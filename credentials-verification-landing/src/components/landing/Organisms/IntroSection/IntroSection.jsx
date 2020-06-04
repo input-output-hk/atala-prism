@@ -23,7 +23,6 @@ const IntroSection = () => {
 
   return (
     <div className="IntroSection">
-      <p className="SectionName">{t('landing.intro.explanation')}</p>
       <h1>{t('landing.intro.question')}</h1>
       <div className="IntroItemContainer">
         {keys

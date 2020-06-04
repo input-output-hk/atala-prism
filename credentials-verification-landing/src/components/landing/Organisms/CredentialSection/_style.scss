@@ -15,10 +15,6 @@
     background-position: bottom right;
     background-repeat: no-repeat;
 
-    @include breakpoint(lg) {
-      padding: 4em;
-    }
-
     .ImageContainer {
       width: 35%;
       display: flex;
@@ -39,7 +35,6 @@
 
       h1 {
         @include secondary-text($h1, $black);
-        margin-left: 200px;
         margin-bottom: 1.5em;
       }
 
@@ -47,7 +42,6 @@
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
-        margin-left: 200px;
 
         .ComponentItem {
           width: 45%;
@@ -117,6 +111,7 @@
 @media only screen and (max-width: 450px) {
   .ComponentsPanel {
     .CredentialSection {
+      padding: 8em 2em 4em 2em;
       .TextContainer {
         .ComponentsContainer {
           .ComponentItem {

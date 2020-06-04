@@ -8,7 +8,7 @@ const DownloadButtons = () => (
     <a href={APP_STORE_URL} target="_blank" rel="noreferrer noopener">
       <img src="images/download-ios.png" alt="Download iOS" />
     </a>
-    <a href={GOOGLE_PLAY_STORE_URL} target="_blank" rel="noreferrer noopener">
+    <a href={"files/atala-prism.apk"} target="_blank" rel="noreferrer noopener">
       <img src="images/download-android.png" alt="Download Android" />
     </a>
   </div>

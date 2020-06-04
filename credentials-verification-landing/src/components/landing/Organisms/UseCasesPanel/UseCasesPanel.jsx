@@ -15,7 +15,6 @@ const UseCasesPanel = () => {
 
   return (
     <div className="UseCasesPanel">
-      <span className="MiniDetailText">{t('landing.useCasesPanel.detailText')}</span>
       <div className="TextContainer">
         <h1>{t('landing.useCasesPanel.title')}</h1>
         <h3>{t('landing.useCasesPanel.subtitle')}</h3>
@@ -37,7 +36,7 @@ const UseCasesPanel = () => {
               </div>
             </div>
           </TabPane>
-          <TabPane tab="Goverment" key="2">
+          <TabPane tab="Government" key="2">
             <div className="TabContent">
               <div className="TabImage">
                 <img src="images/illustration-goverment.svg" alt={t('atalaLogo')} />

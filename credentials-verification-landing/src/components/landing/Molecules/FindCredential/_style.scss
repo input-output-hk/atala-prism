@@ -7,14 +7,12 @@
   display: flex;
   width: 100%;
 
-  @include breakpoint(lg) {
-    padding: 8em 4em 1em 4em;
-  }
-
   .MapContainer {
-    width: 40%;
+    width: 50%;
     margin-top: -2.5em;
-    padding-left: 5em;
+    &:focus {
+      outline: none;
+    }
     .AtalaLogo,
     .CardanoLogo {
       display: none;
@@ -22,7 +20,7 @@
   }
 
   .TextContainer {
-    width: 60%;
+    width: 50%;
     z-index: 100;
     @include breakpoint(sm) {
       width: 100%;
@@ -33,34 +31,31 @@
     }
 
     .InteractiveDemoText {
-      margin-left: 200px;
       h1 {
         @include secondary-text($h1, $black);
       }
 
-      h3 {
-        @include secondary-text($body, $primary-color);
-        margin-top: 2em;
+      .DescriptionText {
+        width: 400px;
+        margin-top: 1em;
+        h3 {
+          @include secondary-text($body, $primary-color);
+          margin-top: 1.5em;
+        }
+        p {
+          @include primary-text($body, $black);
+        }
       }
 
       .StepTextItem {
-        width: 300px;
+        width: 350px;
         p {
-          @include primary-text($body, $black);
+          @include primary-text($label, $black);
 
           &.NumberText {
             font-weight: 700;
             margin-right: 0.5em;
           }
-        }
-      }
-
-      .DisclaimerText {
-        display: flex;
-        width: 300px;
-        p {
-          @include primary-text($label, $primary-color);
-          font-weight: 600;
         }
       }
 
@@ -74,7 +69,14 @@
 
 @media only screen and (max-width: 1024px) {
   .FindCredential {
+    padding: 8em 4em 1em 4em;
+    .MapContainer {
+      width: 40%;
+      padding-left: 5em;
+      margin-top: -5em;
+    }
     .TextContainer {
+      width: 60%;
       .InteractiveDemoText {
         margin-left: 0;
       }
@@ -85,33 +87,54 @@
 @media only screen and (max-width: 768px) {
   .FindCredential {
     position: relative;
+    min-height: 800px;
 
     .MapContainer {
       width: 100%;
       padding-left: 0;
+      padding-top: 3em;
     }
     .TextContainer {
-      width: 65%;
+      width: 80%;
       position: absolute;
       background: rgba(255, 255, 255, 0.8);
       padding: 1.5em;
+
+      .InteractiveDemoText {
+        h1 {
+          @include secondary-text($h2, $black);
+        }
+        .DescriptionText {
+          width: 100%;
+        }
+        .StepTextItem {
+          width: 450px;
+        }
+      }
     }
   }
 }
 
 @media only screen and (max-width: 450px) {
   .FindCredential {
+    padding: 8em 2em 1em 2em;
     .TextContainer {
-      width: 78%;
+      width: 85%;
       .InteractiveDemoText {
         h1 {
-          @include secondary-text($h2, $black);
+          @include secondary-text($body, $black);
+        }
+        .DescriptionText {
+          p {
+            @include primary-text($label, $black);
+          }
         }
         .StepTextItem {
           width: 100%;
         }
-        .DisclaimerText {
-          width: 280px;
+        .theme-primary {
+          width: 100%;
+          font-size: $label;
         }
       }
     }

@@ -15,7 +15,8 @@ const Credentials = ({
   changeCurrentCredential,
   getStep,
   availableCredential,
-  showContactButton
+  showContactButton,
+  showCongrats
 }) => {
   const { t } = useTranslation();
 
@@ -27,6 +28,7 @@ const Credentials = ({
       availableCredential={availableCredential}
       showContactButton={showContactButton}
       toContactForm={redirectToContact}
+      showCongrats={showCongrats}
     />
   );
 
@@ -57,6 +59,7 @@ Credentials.propTypes = {
   changeCurrentCredential: PropTypes.func.isRequired,
   getStep: PropTypes.func.isRequired,
   showContactButton: PropTypes.bool.isRequired,
+  showCongrats: PropTypes.bool.isRequired,
   redirector: PropTypes.shape({
     redirectToLanding: PropTypes.func.isRequired,
     redirectToContact: PropTypes.func.isRequired

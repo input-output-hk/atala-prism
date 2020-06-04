@@ -15,7 +15,6 @@
     width: 60%;
 
     .GetStartedDescription {
-      margin-left: 200px;
       width: 70%;
       h1 {
         @include secondary-text($h1, $white);
@@ -53,6 +52,9 @@
       .GetStartedDescription {
         margin-left: 0;
         width: 90%;
+        h1 {
+          @include secondary-text($subtitle, $white);
+        }
       }
     }
   }
@@ -60,7 +62,8 @@
 
 @media only screen and (max-width: 450px) {
   .GetStartedContent {
-    min-height: 750px;
+    padding: 8em 2em 4em 2em;
+    min-height: 780px;
     .TextContainer {
       width: 100%;
       .GetStartedDescription {

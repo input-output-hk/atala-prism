@@ -11,7 +11,6 @@ const GetStarted = ({ executeScroll }) => {
   return (
     <div className="GetStartedContent">
       <div className="TextContainer">
-        <span className="MiniDetailText">{t('landing.getStarted.detailText')}</span>
         <div className="GetStartedDescription">
           <h1>{t('landing.getStarted.title')}</h1>
           <h3>{t('landing.getStarted.part1')}</h3>

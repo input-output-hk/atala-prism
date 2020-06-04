@@ -17,7 +17,6 @@
 
   .TextContainer {
     width: 60%;
-    margin-left: 200px;
 
     h1 {
       @include secondary-text($h1, $black);
@@ -31,8 +30,7 @@
   }
 
   .UseCasesContainer {
-    width: 80%;
-    margin-left: 200px;
+    width: 90%;
     margin-top: 3em;
 
     .TabContent {
@@ -94,6 +92,10 @@
   .UseCasesPanel {
     padding: 8em 4em 4em 4em;
 
+    .TextContainer {
+      width: 75%;
+    }
+
     .UseCasesContainer {
       width: 75%;
     }
@@ -116,6 +118,11 @@
 
 @media only screen and (max-width: 450px) {
   .UseCasesPanel {
+    padding: 8em 2em 4em 2em;
+
+    .TextContainer {
+      width: 100%;
+    }
     .UseCasesContainer {
       margin-left: 0;
       width: 100%;

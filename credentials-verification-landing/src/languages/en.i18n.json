@@ -148,7 +148,7 @@
   "landing": {
     "CongratsStep": {
       "congrats": "Hey! Nice to see you again.",
-      "finishProcess": "You've already finished this process."
+      "finishProcess": "You have already completed the interactive demo steps."
     },
     "MyCredentials": {
       "title": "My",
@@ -168,22 +168,22 @@
         "credentials": {
           "image": "images/icon-01.svg",
           "title": "For Growing Businesses",
-          "text": "Expand your customer base, increase your profits and future proof your business.",
-          "bullet1": "Immediate customer verification via reusable KYC credentials means fewer scams, as well as reduced time and cost to authenticate your customers.",
-          "bullet2": "Easily comply with regulatory requirements (including GDPR) with built-in data and privacy compliance.",
-          "bullet3": "Reduce abandoned sales levels with instant registration and checkout to your products and services.",
-          "bullet4": "Offer your customers a streamlined experience with hassle-free, automated user journeys.",
+          "text": "Expand your customer base with an improved overall experience, increase your profits, and future proof your business.",
+          "bullet1": "Offer your customers a streamlined experience with hassle-free, automated user journeys.",
+          "bullet2": "Instantly onboard your customers with reusable KYC credentials that reduce time and cost to securely authenticate them.",
+          "bullet3": "Easily comply with regulatory requirements (including GDPR) via built-in data and privacy compliance.",
+          "bullet4": "Maximize sales and reduce abandoned baskets with instant registration and checkout to your products and services.",
           "bullet5": "Enable your customers to access your products and services with a single click. Eliminate long forms and make life easier."
         },
         "wallet": {
           "image": "images/icon-02.svg",
           "title": "For Effective Governments",
           "text": "Implement secure, next-generation services that make your government more effective, responsive and agile.",
-          "bullet1": "Improve administrative efficiency within departments with fewer face-to-face verifications. Go digital.",
-          "bullet2": "Verified digital identity for everyone means a significant reduction in fraud levels against all parties – individuals, businesses, organizations and government.",
-          "bullet3": "Enable instant access to public and private sector services with a single, universal digital identity. Individuals spending less time authenticating who they are and registering for services means a better overall experience.",
-          "bullet4": "Get rid of any manual paperwork and use a secure digital format instead. Prepare for growth with smart digital services.",
-          "bullet5": "Prueba"
+          "bullet1": "Enable instant access to public and private sector services with a single, universal digital identity.",
+          "bullet2": "Offer citizens a better overall experience with less time spent authenticating who they are and registering for services.",
+          "bullet3": "Verified digital identity for everyone means a significant reduction in fraud levels against all parties – individuals, businesses, organizations and government.",
+          "bullet4": "Improve administrative efficiency within departments with fewer face-to-face verifications. Go digital.",
+          "bullet5": "Get rid of any manual paperwork and use a secure digital format instead. Prepare for growth with smart digital services."
         },
         "crypto": {
           "image": "images/icon-03.svg",
@@ -224,26 +224,29 @@
       "share": "Share your "
     },
     "createdCredential": {
-      "prevCredentialName": "You should see the following"
+      "prevCredentialName": "You should see the following",
+      "prevProofOfEmployementName": "Now that you've started your new job, here is your Proof of Employment."
     },
     "findCredential": {
-      "title": "Experience how Atala PRISM",
-      "title2": "can power a smarter world today!",
+      "title": "Experience how Atala PRISM can",
+      "title2": "power a smarter world today using",
+      "title3": "our interactive city map.",
+      "descriptionText": "Our interactive demo will enable you to see what a smart city powered by Atala PRISM will look like through the eyes of individuals.",
       "arrowAlt": "Arrow Right",
       "credentialAlt": "Man smiling",
       "cardTitle": "Find a Credential",
       "cardSubtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
       "cardSubtitle2": "a page.",
       "warning": "You will be ask for some personal data",
-      "askForCredential": "GET STARTED!",
+      "askForCredential": "LAUNCH INTERACTIVE CITY MAP",
       "detailText": "Interactive Demo",
       "subtitle": "IT’S EASY.",
-      "step1": "Download the Atala PRISM Mobile App",
-      "step2": "Get your government issued identity on your phone. Instantly authenticate yourself and access services straight away!",
+      "step1": "Download the Atala PRISM mobile app. You will use this in conjunction with our interactive city map, which is best viewed on laptop or desktop.",
+      "step2": "Once you have downloaded the mobile app, launch the interactive city map and experience how Atala PRISM can power a smarter world.",
       "disclaimer": "In order to best experience the interactive demo, please use a laptop or desktop."
     },
     "quotes": {
-      "phrase": "Decentralized identity provides a new way to own your personal information and enables secure and trusted transactions in your everyday life"
+      "phrase": "Decentralized identity provides individuals with a new way to own their personal information and enables secure and trusted transactions in their everyday life"
     },
     "trust": {
       "trustName": "Trust 1",
@@ -266,7 +269,7 @@
       "benefit6": "It supports flexible deployment models and choice of the underlying blockchain platform."
     },
     "caseStudy": {
-      "title": "Identity and Credentials Verification Pilot",
+      "title": "Case Study: Identity and Credentials Verification Pilot",
       "title2": "for the Republic of Georgia",
       "caseStudyAlt": "Case Study Republic of Georgia",
       "detailText": "Case Study",
@@ -294,7 +297,7 @@
       "faq4": "All personal information is securely and privately stored on your consumers’ smartphones or smartcards. Leveraging blockchain technology, Atala PRISM ensures that transactions are performed in a secure, peer-to-peer fashion. Each of your consumers is the only person with access to their data and credentials.",
       "titlefaq5": "How does removing third parties keep personal data and information safe?",
       "faq5": "Third parties, including technology companies and municipalities, can sell personal information, prevent individuals from accessing their data or shut down their account without permission. With Atala PRISM, individuals have complete control over their own data.",
-      "titlefaq6": "Isn’t Atala PRISM a third party that is in control of personal data?",
+      "titlefaq6": "Does Atala PRISM own individuals' data?",
       "faq6": "No. All data is securely stored and encrypted on the individual’s phone or smartcard. Each individual is the only person that can access it using their biometrics (i.e. fingerprint or faceID) or PIN code.",
       "titlefaq7": "Are identity and credentials shareable only within the Atala PRISM ecosystem?",
       "faq7": "Anyone can integrate with Atala PRISM. Since it is built using industry standards, third-party apps will be able to connect easily in the future."
@@ -304,7 +307,7 @@
       "subtitle": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
     },
     "contactPanel": {
-      "title": "Contact Us",
+      "title": "Get in touch with us",
       "detailText": "Contact",
       "part1": "Atala PRISM is powered by",
       "part2": "Cardano",
@@ -312,7 +315,7 @@
       "part4": "Cardano is developed by ",
       "part5": "IOHK,",
       "part6": " a blockchain technology company and industry leader in the fields of cryptography and distributed systems.",
-      "part7": "For any inquiries, please fill in the contact form below:"
+      "part7": "Got a question? We would love to hear from you. Send us a message and we'll respond as soon as possible."
     },
     "useCasesPanel": {
       "detailText": "Use Cases",
@@ -355,7 +358,7 @@
     "trademark": {
       "part1": "Terms & Conditions",
       "part2": " Privacy Policy",
-      "part3": "Copyright © 2020 atala.io"
+      "part3": "Copyright © 2020 IOHK"
     }
   },
   "credentials": {
@@ -379,7 +382,7 @@
         "completeName": "Jo Wong",
         "description": "Join Jo on her journey through the smart city powered by Atala PRISM!",
         "history": "As a recent graduate, she is on the lookout for her first job. Part of the ‘mobile first generation’, her phone is where life happens. Instead of old fashioned documents, it makes sense for her to hold and manage her identity and credentials straight from her phone.",
-        "type": "Student Credentials"
+        "type": "Get the following Credentials:"
       },
       "touristPersona": {
         "title": "This is Grace.",
@@ -387,7 +390,7 @@
         "completeName": "Grace Hamilton",
         "description": "Join Grace on her journey through the smart city powered by Atala PRISM!",
         "history": "Grace is a young globetrotter who enjoys visiting new places. She likes to travel light and as efficiently as possible. So it feels natural to her to carry all her traveling documentation straight on her phone.",
-        "type": "Tourist Credentials"
+        "type": "Get the following Credentials:"
       },
       "executivePersona": {
         "title": "This is Brandon.",
@@ -395,7 +398,7 @@
         "completeName": "Brandon Tusk",
         "description": "Join Brandon on his journey through the smart city powered by Atala PRISM!",
         "history": "As a business executive, Brandon needs to attend conferences and client offices often. He likes to be up-to-speed with innovative technologies both in his office and outside of it. That’s why he prefers to live the smart way with all important documentation stored straight on his phone.",
-        "type": "Company Executive Credentials"
+        "type": "Get the following Credentials:"
       },
       "enabledButton": "'s story",
       "disabledButton": "Coming soon"
@@ -557,7 +560,7 @@
         "award": "Award",
         "fullName": "Full Name",
         "startDate": "Start Date",
-        "graduationDate": "Issuance date"
+        "graduationDate": "Issuance Date"
       }
     }
   },
@@ -576,7 +579,7 @@
     "table": {
       "columns": {
         "providerName": "Provider Name",
-        "classOfInsurance": "Class Of Insurance",
+        "classOfInsurance": "Class of Insurance",
         "policyNumber": "Policy Number",
         "fullName": "Full Name",
         "policyEndDate": "Policy End Date"
@@ -773,17 +776,18 @@
       "title": "Let's move forward together.",
       "title2": "forward together.",
       "emailSuscription": "Or stay up to date on the latest announcements and products with just your email:",
-      "termsConditions": "By submitting this form, I agree with Atala PRISM’s ",
-      "termsConditions2": "Privacy Policy.",
+      "termsConditions1": "Terms & Conditions ",
+      "termsConditions2": "and ",
+      "termsConditions3": "Privacy Policy.",
       "send": "Send",
-      "consent": "Yes, I would like to subscribe to updates from Atala PRISM.",
-      "consent2": "Yes, I agree.",
+      "consent": "Yes, I would like to subscribe to newsletters from Atala PRISM.",
+      "consent2": "Yes, I have read and agree to the Atala PRISM ",
       "faq1": "Check out our",
       "faq2": "FAQs",
       "faq3": " for answers to any other questions you may have.",
       "form": {
         "fullName": "Full Name",
-        "email": "E-mail",
+        "email": "Email address",
         "formMessage": "Message"
       }
     },
@@ -820,10 +824,10 @@
       "checkHome2": "to see your Credentials.",
       "openCredentialID": "Open the ",
       "openCredentialID2": " Detail.",
-      "share": "You will receive a Proof Request on",
+      "share": "You will receive a request to share credentials.",
       "share2": "Contacts.",
       "optionalOpen": "Do the same with the ",
-      "governmentCredentialId": "Select Government ID and share.",
+      "governmentCredentialId": "Select the requested credentials and share.",
       "1": "University degree",
       "2": "Proof of Employment",
       "3": "Health Insurance"
@@ -862,8 +866,8 @@
     "credentialDescription": {
       "CredentialType0": "Metropol city has announced that all residents will be issued with a new digital ID. This forward thinking initiative will give citizens fast and friction-free access to many government and municipal services, making it easier than ever before to take public transport, pay city taxes and vote on local issues, straight from your phone. The city simply verifies the resident and issues a digital ID that is stored securely on their Atala PRISM wallet. Metropol City Resident Jo is excited that this verified digital ID enables her to live smarter; straight from her phone.",
       "CredentialType1": "After graduating, Jo finds out that her University will be issuing her degree digitally. This innovative approach means that potential employers will be able to instantly verify her degree, making the process of recruitment much faster. All Jo needs to do is use Atala PRISM to share her digital ID with her University, who will issue her with her ‘digital degree’. It’s super convenient for everyone and means that Jo can put her years of studying to good use, faster.",
-      "CredentialType2": "After finding her dream role at a Startup, Jo’s new employer issues her with a ‘Proof of Employment’ certificate that she can access via the Atala PRISM app. This certificate enables Jo to live her life even more efficiently, including renting an apartment closer to her new office. After finding her perfect place, Jo simply uses her Atala PRISM app to demonstrate Proof of Employment to the landlord. She doesn't need to waste time filling out lengthy forms and submitting to lengthy background checks.",
-      "CredentialType3": "Atala PRISM is making Jo’s working life smarter and more streamlined and the next step is to add her health insurance. All she needs to do is share her ID and Proof of Employment with the insurance company via Atala PRISM. In the future, Jo will be able to use her phone to share her insurance details with her doctor or pick up a prescription at a local pharmacy. All confidentially, securely and in seconds."
+      "CredentialType2": "Jo is looking to rent out a new flat and her landlord requires a few documents including a Proof of Employment. Jo starts the job search and soon finds her dream role at a startup. She is excited that she can submit an instant application using Atala PRISM that doesn't require filling out lengthy forms or submitting to time-consuming background checks. As soon as Jo accepts the job offer, her employer provides her with the Proof of Employment document she needs.",
+      "CredentialType3": "Atala PRISM is making Jo's life smarter and more streamlined, and the next step for her is to apply for a health insurance. Jo is excited that she can submit an instant application using Atala PRISM by submitting her ID and Proof of Employment. The insurance company instantly grants her health cover. Jo is now able to use her phone to share her insurance details with her doctor or to pick up a prescription at a local pharmacy. All confidentially, securely and in seconds."
     },
     "credentialAsk": {
       "CredentialType0": "Get your ID",
@@ -906,7 +910,7 @@
       "CREDENTIAL_RECEIVED": "Credential received"
     },
     "IdCredentialCard": {
-      "CredentialTitle": "National ID Card",
+      "CredentialTitle": "Government ID",
       "CredentialSubtitle": "Metropol City Government",
       "IdentityNumber": "Identity Number",
       "DateOfBirth": "Date of Birth",
@@ -915,9 +919,9 @@
     },
     "contactFormButton": {
       "congrats": "Congrats!",
-      "congrats2": "You have all the Credentials.",
-      "knowMore": "Would you like to know more?",
-      "getInTouch": "Get in touch!"
+      "congrats2": "You have all the credentials.",
+      "knowMore": "Thanks for experiencing our smart city demo powered by Atala PRISM.",
+      "getInTouch": "Click here to get in touch with us or subscribe for any updates."
     }
   },
   "errors": {

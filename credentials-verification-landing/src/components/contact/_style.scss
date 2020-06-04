@@ -2,9 +2,15 @@
 
 .CredentialStepContent {
   width: 100%;
+  margin-top: -1.75em;
 
   .CredentialsForm {
     padding-left: 15em;
+
+    .theme-link {
+      padding-left: 0;
+      margin-bottom: 0.75em;
+    }
 
     .TitleContent {
       margin-bottom: 2em;
@@ -100,6 +106,25 @@
       display: flex;
       justify-content: center;
       padding-top: 4em;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .CredentialStepContent {
+    .CredentialsForm {
+      padding-left: 2em;
+      width: 95%;
+
+      .TitleContent {
+        h1 {
+          font-size: $title;
+        }
+      }
+
+      .ImageSide {
+        display: none;
+      }
     }
   }
 }

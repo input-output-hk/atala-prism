@@ -5,7 +5,6 @@
 
   h1 {
     @include secondary-text($h1, $black);
-    margin-left: 200px;
   }
 
   p {
@@ -16,16 +15,10 @@
     }
   }
 
-  @include breakpoint(lg) {
-    padding: 4em;
-  }
-
   .IntroItemContainer {
     display: flex;
     justify-content: space-between;
     margin-top: 4em;
-    margin-left: 200px;
-
     .lineSeparatorSide {
       display: none;
     }
@@ -40,7 +33,6 @@
     display: flex;
     justify-content: space-between;
     margin-top: 1em;
-    margin-left: 200px;
   }
 }
 
@@ -50,15 +42,6 @@
 
     h1 {
       @include secondary-text($h1, $black);
-      margin-left: 200px;
-    }
-
-    .IntroItemContainer {
-      flex-direction: column;
-      .IntroItem {
-        width: 100%;
-        margin-bottom: 1.5em;
-      }
     }
     .ReadMoreContainer {
       display: none;
@@ -84,40 +67,8 @@
   }
 }
 
-@media only screen and (max-width: 1024px) {
+@media only screen and (max-width: 450px) {
   .IntroSection {
-    padding: 4em;
-
-    h1 {
-      @include secondary-text($h1, $black);
-      margin-left: 200px;
-    }
-
-    .IntroItemContainer {
-      flex-direction: column;
-      .IntroItem {
-        width: 100%;
-        margin-bottom: 1.5em;
-      }
-    }
-  }
-}
-
-@media only screen and (max-width: 768px) {
-  .IntroSection {
-
-    h1 {
-      @include secondary-text($h1, $black);
-      margin-left: 0;
-    }
-
-    .IntroItemContainer {
-      margin-left: 0;
-      flex-direction: column;
-      .IntroItem {
-        width: 100%;
-        margin-bottom: 1.5em;
-      }
-    }
+    padding: 8em 2em 2em 2em;
   }
 }

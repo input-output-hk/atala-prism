@@ -5,8 +5,6 @@ import I18nError from './I18nError';
 import UserInfo from './userInfo/UserInfoContainer';
 import Credentials from './credentials/CredentialsContainer';
 import Contact from './contact/ContactContainer';
-import TermsAndConditions from './legal/TermsAndConditions';
-import PrivacyPolicy from './legal/PrivacyPolicy';
 
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 
@@ -31,16 +29,6 @@ const contactRoute = {
   key: 'contact',
   component: Contact
 };
-const termsRoute = {
-  path: '/terms-and-conditions',
-  key: 'terms-and-conditions',
-  component: TermsAndConditions
-};
-const privacyRoute = {
-  path: '/privacy-policy',
-  key: 'privacy-policy',
-  component: PrivacyPolicy
-};
 
 const routes = [
   errorRoute,
@@ -48,8 +36,6 @@ const routes = [
   userInfoRoute,
   credentialsRoute,
   contactRoute,
-  termsRoute,
-  privacyRoute
 ];
 
 const Router = () => (

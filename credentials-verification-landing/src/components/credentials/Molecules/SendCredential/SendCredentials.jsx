@@ -27,7 +27,7 @@ const SendCredentials = ({ currentCredential }) => {
       </h1>
       <h3>
         {t('credential.sendCredentials.explanation')}
-        {t(`credential.sendCredentials.${currentCredential}`)}.
+        {t(`credential.sendCredentials.${currentCredential}`)},
         {t('credential.sendCredentials.explanation2')}
         {currentCredential > 1 &&
           t('credential.sendCredentials.explanation3') +
@@ -42,13 +42,11 @@ const SendCredentials = ({ currentCredential }) => {
           />
         </div>
         <div className="StepTextItem">
-          <p className="NumberText">01.</p>
+          <p className="NumberText">1.</p>
           <p>{t('credential.sendCredentials.share')}</p>
-          <img src={iconConnection} alt={t('credential.scanQRInfo.step2.alt')} />
-          <p>{t('credential.sendCredentials.share2')}</p>
         </div>
         <div className="StepTextItem">
-          <p className="NumberText">02.</p>
+          <p className="NumberText">2.</p>
           <p>{t('credential.sendCredentials.governmentCredentialId')}</p>
         </div>
       </div>

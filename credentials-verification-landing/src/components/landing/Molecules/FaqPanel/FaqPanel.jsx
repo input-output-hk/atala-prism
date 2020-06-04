@@ -8,7 +8,6 @@ const FaqPanel = () => {
 
   return (
     <div className="FaqPanelContent">
-      <span className="MiniDetailText">{t('landing.faqPanel.detailText')}</span>
       <div className="TextContainer">
         <h1>{t('landing.faqPanel.title')}</h1>
         <div className="FaqContainer">

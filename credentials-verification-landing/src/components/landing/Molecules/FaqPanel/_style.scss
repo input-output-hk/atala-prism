@@ -12,7 +12,6 @@
 
   .TextContainer {
     width: 70%;
-    margin-left: 200px;
 
     h1 {
       @include secondary-text($h1, $black);
@@ -20,7 +19,7 @@
     }
 
     .FaqContainer {
-      width: 80%;
+      width: 90%;
 
       .FaqItem {
         margin-top: 3em;
@@ -62,6 +61,7 @@
 
 @media only screen and (max-width: 450px) {
   .FaqPanelContent {
+    padding: 8em 2em 4em 2em;
     .TextContainer {
       .FaqContainer {
         width: 100%;

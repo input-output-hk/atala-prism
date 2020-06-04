@@ -15,18 +15,17 @@ const Contact = () => {
   const [consent, setConsent] = useState(false);
 
   const submitForm = () => {
-    contactInfoRef.current
-      .getForm()
-      .validateFields(
-        ['fullName', 'email', 'formMessage'],
-        (errors, { fullName, email, formMessage }) => {
-          if (!consent) return message.error(t('errors.consent'));
-          if (errors) return;
+    const form = contactInfoRef.current.getForm();
+    form.validateFields(
+      ['fullName', 'email', 'formMessage'],
+      (errors, { fullName, email, formMessage }) => {
+        if (!consent) return message.error(t('errors.consent'));
+        if (errors) return;
 
-          console.log('fields=', fullName, email, formMessage, consent);
-          subscribeToNewsLetter({ EMAIL: email, FULLNAME: fullName, MESSAGE: formMessage });
-        }
-      );
+        subscribeToNewsLetter({ EMAIL: email, FULLNAME: fullName, MESSAGE: formMessage });
+        form.resetFields();
+      }
+    );
   };
 
   const subscribeToNewsLetter = formData => {

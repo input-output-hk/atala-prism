@@ -13,8 +13,7 @@
     }
 
     .paragraphContent {
-      margin-left: 200px;
-      width: 58%;
+      width: 65%;
       h1 {
         @include secondary-text($h1, $black);
         line-height: 32px;
@@ -34,8 +33,7 @@
   }
 
   .ContactPanelForm {
-    margin-left: 200px;
-    width: 58%;
+    width: 65%;
     margin-top: 1em;
 
     .contactInformation {
@@ -108,11 +106,11 @@
 
     .ContactPanelContainer {
       .paragraphContent {
-        width: 70%;
+        width: 80%;
       }
     }
     .ContactPanelForm {
-      width: 70%;
+      width: 80%;
     }
   }
 }
@@ -129,15 +127,17 @@
       width: 100%;
       margin-left: 0;
     }
-  }
-}
 
-@media only screen and (max-width: 450px) {
-  .ContactPanel {
     .IllustrationFooter {
       align-self: flex-end;
       margin-right: 1em;
       width: 100px;
     }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .ContactPanel {
+    padding: 8em 2em 0 2em;
   }
 }

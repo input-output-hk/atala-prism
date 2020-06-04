@@ -13,7 +13,7 @@ const panelsData = [
   {
     key: '2',
     name: 'wallet',
-    bulletsNumber: 4
+    bulletsNumber: 5
   },
   {
     key: '3',

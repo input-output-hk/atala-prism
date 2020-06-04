@@ -1,12 +1,15 @@
 import React from 'react';
-import { Col, Row } from 'antd';
+import { Col, Row, Icon } from 'antd';
 import { useTranslation } from 'react-i18next';
 import Contact from './Organisms/Contact/Contact';
+import { LEFT } from '../../helpers/constants';
+import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 
+import { withRedirector } from '../providers/withRedirector';
 import '../credentials/_style.scss';
 import './_style.scss';
 
-const ContactContainer = () => {
+const ContactContainer = ({ redirector: { redirectToLanding } }) => {
   const { t } = useTranslation();
 
   return (
@@ -17,10 +20,22 @@ const ContactContainer = () => {
       <div className="CredentialStepContent">
         <Row className="CredentialsForm">
           <Col xs={24} lg={13}>
+            <CustomButton
+              buttonProps={{
+                onClick: redirectToLanding,
+                className: 'theme-link'
+              }}
+              icon={{ icon: <Icon type="left" />, side: LEFT }}
+              buttonText={t('credential.backHome')}
+            />
             <div className="TitleContent">
               <h1>{t('credential.contactInformation.title')}</h1>
               <p>{t('credential.contactInformation.congrats')}</p>
-              <img src="images/icon-decorative.svg" className="IconDecorative" alt={t('atalaLogo')} />
+              <img
+                src="images/icon-decorative.svg"
+                className="IconDecorative"
+                alt={t('atalaLogo')}
+              />
             </div>
             <div className="Form">
               <Contact />
@@ -38,5 +53,4 @@ const ContactContainer = () => {
   );
 };
 
-
-export default ContactContainer;
+export default withRedirector(ContactContainer);

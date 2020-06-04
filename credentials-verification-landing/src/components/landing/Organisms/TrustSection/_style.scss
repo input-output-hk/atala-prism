@@ -16,7 +16,6 @@
       line-height: 32px;
       width: 360px;
       margin-bottom: 2.5em;
-      margin-left: 200px;
     }
   }
 
@@ -24,7 +23,6 @@
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    margin-left: 200px;
 
     .BenefitItem {
       width: 30%;
@@ -74,6 +72,7 @@
 
 @media only screen and (max-width: 450px) {
   .TrustSection {
+    padding: 8em 2em 2em 2em;
     .BenefitsContainer {
       .BenefitItem {
         width: 100%;

@@ -8,9 +8,6 @@ html {
   .LandingHeader {
     background: $secondary-color;
     width: 100%;
-    background-position: bottom;
-    background-repeat: no-repeat;
-    background-size: cover;
 
     .LadingHeaderContent {
       display: flex;
@@ -56,22 +53,20 @@ html {
         padding: 4em 2em 0 4em;
 
         .HeaderText {
-          width: 40%;
+          width: 50%;
           padding-right: 2em;
+          margin-top: 4em;
+          margin-bottom: 2em;
+
           h1 {
             @include secondary-text($h1, $white);
-            line-height: 26px;
-            margin-bottom: 1em;
-          }
-          h3 {
-            @include primary-text($body, $white);
+            line-height: 30px;
           }
         }
 
         .HeaderImages {
+          width: 50%;
           margin-top: 4em;
-          padding-right: 2em;
-          width: 60%;
         }
       }
     }
@@ -101,8 +96,9 @@ html {
   .LandingContainer {
     .LandingHeader {
       .LadingHeaderContent {
-        padding: 8em 4em 0 4em;
+        padding: 8em 2em 0 2em;
         flex-direction: column;
+        align-items: flex-start;
 
         .HeaderText {
           width: 100%;
@@ -113,40 +109,6 @@ html {
           margin-top: 1em;
           margin-bottom: 1em;
         }
-      }
-    }
-  }
-}
-
-@media only screen and (max-width: 1024px) {
-  .LandingContainer {
-    .LandingHeader {
-      .LadingHeaderContent {
-        padding: 4em 2em 0 4em;
-
-        .HeaderText {
-          width: 50%;
-          padding-right: 2em;
-        }
-
-        .HeaderImages {
-          width: 50%;
-
-          img {
-            width: 80%;
-            height: auto;
-          }
-        }
-      }
-    }
-  }
-}
-
-@media only screen and (max-width: 450px) {
-  .LandingContainer {
-    .LandingHeader {
-      .LadingHeaderContent {
-        padding: 8em 2em 0 4em;
       }
     }
   }

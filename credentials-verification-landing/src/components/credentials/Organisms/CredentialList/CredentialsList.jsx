@@ -19,7 +19,8 @@ const CredentialsList = ({
   changeCurrentCredential,
   availableCredential,
   showContactButton,
-  toContactForm
+  toContactForm,
+  showCongrats
 }) => {
   const { t } = useTranslation();
 
@@ -34,7 +35,7 @@ const CredentialsList = ({
       buttonText={t(`credential.${CREDENTIAL_TYPES[index]}`)}
       key={index}
       optImg={
-        showContactButton || parseInt(index, 10) < availableCredential
+        showCongrats || showContactButton || parseInt(index, 10) < availableCredential
           ? { src: checkIcon, alt: 'Verified Icon' }
           : {}
       }
@@ -53,6 +54,7 @@ CredentialsList.propTypes = {
   changeCurrentCredential: PropTypes.func.isRequired,
   availableCredential: PropTypes.number.isRequired,
   showContactButton: PropTypes.bool.isRequired,
+  showCongrats: PropTypes.bool.isRequired,
   toContactForm: PropTypes.func.isRequired
 };
 

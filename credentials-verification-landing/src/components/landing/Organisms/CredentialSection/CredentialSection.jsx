@@ -10,7 +10,6 @@ const CredentialSection = () => {
     <div className="ComponentsPanel">
       <div className="CredentialSection">
         <div className="TextContainer">
-          <span className="MiniDetailText">{t('landing.credential.detailText')}</span>
           <h1>{t('landing.credential.title')}</h1>
           <div className="ComponentsContainer">
             <div className="ComponentItem">
@@ -18,12 +17,12 @@ const CredentialSection = () => {
               <p>{t('landing.credential.component1')}</p>
             </div>
             <div className="ComponentItem">
-              <h3>{t('landing.credential.titlecomponent2')}</h3>
-              <p>{t('landing.credential.component2')}</p>
-            </div>
-            <div className="ComponentItem">
               <h3>{t('landing.credential.titlecomponent3')}</h3>
               <p>{t('landing.credential.component3')}</p>
+            </div>
+            <div className="ComponentItem">
+              <h3>{t('landing.credential.titlecomponent2')}</h3>
+              <p>{t('landing.credential.component2')}</p>
             </div>
             <div className="ComponentItem">
               <h3>{t('landing.credential.titlecomponent4')}</h3>

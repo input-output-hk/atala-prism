@@ -29,3 +29,15 @@
     padding: 1.25em 4em;
   }
 }
+
+@media only screen and (max-width: 768px) {
+  .Header {
+    padding: 1.25em 4em;
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .Header {
+    padding: 1.25em 2em;
+  }
+}

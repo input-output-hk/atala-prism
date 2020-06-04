@@ -3,37 +3,7 @@
 .AppContainer {
   display: flex;
   flex-flow: column;
-
-  .MainContent {
-    display: flex;
-    height: 91%;
-    border-radius: 20px 20px 0 0;
-    overflow: hidden;
-    .MainContainer {
-      width: 97vw;
-      background: $white;
-      @include breakpoint(sm) {
-        width: 100vw;
-        overflow-y: auto;
-      }
-      .ContentHeader {
-        display: flex;
-        justify-content: space-between;
-        h1 {
-          @include secondary-text($h1, $secondary-color);
-        }
-      }
-
-      .FilterControls {
-        display: flex;
-        margin: 40px 0 20px;
-
-        .ant-select {
-          width: 100%;
-        }
-      }
-    }
-  }
+  width: 100%;
 
   .ControlButtons {
     display: flex;

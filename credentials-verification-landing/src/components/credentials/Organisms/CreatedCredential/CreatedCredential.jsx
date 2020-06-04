@@ -26,6 +26,13 @@ const currentCredentialCard = {
   3: CredentialData
 };
 
+const prevCredentialMessage = [
+  'prevCredentialName',
+  'prevCredentialName',
+  'prevProofOfEmployementName',
+  'prevCredentialName'
+];
+
 const CreatedCredential = ({ confirmSuccessCredential, currentCredential }) => {
   const { t } = useTranslation();
   const { user } = useContext(UserContext);
@@ -93,7 +100,7 @@ const CreatedCredential = ({ confirmSuccessCredential, currentCredential }) => {
   return (
     <div>
       <div className="CreatedCredential">
-        <h3>{t('landing.createdCredential.prevCredentialName')}</h3>
+        <h3>{t(`landing.createdCredential.${prevCredentialMessage[currentCredential]}`)}</h3>
         <div className="ContainerCredential">
           <Card {...user} {...cardContent} />
         </div>

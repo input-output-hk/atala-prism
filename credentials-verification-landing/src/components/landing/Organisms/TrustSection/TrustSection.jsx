@@ -10,7 +10,6 @@ const TrustSection = () => {
   return (
     <div className="TrustSection">
       <div className="DownloadContainer">
-        <span className="MiniDetailText">{t('landing.trust.downloadInfo')}</span>
         <h1>{t('landing.trust.predownloadText')}</h1>
       </div>
       <div className="BenefitsContainer">

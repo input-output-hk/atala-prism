@@ -24,7 +24,9 @@ import {
   STEP_1_EVENT,
   STEP_2_EVENT,
   STEP_3_EVENT,
-  STEP_4_EVENT
+  STEP_4_EVENT,
+  LANDING_PAGE,
+  CREDENTIALS_PAGE
 } from '../../helpers/constants';
 import Credentials from './Credentials';
 import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInside';
@@ -251,6 +253,7 @@ const CredentialsContainer = ({
         changeCurrentCredential={value => setCurrentCredential(value)}
         availableCredential={currentCredential}
         showContactButton={showContactButton}
+        showCongrats={showCongrats}
       />
     </div>
   );

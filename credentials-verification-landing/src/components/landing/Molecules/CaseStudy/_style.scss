@@ -6,11 +6,10 @@
   background: $background;
 
   .TextContainer {
-    width: 60%;
+    width: 50%;
 
     .CaseStudyDescription {
-      margin-left: 200px;
-      width: 50%;
+      width: 70%;
       h1 {
         @include secondary-text($h1, $black);
         line-height: 30px;
@@ -23,12 +22,11 @@
   }
 
   .ImageContainer {
-    width: 40%;
+    width: 50%;
     display: flex;
     justify-content: center;
-
     img {
-      width: 95%;
+      margin-top: -2em;
     }
   }
 }
@@ -39,7 +37,7 @@
 
     .TextContainer {
       .CaseStudyDescription {
-        width: 60%;
+        width: 80%;
       }
     }
 
@@ -66,11 +64,16 @@
 
 @media only screen and (max-width: 450px) {
   .CaseStudyContent {
+    padding: 8em 2em 4em 2em;
     flex-direction: column;
     .TextContainer {
       width: 100%;
       .CaseStudyDescription {
         width: 100%;
+        h1 {
+          @include secondary-text($subtitle, $black);
+          line-height: 22px;
+        }
       }
     }
     .ImageContainer {

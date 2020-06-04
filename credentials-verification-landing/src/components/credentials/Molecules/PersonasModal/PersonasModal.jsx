@@ -74,7 +74,7 @@ const PersonasModal = ({ showModal, selectPersona }) => {
   ));
 
   return (
-    <Modal visible={showModal} footer={null} closable={false} width="75%" style={{ top: 20 }}>
+    <Modal visible={showModal} footer={null} closable={false} width="75%" style={{ top: 0 }}>
       <div className="PersonasModal">
         <h1>{t('credentials.personasModal.title')}</h1>
         <div className="PersonaCards">{personaCards}</div>

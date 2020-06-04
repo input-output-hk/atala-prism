@@ -11,14 +11,15 @@ const { TextArea } = Input;
 const TemplateForm = React.forwardRef((_props, ref) => {
   const { t } = useTranslation();
 
-  const getInput = (key, inputProps, extraRules) => {
+  const getInput = (key, inputProps, extraRules, normalize) => {
     const rules = extraRules
       ? [noEmptyInput(t('errors.form.emptyField')), extraRules]
       : [noEmptyInput(t('errors.form.emptyField'))];
 
     return {
       fieldDecoratorData: {
-        rules
+        rules,
+        normalize
       },
       label: t(`credential.contactInformation.form.${key}`),
       key,
@@ -35,7 +36,8 @@ const TemplateForm = React.forwardRef((_props, ref) => {
       {
         validator: (_, value, cb) => emailFormatValidation(value, cb),
         message: t('errors.email')
-      }
+      },
+      value => value && value.trim()
     ),
     { ...getInput('formMessage'), input: <TextArea rows={4} placeholder="Tell us more..." /> }
   ];

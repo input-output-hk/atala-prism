@@ -9,7 +9,6 @@ const CaseStudy = () => {
   return (
     <div className="CaseStudyContent">
       <div className="TextContainer">
-        <span className="MiniDetailText">{t('landing.caseStudy.detailText')}</span>
         <div className="CaseStudyDescription">
         <h1>{t('landing.caseStudy.title')}</h1>
         <h1>{t('landing.caseStudy.title2')}</h1>

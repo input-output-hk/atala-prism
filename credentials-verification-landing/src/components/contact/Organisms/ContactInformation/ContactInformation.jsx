@@ -12,24 +12,32 @@ const ContactInformation = ({ submit, contactInfoRef, onConsent }) => {
   return (
     <div className="contactInformation">
       <ContactInformationForm ref={contactInfoRef} />
-      <p>{t('credential.contactInformation.emailSuscription')}</p>
       <Checkbox onChange={event => onConsent(event.target.checked)}>
         {t('credential.contactInformation.consent')}
       </Checkbox>
       <hr />
-      <p>
-        {t('credential.contactInformation.termsConditions')}
-        <a href="/privacy-policy" target="_blank">
-          {t('credential.contactInformation.termsConditions2')}
-        </a>
-      </p>
       <Checkbox onChange={event => onConsent(event.target.checked)}>
         {t('credential.contactInformation.consent2')}
+        <a
+          href="https://legal.atalaprism.io/terms-and-conditions.html "
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('credential.contactInformation.termsConditions1')}
+        </a>
+        {t('credential.contactInformation.termsConditions2')}
+        <a
+          href="https://legal.atalaprism.io/privacy-policy.html "
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('credential.contactInformation.termsConditions3')}
+        </a>
       </Checkbox>
       <div className="FAQContainer">
         <p>
           {t('credential.contactInformation.faq1')}{' '}
-          <a href="#">{t('credential.contactInformation.faq2')}</a>{' '}
+          <a href="/">{t('credential.contactInformation.faq2')}</a>{' '}
           {t('credential.contactInformation.faq3')}
         </p>
       </div>

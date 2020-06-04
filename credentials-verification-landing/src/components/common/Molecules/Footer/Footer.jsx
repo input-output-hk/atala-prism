@@ -15,13 +15,21 @@ const Footer = () => {
         </button>
         <div className="FooterText">
           <p>
-            <a href="/terms-and-conditions" target="_blank">
+            <a
+              href="https://legal.atalaprism.io/terms-and-conditions.html "
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {t('landing.trademark.part1')}
             </a>
           </p>
           <p>
-            <a href="/privacy-policy" target="_blank">
-            {t('landing.trademark.part2')}
+            <a
+              href="https://legal.atalaprism.io/privacy-policy.html "
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('landing.trademark.part2')}
             </a>
           </p>
         </div>
