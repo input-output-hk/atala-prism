@@ -49,6 +49,44 @@ variable psql_password {
   description = "PostgreSQL password to use for node"
 }
 
+variable cardano_db_sync_psql_host {
+  description = "PostgreSQL host for the cardano-db-sync db"
+}
+
+variable cardano_db_sync_psql_username {
+  description = "PostgreSQL username for the cardano-db-sync db"
+}
+
+variable cardano_db_sync_psql_password {
+  description = "PostgreSQL password for the cardano-db-sync db"
+}
+
+variable cardano_db_sync_psql_database {
+  description = "PostgreSQL dababase name for the cardano-db-sync db"
+}
+
+variable cardano_wallet_api_host {
+  description = "Cardano wallet API host"
+}
+
+variable cardano_wallet_api_port {
+  description = "Cardano wallet API port"
+  type = number
+  default = 8090
+}
+
+variable cardano_wallet_id {
+  description = "Cardano wallet id to use for PRISM transactions"
+}
+
+variable cardano_wallet_passphrase {
+  description = "Passphrase to the wallet used for PRISM transactions"
+}
+
+variable cardano_payment_address {
+  description = "Address to send funds to when publishing PRISM transactions"
+}
+
 variable vpc_id {
   description = "ID of VPC to use"
 }

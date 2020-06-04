@@ -197,6 +197,18 @@ state_key="infra/stage/services/prism/$env_name_short/terraform.tfstate"
 intdemo_enabled=${INTDEMO_ENABLED:-"false"}
 geud_enabled=${GEUD_ENABLED:-"false"}
 
+if [ -z ${TF_VAR_cardano_wallet_id:-} ] && [ -n ${GEUD_NODE_CARDANO_WALLET_ID:-} ]; then
+  export TF_VAR_cardano_wallet_id=$GEUD_NODE_CARDANO_WALLET_ID
+fi
+
+if [ -z ${TF_VAR_cardano_wallet_passphrase:-} ] && [ -n ${GEUD_NODE_CARDANO_WALLET_PASSPHRASE:-} ]; then
+  export TF_VAR_cardano_wallet_passphrase=$GEUD_NODE_CARDANO_WALLET_PASSPHRASE
+fi
+
+if [ -z ${TF_VAR_cardano_payment_address:-} ] && [ -n ${GEUD_NODE_CARDANO_PAYMENT_ADDRESS:-} ]; then
+  export TF_VAR_cardano_payment_address=$GEUD_NODE_CARDANO_PAYMENT_ADDRESS
+fi
+
 echo "Using env name '$env_name_short'."
 echo "Performing action '$action'."
 

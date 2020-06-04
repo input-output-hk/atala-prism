@@ -105,14 +105,41 @@ variable postgres_password {
   type        = string
 }
 
+variable cardano_wallet_id {
+  description = "Cardano wallet id to use for PRISM transactions"
+  default = ""
+}
+
+variable cardano_wallet_passphrase {
+  description = "Passphrase to the wallet used for PRISM transactions"
+  default = ""
+}
+
+variable cardano_payment_address {
+  description = "Address to send funds to when publishing PRISM transactions"
+  default = ""
+}
+
 variable "vpc_name" {
   description = "Name of the VPC to use, used for Terraform state resolving"
   type        = string
-  default     = "prism-test" # value will be set to name
+  default     = "prism-test"
 }
 
 variable "vpc_state_key" {
   description = "Key for VPC Terraform state resolving"
+  type        = string
+  default     = null # value will be computed based on vpc_name
+}
+
+variable "cardano_name" {
+  description = "Name of the Cardano node/db-sync/wallet deployment to use, used for Terraform state resolving"
+  type        = string
+  default     = "prism-test"
+}
+
+variable "cardano_state_key" {
+  description = "Key for Cardano Terraform state resolving"
   type        = string
   default     = null # value will be computed based on vpc_name
 }

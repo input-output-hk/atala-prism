@@ -13,6 +13,7 @@ provider aws {
 locals {
   # if config value is not ovverriden, use default
   vpc_state_key = coalesce(var.vpc_state_key, "infra/stage/vpc/${var.vpc_name}/terraform.tfstate")
+  cardano_state_key = coalesce(var.cardano_state_key, "infra/stage/cardano/${var.cardano_name}/terraform.tfstate")
 }
 
 data "terraform_remote_state" "vpc" {
@@ -20,6 +21,15 @@ data "terraform_remote_state" "vpc" {
   config = {
     bucket = "atala-cvp"
     key    = local.vpc_state_key
+    region = "us-east-2"
+  }
+}
+
+data "terraform_remote_state" "cardano" {
+  backend = "s3"
+  config = {
+    bucket = "atala-cvp"
+    key    = local.cardano_state_key
     region = "us-east-2"
   }
 }
@@ -32,6 +42,13 @@ locals {
   vpc_cidr_block             = data.terraform_remote_state.vpc.outputs.vpc_cidr_block
   private_dns_namespace_id   = data.terraform_remote_state.vpc.outputs.private_dns_namespace_id
   private_dns_namespace_name = data.terraform_remote_state.vpc.outputs.private_dns_namespace_name
+
+  cardano_db_sync_psql_host = data.terraform_remote_state.cardano.outputs.psql_host
+  cardano_db_sync_psql_username = data.terraform_remote_state.cardano.outputs.psql_username
+  cardano_db_sync_psql_password = data.terraform_remote_state.cardano.outputs.psql_password
+  cardano_db_sync_psql_database = data.terraform_remote_state.cardano.outputs.psql_database
+  cardano_wallet_api_host = data.terraform_remote_state.cardano.outputs.wallet_host
+  cardano_wallet_api_port = data.terraform_remote_state.cardano.outputs.wallet_port
 }
 
 resource aws_cloudwatch_log_group prism_log_group {
@@ -238,6 +255,16 @@ module "prism_service" {
   connector_psql_password = local.connector_psql_password
   node_psql_username      = local.node_psql_username
   node_psql_password      = local.node_psql_password
+
+  cardano_db_sync_psql_host = local.cardano_db_sync_psql_host
+  cardano_db_sync_psql_username = local.cardano_db_sync_psql_username
+  cardano_db_sync_psql_password = local.cardano_db_sync_psql_password
+  cardano_db_sync_psql_database = local.cardano_db_sync_psql_database
+  cardano_wallet_api_host = local.cardano_wallet_api_host
+  cardano_wallet_api_port = local.cardano_wallet_api_port
+  cardano_wallet_id = var.cardano_wallet_id
+  cardano_wallet_passphrase = var.cardano_wallet_passphrase
+  cardano_payment_address = var.cardano_payment_address
 
   tls_certificate_arn = data.aws_acm_certificate.prism_tls_cert.arn
 

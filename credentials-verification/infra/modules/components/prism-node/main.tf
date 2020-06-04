@@ -36,6 +36,15 @@ module "node_container_definition" {
     { name = "GEUD_NODE_PSQL_USERNAME", value = var.psql_username },
     { name = "GEUD_NODE_PSQL_PASSWORD", value = var.psql_password },
     { name = "GEUD_NODE_LEDGER", value = "in-memory" },
+    { name = "GEUD_NODE_CARDANO_DB_SYNC_HOST", value = var.cardano_db_sync_psql_host },
+    { name = "GEUD_NODE_CARDANO_DB_SYNC_USERNAME", value = var.cardano_db_sync_psql_username },
+    { name = "GEUD_NODE_CARDANO_DB_SYNC_PASSWORD", value = var.cardano_db_sync_psql_password },
+    { name = "GEUD_NODE_CARDANO_DB_SYNC_DATABASE", value = var.cardano_db_sync_psql_database },
+    { name = "GEUD_NODE_CARDANO_WALLET_API_HOST", value = var.cardano_wallet_api_host },
+    { name = "GEUD_NODE_CARDANO_WALLET_API_PORT", value = var.cardano_wallet_api_port },
+    { name = "GEUD_NODE_CARDANO_WALLET_ID", value = var.cardano_wallet_id },
+    { name = "GEUD_NODE_CARDANO_WALLET_PASSPHRASE", value = var.cardano_wallet_passphrase },
+    { name = "GEUD_NODE_CARDANO_PAYMENT_ADDRESS", value = var.cardano_payment_address },
   ]
 
   logConfiguration = {
