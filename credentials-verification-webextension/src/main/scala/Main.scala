@@ -14,9 +14,9 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 object Main {
 
   private val config = if (BuildInfo.production) {
-    Config.default(BuildInfo.activeTabContextScripts)
+    Config.default(BuildInfo.activeTabContextScripts, overrideConnectorUrl = BuildInfo.overrideConnectorUrl)
   } else {
-    Config.dev(BuildInfo.activeTabContextScripts)
+    Config.dev(BuildInfo.activeTabContextScripts, overrideConnectorUrl = BuildInfo.overrideConnectorUrl)
   }
 
   def main(args: Array[String]): Unit = {

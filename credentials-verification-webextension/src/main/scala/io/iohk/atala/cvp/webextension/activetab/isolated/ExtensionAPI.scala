@@ -24,7 +24,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
   * more code and latency to support any website.
   *
   * NOTE: This API is intended to run on any other context different to the isolated content-script
-  *       so that other contexts can communiacate with the content-script in a simple way.
+  *       so that other contexts can communicate with the content-script in a simple way.
   *
   * @see https://developer.chrome.com/extensions/messaging#external-webpage
   */
@@ -51,8 +51,12 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     // subscribe for the result before sending the command to avoid latency-related race-conditions
     val result = listenFor(tagged.tag)
 
-    // TODO: Verify how we can use the targetOrigin properly to specify the extension as the target.
-    dom.window.postMessage(msg, "*")
+    // This ensures that the message gets only to the current website
+    // preventing other windows to grab it, BUT it doesn allow other extensions
+    // accessing the current website to grab it.
+    //
+    // TODO: A safer way could be to send the message to the frame where our content-script runs
+    dom.window.postMessage(msg, dom.window.location.origin.orNull)
 
     result
   }
@@ -73,7 +77,7 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
         .decode[Event](event.data.toString)
         .filter(_.tag == tag)
         .foreach { result =>
-          // This listener may catch events published as responses
+          // This listener catches events published as responses because the origin is the same
           if (!promise.isCompleted) {
             promise.success(result.model)
           }

@@ -14,17 +14,17 @@ case class Config(
 
 object Config {
 
-  def default(activeTabContextScripts: Seq[String]): Config = {
+  def default(activeTabContextScripts: Seq[String], overrideConnectorUrl: Option[String] = None): Config = {
     Config(
       ActiveTabConfig(contextScripts = activeTabContextScripts),
-      connectorUrl = "http://console-develop.atalaprism.io/"
+      connectorUrl = overrideConnectorUrl.getOrElse("http://console-develop.atalaprism.io")
     )
   }
 
-  def dev(activeTabContextScripts: Seq[String]): Config = {
+  def dev(activeTabContextScripts: Seq[String], overrideConnectorUrl: Option[String] = None): Config = {
     Config(
       ActiveTabConfig(contextScripts = activeTabContextScripts),
-      connectorUrl = "http://localhost:10000"
+      connectorUrl = overrideConnectorUrl.getOrElse("http://localhost:10000")
     )
   }
 }

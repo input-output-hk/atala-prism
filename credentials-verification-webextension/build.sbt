@@ -93,6 +93,7 @@ buildInfoPackage := "io.iohk.atala.cvp.webextension"
 buildInfoKeys := Seq[BuildInfoKey](name)
 buildInfoKeys ++= Seq[BuildInfoKey](
   "production" -> (sys.env.getOrElse("PROD", "false") == "true"),
+  "overrideConnectorUrl" -> sys.env.get("CONNECTOR_URL"),
   // it's simpler to propagate the required js scripts from this file to avoid hardcoding
   // them on the code that actually injects them.
   "activeTabContextScripts" -> manifestActiveTabContextScripts
