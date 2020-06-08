@@ -42,9 +42,7 @@ class AboutViewController: BaseViewController {
         let version = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String
         labelVersion.text = version
         
-        if Common.DEBUG {
-            labelTesting.isHidden = false
-        }
+        labelTesting.isHidden = Env.isProduction()
         
         let attrs = [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 13)]
         let attributedString = NSMutableAttributedString(string:"about_atala_prism".localize(), attributes:attrs)

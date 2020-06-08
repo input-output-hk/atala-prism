@@ -14,7 +14,7 @@ class Logger {
         let file = FileDestination() // log to default swiftybeaver.log file
         // let remote = SBPlatformDestination(appID: Common.LOGS_APP_ID, appSecret: Common.LOGS_APP_SECRET, encryptionKey: Common.LOGS_APP_ENCRYPT_KEY)
 
-        if Common.DEBUG {
+        if !Env.isProduction() {
             SwiftyBeaver.self.addDestination(console)
             SwiftyBeaver.self.addDestination(file)
             // SwiftyBeaver.self.addDestination(remote)

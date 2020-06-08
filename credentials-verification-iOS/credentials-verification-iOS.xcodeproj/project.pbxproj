@@ -25,6 +25,7 @@
 		B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27BE2406F37600FF751B /* AboutViewController.swift */; };
 		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
+		B3C760182489777C00AC46DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C760172489777C00AC46DC /* Env.swift */; };
 		B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */; };
 		B3F94E86247455650087EBFD /* Lock.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3F94E85247455650087EBFD /* Lock.storyboard */; };
 		B3F94E8A247455720087EBFD /* Security.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3F94E88247455720087EBFD /* Security.storyboard */; };
@@ -198,7 +199,6 @@
 		EE904F202373BA2100EE6344 /* NewDegreeViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE904F1F2373BA2100EE6344 /* NewDegreeViewCell.xib */; };
 		EE917B8723C2AEF9009D0974 /* ApiParseUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE917B8623C2AEF9009D0974 /* ApiParseUtils.swift */; };
 		EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */; };
-		EEB7DD52239A0C6900C4DEA5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */; };
 		EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB7DD55239A153700C4DEA5 /* Tracker.swift */; };
 		EEDAF2C32389EC2400121206 /* ConfirmationViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEDAF2C22389EC2400121206 /* ConfirmationViewCell.xib */; };
 		EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDAF2C52389ECDC00121206 /* ConfirmationViewCell.swift */; };
@@ -254,6 +254,8 @@
 		B36F27BE2406F37600FF751B /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
 		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
+		B3C7601524896B9600AC46DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B3C760172489777C00AC46DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
 		B3E8ADD523EE025B00D63D0A /* credentials-verification-iOSTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "credentials-verification-iOSTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MnemonicsTests.swift; sourceTree = "<group>"; };
 		B3F94E85247455650087EBFD /* Lock.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Lock.storyboard; sourceTree = "<group>"; };
@@ -516,6 +518,31 @@
 				B30255052449E61900C8E9C0 /* Notifications.storyboard */,
 			);
 			path = notifications;
+			sourceTree = "<group>";
+		};
+		B3C7601124896B4700AC46DC /* firebase */ = {
+			isa = PBXGroup;
+			children = (
+				B3C7601424896B8700AC46DC /* debug */,
+				B3C7601224896B5400AC46DC /* release */,
+			);
+			path = firebase;
+			sourceTree = "<group>";
+		};
+		B3C7601224896B5400AC46DC /* release */ = {
+			isa = PBXGroup;
+			children = (
+				EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */,
+			);
+			path = release;
+			sourceTree = "<group>";
+		};
+		B3C7601424896B8700AC46DC /* debug */ = {
+			isa = PBXGroup;
+			children = (
+				B3C7601524896B9600AC46DC /* GoogleService-Info.plist */,
+			);
+			path = debug;
 			sourceTree = "<group>";
 		};
 		B3F94E84247455650087EBFD /* lock */ = {
@@ -877,6 +904,7 @@
 				EEB7DD55239A153700C4DEA5 /* Tracker.swift */,
 				EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */,
 				EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */,
+				B3C760172489777C00AC46DC /* Env.swift */,
 			);
 			path = general;
 			sourceTree = "<group>";
@@ -912,6 +940,7 @@
 		EE7D4B0F2366B9C3007C31A8 /* res */ = {
 			isa = PBXGroup;
 			children = (
+				B3C7601124896B4700AC46DC /* firebase */,
 				EE7D4B7C2366B9C3007C31A8 /* assets */,
 				EE7D4B182366B9C3007C31A8 /* layouts */,
 				EE7D4B102366B9C3007C31A8 /* Localizable.strings */,
@@ -1218,7 +1247,6 @@
 				EE7D49CF2366B697007C31A8 /* AppConfigs.swift */,
 				EE7D49D02366B697007C31A8 /* Common.swift */,
 				EE7D49D32366B883007C31A8 /* credentials-verification-iOS-Bridging-Header.h */,
-				EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */,
 				F5E38956234BC34F0001F1E3 /* Info.plist */,
 				EE631CFD23C66259001EAA0F /* InfoPlist.strings */,
 			);
@@ -1255,6 +1283,7 @@
 				F5A3CB6823564D31000855C1 /* Run Protobuf Script */,
 				F5E38941234BC34D0001F1E3 /* Sources */,
 				F5E38942234BC34D0001F1E3 /* Frameworks */,
+				B3C7601624896BFE00AC46DC /* Setup Firebase plist files */,
 				F5E38943234BC34D0001F1E3 /* Resources */,
 				E4442DCACB70A2F13D492DEA /* [CP] Embed Pods Frameworks */,
 				EEB7DD53239A0EF500C4DEA5 /* Run Crashlytics Script */,
@@ -1388,7 +1417,6 @@
 				EE7185712384D5CB00C58F62 /* ProfileViewCell.xib in Resources */,
 				EE48AC292379221000C0A441 /* SwitchCustomView.xib in Resources */,
 				EE7D4C7A2366B9C4007C31A8 /* Localizable.stringsdict in Resources */,
-				EEB7DD52239A0C6900C4DEA5 /* GoogleService-Info.plist in Resources */,
 				EE8CD81E237D10D700614578 /* HistoryViewCell.xib in Resources */,
 				EE904F162373B9E100EE6344 /* DetailFooterViewCell.xib in Resources */,
 				EE904F1A2373B9FA00EE6344 /* DetailPropertyViewCell.xib in Resources */,
@@ -1487,6 +1515,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		B3C7601624896BFE00AC46DC /* Setup Firebase plist files */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Setup Firebase plist files";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Name of the resource to copy\nINFO_PLIST_FILE=GoogleService-Info.plist\n\n# Get references to debug and release versions of the plist file\nDEBUG_INFO_PLIST_FILE=${PROJECT_DIR}/${TARGET_NAME}/res/firebase/debug/${INFO_PLIST_FILE}\nRELEASE_INFO_PLIST_FILE=${PROJECT_DIR}/${TARGET_NAME}/res/firebase/release/${INFO_PLIST_FILE}\n\n# Make sure the debug version exists\necho \"Looking for ${INFO_PLIST_FILE} in ${DEBUG_INFO_PLIST_FILE}\"\nif [ ! -f $DEBUG_INFO_PLIST_FILE ] ; then\n    echo \"File GoogleService-Info.plist (testing) not found.\"\n    exit 1\nfi\n\n# Make sure the release version exists\necho \"Looking for ${INFO_PLIST_FILE} in ${RELEASE_INFO_PLIST_FILE}\"\nif [ ! -f $RELEASE_INFO_PLIST_FILE ] ; then\n    echo \"File GoogleService-Info.plist (release) not found.\"\n    exit 1\nfi\n\n# Get a reference to the destination location for the plist file\nPLIST_DESTINATION=${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\necho \"Copying ${INFO_PLIST_FILE} to final destination: ${PLIST_DESTINATION}\"\n\n# Copy the appropiate file to app bundle\nif [ \"${CONFIGURATION}\" == \"Debug\" ] ; then\n    echo \"File ${DEBUG_INFO_PLIST_FILE} copied\"\n    cp \"${DEBUG_INFO_PLIST_FILE}\" \"${PLIST_DESTINATION}\"\nelse\n    echo \"File ${RELEASE_INFO_PLIST_FILE} copied\"\n    cp \"${RELEASE_INFO_PLIST_FILE}\" \"${PLIST_DESTINATION}\"\nfi\n";
+		};
 		E4442DCACB70A2F13D492DEA /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1572,6 +1618,7 @@
 				EE904F042373AA5A00EE6344 /* DegreeViewCell.swift in Sources */,
 				EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */,
 				EE7D4BFF2366B9C4007C31A8 /* BaseTabViewController.swift in Sources */,
+				B3C760182489777C00AC46DC /* Env.swift in Sources */,
 				EE48AC2723791B3000C0A441 /* SwitchCustomView.swift in Sources */,
 				EE22F1ED23A486FA003C4F87 /* wallet.proto in Sources */,
 				EE48AC1E23775E0700C0A441 /* SuccessViewController.swift in Sources */,
@@ -1890,6 +1937,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.5;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Ddebug";
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = "Atala PRISM";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1914,6 +1962,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.5;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Drelease";
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = "Atala PRISM";
 				PROVISIONING_PROFILE_SPECIFIER = "";

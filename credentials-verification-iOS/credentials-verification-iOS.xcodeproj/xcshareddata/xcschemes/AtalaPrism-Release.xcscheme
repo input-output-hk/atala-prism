@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1110"
+   LastUpgradeVersion = "1150"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F5E38944234BC34D0001F1E3"
-               BuildableName = "Atala Prism.app"
+               BuildableName = "Atala PRISM.app"
                BlueprintName = "credentials-verification-iOS"
                ReferencedContainer = "container:credentials-verification-iOS.xcodeproj">
             </BuildableReference>
@@ -28,33 +28,12 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F5E3895A234BC3500001F1E3"
-               BuildableName = "credentials-verification-iOSTests.xctest"
-               BlueprintName = "credentials-verification-iOSTests"
-               ReferencedContainer = "container:credentials-verification-iOS.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F5E38965234BC3500001F1E3"
-               BuildableName = "credentials-verification-iOSUITests.xctest"
-               BlueprintName = "credentials-verification-iOSUITests"
-               ReferencedContainer = "container:credentials-verification-iOS.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      enableAddressSanitizer = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -66,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F5E38944234BC34D0001F1E3"
-            BuildableName = "Atala Prism.app"
+            BuildableName = "Atala PRISM.app"
             BlueprintName = "credentials-verification-iOS"
             ReferencedContainer = "container:credentials-verification-iOS.xcodeproj">
          </BuildableReference>
@@ -83,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F5E38944234BC34D0001F1E3"
-            BuildableName = "Atala Prism.app"
+            BuildableName = "Atala PRISM.app"
             BlueprintName = "credentials-verification-iOS"
             ReferencedContainer = "container:credentials-verification-iOS.xcodeproj">
          </BuildableReference>

@@ -15,7 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         setupLoggingPlatform()
 
         // Only for the debug version, restore the custom URL
-        if Common.DEBUG {
+        if !Env.isProduction() {
             Common.URL_API = SharedMemory.global.loggedUser?.apiUrl ?? Common.URL_API
             Logger.d("API URL: \(Common.URL_API)")
         }

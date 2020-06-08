@@ -126,7 +126,7 @@ extension LoginViewController {
 
     func setupUrlTextField() {
 
-        textFieldUrl.isHidden = !Common.DEBUG
+        textFieldUrl.isHidden = Env.isProduction()
         textFieldUrl.config(delegate: self)
         textFieldUrl.textField.autocapitalizationType = .none
         textFieldUrl.textField.autocorrectionType = .no
