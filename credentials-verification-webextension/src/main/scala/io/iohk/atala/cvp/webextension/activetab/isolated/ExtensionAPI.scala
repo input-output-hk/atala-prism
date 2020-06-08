@@ -38,6 +38,14 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     }
   }
 
+  def getUserDetails(): Future[Event.GotUserDetails] = {
+    val cmd = Command.GetUserDetails()
+    processCommand(cmd).collect {
+      case r: Event.GotUserDetails => r
+      case x => throw new RuntimeException(s"Unknown response: $x")
+    }
+  }
+
   /**
     * Process a command, waiting for a response.
     *

@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.activetab.context
 
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
-
+import io.iohk.atala.cvp.webextension.activetab.models.UserDetails
 import scala.concurrent.ExecutionContext
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
@@ -30,7 +30,8 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         // NOTE: The highlighted error is a bug on IntelliJ as the code compiles properly
         value = js.Dictionary(
           "log" -> js.Any.fromFunction1(log), // TODO: Remove
-          "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus)
+          "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus),
+          "getUserDetails" -> js.Any.fromFunction0(getUserDetails)
         )
       }
     )
@@ -38,6 +39,9 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
 
   def getWalletStatus(): js.Promise[String] = {
     extensionAPI.getWalletStatus().map(_.status).toJSPromise
+  }
+  def getUserDetails(): js.Promise[Option[UserDetails]] = {
+    extensionAPI.getUserDetails().map(_.userDetails).toJSPromise
   }
 
   def log(text: String): Unit = {

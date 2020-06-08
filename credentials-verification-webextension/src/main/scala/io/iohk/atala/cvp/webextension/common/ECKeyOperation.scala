@@ -15,9 +15,20 @@ import scala.scalajs.js.typedarray._
 object ECKeyOperation {
   val CURVE_NAME = "secp256k1"
   val firstMasterKeyId = "master"
-  //TODO As per the below link first master key id shoule master-0 , but this needs change in node
+
   // https://github.com/input-output-hk/atala/blob/develop/credentials-verification/docs/protocol/key-derivation.md
   private val firstMasterChild = "m/0'/0'/0'"
+
+  def didFromMasterKey(ecKeyPair: EcKeyPair): String = {
+    val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKeyPair), KeyUsage.MASTER_KEY)
+    val atalaOperation = createAtalaOperation(Seq(publicKey))
+    val byteArray = atalaOperation.toByteArray.toTypedArray
+    val uint8Array = new Uint8Array(byteArray.buffer, byteArray.byteOffset, byteArray.length)
+    val sha256 = hash.sha256().update(uint8Array)
+    val didSuffix = sha256.digest_hex(hashJsStrings.hex)
+    val did = s"did:prism:$didSuffix"
+    did
+  }
 
   def createDIDOperation(ecKeyPair: EcKeyPair): AtalaOperation = {
     val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKeyPair), KeyUsage.MASTER_KEY)

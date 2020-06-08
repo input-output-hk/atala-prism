@@ -2,7 +2,6 @@ package io.iohk.atala.cvp.webextension.activetab.models
 
 import io.circe.generic.auto._
 import io.circe.parser.parse
-
 import scala.util.Try
 
 /**
@@ -15,6 +14,7 @@ private[activetab] object Event {
   // TODO: Find a better way, possible returning something like Either[CommandRejected, Event]
   final case class CommandRejected(reason: String) extends Event
   final case class GotWalletStatus(status: String) extends Event
+  final case class GotUserDetails(userDetails: Option[UserDetails]) extends Event
 
   def decode(string: String): Try[Event] = {
     parse(string).toTry

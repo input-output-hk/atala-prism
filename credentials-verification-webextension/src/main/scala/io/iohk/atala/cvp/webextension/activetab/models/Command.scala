@@ -14,6 +14,8 @@ private[activetab] object Command {
 
   final case class GetWalletStatus() extends Command
 
+  final case class GetUserDetails() extends Command
+
   def decode(string: String): Try[Command] = {
     parse(string).toTry
       .flatMap(_.as[Command].toTry)

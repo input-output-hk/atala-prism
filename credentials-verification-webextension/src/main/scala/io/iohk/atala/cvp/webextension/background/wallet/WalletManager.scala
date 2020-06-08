@@ -6,15 +6,16 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
+import io.iohk.atala.cvp.webextension.background.models.Command.UserDetails
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
-import io.iohk.prism.protos.connector_api.{GetCurrentUserRequest, GetCurrentUserResponse, RegisterDIDRequest}
+import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
-import scala.scalajs.js.JSConverters._
+
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, _}
@@ -218,6 +219,14 @@ private[background] class WalletManager(
     }
   }
 
+  def getUserDetails(): Future[Option[UserDetails]] = {
+    Future.successful {
+      walletData.map { walletData =>
+        UserDetails(walletData.organisationName, walletData.role.toString, walletData.logo)
+      }
+    }
+  }
+
   def generateSecretKey(password: String): Future[CryptoKey] = {
     val pbdkf2 =
       crypto.Pbkdf2Params("PBKDF2", WalletManager.PASSWORD_SALT.getBytes.toTypedArray.buffer, 100L, "SHA-512")
@@ -278,9 +287,8 @@ private[background] class WalletManager(
       mnemonic: Mnemonic
   ): Future[Unit] = {
     val result = for {
-      response <- recoverAccount(mnemonic)
+      newWalletData <- recoverAccount(mnemonic)
       aesKey <- generateSecretKey(password)
-      newWalletData = WalletData(Map.empty, mnemonic, response.name, Role.toRole(response.role), response.logo.bytes)
       _ <- save(aesKey, newWalletData)
       _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
     } yield ()
@@ -352,15 +360,16 @@ private[background] class WalletManager(
     }
   }
 
-  private def recoverAccount(mnemonic: Mnemonic): Future[GetCurrentUserResponse] = {
-    val recoverWallet = RecoverWallet(mnemonic)
-    val requestNonce = recoverWallet.requestNonce()
-    val request = GetCurrentUserRequest()
-    val did = "did" -> recoverWallet.createDIDId()
-    val didKeyId = "didKeyId" -> ECKeyOperation.firstMasterKeyId
-    val didSignature = "didSignature" -> recoverWallet.getUrlEncodedDIDSignature(requestNonce, request)
-    val requestNoncePair = "requestNonce" -> recoverWallet.getUrlEncodedRequestNonce(requestNonce)
-    val metadata = Map(did, didKeyId, didSignature, requestNoncePair)
-    connectorClientService.getCurrentUser(request, metadata.toJSDictionary)
+  private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {
+    val eckeyPair = ECKeyOperation.createECKeyPair(mnemonic)
+    connectorClientService.getCurrentUser(eckeyPair).map { res =>
+      WalletData(
+        keys = Map.empty,
+        mnemonic = mnemonic,
+        organisationName = res.name,
+        role = Role.toRole(res.role),
+        logo = res.logo.bytes
+      )
+    }
   }
 }
