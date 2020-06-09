@@ -1,6 +1,9 @@
 version: 2.1
 
 parameters:
+  scala-version:
+    type: string
+    default: "2.12"
   scala-mill-docker-image:
     type: string
     default: "inputoutput/scala-mill:2.12.10-0.6.2-0.12.24"
@@ -286,17 +289,26 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - webextension-cache-{{ checksum "credentials-verification-webextension/build.sbt" }}
+            - webextension-cache-v1-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
             # fallback to using the latest cache if no exact match is found
-            - webextension-cache-
+            - webextension-cache-v1-
 
-      - run: cd credentials-verification-webextension && sbt test:compile
+      - run:
+          name: Compile extension and its tests
+          command: cd credentials-verification-webextension && sbt test:compile
+
+      - run:
+          name: Package extension
+          command: cd credentials-verification-webextension && sbt chromePackage
 
       - save_cache:
           paths:
+            - ~/.cache/coursier
+            - ~/.ivy2
             - ~/.m2
-            - ~/.ivy2/cache
-          key: webextension-cache-{{ checksum "credentials-verification-webextension/build.sbt" }}
+            - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/main/node_modules
+            - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/test/node_modules
+          key: webextension-cache-v1-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
 
       - run:
           name: Install test dependencies
@@ -307,10 +319,6 @@ jobs:
       - run:
           name: Run Unit Tests
           command: cd credentials-verification-webextension && sbt test
-
-      - run:
-          name: Package extension
-          command: cd credentials-verification-webextension && sbt chromePackage
 
 workflows:
   version: 2.1
