@@ -1,6 +1,7 @@
 package io.iohk.atala.cvp.webextension.background.wallet
 
 import java.util.Base64
+
 import com.google.protobuf.ByteString
 import io.circe.Json
 import io.circe.generic.auto._
@@ -18,6 +19,7 @@ import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
+import scala.scalajs.js.JSConverters._
 import scala.scalajs.js.typedarray.{ArrayBuffer, _}
 import scala.util.{Failure, Success}
 
@@ -26,9 +28,6 @@ object WalletManager {
 
   val LOCAL_STORAGE_KEY = "atala-wallet-data"
   val PASSWORD_SALT = "kkmarcbr/a"
-
-  // TODO: remove as soon as proper wallet creation, locking/unlocking is implemented
-  val FIXME_WALLET_PASSWORD = "abc"
 }
 
 case class SigningRequest(id: Int, message: String)

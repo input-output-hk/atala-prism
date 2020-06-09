@@ -1,12 +1,13 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
+import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.background.wallet.Role.{Issuer, Verifier}
-import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import org.scalajs.dom.html.{Div, Input, Select}
-import org.scalajs.dom.raw.{FileReader, HTMLDivElement}
-import scalatags.JsDom.all.{div, _}
+import io.iohk.atala.cvp.webextension.popup.utils.ValidationUtils
+import org.scalajs.dom.html.{Div, Input, Label, Select}
+import org.scalajs.dom.raw.FileReader
+import scalatags.JsDom.all.{div, label, _}
 import typings.std.console
 
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
@@ -15,49 +16,75 @@ class RegistrationView(backgroundAPI: BackgroundAPI) {
   def registrationScreen(divElement: Div): Unit = {
     console.info("**************************organisationScreen*****************************")
     val mnemonic = Mnemonic()
-    lazy val seedDiv: Div = div(`class` := "input__container")(mnemonic.seed).render
-    lazy val orgNameInput: Input = input(
-      `class` := "_input",
-      id := "organisationName",
-      `type` := "text",
-      placeholder := "Enter Organisation Name"
-    ).render
-    lazy val selectRole: Select = select(id := "role", name := "role")(
+    val seedDiv: Div = div(cls := "input__container")(mnemonic.seed).render
+    val passwordInput: Input =
+      input(id := "password", cls := "_input", `type` := "password", placeholder := "Enter Password").render
+    val password2Input: Input =
+      input(id := "password2", cls := "_input", `type` := "password", placeholder := "Enter Password Again").render
+    val orgNameInput: Input = input(id := "orgname", cls := "_input", placeholder := "Enter Organisation Name").render
+    val selectRole: Select = select(id := "role", name := "role")(
       option(value := Issuer.toString)(Issuer.toString),
       option(value := Verifier.toString)(Verifier.toString)
     ).render
-    lazy val logoInput: Input =
-      input(id := "logo", `type` := "file", accept := "image/png, image/jpeg").render
+    val logoInput: Input = input(id := "logo", `type` := "file", accept := "image/png, image/jpeg").render
+    val statusLabel: Label = label(cls := "_label_update")("").render
 
-    lazy val registration = {
-      div(
-        div(`class` := "div__field_group")(
-          label(`class` := "_label")("Seed Phrase: "),
+    val registration = {
+      div(id := "registrationScreen")(
+        div(cls := "div__field_group")(
+          label(cls := "_label")("Seed Phrase: "),
           seedDiv
         ),
-        div(`class` := "div__field_group")(
-          label(`class` := "_label")("Organisation Name: "),
-          div(`class` := "input__container")(
+        div(cls := "div__field_group")(
+          label(cls := "_label")("Password: "),
+          div(cls := "input__container")(
+            passwordInput
+          )
+        ),
+        div(cls := "div__field_group")(
+          label(cls := "_label")("Verify Password: "),
+          div(cls := "input__container")(
+            password2Input
+          )
+        ),
+        div(cls := "div__field_group")(
+          label(cls := "_label")("Organisation Name: "),
+          div(cls := "input__container")(
             orgNameInput
           )
         ),
-        div(`class` := "div__field_group")(
-          label(`class` := "_label", `for` := "role")("Choose Organisation Role: "),
-          div(`class` := "input__container")(
+        div(cls := "div__field_group")(
+          label(cls := "_label", `for` := "role")("Choose Organisation Role: "),
+          div(cls := "input__container")(
             selectRole
           )
         ),
-        div(`class` := "div__field_group")(
+        div(cls := "div__field_group")(
           label(`for` := "logo")("Choose logo image: "),
-          div(`class` := "input__container")(
+          div(cls := "input__container")(
             logoInput
           )
         ),
-        div(`class` := "div__field_group")(
+        div(cls := "status_container")(
+          div(cls := "input__container")(
+            statusLabel
+          )
+        ),
+        div(cls := "div__field_group")(
           div(
-            `class` := "div__btn",
-            id := "registerOrganisation",
-            onclick := { () => registerOrganisation(seedDiv, orgNameInput, selectRole, logoInput) }
+            id := "registerButton",
+            cls := "div__btn",
+            onclick := { () =>
+              registerOrganisation(
+                seedDiv,
+                passwordInput,
+                password2Input,
+                orgNameInput,
+                selectRole,
+                logoInput,
+                statusLabel
+              )
+            }
           )("Register")
         )
       )
@@ -65,45 +92,52 @@ class RegistrationView(backgroundAPI: BackgroundAPI) {
     divElement.innerHTML = "" // This is the way I could make it work using scalatags onclick doesnt works
     divElement.appendChild(registration.render)
   }
+
   private def registerOrganisation(
       seedDiv: Div,
+      passwordInput: Input,
+      password2Input: Input,
       orgNameInput: Input,
       selectRole: Select,
-      logoInput: Input
+      logoInput: Input,
+      statusLabel: Label
   ): Unit = {
+    ValidationUtils.checkPasswordErrors(passwordInput, password2Input) match {
+      case Some(errors) => statusLabel.innerHTML = errors
+      case None =>
+        statusLabel.innerHTML = ""
+        val mnemonic = Mnemonic(seedDiv.textContent)
 
-    val mnemonic = Mnemonic(seedDiv.textContent)
+        if (logoInput.files.length != 0) {
+          console.log("file selected");
+          val reader = new FileReader()
+          reader.onloadend = _ => {
+            val buffer = reader.result.asInstanceOf[ArrayBuffer]
+            val bb = TypedArrayBuffer.wrap(buffer)
+            val arrayBytes: Array[Byte] = new Array[Byte](bb.remaining())
+            bb.get(arrayBytes)
 
-    if (logoInput.files.length != 0) {
-      console.log("file selected");
-      val reader = new FileReader()
-      reader.onloadend = _ => {
-        val buffer = reader.result.asInstanceOf[ArrayBuffer]
-        val bb = TypedArrayBuffer.wrap(buffer)
-        val arrayBytes: Array[Byte] = new Array[Byte](bb.remaining())
-        bb.get(arrayBytes)
-
-        backgroundAPI.createWallet(
-          WalletManager.FIXME_WALLET_PASSWORD,
-          mnemonic,
-          Role.toRole(selectRole.value),
-          orgNameInput.value,
-          arrayBytes
-        )
-      }
-      reader.readAsArrayBuffer(logoInput.files(0))
-    } else {
-      console.log("No file selected");
-      backgroundAPI.createWallet(
-        WalletManager.FIXME_WALLET_PASSWORD,
-        mnemonic,
-        Role.toRole(selectRole.value),
-        orgNameInput.value,
-        new Array[Byte](0)
-      )
+            backgroundAPI.createWallet(
+              passwordInput.value,
+              mnemonic,
+              Role.toRole(selectRole.value),
+              orgNameInput.value,
+              arrayBytes
+            )
+          }
+          reader.readAsArrayBuffer(logoInput.files(0))
+        } else {
+          console.log("No file selected");
+          backgroundAPI.createWallet(
+            passwordInput.value,
+            mnemonic,
+            Role.toRole(selectRole.value),
+            orgNameInput.value,
+            new Array[Byte](0)
+          )
+        }
     }
   }
-
 }
 
 object RegistrationView {

@@ -14,7 +14,7 @@ class InitialWalletView(backgroundAPI: BackgroundAPI) {
     lazy val recoverDiv =
       div(
         cls := "div__btn",
-        id := "recover",
+        id := "recoveryScreenButton",
         "Recover Wallet",
         onclick := { () =>
           RecoveryView(backgroundAPI).recover(containerDiv)
@@ -24,7 +24,7 @@ class InitialWalletView(backgroundAPI: BackgroundAPI) {
     lazy val registrationDiv =
       div(
         cls := "div__btn",
-        id := "registrationScreen",
+        id := "registrationScreenButton",
         "Register",
         onclick := { () =>
           RegistrationView(backgroundAPI).registrationScreen(containerDiv)

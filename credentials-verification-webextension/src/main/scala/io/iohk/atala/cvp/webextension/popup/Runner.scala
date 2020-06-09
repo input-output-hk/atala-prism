@@ -4,13 +4,13 @@ import java.util.Base64
 
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager, WalletStatus}
+import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, I18NMessages, Mnemonic}
 import io.iohk.atala.cvp.webextension.facades.elliptic.EC
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.raw._
-import typings.std.{console, document}
+import typings.std.console
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
@@ -109,8 +109,8 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     }
   }
 
-  def unlockWallet(): Unit = {
-    backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD).map { _ =>
+  def unlockWallet(password: String): Unit = {
+    backgroundAPI.unlockWallet(password).map { _ =>
       dom.window.location.href = "popup.html"
       getWalletStatus()
     }
@@ -120,12 +120,6 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     backgroundAPI.lockWallet().map { _ =>
       dom.window.location.href = "popup-locked.html"
       getWalletStatus()
-    }
-  }
-
-  def popup() = {
-    dom.window.onload = _ => {
-      dom.document.body = InitialWalletView(backgroundAPI).htmlBody
     }
   }
 
@@ -171,7 +165,7 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     println(s"popup: $msg")
   }
 
-  private def initializeWallet(walletStatus: WalletStatus, h2: HTMLHeadingElement): Future[Unit] = {
+  private def initializeWallet(walletStatus: WalletStatus, password: String, h2: HTMLHeadingElement): Future[Unit] = {
     if (walletStatus == WalletStatus.Missing) {
       val mnemonic = Mnemonic()
       h2.innerText = mnemonic.seed
@@ -185,10 +179,10 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
         s"*******Encoded Operation*******************\n${encodeOperation}\n*****************************"
       )
 
-      backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array())
+      backgroundAPI.createWallet(password, mnemonic, Role.Verifier, "IOHK", Array())
 
     } else {
-      backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD)
+      backgroundAPI.unlockWallet(password)
     }
   }
 }

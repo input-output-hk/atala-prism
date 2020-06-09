@@ -1,18 +1,15 @@
 package io.iohk.atala.cvp.webextension.background
 
-import io.iohk.atala.cvp.webextension.Config
-import io.iohk.atala.cvp.webextension.activetab.ActiveTabConfig
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.testing.{FakeApis, FakeConnectorClientService}
+import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.scalajs.concurrent.JSExecutionContext
-import scala.scalajs.js
 
-class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
   // This test is truly async and needs to override the default serial execution context, read more at
   // https://github.com/scalatest/scalatest/issues/1039
   implicit override def executionContext: ExecutionContextExecutor = JSExecutionContext.Implicits.queue
@@ -20,26 +17,6 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
   val PASSWORD = "test-password"
   val TEST_KEY = "test-key"
   val ORGANISATION_NAME = "IOHK"
-  override def beforeAll(): Unit = {
-    // Fake the APIs only available in the browser
-    FakeApis.configure()
-  }
-
-  override def beforeEach(): Unit = {
-    // Remove any listener from any previous test
-    js.Dynamic.global.global.chrome.runtime.onMessage.removeAllListeners()
-    // Delete any data stored by any previous test
-    js.Dynamic.global.global.chrome.storage.local.clear()
-    // Run the background script
-
-    Runner(
-      Config(
-        ActiveTabConfig(List.empty),
-        connectorUrl = "http://localhost:10000/test"
-      ),
-      FakeConnectorClientService
-    ).run()
-  }
 
   def setUpWallet(api: BackgroundAPI, keys: Seq[String] = List()): Future[Unit] = {
     for {

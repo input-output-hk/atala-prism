@@ -279,9 +279,10 @@ jobs:
   build-credentials-verification-webextension:
     working_directory: ~/repo
     docker:
-      - image: circleci/openjdk:8-jdk-node
+      - image: circleci/openjdk:8-jdk-node-browsers
     steps:
       - checkout
+
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -296,6 +297,12 @@ jobs:
             - ~/.m2
             - ~/.ivy2/cache
           key: webextension-cache-{{ checksum "credentials-verification-webextension/build.sbt" }}
+
+      - run:
+          name: Install test dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libnss3
 
       - run:
           name: Run Unit Tests

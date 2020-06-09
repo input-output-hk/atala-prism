@@ -2,6 +2,7 @@ import chrome._
 import chrome.permissions.Permission
 import chrome.permissions.Permission.API
 import com.alexitc.{Chrome, ChromeSbtPlugin}
+import org.scalajs.jsenv.selenium.SeleniumJSEnv
 
 resolvers += Resolver.sonatypeRepo("releases")
 resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
@@ -133,6 +134,25 @@ libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 
 // grpc libraries
 libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % grpcWebVersion
+
+// Enable DOM testing with Chrome under Selenium
+requireJsDomEnv in Test := true
+
+npmDependencies in Test += "chromedriver" -> "83.0.0"
+
+jsEnv in Test := {
+  // Set the path to the Chrome driver, based on the OS
+  val isWindows = System.getProperty("os.name").toLowerCase.contains("win")
+  val chromeDriverBin = if (isWindows) "chromedriver.exe" else "chromedriver"
+  val npmDir = (npmInstallDependencies in Test).value
+  val chromeDriver = f"$npmDir/node_modules/chromedriver/bin/$chromeDriverBin"
+  System.setProperty("webdriver.chrome.driver", chromeDriver)
+
+  val capabilities = new org.openqa.selenium.chrome.ChromeOptions()
+    .addArguments("disable-web-security")
+    .setHeadless(true)
+  new SeleniumJSEnv(capabilities)
+}
 
 addCompilerPlugin(
   "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full
