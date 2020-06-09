@@ -89,6 +89,8 @@ export const CONTACT_US_NAME = 'contactUs';
 
 export const APP_STORE_URL = 'https://www.apple.com/la/ios/app-store/';
 export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store';
+export const TESTFLIGHT_URL = 'https://testflight.apple.com/join/n2zFCcUv';
+export const APK_FILE_PATH = 'files/atala-prism.apk';
 
 // EXAMPLE CERTIFICATE CARD VALUES
 export const CARD_UNIVERSITY_TITLE = 'Bachelor of Science';

@@ -25,13 +25,20 @@ canvas {
 
 .AtalaPrismDemoMap {
   outline: none;
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .atala-prism-demo-root {
   height: 100%;
   width: 100%;
   outline: none;
-  /* position: relative; */
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .AtalaLogo {

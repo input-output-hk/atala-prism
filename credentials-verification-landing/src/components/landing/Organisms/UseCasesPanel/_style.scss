@@ -63,7 +63,7 @@
         justify-content: center;
 
         img {
-          width: 500px;
+          width: 100%;
         }
       }
     }
@@ -112,6 +112,15 @@
     .UseCasesContainer {
       margin-left: 0;
       width: 100%;
+
+      .TabContent{
+        .TabText {
+          width: 40%;
+        }
+        .TabImage {
+          width: 60%;
+        }
+      }
     }
   }
 }
@@ -139,4 +148,13 @@
       }
     }
   }
+}
+
+.ant-tabs .ant-tabs-top-content > .ant-tabs-tabpane,
+.ant-tabs .ant-tabs-bottom-content > .ant-tabs-tabpane {
+  width: 100%;
+  opacity: 1;
+  -webkit-transition: opacity 0.45s;
+  transition: opacity 0.45s;
+  background-color: transparent;
 }

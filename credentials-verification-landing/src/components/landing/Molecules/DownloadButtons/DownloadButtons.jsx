@@ -1,14 +1,19 @@
 import React from 'react';
-import { APP_STORE_URL, GOOGLE_PLAY_STORE_URL } from '../../../../helpers/constants';
+import {
+  APP_STORE_URL,
+  GOOGLE_PLAY_STORE_URL,
+  TESTFLIGHT_URL,
+  APK_FILE_PATH
+} from '../../../../helpers/constants';
 
 import './_style.scss';
 
 const DownloadButtons = () => (
   <div className="DownloadButtons">
-    <a href={APP_STORE_URL} target="_blank" rel="noreferrer noopener">
+    <a href={TESTFLIGHT_URL} target="_blank" rel="noreferrer noopener">
       <img src="images/download-ios.png" alt="Download iOS" />
     </a>
-    <a href={"files/atala-prism.apk"} target="_blank" rel="noreferrer noopener">
+    <a href={APK_FILE_PATH} target="_blank" rel="noreferrer noopener">
       <img src="images/download-android.png" alt="Download Android" />
     </a>
   </div>

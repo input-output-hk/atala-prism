@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Checkbox } from 'antd';
+import { Checkbox, Icon } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import ContactInformationForm from '../ContactInformationForm/ContactInformationForm';
@@ -45,10 +45,16 @@ const ContactInformation = ({ submit, contactInfoRef, onConsent }) => {
         buttonProps={{
           onClick: submit,
           className: 'theme-primary',
-          disabled: false
+          disabled: true
         }}
         buttonText={t('credential.contactInformation.send')}
       />
+      <div className="DisableContainer">
+        <p className="Disable">
+          <Icon type="exclamation-circle" />
+          {t('credential.contactInformation.disable')}
+        </p>
+      </div>
     </div>
   );
 };

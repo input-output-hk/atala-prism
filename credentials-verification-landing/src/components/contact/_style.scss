@@ -65,6 +65,20 @@
           }
         }
 
+        .DisableContainer {
+          background-color: $primary-color-lighter;
+          padding: 0.5em 1em;
+          border-radius: 4px;
+          p.Disable {
+            @include primary-text($label, $primary-color);
+            font-style: italic;
+      
+            .anticon {
+              margin-right: 0.5em;
+            }
+          }
+        }
+
         button {
           margin: 1em 0;
         }
