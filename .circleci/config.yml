@@ -44,7 +44,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
           name: Set tag convention
@@ -140,7 +140,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
           name: Set tag convention
@@ -175,7 +175,9 @@ jobs:
       - checkout
 
       - restore_cache:
-          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+          keys:
+            - cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
+            - cv-cache-v1-
 
       - run:
           name: install coursier
@@ -209,9 +211,10 @@ jobs:
           command: cd credentials-verification && mill -i __.compile && mill -i __.test
 
       - save_cache:
-          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
           paths:
-            - "~/.ivy2/cache"
+            - ~/.cache/coursier
+            - ~/.ivy2
 
   build-credentials-verification-landing:
     working_directory: ~/repo
