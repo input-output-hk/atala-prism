@@ -23,10 +23,12 @@ import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class SignedRequestsAuthenticatorSpec extends WordSpec {
+  private implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
-  private val request = connector_api.GetConnectionTokenInfoRequest("")
+  private val request = connector_api.GetConnectionTokenInfoRequest()
   private val response = connector_api.GetConnectionTokenInfoResponse()
 
   "public" should {
