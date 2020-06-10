@@ -20,7 +20,7 @@ class WalletIOSpec extends WordSpec with ScalaFutures with MustMatchers with Bef
       val walletIO = WalletIO(filePath)
       val wallet = "saved-wallet".getBytes
       val responseF = walletIO.save(wallet)
-      responseF.futureValue
+      responseF.futureValue mustBe (())
     }
   }
 
