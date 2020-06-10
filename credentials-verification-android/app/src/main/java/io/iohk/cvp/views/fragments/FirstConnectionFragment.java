@@ -5,21 +5,18 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+
+import javax.inject.Inject;
 
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.utils.PermissionUtils;
@@ -27,11 +24,7 @@ import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
-
-import javax.inject.Inject;
-
 import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -72,6 +65,17 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
         return viewModel;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        registerTokenInfoObserver();
+    }
+
+    private void registerTokenInfoObserver() {
+        ActivityUtils.registerObserver((MainActivity) getActivity(),
+                viewModel, this, issuerConnections);
+    }
+
     private int getTitleId() {
         if (this.idTitle != 0) {
             return this.idTitle;
@@ -100,9 +104,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ActivityUtils
-                .onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
-                        viewModel, data, this, issuerConnections);
+        ActivityUtils.onQrcodeResult(requestCode, resultCode, viewModel, data);
     }
 
     @Override

@@ -36,11 +36,6 @@ public class ConnectionsActivityViewModel extends NewConnectionsViewModel {
         return connections;
     }
 
-    public LiveData<AsyncTaskResult<ParticipantInfo>> getConnectionTokenInfo(String token) {
-        new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo), context).execute(null, token);
-        return issuerInfo;
-    }
-
     public MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> getMessages(Set<String> userIds) {
         GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
         task.execute(userIds);

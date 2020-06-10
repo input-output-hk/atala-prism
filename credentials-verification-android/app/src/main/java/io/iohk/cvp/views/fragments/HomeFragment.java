@@ -111,6 +111,17 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
         listConnections();
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        registerTokenInfoObserver();
+    }
+
+    private void registerTokenInfoObserver() {
+            ActivityUtils.registerObserver((MainActivity) getActivity(),
+                    viewModel, this, issuerConnections);
+    }
+
     public void listNewCredentials() {
         credentialsAdapter.clearMessages();
         liveData = viewModel.getMessages(this.getUserIds());
@@ -229,7 +240,6 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ActivityUtils.onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
-                viewModel, data, this, issuerConnections);
+        ActivityUtils.onQrcodeResult(requestCode, resultCode, viewModel, data);
     }
 }

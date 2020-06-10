@@ -6,31 +6,30 @@ import io.grpc.StatusRuntimeException;
 import io.iohk.prism.protos.ConnectorServiceGrpc;
 import io.iohk.prism.protos.GetConnectionTokenInfoRequest;
 import io.iohk.prism.protos.GetConnectionTokenInfoResponse;
-import io.iohk.prism.protos.ParticipantInfo;
 
-public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<ParticipantInfo> {
+public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<ParticipantInfoResponse> {
 
   public GetConnectionTokenInfoRunnable(
-      MutableLiveData<AsyncTaskResult<ParticipantInfo>> liveData) {
+          MutableLiveData<AsyncTaskResult<ParticipantInfoResponse>> liveData) {
     super(liveData);
   }
 
   @Override
-  public AsyncTaskResult<ParticipantInfo> run(
-      ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
-      ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
+  public AsyncTaskResult<ParticipantInfoResponse> run(
+          ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
+          ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
     return getConnectionToken(blockingStub, params);
   }
 
-  private AsyncTaskResult<ParticipantInfo> getConnectionToken(
-      ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub, Object... params)
-      throws StatusRuntimeException {
+  private AsyncTaskResult<ParticipantInfoResponse> getConnectionToken(
+          ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub, Object... params)
+          throws StatusRuntimeException {
 
     String token = String.valueOf(params[1]);
     GetConnectionTokenInfoRequest request = GetConnectionTokenInfoRequest.newBuilder()
-        .setToken(token).build();
+            .setToken(token).build();
     GetConnectionTokenInfoResponse response = blockingStub.getConnectionTokenInfo(request);
 
-    return new AsyncTaskResult<>(response.getCreator());
+    return new AsyncTaskResult<>(new ParticipantInfoResponse(response.getCreator(), token));
   }
 }

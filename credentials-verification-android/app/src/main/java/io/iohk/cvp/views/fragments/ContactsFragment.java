@@ -154,6 +154,17 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
         listConnections(this.getUserIds());
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        registerTokenInfoObserver();
+    }
+
+    private void registerTokenInfoObserver() {
+        ActivityUtils.registerObserver((MainActivity) getActivity(),
+                viewModel, this, issuerConnections);
+    }
+
     public void listConnections(Set<String> userIds) {
         loading.setVisibility(View.VISIBLE);
         liveData = viewModel.getConnections(userIds);
@@ -308,7 +319,6 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ActivityUtils.onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
-                viewModel, data, this, issuerConnections);
+        ActivityUtils.onQrcodeResult(requestCode, resultCode, viewModel, data);
     }
 }
