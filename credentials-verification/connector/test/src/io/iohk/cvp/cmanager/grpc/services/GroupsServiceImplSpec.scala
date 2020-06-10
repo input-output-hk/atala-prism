@@ -4,7 +4,6 @@ import java.util.UUID
 
 import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
-import io.iohk.connector.repositories.daos.ParticipantsDAO
 import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup}

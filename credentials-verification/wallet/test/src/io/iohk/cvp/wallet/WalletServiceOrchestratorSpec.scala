@@ -60,8 +60,7 @@ class WalletServiceOrchestratorSpec
       val walletData =
         walletServiceOrchestrator.createNewWallet(passPhrase, wallet_models.Role.Issuer, "ORG", defaultLogo).futureValue
       val newPassPhrase = "new password"
-      val savedWalletData: Unit = walletServiceOrchestrator.save(newPassPhrase, walletData).futureValue
-      savedWalletData mustBe ()
+      walletServiceOrchestrator.save(newPassPhrase, walletData).futureValue
     }
   }
 

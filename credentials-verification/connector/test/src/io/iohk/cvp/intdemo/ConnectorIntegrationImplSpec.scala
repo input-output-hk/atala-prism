@@ -5,7 +5,6 @@ import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.cvp.intdemo.ConnectorIntegrationImplSpec._
 import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import io.iohk.prism.protos.credential_models
 import org.mockito.ArgumentMatcher

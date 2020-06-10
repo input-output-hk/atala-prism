@@ -118,6 +118,7 @@ object versions {
   val grpc = "1.24.0"
   val monocle = "2.0.0"
   val scopt = "4.0.0-RC2"
+  val silencer = "1.4.2"
   val twirl = "1.5.0"
 }
 
@@ -181,6 +182,8 @@ object common extends ScalaModule {
 trait ServerCommon extends ScalaModule with BuildInfo {
 
   def scalaVersion = versions.scala
+
+  override def scalacOptions = Seq("-Ywarn-unused:imports", "-deprecation", "-Xfatal-warnings", "-feature")
 
   override def moduleDeps = Seq(common) ++ super.moduleDeps
 
@@ -278,8 +281,6 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
 
 object node extends ServerPBCommon with CVPDockerModule {
 
-  override def scalacOptions = Seq("-Ywarn-unused:imports", "-deprecation", "-Xfatal-warnings", "-feature")
-
   override def mainClass = Some("io.iohk.node.NodeApp")
 
   override def cvpDockerConfig = CVPDockerConfig(name = "node")
@@ -323,6 +324,22 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule {
   def twirlVersion = versions.twirl
 
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
+
+  override def compileIvyDeps =
+    super.compileIvyDeps.map {
+      _ ++ Agg(ivy"com.github.ghik::silencer-plugin:${versions.silencer}")
+    }
+
+  override def scalacPluginIvyDeps =
+    super.scalacPluginIvyDeps.map {
+      _ ++ Agg(ivy"com.github.ghik::silencer-plugin:${versions.silencer}")
+    }
+
+  // Disable unused import warnings in Twirl generated classes
+  override def scalacOptions =
+    super.scalacOptions.map {
+      _ ++ Seq("-P:silencer:pathFilters=.*out/connector/compileTwirl.*")
+    }
 
   override def ivyDeps =
     super.ivyDeps.map { deps =>

@@ -3,7 +3,6 @@ package io.iohk.cvp.cstore.repositories.daos
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.cvp.cstore.models.Verifier
-import io.iohk.cvp.models.ParticipantId
 
 object VerifiersDAO {
   def insert(verifier: Verifier): ConnectionIO[Unit] = {

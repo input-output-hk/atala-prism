@@ -7,18 +7,9 @@ import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.cvp.cmanager.models.requests.CreateSubject
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Subject}
-import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository, StudentsRepository}
+import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
 import io.iohk.prism.protos.cmanager_api
-import io.iohk.prism.protos.cmanager_api.{
-  GenerateConnectionTokenForSubjectRequest,
-  GenerateConnectionTokenForSubjectResponse,
-  GetSubjectCredentialsRequest,
-  GetSubjectCredentialsResponse,
-  GetSubjectRequest,
-  GetSubjectResponse,
-  GetSubjectsRequest,
-  GetSubjectsResponse
-}
+import io.iohk.prism.protos.cmanager_api._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 

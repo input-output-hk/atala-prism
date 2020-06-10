@@ -6,18 +6,13 @@ import com.google.protobuf.ByteString
 import io.iohk.connector.Authenticator
 import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.cvp.cstore.grpc.ProtoCodecs._
-import io.iohk.cvp.cstore.models.{StoreIndividual, Verifier, VerifierHolder}
+import io.iohk.cvp.cstore.models.Verifier
 import io.iohk.cvp.cstore.repositories.VerifierHoldersRepository
-import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData
 import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredCredentialCreateData
+import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData
 import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
 import io.iohk.cvp.models.ParticipantId
-import io.iohk.prism.protos.cstore_api.{
-  CreateHolderRequest,
-  CreateHolderResponse,
-  GetHoldersRequest,
-  GetHoldersResponse
-}
+import io.iohk.prism.protos.cstore_api.{GetHoldersRequest, GetHoldersResponse}
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.slf4j.{Logger, LoggerFactory}
 

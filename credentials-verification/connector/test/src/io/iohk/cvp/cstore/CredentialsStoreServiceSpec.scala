@@ -16,7 +16,6 @@ import io.iohk.cvp.cstore.repositories.{VerifierHoldersRepository, VerifiersRepo
 import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
-import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._

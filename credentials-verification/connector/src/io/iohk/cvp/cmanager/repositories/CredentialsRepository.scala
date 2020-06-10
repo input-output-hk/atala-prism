@@ -3,9 +3,8 @@ package io.iohk.cvp.cmanager.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.cmanager.models
 import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
-import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
+import io.iohk.cvp.cmanager.models._
 import io.iohk.cvp.cmanager.repositories.daos.CredentialsDAO
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps

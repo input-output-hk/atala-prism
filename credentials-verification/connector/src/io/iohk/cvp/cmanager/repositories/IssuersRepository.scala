@@ -9,7 +9,7 @@ import io.iohk.cvp.cmanager.repositories.daos.IssuersDAO
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 object IssuersRepository {
   case class IssuerCreationData(id: Issuer.Id)

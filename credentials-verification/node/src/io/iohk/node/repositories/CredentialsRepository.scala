@@ -8,8 +8,8 @@ import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import io.iohk.node.errors.NodeError
 import io.iohk.node.errors.NodeError.UnknownValueError
-import io.iohk.node.models.nodeState.CredentialState
 import io.iohk.node.models.CredentialId
+import io.iohk.node.models.nodeState.CredentialState
 import io.iohk.node.operations.TimestampInfo
 import io.iohk.node.repositories.daos.CredentialsDAO
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData

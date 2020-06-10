@@ -4,12 +4,13 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
-import io.iohk.connector.repositories.daos._
 import io.iohk.connector.model.ConnectionId
+import io.iohk.connector.repositories.daos._
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong
+import scala.language.higherKinds
 
 class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 

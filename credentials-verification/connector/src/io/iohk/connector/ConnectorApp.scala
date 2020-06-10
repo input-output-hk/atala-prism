@@ -138,13 +138,13 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val intDemoRepository = new IntDemoRepository(xa)(executionContext)
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)(executionContext)
     val idService =
-      new IdServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
+      new IdServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
     val degreeService =
-      new DegreeServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
+      new DegreeServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
     val employmentService =
-      new EmploymentServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
+      new EmploymentServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
     val insuranceService =
-      new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
+      new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
 
     logger.info("Starting server")
     server = ServerBuilder

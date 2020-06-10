@@ -4,22 +4,21 @@ import java.time.LocalDate
 import java.util.UUID
 
 import cats.effect.IO
-import doobie.util.transactor.Transactor
-import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, IssuerGroup, Student, Subject, UniversityCredential}
-import io.iohk.cvp.cmanager.repositories.{daos => cmanagerDaos}
-import io.iohk.connector.repositories.{daos => connectorDaos}
 import doobie.implicits._
+import doobie.util.transactor.Transactor
 import io.circe.Json
-import io.circe.Json.JString
+import io.circe.syntax._
 import io.iohk.connector.model.{ParticipantInfo, ParticipantType}
+import io.iohk.connector.repositories.{daos => connectorDaos}
 import io.iohk.cvp.cmanager.models.requests.{
   CreateGenericCredential,
   CreateStudent,
   CreateSubject,
   CreateUniversityCredential
 }
+import io.iohk.cvp.cmanager.models._
+import io.iohk.cvp.cmanager.repositories.{daos => cmanagerDaos}
 import io.iohk.cvp.models.ParticipantId
-import io.circe.syntax._
 
 object DataPreparation {
 

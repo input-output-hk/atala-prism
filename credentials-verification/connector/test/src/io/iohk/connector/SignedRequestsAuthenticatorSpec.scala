@@ -7,7 +7,7 @@ import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
-import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toEncodedPublicKey}
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}

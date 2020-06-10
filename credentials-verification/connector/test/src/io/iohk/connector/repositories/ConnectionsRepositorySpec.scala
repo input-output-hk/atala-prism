@@ -11,6 +11,7 @@ import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong
+import scala.language.higherKinds
 
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
