@@ -19,6 +19,7 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.Constants;
 import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
@@ -60,25 +61,22 @@ public class TermsAndConditionsActivity extends CvpActivity {
     mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
     firstCheckbox.setListeners(
-      isClicked -> {
-        mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_TCS, null);
+            isClicked -> {
+              mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_TCS, null);
 
-        termsAndConditionsChecked = isClicked;
-        updateButtonState();
-      },
-      // TODO: get the last time the terms and conditions where updated
-      () -> showWeb("/terms-and-conditions")
+              termsAndConditionsChecked = isClicked;
+              updateButtonState();
+            },
+            () -> showWeb(Constants.LEGAL_BASE_URL.concat(Constants.LEGAL_TERMS_AND_CONDITIONS))
     );
     secondCheckbox.setListeners(
-      isClicked -> {
-        mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_PP, null);
+            isClicked -> {
+              mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_PP, null);
 
-        privacyPolicyChecked = isClicked;
-        updateButtonState();
-      },
-      // TODO: get the last time the privacy policies and conditions where updated
-      // TODO: import the privacy policies asset when needed
-      () -> showWeb("/privacy-policy")
+              privacyPolicyChecked = isClicked;
+              updateButtonState();
+            },
+            () -> showWeb(Constants.LEGAL_BASE_URL.concat(Constants.LEGAL_PRIVACY_POLICY))
     );
   }
 

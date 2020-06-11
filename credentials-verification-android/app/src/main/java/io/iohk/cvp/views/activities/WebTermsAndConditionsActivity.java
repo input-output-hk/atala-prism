@@ -51,7 +51,7 @@ public class WebTermsAndConditionsActivity extends Activity {
 
     webView.getSettings().setJavaScriptEnabled(true);
     webView.setWebViewClient(new WebViewClient());
-    webView.loadUrl(BuildConfig.API_BASE_URL + getIntent().getExtras().getString(WEB_VIEW_URL));
+    webView.loadUrl(getIntent().getExtras().getString(WEB_VIEW_URL));
 
   }
 
