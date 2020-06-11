@@ -7,10 +7,16 @@ import io.iohk.connector.repositories._
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
-import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
+import io.iohk.cvp.cmanager.grpc.services.{
+  CredentialsServiceImpl,
+  GroupsServiceImpl,
+  StudentsServiceImpl,
+  SubjectsServiceImpl
+}
 import io.iohk.cvp.cmanager.repositories.{
   CredentialsRepository,
   IssuerGroupsRepository,
+  IssuerSubjectsRepository,
   IssuersRepository,
   StudentsRepository
 }
@@ -28,7 +34,12 @@ import io.iohk.prism.intdemo.protos.intdemo_api.{
   InsuranceServiceGrpc
 }
 import io.iohk.prism.protos.admin_api.AdminServiceGrpc
-import io.iohk.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
+import io.iohk.prism.protos.cmanager_api.{
+  CredentialsServiceGrpc,
+  GroupsServiceGrpc,
+  StudentsServiceGrpc,
+  SubjectsServiceGrpc
+}
 import io.iohk.prism.protos.connector_api
 import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
@@ -115,9 +126,13 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val issuersRepository = new IssuersRepository(xa)(executionContext)
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val studentsRepository = new StudentsRepository(xa)(executionContext)
+    val subjectsRepository = new IssuerSubjectsRepository(xa)(executionContext)
     val issuerGroupsRepository = new IssuerGroupsRepository(xa)(executionContext)
     val credentialsService =
       new CredentialsServiceImpl(issuersRepository, credentialsRepository, authenticator)(executionContext)
+    val subjectsService = new SubjectsServiceImpl(subjectsRepository, credentialsRepository, authenticator)(
+      executionContext
+    )
     val studentsService =
       new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator)(executionContext)
     val groupsService = new GroupsServiceImpl(issuerGroupsRepository, authenticator)(executionContext)
@@ -152,6 +167,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .intercept(new GrpcAuthenticatorInterceptor)
       .addService(connector_api.ConnectorServiceGrpc.bindService(connectorService, executionContext))
       .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
+      .addService(SubjectsServiceGrpc.bindService(subjectsService, executionContext))
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
