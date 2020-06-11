@@ -14,18 +14,6 @@
     android:layout_marginEnd="24dp">
 
     <TextView
-      android:id="@+id/text_view_1"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginBottom="8dp"
-      android:text="@string/account_creation"
-      android:textAlignment="textStart"
-      android:textSize="12sp"
-      app:layout_constraintBottom_toTopOf="@id/titleLabel"
-      app:layout_constraintHorizontal_bias="0.495"
-      app:layout_constraintLeft_toLeftOf="parent" />
-
-    <TextView
       android:id="@+id/titleLabel"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -77,7 +65,7 @@
       android:layout_height="64dp"
       android:layout_marginBottom="32dp"
       android:enabled="false"
-      android:text="@string/continue_string"
+      android:text="@string/accept"
       app:cornerRadius="32dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"

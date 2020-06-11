@@ -15,7 +15,7 @@
     app:showAsAction="ifRoom" />
   <item
     android:id="@+id/action_new_connection"
-    android:icon="@drawable/ic_scan_qr_menu_item"
+    android:icon="@drawable/ic_scan_qr_menu_item_red"
     android:title="@string/new_connection"
     android:visible="false"
     app:showAsAction="ifRoom" />

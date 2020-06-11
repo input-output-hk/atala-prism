@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -59,6 +60,9 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
     @BindView(R.id.credentailsToShareContent)
     LinearLayout credentailsToShareContent;
 
+    @BindView(R.id.share_button)
+    Button shareButton;
+
     private ViewModelProvider.Factory factory;
 
     private ProofRequest proofRequest;
@@ -68,9 +72,6 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
     private ConnectionInfo connection;
 
     private LiveData<AsyncTaskResult<Boolean>> liveData;
-
-
-    private int sharedCedentialsCount;
 
     public static ShareProofRequestDialogFragment newInstance(ProofRequest proofRequest,
                                                               List<Credential> acceptedcredentials,
@@ -104,18 +105,20 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
 
-
-        participantLogoImgView.setImageBitmap(
-                                ImageUtils.getBitmapFromByteArray(connection.getParticipantInfo().getIssuer().getLogo().toByteArray()));
+        try {
+            participantLogoImgView.setImageBitmap(
+                    ImageUtils.getBitmapFromByteArray(connection.getParticipantInfo().getIssuer().getLogo().toByteArray()));
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+        }
 
         try {
             titleTextView.setText(connection.getParticipantInfo().getIssuer().getName());
             for (Credential acceptedCredential : acceptedcredentials) {
                 TextView text = new TextView(getActivity());
                 text.setText(getCredentialType(acceptedCredential));
-                credentailsToShareContent.addView(new ShareCredentialRow(getActivity(), acceptedCredential));
+                credentailsToShareContent.addView(new ShareCredentialRow(this, acceptedCredential));
             }
-
         } catch (Exception e) {
             Crashlytics.logException(e);
         }
@@ -155,59 +158,47 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
         this.dismiss();
     }
 
-    @OnClick(R.id.share_button)
-    public void onConnectClick() {
-
-        boolean isAllCredentialsChecked = true;
+    public void enableShareButton(){
         for(int i=0; i<credentailsToShareContent.getChildCount(); i++) {
             ShareCredentialRow shareCredentialRow = (ShareCredentialRow) credentailsToShareContent.getChildAt(i);
             if(!shareCredentialRow.isChecked()){
-                isAllCredentialsChecked = false;
-                break;
+                shareButton.setEnabled(false);
+                return;
             }
         }
+        shareButton.setEnabled(true);
+    }
 
-        if(isAllCredentialsChecked) {
-            sharedCedentialsCount = 0;
-            acceptedcredentials.forEach(credential -> {
-                try {
-                    Preferences pref = new Preferences(getContext());
-                    sharedCedentialsCount++;
-                    String userId = pref.getUserIdByConnection(connection.getConnectionId()).orElseThrow(() ->
-                            new SharedPrefencesDataNotFoundException(
-                                    "Couldn't find user id for connection id " + connection.getConnectionId(),
-                                    ErrorCode.USER_ID_NOT_FOUND));
+    @OnClick(R.id.share_button)
+    public void onConnectClick() {
+        try {
+            Preferences prefs = new Preferences(getContext());
+            String userId = prefs.getUserIdByConnection(connection.getConnectionId()).orElseThrow(() ->
+                    new SharedPrefencesDataNotFoundException(
+                            "Couldn't find user id for connection id " + connection.getConnectionId(),
+                            ErrorCode.USER_ID_NOT_FOUND));
 
-                    liveData = viewModel.sendMessage(userId, connection.getConnectionId(), credential.toByteString());
-
-                    if (!liveData.hasActiveObservers()) {
-                        liveData.observe(this, response -> {
-                            FragmentManager fm = getFragmentManager();
-                            if (response.getError() != null) {
-                                SupportErrorDialogFragment.newInstance(new Dialog(getContext())).show(fm, "");
-                                getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                                        R.string.server_error_message));
-                                return;
-                            } else {
-                                if (acceptedcredentials.size() == sharedCedentialsCount) {
-
-                                    pref.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_SHARED_KEY);
-                                    SuccessDialog.newInstance(this, R.string.server_share_successfully)
-                                            .show(getFragmentManager(), "dialog");
-                                    this.dismiss();
-                                    ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONTACTS, null);
-                                }
-
-                            }
-                        });
-                    }
-
-                } catch (Exception e) {
-                    Crashlytics.logException(e);
+            liveData = viewModel.sendMultipleMessage(userId, connection.getConnectionId(), acceptedcredentials);
+            if (liveData.hasActiveObservers()) {
+                return;
+            }
+            liveData.observe(this, response -> {
+                if (response.getError() == null) {
+                    prefs.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_SHARED_KEY);
+                    SuccessDialog.newInstance(this, R.string.server_share_successfully)
+                            .show(getFragmentManager(), "dialog");
+                    this.dismiss();
+                    ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONTACTS, null);
+                } else {
+                    FragmentManager fm = getFragmentManager();
+                    SupportErrorDialogFragment.newInstance(new Dialog(getContext())).show(fm, "");
+                    getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                            R.string.server_error_message));
                 }
             });
-        }else{
-            Toast.makeText(getActivity(), R.string.select_all_credential_alert, Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Crashlytics.logException(e);
         }
     }
 

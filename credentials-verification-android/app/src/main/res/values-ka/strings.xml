@@ -7,7 +7,7 @@
   <!-- Activities titles -->
   <string name="connections_activity_title">Connections</string>
   <string name="terms_and_conditions_activity_title">Terms and Conditions</string>
-  <string name="wallet_setup_activity_title">Your recovery phrase</string>
+  <string name="wallet_setup_activity_title">Your Seed Phrase</string>
   <string name="seed_phrase_verification_activity_title">Verify Seed Phrase</string>
   <string name="qr_scanner_activity_title">Scan QR</string>
 
@@ -23,9 +23,7 @@
 
   <!-- Terms and Conditions -->
   <string name="account_creation">Account Creation</string>
-  <string name="terms_and_conditions_description">
-    To continue creating your account you must accept the following terms and conditions.
-  </string>
+  <string name="terms_and_conditions_description">Please indicate that you have read and agree to the Terms and Conditions and the Privacy Policy Agreement</string>
   <string name="privacy_policies_agreement">Privacy Policy Agreement</string>
 
   <!-- About -->
@@ -42,12 +40,12 @@
 
 
   <!-- Wallet setup -->
-  <string name="seed_phrase_description">Your seed phrase is your personal key that gives you access to your account.</string>
-  <string name="seed_phrase_explanation">Without it you will not be able to access any of your records or funds in case you lose your device or quite the app. \nPlease store your seed phrase securely before proceeding.</string>
-  <string name="seed_phrase_acceptance">I understand that if I lose my seed phrase,\nI will not be able to access my account.</string>
+  <string name="seed_phrase_description">Your Seed Phrase is used to generate and recover your account.</string>
+  <string name="seed_phrase_explanation">Please save these 12 words on a piece of paper. The order is important. This seed will allow you to recover your account.</string>
+  <string name="seed_phrase_acceptance">I understand that if I lose my seed phrase,\nI will not be able to recover my account.</string>
 
   <!-- Seed Phrase Verification -->
-  <string name="seed_phrase_verification_description">Enter the correct words of your seed phrase bellow.</string>
+  <string name="seed_phrase_verification_description">Enter the following words to verify your Seed Phrase</string>
   <string name="word_numeric">Word #%1$s</string>>
 
   <!-- Credential General Strings -->
@@ -75,12 +73,13 @@
   <string name="award">Award</string>
   <string name="national_card">National ID Card</string>
   <string name="university_degree">University Degree</string>
-  <string name="issuance_date">Issuance date</string>
+  <string name="issuance_date">Issuance Date</string>
   <string name="company_name">Company Name</string>
   <string name="employment_status">Employment Status</string>
   <string name="provider_name">Provider Name</string>
   <string name="decline">Decline</string>
   <string name="confirm">Confirm</string>
+  <string name="share_information_credential">Share the following information to process your credential:</string>
 
   <!-- Credential Acceptance Payment -->
   <string name="payment_activity_title">Payment</string>
@@ -117,16 +116,16 @@
   <string name="notifications">Notifications</string>
 
   <!-- Settings option labels -->
-  <string name="backup_button_name">Backup Data</string>
-  <string name="backup_button_description">Please create your backup now!</string>
+  <string name="backup_button_name">Backup Account</string>
+  <string name="backup_button_description">Create a backup now</string>
   <string name="security_button_name">Security</string>
-  <string name="security_button_description">Set Up Biometrics and PIN Code</string>
+  <string name="security_button_description">Secure app with a Pin or Biometrics</string>
   <string name="pin_code_button_name">PIN Code</string>
   <string name="pin_code_button_description">Change the code to unlock this app</string>
-  <string name="support_button_name">Help &amp; Support</string>
-  <string name="support_button_description">Do you have any doubts?</string>
+  <string name="support_button_name">Support</string>
+  <string name="support_button_description">Get in touch with us</string>
   <string name="about_button_name">About</string>
-  <string name="about_button_description">Legal, Versions and Network info</string>
+  <string name="about_button_description">Legal and version information</string>
   <string name="support_title">Support</string>
 
   <!-- Payment screen labels -->
@@ -194,6 +193,8 @@
   <string name="connection_re_acept_title">You have already connected to</string>
   <string name="connection_acept_button">Confirm</string>
   <string name="connection_re_acept_button">Connect again</string>
+  <string name="employee_name">Employee Name</string>
+
 
   <!-- Security screen labels -->
   <string name="setting_up">Setup</string>

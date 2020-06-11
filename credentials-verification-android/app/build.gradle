@@ -151,6 +151,8 @@ dependencies {
     implementation('org.bitcoinj:bitcoinj-core:0.15.6') {
         exclude group: 'com.google.protobuf'
     }
+    implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
 
     compileOnly 'org.projectlombok:lombok:1.18.10'

@@ -60,7 +60,7 @@
             android:layout_marginTop="10dp"
             android:textColor="@color/black"
             android:textSize="16dp"
-            android:text="Want you to share the following credentials with them:"/>
+            android:text="@string/share_information_credential"/>
 
     </LinearLayout>
 
@@ -161,6 +161,7 @@
             android:layout_marginEnd="16dp"
             android:layout_weight="1"
             android:text="Share"
+            android:enabled="false"
             android:textAllCaps="false"
             app:cornerRadius="32dp" />
     </LinearLayout>

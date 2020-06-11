@@ -43,13 +43,17 @@
 
         <TextView
             android:id="@+id/text_view_1"
+            android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/about_title"
+            android:text="@string/about"
             android:textAlignment="textStart"
-            android:textSize="12sp"
+            android:textColor="@color/black"
+            android:textSize="28sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+
 
         <ImageView
             android:id="@+id/imageView3"
@@ -124,6 +128,7 @@
             android:layout_marginTop="5dp"
             android:text="@string/about_terms_date"
             android:textSize="13sp"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/termsLabel" />
 
@@ -145,6 +150,7 @@
             android:layout_marginTop="5dp"
             android:text="@string/about_policy_date"
             android:textSize="13sp"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/policyLabel" />
 

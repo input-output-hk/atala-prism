@@ -193,7 +193,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
             layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_grey));
 
-            textViewCredentialType.setText(getResources().getString(R.string.national_card));
+            textViewCredentialType.setText(getResources().getString(R.string.credential_government_name));
             textViewCredentialType.setTextColor(getResources().getColor(R.color.grey_4));
 
             textViewCredentialName.setText(credentialDto.getIssuer().getName());
@@ -233,7 +233,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
                 textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
 
 
-                awardTitle.setText(getResources().getString(R.string.full_name));
+                awardTitle.setText(getResources().getString(R.string.employee_name));
                 awardValue.setText(credentialDto.getCredentialSubject().getName());
 
                 textViewCredentialName.setText(credentialDto.getIssuer().getName());

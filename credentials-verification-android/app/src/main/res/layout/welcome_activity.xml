@@ -9,6 +9,17 @@
   tools:context=".views.activities.WelcomeActivity">
 
 
+  <androidx.viewpager2.widget.ViewPager2
+      android:id="@+id/vp_pager"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:visibility="gone"
+      app:layout_constraintBottom_toTopOf="@+id/tabDots"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      android:layout_marginTop="@dimen/activity_default_side_margin"
+      app:layout_constraintTop_toTopOf="@+id/welcome_body_container" />
+
   <LinearLayout
       android:id="@+id/steps_counter"
       android:layout_width="0dp"
@@ -96,55 +107,70 @@
     </LinearLayout>
   </LinearLayout>
 
+  <com.google.android.material.tabs.TabLayout
+      android:id="@+id/tabDots"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="@dimen/activity_default_side_margin"
+      android:visibility="gone"
+      app:layout_constraintBottom_toTopOf="@+id/welcomeButtonsContainer"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:tabGravity="center"
+      app:tabIndicatorHeight="0dp"
+      app:tabBackground="@drawable/tab_selector" />
 
   <LinearLayout
-    android:id="@+id/welcomeButtonsContainer"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:orientation="horizontal"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent">
-    <Button
-      android:id="@+id/get_started_button"
+      android:id="@+id/welcomeButtonsContainer"
       android:layout_width="match_parent"
-      android:layout_height="56dp"
-      android:layout_marginBottom="32dp"
-      android:text="@string/get_started"
-      android:textAllCaps="false"
-      android:textColor="@android:color/white"
-      app:cornerRadius="32dp" />
-
-    <Button
-      android:id="@+id/restore_account_btn"
-      android:layout_width="match_parent"
-      android:layout_height="56dp"
-      android:layout_weight="1"
-      android:layout_marginBottom="32dp"
-      android:layout_marginEnd="8dp"
-      android:backgroundTint="@color/black"
-      android:text="@string/restore_account"
-      android:textAllCaps="false"
-      android:visibility="gone"
-      app:cornerRadius="32dp"
+      android:layout_height="0dp"
+      android:orientation="horizontal"
+      android:visibility="visible"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent" />
+      app:layout_constraintStart_toStartOf="parent">
 
     <Button
-      android:id="@+id/create_account_btn"
-      android:layout_width="match_parent"
-      android:layout_height="56dp"
-      android:layout_weight="1"
-      android:layout_marginBottom="32dp"
-      android:layout_marginStart="8dp"
-      android:text="@string/create_account"
-      android:textAllCaps="false"
-      android:visibility="gone"
-      app:cornerRadius="32dp"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent" />
+        android:id="@+id/view_pager_button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginBottom="32dp"
+        android:text="@string/create_account"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        android:textColor="@android:color/white"
+        app:cornerRadius="32dp" />
+
+    <Button
+        android:id="@+id/restore_account_btn"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="32dp"
+        android:layout_weight="1"
+        android:backgroundTint="@color/black"
+        android:text="@string/restore_account"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        app:cornerRadius="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/get_started_button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="32dp"
+        android:layout_weight="1"
+        android:text="@string/get_started"
+        android:textAllCaps="false"
+        android:visibility="visible"
+        app:cornerRadius="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
   </LinearLayout>
 
   <RelativeLayout
@@ -156,33 +182,15 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/steps_counter">
 
+
+
     <include
         android:id="@+id/welcome_view"
         layout="@layout/welcome_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <include
-        android:id="@+id/tutorial_step1_view"
-        layout="@layout/tutorial_step_1"
-        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone" />
+         />
 
-    <include
-        android:id="@+id/tutorial_step2_view"
-        layout="@layout/tutorial_step_2"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
-
-
-    <include
-        android:id="@+id/tutorial_step3_view"
-        layout="@layout/tutorial_step_3"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
 
   </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
