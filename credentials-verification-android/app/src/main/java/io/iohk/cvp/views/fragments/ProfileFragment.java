@@ -34,7 +34,6 @@ public class ProfileFragment extends CvpFragment {
   TextView textViewEmail;
   @BindView(R.id.text_view_name)
   TextView textViewName;
-  private Preferences preferences;
   private boolean isEditing;
 
   @Inject
@@ -55,16 +54,17 @@ public class ProfileFragment extends CvpFragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
-    this.preferences = new Preferences(getContext());
 
-    String name = preferences.getString(Preferences.USER_PROFILE_NAME);
+    Preferences pref = new Preferences(getContext());
+
+    String name = pref.getString(Preferences.USER_PROFILE_NAME);
     textInputEditTextName.setText(name);
     textViewName.setText(name);
 
-    textInputEditTextCountry.setText(preferences.getString(Preferences.USER_PROFILE_COUNTRY));
-    textInputEditTextBirthDate.setText(preferences.getString(Preferences.USER_PROFILE_BIRTH_DATE));
+    textInputEditTextCountry.setText(pref.getString(Preferences.USER_PROFILE_COUNTRY));
+    textInputEditTextBirthDate.setText(pref.getString(Preferences.USER_PROFILE_BIRTH_DATE));
 
-    String email = preferences.getString(Preferences.USER_PROFILE_EMAIL);
+    String email = pref.getString(Preferences.USER_PROFILE_EMAIL);
     textInputEditTextEmail.setText(email);
     textViewEmail.setText(email);
     return view;
@@ -109,7 +109,7 @@ public class ProfileFragment extends CvpFragment {
     String birthDate = textInputEditTextBirthDate.getText().toString();
     String email = textInputEditTextEmail.getText().toString();
 
-    preferences.saveUserProfile(name, country, birthDate, email);
+    new Preferences(getContext()).saveUserProfile(name, country, birthDate, email);
     textViewEmail.setText(email);
     textViewName.setText(name);
   }

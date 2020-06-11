@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -27,9 +28,6 @@ public class TermsAndConditionsActivity extends CvpActivity {
 
   @Inject
   Navigator navigator;
-
-  @BindView(R.id.large_description_frame)
-  public FrameLayout frameLayout;
 
   @BindView(R.id.terms_and_conditions_checkbox_layout)
   public CheckboxWithDescription firstCheckbox;
@@ -69,7 +67,7 @@ public class TermsAndConditionsActivity extends CvpActivity {
         updateButtonState();
       },
       // TODO: get the last time the terms and conditions where updated
-      () -> showLargeDescription(termsAndConditionsTitle, Calendar.getInstance(), R.string.terms_and_conditions_asset_name)
+      () -> showWeb("/terms-and-conditions")
     );
     secondCheckbox.setListeners(
       isClicked -> {
@@ -80,15 +78,14 @@ public class TermsAndConditionsActivity extends CvpActivity {
       },
       // TODO: get the last time the privacy policies and conditions where updated
       // TODO: import the privacy policies asset when needed
-      () -> showLargeDescription(policiesTitle, Calendar.getInstance(), R.string.terms_and_conditions_asset_name)
+      () -> showWeb("/privacy-policy")
     );
   }
 
-  public void showLargeDescription(String title, Calendar lastUpdated, int assetResourceId) {
-    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-    ft.replace(R.id.large_description_frame, new LargeDescriptionDialogFragment(title, lastUpdated, assetResourceId));
-    ft.addToBackStack(title);
-    ft.commit();
+  public void showWeb(String url) {
+    Intent intent = new Intent(getApplicationContext(), WebTermsAndConditionsActivity.class);
+    intent.putExtra(WebTermsAndConditionsActivity.WEB_VIEW_URL, url);
+    startActivity(intent);
   }
 
   private void updateButtonState() {

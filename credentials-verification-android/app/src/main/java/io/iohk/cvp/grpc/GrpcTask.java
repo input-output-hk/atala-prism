@@ -24,6 +24,7 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
     private final ManagedChannel origChannel;
 
     public GrpcTask(GrpcRunnable<A> grpcRunnable, Context context) {
+
         Preferences prefs = new Preferences(context);
         String ip = prefs.getString(Preferences.BACKEND_IP);
         Integer port = prefs.getInt(Preferences.BACKEND_PORT);

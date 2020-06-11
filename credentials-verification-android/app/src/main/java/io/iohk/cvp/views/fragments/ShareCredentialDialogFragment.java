@@ -147,10 +147,9 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
     @OnClick(R.id.share_button)
     public void onShareClick() {
-        Preferences prefs = new Preferences(getContext());
         selectedVerifiers.forEach(connectionId -> {
             try {
-                String userId = prefs.getUserIdByConnection(connectionId).orElseThrow(() ->
+                String userId = new Preferences(getContext()).getUserIdByConnection(connectionId).orElseThrow(() ->
                         new SharedPrefencesDataNotFoundException(
                                 "Couldn't find user id for connection id " + connectionId,
                                 ErrorCode.USER_ID_NOT_FOUND));

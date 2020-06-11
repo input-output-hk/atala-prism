@@ -3,11 +3,13 @@ package io.iohk.cvp.views.activities;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import androidx.biometric.BiometricPrompt;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -28,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 
@@ -43,10 +47,10 @@ import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
+import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.MyCredentials;
 import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
@@ -56,6 +60,7 @@ import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 import io.iohk.prism.protos.ConnectionInfo;
 import lombok.Getter;
+import lombok.NonNull;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
@@ -92,6 +97,9 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     @BindView(R.id.fragment_layout)
     public FrameLayout frameLayout;
 
+    @BindView(R.id.fragment_layout_over_menu)
+    public FrameLayout frameLayoutOverMenu;
+
     @BindColor(R.color.colorPrimary)
     ColorStateList colorRed;
 
@@ -120,15 +128,21 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Preferences prefs = new Preferences(getApplicationContext());
-        if (!prefs.getUserIds().isEmpty()) {
+        if (new Preferences(getApplicationContext()).hasUserIdsStored()) {
             ft.replace(R.id.fragment_layout, homeFragment, MAIN_FRAGMENT_TAG);
         } else {
             FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.notifications, issuerConnections);
             ft.replace(R.id.fragment_layout, f, MAIN_FRAGMENT_TAG);
         }
         ft.commit();
+
+        Preferences prefs = new Preferences(this);
+        if(prefs.isPinConfigured())
+            navigator.showUnlockScreen(this);
+
     }
+
+
 
     @Override
     public MainViewModel getViewModel() {
@@ -172,8 +186,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
         switch (option) {
             case CONTACTS:
-                Preferences prefs = new Preferences(getApplicationContext());
-                if (!prefs.getUserIds().isEmpty()) {
+                if (new Preferences(getApplicationContext()).hasUserIdsStored()) {
                     return Optional.of(contactsFragment);
                 }
 
@@ -222,7 +235,6 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                 String strNonce = nonce.getNonce();
 
                 Preferences prefs = new Preferences(this);
-
                 // TODO send real amount
                 sendPayments(new BigDecimal(150.1, MathContext.DECIMAL32), strNonce,
                         prefs.getString(CONNECTION_TOKEN_TO_ACCEPT),
@@ -293,4 +305,12 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     public void setIssuerConnections(List<ConnectionInfo> issuerConnections) {
         this.issuerConnections = issuerConnections;
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
+
 }

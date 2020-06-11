@@ -7,14 +7,6 @@
   android:background="@color/white"
   tools:context=".views.activities.TermsAndConditionsActivity">
 
-  <FrameLayout
-    android:id="@+id/large_description_frame"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:elevation="16dp"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
-
   <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"

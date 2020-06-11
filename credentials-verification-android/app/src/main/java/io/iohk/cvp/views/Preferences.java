@@ -7,19 +7,21 @@ import android.util.Base64;
 
 import com.google.protobuf.ByteString;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.core.exception.WrongPinLengthException;
+import io.iohk.cvp.data.preferences.SecurityPin;
 import io.iohk.cvp.utils.KeyStoreUtils;
 import io.iohk.prism.protos.AddConnectionFromTokenResponse;
-import lombok.AllArgsConstructor;
 
 import static android.content.Context.MODE_PRIVATE;
 
-@AllArgsConstructor
 public class Preferences {
 
     public static final String ACCEPTED_MESSAGES_KEY = "accepted_messages";
@@ -40,14 +42,24 @@ public class Preferences {
     public static final String PROOF_REQUEST_SHARED_KEY = "proof_request_shared";
     public static final String PROOF_REQUEST_CANCEL_KEY = "proof_request_cancel";
 
-    private Context context;
+    public static final String SECURITY_PIN = "security_pin";
+    public static final String SECURITY_TOUCH_ENABLED = "security_touch_enabled";
+
+    // This key get used always that app start, this help to detect when app is starting and avoid to call UnlockActivity before the first activity is launched.
+    public static final String FIRST_LAUNCH = "first_launch";
+
+    final private Context context;
+
+    public Preferences(Context context){
+        this.context = context;
+    }
 
     public void savePrivateKey(byte[] pk) {
         KeyStoreUtils keyStoreUtils = new KeyStoreUtils();
         keyStoreUtils.generateKey();
         String encPk = keyStoreUtils.encryptData(pk);
 
-        SharedPreferences.Editor editor = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE)
+        Editor editor = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE)
                 .edit();
         editor.putString(PK_KEY, encPk);
         editor.apply();
@@ -63,6 +75,12 @@ public class Preferences {
                                 "PrivateKey not found on shared preferences",
                                 ErrorCode.PRIVATE_KEY_NOT_FOUND)),
                         Base64.DEFAULT));
+    }
+
+    public boolean isPrivateKeyStored() {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        Optional<String> pk = Optional.ofNullable(sharedPreferences.getString(PK_KEY, null));
+        return pk.isPresent();
     }
 
     public void saveMessage(String messageId, String prefKey) {
@@ -82,6 +100,42 @@ public class Preferences {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         return sharedPreferences
                 .getStringSet(USER_ID_LIST_KEY, new HashSet<>());
+    }
+
+    public boolean hasUserIdsStored() {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        return !sharedPreferences.getStringSet(USER_ID_LIST_KEY, new HashSet<>()).isEmpty();
+    }
+
+    public void saveSecurityPin(SecurityPin pin) {
+        editString(pin.getPinString(), SECURITY_PIN);
+    }
+
+    public SecurityPin getSecurityPin() throws WrongPinLengthException {
+       return new SecurityPin(getString(SECURITY_PIN));
+    }
+
+    public boolean isPinConfigured() {
+        return StringUtils.isNotBlank(getString(SECURITY_PIN));
+    }
+
+    public void saveSecurityTouch(Boolean enable) {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        Editor editor = prefs.edit();
+        editor.putBoolean(SECURITY_TOUCH_ENABLED, enable);
+        editor.apply();
+    }
+
+    public Boolean getSecurityTouch() {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        return prefs.getBoolean(SECURITY_TOUCH_ENABLED, false);
+    }
+
+    private void editString(String valueToAdd, String prefKey) {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        Editor editor = prefs.edit();
+        editor.putString(prefKey, valueToAdd);
+        editor.apply();
     }
 
     private void editStringSet(String valueToAdd, String prefKey) {
@@ -170,4 +224,19 @@ public class Preferences {
         return sharedPreferences
                 .getInt(key, 0);
     }
+
+    public void setIsFirstLaunch(boolean firstLaunch) {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        Editor editor = prefs.edit();
+        editor.putBoolean(FIRST_LAUNCH, firstLaunch);
+        editor.apply();
+    }
+
+
+    public Boolean isFirstLaunch() {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        return prefs.getBoolean(FIRST_LAUNCH, true);
+    }
+
+
 }

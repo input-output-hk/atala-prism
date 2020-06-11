@@ -83,8 +83,7 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
     protected abstract int getViewId();
 
     protected Set<String> getUserIds() {
-        Preferences prefs = new Preferences(getContext());
-        return prefs.getUserIds();
+        return new Preferences(getContext()).getUserIds();
     }
 
 }

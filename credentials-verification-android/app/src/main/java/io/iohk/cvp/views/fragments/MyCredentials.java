@@ -81,8 +81,7 @@ public class MyCredentials extends CvpFragment<CredentialsViewModel> {
                              Bundle savedInstanceState) {
 
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        Preferences prefs = new Preferences(getContext());
-        credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false, prefs);
+        credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false, new Preferences(getContext()));
         credentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         credentialsRecyclerView.setAdapter(credentialsAdapter);
 

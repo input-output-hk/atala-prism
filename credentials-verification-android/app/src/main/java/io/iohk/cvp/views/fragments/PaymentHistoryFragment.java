@@ -83,9 +83,7 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
         recyclerView.setLayoutManager(linearLayoutManagerCredentials);
         recyclerView.setAdapter(adapter);
 
-        Preferences prefs = new Preferences(getContext());
-
-        liveData = viewModel.getPayments(prefs.getUserIds());
+        liveData = viewModel.getPayments(new Preferences(getContext()).getUserIds());
 
         if (!liveData.hasActiveObservers()) {
             liveData.observe(this, response -> {

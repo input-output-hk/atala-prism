@@ -85,6 +85,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     private List<ConnectionInfo> issuerConnections;
 
+
     @Inject
     public ContactsFragment() {
     }
@@ -220,11 +221,9 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
             credentialLiveData.observe(this, result -> {
                 try {
                     if (result.getError() == null) {
-
-                        Preferences prefs = new Preferences(getContext());
-
-                        Set<String> acceptedProofRequesIds = prefs.getStoredMessages(Preferences.PROOF_REQUEST_SHARED_KEY);
-                        Set<String> cancelProofRequestIds = prefs.getStoredMessages(Preferences.PROOF_REQUEST_CANCEL_KEY);
+                        Preferences pref = new Preferences(getContext());
+                        Set<String> acceptedProofRequesIds = pref.getStoredMessages(Preferences.PROOF_REQUEST_SHARED_KEY);
+                        Set<String> cancelProofRequestIds = pref.getStoredMessages(Preferences.PROOF_REQUEST_CANCEL_KEY);
 
                         List<ReceivedMessage> messages = result.getResult();
                         proofRequestMessages.addAll(messages.stream()

@@ -21,6 +21,7 @@ import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;

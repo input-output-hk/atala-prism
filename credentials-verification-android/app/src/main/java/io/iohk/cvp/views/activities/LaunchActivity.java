@@ -21,14 +21,15 @@ public class LaunchActivity extends CvpActivity {
   @Override
   public void onCreate(Bundle state) {
     super.onCreate(state);
+    Preferences prefs = new Preferences(this);
+    prefs.setIsFirstLaunch(true);
     Objects.requireNonNull(getSupportActionBar()).hide();
 
     new Handler().postDelayed(
         () -> {
-          try {
-            new Preferences(this).getPrivateKey();
+          if(prefs.isPrivateKeyStored()) {
             navigator.showConnections(this, new ArrayList<>());
-          } catch (SharedPrefencesDataNotFoundException e) {
+          } else {
             navigator.showWelcomeActivity(this);
           }
         },

@@ -150,9 +150,9 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
                 return;
             }
 
-            Preferences prefs = new Preferences(getContext());
-            prefs.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
-            ((MainActivity) getActivity()).acceptConnection(getArguments().getString(TOKEN_KEY), prefs);
+            Preferences pref = new Preferences(getContext());
+            pref.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
+            ((MainActivity) getActivity()).acceptConnection(getArguments().getString(TOKEN_KEY), pref);
         });
     }
 }

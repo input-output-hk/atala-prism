@@ -135,8 +135,7 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
     try {
       ECKeys crypto = new ECKeys();
       KeyPair keyPair = crypto.getKeyPair(seedPhrase);
-      Preferences prefs = new Preferences(this);
-      prefs.savePrivateKey(keyPair.getPrivateKey().toByteArray());
+      new Preferences(this).savePrivateKey(keyPair.getPrivateKey().toByteArray());
       navigator.showAccountCreated(this);
     } catch (CryptoException | InvalidKeySpecException e) {
       Crashlytics.logException(e);

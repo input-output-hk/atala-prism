@@ -4,6 +4,8 @@
   android:layout_height="match_parent"
   android:paddingTop="72dp"
   android:paddingStart="16dp"
+  android:background="@color/white"
+  android:clickable="true"
   android:paddingEnd="16dp"
   android:orientation="vertical">
 

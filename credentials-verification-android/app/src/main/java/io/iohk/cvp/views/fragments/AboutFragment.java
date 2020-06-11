@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -23,7 +24,10 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.cvp.views.activities.WebTermsAndConditionsActivity;
+import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.NoAppBar;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
@@ -80,20 +84,18 @@ public class AboutFragment extends CvpFragment {
     }
 
     @OnClick(R.id.termsLabel)
-    void onBackendIpClick() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.large_description_frame, new LargeDescriptionDialogFragment(termsAndConditionsTitle, Calendar.getInstance(),
-                R.string.terms_and_conditions_asset_name));
-        ft.addToBackStack(termsAndConditionsTitle);
-        ft.commit();
+    void onTermsClick() {
+        showWebContent("/terms-and-conditions");
     }
 
     @OnClick(R.id.policyLabel)
-    void onAboutClick() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.large_description_frame, new LargeDescriptionDialogFragment(policiesTitle, Calendar.getInstance(),
-                R.string.terms_and_conditions_asset_name));
-        ft.addToBackStack(policiesTitle);
-        ft.commit();
+    void onPolicyClick() {
+        showWebContent("/privacy-policy");
+    }
+
+    private void showWebContent(String url){
+        Intent intent = new Intent(getActivity().getApplicationContext(), WebTermsAndConditionsActivity.class);
+        intent.putExtra(WebTermsAndConditionsActivity.WEB_VIEW_URL, url);
+        getActivity().startActivity(intent);
     }
 }

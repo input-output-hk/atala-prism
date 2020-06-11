@@ -6,6 +6,7 @@ import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SECOND
 import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SEED_PHRASE_KEY;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
 import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
+import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.activities.WalletSetupActivity;
 import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.activities.WelcomeActivity;
@@ -138,19 +140,16 @@ public class Navigator {
         from.startActivity(intent);
     }
 
-    public void showFragment(FragmentManager supportFragmentManager, CvpFragment cvpFragment,
-                             String tag) {
+    public void showFragment(FragmentManager supportFragmentManager, CvpFragment cvpFragment, String tag) {
         FragmentTransaction ft = supportFragmentManager.beginTransaction();
         ft.replace(R.id.fragment_layout, cvpFragment, tag);
         ft.addToBackStack(tag);
         ft.commit();
+
     }
 
     public void showFragmentOnTop(FragmentManager supportFragmentManager, CvpFragment cvpFragment) {
-        FragmentTransaction ft = supportFragmentManager.beginTransaction();
-        ft.replace(R.id.fragment_layout, cvpFragment);
-        ft.addToBackStack(null);
-        ft.commit();
+       showFragment(supportFragmentManager, cvpFragment, null);
     }
 
     public void showFragmentOnTopOfMenu(FragmentManager supportFragmentManager,
@@ -159,6 +158,7 @@ public class Navigator {
         ft.replace(R.id.fragment_layout_over_menu, cvpFragment);
         ft.addToBackStack(null);
         ft.commit();
+
     }
 
     public void showDialogFragment(FragmentManager supportFragmentManager,
@@ -170,5 +170,11 @@ public class Navigator {
                     .show(cvpFragment)
                     .commit();
         }
+    }
+
+    public void showUnlockScreen(Context ctx) {
+        Intent myIntent = new Intent(ctx, UnlockActivity.class);
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        ctx.startActivity(myIntent);
     }
 }

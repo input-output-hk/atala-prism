@@ -34,11 +34,9 @@ public class BackendIpFragment extends CvpFragment {
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
-    Preferences prefs = new Preferences(getContext());
-
-    editTextBackendIp.setText(prefs.getString(Preferences.BACKEND_IP));
-
-    Integer port = prefs.getInt(Preferences.BACKEND_PORT);
+    editTextBackendIp.setText(new Preferences(getContext()).getString(Preferences.BACKEND_IP));
+    Preferences pref = new Preferences(getContext());
+    Integer port = pref.getInt(Preferences.BACKEND_PORT);
 
     editTextBackendPort.setText(port.equals(0) ? "" : port.toString());
 
@@ -62,8 +60,8 @@ public class BackendIpFragment extends CvpFragment {
 
   @OnClick(R.id.save_ip)
   void onSaveClick() {
-    Preferences prefs = new Preferences(getContext());
-    prefs.saveBackendData(editTextBackendIp.getText().toString(),
+    Preferences pref = new Preferences(getContext());
+    pref.saveBackendData(editTextBackendIp.getText().toString(),
         editTextBackendPort.getText().toString());
 
     Toast.makeText(getContext(), "Saved successfully", Toast.LENGTH_SHORT).show();

@@ -93,9 +93,10 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        Preferences pref = new Preferences(getContext());
+
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        Preferences prefs = new Preferences(getContext());
-        credentialsAdapter = new NewCredentialsRecyclerViewAdapter(R.layout.row_new_credential, this, true, prefs);
+        credentialsAdapter = new NewCredentialsRecyclerViewAdapter(R.layout.row_new_credential, this, true, pref);
         credentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         credentialsRecyclerView.setAdapter(credentialsAdapter);
 
@@ -136,10 +137,9 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
                         getNavigator().showPopUp(getFragmentManager(), getResources().getString(
                                 R.string.server_error_message));
                     } else {
-                        Preferences prefs = new Preferences(getContext());
-
-                        Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-                        Set<String> rejectedMessagesIds = prefs.getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
+                        Preferences pref = new Preferences(getContext());
+                        Set<String> acceptedMessagesIds = pref.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+                        Set<String> rejectedMessagesIds = pref.getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
 
                         List<ReceivedMessage> messages = result.getResult();
                         List<ReceivedMessage> newMessages = messages.stream()

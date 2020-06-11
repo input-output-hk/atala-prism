@@ -50,11 +50,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ShareProofRequestDialogFragment extends CvpDialogFragment<ConnectionsListablesViewModel> {
 
-    private static final String TYPES_KEY = "types";
-    private static final String TOKEN_KEY = "token";
-    private static final String NAME_KEY = "participantName";
-    private static final String LOGO_DATA_KEY = "logo";
-
     @BindView(R.id.title)
     TextView titleTextView;
 
@@ -73,6 +68,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
     private ConnectionInfo connection;
 
     private LiveData<AsyncTaskResult<Boolean>> liveData;
+
 
     private int sharedCedentialsCount;
 
@@ -107,6 +103,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
+
 
         participantLogoImgView.setImageBitmap(
                                 ImageUtils.getBitmapFromByteArray(connection.getParticipantInfo().getIssuer().getLogo().toByteArray()));
@@ -152,8 +149,8 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
 
     @OnClick(R.id.cancel_button)
     public void onCancelClick() {
-        Preferences prefs = new Preferences(getContext());
-        prefs.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_CANCEL_KEY);
+        Preferences pref = new Preferences(getContext());
+        pref.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_CANCEL_KEY);
         getActivity().onBackPressed();
         this.dismiss();
     }
@@ -171,12 +168,12 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
         }
 
         if(isAllCredentialsChecked) {
-            Preferences prefs = new Preferences(getContext());
             sharedCedentialsCount = 0;
             acceptedcredentials.forEach(credential -> {
                 try {
+                    Preferences pref = new Preferences(getContext());
                     sharedCedentialsCount++;
-                    String userId = prefs.getUserIdByConnection(connection.getConnectionId()).orElseThrow(() ->
+                    String userId = pref.getUserIdByConnection(connection.getConnectionId()).orElseThrow(() ->
                             new SharedPrefencesDataNotFoundException(
                                     "Couldn't find user id for connection id " + connection.getConnectionId(),
                                     ErrorCode.USER_ID_NOT_FOUND));
@@ -194,7 +191,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
                             } else {
                                 if (acceptedcredentials.size() == sharedCedentialsCount) {
 
-                                    prefs.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_SHARED_KEY);
+                                    pref.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_SHARED_KEY);
                                     SuccessDialog.newInstance(this, R.string.server_share_successfully)
                                             .show(getFragmentManager(), "dialog");
                                     this.dismiss();

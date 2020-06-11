@@ -1,22 +1,25 @@
 package io.iohk.cvp.views.fragments;
 
-import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.lifecycle.ViewModel;
+
+import java.util.Objects;
+
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.components.OptionItem;
-import java.util.Objects;
-import javax.inject.Inject;
 import lombok.Setter;
 
 @Setter
@@ -49,7 +52,7 @@ public class SettingsFragment extends CvpFragment {
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+                           Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
     if (!BuildConfig.DEBUG) {
@@ -66,11 +69,21 @@ public class SettingsFragment extends CvpFragment {
 
   @OnClick(R.id.backend_ip)
   void onBackendIpClick() {
-    navigator.showFragment(getFragmentManager(), new BackendIpFragment(), MAIN_FRAGMENT_TAG);
+    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new BackendIpFragment());
   }
 
+  @OnClick(R.id.security)
+  void onSecurityClick() {
+    if(!new Preferences(getContext()).isPinConfigured()){
+      navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecuritySettingsStep1Fragment());
+    }else{
+      navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecurityFragment());
+    }
+  }
+
+  // Disable for the time being
   @OnClick(R.id.about)
   void onAboutClick() {
-    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new AboutFragment());
+//    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new AboutFragment());
   }
 }

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
     android:background="@color/white">
 
     <RelativeLayout
@@ -32,14 +33,6 @@
             android:textAlignment="center" />
 
     </RelativeLayout>
-
-    <FrameLayout
-        android:id="@+id/large_description_frame"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

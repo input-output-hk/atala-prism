@@ -123,8 +123,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     @BindView(R.id.layout_university_name)
     ConstraintLayout layoutUniversityName;
 
-
-
     @Inject
     CredentialDetailFragment(ViewModelProvider.Factory factory) {
         this.factory = factory;
@@ -295,10 +293,11 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     }
 
     private void saveCredential() {
-        Preferences prefs = new Preferences(getContext());
-        Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+        Preferences pref = new Preferences(getContext());
+
+        Set<String> acceptedMessagesIds = pref.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
         if(!acceptedMessagesIds.contains(messageId)){
-            prefs.saveMessage(messageId, Preferences.ACCEPTED_MESSAGES_KEY);
+            pref.saveMessage(messageId, Preferences.ACCEPTED_MESSAGES_KEY);
         }
     }
 

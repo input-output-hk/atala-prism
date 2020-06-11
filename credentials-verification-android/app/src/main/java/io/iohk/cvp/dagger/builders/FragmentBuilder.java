@@ -9,24 +9,30 @@ import io.iohk.cvp.dagger.modules.ContactsFragmentModule;
 import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.HomeFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
+import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.fragments.AboutFragment;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
 import io.iohk.cvp.views.fragments.BackendIpFragment;
-import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.CredentialDetailFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
-import io.iohk.cvp.views.fragments.MyCredentials;
+import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
+import io.iohk.cvp.views.fragments.MyCredentials;
 import io.iohk.cvp.views.fragments.PaymentCongratsFragment;
 import io.iohk.cvp.views.fragments.PaymentFragment;
 import io.iohk.cvp.views.fragments.PaymentHistoryFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
+import io.iohk.cvp.views.fragments.SecurityChangePinFragment;
+import io.iohk.cvp.views.fragments.SecurityFragment;
+import io.iohk.cvp.views.fragments.SecuritySettingsStep1Fragment;
+import io.iohk.cvp.views.fragments.SecuritySettingsStep2Fragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
 import io.iohk.cvp.views.fragments.ShareProofRequestDialogFragment;
 import io.iohk.cvp.views.fragments.WalletFragment;
+import io.iohk.cvp.views.utils.ForegroundBackgroundListener;
 
 @Module
 public abstract class FragmentBuilder {
@@ -84,4 +90,22 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector
   abstract AboutFragment contributeAboutFragment();
+
+  @ContributesAndroidInjector
+  abstract SecurityFragment contributeSecurityFragment();
+
+  @ContributesAndroidInjector
+  abstract SecurityChangePinFragment contributeSecurityChangePinFragment();
+
+  @ContributesAndroidInjector
+  abstract SecuritySettingsStep1Fragment contributeSecuritySettingsStep1Fragment();
+
+  @ContributesAndroidInjector
+  abstract SecuritySettingsStep2Fragment contributeSecuritySettingsStep2Fragment();
+
+  @ContributesAndroidInjector
+  abstract UnlockActivity contributeUnlockFragment();
+
+  @ContributesAndroidInjector
+  abstract ForegroundBackgroundListener foregroundBackgroundListener();
 }

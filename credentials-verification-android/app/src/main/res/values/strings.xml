@@ -107,7 +107,7 @@
   <string name="employers">Employers</string>
   <string name="home_title">Credentials</string>
   <string name="view">View</string>
-  <string name="new_credentials_section_title">You have a new credential</string>
+  <string name="new_credentials_section_title">You have new credential(s)</string>
   <string name="settings">Settings</string>
   <string name="about">About</string>
   <string name="wallet">Wallet</string>
@@ -122,10 +122,10 @@
   <string name="backup_button_name">Backup Data</string>
   <string name="backup_button_description">Please create your backup now!</string>
   <string name="security_button_name">Security</string>
-  <string name="security_button_description">Secure your app using Biometrics</string>
+  <string name="security_button_description">Set Up Biometrics and PIN Code</string>
   <string name="pin_code_button_name">PIN Code</string>
   <string name="pin_code_button_description">Change the code to unlock this app</string>
-  <string name="support_button_name">Support</string>
+  <string name="support_button_name">Help &amp; Support</string>
   <string name="support_button_description">Do you have any doubts?</string>
   <string name="about_button_name">About</string>
   <string name="about_button_description">Legal, Versions and Network info</string>
@@ -196,5 +196,25 @@
   <string name="connection_re_acept_title">You have already connected to</string>
   <string name="connection_acept_button">Confirm</string>
   <string name="connection_re_acept_button">Connect again</string>
+
+  <!-- Security screen labels -->
+  <string name="setting_up">Setup</string>
+  <string name="pin_code">Pin Code</string>
+  <string name="steps_numbers">1 of 2</string>
+  <string name="steps_numbers_two">2 of 2</string>
+  <string name="set_up_title">Enter a 4 digit code</string>
+  <string name="pin_code_uppercase">PIN CODE</string>
+  <string name="pin_code_confirm_uppercase">CONFIRM YOUR PIN CODE</string>
+  <string name="touch">Touch ID</string>
+  <string name="touch_description">Touch ID enables quick and easy login without a password. Please enable the App to use Touch ID under Settings</string>
+  <string name="allow_touch">Enable Touch ID</string>
+  <string name="not_now">Not Now</string>
+  <string name="use_touch">Use Touch as Pin</string>
+  <string name="change_pin">Change Pin Code</string>
+  <string name="write_pin">Enter your PIN</string>
+  <string name="incorrect_pin_code">Incorrect PIN CODE</string>
+  <string name="same_pin_required">Pins has to be the same</string>
+  <string name="incorrect_current_pin">Your current PIN is incorrect</string>
+  <string name="wrong_pin_size">Pin length must be %1$d characters long</string>
 
 </resources>
