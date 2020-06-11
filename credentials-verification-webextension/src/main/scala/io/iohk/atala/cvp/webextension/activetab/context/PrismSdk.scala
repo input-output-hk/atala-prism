@@ -31,7 +31,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         value = js.Dictionary(
           "log" -> js.Any.fromFunction1(log), // TODO: Remove
           "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus),
-          "getUserDetails" -> js.Any.fromFunction0(getUserDetails)
+          "login" -> js.Any.fromFunction1(login)
         )
       }
     )
@@ -40,8 +40,9 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
   def getWalletStatus(): js.Promise[String] = {
     extensionAPI.getWalletStatus().map(_.status).toJSPromise
   }
-  def getUserDetails(): js.Promise[Option[UserDetails]] = {
-    extensionAPI.getUserDetails().map(_.userDetails).toJSPromise
+
+  def login(password: String): js.Promise[Option[UserDetails]] = {
+    extensionAPI.getUserDetails(password).map(_.userDetails).toJSPromise
   }
 
   def log(text: String): Unit = {

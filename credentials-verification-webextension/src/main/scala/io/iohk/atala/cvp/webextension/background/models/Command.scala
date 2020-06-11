@@ -33,8 +33,8 @@ private[background] object Command {
   final case object GetWalletStatus extends CommandWithResponse[WalletStatusResult];
   final case class WalletStatusResult(status: WalletStatus)
 
-  final case object GetUserDetails extends CommandWithResponse[Option[UserDetails]];
-  final case class UserDetails(name: String, role: String, logo: Array[Byte])
+  final case class GetUserDetails(password: String) extends CommandWithResponse[Option[UserDetails]];
+  final case class UserDetails(sessionId: String, name: String, role: String, logo: Array[Byte])
 
   final case class CreateWallet(
       password: String,

@@ -1,6 +1,6 @@
 package io.iohk.atala.cvp.webextension.background.wallet
 
-import java.util.Base64
+import java.util.{Base64, UUID}
 
 import com.google.protobuf.ByteString
 import io.circe.Json
@@ -19,7 +19,6 @@ import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
-import scala.scalajs.js.JSConverters._
 import scala.scalajs.js.typedarray.{ArrayBuffer, _}
 import scala.util.{Failure, Success}
 
@@ -94,8 +93,9 @@ private[background] class WalletManager(
     ectx: ExecutionContext
 ) {
   val ec: EC = new EC(WalletManager.CURVE_NAME)
-
   private var storageKey: Option[CryptoKey] = None
+  type SessionID = String
+  var session: Option[SessionID] = None
   var walletData: Option[WalletData] = None
   var signingRequests: Map[Int, (SigningRequest, Promise[String])] = Map.empty
   var requestCounter: Int = 0
@@ -218,12 +218,27 @@ private[background] class WalletManager(
     }
   }
 
-  def getUserDetails(): Future[Option[UserDetails]] = {
-    Future.successful {
-      walletData.map { walletData =>
-        UserDetails(walletData.organisationName, walletData.role.toString, walletData.logo)
+  def getUserDetails(password: String): Future[Option[UserDetails]] = {
+
+    def getUser(sessionId: SessionID): Future[Option[UserDetails]] = {
+      Future.successful {
+        walletData.map { walletData =>
+          UserDetails(
+            sessionId,
+            walletData.organisationName,
+            walletData.role.toString,
+            walletData.logo
+          )
+        }
       }
     }
+
+    for {
+      _ <- unlock(password)
+      _ <- Future.successful(session = Some(UUID.randomUUID().toString))
+      user <- getUser(session.getOrElse("No Session"))
+    } yield user
+
   }
 
   def generateSecretKey(password: String): Future[CryptoKey] = {

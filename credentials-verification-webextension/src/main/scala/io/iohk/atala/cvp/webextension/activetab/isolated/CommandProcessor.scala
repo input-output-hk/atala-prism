@@ -13,10 +13,10 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
           .getWalletStatus()
           .map(response => Event.GotWalletStatus(response.status.toString))
 
-      case Command.GetUserDetails() =>
+      case Command.GetUserDetails(password) =>
         backgroundAPI
-          .getUserDetails()
-          .map(response => Event.GotUserDetails(response.map(u => UserDetails(u.name, u.role, u.logo))))
+          .getUserDetails(password)
+          .map(response => Event.GotUserDetails(response.map(u => UserDetails(u.sessionId, u.name, u.role, u.logo))))
     }
   }
 }

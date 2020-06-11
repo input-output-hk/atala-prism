@@ -14,7 +14,7 @@ private[activetab] object Command {
 
   final case class GetWalletStatus() extends Command
 
-  final case class GetUserDetails() extends Command
+  final case class GetUserDetails(password: String) extends Command
 
   def decode(string: String): Try[Command] = {
     parse(string).toTry
