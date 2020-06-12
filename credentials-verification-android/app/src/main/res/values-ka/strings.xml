@@ -208,7 +208,7 @@
   <string name="touch_description">Touch ID enables quick and easy login without a password. Please enable the App to use Touch ID under Settings</string>
   <string name="allow_touch">Enable Touch ID</string>
   <string name="not_now">Not Now</string>
-  <string name="use_touch">Use Touch as Pin</string>
+  <string name="use_touch">Use Fingerprint as Pin</string>
   <string name="change_pin">Change Pin Code</string>
   <string name="write_pin">Enter your PIN</string>
   <string name="incorrect_pin_code">Incorrect PIN CODE</string>

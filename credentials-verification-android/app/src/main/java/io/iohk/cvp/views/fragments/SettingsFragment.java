@@ -62,9 +62,10 @@ public class SettingsFragment extends CvpFragment {
     return view;
   }
 
+  // Disable for the time being
   @OnClick(R.id.support)
   void onSupportClick() {
-    navigator.showWebView(Objects.requireNonNull(this.getActivity()));
+//    navigator.showWebView(Objects.requireNonNull(this.getActivity()));
   }
 
   @OnClick(R.id.backend_ip)
@@ -81,9 +82,8 @@ public class SettingsFragment extends CvpFragment {
     }
   }
 
-  // Disable for the time being
   @OnClick(R.id.about)
   void onAboutClick() {
-//    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new AboutFragment());
+    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new AboutFragment());
   }
 }

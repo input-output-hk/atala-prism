@@ -32,10 +32,10 @@ public class ActivityUtils {
         }
     }
 
-    public static void registerObserver(MainActivity activity, NewConnectionsViewModel viewModel, CvpFragment homeFragment, List<ConnectionInfo> issuerConnections) {
+    public static void registerObserver(MainActivity activity, NewConnectionsViewModel viewModel, List<ConnectionInfo> issuerConnections) {
         LiveData<AsyncTaskResult<ParticipantInfoResponse>> liveData = viewModel.getConnectionTokenInfoLiveData();
         if(!liveData.hasActiveObservers()){
-            liveData.observe(homeFragment.getViewLifecycleOwner(), response -> {
+            liveData.observe(activity, response -> {
                         FragmentManager fragmentManager = Objects.requireNonNull(activity)
                                 .getSupportFragmentManager();
                         if (response.getError() != null) {

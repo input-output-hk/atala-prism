@@ -31,6 +31,7 @@ import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.NoAppBar;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
+import io.iohk.cvp.views.fragments.utils.TermsAndConditionHelper;
 import lombok.Setter;
 
 @Setter
@@ -85,17 +86,13 @@ public class AboutFragment extends CvpFragment {
 
     @OnClick(R.id.termsLabel)
     void onTermsClick() {
-        showWebContent("/terms-and-conditions");
+        TermsAndConditionHelper.showTermsAndConditions(getContext());
     }
 
     @OnClick(R.id.policyLabel)
     void onPolicyClick() {
-        showWebContent("/privacy-policy");
+        TermsAndConditionHelper.showPrivacyPolicy(getContext());
     }
 
-    private void showWebContent(String url){
-        Intent intent = new Intent(getActivity().getApplicationContext(), WebTermsAndConditionsActivity.class);
-        intent.putExtra(WebTermsAndConditionsActivity.WEB_VIEW_URL, url);
-        getActivity().startActivity(intent);
-    }
+
 }

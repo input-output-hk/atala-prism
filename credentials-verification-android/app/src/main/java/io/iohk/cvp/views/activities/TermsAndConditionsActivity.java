@@ -23,6 +23,7 @@ import io.iohk.cvp.utils.Constants;
 import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
+import io.iohk.cvp.views.fragments.utils.TermsAndConditionHelper;
 import io.iohk.cvp.views.utils.components.CheckboxWithDescription;
 
 public class TermsAndConditionsActivity extends CvpActivity {
@@ -67,7 +68,7 @@ public class TermsAndConditionsActivity extends CvpActivity {
               termsAndConditionsChecked = isClicked;
               updateButtonState();
             },
-            () -> showWeb(Constants.LEGAL_BASE_URL.concat(Constants.LEGAL_TERMS_AND_CONDITIONS))
+            () -> TermsAndConditionHelper.showTermsAndConditions(this)
     );
     secondCheckbox.setListeners(
             isClicked -> {
@@ -76,14 +77,8 @@ public class TermsAndConditionsActivity extends CvpActivity {
               privacyPolicyChecked = isClicked;
               updateButtonState();
             },
-            () -> showWeb(Constants.LEGAL_BASE_URL.concat(Constants.LEGAL_PRIVACY_POLICY))
+            () -> TermsAndConditionHelper.showPrivacyPolicy(this)
     );
-  }
-
-  public void showWeb(String url) {
-    Intent intent = new Intent(getApplicationContext(), WebTermsAndConditionsActivity.class);
-    intent.putExtra(WebTermsAndConditionsActivity.WEB_VIEW_URL, url);
-    startActivity(intent);
   }
 
   private void updateButtonState() {

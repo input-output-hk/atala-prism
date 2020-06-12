@@ -24,11 +24,8 @@ import com.google.android.gms.common.SupportErrorDialogFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -163,7 +160,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     private void registerTokenInfoObserver() {
         ActivityUtils.registerObserver((MainActivity) getActivity(),
-                viewModel, this, issuerConnections);
+                viewModel, issuerConnections);
     }
 
     public void listConnections(Set<String> userIds) {
