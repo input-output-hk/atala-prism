@@ -1,7 +1,6 @@
 @import '../../../../css/general_styling';
 
 .CollapseContainer {
-  width: 100%;
   .ItemDetail {
     display: flex;
     justify-content: space-between;
@@ -36,4 +35,12 @@
 
 .ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
   left: 0;
+}
+
+@media only screen and (max-width: 1024px) {
+  .CollapseContainer {
+    .ItemDetail {
+      flex-direction: column;
+    }
+  }
 }

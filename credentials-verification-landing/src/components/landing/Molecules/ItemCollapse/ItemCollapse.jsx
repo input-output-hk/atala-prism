@@ -4,25 +4,9 @@ import { useTranslation } from 'react-i18next';
 
 import './_style.scss';
 
-const panelsData = [
-  {
-    key: '1',
-    name: 'credentials',
-    bulletsNumber: 5
-  },
-  {
-    key: '2',
-    name: 'wallet',
-    bulletsNumber: 5
-  },
-  {
-    key: '3',
-    name: 'crypto',
-    bulletsNumber: 5
-  }
-];
+const bulletsNumber = 5;
 
-const ItemCollapse = () => {
+const ItemCollapse = ({ name }) => {
   const { t } = useTranslation();
 
   const { Panel } = Collapse;
@@ -31,11 +15,10 @@ const ItemCollapse = () => {
     borderRadius: 4,
     marginBottom: 24,
     border: 0,
-    overflow: 'hidden',
-    width: '27.5%'
+    overflow: 'hidden'
   };
 
-  const bulletsRender = (name, bulletsNumber) => {
+  const bulletsRender = () => {
     let bullets = [];
     for (let i = 1; i <= bulletsNumber; i++) {
       bullets.push(
@@ -47,14 +30,6 @@ const ItemCollapse = () => {
     return bullets;
   };
 
-  const panels = panelsData.map(panel => (
-    <Panel header={t('landing.intro.itemIcon.readMore')} key={panel.key} style={customPanelStyle}>
-      <div className="BulletItems">
-        <ul>{bulletsRender(panel.name, panel.bulletsNumber)}</ul>
-      </div>
-    </Panel>
-  ));
-
   return (
     <div className="CollapseContainer">
       <Collapse
@@ -62,7 +37,11 @@ const ItemCollapse = () => {
         bordered={false}
         expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0} />}
       >
-        {panels}
+        <Panel header={t('landing.intro.itemIcon.readMore')} key={name} style={customPanelStyle}>
+          <div className="BulletItems">
+            <ul>{bulletsRender()}</ul>
+          </div>
+        </Panel>
       </Collapse>
     </div>
   );

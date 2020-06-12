@@ -19,6 +19,11 @@
     display: flex;
     justify-content: space-between;
     margin-top: 4em;
+
+    .ItemVision {
+      width: 30%;
+    }
+
     .lineSeparatorSide {
       display: none;
     }
@@ -44,7 +49,9 @@
       @include secondary-text($h1, $black);
     }
     .ReadMoreContainer {
-      display: none;
+      .ant-collapse-item {
+        width: 100% !important;
+      }
     }
   }
 }
@@ -59,9 +66,13 @@
     .IntroItemContainer {
       margin-left: 0;
       flex-direction: column;
-      .IntroItem {
-        width: 100%;
-        margin-bottom: 1.5em;
+      .ItemVision {
+        width: 80%;
+        .IntroItem {
+          .HeaderItem {
+            min-height: auto;
+          }
+        }
       }
     }
   }
@@ -70,5 +81,11 @@
 @media only screen and (max-width: 450px) {
   .IntroSection {
     padding: 8em 2em 2em 2em;
+
+    .IntroItemContainer {
+      .ItemVision {
+        width: 100%;
+      }
+    }
   }
 }

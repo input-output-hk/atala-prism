@@ -5,7 +5,6 @@
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  width: 27.5%;
 
   .HeaderItem {
     min-height: 145px;
@@ -34,20 +33,5 @@
         @include primary-text($label, $black);
       }
     }
-  }
-
-  &:nth-child(3) {
-    .BulletItems {
-      ul {
-        li:last-child {
-          display: none;
-        }
-      }
-    }
-  }
-
-  @include breakpoint(sm) {
-    width: 100%;
-    margin-bottom: 2em;
   }
 }

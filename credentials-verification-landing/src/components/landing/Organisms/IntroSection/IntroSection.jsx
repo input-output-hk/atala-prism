@@ -13,12 +13,15 @@ const IntroSection = () => {
   const separator = key => <hr key={key} className="lineSeparatorSide" />;
 
   const createIntroItem = (key, pictureNumber) => (
-    <IntroItem
-      key={key}
-      itemIcon={t(`landing.intro.itemIcon.${key}.image`)}
-      itemTitle={t(`landing.intro.itemIcon.${key}.title`)}
-      itemText={t(`landing.intro.itemIcon.${key}.text`)}
-    />
+    <div className="ItemVision">
+      <IntroItem
+        key={key}
+        itemIcon={t(`landing.intro.itemIcon.${key}.image`)}
+        itemTitle={t(`landing.intro.itemIcon.${key}.title`)}
+        itemText={t(`landing.intro.itemIcon.${key}.text`)}
+      />
+      <ItemCollapse name={key} />
+    </div>
   );
 
   return (
@@ -34,9 +37,6 @@ const IntroSection = () => {
             },
             [createIntroItem('credentials', 1)]
           )}
-      </div>
-      <div className="ReadMoreContainer">
-        <ItemCollapse />
       </div>
     </div>
   );
