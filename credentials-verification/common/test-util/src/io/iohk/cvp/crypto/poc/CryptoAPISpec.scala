@@ -1,12 +1,10 @@
 package io.iohk.cvp.crypto.poc
 
 import java.nio.charset.StandardCharsets
-import java.security.PublicKey
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import org.scalatest.{MustMatchers, WordSpec}
 
 // This test displays the way to use the CryptoAPI

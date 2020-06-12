@@ -3,9 +3,10 @@ package io.iohk.dids
 import java.net.URI
 import java.util.UUID
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class InMemoryDIDDriverSpec extends WordSpec with Matchers {
+class InMemoryDIDDriverSpec extends AnyWordSpec with Matchers {
 
   val exampleUUID = UUID.fromString("7eb48f53-a4ee-4485-8b29-5f1e899adbdb")
   val exampleURI = new URI(s"did:memory:${exampleUUID.toString}")

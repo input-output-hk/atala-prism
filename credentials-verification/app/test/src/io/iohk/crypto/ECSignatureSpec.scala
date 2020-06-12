@@ -3,10 +3,10 @@ package io.iohk.crypto
 import java.util.Base64
 
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
-import org.scalatest.MustMatchers._
-import org.scalatest.WordSpec
+import org.scalatest.matchers.must.Matchers._
+import org.scalatest.wordspec.AnyWordSpec
 
-class ECSignatureSpec extends WordSpec {
+class ECSignatureSpec extends AnyWordSpec {
   "it" should {
     val urlBase64EncodedD = "avwoe7yP0B58wMp7sALpCToCnA6gD2Dsv5bnScWzOL0"
     val dBytes = Base64.getUrlDecoder.decode(urlBase64EncodedD)

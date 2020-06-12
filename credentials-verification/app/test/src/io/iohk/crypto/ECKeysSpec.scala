@@ -5,10 +5,10 @@ import java.util.Base64
 
 import io.iohk.cvp.crypto.ECKeys
 import javax.xml.bind.DatatypeConverter
-import org.scalatest.MustMatchers._
-import org.scalatest.WordSpec
+import org.scalatest.matchers.must.Matchers._
+import org.scalatest.wordspec.AnyWordSpec
 
-class ECKeysSpec extends WordSpec {
+class ECKeysSpec extends AnyWordSpec {
   "generateKeyPair" should {
     "generate a random key pair" in {
       val one = ECKeys.generateKeyPair()

@@ -1,11 +1,11 @@
 package io.iohk.dids
 
-import org.scalatest.MustMatchers._
-import org.scalatest.WordSpec
+import org.scalatest.matchers.must.Matchers._
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.util.{Failure, Success}
 
-class DIDLoaderSpec extends WordSpec {
+class DIDLoaderSpec extends AnyWordSpec {
   "getDID" should {
     "load a DID" in {
       val expectedX = "ostQVNLv52D3eioe0lsMRNng6stDrvzPVpQI3n8UCww"

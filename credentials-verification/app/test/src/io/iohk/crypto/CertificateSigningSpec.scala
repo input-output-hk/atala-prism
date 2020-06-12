@@ -7,9 +7,10 @@ import java.util.Base64
 import io.iohk.claims.json._
 import io.iohk.claims.{Certificate, SubjectClaims}
 import io.iohk.cvp.crypto.ECKeys
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class CertificateSigningSpec extends WordSpec with Matchers {
+class CertificateSigningSpec extends AnyWordSpec with Matchers {
 
   implicit val certificateEncoding: SignableEncoding[Certificate] = new TwoLineJsonEncoding[Certificate]
 

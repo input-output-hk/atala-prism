@@ -1,10 +1,8 @@
 package io.iohk.cvp.repositories
 
 import cats.effect.IO
-import doobie.util.fragment.Fragment
 import doobie.util.transactor.Transactor
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Second, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, MustMatchers, WordSpec}
 
 import scala.concurrent.ExecutionContext

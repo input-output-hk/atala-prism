@@ -58,9 +58,13 @@ object GitSupport {
   }
 }
 
-object app extends ScalaModule {
+trait DefaultScalaModule extends ScalaModule {
   def scalaVersion = versions.scala
 
+  override def scalacOptions = Seq("-Ywarn-unused:imports", "-deprecation", "-Xfatal-warnings", "-feature")
+}
+
+object app extends DefaultScalaModule {
   override def mainClass = Some("io.iohk.test.IssueCredential")
 
   override def moduleDeps = Seq(common) ++ super.moduleDeps
@@ -75,15 +79,16 @@ object app extends ScalaModule {
     override def ivyDeps =
       Agg(
         ivy"org.scalatest::scalatest:3.0.8",
-        ivy"org.scalacheck::scalacheck:1.14.0"
+        ivy"org.scalatest::scalatest-wordspec:3.2.0-M4",
+        ivy"org.scalatestplus::scalatestplus-scalacheck:3.1.0.0-RC2"
       )
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
 }
 
-object `indy-poc` extends ScalaModule {
-  def scalaVersion = "2.12.4"
+object `indy-poc` extends DefaultScalaModule {
+  override def scalaVersion = "2.12.4"
 
   override def mainClass = Some("io.iohk.indy.ExampleRunner")
 
@@ -122,9 +127,7 @@ object versions {
   val twirl = "1.5.0"
 }
 
-object common extends ScalaModule {
-  def scalaVersion = versions.scala
-
+object common extends DefaultScalaModule {
   override def ivyDeps =
     Agg(
       ivy"org.flywaydb:flyway-core:6.0.2",
@@ -140,9 +143,7 @@ object common extends ScalaModule {
       ivy"com.lihaoyi::os-lib:0.2.7"
     )
 
-  object `test-util` extends ScalaModule {
-    def scalaVersion = versions.scala
-
+  object `test-util` extends DefaultScalaModule {
     override def moduleDeps = Seq(common) ++ super.moduleDeps
 
     override def ivyDeps =
@@ -179,12 +180,7 @@ object common extends ScalaModule {
   * - Logback
   * - Monix
   */
-trait ServerCommon extends ScalaModule with BuildInfo {
-
-  def scalaVersion = versions.scala
-
-  override def scalacOptions = Seq("-Ywarn-unused:imports", "-deprecation", "-Xfatal-warnings", "-feature")
-
+trait ServerCommon extends DefaultScalaModule with BuildInfo {
   override def moduleDeps = Seq(common) ++ super.moduleDeps
 
   override def ivyDeps =
@@ -297,10 +293,10 @@ object node extends ServerPBCommon with CVPDockerModule {
       }
   }
 
-  object client extends ScalaModule {
+  object client extends DefaultScalaModule {
+    override def scalaVersion = node.scalaVersion
 
     override def moduleDeps = Seq(node)
-    override def scalaVersion = node.scalaVersion
 
     override def ivyDeps =
       node.ivyDeps.map { deps =>
@@ -373,10 +369,10 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule {
       super.generatedSources() ++ Seq(compileTwirl().classes)
     }
 
-  object client extends ScalaModule {
+  object client extends DefaultScalaModule {
+    override def scalaVersion = connector.scalaVersion
 
     override def moduleDeps = Seq(node, connector)
-    override def scalaVersion = node.scalaVersion
 
     override def ivyDeps =
       node.ivyDeps.map { deps =>

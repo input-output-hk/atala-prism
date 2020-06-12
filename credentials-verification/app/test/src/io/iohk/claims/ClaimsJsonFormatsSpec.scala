@@ -5,11 +5,12 @@ import java.time.{LocalDateTime, ZoneId}
 
 import io.iohk.claims.json._
 import org.scalacheck.Gen
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{Format, Json}
 
-class ClaimsJsonFormatsSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
+class ClaimsJsonFormatsSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPropertyChecks {
   val json =
     """
      |{

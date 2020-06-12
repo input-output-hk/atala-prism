@@ -10,9 +10,10 @@ import io.iohk.crypto.{SignableEncoding, TwoLineJsonEncoding}
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.dids.DIDLoader
 import org.scalatest.OptionValues._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class IssuerSpec extends WordSpec with Matchers {
+class IssuerSpec extends AnyWordSpec with Matchers {
 
   implicit val certificateEncoding: SignableEncoding[Certificate] = new TwoLineJsonEncoding[Certificate]
   implicit val dateTimeOrdering = new Ordering[LocalDateTime] {

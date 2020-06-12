@@ -5,12 +5,13 @@ import java.util.Base64
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.dids.security.Secp256k1VerificationKey2018
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
 
 import scala.util.Success
 
-class EncodingSpec extends WordSpec with Matchers {
+class EncodingSpec extends AnyWordSpec with Matchers {
 
   val expectedJson =
     """

@@ -1,11 +1,12 @@
 package io.iohk.crypto
 
 import org.scalacheck.Gen
-import org.scalatest.{Matchers, WordSpec}
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, JsValue}
 
-class TwoLineJsonEncodingSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
+class TwoLineJsonEncodingSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   implicit val mapEncoding = new TwoLineJsonEncoding[Map[String, String]]
 
@@ -57,12 +58,12 @@ class TwoLineJsonEncodingSpec extends WordSpec with Matchers with GeneratorDrive
         if (depth == 0) {
           Gen.oneOf(
             Gen.alphaStr.map(JsString.apply),
-            Gen.posNum[Float].map(n => JsNumber(BigDecimal(n)))
+            Gen.posNum[Float].map(n => JsNumber(BigDecimal.decimal(n)))
           )
         } else {
           Gen.oneOf(
             Gen.alphaStr.map(JsString.apply),
-            Gen.posNum[Float].map(n => JsNumber(BigDecimal(n))),
+            Gen.posNum[Float].map(n => JsNumber(BigDecimal.decimal(n))),
             Gen.listOf(jsonValueGen(depth - 1)).map(JsArray.apply),
             Gen.mapOf(Gen.zip(nonEmptyStrGen, jsonValueGen(depth - 1))).map(JsObject.apply)
           )
