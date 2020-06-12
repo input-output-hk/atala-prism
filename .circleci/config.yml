@@ -9,6 +9,18 @@ parameters:
     default: "inputoutput/scala-mill:2.12.10-0.6.2-0.12.24"
 
 commands:
+  halt-step-if-not-changed:
+    description: "Halts the current workflow step if none of the directories given have changed, unless the branch is mandatory"
+    parameters:
+      directories:
+        type: string
+    steps:
+      - run:
+          name: "Stop job if nothing changed"
+          command: |
+            # Halt the job if directories_changed.sh fails (i.e., detected a change). and avoid failing with "|| true"
+            (./.circleci/directories_changed.sh << parameters.directories >> && circleci-agent step halt) || true
+
   install-protoc:
     description: "Install protoc and its plugins"
     parameters:
@@ -174,6 +186,9 @@ jobs:
     steps:
       - checkout
 
+      - halt-step-if-not-changed:
+          directories: "credentials-verification"
+
       - restore_cache:
           keys:
             - cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
@@ -222,6 +237,8 @@ jobs:
       - image: circleci/node:10-browsers
     steps:
       - checkout
+      - halt-step-if-not-changed:
+          directories: "credentials-verification credentials-verification-landing"
       - install-protoc
       - run:
           name: Move to target folder then run tests
@@ -233,7 +250,8 @@ jobs:
       - image: circleci/node:10-browsers
     steps:
       - checkout
-
+      - halt-step-if-not-changed:
+          directories: "credentials-verification credentials-verification-web"
       - setup_remote_docker
       - install-protoc
       - run:
@@ -264,6 +282,8 @@ jobs:
       JVM_OPTS: -Xmx3200m
     steps:
       - checkout
+      - halt-step-if-not-changed:
+          directories: "credentials-verification-android"
       - run: yes | sdkmanager --licenses || exit 0
       - run: yes | sdkmanager --update || exit 0
       - restore_cache:
@@ -288,6 +308,9 @@ jobs:
       - image: circleci/openjdk:8-jdk-node-browsers
     steps:
       - checkout
+
+      - halt-step-if-not-changed:
+          directories: "credentials-verification credentials-verification-webextension"
 
       # Download and cache dependencies
       - restore_cache:
@@ -336,6 +359,7 @@ workflows:
           filters:
             branches:
               only:
+                # Update .circleci/directories_changed.sh if you update this list
                 - /develop.*/
                 - /test.*/
                 - /geud-test.*/
