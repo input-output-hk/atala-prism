@@ -81,26 +81,14 @@
             android:id="@+id/versionLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="@string/about_version_number"
+            android:layout_marginLeft="8dp"
             android:textAlignment="textStart"
             android:textColor="@color/black"
             android:textSize="17sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/titleLabel"
-            app:layout_constraintLeft_toRightOf="@id/titleLabel" />
-
-        <TextView
-            android:id="@+id/environmentLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="@string/about_version_server"
-            android:textAlignment="textStart"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@id/titleLabel"
-            app:layout_constraintLeft_toRightOf="@id/versionLabel" />
+            app:layout_constraintLeft_toRightOf="@id/titleLabel"
+            app:layout_constraintTop_toTopOf="@+id/titleLabel" />
 
         <View
             android:id="@+id/view2"
