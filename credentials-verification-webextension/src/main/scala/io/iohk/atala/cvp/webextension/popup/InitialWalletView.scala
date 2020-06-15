@@ -4,7 +4,9 @@ import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import org.scalajs.dom.html.{Body, Div}
 import scalatags.JsDom.all.{div, script, _}
 
-class InitialWalletView(backgroundAPI: BackgroundAPI) {
+import scala.concurrent.ExecutionContext
+
+class InitialWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
   def htmlBody: Body = {
     val containerDiv: Div = div(
       cls := "container",
@@ -44,6 +46,6 @@ class InitialWalletView(backgroundAPI: BackgroundAPI) {
   }
 }
 object InitialWalletView {
-  def apply(backgroundAPI: BackgroundAPI): InitialWalletView =
+  def apply(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext): InitialWalletView =
     new InitialWalletView(backgroundAPI)
 }

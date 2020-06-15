@@ -7,7 +7,10 @@ import org.scalajs.dom.html.{Div, Input, Label}
 import scalatags.JsDom.all.{div, _}
 import typings.std.console
 
-class RecoveryView(backgroundAPI: BackgroundAPI) {
+import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
+
+class RecoveryView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
   def recover(divElement: Div) = {
     console.info("**************************recover*****************************")
@@ -50,7 +53,7 @@ class RecoveryView(backgroundAPI: BackgroundAPI) {
             id := "recoverButton",
             cls := "div__btn",
             onclick := { () =>
-              recoverWallet(seedPhraseInput, passwordInput, password2Input, statusLabel)
+              recoverWallet(seedPhraseInput, passwordInput, password2Input, statusLabel, divElement)
             }
           )("Recover wallet")
         )
@@ -65,18 +68,28 @@ class RecoveryView(backgroundAPI: BackgroundAPI) {
       seedPhrase: Input,
       passwordInput: Input,
       password2Input: Input,
-      statusLabel: Label
+      statusLabel: Label,
+      divElement: Div
   ): Unit = {
     ValidationUtils.checkPasswordErrors(passwordInput, password2Input) match {
       case Some(errors) => statusLabel.innerHTML = errors
       case None =>
         val mnemonic = Mnemonic(seedPhrase.value)
-        backgroundAPI.recoverWallet(passwordInput.value, mnemonic)
+        backgroundAPI
+          .recoverWallet(passwordInput.value, mnemonic)
+          .flatMap { _ =>
+            MainWalletView(backgroundAPI).mainWalletScreen(divElement)
+          }
+          .onComplete {
+            case Failure(ex) =>
+              println(s"Failed recovering wallet : ${ex.getMessage}")
+              throw ex
+          }
     }
   }
 }
 
 object RecoveryView {
-  def apply(backgroundAPI: BackgroundAPI): RecoveryView =
+  def apply(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext): RecoveryView =
     new RecoveryView(backgroundAPI)
 }

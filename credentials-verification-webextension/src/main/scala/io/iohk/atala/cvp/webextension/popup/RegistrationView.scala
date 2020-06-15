@@ -10,8 +10,11 @@ import org.scalajs.dom.raw.FileReader
 import scalatags.JsDom.all.{div, label, _}
 import typings.std.console
 
+import scala.concurrent.ExecutionContext
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
-class RegistrationView(backgroundAPI: BackgroundAPI) {
+import scala.util.{Failure, Success}
+
+class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
   def registrationScreen(divElement: Div): Unit = {
     console.info("**************************organisationScreen*****************************")
@@ -82,7 +85,8 @@ class RegistrationView(backgroundAPI: BackgroundAPI) {
                 orgNameInput,
                 selectRole,
                 logoInput,
-                statusLabel
+                statusLabel,
+                divElement
               )
             }
           )("Register")
@@ -100,7 +104,8 @@ class RegistrationView(backgroundAPI: BackgroundAPI) {
       orgNameInput: Input,
       selectRole: Select,
       logoInput: Input,
-      statusLabel: Label
+      statusLabel: Label,
+      divElement: Div
   ): Unit = {
     ValidationUtils.checkPasswordErrors(passwordInput, password2Input) match {
       case Some(errors) => statusLabel.innerHTML = errors
@@ -117,29 +122,48 @@ class RegistrationView(backgroundAPI: BackgroundAPI) {
             val arrayBytes: Array[Byte] = new Array[Byte](bb.remaining())
             bb.get(arrayBytes)
 
-            backgroundAPI.createWallet(
+            backgroundAPI
+              .createWallet(
+                passwordInput.value,
+                mnemonic,
+                Role.toRole(selectRole.value),
+                orgNameInput.value,
+                arrayBytes
+              )
+              .flatMap { _ =>
+                MainWalletView(backgroundAPI).mainWalletScreen(divElement)
+              }
+              .onComplete {
+                case Failure(ex) =>
+                  println(s"Failed creating wallet : ${ex.getMessage}")
+                  throw ex
+              }
+          }
+          reader.readAsArrayBuffer(logoInput.files(0))
+
+        } else {
+          console.log("No file selected");
+          backgroundAPI
+            .createWallet(
               passwordInput.value,
               mnemonic,
               Role.toRole(selectRole.value),
               orgNameInput.value,
-              arrayBytes
+              new Array[Byte](0)
             )
-          }
-          reader.readAsArrayBuffer(logoInput.files(0))
-        } else {
-          console.log("No file selected");
-          backgroundAPI.createWallet(
-            passwordInput.value,
-            mnemonic,
-            Role.toRole(selectRole.value),
-            orgNameInput.value,
-            new Array[Byte](0)
-          )
+            .flatMap { _ =>
+              MainWalletView(backgroundAPI).mainWalletScreen(divElement)
+            }
+            .onComplete {
+              case Failure(ex) =>
+                println(s"Failed creating wallet : ${ex.getMessage}")
+                throw ex
+            }
         }
     }
   }
 }
 
 object RegistrationView {
-  def apply(backgroundAPI: BackgroundAPI) = new RegistrationView(backgroundAPI)
+  def apply(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) = new RegistrationView(backgroundAPI)
 }
