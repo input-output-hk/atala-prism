@@ -45,7 +45,7 @@ object ParsingUtils {
 
   def parseKeyId(id: ValueAtPath[String]): Either[ValidationError, String] = {
     id.parse { id =>
-      Either.cond(KEY_ID_RE.pattern.matcher(id).matches(), id, "Invalid key id")
+      Either.cond(KEY_ID_RE.pattern.matcher(id).matches(), id, s"Invalid key id: $id")
     }
   }
 

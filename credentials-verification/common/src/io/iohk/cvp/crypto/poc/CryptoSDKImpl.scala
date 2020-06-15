@@ -20,14 +20,14 @@ import scala.util.Try
  *  will be the concatenation of the two values separated with a dot "."
  */
 case class SignedCredential private (credential: Base64URL, signature: Base64URL) {
-  def canonicalForm: String = s"$credential${SignedCredential.SEPARATOR}$signature)"
+  def canonicalForm: String = s"$credential${SignedCredential.SEPARATOR}$signature"
   def bytes: Array[Byte] = canonicalForm.getBytes(StandardCharsets.UTF_8)
 }
 
 object SignedCredential {
   private val SEPARATOR = '.'
-  private def encoder: Base64.Encoder = Base64.getMimeEncoder()
-  private def decoder: Base64.Decoder = Base64.getMimeDecoder()
+  private def encoder: Base64.Encoder = Base64.getUrlEncoder()
+  private def decoder: Base64.Decoder = Base64.getUrlDecoder()
 
   def decode(sc: SignedCredential): (Array[Byte], Array[Byte]) = {
     (decoder.decode(sc.credential), decoder.decode(sc.signature))
@@ -47,10 +47,10 @@ object SignedCredential {
     }
 }
 
-trait CryptoAPI {
+trait CryptoSDK {
   // We receive a credential as Array[Byte] keeping serialization process orthogonal
   // to the cryptographic one
-  def sign(privateKey: PrivateKey, credential: Array[Byte]): SignedCredential
+  def signCredential(privateKey: PrivateKey, credential: Array[Byte]): SignedCredential
 
   // We assume that the public key is present or can be retrieved from the representation
   // of the signed bytes
@@ -60,9 +60,9 @@ trait CryptoAPI {
   def hash(signedCredential: SignedCredential): SHA256Digest
 }
 
-object CryptoAPIImpl extends CryptoAPI {
+object CryptoSDKImpl extends CryptoSDK {
 
-  override def sign(privateKey: PrivateKey, credential: Array[Byte]): SignedCredential =
+  override def signCredential(privateKey: PrivateKey, credential: Array[Byte]): SignedCredential =
     SignedCredential.from(
       credential,
       ECSignature.sign(privateKey, credential).toArray
@@ -73,6 +73,7 @@ object CryptoAPIImpl extends CryptoAPI {
     ECSignature.verify(key, cred, sig.toVector)
   }
 
-  override def hash(signedCredential: SignedCredential): SHA256Digest =
+  override def hash(signedCredential: SignedCredential): SHA256Digest = {
     SHA256Digest.compute(signedCredential.bytes)
+  }
 }

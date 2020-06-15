@@ -8,7 +8,11 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
+import io.iohk.cvp.utils.FutureEither
+import io.iohk.node.errors.NodeError
+import io.iohk.node.errors.NodeError.UnknownValueError
+import io.iohk.node.models.nodeState.CredentialState
+import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.path.{Path, ValueAtPath}
 import io.iohk.node.operations.{
   CreateDIDOperationSpec,
@@ -19,8 +23,8 @@ import io.iohk.node.operations.{
 }
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
-import io.iohk.prism.protos.node_api.GetBuildInfoRequest
+import io.iohk.node.services.{BlockProcessingServiceSpec, CredentialsService, DIDDataService, ObjectManagementService}
+import io.iohk.prism.protos.node_api.{GetBuildInfoRequest, GetCredentialStateRequest, GetCredentialStateResponse}
 import io.iohk.prism.protos.{node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -40,6 +44,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   val objectManagementService = mock[ObjectManagementService]
+  val credentialsService = mock[CredentialsService]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -53,7 +58,10 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       .directExecutor()
       .addService(
         node_api.NodeServiceGrpc
-          .bindService(new NodeServiceImpl(didDataService, objectManagementService), executionContext)
+          .bindService(
+            new NodeServiceImpl(didDataService, objectManagementService, credentialsService),
+            executionContext
+          )
       )
       .build()
       .start()
@@ -197,6 +205,74 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       // Give it enough time between build creation and test
       val buildTime = LocalDateTime.parse(buildInfo.buildTime)
       buildTime.compareTo(aMonthAgo) must be > 0
+    }
+  }
+
+  "NodeService.getCredentialState" should {
+    "fail when credentialId is not valid" in {
+      val requestWithInvalidId = GetCredentialStateRequest(credentialId = "")
+      val ex = new RuntimeException("INTERNAL: requirement failed")
+
+      val error = intercept[RuntimeException] {
+        service.getCredentialState(requestWithInvalidId)
+      }
+      error.getMessage must be(ex.getMessage)
+    }
+
+    "fail when the CredentialService reports an error" in {
+      val validCredentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
+      val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
+      val ex = new RuntimeException(s"UNKNOWN: Unknown credential_id: ${validCredentialId.id}")
+
+      val repositoryError = new FutureEither[NodeError, CredentialState](
+        Future(
+          Left(UnknownValueError("credential_id", validCredentialId.id))
+        )
+      )
+
+      doReturn(repositoryError).when(credentialsService).getCredentialState(validCredentialId)
+
+      val serviceError = intercept[RuntimeException] {
+        service.getCredentialState(requestWithValidId)
+      }
+      serviceError.getMessage must be(ex.getMessage)
+    }
+
+    "return credential state when CredentialService succeeds" in {
+      val validCredentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
+      val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
+
+      val issuerDIDSuffix = DIDSuffix(SHA256Digest.compute("testDID".getBytes()))
+      val issuedOn = TimestampInfo.dummyTime
+      val credState =
+        CredentialState(
+          contentHash = SHA256Digest.compute("content".getBytes()),
+          credentialId = validCredentialId,
+          issuerDIDSuffix = issuerDIDSuffix,
+          issuedOn = issuedOn,
+          revokedOn = None,
+          lastOperation = SHA256Digest.compute("lastOp".getBytes())
+        )
+
+      val repositoryResponse = new FutureEither[NodeError, CredentialState](
+        Future(
+          Right(credState)
+        )
+      )
+
+      val timestampInfoProto = node_api
+        .TimestampInfo()
+        .withBlockTimestamp(issuedOn.atalaBlockTimestamp.toEpochMilli)
+        .withBlockSequenceNumber(issuedOn.atalaBlockSequenceNumber)
+        .withOperationSequenceNumber(issuedOn.operationSequenceNumber)
+
+      val expectedResponse = GetCredentialStateResponse()
+        .withIssuerDID(issuerDIDSuffix.suffix)
+        .withPublicationDate(timestampInfoProto)
+
+      doReturn(repositoryResponse).when(credentialsService).getCredentialState(validCredentialId)
+
+      service.getCredentialState(requestWithValidId) must be(expectedResponse)
     }
   }
 }

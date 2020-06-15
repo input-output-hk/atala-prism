@@ -10,7 +10,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 // This test displays the way to use the CryptoAPI
 // We will show the use with
 
-class CryptoAPISpec extends WordSpec with MustMatchers {
+class CryptoSDKSpec extends WordSpec with MustMatchers {
   "CryptoAPI" should {
     "Work with a toy credential" in {
 
@@ -93,9 +93,9 @@ class CryptoAPISpec extends WordSpec with MustMatchers {
       println(s"We created a credential: $credentialToSign")
       println(s"The credential bytes are: $credentialBytes")
 
-      val api = CryptoAPIImpl
+      val api = CryptoSDKImpl
 
-      val signedCredential = api.sign(privateKey, credentialBytes)
+      val signedCredential = api.signCredential(privateKey, credentialBytes)
       println(s"We signed the credential and obtain: ${signedCredential.canonicalForm}")
 
       println(s"we now send the credential to another person")

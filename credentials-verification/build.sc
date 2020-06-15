@@ -140,7 +140,8 @@ object common extends DefaultScalaModule {
       ivy"io.monix::monix:3.0.0",
       ivy"org.bouncycastle:bcprov-jdk15on:1.62",
       ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
-      ivy"com.lihaoyi::os-lib:0.2.7"
+      ivy"com.lihaoyi::os-lib:0.2.7",
+      ivy"net.jtownson::odyssey:0.1.5"
     )
 
   object `test-util` extends DefaultScalaModule {

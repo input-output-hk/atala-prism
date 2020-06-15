@@ -13,3 +13,4 @@ result
 target/
 *.iml
 *.log
+out/

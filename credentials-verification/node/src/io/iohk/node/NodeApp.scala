@@ -11,7 +11,7 @@ import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
-import io.iohk.node.repositories.{DIDDataRepository, KeyValuesRepository}
+import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.node.services._
 import io.iohk.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
@@ -95,10 +95,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataService = new DIDDataService(new DIDDataRepository(xa))
+    val credentialsService = new CredentialsService(new CredentialsRepository(xa))
     val objectManagementService = new ObjectManagementService(storage, atalaReferenceLedger, blockProcessingService)
     objectManagementServicePromise.success(objectManagementService)
 
-    val nodeService = new NodeServiceImpl(didDataService, objectManagementService)
+    val nodeService = new NodeServiceImpl(didDataService, objectManagementService, credentialsService)
 
     logger.info("Starting server")
     import io.grpc.protobuf.services.ProtoReflectionService

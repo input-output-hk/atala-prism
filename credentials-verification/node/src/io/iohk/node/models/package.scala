@@ -30,7 +30,7 @@ package object models {
 
   object DIDSuffix {
     def apply(didSuffix: String): DIDSuffix = {
-      require(DIDSuffix.DID_SUFFIX_RE.pattern.matcher(didSuffix).matches())
+      require(DIDSuffix.DID_SUFFIX_RE.pattern.matcher(didSuffix).matches(), s"match error: $didSuffix")
 
       new DIDSuffix(didSuffix)
     }

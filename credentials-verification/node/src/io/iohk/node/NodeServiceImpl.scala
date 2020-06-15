@@ -1,20 +1,22 @@
 package io.iohk.node
 
-import java.security.PublicKey
-
-import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.cvp.BuildInfo
-import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.errors.NodeError
-import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
+import io.iohk.node.grpc.ProtoCodecs
+import io.iohk.node.models.CredentialId
 import io.iohk.node.operations._
-import io.iohk.node.services.{DIDDataService, ObjectManagementService}
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
+import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
+import io.iohk.prism.protos.node_api
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectManagementService)(implicit
+class NodeServiceImpl(
+    didDataService: DIDDataService,
+    objectManagement: ObjectManagementService,
+    credentialsService: CredentialsService
+)(implicit
     ec: ExecutionContext
 ) extends node_api.NodeServiceGrpc.NodeService {
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
@@ -22,7 +24,7 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     didDataService.findByDID(request.did).value.flatMap {
       case Left(err: NodeError) => Future.failed(err.toStatus.asRuntimeException())
       case Right(didData) =>
-        Future.successful(node_api.GetDidDocumentResponse(Some(toDIDData(didData.toDIDData))))
+        Future.successful(node_api.GetDidDocumentResponse(Some(ProtoCodecs.toDIDDataProto(didData.toDIDData))))
     }
   }
 
@@ -73,6 +75,24 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     } yield node_api.RevokeCredentialResponse()
   }
 
+  override def getCredentialState(request: GetCredentialStateRequest): Future[GetCredentialStateResponse] = {
+    val credentialIdF = Future {
+      CredentialId(request.credentialId)
+    } recover {
+      case ex: IllegalArgumentException =>
+        throw new RuntimeException(ex.getMessage)
+    }
+    for {
+      credentialId <- credentialIdF
+      credentialStateEither <- credentialsService.getCredentialState(credentialId).value
+    } yield {
+      credentialStateEither match {
+        case Left(err: NodeError) => throw err.toStatus.asRuntimeException()
+        case Right(credentialState) => ProtoCodecs.toCredentialStateResponseProto(credentialState)
+      }
+    }
+  }
+
   override def getBuildInfo(request: node_api.GetBuildInfoRequest): Future[node_api.GetBuildInfoResponse] = {
     Future
       .successful(
@@ -83,47 +103,6 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
           .withMillVersion(BuildInfo.millVersion)
           .withBuildTime(BuildInfo.buildTime)
       )
-  }
-
-  private def toDIDData(didData: models.DIDData) = {
-    node_models
-      .DIDData()
-      .withId(didData.didSuffix.suffix)
-      .withPublicKeys(
-        didData.keys.map(key => toProtoPublicKey(key.keyId, toECKeyData(key.key), toProtoKeyUsage(key.keyUsage)))
-      )
-  }
-
-  private def toProtoPublicKey(
-      id: String,
-      ecKeyData: node_models.ECKeyData,
-      keyUsage: node_models.KeyUsage
-  ): node_models.PublicKey = {
-    node_models
-      .PublicKey()
-      .withId(id)
-      .withEcKeyData(ecKeyData)
-      .withUsage(keyUsage)
-
-  }
-
-  private def toECKeyData(key: PublicKey): node_models.ECKeyData = {
-    val point = ECKeys.getECPoint(key)
-    node_models
-      .ECKeyData()
-      .withCurve(ECKeys.CURVE_NAME)
-      .withX(ByteString.copyFrom(point.getAffineX.toByteArray))
-      .withY(ByteString.copyFrom(point.getAffineY.toByteArray))
-  }
-
-  private def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {
-    keyUsage match {
-      case MasterKey => node_models.KeyUsage.MASTER_KEY
-      case IssuingKey => node_models.KeyUsage.ISSUING_KEY
-      case CommunicationKey => node_models.KeyUsage.COMMUNICATION_KEY
-      case AuthenticationKey => node_models.KeyUsage.AUTHENTICATION_KEY
-
-    }
   }
 
   protected def errorEitherToFuture[T](either: Either[ValidationError, T]): Future[T] = {
