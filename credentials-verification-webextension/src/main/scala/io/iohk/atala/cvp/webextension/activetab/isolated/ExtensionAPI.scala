@@ -72,7 +72,7 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
   /**
     * Listen to the message stream waiting for a specific message matching the given tag.
     *
-    * TODO: Instead of susbcribing on each request it may be more efficient to keep a single
+    * TODO: Instead of subscribing on each request it may be more efficient to keep a single
     *       stream for all messages.
     *
     * @param tag the tag to look for.
@@ -81,14 +81,20 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
   private def listenFor(tag: UUID): Future[Event] = {
     val promise = Promise[Event]()
     val listener = (event: dom.raw.MessageEvent) => {
-      TaggedModel
-        .decode[Event](event.data.toString)
-        .filter(_.tag == tag)
-        .foreach { result =>
-          // This listener catches events published as responses because the origin is the same
-          if (!promise.isCompleted) {
-            promise.success(result.model)
-          }
+      // To reduce security risks, let's accept messages only from the website,
+      // which is where our content-script runs
+      dom.window.location.origin
+        .filter(_ == event.origin)
+        .foreach { _ =>
+          TaggedModel
+            .decode[Event](event.data.toString)
+            .filter(_.tag == tag)
+            .foreach { result =>
+              // As the listener is de-registered asynchronously, it will catch more events until that's done.
+              if (!promise.isCompleted) {
+                promise.success(result.model)
+              }
+            }
         }
     }
 

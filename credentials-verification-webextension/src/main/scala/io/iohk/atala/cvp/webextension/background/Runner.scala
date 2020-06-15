@@ -47,40 +47,57 @@ class Runner(
     * Internally, this is done by string-based messages, which we encode as JSON.
     */
   private def processExternalMessages(): Unit = {
-    chrome.runtime.Runtime.onMessage.listen { message =>
-      message.value.foreach { any =>
-        val response = Future
-          .fromTry { Try(any.asInstanceOf[String]).flatMap(Command.decode) }
-          .map { cmd =>
-            Logger.log(s"Got command = $cmd")
-            cmd
-          }
-          .flatMap(commandProcessor.process)
-          .map(encodeCommandResponseAsRight(_))
-          .transformWith {
-            case Success(response: Json) =>
-              Logger.log(s"Responding successfully: ${response.toString}")
-              Future.successful(response)
-            case Failure(NonFatal(ex)) =>
-              Logger.log(s"Failed to process command, error = ${ex.getMessage}")
-              Future.successful {
-                implicitly[Encoder[Either[String, Nothing]]]
-                  .apply(Left(ex.getMessage))
-              }
-            case Failure(ex) =>
-              Logger.log(s"Impossible failure: ${ex.getMessage}")
-              Future.failed(ex)
-          }
-          .map(_.noSpaces)
-
-        /**
-          * NOTE: When replying on futures, the method returning an async response is the only reliable one
-          * otherwise, the sender is getting no response, a way to use the async method is to pass a response
-          * in case of failures even if that case was already handled with the CommandRejected event.
-          */
-        message.response(response, "Impossible failure")
+    // The messages are expected from:
+    // - Our extension (like the browser action icon).
+    // - Websites where our content-script was injected.
+    //
+    // Any other sender is ignored.
+    //
+    // As the extension id matches, there is no need to check the sender url as
+    // it's one of the urls where our content-script gets injected.
+    val myExtensionId = chrome.runtime.Runtime.id
+    chrome.runtime.Runtime.onMessage
+      .filter { message =>
+        // Ignore messages from anyone else
+        //
+        // NOTE: While testing with selenium, the extension id is "id", which allow us to get the test passing
+        //       without disabling the id check.
+        message.sender.id.getOrElse("id") == myExtensionId
       }
-    }
+      .listen { message =>
+        message.value.foreach { any =>
+          val response = Future
+            .fromTry { Try(any.asInstanceOf[String]).flatMap(Command.decode) }
+            .map { cmd =>
+              Logger.log(s"Got command = $cmd")
+              cmd
+            }
+            .flatMap(commandProcessor.process)
+            .map(encodeCommandResponseAsRight(_))
+            .transformWith {
+              case Success(response: Json) =>
+                Logger.log(s"Responding successfully: ${response.toString}")
+                Future.successful(response)
+              case Failure(NonFatal(ex)) =>
+                Logger.log(s"Failed to process command, error = ${ex.getMessage}")
+                Future.successful {
+                  implicitly[Encoder[Either[String, Nothing]]]
+                    .apply(Left(ex.getMessage))
+                }
+              case Failure(ex) =>
+                Logger.log(s"Impossible failure: ${ex.getMessage}")
+                Future.failed(ex)
+            }
+            .map(_.noSpaces)
+
+          /**
+            * NOTE: When replying on futures, the method returning an async response is the only reliable one
+            * otherwise, the sender is getting no response, a way to use the async method is to pass a response
+            * in case of failures even if that case was already handled with the CommandRejected event.
+            */
+          message.response(response, "Impossible failure")
+        }
+      }
   }
 }
 

@@ -111,6 +111,8 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
 
     val message = (command: Command).asJson.noSpaces
     log(s"Sending command $message")
+    // No other extension can see this message, from the official docs:
+    // - If the extensionId is omitted, the message will be sent to your own extension.
     chrome.runtime.Runtime
       .sendMessage(message = message, responseCallback = callback)
 

@@ -24,18 +24,27 @@ private[isolated] class ExternalMessageProcessor(commandProcessor: CommandProces
   }
 
   private val eventHandler = (event: dom.raw.MessageEvent) => {
-    // Anyone can use our extension right now, there is no need to validate the origin
-    // we just need to handle the message as untrusted.
-    TaggedModel.decode[Command](event.data.toString) match {
-      case Failure(_) =>
-        // There is nothing to do when we get an unknown message
-        ()
+    // We need to make sure that the event comes from the same website where this
+    // content-script is running.
+    //
+    // Otherwise, other websites/extensions would make our background context believe
+    // that the request is from this website content-script while it's not, this
+    // content-script is just a proxy to get to the background.
+    dom.window.location.origin
+      .filter(_ == event.origin)
+      .foreach { _ =>
+        TaggedModel.decode[Command](event.data.toString) match {
+          case Failure(_) =>
+            // There is nothing to do when we get an unknown message
+            ()
 
-      case Success(value) =>
-        commandProcessor
-          .process(value.model)
-          .onComplete(reply(event.origin, value.tag, _))
-    }
+          case Success(value) =>
+            commandProcessor
+              .process(value.model)
+              .onComplete(reply(event.origin, value.tag, _))
+        }
+      }
+
   }
 
   private def reply[T: Encoder](origin: String, tag: UUID, result: Try[T]): Unit = {
