@@ -58,13 +58,13 @@ object GitSupport {
   }
 }
 
-trait DefaultScalaModule extends ScalaModule {
+trait PrismScalaModule extends ScalaModule {
   def scalaVersion = versions.scala
 
   override def scalacOptions = Seq("-Ywarn-unused:imports", "-deprecation", "-Xfatal-warnings", "-feature")
 }
 
-object app extends DefaultScalaModule {
+object app extends PrismScalaModule {
   override def mainClass = Some("io.iohk.test.IssueCredential")
 
   override def moduleDeps = Seq(common) ++ super.moduleDeps
@@ -87,7 +87,7 @@ object app extends DefaultScalaModule {
   }
 }
 
-object `indy-poc` extends DefaultScalaModule {
+object `indy-poc` extends PrismScalaModule {
   override def scalaVersion = "2.12.4"
 
   override def mainClass = Some("io.iohk.indy.ExampleRunner")
@@ -127,7 +127,7 @@ object versions {
   val twirl = "1.5.0"
 }
 
-object common extends DefaultScalaModule {
+object common extends PrismScalaModule {
   override def ivyDeps =
     Agg(
       ivy"org.flywaydb:flyway-core:6.0.2",
@@ -144,7 +144,7 @@ object common extends DefaultScalaModule {
       ivy"net.jtownson::odyssey:0.1.5"
     )
 
-  object `test-util` extends DefaultScalaModule {
+  object `test-util` extends PrismScalaModule {
     override def moduleDeps = Seq(common) ++ super.moduleDeps
 
     override def ivyDeps =
@@ -181,7 +181,7 @@ object common extends DefaultScalaModule {
   * - Logback
   * - Monix
   */
-trait ServerCommon extends DefaultScalaModule with BuildInfo {
+trait ServerCommon extends PrismScalaModule with BuildInfo {
   override def moduleDeps = Seq(common) ++ super.moduleDeps
 
   override def ivyDeps =
@@ -294,7 +294,7 @@ object node extends ServerPBCommon with CVPDockerModule {
       }
   }
 
-  object client extends DefaultScalaModule {
+  object client extends PrismScalaModule {
     override def scalaVersion = node.scalaVersion
 
     override def moduleDeps = Seq(node)
@@ -370,7 +370,7 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule {
       super.generatedSources() ++ Seq(compileTwirl().classes)
     }
 
-  object client extends DefaultScalaModule {
+  object client extends PrismScalaModule {
     override def scalaVersion = connector.scalaVersion
 
     override def moduleDeps = Seq(node, connector)
