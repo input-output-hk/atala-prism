@@ -24,7 +24,7 @@ class MainWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext
     backgroundAPI.getWalletStatus().map { walletStatus =>
       statusLabel.textContent = walletStatus.status.toString
       println(s"Got wallet status: ${walletStatus.status}")
-      divElement.innerHTML = ""
+      divElement.clear()
       divElement.appendChild(mainScreen)
     }
   }

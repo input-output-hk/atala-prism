@@ -60,7 +60,7 @@ class RecoveryView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) 
       )
     }
 
-    divElement.innerHTML = ""
+    divElement.clear()
     divElement.appendChild(recover.render)
   }
 
@@ -72,7 +72,7 @@ class RecoveryView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) 
       divElement: Div
   ): Unit = {
     ValidationUtils.checkPasswordErrors(passwordInput, password2Input) match {
-      case Some(errors) => statusLabel.innerHTML = errors
+      case Some(errors) => statusLabel.textContent = errors
       case None =>
         val mnemonic = Mnemonic(seedPhrase.value)
         backgroundAPI

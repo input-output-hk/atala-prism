@@ -93,7 +93,8 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
         )
       )
     }
-    divElement.innerHTML = "" // This is the way I could make it work using scalatags onclick doesnt works
+
+    divElement.clear()
     divElement.appendChild(registration.render)
   }
 
@@ -108,9 +109,9 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
       divElement: Div
   ): Unit = {
     ValidationUtils.checkPasswordErrors(passwordInput, password2Input) match {
-      case Some(errors) => statusLabel.innerHTML = errors
+      case Some(errors) => statusLabel.textContent = errors
       case None =>
-        statusLabel.innerHTML = ""
+        statusLabel.clear()
         val mnemonic = Mnemonic(seedDiv.textContent)
 
         if (logoInput.files.length != 0) {
