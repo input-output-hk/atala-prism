@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">Atala Prism</string>
+  <string name="app_name">Atala PRISM</string>
   <string name="scan_qr">Scan QR code</string>
   <string name="connection_label">Connect to an organization to receive your credentials</string>
   <string name="connection_secondary_label">Receive, store and share your digital credentials</string>
@@ -186,7 +186,7 @@
   <string name="ok">OK</string>
   <string name="error">ERROR</string>
   <string name="server_error_message">Please try again. If the error persists contact support.</string>
-  <string name="server_share_successfully">Successfully shared!.</string>
+  <string name="server_share_successfully">Successfully shared!</string>
   <string name="select_all_credential_alert">You have to select all the credentials.</string>
 
   <string name="connection_acept_title">Would you like to connect with</string>
