@@ -13,12 +13,14 @@ import scala.concurrent.duration._
 
 class CardanoClientExample extends WordSpec {
 
-  val globalConfig = ConfigFactory.load()
+  private val globalConfig = ConfigFactory.load()
 
-  val clientConfig = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
+  private lazy val clientConfig = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
 
   "CardanoClient example" should {
-    "should be able to access db sync and wallet" in {
+    "be able to access db sync and wallet" in {
+      assume(shouldTestCardanoIntegration(), "The integration test was cancelled because it hasn't been configured")
+
       val client = CardanoClient(clientConfig.cardanoClientConfig)
       val walletId = clientConfig.walletId
       val passphrase = clientConfig.walletPassphrase
@@ -37,5 +39,14 @@ class CardanoClientExample extends WordSpec {
         .right
         .value
     }
+  }
+
+  /**
+    * Returns whether Cardano Integration tests should run because it's running in CI, or it's locally configured.
+    */
+  private def shouldTestCardanoIntegration(): Boolean = {
+    // Return true when CI="true" (environment is expected to be configured), or GEUD_NODE_CARDANO_WALLET_ID is defined
+    // (any other Cardano variable could be used, this one is arbitrary)
+    sys.env.get("CI").filter(_ == "true").orElse(sys.env.get("GEUD_NODE_CARDANO_WALLET_ID")).isDefined
   }
 }

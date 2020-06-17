@@ -10,7 +10,7 @@ import io.github.davidgregory084.TpolecatModule
 import mill._
 import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scalapblib._
-import mill.define.Sources
+import mill.define.{Sources, Target}
 import mill.modules.Assembly.Rule
 import mill.scalalib._
 import mill.twirllib._
@@ -99,6 +99,14 @@ trait PrismScalaModule extends TpolecatModule {
     }
 
   trait PrismTestsModule extends Tests {
+    // Override with T.input to avoid caching
+    // Ref: https://www.lihaoyi.com/mill/page/tasks.html#millapictxenv
+    override def forkEnv: Target[Map[String, String]] =
+      T.input {
+        // Use T.ctx.env instead of sys.env to allow running without interactive (-i) mode
+        T.ctx.env
+      }
+
     // ScalaModule.Tests does not reuse outer compile deps, so do that
     override def compileIvyDeps = PrismScalaModule.this.compileIvyDeps
   }
