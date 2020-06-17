@@ -47,6 +47,6 @@ extension UIColor {
         "appGreyLight": UIColor.appGreyLight,
         "appViolet": UIColor.appViolet,
         "appBlue": UIColor.appBlue,
-        "appPropertyGrey": UIColor.appPropertyGrey,
+        "appPropertyGrey": UIColor.appPropertyGrey
     ]
 }

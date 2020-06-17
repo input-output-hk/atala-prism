@@ -16,16 +16,17 @@ extension UIColor {
     }
 
     public func hexString(_ includeAlpha: Bool = true) -> String {
-        var r: CGFloat = 0
-        var g: CGFloat = 0
-        var b: CGFloat = 0
-        var a: CGFloat = 0
-        self.getRed(&r, green: &g, blue: &b, alpha: &a)
+        var rComp: CGFloat = 0
+        var gComp: CGFloat = 0
+        var bComp: CGFloat = 0
+        var aComp: CGFloat = 0
+        self.getRed(&rComp, green: &gComp, blue: &bComp, alpha: &aComp)
 
         if includeAlpha {
-            return String(format: "#%02X%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255), Int(a * 255))
+            return String(format: "#%02X%02X%02X%02X", Int(rComp * 255), Int(gComp * 255),
+                          Int(bComp * 255), Int(aComp * 255))
         } else {
-            return String(format: "#%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
+            return String(format: "#%02X%02X%02X", Int(rComp * 255), Int(gComp * 255), Int(bComp * 255))
         }
     }
 }

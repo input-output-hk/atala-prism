@@ -17,7 +17,8 @@ class RegisterViewController: BaseViewController, RegisterSeedViewDelegate, Swit
 
     static func openThisView(_ caller: UIViewController?) {
 
-        ViewControllerUtils.changeScreenPresented(caller: caller, storyboardName: "Register", viewControllerIdentif: "Register")
+        ViewControllerUtils.changeScreenPresented(caller: caller, storyboardName: "Register",
+                                                  viewControllerIdentif: "Register")
         caller?.navigationController?.popViewController(animated: true)
     }
 
@@ -47,15 +48,16 @@ class RegisterViewController: BaseViewController, RegisterSeedViewDelegate, Swit
         let stackRows = stack.subviews
         let elementsPerRow = CryptoUtils.SEED_COUNT / stackRows.count
         for indexColumn in 0 ..< stackRows.count {
-            let stackRow = stackRows[indexColumn] as! UIStackView
-            stackRow.arrangedSubviews.forEach { $0.removeFromSuperview() }
-            for indexRow in 0 ..< elementsPerRow {
-                let seed = RegisterSeedView()
-                let index = indexColumn * elementsPerRow + indexRow
-                let text = String(format: "register_seed_text".localize(), index + 1, " - ")
-                seed.config(delegate: self, index: index, text: text)
-                stackRow.addArrangedSubview(seed)
-                viewSeeds.append(seed)
+            if let stackRow = stackRows[indexColumn] as? UIStackView {
+                stackRow.arrangedSubviews.forEach { $0.removeFromSuperview() }
+                for indexRow in 0 ..< elementsPerRow {
+                    let seed = RegisterSeedView()
+                    let index = indexColumn * elementsPerRow + indexRow
+                    let text = String(format: "register_seed_text".localize(), index + 1, " - ")
+                    seed.config(delegate: self, index: index, text: text)
+                    stackRow.addArrangedSubview(seed)
+                    viewSeeds.append(seed)
+                }
             }
         }
     }

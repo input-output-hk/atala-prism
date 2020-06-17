@@ -13,7 +13,8 @@ class WelcomeViewController: BaseViewController {
 
     static func openThisView(_ caller: UIViewController?) {
 
-        ViewControllerUtils.changeScreenPresented(caller: caller, storyboardName: "Welcome", viewControllerIdentif: "Welcome")
+        ViewControllerUtils.changeScreenPresented(caller: caller, storyboardName: "Welcome",
+                                                  viewControllerIdentif: "Welcome")
         caller?.navigationController?.popViewController(animated: true)
     }
 
@@ -23,7 +24,9 @@ class WelcomeViewController: BaseViewController {
         super.viewDidLoad()
 
         // Setup
-        informationView.config(imageNamed: "img_black_logo", title: "welcome_title".localize(), subtitle: nil, buttonText: "welcome_button".localize(), buttonAction: actionContinue)
+        informationView.config(imageNamed: "img_black_logo", title: "welcome_title".localize(),
+                               subtitle: nil, buttonText: "welcome_button".localize(),
+                               buttonAction: actionContinue)
     }
 
     lazy var actionContinue = SelectorAction(action: { [weak self] in

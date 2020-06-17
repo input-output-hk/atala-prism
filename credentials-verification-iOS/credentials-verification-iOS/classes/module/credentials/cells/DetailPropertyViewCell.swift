@@ -11,7 +11,7 @@ class DetailPropertyViewCell: BaseTableViewCell {
     @IBOutlet weak var labelSubtitle: UILabel!
     @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var viewSeparator: UIView!
-    
+
     override class func default_NibName() -> String {
         return "DetailPropertyViewCell"
     }

@@ -1,6 +1,7 @@
 //
 
-class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, CommonViewCellPresenterDelegate, HistoryViewCellPresenterDelegate {
+class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+                        CommonViewCellPresenterDelegate, HistoryViewCellPresenterDelegate {
 
     var viewImpl: WalletViewController? {
         return view as? WalletViewController
@@ -46,7 +47,7 @@ class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDeleg
         InitialCellValue(icon: "logo_credit_card", title: "wallet_initial_row_credit_cards", action: nil),
         InitialCellValue(icon: "logo_sp_money", title: "wallet_initial_row_digital_lari", action: nil),
         InitialCellValue(icon: "logo_dollar", title: "wallet_initial_row_cash", action: nil),
-        InitialCellValue(icon: "logo_bank", title: "wallet_initial_row_wire_transfer", action: nil),
+        InitialCellValue(icon: "logo_bank", title: "wallet_initial_row_wire_transfer", action: nil)
     ]
 
     func startShowingInitial() {
@@ -151,8 +152,6 @@ class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDeleg
         return sharedMemory.loggedUser
     }
 
-    var showAsEmpty_DELETE_ME = false
-
     func fetchElements() {
 
         switch mode {
@@ -194,8 +193,10 @@ class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDeleg
             return nil
         }, success: {
             self.startListing()
-        }, error: { error in
-            self.viewImpl?.showErrorMessage(doShow: true, message: "wallet_history_retrieve_error".localize(), afterErrorAction: {
+        }, error: { _ in
+            self.viewImpl?.showErrorMessage(doShow: true,
+                                            message: "wallet_history_retrieve_error".localize(),
+                                            afterErrorAction: {
                 self.tappedBackButton()
             })
         })
@@ -228,19 +229,23 @@ class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDeleg
 
     func setup(for cell: CommonViewCell) {
 
-        let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        cell.config(title: value.title.localize(), subtitle: nil, logoData: nil, logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
+        if let value = initialRows![cell.indexPath!.row].value as? InitialCellValue {
+            cell.config(title: value.title.localize(), subtitle: nil, logoData: nil,
+                        logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
+        }
     }
 
     func tappedAction(for cell: CommonViewCell) {
 
-        let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        value.action?.action()
+        if let value = initialRows![cell.indexPath!.row].value as? InitialCellValue {
+            value.action?.action()
+        }
     }
 
     func setup(for cell: HistoryViewCell) {
 
-        let value = historyRows![cell.indexPath!.row].value as! PaymentHistory
-        cell.config(title: value.text, date: value.date, amount: value.amount, status: value.status ?? 0)
+        if let value = historyRows![cell.indexPath!.row].value as? PaymentHistory {
+            cell.config(title: value.text, date: value.date, amount: value.amount, status: value.status ?? 0)
+        }
     }
 }

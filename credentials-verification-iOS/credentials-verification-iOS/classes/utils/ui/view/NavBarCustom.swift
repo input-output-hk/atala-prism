@@ -10,7 +10,8 @@ class NavBarCustomStyle: NSObject {
     var rightIconName: String?
     var rightIconAction: SelectorAction?
 
-    init(hasNavBar: Bool, isWhite: Bool = false, title: String? = nil, hasBackButton: Bool = false, rightIconName: String? = nil, rightIconAction: SelectorAction? = nil) {
+    init(hasNavBar: Bool, isWhite: Bool = false, title: String? = nil, hasBackButton: Bool = false,
+         rightIconName: String? = nil, rightIconAction: SelectorAction? = nil) {
         self.hasNavBar = hasNavBar
         self.isWhite = isWhite
         self.title = title

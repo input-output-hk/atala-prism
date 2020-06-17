@@ -45,26 +45,27 @@ class ConnectionMaker {
 
         // Issuers
         if item.issuer.name.count > 0 {
-            let u = ConnectionBase()
-            u.did = item.issuer.did
-            u.name = item.issuer.name
-            u.logoData = item.issuer.logo
-            u.type = 0
-            return u
+            let issuer = ConnectionBase()
+            issuer.did = item.issuer.did
+            issuer.name = item.issuer.name
+            issuer.logoData = item.issuer.logo
+            issuer.type = 0
+            return issuer
         }
         // Verifiers
         if item.verifier.name.count > 0 {
-            let e = ConnectionBase()
-            e.did = item.verifier.did
-            e.name = item.verifier.name
-            e.logoData = item.verifier.logo
-            e.type = 1
-            return e
+            let verifier = ConnectionBase()
+            verifier.did = item.verifier.did
+            verifier.name = item.verifier.name
+            verifier.logoData = item.verifier.logo
+            verifier.type = 1
+            return verifier
         }
         return nil
     }
 
-    static func parseResponseList(_ responses: [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse]) -> [ConnectionBase] {
+    static func parseResponseList(_ responses: [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse])
+        -> [ConnectionBase] {
 
         var connections: [ConnectionBase] = []
 
@@ -74,7 +75,7 @@ class ConnectionMaker {
                 if let connection = ConnectionMaker.build(item) {
                     connections.append(connection)
                 }
-                
+
             }
         }
         return connections

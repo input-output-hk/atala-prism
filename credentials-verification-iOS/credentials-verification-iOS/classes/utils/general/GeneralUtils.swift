@@ -50,13 +50,15 @@ extension UIApplication {
 
         if let presented = rootVC?.presentedViewController {
             if presented.isKind(of: UINavigationController.self) {
-                let navigationController = presented as! UINavigationController
-                return navigationController.viewControllers.last!
+                if let navigationController = presented as? UINavigationController {
+                    return navigationController.viewControllers.last!
+                }
             }
 
             if presented.isKind(of: UITabBarController.self) {
-                let tabBarController = presented as! UITabBarController
-                return tabBarController.selectedViewController!
+                if let tabBarController = presented as? UITabBarController {
+                    return tabBarController.selectedViewController!
+                }
             }
 
             return app_getVisibleViewControllerInternal(presented)
@@ -78,7 +80,8 @@ extension UIView {
 
 extension UIWindow {
 
-    func replaceRootViewControllerWith(_ replacementController: UIViewController, animated: Bool, completion: (() -> Void)?) {
+    func replaceRootViewControllerWith(_ replacementController: UIViewController, animated: Bool,
+                                       completion: (() -> Void)?) {
 
         let snapshotImageView = UIImageView(image: self.snapshot())
         self.addSubview(snapshotImageView)
@@ -89,7 +92,7 @@ extension UIWindow {
             if animated {
                 UIView.animate(withDuration: 0.4, animations: { () -> Void in
                     snapshotImageView.alpha = 0
-                }, completion: { (success) -> Void in
+                }, completion: { _ -> Void in
                     snapshotImageView.removeFromSuperview()
                     completion?()
                 })

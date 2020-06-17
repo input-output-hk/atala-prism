@@ -35,11 +35,9 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
     private func updateContinueButtonState() {
 
         // Only enable button if all text fields have text
-        for fieldText in viewImpl?.getTextFieldsTexts() ?? [] {
-            if fieldText.count == 0 {
+        for fieldText in viewImpl?.getTextFieldsTexts() ?? [] where fieldText.count == 0 {
                 viewImpl?.changeButtonState(isEnabled: false)
                 return
-            }
         }
         viewImpl?.changeButtonState(isEnabled: true)
     }
@@ -111,7 +109,7 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
                 user?.apiUrl = Common.URL_API
                 user?.mnemonics = CryptoUtils.global.mnemonics
                 user?.seed = CryptoUtils.global.seed
-                user?.privateKey = CryptoUtils.global.pk?.extended()
+                user?.privateKey = CryptoUtils.global.privateKey?.extended()
             }
 
             DispatchQueue.main.async {

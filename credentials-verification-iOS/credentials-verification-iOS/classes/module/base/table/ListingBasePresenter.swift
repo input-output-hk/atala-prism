@@ -7,7 +7,8 @@ protocol ListingBaseTableUtilsPresenterDelegate: TableUtilsPresenterDelegate {
     func hasData() -> Bool
 }
 
-class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDelegate, ListingEmptyViewCellPresenterDelegate {
+class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDelegate,
+                            ListingEmptyViewCellPresenterDelegate {
 
     enum ListingBaseState: Int {
         case fetching
@@ -29,8 +30,8 @@ class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDel
     var fetchingQueue: Int = 0
     var lastError: Error?
 
-    func tableDelegate() -> ListingBaseTableUtilsPresenterDelegate {
-        return self as! ListingBaseTableUtilsPresenterDelegate
+    func tableDelegate() -> ListingBaseTableUtilsPresenterDelegate? {
+        return self as? ListingBaseTableUtilsPresenterDelegate
     }
 
     // MARK: Lifecycle
@@ -63,7 +64,7 @@ class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDel
 
         Logger.d("startFetchOrListing: Called")
         // If is ready, start listing
-        if tableDelegate().hasData() {
+        if tableDelegate()?.hasData() ?? false {
             Logger.d("startFetchOrListing: Listing")
             startListing()
             return
@@ -82,7 +83,7 @@ class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDel
     func startFetching() {
 
         state = .fetching
-        tableDelegate().fetchData()
+        tableDelegate()?.fetchData()
         updateViewToState()
     }
 
@@ -105,8 +106,8 @@ class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDel
     // Override
     func getBaseElementCount() -> Int? {
 
-        let _hasData = tableDelegate().hasData()
-        if !_hasData && state == .listing {
+        let hasData = tableDelegate()?.hasData() ?? false
+        if !hasData && state == .listing {
             return 0
         }
         if state == .fetching || state == .error {
@@ -132,7 +133,7 @@ class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDel
 
     func errorRetryTapped(for cell: ListingErrorRetryViewCell) {
 
-        tableDelegate().cleanData()
+        tableDelegate()?.cleanData()
         startFetching()
     }
 
@@ -142,7 +143,7 @@ class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDel
 
     func emptyRetryTapped(for cell: ListingEmptyViewCell) {
 
-        tableDelegate().cleanData()
+        tableDelegate()?.cleanData()
         startFetching()
     }
 }

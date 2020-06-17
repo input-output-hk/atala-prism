@@ -6,7 +6,7 @@ class Tracker {
     static let global = Tracker()
 
     // MARK: Sign-Up/Registration
-    
+
     func trackCreateAccountTapped() {
         Analytics.logEvent("create_account", parameters: nil)
     }
@@ -26,7 +26,7 @@ class Tracker {
     func trackRecoveryFail() {
         Analytics.logEvent("verify_recovery_phrase_fail", parameters: nil)
     }
-    
+
     // MARK: App security
 
     func trackSecureAppFingerprint() {
@@ -40,7 +40,7 @@ class Tracker {
     func trackSecureAppPasscode() {
         Analytics.logEvent("secure_app_fingerprint_passcode", parameters: nil)
     }
-    
+
     // MARK: Accept Connection
 
     func trackConnectionAccept() {
@@ -54,7 +54,7 @@ class Tracker {
     func trackConnectionRepeat() {
         Analytics.logEvent("repeat_connection_notification", parameters: nil)
     }
-    
+
     // MARK: Accept Credentials
 
     func trackCredentialNewConfirm() {

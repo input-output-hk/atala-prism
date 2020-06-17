@@ -9,7 +9,7 @@
 import Foundation
 
 protocol ConnectionsWorkerDelegate: class {
-    
+
     func connectionsFetched(connections: [ConnectionBase])
     func config(isLoading: Bool)
     func showErrorMessage(doShow: Bool, message: String?)
@@ -18,23 +18,23 @@ protocol ConnectionsWorkerDelegate: class {
 }
 
 class ConnectionsWorker: NSObject {
-    
+
     weak var delegate: ConnectionsWorkerDelegate?
-    
+
     var connectionRequest: ConnectionRequest?
     let sharedMemory: SharedMemory = SharedMemory.global
-    
+
     func fetchConnections() {
-        
+
         var connections: [ConnectionBase] = []
-        
+
         // Call the service
         ApiService.call(async: {
             do {
                 let user = self.sharedMemory.loggedUser
                 let responses = try ApiService.global.getConnections(userIds: user?.connectionUserIds?.valuesArray)
                 Logger.d("getConnections responsed: \(responses)")
-                
+
                 // Parse data
                 let parsedResponse = ConnectionMaker.parseResponseList(responses)
                 connections.append(contentsOf: parsedResponse)
@@ -44,21 +44,21 @@ class ConnectionsWorker: NSObject {
             return nil
         }, success: {
             self.delegate?.connectionsFetched(connections: connections)
-        }, error: { error in
+        }, error: { _ in
             self.delegate?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
-    
+
     func validateQrCode(_ str: String, connections: [ConnectionBase]) {
-        
+
         self.delegate?.config(isLoading: true)
-        
+
         // Call the service
         ApiService.call(async: {
             do {
                 let response = try ApiService.global.getConnectionTokenInfo(token: str)
                 Logger.d("getConnectionTokenInfo response: \(response)")
-                
+
                 // Parse data
                 guard let connection = ConnectionMaker.build(response.creator) else {
                     return SimpleLocalizedError("Can't parse response")
@@ -67,7 +67,7 @@ class ConnectionsWorker: NSObject {
                 conn.info = connection
                 conn.token = str
                 conn.type = connection.type
-                
+
                 self.connectionRequest = conn
             } catch {
                 return error
@@ -76,21 +76,24 @@ class ConnectionsWorker: NSObject {
         }, success: {
             let isDuplicated = connections.contains { $0.did == self.connectionRequest?.info?.did }
             self.delegate?.config(isLoading: false)
-            self.delegate?.showNewConnectMessage(type: self.connectionRequest?.type ?? 0, title: self.connectionRequest!.info?.name, logoData: self.connectionRequest?.info?.logoData, isDuplicated: isDuplicated)
-        }, error: { error in
+            self.delegate?.showNewConnectMessage(type: self.connectionRequest?.type ?? 0,
+                                                 title: self.connectionRequest!.info?.name,
+                                                 logoData: self.connectionRequest?.info?.logoData,
+                                                 isDuplicated: isDuplicated)
+        }, error: { _ in
             self.delegate?.config(isLoading: false)
             self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize())
         })
     }
-    
+
     func confirmQrCode() {
-        
+
         // 1. Get the connection payment token.
         // 2. Call the payment library.
         // 3. On library response, add new connection.
-        
+
         self.delegate?.config(isLoading: true)
-        
+
         // Call the service
         ApiService.call(async: {
             do {
@@ -107,23 +110,24 @@ class ConnectionsWorker: NSObject {
             return nil
         }, success: {
             self.delegate?.config(isLoading: false)
-            
+
             self.connectionRequest!.paymentNonce = ""
             self.sendNewConnectionToServer()
-        }, error: { error in
+        }, error: { _ in
             self.delegate?.config(isLoading: false)
             self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
         })
     }
-    
+
     func sendNewConnectionToServer() {
-        
+
         self.delegate?.config(isLoading: true)
-        
+
         // Call the service
         ApiService.call(async: {
             do {
-                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!, nonce: self.connectionRequest!.paymentNonce!)
+                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!,
+                                                                        nonce: self.connectionRequest!.paymentNonce!)
                 Logger.d("addConnectionToken response: \(response)")
                 // Save the userId
                 self.sharedMemory.loggedUser?.connectionUserIds?[response.connection.connectionID] = response.userID
@@ -135,7 +139,7 @@ class ConnectionsWorker: NSObject {
         }, success: {
             self.delegate?.config(isLoading: false)
             self.delegate?.conectionAccepted()
-        }, error: { error in
+        }, error: { _ in
             self.delegate?.config(isLoading: false)
             self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
         })

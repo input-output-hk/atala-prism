@@ -36,8 +36,11 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UITableView
 
     static func makeThisView() -> ShareDialogViewController {
         let storyboard = UIStoryboard(name: "ShareDialog", bundle: nil)
-        let viewcontroller = storyboard.instantiateViewController(withIdentifier: "ShareDialog")
-        return viewcontroller as! ShareDialogViewController
+        if let viewcontroller = storyboard.instantiateViewController(withIdentifier: "ShareDialog")
+                                as? ShareDialogViewController {
+            return viewcontroller
+        }
+        return ShareDialogViewController()
     }
 
     let presentr: Presentr = {
@@ -92,10 +95,11 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UITableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.delegate?.shareItemCount(for: self) ?? 0
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        if let cell = collectionView.dequeueReusableCell(withIdentifier: ShareDialogItemCollectionViewCell.reuseIdentifier,
+        if let cell = collectionView.dequeueReusableCell(withIdentifier:
+                                                            ShareDialogItemCollectionViewCell.reuseIdentifier,
                                                          for: indexPath) as? ShareDialogItemCollectionViewCell {
 
             let item = self.delegate?.shareItem(for: self, at: indexPath.row)
@@ -145,7 +149,8 @@ class ShareDialogItemCollectionViewCell: UITableViewCell {
         self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
         self.imageLogo.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
         self.viewTick.image = isSelected ? #imageLiteral(resourceName: "ico_share_tick") : #imageLiteral(resourceName: "ico_share_empty")
-        self.viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, borderWidth: isSelected ? 2 : 0, borderColor: UIColor.appRed.cgColor)
+        self.viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR,
+                                    borderWidth: isSelected ? 2 : 0, borderColor: UIColor.appRed.cgColor)
         self.viewBg.addShadowLayer(radius: 4)
         self.viewTick.addDropShadow()
     }

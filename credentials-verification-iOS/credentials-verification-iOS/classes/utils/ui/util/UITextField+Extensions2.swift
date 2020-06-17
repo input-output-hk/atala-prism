@@ -53,11 +53,13 @@ public extension UITextField {
     ///
     /// - Parameter color: placeholder text color.
     func setPlaceHolderTextColor(_ color: UIColor) {
-        self.attributedPlaceholder = NSAttributedString(string: self.placeholder != nil ? self.placeholder! : "", attributes: [NSAttributedString.Key.foregroundColor: color])
+        self.attributedPlaceholder = NSAttributedString(string: self.placeholder != nil ? self.placeholder! : "",
+                                                        attributes: [NSAttributedString.Key.foregroundColor: color])
     }
 
     /// Set placeholder text and its color
     func placeholder(text value: String, color: UIColor = .red) {
-        self.attributedPlaceholder = NSAttributedString(string: value, attributes: [NSAttributedString.Key.foregroundColor: color])
+        self.attributedPlaceholder = NSAttributedString(string: value,
+                                                        attributes: [NSAttributedString.Key.foregroundColor: color])
     }
 }

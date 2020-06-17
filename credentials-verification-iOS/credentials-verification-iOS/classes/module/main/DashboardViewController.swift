@@ -39,10 +39,12 @@ class DashboardViewController: BaseTabPagerViewController {
         super.viewWillAppear(animated)
 
         configTabbarDecorator()
-        NotificationCenter.default.addObserver(self, selector: #selector(onShowCredentialsScreen), name: .showCredentialsScreen, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(onShowContactsScreen), name: .showContactsScreen, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onShowCredentialsScreen),
+                                               name: .showCredentialsScreen, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onShowContactsScreen),
+                                               name: .showContactsScreen, object: nil)
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         NotificationCenter.default.removeObserver(self)
     }
@@ -77,7 +79,7 @@ class DashboardViewController: BaseTabPagerViewController {
 
         // Select the initial tab
         scrollToPage(Page.at(index: 2), animated: false)
-        
+
     }
 
     func setupBarButtons() {
@@ -110,17 +112,17 @@ class DashboardViewController: BaseTabPagerViewController {
         Logger.d("Central button tapped")
         scrollToPage(Page.at(index: 2), animated: true)
     }
-    
+
     // MARK: Change tab notifications
-    
+
     @objc func onShowCredentialsScreen() {
         scrollToPage(Page.at(index: 0), animated: true)
     }
-    
+
     @objc func onShowContactsScreen() {
         scrollToPage(Page.at(index: 1), animated: true)
     }
-    
+
     // MARK: Pager
 
     @objc func nextPage(_ sender: UIBarButtonItem) {
@@ -139,8 +141,8 @@ class DashboardViewController: BaseTabPagerViewController {
 
     func makeAllChildViewControllers() -> [UIViewController] {
         var viewControllers = [UIViewController]()
-        for i in 0 ..< viewControllersIdentifiers.count {
-            viewControllers.append(makeChildViewController(index: i))
+        for pos in 0 ..< viewControllersIdentifiers.count {
+            viewControllers.append(makeChildViewController(index: pos))
         }
         return viewControllers
     }
@@ -151,7 +153,8 @@ class DashboardViewController: BaseTabPagerViewController {
     }
 
     @discardableResult
-    override func scrollToPage(_ page: PageboyViewController.Page, animated: Bool, completion: PageboyViewController.PageScrollCompletion? = nil) -> Bool {
+    override func scrollToPage(_ page: PageboyViewController.Page, animated: Bool,
+                               completion: PageboyViewController.PageScrollCompletion? = nil) -> Bool {
         let result = super.scrollToPage(page, animated: animated)
 
         // Check if is the central button

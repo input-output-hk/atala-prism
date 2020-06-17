@@ -21,7 +21,8 @@ extension UIImage {
         }
     }
 
-    static func applyUrlImage(url: String?, imageView: UIImageView, isCircular: Bool = false, placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
+    static func applyUrlImage(url: String?, imageView: UIImageView, isCircular: Bool = false,
+                              placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
 
         // Apply the placeholder
         if placeholderNamed != nil {
@@ -46,7 +47,8 @@ extension UIImage {
         }
     }
 
-    static func applyDataImage(data: Data?, imageView: UIImageView, isCircular: Bool = false, placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
+    static func applyDataImage(data: Data?, imageView: UIImageView, isCircular: Bool = false,
+                               placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
 
         // Apply the placeholder
         if placeholderNamed != nil {
@@ -74,11 +76,15 @@ extension UIImage {
 
 extension UIImageView {
 
-    func applyUrlImage(url: String?, isCircular: Bool = false, placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
-        UIImage.applyUrlImage(url: url, imageView: self, isCircular: isCircular, placeholderNamed: placeholderNamed, callback: callback)
+    func applyUrlImage(url: String?, isCircular: Bool = false, placeholderNamed: String? = nil,
+                       callback: ((Image) -> Void)? = nil) {
+        UIImage.applyUrlImage(url: url, imageView: self, isCircular: isCircular,
+                              placeholderNamed: placeholderNamed, callback: callback)
     }
 
-    func applyDataImage(data: Data?, isCircular: Bool = false, placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
-        UIImage.applyDataImage(data: data, imageView: self, isCircular: isCircular, placeholderNamed: placeholderNamed, callback: callback)
+    func applyDataImage(data: Data?, isCircular: Bool = false, placeholderNamed: String? = nil,
+                        callback: ((Image) -> Void)? = nil) {
+        UIImage.applyDataImage(data: data, imageView: self, isCircular: isCircular,
+                               placeholderNamed: placeholderNamed, callback: callback)
     }
 }

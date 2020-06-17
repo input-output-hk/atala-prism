@@ -6,11 +6,15 @@
 //  Copyright © 2020 iohk. All rights reserved.
 //
 
-
 import SwiftGRPC
 import SwiftProtobuf
 
-class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate, NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate, DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate, DetailPropertyViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate, ConnectionsWorkerDelegate {
+class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+                                NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
+                                NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate,
+                                DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate,
+                                DetailPropertyViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate,
+                                ConnectionsWorkerDelegate {
 
     var viewImpl: NotificationsViewController? {
         return view as? NotificationsViewController
@@ -49,12 +53,12 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     var detailRows: [CellRow]?
 
     var detailDegree: Degree?
-    
+
     var connectionsWorker = ConnectionsWorker()
     var stateSpecial: ConnectionsSpecialState = .none
-    
+
     var connections: [ConnectionBase] = []
-    
+
     override init() {
         super.init()
         connectionsWorker.delegate = self
@@ -90,21 +94,43 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         detailRows?.append(CellRow(type: .detailHeader, value: degree))
         switch degree.type {
         case .univerityDegree:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_degree_name".localize(), degree.credentialSubject?.degreeAwarded, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_award".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_issuance_date".localize(), degree.issuanceDate, true,  degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_full_name".localize(),
+                                               degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_degree_name".localize(),
+                                               degree.credentialSubject?.degreeAwarded, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_award".localize(),
+                                               degree.credentialSubject?.degreeResult, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_issuance_date".localize(),
+                                               degree.issuanceDate, true, degree.type)))
         case .governmentIssuedId:
             detailRows?.append(CellRow(type: .document, value: degree))
         case .certificatOfInsurance:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_class_insurance".localize(), degree.productClass, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_number".localize(), degree.policyNumber, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_end_date".localize(), degree.expiryDate, true,  degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_full_name".localize(),
+                                               degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_employment_class_insurance".localize(),
+                                               degree.productClass, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_employment_policy_number".localize(),
+                                               degree.policyNumber, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_employment_policy_end_date".localize(),
+                                               degree.expiryDate, true, degree.type)))
         case .proofOfEmployment:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employee_name".localize(), degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_status".localize(), degree.employmentStatus, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_start_date".localize(), degree.issuanceDate, true,  degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_employee_name".localize(),
+                                               degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_employment_status".localize(),
+                                               degree.employmentStatus, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty,
+                                       value: ("credentials_detail_employment_start_date".localize(),
+                                               degree.issuanceDate, true, degree.type)))
         default:
             print("Unrecognized type")
         }
@@ -122,7 +148,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     @discardableResult
     func tappedBackButton() -> Bool {
-        
+
         if isScanningQr() {
             stopQrScanning()
             return true
@@ -215,7 +241,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     func fetchElements() {
         self.connectionsWorker.fetchConnections()
     }
-    
+
     func fetchCredentials() {
 
         guard let user = self.sharedMemory.loggedUser else {
@@ -237,7 +263,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                         if !isRejected && isNew {
                             if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
                                 if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential, messageId: message.id, isNew: isNew) {
+                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential,
+                                                                     messageId: message.id, isNew: isNew) {
                                         credentials.append(credential)
                                     }
                                 }
@@ -254,7 +281,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             return nil
         }, success: {
             self.startListing()
-        }, error: { error in
+        }, error: { _ in
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
@@ -285,7 +312,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func setup(for cell: NewDegreeViewCell) {
 
-        guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
+        guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
+            let degree = cellRow.value as? Degree else {
             return
         }
 
@@ -317,17 +345,19 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             print("Unrecognized type")
         }
 
-        cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil, logoPlaceholderNamed: placeholder, isLast: isLast)
+        cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil,
+                    logoPlaceholderNamed: placeholder, isLast: isLast)
     }
 
     func tappedAction(for cell: NewDegreeViewCell) {
 
-        guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
+        guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
+            let degree = cellRow.value as? Degree else {
             return
         }
         startShowingDetails(degree: degree)
     }
-    
+
     func didSelectRowAt(indexPath: IndexPath) {
         if mode == .degrees {
             let rowIndex = indexPath.row
@@ -364,8 +394,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil, logoPlaceholderNamed: placeholder)
         }
         // Config for an Id
-        else if let _ = cellRow?.value as? LoggedUser {
-            cell.config(title: "credentials_document_title".localize(), subtitle: nil, logoData: nil, logoPlaceholderNamed: "ico_placeholder_credential")
+        else if cellRow?.value is LoggedUser {
+            cell.config(title: "credentials_document_title".localize(), subtitle: nil,
+                        logoData: nil, logoPlaceholderNamed: "ico_placeholder_credential")
         }
     }
 
@@ -377,7 +408,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             startShowingDetails(degree: degree)
         }
         // Config for an Id
-        else if let _ = cellRow?.value as? LoggedUser {
+        else if cellRow?.value is LoggedUser {
             startShowingDocument()
         }
     }
@@ -389,29 +420,42 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     func setup(for cell: DocumentViewCell) {
         cell.config(degree: detailDegree, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
     }
-    
+
     func setup(for cell: DetailHeaderViewCell) {
         switch detailDegree?.type {
         case .univerityDegree:
-            cell.config(title: "credentials_detail_university_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_university_name".localize(),
+                        subtitle: detailDegree?.issuer?.name,
+                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
+                        type: detailDegree?.type)
         case .governmentIssuedId:
-            cell.config(title: "credentials_detail_national_id_card".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_national_id_card".localize(),
+                        subtitle: detailDegree?.issuer?.name,
+                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
+                        type: detailDegree?.type)
         case .certificatOfInsurance:
-            cell.config(title: "credentials_detail_provider_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_provider_name".localize(),
+                        subtitle: detailDegree?.issuer?.name,
+                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
+                        type: detailDegree?.type)
         case .proofOfEmployment:
-            cell.config(title: "credentials_detail_company_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_company_name".localize(),
+                        subtitle: detailDegree?.issuer?.name,
+                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
+                        type: detailDegree?.type)
         default:
             print("Unrecognized type")
         }
-        
+
     }
 
     func setup(for cell: DetailPropertyViewCell) {
         let detailRow = detailRows![cell.indexPath!.row]
-        let pair = detailRow.value as! (String?, String?, Bool?, CredentialType?)
-        cell.config(title: pair.0, subtitle: pair.1, isLast: pair.2, type: pair.3)
+        if let pair = detailRow.value as? (String?, String?, Bool?, CredentialType?) {
+            cell.config(title: pair.0, subtitle: pair.1, isLast: pair.2, type: pair.3)
+        }
     }
-    
+
     func setup(for cell: DetailFooterViewCell) {
         cell.config(isNew: false, type: detailDegree?.type)
     }
@@ -445,38 +489,38 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         Tracker.global.trackConnectionDecline()
     }
 
-    func tappedConfirmAction(for vc: ConnectionConfirmViewController) {
-        if vc.isDuplicated {
+    func tappedConfirmAction(for viewController: ConnectionConfirmViewController) {
+        if viewController.isDuplicated {
             Tracker.global.trackConnectionRepeat()
         } else {
             Tracker.global.trackConnectionAccept()
         }
         self.connectionsWorker.confirmQrCode()
     }
-    
+
     // MARK: ConnectionsWorkerDelegate
-    
+
     func connectionsFetched(connections: [ConnectionBase]) {
         self.connections.removeAll()
         self.connections.append(connections)
         fetchCredentials()
     }
-    
+
     func config(isLoading: Bool) {
          self.viewImpl?.config(isLoading: isLoading)
     }
-    
+
     func showErrorMessage(doShow: Bool, message: String?) {
         self.viewImpl?.showErrorMessage(doShow: doShow, message: message)
     }
-    
+
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?, isDuplicated: Bool) {
         self.viewImpl?.onBackPressed()
         self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData, isDuplicated: isDuplicated)
     }
-    
+
     func conectionAccepted() {
         NotificationCenter.default.post(name: .showContactsScreen, object: nil)
     }
-    
+
 }

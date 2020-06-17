@@ -56,15 +56,18 @@ extension UIViewController {
         // If there is a main scrollview, move the content
         if let scrollView = getScrollableMainView() {
             let userInfo = notification.userInfo!
-            var keyboardFrame: CGRect = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
-            keyboardFrame = self.view.convert(keyboardFrame, from: nil)
+            if let frame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+                var keyboardFrame: CGRect = (frame).cgRectValue
+                keyboardFrame = self.view.convert(keyboardFrame, from: nil)
 
-            var contentInset: UIEdgeInsets = scrollView.contentInset
-            contentInset.bottom = keyboardFrame.size.height
-            scrollView.contentInset = contentInset
+                var contentInset: UIEdgeInsets = scrollView.contentInset
+                contentInset.bottom = keyboardFrame.size.height
+                scrollView.contentInset = contentInset
+            }
         }
         // Otherwise, if there is no scrollview but there is a keyboardsize available, shift the whole view
-        else if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+        else if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey]
+                        as? NSValue)?.cgRectValue {
             if self.view.frame.origin.y == 0 {
                 self.view.frame.origin.y -= keyboardSize.height - 70
             }
@@ -110,7 +113,8 @@ extension UIViewController: BaseView {
     }
 
     func showErrorMessage(doShow: Bool, message: String?, afterErrorAction: (() -> Void)? = nil) {
-        ViewUtils.showErrorMessage(doShow: doShow, view: self, title: nil, message: message, afterErrorAction: afterErrorAction)
+        ViewUtils.showErrorMessage(doShow: doShow, view: self, title: nil, message: message,
+                                   afterErrorAction: afterErrorAction)
     }
 
     func showSuccessMessage(doShow: Bool, message: String?, title: String? = nil, actions: [UIAlertAction]? = nil) {

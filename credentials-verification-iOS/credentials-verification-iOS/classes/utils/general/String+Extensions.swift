@@ -14,18 +14,21 @@ extension String {
         do {
             let localizedStr: String = self.localize()
 
-            let modifiedFont = NSString(format: "<span style=\"font-family: '-apple-system', '.SFUIText'; font-size: \(pointSize)\">%@</span>" as NSString, localizedStr) as String
+            let modifiedFont = NSString(format:
+                "<span style=\"font-family: '-apple-system', '.SFUIText'; font-size: \(pointSize)\">%@</span>"
+                    as NSString, localizedStr) as String
 
             let attrStr = try NSMutableAttributedString(
                 data: modifiedFont.data(using: String.Encoding.unicode, allowLossyConversion: true)!,
-                options: [NSAttributedString.DocumentReadingOptionKey.documentType: NSAttributedString.DocumentType.html],
+                options: [NSAttributedString.DocumentReadingOptionKey.documentType:
+                    NSAttributedString.DocumentType.html],
                 documentAttributes: nil
             )
 
             let style = NSMutableParagraphStyle()
             style.alignment = alignment
             attrStr.addAttributes([NSAttributedString.Key.paragraphStyle: style],
-                                  range: NSMakeRange(0, attrStr.length))
+                                  range: NSRange(location: 0, length: attrStr.length))
 
             return attrStr
         } catch _ {}
@@ -72,16 +75,16 @@ extension String {
         return String(self.suffix(from: fromIndex))
     }
 
-    func substring(to: Int) -> String {
+    func substring(toPos: Int) -> String {
 
-        let toIndex = index(from: to)
+        let toIndex = index(from: toPos)
         return String(self[..<toIndex])
     }
 
-    func substring(with r: Range<Int>) -> String {
+    func substring(with range: Range<Int>) -> String {
 
-        let startIndex = index(from: r.lowerBound)
-        let endIndex = index(from: r.upperBound)
+        let startIndex = index(from: range.lowerBound)
+        let endIndex = index(from: range.upperBound)
         return String(self[startIndex ..< endIndex])
     }
 
@@ -101,7 +104,7 @@ extension String {
     }
 
     static func isEmpty(_ target: String?) -> Bool {
-        return target == nil || target == ""
+        return target == nil || target!.isEmpty
     }
 
     func trim() -> String {
@@ -113,11 +116,12 @@ extension String {
         if self.count <= maxCount {
             return self
         }
-        let temp = self.substring(to: maxCount)
+        let temp = self.substring(toPos: maxCount)
         return "\(temp)…"
     }
 
-    func attributedStringWithColor(_ strings: [String], color: UIColor, characterSpacing: UInt? = nil) -> NSAttributedString {
+    func attributedStringWithColor(_ strings: [String], color: UIColor,
+                                   characterSpacing: UInt? = nil) -> NSAttributedString {
         let attributedString = NSMutableAttributedString(string: self)
         for string in strings {
             let range = (self as NSString).range(of: string)
@@ -126,7 +130,8 @@ extension String {
 
         guard let characterSpacing = characterSpacing else { return attributedString }
 
-        attributedString.addAttribute(NSAttributedString.Key.kern, value: characterSpacing, range: NSRange(location: 0, length: attributedString.length))
+        attributedString.addAttribute(NSAttributedString.Key.kern, value: characterSpacing,
+                                      range: NSRange(location: 0, length: attributedString.length))
 
         return attributedString
     }

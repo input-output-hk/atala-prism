@@ -30,8 +30,8 @@ extension Array {
 
         removeAll(keepingCapacity: true)
 
-        anotherSelf.each { (index: Int, current: Element) in
-            if (current as! T) !== element {
+        anotherSelf.each { (_ index: Int, current: Element) in
+            if let currentT = current as? T, currentT !== element {
                 self.append(current)
             }
         }
@@ -75,10 +75,8 @@ extension Array where Element: Equatable {
     /// - Returns: an array with all indexes of the given item.
     public func indexes(of item: Element) -> [Int] {
         var indexes: [Int] = []
-        for index in 0 ..< self.count {
-            if self[index] == item {
-                indexes.append(index)
-            }
+        for index in 0 ..< self.count where self[index] == item {
+            indexes.append(index)
         }
         return indexes
     }

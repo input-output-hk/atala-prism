@@ -49,7 +49,8 @@ class SettingsViewController: ListingBaseViewController {
         }
 
         // Navigation bar
-        navBar = NavBarCustomStyle(hasNavBar: true, isWhite: false, title: navTitle, hasBackButton: settingsMode != .initial)
+        navBar = NavBarCustomStyle(hasNavBar: true, isWhite: false, title: navTitle,
+                                   hasBackButton: settingsMode != .initial)
         NavBarCustom.config(view: self)
         // Special background
         viewBgSpecial.isHidden = !hasBgSpecial
@@ -98,14 +99,14 @@ class SettingsViewController: ListingBaseViewController {
         params.append(urlStr)
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "BrowserSegue", params: params)
     }
-    
+
     func changeScreenToAbout() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "AboutSegue", params: nil)
-        
+
     }
-    
+
     func changeScreenToSecurity() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "SecuritySegue", params: nil)
-        
+
     }
 }

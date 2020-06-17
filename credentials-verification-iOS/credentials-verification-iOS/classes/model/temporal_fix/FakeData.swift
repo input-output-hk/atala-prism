@@ -23,7 +23,9 @@ class FakeData {
         loggedUser.email = "mauro@mauro.com"
         loggedUser.firstName = "Mauro"
         loggedUser.lastName = "Carreño"
-        loggedUser.connectionUserIds = ["af3dccfa-6505-44cb-a24e-4a64ca2e564e": "320f42d9-1ffe-4ddf-b630-72e679cf4731", "fcd5959e-d904-4dc5-85bb-5130f9b565cd": "870543ae-e0d5-4d33-92a9-4654003819e3", "8421a54a-a2b9-43f3-b70b-b2a300e58ec6": "ca4293a3-80bb-4d85-a7a7-fe3df67da7e1"]
+        loggedUser.connectionUserIds = ["af3dccfa-6505-44cb-a24e-4a64ca2e564e": "320f42d9-1ffe-4ddf-b630-72e679cf4731",
+                                        "fcd5959e-d904-4dc5-85bb-5130f9b565cd": "870543ae-e0d5-4d33-92a9-4654003819e3",
+                                        "8421a54a-a2b9-43f3-b70b-b2a300e58ec6": "ca4293a3-80bb-4d85-a7a7-fe3df67da7e1"]
         loggedUser.countryFullName = "Republic of Georgia"
         loggedUser.countryShortName = "Georgia"
         loggedUser.nationalityName = "Georgian"
@@ -37,11 +39,11 @@ class FakeData {
 
         var list: [ConnectionBase] = []
 
-        let u1 = ConnectionBase()
-        u1.connectionId = "111"
-        u1.name = "Business and Techonoly University"
-        u1.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
-        list.append(u1)
+        let uni1 = ConnectionBase()
+        uni1.connectionId = "111"
+        uni1.name = "Business and Techonoly University"
+        uni1.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
+        list.append(uni1)
 
         return list
     }
@@ -50,35 +52,35 @@ class FakeData {
 
         var list: [ConnectionBase] = []
 
-        let e1 = ConnectionBase()
-        e1.connectionId = "1"
-        e1.name = "HR.GE"
-        e1.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
-        list.append(e1)
+        let element1 = ConnectionBase()
+        element1.connectionId = "1"
+        element1.name = "HR.GE"
+        element1.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
+        list.append(element1)
 
-        let e2 = ConnectionBase()
-        e2.connectionId = "2"
-        e2.name = "ABC Bank"
-        e2.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
-        list.append(e2)
+        let element2 = ConnectionBase()
+        element2.connectionId = "2"
+        element2.name = "ABC Bank"
+        element2.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
+        list.append(element2)
 
-        let e3 = ConnectionBase()
-        e3.connectionId = "3"
-        e3.name = "Important Employer"
-        e3.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
-        list.append(e3)
+        let element3 = ConnectionBase()
+        element3.connectionId = "3"
+        element3.name = "Important Employer"
+        element3.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
+        list.append(element3)
 
-        let e4 = ConnectionBase()
-        e4.connectionId = "4"
-        e4.name = "Citi Bank"
-        e4.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
-        list.append(e4)
+        let element4 = ConnectionBase()
+        element4.connectionId = "4"
+        element4.name = "Citi Bank"
+        element4.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
+        list.append(element4)
 
-        let e5 = ConnectionBase()
-        e5.connectionId = "5"
-        e5.name = "Citi Bank 2"
-        e5.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
-        list.append(e5)
+        let element5 = ConnectionBase()
+        element5.connectionId = "5"
+        element5.name = "Citi Bank 2"
+        element5.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
+        list.append(element5)
 
         return list
     }
@@ -127,40 +129,27 @@ class FakeData {
 
         var list: [PaymentHistory] = []
 
-        let e1 = PaymentHistory()
-        e1.status = 0
-        e1.text = "Credential Issuance Free University Tblisi"
-        e1.date = "27 Aug 2019"
-        e1.amount = "10"
-        list.append(e1)
+        let element1 = PaymentHistory()
+        element1.status = 0
+        element1.text = "Credential Issuance Free University Tblisi"
+        element1.date = "27 Aug 2019"
+        element1.amount = "10"
+        list.append(element1)
 
-        let e2 = PaymentHistory()
-        e2.status = 1
-        e2.text = "Credential Issuance Business and Technical University (BTU)"
-        e2.date = "27 Aug 2019"
-        e2.amount = "8"
-        list.append(e2)
+        let element2 = PaymentHistory()
+        element2.status = 1
+        element2.text = "Credential Issuance Business and Technical University (BTU)"
+        element2.date = "27 Aug 2019"
+        element2.amount = "8"
+        list.append(element2)
 
-        let e3 = PaymentHistory()
-        e3.status = 0
-        e3.text = "Credential Verification HR.GE"
-        e3.date = "27 Aug 2019"
-        e3.amount = "10"
-        list.append(e3)
+        let element3 = PaymentHistory()
+        element3.status = 0
+        element3.text = "Credential Verification HR.GE"
+        element3.date = "27 Aug 2019"
+        element3.amount = "10"
+        list.append(element3)
 
         return list
     }
-    
-    static func fakeProofOfEmployment() -> Degree {
-        let credential = Mapper<Degree>().map(JSONString:  "\n{\n  \"id\": \"tAZFcqDNVVV_D4Y_FwpqXw==\",\n  \"type\": [\"VerifiableCredential\", \"RedlandIdCredential\"],\n  \"issuer\": {\n    \"id\": \"did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff\",\n    \"name\": \"Department of Interior, Republic of Redland\"\n  },\n  \"issuanceDate\": \"2020-03-02\",\n  \"expiryDate\": \"2030-03-02\",\n  \"credentialSubject\": {\n    \"id\": \"unknown\",\n    \"name\": \"Leandro \",\n    \"dateOfBirth\": \"2004-02-19\"\n  }\n}\n")
-        credential?.type = .proofOfEmployment
-        return credential!;
-    }
-    
-    static func fakeCertificatOfInsurance() -> Degree {
-        let credential = Mapper<Degree>().map(JSONString:  "\n{\n  \"id\": \"tAZFcqDNVVV_D4Y_FwpqXw==\",\n  \"type\": [\"VerifiableCredential\", \"RedlandIdCredential\"],\n  \"issuer\": {\n    \"id\": \"did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff\",\n    \"name\": \"Department of Interior, Republic of Redland\"\n  },\n  \"issuanceDate\": \"2020-03-02\",\n  \"expiryDate\": \"2030-03-02\",\n  \"credentialSubject\": {\n    \"id\": \"unknown\",\n    \"name\": \"Leandro \",\n    \"dateOfBirth\": \"2004-02-19\"\n  }\n}\n")
-        credential?.type = .certificatOfInsurance
-        return credential!;
-    }
-
 }

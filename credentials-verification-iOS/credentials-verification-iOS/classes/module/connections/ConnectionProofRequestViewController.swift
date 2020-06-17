@@ -25,7 +25,7 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
     @IBOutlet weak var viewBg: UIView!
     @IBOutlet weak var tableCredentials: UITableView!
     @IBOutlet weak var tableHeightCtrt: NSLayoutConstraint!
-    
+
     weak var delegate: ConnectionProofRequestPresenterDelegate?
     var connection: ConnectionBase?
     var credentials: [Degree] = []
@@ -38,14 +38,18 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
         // Do any additional setup after loading the view.
 
         viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
-        buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
+        buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3,
+                                      borderColor: UIColor.appRed.cgColor)
         buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
     }
 
     static func makeThisView() -> ConnectionProofRequestViewController {
         let storyboard = UIStoryboard(name: "ConnectionProofRequest", bundle: nil)
-        let viewcontroller = storyboard.instantiateViewController(withIdentifier: "ConnectionProofRequest")
-        return viewcontroller as! ConnectionProofRequestViewController
+        if let viewcontroller = storyboard.instantiateViewController(withIdentifier: "ConnectionProofRequest")
+                                as? ConnectionProofRequestViewController {
+            return viewcontroller
+        }
+        return ConnectionProofRequestViewController()
     }
 
     let presentr: Presentr = {
@@ -65,7 +69,8 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
         return presenter
     }()
 
-    func config(delegate: ConnectionProofRequestPresenterDelegate?, connection: ConnectionBase, credentials: [Degree], requiered: [String], logoData: Data?, placeholderNamed: String?) {
+    func config(delegate: ConnectionProofRequestPresenterDelegate?, connection: ConnectionBase,
+                credentials: [Degree], requiered: [String], logoData: Data?, placeholderNamed: String?) {
 
         self.delegate = delegate
         self.credentials = credentials
@@ -100,28 +105,29 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
         self.delegate?.tappedDeclineAction(for: self)
         return false
     }
-    
+
 }
 
 extension ConnectionProofRequestViewController: UITableViewDataSource, ConnectionProofRequestCellPresenterDelegate {
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return credentials.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ConnectionProofRequestCell") as? ConnectionProofRequestCell else  {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ConnectionProofRequestCell")
+            as? ConnectionProofRequestCell else {
             return UITableViewCell()
         }
         cell.config(credential: credentials[indexPath.row])
         cell.delegate = self
         return cell
     }
-    
+
     func setup(for cell: ConnectionProofRequestCell) {
-        
+
     }
-    
+
     func tappedAction(for cell: ConnectionProofRequestCell) {
         if cell.checkbox.getState() {
             selectedCredentials.append(cell.credential)
@@ -134,9 +140,9 @@ extension ConnectionProofRequestViewController: UITableViewDataSource, Connectio
                 $0.type?.rawValue == type
             }
         }
-        
+
         buttonConfirm.isEnabled = isComplete
         buttonConfirm.backgroundColor = isComplete ? .appRed : .appGreyMid
     }
-    
+
 }

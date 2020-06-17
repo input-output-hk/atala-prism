@@ -29,7 +29,7 @@ class CredentialsViewController: ListingBaseViewController {
         super.viewWillAppear(animated)
         self.presenterImpl.actionPullToRefresh()
     }
-    
+
     @discardableResult
     override func onBackPressed() -> Bool {
         if !presenterImpl.tappedBackButton() {
@@ -42,7 +42,8 @@ class CredentialsViewController: ListingBaseViewController {
 
     func setupEmptyView() {
 
-        viewEmpty.config(imageNamed: "img_notifications_tray", title: "connections_empty_title".localize(), subtitle: "connections_empty_subtitle".localize(), buttonText: nil, buttonAction: nil)
+        viewEmpty.config(imageNamed: "img_notifications_tray", title: "connections_empty_title".localize(),
+                         subtitle: "connections_empty_subtitle".localize(), buttonText: nil, buttonAction: nil)
     }
 
     override func config(mode: ListingBasePresenter.ListingBaseState) {
@@ -55,7 +56,9 @@ class CredentialsViewController: ListingBaseViewController {
         viewTable.isHidden = isEmpty
 
         // Change the nav bar
-        var navTitle = credentialsMode == .degrees ? "credentials_nav_title".localize() : "credentials_document_title".localize()
+        var navTitle = credentialsMode == .degrees
+            ? "credentials_nav_title".localize()
+            : "credentials_document_title".localize()
         var navAction: SelectorAction?
         var navActionIcon: String?
         if credentialsMode == .detail {
@@ -80,7 +83,9 @@ class CredentialsViewController: ListingBaseViewController {
             }
 
         }
-        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: credentialsMode != .degrees, rightIconName: navActionIcon, rightIconAction: navAction)
+        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
+                                   hasBackButton: credentialsMode != .degrees, rightIconName: navActionIcon,
+                                   rightIconAction: navAction)
         NavBarCustom.config(view: self)
     }
 
@@ -156,7 +161,8 @@ class CredentialsViewController: ListingBaseViewController {
     func showShareDialog() {
 
         if !shareDialogViewController.isBeingPresented {
-            customPresentViewController(shareDialogViewController.presentr, viewController: shareDialogViewController, animated: true)
+            customPresentViewController(shareDialogViewController.presentr,
+                                        viewController: shareDialogViewController, animated: true)
         }
         shareDialogViewController.config(delegate: presenterImpl, parentVc: self)
         configShareDialog(enableButton: false)

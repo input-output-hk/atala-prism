@@ -20,7 +20,8 @@ class SuccessViewController: BaseViewController {
         super.viewDidLoad()
 
         // Setup
-        informationView.config(imageNamed: "img_success", title: titleText, subtitle: subtitleText, buttonText: buttonText, buttonAction: buttonAction)
+        informationView.config(imageNamed: "img_success", title: titleText, subtitle: subtitleText,
+                               buttonText: buttonText, buttonAction: buttonAction)
     }
 }
 
@@ -34,7 +35,8 @@ extension SuccessViewController: SegueableScreen {
         buttonAction = params?[3] as? SelectorAction
     }
 
-    static func makeSeguedParams(title: String?, subtitle: String?, buttonText: String?, buttonAction: SelectorAction?) -> [Any?]? {
+    static func makeSeguedParams(title: String?, subtitle: String?, buttonText: String?,
+                                 buttonAction: SelectorAction?) -> [Any?]? {
 
         var params: [Any?] = []
         params.append(title)

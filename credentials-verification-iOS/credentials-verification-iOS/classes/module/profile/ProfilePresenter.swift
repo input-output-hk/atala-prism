@@ -1,6 +1,8 @@
 //
 
-class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, ProfileViewCellPresenterDelegate, TabsViewCellPresenterDelegate, FieldViewCellPresenterDelegate {
+class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+                        ProfileViewCellPresenterDelegate, TabsViewCellPresenterDelegate,
+                        FieldViewCellPresenterDelegate {
 
     var viewImpl: ProfileViewController? {
         return view as? ProfileViewController
@@ -45,7 +47,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         CellRow(type: .field, value: (0, true)),
         CellRow(type: .field, value: (1, true)),
         CellRow(type: .field, value: (2, false)),
-        CellRow(type: .footer, value: nil),
+        CellRow(type: .footer, value: nil)
     ]
 
     func startShowingInitial() {
@@ -216,7 +218,8 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         default:
             break
         }
-        cell.config(title: fieldTitle, text: fieldText, bgColor: UIColor.appGreyLight, isEnable: mode == .editing, hasNext: fieldValue.1)
+        cell.config(title: fieldTitle, text: fieldText, bgColor: UIColor.appGreyLight,
+                    isEnable: mode == .editing, hasNext: fieldValue.1)
     }
 
     func textFieldDidChange(for cell: FieldViewCell, text: String?) {

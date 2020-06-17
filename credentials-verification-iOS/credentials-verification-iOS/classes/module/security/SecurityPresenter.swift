@@ -9,60 +9,61 @@
 import UIKit
 import LocalAuthentication
 
-class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, SecurityMainViewCellPresenterDelegate {
-    
+class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+                            SecurityMainViewCellPresenterDelegate {
+
     var viewImpl: SecurityViewController? {
         return view as? SecurityViewController
     }
-    
+
     enum ScurityMode {
         case setup
         case main
         case changePin
     }
-    
+
     enum SecurityCellType {
         case base(value: ListingBaseCellType)
         case main // initial mode
     }
-    
+
     struct CellRow {
         var type: SecurityCellType
         var value: Any?
     }
-    
+
     struct InitialCellValue {
         var icon: UIImage
         var title: String
         var hasSwitch: Bool
         var action: SelectorAction?
     }
-    
+
     var mode: ScurityMode = .setup
-    
+
     var initialRows: [CellRow]?
-    
+
     // MARK: Modes
-    
+
     func getMode() -> ScurityMode {
         return mode
     }
-    
+
     lazy var initialStaticCells: [InitialCellValue] = [
         InitialCellValue(icon: #imageLiteral(resourceName: "logo_security"), title: "security_use_touch_id", hasSwitch: true, action: nil),
-        InitialCellValue(icon: #imageLiteral(resourceName: "logo_pin_code"), title: "security_change_pin", hasSwitch: false, action: actionRowPin),
+        InitialCellValue(icon: #imageLiteral(resourceName: "logo_pin_code"), title: "security_change_pin", hasSwitch: false, action: actionRowPin)
     ]
-    
+
     var pinSetup: String?
-    
+
     func startShowingInitial() {
         if let pin = sharedMemory.loggedUser?.appPin, !pin.isEmpty {
             startShowingMain()
         } else {
-            
+
         }
     }
-    
+
     func startShowingMain() {
         mode = .main
         state = .listing
@@ -71,23 +72,23 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         viewImpl?.updateViewMode(mode: .main)
         updateViewToState()
     }
-    
+
     func startShowingChangePin() {
         mode = .changePin
         viewImpl?.updateViewMode(mode: .changePin)
     }
-    
+
     func validateSetupMode() {
         if let pin = sharedMemory.loggedUser?.appPin, !pin.isEmpty {
             startShowingMain()
         }
     }
-    
+
     // MARK: Buttons
-    
+
     @discardableResult
     func tappedBackButton() -> Bool {
-        
+
         if mode == .changePin {
             startShowingMain()
             return true
@@ -101,7 +102,8 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         var error: NSError?
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             let reason = "Log in to your account"
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason ) { success, error in
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                                   localizedReason: reason ) { success, error in
 
                 if success {
 
@@ -129,9 +131,11 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         } else {
             DispatchQueue.main.async { [unowned self] in
                 if context.biometryType == .faceID {
-                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: "security_unerroled_face_id".localize())
+                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil,
+                                               message: "security_unerroled_face_id".localize())
                 } else {
-                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: "security_unerroled_touch_id".localize())
+                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil,
+                                               message: "security_unerroled_touch_id".localize())
                 }
             }
         }
@@ -144,7 +148,7 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         Tracker.global.trackSecureAppPasscode()
         self.startShowingMain()
     }
-    
+
     func tappedSetupConfirmPinButton(pin: String) {
         self.pinSetup = pin
         //        sharedMemory.loggedUser = sharedMemory.loggedUser
@@ -160,20 +164,22 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         }
         self.viewImpl?.changeScreenToSetupStepTwo()
     }
-    
+
     func tappedSetupConfirmChangePass(oldPin: String, newPin: String) {
-        if (sharedMemory.loggedUser?.appPin == oldPin) {
+        if sharedMemory.loggedUser?.appPin == oldPin {
             sharedMemory.loggedUser?.appPin = newPin
             sharedMemory.loggedUser = sharedMemory.loggedUser
-            viewImpl?.showSuccessMessage(doShow: true, message: "security_change_pin_success".localize(), actions: [UIAlertAction(title: "Ok", style: .default, handler: { _ in
+            viewImpl?.showSuccessMessage(doShow: true, message: "security_change_pin_success".localize(),
+                                         actions: [UIAlertAction(title: "Ok", style: .default, handler: { _ in
                 self.startShowingMain()
             })])
         } else {
             viewImpl?.showErrorMessage(doShow: true, message: "security_change_pin_error".localize())
         }
     }
-    
-    func toogleVisibility(digOneTf: UITextField, digtwoTf: UITextField, digThreeTf: UITextField, digFourTf: UITextField, toogleBttn: UIButton) {
+
+    func toogleVisibility(digOneTf: UITextField, digtwoTf: UITextField, digThreeTf: UITextField, digFourTf: UITextField,
+                          toogleBttn: UIButton) {
         digOneTf.isSecureTextEntry = !digOneTf.isSecureTextEntry
         digtwoTf.isSecureTextEntry = !digtwoTf.isSecureTextEntry
         digThreeTf.isSecureTextEntry = !digThreeTf.isSecureTextEntry
@@ -181,15 +187,22 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         let icon = digOneTf.isSecureTextEntry ? #imageLiteral(resourceName: "ico_visibility_on") : #imageLiteral(resourceName: "ico_visibility_off")
         toogleBttn.setImage(icon, for: .normal)
     }
-    
-    func validatePIN(pinOneDigOneTf: UITextField, pinOneDigTwoTf: UITextField, pinOneDigThreeTf: UITextField, pinOneDigFourTf: UITextField, pinTwoDigOneTf: UITextField, pinTwoDigTwoTf: UITextField, pinTwoDigThreeTf: UITextField, pinTwoDigFourTf: UITextField, passMatchImg: UIImageView, passMatchLbl: UILabel, confirmBttn: UIButton) {
-        
-        if !pinOneDigOneTf.text!.isEmpty && !pinOneDigTwoTf.text!.isEmpty && !pinOneDigThreeTf.text!.isEmpty && !pinOneDigFourTf.text!.isEmpty && !pinTwoDigOneTf.text!.isEmpty && !pinTwoDigTwoTf.text!.isEmpty && !pinTwoDigThreeTf.text!.isEmpty && !pinTwoDigFourTf.text!.isEmpty {
-            
+
+    func validatePIN(pinOneDigOneTf: UITextField, pinOneDigTwoTf: UITextField, pinOneDigThreeTf: UITextField,
+                     pinOneDigFourTf: UITextField, pinTwoDigOneTf: UITextField, pinTwoDigTwoTf: UITextField,
+                     pinTwoDigThreeTf: UITextField, pinTwoDigFourTf: UITextField, passMatchImg: UIImageView,
+                     passMatchLbl: UILabel, confirmBttn: UIButton) {
+
+        if !pinOneDigOneTf.text!.isEmpty && !pinOneDigTwoTf.text!.isEmpty
+            && !pinOneDigThreeTf.text!.isEmpty && !pinOneDigFourTf.text!.isEmpty
+            && !pinTwoDigOneTf.text!.isEmpty && !pinTwoDigTwoTf.text!.isEmpty
+            && !pinTwoDigThreeTf.text!.isEmpty && !pinTwoDigFourTf.text!.isEmpty {
+
             passMatchImg.isHidden = false
             passMatchLbl.isHidden = false
-            
-            if pinOneDigOneTf.text == pinTwoDigOneTf.text  && pinOneDigTwoTf.text == pinTwoDigTwoTf.text  && pinOneDigThreeTf.text == pinTwoDigThreeTf.text  && pinOneDigFourTf.text == pinTwoDigFourTf.text {
+
+            if pinOneDigOneTf.text == pinTwoDigOneTf.text  && pinOneDigTwoTf.text == pinTwoDigTwoTf.text
+                && pinOneDigThreeTf.text == pinTwoDigThreeTf.text  && pinOneDigFourTf.text == pinTwoDigFourTf.text {
                 confirmBttn.isEnabled = true
                 confirmBttn.backgroundColor = .appRed
                 passMatchImg.image = #imageLiteral(resourceName: "ico_ok")
@@ -209,25 +222,25 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             passMatchLbl.isHidden = true
         }
     }
-    
+
     lazy var actionRowPin = SelectorAction(action: { [weak self] in
         self?.startShowingChangePin()
     })
-    
+
     // MARK: ListingBaseTableUtilsPresenterDelegate
-    
+
     func cleanData() {
         initialRows = []
     }
-    
+
     func fetchData() {
-        
+
         state = .fetching
         fetchingQueue = 1
-        
+
         fetchElements()
     }
-    
+
     func hasData() -> Bool {
         switch mode {
         case .main:
@@ -236,12 +249,12 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             return false
         }
     }
-    
+
     func getElementCount() -> Int {
         if let baseValue = super.getBaseElementCount() {
             return baseValue
         }
-        
+
         switch mode {
         case .main:
             return (initialRows?.size() ?? 0)
@@ -249,12 +262,12 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             return 0
         }
     }
-    
+
     func getElementType(indexPath: IndexPath) -> SecurityCellType? {
         if let baseValue = super.getBaseElementType(indexPath: indexPath) {
             return .base(value: baseValue)
         }
-        
+
         switch mode {
         case .main:
             return initialRows![indexPath.row].type
@@ -262,15 +275,15 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             return nil
         }
     }
-    
+
     // MARK: Fetch
-    
+
     func getLoggedUser() -> LoggedUser? {
         return sharedMemory.loggedUser
     }
-    
+
     func fetchElements() {
-        
+
         switch mode {
         case .main:
             self.startShowingMain()
@@ -281,37 +294,40 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             self.startShowingChangePin()
         }
     }
-    
+
     // MARK: Table
-    
+
     func hasPullToRefresh() -> Bool {
         false
     }
-    
+
     func actionPullToRefresh() {
-        
-        // self.startShowingInitial()
+
         self.fetchData()
         self.updateViewToState()
     }
-    
+
     func setup(for cell: SecurityMainViewCell) {
-        
-        let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        cell.config(title: value.title.localize(), hasSwitch: value.hasSwitch, switchValue: sharedMemory.loggedUser?.appBiometrics ?? false, icon: value.icon)
+
+        if let value = initialRows![cell.indexPath!.row].value as? InitialCellValue {
+            cell.config(title: value.title.localize(), hasSwitch: value.hasSwitch,
+                        switchValue: sharedMemory.loggedUser?.appBiometrics ?? false, icon: value.icon)
+        }
     }
-    
+
     func tappedAction(for cell: SecurityMainViewCell) {
-        
-        let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        value.action?.action()
+
+        if let value = initialRows![cell.indexPath!.row].value as? InitialCellValue {
+            value.action?.action()
+        }
     }
-    
+
     func didSelectRowAt(indexPath: IndexPath) {
-        let value = initialRows![indexPath.row].value as! InitialCellValue
-        value.action?.action()
+        if let value = initialRows![indexPath.row].value as? InitialCellValue {
+            value.action?.action()
+        }
     }
-    
+
     func switchValueChanged(for cell: SecurityMainViewCell, value: Bool) {
         sharedMemory.loggedUser?.appBiometrics = value
         sharedMemory.loggedUser = sharedMemory.loggedUser

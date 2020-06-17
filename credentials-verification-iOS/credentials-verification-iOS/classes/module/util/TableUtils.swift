@@ -94,7 +94,7 @@ class TableUtils: NSObject, UITableViewDataSource, UITableViewDelegate {
             baseCell.willDisplay()
         }
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         presenterDelegate.didSelectRowAt(indexPath: indexPath)
     }

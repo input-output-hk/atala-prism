@@ -1,0 +1,37 @@
+disabled_rules:
+
+opt_in_rules:
+- empty_string
+excluded:
+- Pods
+- protobuf
+- credentials-verification-iOSTests
+- credentials-verification-iOSUITests
+line_length:
+    ignores_comments: true
+    ignores_urls: true
+function_body_length:
+    warning: 100
+    error: 200
+type_body_length:
+    warning: 350
+    error: 700
+file_length:
+    ignore_comment_only_lines: true
+cyclomatic_complexity:
+    warning: 25
+    error: 50
+function_parameter_count:
+    warning: 10
+    error: 20
+large_tuple:
+  warning: 4
+  error: 5
+identifier_name:
+  max_length: 
+    warning: 40
+    error: 100
+  allowed_symbols: ["_"] # these are allowed in constants names
+  excluded:
+    - id
+reporter: "xcode"

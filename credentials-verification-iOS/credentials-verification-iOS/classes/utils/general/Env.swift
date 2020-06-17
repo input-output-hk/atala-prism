@@ -10,7 +10,7 @@ import Foundation
 
 struct Env {
 
-    private static let production : Bool = {
+    private static let production: Bool = {
         #if debug
             return false
         #else
@@ -21,5 +21,5 @@ struct Env {
     static func isProduction () -> Bool {
         return self.production
     }
-    
+
 }

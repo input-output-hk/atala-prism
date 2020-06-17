@@ -34,7 +34,11 @@ class BaseTabPagerViewController: TabmanViewController {
         super.viewDidLoad()
 
         ViewControllerUtils.viewDidLoad(view: self, presenter: presenter)
-        ViewControllerUtils.setupNotificationsForBackgroundCalls(view: self, didEnterForeground: #selector(didEnterForeground), willEnterForeground: #selector(willEnterForeground), didEnterBackground: #selector(didEnterBackground), willEnterBackground: #selector(willEnterBackground))
+        ViewControllerUtils.setupNotificationsForBackgroundCalls(view: self,
+                                                                 didEnterForeground: #selector(didEnterForeground),
+                                                                 willEnterForeground: #selector(willEnterForeground),
+                                                                 didEnterBackground: #selector(didEnterBackground),
+                                                                 willEnterBackground: #selector(willEnterBackground))
     }
 
     override func viewDidAppear(_ animated: Bool) {

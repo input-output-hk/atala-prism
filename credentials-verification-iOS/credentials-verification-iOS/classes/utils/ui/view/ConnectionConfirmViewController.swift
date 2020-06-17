@@ -18,7 +18,7 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
     @IBOutlet weak var viewBg: UIView!
 
     weak var delegate: ConnectionConfirmPresenterDelegate?
-    
+
     var isDuplicated: Bool = false
 
     override func viewDidLoad() {
@@ -27,14 +27,19 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
         // Do any additional setup after loading the view.
 
         viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
-        buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
-        buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
+        buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON,
+                                      borderWidth: 3, borderColor: UIColor.appRed.cgColor)
+        buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON,
+                                      borderWidth: 3, borderColor: UIColor.appRed.cgColor)
     }
 
     static func makeThisView() -> ConnectionConfirmViewController {
         let storyboard = UIStoryboard(name: "ConnectionConfirm", bundle: nil)
-        let viewcontroller = storyboard.instantiateViewController(withIdentifier: "ConnectionConfirm")
-        return viewcontroller as! ConnectionConfirmViewController
+        if let viewcontroller = storyboard.instantiateViewController(withIdentifier: "ConnectionConfirm")
+                                    as? ConnectionConfirmViewController {
+            return viewcontroller
+        }
+        return ConnectionConfirmViewController()
     }
 
     let presentr: Presentr = {
@@ -54,12 +59,13 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
         return presenter
     }()
 
-    func config(delegate: ConnectionConfirmPresenterDelegate?, lead: String?, title: String?, logoData: Data?, placeholderNamed: String?, isDuplicated: Bool) {
-        
+    func config(delegate: ConnectionConfirmPresenterDelegate?, lead: String?, title: String?,
+                logoData: Data?, placeholderNamed: String?, isDuplicated: Bool) {
+
         self.delegate = delegate
         labelLead.text = lead
         labelTitle.text = title
-        if isDuplicated{
+        if isDuplicated {
             buttonConfirm.setTitle("connections_scan_qr_confirm_duplicated_button".localize(), for: .normal)
         }
         imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)

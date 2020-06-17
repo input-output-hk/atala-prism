@@ -24,7 +24,7 @@ class Issuer: Mappable {
         name <- map["name"]
         address <- map["address"]
     }
-    
+
 }
 
 class CredentialSubject: Mappable {
@@ -53,7 +53,7 @@ class CredentialSubject: Mappable {
         degreeResult <- map["degreeResult"]
         graduationYear <- map["graduationYear"]
     }
-    
+
 }
 
 class Degree: Mappable {
@@ -93,14 +93,13 @@ class Degree: Mappable {
     }
 
     static func build(_ sentCredential: Io_Iohk_Prism_Protos_Credential, messageId: String, isNew: Bool) -> Degree? {
-        
+
         let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument)
 
         credential?.intCredential = sentCredential
         credential?.type = CredentialType(rawValue: sentCredential.typeID)
         credential?.isNew = isNew
         credential?.messageId = messageId
-
 
         return credential
     }

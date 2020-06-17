@@ -47,9 +47,10 @@ class BaseNibLoadingView: UIView, NibDefinable {
     private func loadViewFromNib() -> UIView {
         let bundle = Bundle(for: type(of: self))
         let nib = UINib(nibName: nibName, bundle: bundle)
-        let nibView = nib.instantiate(withOwner: self, options: nil).first as! UIView
-
-        return nibView
+        if let nibView = nib.instantiate(withOwner: self, options: nil).first as? UIView {
+            return nibView
+        }
+        return UIView()
     }
 
     func commonInit() {}

@@ -1,6 +1,8 @@
 //
 
-class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, ConnectionMainViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate, ConnectionProofRequestPresenterDelegate, ConnectionsWorkerDelegate {
+class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+                            ConnectionMainViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate,
+                            ConnectionProofRequestPresenterDelegate, ConnectionsWorkerDelegate {
 
     var viewImpl: ConnectionsViewController? {
         return view as? ConnectionsViewController
@@ -19,11 +21,11 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var stateSpecial: ConnectionsSpecialState = .none
 
     var connections: [ConnectionBase] = []
-    
+
     var detailProofRequestMessageId: String?
-    
+
     var connectionsWorker = ConnectionsWorker()
-    
+
     override init() {
         super.init()
         connectionsWorker.delegate = self
@@ -107,7 +109,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         // Call the service
         self.connectionsWorker.fetchConnections()
     }
-    
+
     func fetchCredentials() {
 
         guard let user = self.sharedMemory.loggedUser else {
@@ -130,7 +132,8 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                         if !isRejected {
                             if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
                                 if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential, messageId: message.id, isNew: isNew) {
+                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential,
+                                                                     messageId: message.id, isNew: isNew) {
                                         credentials.append(credential)
                                     }
                                 } else if !atalaMssg.proofRequest.connectionToken.isEmpty && isNew {
@@ -151,11 +154,11 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             // Already asked for proof rquest do nothing
-        }, error: { error in
+        }, error: { _ in
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
-    
+
     func askProofRequest(credentials: [Degree], proofRequest: Io_Iohk_Prism_Protos_ProofRequest) {
         let filteredCredentials = credentials.filter {
             proofRequest.typeIds.contains($0.type!.rawValue)
@@ -165,11 +168,14 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         })
         if !filteredCredentials.isEmpty && shareConnection != nil {
             DispatchQueue.main.async {
-                self.viewImpl?.showNewProofRequestMessage(credentials: filteredCredentials, requiered: proofRequest.typeIds, connection: shareConnection!, logoData: shareConnection?.logoData)
+                self.viewImpl?.showNewProofRequestMessage(credentials: filteredCredentials,
+                                                          requiered: proofRequest.typeIds,
+                                                          connection: shareConnection!,
+                                                          logoData: shareConnection?.logoData)
             }
         }
     }
-    
+
     private func shareCredentials(connection: ConnectionBase, credentials: [Degree]) {
 
         viewImpl?.config(isLoading: true)
@@ -177,9 +183,12 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         // Call the service
         ApiService.call(async: {
             do {
-                if let connId = connection.connectionId, let userId = self.sharedMemory.loggedUser?.connectionUserIds?[connId] {
-                
-                let responses = try ApiService.global.shareCredentials(userId: userId, connectionId: connId, degrees: credentials)
+                if let connId = connection.connectionId,
+                    let userId = self.sharedMemory.loggedUser?.connectionUserIds?[connId] {
+
+                let responses = try ApiService.global.shareCredentials(userId: userId,
+                                                                       connectionId: connId,
+                                                                       degrees: credentials)
                 Logger.d("shareCredential response: \(responses)")
                 } else {
                     return nil
@@ -195,8 +204,10 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 self.tappedBackButton()
                 self.actionPullToRefresh()
             })]
-            self.viewImpl?.showSuccessMessage(doShow: true, message: "", title: "credentials_detail_share_success".localize(), actions: actions)
-        }, error: { error in
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "",
+                                              title: "credentials_detail_share_success".localize(),
+                                              actions: actions)
+        }, error: { _ in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
@@ -207,7 +218,8 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func setup(for cell: ConnectionMainViewCell) {
 
         let university: ConnectionBase = connections[cell.indexPath!.row]
-        cell.config(title: university.name, isUniversity: university.type != 0, logoData: sharedMemory.imageBank?.logo(for: university.connectionId))
+        cell.config(title: university.name, isUniversity: university.type != 0,
+                    logoData: sharedMemory.imageBank?.logo(for: university.connectionId))
 
     }
 
@@ -244,22 +256,22 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     // MARK: ConnectionProofRequestPresenterDelegate
-    
+
     func tappedDeclineAction(for: ConnectionProofRequestViewController) {
         sharedMemory.loggedUser?.messagesRejectedIds?.append(detailProofRequestMessageId!)
         sharedMemory.loggedUser = sharedMemory.loggedUser
     }
-    
-    func tappedConfirmAction(for vc: ConnectionProofRequestViewController) {
+
+    func tappedConfirmAction(for viewController: ConnectionProofRequestViewController) {
         sharedMemory.loggedUser?.messagesAcceptedIds?.append(detailProofRequestMessageId!)
         sharedMemory.loggedUser = sharedMemory.loggedUser
-        shareCredentials(connection: vc.connection!, credentials: vc.selectedCredentials)
+        shareCredentials(connection: viewController.connection!, credentials: viewController.selectedCredentials)
     }
-    
+
     // MARK: ConnectionsWorkerDelegate
-    
+
     func connectionsFetched(connections: [ConnectionBase]) {
-        
+
         // Save logos
         ImageBank.saveLogos(list: connections)
         let sortedConnections = connections.sorted { $0.name < $1.name}
@@ -268,20 +280,20 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         self.startListing()
         self.fetchCredentials()
     }
-    
+
     func config(isLoading: Bool) {
          self.viewImpl?.config(isLoading: isLoading)
     }
-    
+
     func showErrorMessage(doShow: Bool, message: String?) {
         self.viewImpl?.showErrorMessage(doShow: doShow, message: message)
     }
-    
+
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?, isDuplicated: Bool) {
         self.viewImpl?.onBackPressed()
         self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData, isDuplicated: isDuplicated)
     }
-    
+
     func conectionAccepted() {
         self.actionPullToRefresh()
     }

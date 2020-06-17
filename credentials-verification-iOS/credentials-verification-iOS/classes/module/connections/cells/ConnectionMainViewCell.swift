@@ -42,7 +42,7 @@ class ConnectionMainViewCell: BaseTableViewCell {
         labelTitle.text = title
         labelSubtitle.isHidden = true
         constraintTitleVertical.constant = 0.0
-        
-        imageLogo.applyDataImage(data: logoData, placeholderNamed: isUniversity ? "ico_placeholder_university" : "ico_placeholder_credential")
+        let placeholder = isUniversity ? "ico_placeholder_university" : "ico_placeholder_credential"
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholder)
     }
 }

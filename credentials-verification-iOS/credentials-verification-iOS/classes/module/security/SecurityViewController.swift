@@ -9,7 +9,7 @@
 import UIKit
 
 class SecurityViewController: ListingBaseViewController {
-    
+
     @IBOutlet weak var setupView: UIView!
     @IBOutlet weak var setupTitleLbl: UILabel!
     @IBOutlet weak var setupStepLbl: UILabel!
@@ -32,7 +32,6 @@ class SecurityViewController: ListingBaseViewController {
     @IBOutlet weak var setupPassMatchImg: UIImageView!
     @IBOutlet weak var setupPassMatchLbl: UILabel!
     @IBOutlet weak var setupSetepTwoConfirmBttn: UIButton!
-    
 
     @IBOutlet weak var changeDescriptionLbl: UILabel!
     @IBOutlet weak var changePinView: UIView!
@@ -54,25 +53,25 @@ class SecurityViewController: ListingBaseViewController {
     @IBOutlet weak var changePassMatchImg: UIImageView!
     @IBOutlet weak var changePassMatchLbl: UILabel!
     @IBOutlet weak var changeConfirmBttn: UIButton!
-    
+
     var presenterImpl = SecurityPresenter()
     override var presenter: BasePresenter { return presenterImpl }
-    
+
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return NavBarCustomStyle(hasNavBar: true, title: nil, hasBackButton: true)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Setup
         setupButtons()
         setupViews()
-        
+
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
         ViewControllerUtils.addShiftKeyboardListeners(view: self)
     }
-    
+
     @discardableResult
     override func onBackPressed() -> Bool {
         if !presenterImpl.tappedBackButton() {
@@ -80,30 +79,30 @@ class SecurityViewController: ListingBaseViewController {
         }
         return false
     }
-    
+
     func setupButtons() {
         setupSetepOneConfirmBttn.layer.cornerRadius = AppConfigs.CORNER_RADIUS_BUTTON
         setupSetepTwoConfirmBttn.layer.cornerRadius = AppConfigs.CORNER_RADIUS_BUTTON
         changeConfirmBttn.layer.cornerRadius = AppConfigs.CORNER_RADIUS_BUTTON
     }
-    
+
     func setupViews() {
         setupStepOneView.layer.cornerRadius = 3
         setupStepTwoView.layer.cornerRadius = 3
     }
-    
+
     func setupForTouchID() {
         setupTitleLbl.text = "security_touch_id".localize()
         setupStepOneDescriptionLbl.text = "security_description_touch_id".localize()
         setupSetepOneConfirmBttn.setTitle("security_allow_touch_id".localize(), for: .normal)
     }
-    
+
     func setupForFaceID() {
         setupTitleLbl.text = "security_face_id".localize()
         setupStepOneDescriptionLbl.text = "security_description_face_id".localize()
         setupSetepOneConfirmBttn.setTitle("security_allow_face_id".localize(), for: .normal)
     }
-    
+
     func updateViewMode(mode: SecurityPresenter.ScurityMode) {
         switch mode {
         case .setup:
@@ -146,58 +145,83 @@ class SecurityViewController: ListingBaseViewController {
             return super.getCellNib(for: indexPath)
         }
     }
-    
+
     // MARK: Buttons
 
     @IBAction func actionSetupConfirmStepOne(_ sender: Any) {
         presenterImpl.tappedSetupConfirmBiometricsButton()
     }
-    
+
     @IBAction func actionSetupSkipStepOne(_ sender: Any) {
         presenterImpl.tappedSetupSkipBiometricsButton()
     }
-    
+
     @IBAction func showSetupPassOne(_ sender: Any) {
-        presenterImpl.toogleVisibility(digOneTf: setupPinOneDigOneTf, digtwoTf: setupPinOneDigTwoTf, digThreeTf: setupPinOneDigThreeTf, digFourTf: setupPinOneDigFourTf, toogleBttn: setupPinOneBttn)
+        presenterImpl.toogleVisibility(digOneTf: setupPinOneDigOneTf, digtwoTf: setupPinOneDigTwoTf,
+                                       digThreeTf: setupPinOneDigThreeTf, digFourTf: setupPinOneDigFourTf,
+                                       toogleBttn: setupPinOneBttn)
     }
-    
+
     @IBAction func showSetupPassTwo(_ sender: Any) {
-        presenterImpl.toogleVisibility(digOneTf: setupPinTwoDigOneTf, digtwoTf: setupPinTwoDigTwoTf, digThreeTf: setupPinTwoDigThreeTf, digFourTf: setupPinTwoDigFourTf, toogleBttn: setupPinTwoBttn)
+        presenterImpl.toogleVisibility(digOneTf: setupPinTwoDigOneTf, digtwoTf: setupPinTwoDigTwoTf,
+                                       digThreeTf: setupPinTwoDigThreeTf, digFourTf: setupPinTwoDigFourTf,
+                                       toogleBttn: setupPinTwoBttn)
     }
-    
+
     @IBAction func showChangePassOne(_ sender: Any) {
-        presenterImpl.toogleVisibility(digOneTf: changePinOneDigOneTf, digtwoTf: changePinOneDigTwoTf, digThreeTf: changePinOneDigThreeTf, digFourTf: changePinOneDigFourTf, toogleBttn: changePinOneBttn)
+        presenterImpl.toogleVisibility(digOneTf: changePinOneDigOneTf, digtwoTf: changePinOneDigTwoTf,
+                                       digThreeTf: changePinOneDigThreeTf, digFourTf: changePinOneDigFourTf,
+                                       toogleBttn: changePinOneBttn)
     }
-    
+
     @IBAction func showChangePassTwo(_ sender: Any) {
-        presenterImpl.toogleVisibility(digOneTf: changePinTwoDigOneTf, digtwoTf: changePinTwoDigTwoTf, digThreeTf: changePinTwoDigThreeTf, digFourTf: changePinTwoDigFourTf, toogleBttn: changePinTwoBttn)
+        presenterImpl.toogleVisibility(digOneTf: changePinTwoDigOneTf, digtwoTf: changePinTwoDigTwoTf,
+                                       digThreeTf: changePinTwoDigThreeTf, digFourTf: changePinTwoDigFourTf,
+                                       toogleBttn: changePinTwoBttn)
     }
-    
+
     @IBAction func showChangePassCurrent(_ sender: Any) {
-        presenterImpl.toogleVisibility(digOneTf: changePinOldDigOneTf, digtwoTf: changePinOldDigTwoTf, digThreeTf: changePinOldDigThreeTf, digFourTf: changePinOldDigFourTf, toogleBttn: changePinOldBttn)
+        presenterImpl.toogleVisibility(digOneTf: changePinOldDigOneTf, digtwoTf: changePinOldDigTwoTf,
+                                       digThreeTf: changePinOldDigThreeTf, digFourTf: changePinOldDigFourTf,
+                                       toogleBttn: changePinOldBttn)
     }
-    
+
     @IBAction func actionSetupConfirmStepTwo(_ sender: Any) {
-        let pin = "\(setupPinOneDigOneTf.text!)\(setupPinOneDigTwoTf.text!)\(setupPinOneDigThreeTf.text!)\(setupPinOneDigFourTf.text!)"
+        let pin = """
+        \(setupPinOneDigOneTf.text!)\
+        \(setupPinOneDigTwoTf.text!)\
+        \(setupPinOneDigThreeTf.text!)\
+        \(setupPinOneDigFourTf.text!)
+        """
         presenterImpl.tappedSetupConfirmPinButton(pin: pin)
     }
-    
+
     @IBAction func actionConfirmChangePass(_ sender: Any) {
-        let oldPin = "\(changePinOldDigOneTf.text!)\(changePinOldDigTwoTf.text!)\(changePinOldDigThreeTf.text!)\(changePinOldDigFourTf.text!)"
-        let newPin = "\(changePinOneDigOneTf.text!)\(changePinOneDigTwoTf.text!)\(changePinOneDigThreeTf.text!)\(changePinOneDigFourTf.text!)"
+        let oldPin = """
+        \(changePinOldDigOneTf.text!)\
+        \(changePinOldDigTwoTf.text!)\
+        \(changePinOldDigThreeTf.text!)\
+        \(changePinOldDigFourTf.text!)
+        """
+        let newPin = """
+        \(changePinOneDigOneTf.text!)\
+        \(changePinOneDigTwoTf.text!)\
+        \(changePinOneDigThreeTf.text!)\
+        \(changePinOneDigFourTf.text!)
+        """
 
         presenterImpl.tappedSetupConfirmChangePass(oldPin: oldPin, newPin: newPin)
-        
+
     }
-    
+
     // MARK: Screens
-    
+
     func changeScreenToSetupStepTwo() {
         setupScroll.scrollRectToVisible(setupStepTwoPageView.frame, animated: true)
         setupStepLbl.text = "security_step_two".localize()
         setupStepTwoView.alpha = 1
     }
-    
+
     func changeScreenToChangePin() {
         setupView.isHidden = true
         changePinView.isHidden = false
@@ -234,9 +258,10 @@ class SecurityViewController: ListingBaseViewController {
 }
 
 extension SecurityViewController: UITextFieldDelegate {
-    
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-    
+
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange,
+                   replacementString string: String) -> Bool {
+
         if !string.isEmpty {
             if textField == setupPinOneDigOneTf {
                 setupPinOneDigTwoTf.becomeFirstResponder()
@@ -281,18 +306,58 @@ extension SecurityViewController: UITextFieldDelegate {
             }
             textField.text = string
             if presenterImpl.mode == .changePin {
-                presenterImpl.validatePIN(pinOneDigOneTf: changePinOneDigOneTf, pinOneDigTwoTf: changePinOneDigTwoTf, pinOneDigThreeTf: changePinOneDigThreeTf, pinOneDigFourTf: changePinOneDigFourTf, pinTwoDigOneTf: changePinTwoDigOneTf, pinTwoDigTwoTf: changePinTwoDigTwoTf, pinTwoDigThreeTf: changePinTwoDigThreeTf, pinTwoDigFourTf: changePinTwoDigFourTf, passMatchImg: changePassMatchImg, passMatchLbl: changePassMatchLbl, confirmBttn: changeConfirmBttn)
+                presenterImpl.validatePIN(pinOneDigOneTf: changePinOneDigOneTf,
+                                          pinOneDigTwoTf: changePinOneDigTwoTf,
+                                          pinOneDigThreeTf: changePinOneDigThreeTf,
+                                          pinOneDigFourTf: changePinOneDigFourTf,
+                                          pinTwoDigOneTf: changePinTwoDigOneTf,
+                                          pinTwoDigTwoTf: changePinTwoDigTwoTf,
+                                          pinTwoDigThreeTf: changePinTwoDigThreeTf,
+                                          pinTwoDigFourTf: changePinTwoDigFourTf,
+                                          passMatchImg: changePassMatchImg,
+                                          passMatchLbl: changePassMatchLbl,
+                                          confirmBttn: changeConfirmBttn)
             } else {
-                presenterImpl.validatePIN(pinOneDigOneTf: setupPinOneDigOneTf, pinOneDigTwoTf: setupPinOneDigTwoTf, pinOneDigThreeTf: setupPinOneDigThreeTf, pinOneDigFourTf: setupPinOneDigFourTf, pinTwoDigOneTf: setupPinTwoDigOneTf, pinTwoDigTwoTf: setupPinTwoDigTwoTf, pinTwoDigThreeTf: setupPinTwoDigThreeTf, pinTwoDigFourTf: setupPinTwoDigFourTf, passMatchImg: setupPassMatchImg, passMatchLbl: setupPassMatchLbl, confirmBttn: setupSetepTwoConfirmBttn)
+                presenterImpl.validatePIN(pinOneDigOneTf: setupPinOneDigOneTf,
+                                          pinOneDigTwoTf: setupPinOneDigTwoTf,
+                                          pinOneDigThreeTf: setupPinOneDigThreeTf,
+                                          pinOneDigFourTf: setupPinOneDigFourTf,
+                                          pinTwoDigOneTf: setupPinTwoDigOneTf,
+                                          pinTwoDigTwoTf: setupPinTwoDigTwoTf,
+                                          pinTwoDigThreeTf: setupPinTwoDigThreeTf,
+                                          pinTwoDigFourTf: setupPinTwoDigFourTf,
+                                          passMatchImg: setupPassMatchImg,
+                                          passMatchLbl: setupPassMatchLbl,
+                                          confirmBttn: setupSetepTwoConfirmBttn)
             }
             return false
         } else if !textField.text!.isEmpty && string.isEmpty {
-            
+
             textField.text = ""
             if presenterImpl.mode == .changePin {
-                presenterImpl.validatePIN(pinOneDigOneTf: changePinOneDigOneTf, pinOneDigTwoTf: changePinOneDigTwoTf, pinOneDigThreeTf: changePinOneDigThreeTf, pinOneDigFourTf: changePinOneDigFourTf, pinTwoDigOneTf: changePinTwoDigOneTf, pinTwoDigTwoTf: changePinTwoDigTwoTf, pinTwoDigThreeTf: changePinTwoDigThreeTf, pinTwoDigFourTf: changePinTwoDigFourTf, passMatchImg: changePassMatchImg, passMatchLbl: changePassMatchLbl, confirmBttn: changeConfirmBttn)
+                presenterImpl.validatePIN(pinOneDigOneTf: changePinOneDigOneTf,
+                                          pinOneDigTwoTf: changePinOneDigTwoTf,
+                                          pinOneDigThreeTf: changePinOneDigThreeTf,
+                                          pinOneDigFourTf: changePinOneDigFourTf,
+                                          pinTwoDigOneTf: changePinTwoDigOneTf,
+                                          pinTwoDigTwoTf: changePinTwoDigTwoTf,
+                                          pinTwoDigThreeTf: changePinTwoDigThreeTf,
+                                          pinTwoDigFourTf: changePinTwoDigFourTf,
+                                          passMatchImg: changePassMatchImg,
+                                          passMatchLbl: changePassMatchLbl,
+                                          confirmBttn: changeConfirmBttn)
             } else {
-                presenterImpl.validatePIN(pinOneDigOneTf: setupPinOneDigOneTf, pinOneDigTwoTf: setupPinOneDigTwoTf, pinOneDigThreeTf: setupPinOneDigThreeTf, pinOneDigFourTf: setupPinOneDigFourTf, pinTwoDigOneTf: setupPinTwoDigOneTf, pinTwoDigTwoTf: setupPinTwoDigTwoTf, pinTwoDigThreeTf: setupPinTwoDigThreeTf, pinTwoDigFourTf: setupPinTwoDigFourTf, passMatchImg: setupPassMatchImg, passMatchLbl: setupPassMatchLbl, confirmBttn: setupSetepTwoConfirmBttn)
+                presenterImpl.validatePIN(pinOneDigOneTf: setupPinOneDigOneTf,
+                                          pinOneDigTwoTf: setupPinOneDigTwoTf,
+                                          pinOneDigThreeTf: setupPinOneDigThreeTf,
+                                          pinOneDigFourTf: setupPinOneDigFourTf,
+                                          pinTwoDigOneTf: setupPinTwoDigOneTf,
+                                          pinTwoDigTwoTf: setupPinTwoDigTwoTf,
+                                          pinTwoDigThreeTf: setupPinTwoDigThreeTf,
+                                          pinTwoDigFourTf: setupPinTwoDigFourTf,
+                                          passMatchImg: setupPassMatchImg,
+                                          passMatchLbl: setupPassMatchLbl,
+                                          confirmBttn: setupSetepTwoConfirmBttn)
             }
             return false
         }

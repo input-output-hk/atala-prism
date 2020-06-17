@@ -2,6 +2,7 @@
 // Source: https://github.com/dillidon/alerts-and-pickers
 // License: https://github.com/dillidon/alerts-and-pickers/blob/new/LICENSE
 // Note: Some of the contents of the original source may have been modified.
+// swiftlint:disable identifier_name
 import UIKit
 
 extension String {
@@ -36,12 +37,14 @@ public extension String {
 
     /// Regular string.
     var regular: NSAttributedString {
-        return NSMutableAttributedString(string: self, attributes: [.font: UIFont.systemFont(ofSize: UIFont.systemFontSize)])
+        return NSMutableAttributedString(string: self,
+                                         attributes: [.font: UIFont.systemFont(ofSize: UIFont.systemFontSize)])
     }
 
     /// Bold string.
     var bold: NSAttributedString {
-        return NSMutableAttributedString(string: self, attributes: [.font: UIFont.boldSystemFont(ofSize: UIFont.systemFontSize)])
+        return NSMutableAttributedString(string: self,
+                                         attributes: [.font: UIFont.boldSystemFont(ofSize: UIFont.systemFontSize)])
     }
 
     /// Underlined string
@@ -51,12 +54,15 @@ public extension String {
 
     /// Strikethrough string.
     var strikethrough: NSAttributedString {
-        return NSAttributedString(string: self, attributes: [.strikethroughStyle: NSNumber(value: NSUnderlineStyle.single.rawValue as Int)])
+        return NSAttributedString(string: self,
+                                  attributes: [.strikethroughStyle: NSNumber(value:
+                                    NSUnderlineStyle.single.rawValue as Int)])
     }
 
     /// Italic string.
     var italic: NSAttributedString {
-        return NSMutableAttributedString(string: self, attributes: [.font: UIFont.italicSystemFont(ofSize: UIFont.systemFontSize)])
+        return NSMutableAttributedString(string: self,
+                                         attributes: [.font: UIFont.italicSystemFont(ofSize: UIFont.systemFontSize)])
     }
 
     /// Add color to string.
@@ -71,8 +77,7 @@ public extension String {
 extension Array where Element: NSAttributedString {
     func joined(separator: NSAttributedString) -> NSAttributedString {
         var isFirst = true
-        return self.reduce(NSMutableAttributedString()) {
-            r, e in
+        return self.reduce(NSMutableAttributedString()) { r, e in
             if isFirst {
                 isFirst = false
             } else {

@@ -22,7 +22,9 @@ public extension Date {
             return calendar.component(.year, from: self)
         }
         set {
-            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: newValue, month: month, day: day, hour: hour, minute: minute, second: second, nanosecond: nanosecond)
+            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: newValue,
+                        month: month, day: day, hour: hour, minute: minute,
+                        second: second, nanosecond: nanosecond)
         }
     }
 
@@ -37,7 +39,9 @@ public extension Date {
             return calendar.component(.month, from: self)
         }
         set {
-            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year, month: newValue, day: day, hour: hour, minute: minute, second: second, nanosecond: nanosecond)
+            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year,
+                        month: newValue, day: day, hour: hour, minute: minute,
+                        second: second, nanosecond: nanosecond)
         }
     }
 
@@ -62,7 +66,9 @@ public extension Date {
             return calendar.component(.day, from: self)
         }
         set {
-            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year, month: month, day: newValue, hour: hour, minute: minute, second: second, nanosecond: nanosecond)
+            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year,
+                        month: month, day: newValue, hour: hour, minute: minute,
+                        second: second, nanosecond: nanosecond)
         }
     }
 
@@ -72,7 +78,9 @@ public extension Date {
             return calendar.component(.hour, from: self)
         }
         set {
-            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year, month: month, day: day, hour: newValue, minute: minute, second: second, nanosecond: nanosecond)
+            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year,
+                        month: month, day: day, hour: newValue, minute: minute,
+                        second: second, nanosecond: nanosecond)
         }
     }
 
@@ -82,7 +90,9 @@ public extension Date {
             return calendar.component(.minute, from: self)
         }
         set {
-            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year, month: month, day: day, hour: hour, minute: newValue, second: second, nanosecond: nanosecond)
+            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year,
+                        month: month, day: day, hour: hour, minute: newValue,
+                        second: second, nanosecond: nanosecond)
         }
     }
 
@@ -92,7 +102,9 @@ public extension Date {
             return calendar.component(.second, from: self)
         }
         set {
-            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year, month: month, day: day, hour: hour, minute: minute, second: newValue, nanosecond: nanosecond)
+            self = Date(calendar: calendar, timeZone: timeZone, era: era, year: year,
+                        month: month, day: day, hour: hour, minute: minute,
+                        second: newValue, nanosecond: nanosecond)
         }
     }
 
@@ -315,7 +327,8 @@ public extension Date {
     func beginning(of component: Calendar.Component) -> Date? {
         switch component {
         case .second:
-            return calendar.date(from: calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: self))
+            return calendar.date(from: calendar.dateComponents([.year, .month, .day,
+                                                                .hour, .minute, .second], from: self))
 
         case .minute:
             return calendar.date(from: calendar.dateComponents([.year, .month, .day, .hour, .minute], from: self))
@@ -348,7 +361,8 @@ public extension Date {
         switch component {
         case .second:
             var date = self.adding(.second, value: 1)
-            guard let after = calendar.date(from: calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)) else {
+            guard let after = calendar.date(from: calendar.dateComponents([.year, .month, .day,
+                                                                           .hour, .minute, .second], from: date)) else {
                 return nil
             }
             date = after
@@ -357,7 +371,8 @@ public extension Date {
 
         case .minute:
             var date = self.adding(.minute, value: 1)
-            guard let after = calendar.date(from: calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)) else {
+            guard let after = calendar.date(from: calendar.dateComponents([.year, .month, .day,
+                                                                           .hour, .minute], from: date)) else {
                 return nil
             }
             date = after.adding(.second, value: -1)
@@ -365,7 +380,8 @@ public extension Date {
 
         case .hour:
             var date = self.adding(.hour, value: 1)
-            guard let after = calendar.date(from: calendar.dateComponents([.year, .month, .day, .hour], from: self)) else {
+            guard let after = calendar.date(from: calendar.dateComponents([.year, .month,
+                                                                           .day, .hour], from: self)) else {
                 return nil
             }
             date = after.adding(.second, value: -1)
@@ -379,7 +395,8 @@ public extension Date {
 
         case .weekOfYear, .weekOfMonth:
             var date = self
-            guard let beginningOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self)) else {
+            guard let beginningOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear,
+                                                                                     .weekOfYear], from: self)) else {
                 return nil
             }
             date = beginningOfWeek.adding(.day, value: 7).adding(.second, value: -1)
@@ -548,16 +565,16 @@ public extension Date {
         let today = Date()
         let gregorian = Calendar(identifier: Calendar.Identifier.gregorian)
 
-        let r1 = arc4random_uniform(UInt32(days))
-        let r2 = arc4random_uniform(UInt32(23))
-        let r3 = arc4random_uniform(UInt32(59))
-        let r4 = arc4random_uniform(UInt32(59))
+        let rand1 = arc4random_uniform(UInt32(days))
+        let rand2 = arc4random_uniform(UInt32(23))
+        let rand3 = arc4random_uniform(UInt32(59))
+        let rand4 = arc4random_uniform(UInt32(59))
 
         var offsetComponents = DateComponents()
-        offsetComponents.day = Int(r1) * -1
-        offsetComponents.hour = Int(r2)
-        offsetComponents.minute = Int(r3)
-        offsetComponents.second = Int(r4)
+        offsetComponents.day = Int(rand1) * -1
+        offsetComponents.hour = Int(rand2)
+        offsetComponents.minute = Int(rand3)
+        offsetComponents.second = Int(rand4)
 
         guard let rndDate1 = gregorian.date(byAdding: offsetComponents, to: today) else {
             print("randoming failed")

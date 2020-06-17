@@ -11,8 +11,8 @@ extension UIColor {
     /// Hexadecimal value string (read-only).
     public var hexString: String {
         let components: [Int] = {
-            let c = cgColor.components!
-            let components = c.count == 4 ? c : [c[0], c[0], c[0], c[1]]
+            let comp = cgColor.components!
+            let components = comp.count == 4 ? comp : [comp[0], comp[0], comp[0], comp[1]]
             return components.map { Int($0 * 255.0) }
         }()
         return String(format: "#%02X%02X%02X", components[0], components[1], components[2])
@@ -47,16 +47,16 @@ extension UIColor {
     ///
     public var rgbComponents: (red: Int, green: Int, blue: Int) {
         var components: [CGFloat] {
-            let c = cgColor.components!
-            if c.count == 4 {
-                return c
+            let comp = cgColor.components!
+            if comp.count == 4 {
+                return comp
             }
-            return [c[0], c[0], c[0], c[1]]
+            return [comp[0], comp[0], comp[0], comp[1]]
         }
-        let r = components[0]
-        let g = components[1]
-        let b = components[2]
-        return (red: Int(r * 255.0), green: Int(g * 255.0), blue: Int(b * 255.0))
+        let rComp = components[0]
+        let gComp = components[1]
+        let bComp = components[2]
+        return (red: Int(rComp * 255.0), green: Int(gComp * 255.0), blue: Int(bComp * 255.0))
     }
 
     /// SwifterSwift: https://github.com/SwifterSwift/SwifterSwift
@@ -68,36 +68,36 @@ extension UIColor {
     ///
     public var cgFloatComponents: (red: CGFloat, green: CGFloat, blue: CGFloat) {
         var components: [CGFloat] {
-            let c = cgColor.components!
-            if c.count == 4 {
-                return c
+            let comp = cgColor.components!
+            if comp.count == 4 {
+                return comp
             }
-            return [c[0], c[0], c[0], c[1]]
+            return [comp[0], comp[0], comp[0], comp[1]]
         }
-        let r = components[0]
-        let g = components[1]
-        let b = components[2]
-        return (red: r, green: g, blue: b)
+        let rComp = components[0]
+        let gComp = components[1]
+        let bComp = components[2]
+        return (red: rComp, green: gComp, blue: bComp)
     }
 
     /// SwifterSwift: https://github.com/SwifterSwift/SwifterSwift
     /// Get components of hue, saturation, and brightness, and alpha (read-only).
     public var hsbaComponents: (hue: CGFloat, saturation: CGFloat, brightness: CGFloat, alpha: CGFloat) {
-        var h: CGFloat = 0.0
-        var s: CGFloat = 0.0
-        var b: CGFloat = 0.0
-        var a: CGFloat = 0.0
+        var hComp: CGFloat = 0.0
+        var sComp: CGFloat = 0.0
+        var bComp: CGFloat = 0.0
+        var aComp: CGFloat = 0.0
 
-        self.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
-        return (hue: h, saturation: s, brightness: b, alpha: a)
+        self.getHue(&hComp, saturation: &sComp, brightness: &bComp, alpha: &aComp)
+        return (hue: hComp, saturation: sComp, brightness: bComp, alpha: aComp)
     }
 
     /// Random color.
     public static var random: UIColor {
-        let r = Int(arc4random_uniform(255))
-        let g = Int(arc4random_uniform(255))
-        let b = Int(arc4random_uniform(255))
-        return UIColor(red: r, green: g, blue: b)
+        let rComp = Int(arc4random_uniform(255))
+        let gComp = Int(arc4random_uniform(255))
+        let bComp = Int(arc4random_uniform(255))
+        return UIColor(red: rComp, green: gComp, blue: bComp)
     }
 }
 
@@ -106,10 +106,10 @@ extension UIColor {
 public extension UIColor {
 
     convenience init(hex: Int, alpha: CGFloat = 1.0) {
-        let r = CGFloat((hex & 0xFF0000) >> 16) / 255
-        let g = CGFloat((hex & 0xFF00) >> 8) / 255
-        let b = CGFloat(hex & 0xFF) / 255
-        self.init(red: r, green: g, blue: b, alpha: alpha)
+        let rComp = CGFloat((hex & 0xFF0000) >> 16) / 255
+        let gComp = CGFloat((hex & 0xFF00) >> 8) / 255
+        let bComp = CGFloat(hex & 0xFF) / 255
+        self.init(red: rComp, green: gComp, blue: bComp, alpha: alpha)
     }
 
     /**

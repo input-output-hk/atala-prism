@@ -23,10 +23,10 @@ class LoggedUser: Mappable {
     var isVerified: Bool?
 
     var apiUrl: String?
-    
+
     var seed: Data?
     var mnemonics: [String]?
-    
+
     var appPin: String?
     var appBiometrics: Bool?
 
@@ -61,10 +61,10 @@ class LoggedUser: Mappable {
         isVerified <- map["isVerified"]
 
         apiUrl <- map["apiUrl"]
-        
+
         seed <- map["seed"]
         mnemonics <- map["mnemonics"]
-        
+
         appPin <- map["appPin"]
         appBiometrics <- map["appBiometrics"]
     }

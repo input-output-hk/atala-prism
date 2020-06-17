@@ -10,11 +10,11 @@ class CryptoUtils: NSObject {
     var mnemonics: [String]?
     var usedMnemonics: [String]?
     var seed: Data?
-    var pk: HDPrivateKey?
-    
+    var privateKey: HDPrivateKey?
+
     func setupMnemonics() {
 
-        mnemonics = try! Mnemonic.generate()
+        mnemonics = try? Mnemonic.generate()
         usedMnemonics = Array(mnemonics![0 ..< CryptoUtils.SEED_COUNT])
 
         generateSeed()
@@ -25,9 +25,9 @@ class CryptoUtils: NSObject {
         let passphrase = ""
         seed = try? Mnemonic.seed(mnemonic: usedMnemonics!, passphrase: passphrase)
     }
-    
+
     func generatePrivateKey() {
-        pk = HDPrivateKey(seed: seed!, network: .mainnetBCH)
+        privateKey = HDPrivateKey(seed: seed!, network: .mainnetBCH)
     }
 
     func getUsedRandomIndexes(count: Int) -> [Int] {
@@ -36,10 +36,8 @@ class CryptoUtils: NSObject {
     }
 
     func checkWordsValidity(indexes: [Int], words: [String]) -> Bool {
-        for i in 0 ..< indexes.count {
-            if usedMnemonics![indexes[i]] != words[i] {
-                return false
-            }
+        for pos in 0 ..< indexes.count where usedMnemonics![indexes[pos]] != words[pos] {
+            return false
         }
         return true
     }

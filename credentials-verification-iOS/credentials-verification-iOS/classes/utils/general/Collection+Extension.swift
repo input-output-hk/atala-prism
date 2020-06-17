@@ -23,7 +23,7 @@ extension Collection where Element: BinaryFloatingPoint {
 
 extension Collection {
     /// Picks N random elements
-    func randomPick(_ n: Int) -> ArraySlice<Element> { shuffled().prefix(n) }
+    func randomPick(_ count: Int) -> ArraySlice<Element> { shuffled().prefix(count) }
 }
 
 extension Dictionary {

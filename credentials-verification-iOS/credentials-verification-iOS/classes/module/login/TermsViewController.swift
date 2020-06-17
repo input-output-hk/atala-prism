@@ -94,7 +94,6 @@ class TermsViewController: BaseViewController, SwitchCustomDelegate {
     func showLegalView(doShow: Bool, urlStr: String?) {
 
         viewLegalContainer.isHidden = !doShow
-        // TODO: Add animation
 
         // Load page
         let urlStr = urlStr ?? "about:blank"

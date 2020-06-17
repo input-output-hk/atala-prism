@@ -19,7 +19,9 @@ protocol InformationViewDelegate: class {}
         buttonMain.layer.cornerRadius = AppConfigs.CORNER_RADIUS_BUTTON
     }
 
-    func config(imageNamed: String, title: String?, titleColor: UIColor = UIColor.appBlack, subtitle: String?, subtitleColor: UIColor = UIColor.appGreySub, buttonText: String?, buttonAction: SelectorAction?) {
+    func config(imageNamed: String, title: String?, titleColor: UIColor = UIColor.appBlack,
+                subtitle: String?, subtitleColor: UIColor = UIColor.appGreySub, buttonText: String?,
+                buttonAction: SelectorAction?) {
 
         imageMain.image = UIImage(named: imageNamed)
         labelTitle.text = title

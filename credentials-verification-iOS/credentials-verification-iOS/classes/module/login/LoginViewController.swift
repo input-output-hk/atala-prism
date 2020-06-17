@@ -34,7 +34,7 @@ class LoginViewController: BaseViewController {
     }
 
     func setupTextFields() {
-        
+
         setupUrlTextField()
 
         setupUrlTextField()
@@ -60,7 +60,8 @@ class LoginViewController: BaseViewController {
 
     func config(mode: ListingBasePresenter.ListingBaseState, specialMode: LoginPresenter.LoginSpecialState) {
 
-        ViewUtils.showLoading(doShow: mode == .fetching || (mode == .special && specialMode == .validatingWords), view: self)
+        ViewUtils.showLoading(doShow: mode == .fetching || (mode == .special && specialMode == .validatingWords),
+                              view: self)
     }
 
     func changeButtonState(isEnabled: Bool) {
@@ -73,7 +74,9 @@ class LoginViewController: BaseViewController {
 
         for index in 0 ..< textFields.count {
             let number = numbers.count > index ? (numbers[index] + 1) : -1
-            let text: String = number != -1 ? String(format: "login_input_title".localize(), number) : "login_input_title_empty".localize()
+            let text: String = number != -1
+                ? String(format: "login_input_title".localize(), number)
+                : "login_input_title_empty".localize()
             textFields[index].config(title: text)
         }
     }

@@ -46,7 +46,8 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     ///  - parameter maxDetectedCount:    max detecte count, default is 20
     ///
     ///  - returns: the scanner object
-    public init(autoRemoveSubLayers: Bool, lineWidth: CGFloat = 4, strokeColor: UIColor = UIColor.green, maxDetectedCount: Int = 20) {
+    public init(autoRemoveSubLayers: Bool, lineWidth: CGFloat = 4, strokeColor: UIColor = UIColor.green,
+                maxDetectedCount: Int = 20) {
 
         self.lineWidth = lineWidth
         self.strokeColor = strokeColor
@@ -71,8 +72,10 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     ///  - parameter avatarScale: the scale for avatar image, default is 0.25
     ///
     ///  - returns: the generated image
-    open class func generateImage(_ stringValue: String, avatarImage: UIImage?, avatarScale: CGFloat = 0.25) -> UIImage? {
-        return generateImage(stringValue, avatarImage: avatarImage, avatarScale: avatarScale, color: CIColor(color: UIColor.black), backColor: CIColor(color: UIColor.white))
+    open class func generateImage(_ stringValue: String, avatarImage: UIImage?,
+                                  avatarScale: CGFloat = 0.25) -> UIImage? {
+        return generateImage(stringValue, avatarImage: avatarImage, avatarScale: avatarScale,
+                             color: CIColor(color: UIColor.black), backColor: CIColor(color: UIColor.white))
     }
 
     ///  Generate Qrcode Image
@@ -84,12 +87,14 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     ///  - parameter backColor:   th CI color for background, default is white
     ///
     ///  - returns: the generated image
-    open class func generateImage(_ stringValue: String, avatarImage: UIImage?, avatarScale: CGFloat = 0.25, color: CIColor, backColor: CIColor) -> UIImage? {
+    open class func generateImage(_ stringValue: String, avatarImage: UIImage?, avatarScale: CGFloat = 0.25,
+                                  color: CIColor, backColor: CIColor) -> UIImage? {
 
         // generate qrcode image
         let qrFilter = CIFilter(name: "CIQRCodeGenerator")!
         qrFilter.setDefaults()
-        qrFilter.setValue(stringValue.data(using: String.Encoding.utf8, allowLossyConversion: false), forKey: "inputMessage")
+        qrFilter.setValue(stringValue.data(using: String.Encoding.utf8, allowLossyConversion: false),
+                          forKey: "inputMessage")
 
         guard let ciImage = qrFilter.outputImage else { return nil }
 
@@ -120,9 +125,9 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         codeImage.draw(in: rect)
 
         let avatarSize = CGSize(width: rect.size.width * scale, height: rect.size.height * scale)
-        let x = (rect.width - avatarSize.width) * 0.5
-        let y = (rect.height - avatarSize.height) * 0.5
-        avatarImage.draw(in: CGRect(x: x, y: y, width: avatarSize.width, height: avatarSize.height))
+        let xPos = (rect.width - avatarSize.width) * 0.5
+        let yPos = (rect.height - avatarSize.height) * 0.5
+        avatarImage.draw(in: CGRect(x: xPos, y: yPos, width: avatarSize.width, height: avatarSize.height))
 
         let result = UIGraphicsGetImageFromCurrentImageContext()
 
@@ -203,17 +208,19 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         dataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
     }
 
-    open func metadataOutput(_ captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+    open func metadataOutput(_ captureOutput: AVCaptureMetadataOutput,
+                             didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
 
         clearDrawLayer()
 
         for dataObject in metadataObjects {
 
             if let codeObject = dataObject as? AVMetadataMachineReadableCodeObject,
-                let obj = previewLayer.transformedMetadataObject(for: codeObject) as? AVMetadataMachineReadableCodeObject {
+                let obj = previewLayer.transformedMetadataObject(for: codeObject)
+                    as? AVMetadataMachineReadableCodeObject {
 
                 if scanFrame.contains(obj.bounds) {
-                    currentDetectedCount = currentDetectedCount + 1
+                    currentDetectedCount += 1
                     if currentDetectedCount > maxDetectedCount {
                         session.stopRunning()
 
@@ -227,7 +234,10 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
                     }
 
                     // transform codeObject
-                    drawCodeCorners(previewLayer.transformedMetadataObject(for: codeObject) as! AVMetadataMachineReadableCodeObject)
+                    if let cObj = previewLayer.transformedMetadataObject(for: codeObject)
+                        as? AVMetadataMachineReadableCodeObject {
+                        drawCodeCorners(cObj)
+                    }
                 }
             }
         }
@@ -273,7 +283,7 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
             point = points[index]
             path.addLine(to: point)
 
-            index = index + 1
+            index += 1
         }
         path.close()
 

@@ -16,7 +16,7 @@ protocol SecurityMainViewCellPresenterDelegate: BaseTableViewCellPresenterDelega
 }
 
 class SecurityMainViewCell: BaseTableViewCell {
-    
+
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var buttonIconAction: UIButton!
     @IBOutlet weak var imageLogo: UIImageView!
@@ -42,11 +42,11 @@ class SecurityMainViewCell: BaseTableViewCell {
     @IBAction func actionMainButtonTapped(_ sender: Any) {
         self.delegateImpl?.tappedAction(for: self)
     }
-    
+
     @IBAction func switchValueChanged(_ sender: Any) {
         self.delegateImpl?.switchValueChanged(for: self, value: switchAction.isOn)
     }
-    
+
     // MARK: Config
 
     func config(title: String, hasSwitch: Bool, switchValue: Bool, icon: UIImage) {

@@ -18,10 +18,10 @@ public extension UISegmentedControl {
     var segmentTitles: [String?] {
         get {
             var titles: [String?] = []
-            var i = 0
-            while i < numberOfSegments {
-                titles.append(titleForSegment(at: i))
-                i += 1
+            var pos = 0
+            while pos < numberOfSegments {
+                titles.append(titleForSegment(at: pos))
+                pos += 1
             }
             return titles
         }
@@ -37,10 +37,10 @@ public extension UISegmentedControl {
     var segmentImages: [UIImage?] {
         get {
             var images: [UIImage?] = []
-            var i = 0
-            while i < numberOfSegments {
-                images.append(imageForSegment(at: i))
-                i += 1
+            var pos = 0
+            while pos < numberOfSegments {
+                images.append(imageForSegment(at: pos))
+                pos += 1
             }
             return images
         }

@@ -46,7 +46,8 @@ class ApiService: NSObject {
         }, metadata: makeMeta(userId))
     }
 
-    func addConnectionToken(token: String, nonce: String) throws -> Io_Iohk_Prism_Protos_AddConnectionFromTokenResponse {
+    func addConnectionToken(token: String,
+                            nonce: String) throws -> Io_Iohk_Prism_Protos_AddConnectionFromTokenResponse {
 
         let publicKey = FakeData.fakePublicKey()
         let userId = FakeData.fakeUserId()
@@ -57,11 +58,13 @@ class ApiService: NSObject {
         }, metadata: makeMeta(userId))
     }
 
-    func getConnections(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse] {
+    func getConnections(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
+        throws -> [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse] {
 
         var responseList: [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse] = []
         for userId in userIds ?? [] {
-            let response = try service.getConnectionsPaginated(Io_Iohk_Prism_Protos_GetConnectionsPaginatedRequest.with {
+            let response = try service.getConnectionsPaginated(
+                Io_Iohk_Prism_Protos_GetConnectionsPaginatedRequest.with {
                 // $0.lastSeenConnectionID = token
                 $0.limit = limit
             }, metadata: makeMeta(userId))
@@ -72,7 +75,8 @@ class ApiService: NSObject {
 
     // MARK: Credentials
 
-    func getCredentials(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] {
+    func getCredentials(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
+        throws -> [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] {
 
         var responseList: [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] = []
         for userId in userIds ?? [] {
@@ -84,15 +88,16 @@ class ApiService: NSObject {
         return responseList
     }
 
-    func shareCredential(userIds: [String]?, connectionIds: [String]?, degree: Degree) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
+    func shareCredential(userIds: [String]?, connectionIds: [String]?,
+                         degree: Degree) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
 
         let messageData = try? degree.intCredential?.serializedData()
 
         var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
 
-        for i in 0 ..< (userIds ?? []).count {
-            let userId = userIds![i]
-            let connectionId = connectionIds![i]
+        for pos in 0 ..< (userIds ?? []).count {
+            let userId = userIds![pos]
+            let connectionId = connectionIds![pos]
             let response = try service.sendMessage(Io_Iohk_Prism_Protos_SendMessageRequest.with {
                 $0.message = messageData!
                 $0.connectionID = connectionId
@@ -102,14 +107,13 @@ class ApiService: NSObject {
         return responseList
     }
 
-    func shareCredentials(userId: String, connectionId: String, degrees: [Degree]) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
-
-        
+    func shareCredentials(userId: String, connectionId: String,
+                          degrees: [Degree]) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
 
         var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
 
-        for i in 0 ..< (degrees).count {
-            let messageData = try? degrees[i].intCredential?.serializedData()
+        for pos in 0 ..< (degrees).count {
+            let messageData = try? degrees[pos].intCredential?.serializedData()
             let response = try service.sendMessage(Io_Iohk_Prism_Protos_SendMessageRequest.with {
                 $0.message = messageData!
                 $0.connectionID = connectionId

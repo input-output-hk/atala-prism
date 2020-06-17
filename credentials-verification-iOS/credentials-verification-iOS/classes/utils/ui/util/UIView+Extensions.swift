@@ -97,6 +97,7 @@ extension UIView {
 }
 
 class Dot: UIView {
-    override func layoutSubviews()
-    { layer.cornerRadius = bounds.size.width / 2 }
+    override func layoutSubviews() {
+        layer.cornerRadius = bounds.size.width / 2
+    }
 }

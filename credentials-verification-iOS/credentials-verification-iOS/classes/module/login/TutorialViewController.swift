@@ -48,7 +48,8 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
 
     static func openThisView(_ caller: UIViewController?) {
 
-        ViewControllerUtils.changeScreenPresented(caller: caller, storyboardName: "Tutorial", viewControllerIdentif: "Tutorial")
+        ViewControllerUtils.changeScreenPresented(caller: caller, storyboardName: "Tutorial",
+                                                  viewControllerIdentif: "Tutorial")
         caller?.navigationController?.popViewController(animated: true)
     }
 
@@ -74,14 +75,16 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
 
         // Force the scrollview to have the correct size first
         scrollView.refreshView()
-        scrollView.contentSize = CGSize(width: scrollView.frame.width * CGFloat(pages.count), height: scrollView.frame.height)
+        scrollView.contentSize = CGSize(width: scrollView.frame.width * CGFloat(pages.count),
+                                        height: scrollView.frame.height)
         scrollView.isPagingEnabled = true
 
-        for i in 0 ..< pages.count {
-            pages[i].frame = CGRect(x: scrollView.frame.width * CGFloat(i), y: 0, width: scrollView.frame.width, height: scrollView.frame.height)
-            scrollView.addSubview(pages[i])
-            pages[i].config(index: i)
-            pageIndicatorContainers[i].addOnClickListener(action: actionPages[i])
+        for pos in 0 ..< pages.count {
+            pages[pos].frame = CGRect(x: scrollView.frame.width * CGFloat(pos), y: 0,
+                                    width: scrollView.frame.width, height: scrollView.frame.height)
+            scrollView.addSubview(pages[pos])
+            pages[pos].config(index: pos)
+            pageIndicatorContainers[pos].addOnClickListener(action: actionPages[pos])
         }
 
         view.refreshView()
@@ -91,7 +94,7 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
     @IBAction func tappedButtonContinue(_ sender: Any) {
         presenterImpl.tappedRegisterButton()
     }
-    
+
     func tappedButtonAction(for view: TutorialPageView, buttonIndex: Int) {
 
         if currentPageIndex + 1 < pages.count {
@@ -125,16 +128,16 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
         let nextPage = pages[index]
         scrollView.scrollRectToVisible(nextPage.frame, animated: animated)
 
-        for i in 0 ..< pages.count {
-            pageIndicatorIcons[i].backgroundColor = index != i ? .appGrey : .appRed
+        for pos in 0 ..< pages.count {
+            pageIndicatorIcons[pos].backgroundColor = index != pos ? .appGrey : .appRed
         }
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let pageIndex = Int(round(scrollView.contentOffset.x/view.frame.width))
 //         pageControl.currentPage = Int(pageIndex)
-        for i in 0 ..< pages.count {
-            pageIndicatorIcons[i].backgroundColor = pageIndex != i ? .appGrey : .appRed
+        for pos in 0 ..< pages.count {
+            pageIndicatorIcons[pos].backgroundColor = pageIndex != pos ? .appGrey : .appRed
         }
     }
 

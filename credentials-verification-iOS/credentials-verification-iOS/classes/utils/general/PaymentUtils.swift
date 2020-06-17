@@ -7,7 +7,9 @@ class PaymentUtils {
     /// Calls the payment view.
     /// success: In case no error arises. Nonce string will be the param.
     /// error: In case of an error or in case of a cancellation. Bool param will be true in the former case.
-    static func showPaymentView(_ view: BaseViewController?, token: String, success: @escaping (String) -> Void, error errorCallback: @escaping (Bool, Error?) -> Void) {
+    static func showPaymentView(_ view: BaseViewController?, token: String,
+                                success: @escaping (String) -> Void,
+                                error errorCallback: @escaping (Bool, Error?) -> Void) {
 
         let request = BTDropInRequest()
         let dropIn = BTDropInController(authorization: token, request: request) { controller, result, error in

@@ -19,7 +19,8 @@ class ViewUtils: NSObject {
         }
     }
 
-    public static func showErrorMessage(doShow: Bool, view: UIViewController, title: String? = nil, message: String? = nil, afterErrorAction: (() -> Void)? = nil) {
+    public static func showErrorMessage(doShow: Bool, view: UIViewController, title: String? = nil,
+                                        message: String? = nil, afterErrorAction: (() -> Void)? = nil) {
 
         if doShow {
             let titleStr = (title == nil || title!.isEmpty) ? "error_generic_title".localize() : title
@@ -32,7 +33,8 @@ class ViewUtils: NSObject {
         }
     }
 
-    public static func showSuccessMessage(doShow: Bool, view: UIViewController, title: String? = nil, message: String? = nil, actions: [UIAlertAction]? = nil) {
+    public static func showSuccessMessage(doShow: Bool, view: UIViewController, title: String? = nil,
+                                          message: String? = nil, actions: [UIAlertAction]? = nil) {
 
         if doShow {
             let titleStr = title == nil ? "success_generic_title".localize() : title
@@ -41,7 +43,8 @@ class ViewUtils: NSObject {
         }
     }
 
-    public static func showAlertView(view: UIViewController, title: String, message: String, actions: [UIAlertAction]? = nil) {
+    public static func showAlertView(view: UIViewController, title: String, message: String,
+                                     actions: [UIAlertAction]? = nil) {
 
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         var actions = actions

@@ -60,7 +60,9 @@ class ProfileViewController: ListingBaseViewController {
         }
 
         // Navigation bar
-        navBar = NavBarCustomStyle(hasNavBar: true, isWhite: hasBgSpecial, title: navTitle, hasBackButton: profileMode != .initial, rightIconName: navTitleIcon, rightIconAction: navTitleIconAction)
+        navBar = NavBarCustomStyle(hasNavBar: true, isWhite: hasBgSpecial, title: navTitle,
+                                   hasBackButton: profileMode != .initial, rightIconName: navTitleIcon,
+                                   rightIconAction: navTitleIconAction)
         NavBarCustom.config(view: self)
         // Special background
         viewBgSpecial.isHidden = !hasBgSpecial

@@ -33,7 +33,8 @@ protocol SwitchCustomDelegate: class {
         super.commonInit()
 
         changeState(newState: currentState)
-        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(SwitchCustomView.imageTapped(_:))))
+        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self,
+                                                              action: #selector(SwitchCustomView.imageTapped(_:))))
     }
 
     @objc func imageTapped(_ sender: UITapGestureRecognizer) {

@@ -24,8 +24,8 @@ class SharedMemoryHelper: NSObject {
             return internalObject
         }
 
-        if let jsonString = getObject(key: key, internalObject: internalObject) {
-            return T(JSONString: jsonString as! String)
+        if let jsonString = getObject(key: key, internalObject: internalObject) as? String {
+            return T(JSONString: jsonString)
         }
         return nil
     }
@@ -36,8 +36,8 @@ class SharedMemoryHelper: NSObject {
             return internalObject
         }
 
-        if let jsonString = getObject(key: key, internalObject: internalObject) {
-            return [T](JSONString: jsonString as! String)
+        if let jsonString = getObject(key: key, internalObject: internalObject) as? String {
+            return [T](JSONString: jsonString)
         }
         return nil
     }

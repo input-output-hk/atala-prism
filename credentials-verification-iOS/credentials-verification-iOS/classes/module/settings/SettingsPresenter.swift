@@ -38,10 +38,14 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     }
 
     lazy var initialStaticCells: [InitialCellValue] = [
-        InitialCellValue(icon: "logo_backup", title: "settings_backup_title", subtitle: "settings_backup_subtitle", action: nil),
-        InitialCellValue(icon: "logo_security", title: "settings_security_title", subtitle: "settings_security_subtitle", action: actionRowSecurity),
-        InitialCellValue(icon: "logo_support", title: "settings_support_title", subtitle: "settings_support_subtitle", action: nil),
-        InitialCellValue(icon: "logo_about", title: "settings_about_title", subtitle: "settings_about_subtitle", action: actionRowTerms),
+        InitialCellValue(icon: "logo_backup", title: "settings_backup_title",
+                         subtitle: "settings_backup_subtitle", action: nil),
+        InitialCellValue(icon: "logo_security", title: "settings_security_title",
+                         subtitle: "settings_security_subtitle", action: actionRowSecurity),
+        InitialCellValue(icon: "logo_support", title: "settings_support_title",
+                         subtitle: "settings_support_subtitle", action: nil),
+        InitialCellValue(icon: "logo_about", title: "settings_about_title",
+                         subtitle: "settings_about_subtitle", action: actionRowTerms)
     ]
 
     func startShowingInitial() {
@@ -149,18 +153,22 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
 
     func setup(for cell: CommonViewCell) {
 
-        let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        cell.config(title: value.title.localize(), subtitle: value.subtitle.localize(), logoData: nil, logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
+        if let value = initialRows![cell.indexPath!.row].value as? InitialCellValue {
+            cell.config(title: value.title.localize(), subtitle: value.subtitle.localize(),
+                        logoData: nil, logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
+        }
     }
 
     func tappedAction(for cell: CommonViewCell) {
 
-        let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        value.action?.action()
+        if let value = initialRows![cell.indexPath!.row].value as? InitialCellValue {
+            value.action?.action()
+        }
     }
-    
+
     func didSelectRowAt(indexPath: IndexPath) {
-        let value = initialRows![indexPath.row].value as! InitialCellValue
-        value.action?.action()
+        if let value = initialRows![indexPath.row].value as? InitialCellValue {
+            value.action?.action()
+        }
     }
 }

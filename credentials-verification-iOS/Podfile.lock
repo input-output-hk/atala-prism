@@ -172,6 +172,7 @@ PODS:
   - SwiftGRPC (0.10.0):
     - gRPC-Core (~> 1.23.0)
     - SwiftProtobuf (~> 1.7.0)
+  - SwiftLint (0.39.2)
   - SwiftProtobuf (1.7.0)
   - SwiftyBeaver (1.7.1)
   - Tabman (2.9.0):
@@ -191,6 +192,7 @@ DEPENDENCIES:
   - ObjectMapper (~> 3.1)
   - Presentr (~> 1.9.0)
   - SwiftGRPC (~> 0.10.0)
+  - SwiftLint
   - SwiftProtobuf (~> 1.7.0)
   - SwiftyBeaver (~> 1.7.0)
   - Tabman (~> 2.6)
@@ -231,6 +233,7 @@ SPEC REPOS:
     - PromisesObjC
     - Protobuf
     - SwiftGRPC
+    - SwiftLint
     - SwiftProtobuf
     - SwiftyBeaver
     - Tabman
@@ -270,11 +273,12 @@ SPEC CHECKSUMS:
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   SwiftGRPC: f8fcfecb547c96cc6913de619f95fa3cd09838ee
+  SwiftLint: 22ccbbe3b8008684be5955693bab135e0ed6a447
   SwiftProtobuf: 4fd9645e69b72cbae6ec8da5be0cdd20ca6565dd
   SwiftyBeaver: da5e573ad583586c18236324c36900990afe1733
   Tabman: 55d3d18f393ce5119515cd0349c841a07774c895
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: f30e63c5a5862abbbc27fff2993ec2ae31abaf40
+PODFILE CHECKSUM: 1c890be857a8988c96a7fe4704645c824ae76089
 
 COCOAPODS: 1.8.4

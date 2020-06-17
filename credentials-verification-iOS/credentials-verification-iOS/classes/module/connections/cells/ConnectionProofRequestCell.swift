@@ -16,9 +16,9 @@ class ConnectionProofRequestCell: BaseTableViewCell, SwitchCustomDelegate {
 
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var checkbox: SwitchCustomView!
-    
+
     var credential: Degree!
-    
+
     override class func default_NibName() -> String {
         return "ConnectionProofRequestCell"
     }
@@ -58,6 +58,6 @@ class ConnectionProofRequestCell: BaseTableViewCell, SwitchCustomDelegate {
         case .none:
             print("Undefined credential type")
         }
-        
+
     }
 }

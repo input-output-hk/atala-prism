@@ -1,6 +1,7 @@
 //
 
-class CredentialPayPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, CredentialPayViewCellPresenterDelegate, FieldViewCellPresenterDelegate, ConfirmationViewCellPresenterDelegate {
+class CredentialPayPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+    CredentialPayViewCellPresenterDelegate, FieldViewCellPresenterDelegate, ConfirmationViewCellPresenterDelegate {
 
     var viewImpl: CredentialPayViewController? {
         return view as? CredentialPayViewController
@@ -43,7 +44,7 @@ class CredentialPayPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         CellRow(type: .field, value: (1, true)),
         CellRow(type: .field, value: (2, true)),
         CellRow(type: .field, value: (3, false)),
-        CellRow(type: .confirmation, value: nil),
+        CellRow(type: .confirmation, value: nil)
     ]
 
     func startShowingInitial() {
@@ -199,7 +200,8 @@ class CredentialPayPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func setup(for cell: ConfirmationViewCell) {
 
-        let isActive = ((cardNumber?.count ?? 0) > 0) && ((cardDate?.count ?? 0) > 0) && ((cardCvv?.count ?? 0) > 0) && ((cardName?.count ?? 0) > 0)
+        let isActive = ((cardNumber?.count ?? 0) > 0) && ((cardDate?.count ?? 0) > 0)
+            && ((cardCvv?.count ?? 0) > 0) && ((cardName?.count ?? 0) > 0)
         cell.config(title: "continue".localize(), isEnabled: isActive)
     }
 

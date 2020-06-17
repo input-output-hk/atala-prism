@@ -13,7 +13,7 @@ class DetailFooterViewCell: BaseTableViewCell {
     @IBOutlet weak var viewButtons: UIView!
     @IBOutlet weak var buttonDecline: UIButton!
     @IBOutlet weak var buttonConfirm: UIButton!
-    
+
     override class func default_NibName() -> String {
         return "DetailFooterViewCell"
     }
@@ -29,8 +29,10 @@ class DetailFooterViewCell: BaseTableViewCell {
         delegateImpl?.setup(for: self)
         viewMainBody.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, onlyBottoms: true)
         viewMainBody.addShadowLayer(opacity: 0.2)
-        buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
-        buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
+        buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3,
+                                      borderColor: UIColor.appRed.cgColor)
+        buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3,
+                                      borderColor: UIColor.appRed.cgColor)
     }
 
     // MARK: Component delegates
@@ -45,7 +47,7 @@ class DetailFooterViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(isNew: Bool,type: CredentialType?) {
+    func config(isNew: Bool, type: CredentialType?) {
 
         switch type {
         case .univerityDegree:

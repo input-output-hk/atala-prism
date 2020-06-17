@@ -39,8 +39,6 @@ class WalletViewController: ListingBaseViewController {
         viewEmpty.isHidden = !isEmpty
         viewTable.isHidden = isEmpty
 
-        // TODO: Config empty screen according to wallet mode
-
         var navTitle = ""
         var navTitleIcon: String?
         var navTitleIconAction: SelectorAction?
@@ -54,14 +52,22 @@ class WalletViewController: ListingBaseViewController {
             navTitleIconAction = actionHistory
         case .history:
             navTitle = "wallet_history_nav_title".localize()
-            viewEmpty.config(imageNamed: "img_credit_card", title: "wallet_history_empty_title".localize(), subtitle: "wallet_history_empty_subtitle".localize(), buttonText: "wallet_history_empty_button".localize(), buttonAction: actionHistoryEmpty)
+            viewEmpty.config(imageNamed: "img_credit_card", title: "wallet_history_empty_title".localize(),
+                             subtitle: "wallet_history_empty_subtitle".localize(),
+                             buttonText: "wallet_history_empty_button".localize(),
+                             buttonAction: actionHistoryEmpty)
         case .creditCards:
             navTitle = "wallet_initial_nav_title".localize()
-            viewEmpty.config(imageNamed: "img_credit_card", title: "wallet_cards_empty_title".localize(), subtitle: "wallet_cards_empty_subtitle".localize(), buttonText: "wallet_cards_empty_button".localize(), buttonAction: actionCardsEmpty)
+            viewEmpty.config(imageNamed: "img_credit_card", title: "wallet_cards_empty_title".localize(),
+                             subtitle: "wallet_cards_empty_subtitle".localize(),
+                             buttonText: "wallet_cards_empty_button".localize(),
+                             buttonAction: actionCardsEmpty)
         }
 
         // Navigation bar
-        navBar = NavBarCustomStyle(hasNavBar: true, isWhite: hasBgSpecial, title: navTitle, hasBackButton: walletMode != .initial, rightIconName: navTitleIcon, rightIconAction: navTitleIconAction)
+        navBar = NavBarCustomStyle(hasNavBar: true, isWhite: hasBgSpecial, title: navTitle,
+                                   hasBackButton: walletMode != .initial, rightIconName: navTitleIcon,
+                                   rightIconAction: navTitleIconAction)
         NavBarCustom.config(view: self)
         // Special background
         viewBgSpecial.isHidden = !hasBgSpecial
@@ -99,7 +105,7 @@ class WalletViewController: ListingBaseViewController {
         case .history:
             return HistoryViewCell.default_NibName()
         case .cards:
-            return NewDegreeViewCell.default_NibName() // TODO: CHANGE ME
+            return NewDegreeViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }

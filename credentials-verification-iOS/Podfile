@@ -29,7 +29,8 @@ target 'credentials-verification-iOS' do
   pod 'BraintreeDropIn', '~> 7.5.0'
   # Mnemonics
   pod 'BitcoinKit', '~> 1.1.0'
-
+  # Linter
+  pod 'SwiftLint'
   
   target 'credentials-verification-iOSTests' do
     inherit! :search_paths

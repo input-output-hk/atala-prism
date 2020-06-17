@@ -30,7 +30,9 @@ class FieldViewCell: BaseTableViewCell, TextFieldTitledViewDelegate {
 
     // MARK: Config
 
-    func config(title: String?, text: String?, bgColor: UIColor, isEnable: Bool = true, hasNext: Bool = false, hasAutocapitalization: Bool = false, hasAutocorrection: Bool = false) {
+    func config(title: String?, text: String?, bgColor: UIColor, isEnable: Bool = true,
+                hasNext: Bool = false, hasAutocapitalization: Bool = false,
+                hasAutocorrection: Bool = false) {
 
         textField.config(title: title ?? "")
         textField.textField.text = text

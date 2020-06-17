@@ -10,11 +10,11 @@ import UIKit
 import LocalAuthentication
 
 class LockPresenter: BasePresenter {
-    
+
     var viewImpl: LockViewController? {
         return view as? LockViewController
     }
-    
+
     func unlock() {
         viewImpl?.dismiss(animated: true, completion: nil)
     }
@@ -25,7 +25,8 @@ class LockPresenter: BasePresenter {
         var error: NSError?
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             let reason = "unlock_app".localize()
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason! ) { success, policyError in
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                                   localizedReason: reason! ) { success, policyError in
 
                 if success {
 
@@ -42,7 +43,9 @@ class LockPresenter: BasePresenter {
                     if policyError?._code == Int(kLAErrorUserCancel) {
                         errorMsg = "unlock_touch_id_cancel".localize()
                     } else if policyError?._code == Int(kLAErrorAuthenticationFailed) {
-                        errorMsg = context.biometryType == .faceID ? "unlock_face_id_error".localize() : "unlock_touch_id_error".localize()
+                        errorMsg = context.biometryType == .faceID
+                            ? "unlock_face_id_error".localize()
+                            : "unlock_touch_id_error".localize()
                     }
                     DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1) { [unowned self] in
                         ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: errorMsg)
@@ -53,17 +56,24 @@ class LockPresenter: BasePresenter {
         } else {
             DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) { [unowned self] in
                 if context.biometryType == .faceID {
-                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: "unlock_unerroled_face_id".localize())
+                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!,
+                                               title: nil, message: "unlock_unerroled_face_id".localize())
                 } else {
-                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: "unlock_unerroled_touch_id".localize())
+                    ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!,
+                                               title: nil, message: "unlock_unerroled_touch_id".localize())
                 }
             }
         }
     }
-    
+
     func validatePin() {
-        let pin = "\(viewImpl?.pinDigOneTf.text ?? "")\(viewImpl?.pinDigTwoTf.text ?? "")\(viewImpl?.pinDigThreeTf.text ?? "")\(viewImpl?.pinDigFourTf.text ?? "")"
-        if (sharedMemory.loggedUser?.appPin == pin) {
+        let pin = """
+        \(viewImpl?.pinDigOneTf.text ?? "")\
+        \(viewImpl?.pinDigTwoTf.text ?? "")\
+        \(viewImpl?.pinDigThreeTf.text ?? "")\
+        \(viewImpl?.pinDigFourTf.text ?? "")
+        """
+        if sharedMemory.loggedUser?.appPin == pin {
             self.unlock()
         } else {
             viewImpl?.showErrorMessage(doShow: true, message: "unlock_pin_error".localize())
@@ -73,7 +83,7 @@ class LockPresenter: BasePresenter {
             viewImpl?.pinDigOneTf.text = ""
         }
     }
-    
+
     func tappedNumber(digit: String) {
         if viewImpl?.pinDigOneTf.text?.isEmpty ?? false {
             viewImpl?.pinDigOneTf.text = digit
@@ -86,7 +96,7 @@ class LockPresenter: BasePresenter {
             validatePin()
         }
     }
-    
+
     func tappedBackspace() {
         if !(viewImpl?.pinDigFourTf.text?.isEmpty ?? false) {
             viewImpl?.pinDigFourTf.text = ""

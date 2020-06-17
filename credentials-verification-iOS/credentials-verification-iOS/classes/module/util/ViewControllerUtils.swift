@@ -61,12 +61,19 @@ class ViewControllerUtils {
         presenter?.willEnterBackground()
     }
 
-    static func setupNotificationsForBackgroundCalls(view: UIViewController, didEnterForeground: Selector, willEnterForeground: Selector, didEnterBackground: Selector, willEnterBackground: Selector) {
+    static func setupNotificationsForBackgroundCalls(view: UIViewController, didEnterForeground: Selector,
+                                                     willEnterForeground: Selector,
+                                                     didEnterBackground: Selector,
+                                                     willEnterBackground: Selector) {
 
-        NotificationCenter.default.addObserver(view, selector: didEnterForeground, name: UIApplication.didBecomeActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(view, selector: willEnterForeground, name: UIApplication.willEnterForegroundNotification, object: nil)
-        NotificationCenter.default.addObserver(view, selector: didEnterBackground, name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(view, selector: willEnterBackground, name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(view, selector: didEnterForeground,
+                                               name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(view, selector: willEnterForeground,
+                                               name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(view, selector: didEnterBackground,
+                                               name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(view, selector: willEnterBackground,
+                                               name: UIApplication.willResignActiveNotification, object: nil)
     }
 
     static func didReceiveMemoryWarning(view: UIViewController) {
@@ -93,8 +100,10 @@ class ViewControllerUtils {
 
     public static func addShiftKeyboardListeners(view: UIViewController) {
 
-        NotificationCenter.default.addObserver(view, selector: #selector(view.shiftKeyboardOnWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(view, selector: #selector(view.shiftKeyboardOnWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(view, selector: #selector(view.shiftKeyboardOnWillShow),
+                                               name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(view, selector: #selector(view.shiftKeyboardOnWillHide),
+                                               name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
     // MARK: Screen navigation
@@ -142,7 +151,8 @@ class ViewControllerUtils {
                                       params: [Any?]? = nil) {
 
         let storyboard = UIStoryboard(name: storyboardName, bundle: nil)
-        let viewcontroller = storyboard.instantiateViewController(withIdentifier: viewControllerIdentif ?? storyboardName)
+        let viewcontroller = storyboard.instantiateViewController(withIdentifier:
+                                                                viewControllerIdentif ?? storyboardName)
         if let segueableViewController = viewcontroller as? SegueableScreen {
             segueableViewController.configScreenFromSegue(params: params)
         }

@@ -44,7 +44,8 @@ class CommonViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String, isComingSoon: Bool = false) {
+    func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String,
+                isComingSoon: Bool = false) {
 
         labelTitle.text = title
         let hideSubtitle = subtitle == nil
