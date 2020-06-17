@@ -68,15 +68,14 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
   "AddConnectionFromToken" should {
     "add connection from token" in {
       val issuerId = createIssuer("Issuer")
-      val holderId = createHolder("Holder")
       val token = createToken(issuerId)
-      val publicKey = generateKeyPair().getPublic
-      val ecPoint = getECPoint(publicKey)
+      val keys = generateKeyPair()
+      val ecPoint = getECPoint(keys.getPublic)
       val publicKeyProto =
         connector_models.ConnectorPublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
-      val encodedPublicKey = toEncodedPublicKey(publicKey)
-      usingApiAs(holderId) { blockingStub =>
-        val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
+      val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+      usingApiAs(Vector.empty, keys, request) { blockingStub =>
         val response = blockingStub.addConnectionFromToken(request)
         val holderId = response.userId
         holderId mustNot be(empty)
@@ -106,15 +105,31 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       }
     }
 
-    "return UNKNOWN if the token does not exist" in {
-      val holderId = createHolder("Holder")
-      val token = TokenString.random()
-      val ecPoint = getECPoint(generateKeyPair().getPublic)
+    "fails to add connection when signature missing" in {
+      val issuerId = createIssuer("Issuer")
+      val token = createToken(issuerId)
+      val keys = generateKeyPair()
+      val ecPoint = getECPoint(keys.getPublic)
       val publicKeyProto =
         connector_models.ConnectorPublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
-      usingApiAs(holderId) { blockingStub =>
+      usingApiAs.unlogged { blockingStub =>
         val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+        val ex = intercept[StatusRuntimeException] {
+          blockingStub.addConnectionFromToken(request)
+        }
+        ex.getStatus.getCode mustBe Status.Code.UNAUTHENTICATED
+      }
+    }
 
+    "return UNKNOWN if the token does not exist" in {
+      val token = TokenString.random()
+      val keys = generateKeyPair()
+      val ecPoint = getECPoint(keys.getPublic)
+      val publicKeyProto =
+        connector_models.ConnectorPublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
+
+      val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+      usingApiAs(Vector.empty, keys, request) { blockingStub =>
         val status = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request)
         }.getStatus

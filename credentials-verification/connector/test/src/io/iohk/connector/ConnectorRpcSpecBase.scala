@@ -1,5 +1,6 @@
 package io.iohk.connector
 
+import java.security.KeyPair
 import java.time.Instant
 import java.util.concurrent.{Executor, TimeUnit}
 
@@ -13,18 +14,31 @@ import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO,
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.grpc.{
+  GrpcAuthenticationHeader,
+  GrpcAuthenticationHeaderParser,
+  GrpcAuthenticatorInterceptor,
+  SignedRequestsHelper
+}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.prism.protos.connector_api
 import org.mockito.MockitoSugar._
 import org.scalatest.BeforeAndAfterEach
+import scalapb.GeneratedMessage
 
 import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T
+  def apply[T](requestNonce: Vector[Byte], keys: KeyPair, request: GeneratedMessage)(f: STUB => T): T = {
+    val encodedPublicKey = ECKeys.toEncodedPublicKey(keys.getPublic)
+    val payload = SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+    val signature = ECSignature.sign(keys.getPrivate, payload.array).toVector
+    apply(requestNonce, signature, encodedPublicKey)(f)
+  }
   def unlogged[T](f: STUB => T): T
 }
 
@@ -125,17 +139,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     Seq(
       connector_api.ConnectorServiceGrpc
         .bindService(
-          new ConnectorService(
-            connectionsService,
-            messagesService,
-            registrationService,
-            braintreePayments,
-            paymentsRepository,
-            authenticator,
-            participantPropagator,
-            nodeMock,
-            participantsRepository
-          ),
+          connectorService,
           executionContext
         )
     )
@@ -174,7 +178,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     authenticator,
     participantPropagator,
     nodeMock,
-    participantsRepository
+    participantsRepository,
+    requireSignatureOnConnectionCreation = true
   )(
     executionContext
   )

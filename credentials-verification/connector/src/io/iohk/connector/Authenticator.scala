@@ -36,12 +36,16 @@ trait Authenticator {
   )(implicit ec: ExecutionContext): Future[Response]
 }
 
+trait AuthenticatorWithGrpcHeaderParser extends Authenticator {
+  def grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
+}
+
 class SignedRequestsAuthenticator(
     participantsRepository: ParticipantsRepository,
     requestNoncesRepository: RequestNoncesRepository,
     nodeClient: node_api.NodeServiceGrpc.NodeService,
-    grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends Authenticator
+    override val grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
+) extends AuthenticatorWithGrpcHeaderParser
     with ErrorSupport {
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)

@@ -1,8 +1,10 @@
 package io.iohk.connector
 
+import java.security.PublicKey
 import java.util.UUID
 
 import com.google.protobuf.ByteString
+import io.grpc.Context
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
@@ -10,8 +12,9 @@ import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ParticipantsRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys._
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
@@ -30,10 +33,12 @@ class ConnectorService(
     registrationService: RegistrationService,
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
-    authenticator: Authenticator,
+    authenticator: AuthenticatorWithGrpcHeaderParser,
     participantPropagatorService: ParticipantPropagatorService,
     nodeService: NodeServiceGrpc.NodeService,
-    participantsRepository: ParticipantsRepository
+    participantsRepository: ParticipantsRepository,
+    // TODO: remove this flag when mobile clients implement signatures
+    requireSignatureOnConnectionCreation: Boolean = false
 )(implicit
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
@@ -130,45 +135,82 @@ class ConnectorService(
       request: connector_api.AddConnectionFromTokenRequest
   ): Future[connector_api.AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
-    def f() = {
-      Future {
-        val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
-        val publicKey = request.holderEncodedPublicKey
-          .map { encodedKey =>
-            io.iohk.cvp.crypto.ECKeys.EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
-          }
-          .getOrElse {
-            // The iOS app has a key hardcoded which is not a valid ECKey
-            // This hack allow us to do the demo because it generates a valid key
-            // ignoring whatever cames from the app.
-            // TODO: Remove me after the demo
-            try {
-              request.holderPublicKey
-                .map { protoKey =>
-                  toEncodedPublicKey(
-                    toPublicKey(
-                      x = BigInt(protoKey.x),
-                      y = BigInt(protoKey.y)
-                    )
-                  )
-                }
-                .getOrElse(throw new RuntimeException("Missing public key"))
-            } catch {
-              case NonFatal(e) =>
-                toEncodedPublicKey(ECKeys.generateKeyPair().getPublic)
-            }
-          }
 
-        connections
-          .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
-          .wrapExceptions
-          .successMap {
-            case (userId, connectionInfo) =>
-              connector_api
-                .AddConnectionFromTokenResponse(Some(connectionInfo.toProto))
-                .withUserId(userId.uuid.toString)
-          }
-      }.flatten
+    def verifyRequestSignature(publicKey: PublicKey): FutureEither[ConnectorError, Unit] = {
+      val ctx = Context.current()
+      val header = authenticator.grpcAuthenticationHeaderParser.parse(ctx)
+
+      header match {
+        case Some(GrpcAuthenticationHeader.PublicKeyBased(requestNonce, headerPublicKey, signature)) =>
+          val payload = SignedRequestsHelper.merge(requestNonce, request.toByteArray).toArray
+
+          val resultEither = for {
+            _ <- Either.cond(
+              ECKeys.toPublicKey(headerPublicKey) == publicKey,
+              (),
+              InvalidArgumentError("publicKey", "key matching one in GRPC header", "different key")
+            )
+            _ <- Either.cond(
+              ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
+              (),
+              SignatureVerificationError()
+            )
+          } yield ()
+          Future.successful(resultEither).toFutureEither
+        case _ =>
+          Future.successful(Left(SignatureMissingError())).toFutureEither
+      }
+    }
+
+    def f() = {
+      Future
+        .fromTry(Try {
+          val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
+          val publicKey = request.holderEncodedPublicKey
+            .map { encodedKey =>
+              io.iohk.cvp.crypto.ECKeys.EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
+            }
+            .getOrElse {
+              // The iOS app has a key hardcoded which is not a valid ECKey
+              // This hack allow us to do the demo because it generates a valid key
+              // ignoring whatever cames from the app.
+              // TODO: Remove me after the demo
+              try {
+                request.holderPublicKey
+                  .map { protoKey =>
+                    toEncodedPublicKey(
+                      toPublicKey(
+                        x = BigInt(protoKey.x),
+                        y = BigInt(protoKey.y)
+                      )
+                    )
+                  }
+                  .getOrElse(throw new RuntimeException("Missing public key"))
+              } catch {
+                case NonFatal(e) =>
+                  toEncodedPublicKey(ECKeys.generateKeyPair().getPublic)
+              }
+            }
+
+          val result = for {
+            _ <-
+              if (requireSignatureOnConnectionCreation) {
+                verifyRequestSignature(ECKeys.toPublicKey(publicKey))
+              } else Future.successful(Right(())).toFutureEither
+            connectionCreationResult <-
+              connections
+                .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
+          } yield connectionCreationResult
+
+          result.wrapExceptions
+            .successMap {
+              case (userId, connectionInfo) =>
+                connector_api
+                  .AddConnectionFromTokenResponse(Some(connectionInfo.toProto))
+                  .withUserId(userId.uuid.toString)
+            }
+        })
+        .flatten
     }
 
     authenticator.public("addConnectionFromToken", request) { f() }
