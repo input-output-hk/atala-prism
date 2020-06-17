@@ -11,6 +11,7 @@ import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialSt
 import io.iohk.prism.protos.node_api
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class NodeServiceImpl(
     didDataService: DIDDataService,
@@ -23,8 +24,8 @@ class NodeServiceImpl(
 
     didDataService.findByDID(request.did).value.flatMap {
       case Left(err: NodeError) => Future.failed(err.toStatus.asRuntimeException())
-      case Right(didData) =>
-        Future.successful(node_api.GetDidDocumentResponse(Some(ProtoCodecs.toDIDDataProto(didData.toDIDData))))
+      case Right(didDataState) =>
+        Future.successful(node_api.GetDidDocumentResponse(Some(ProtoCodecs.toDIDDataProto(didDataState))))
     }
   }
 
@@ -76,8 +77,8 @@ class NodeServiceImpl(
   }
 
   override def getCredentialState(request: GetCredentialStateRequest): Future[GetCredentialStateResponse] = {
-    val credentialIdF = Future {
-      CredentialId(request.credentialId)
+    val credentialIdF = Future.fromTry {
+      Try(CredentialId(request.credentialId))
     } recover {
       case ex: IllegalArgumentException =>
         throw new RuntimeException(ex.getMessage)

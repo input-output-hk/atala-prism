@@ -107,6 +107,8 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
         credentialId.id
       )
     )
+    val credentialIssuanceDate = ProtoCodecs.fromTimestampInfoProto(credentialState.publicationDate.value)
+    val credentialRevocationDate = credentialState.revocationDate map ProtoCodecs.fromTimestampInfoProto
 
     println(credentialState)
 
@@ -123,32 +125,30 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     // get verification key
     val issuancekeyProtoOption = didDocument.publicKeys.find(_.id == issuanceKeyId)
     val issuancekeyData = issuancekeyProtoOption.value
+    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value)
+    val issuanceKeyRevokedOn = issuancekeyData.revokedOn map ProtoCodecs.fromTimestampInfoProto
     val issuancekey = issuancekeyProtoOption flatMap ProtoCodecs.fromProtoKey
 
-    // run all verifications, inclusing signature
-    // the credential was posted in the chain, and
+    // run all verifications, including signature
 
+    // the credential was posted in the chain, and
     credentialState.publicationDate.nonEmpty &&
-    credentialState.revocationDate.isEmpty &&
+    credentialRevocationDate.isEmpty &&
     // the issuer DID that signed the credential is registered, and
     didDocumentOption.nonEmpty &&
     // the key used to signed the credential is in the DID, and
     issuancekeyProtoOption.nonEmpty &&
+    // the key was in the DID before the credential publication event, and
+    issuanceKeyAddedOn.occurredBefore(credentialIssuanceDate) &&
+    // the key was not revoked before credential publication event, and
+    (
+      // either the key was never revoked
+      issuanceKeyRevokedOn.isEmpty ||
+      // or was revoked after signing the credential
+      credentialIssuanceDate.occurredBefore(issuanceKeyRevokedOn.value)
+    ) &&
     // the signature is valid
     cryptoSDK.verify(issuancekey.value, signedCredential)
-
-    // TODO: We are missing key timestamp data in the response of getDidDocument
-    //       We need to correct that and implement the checks that follow
-    // the key was in the DID before the credential publication event, and
-//    issuancekeyData.keyData.ecKeyData.value
-//    state.dids(C.issuerDID.suffix).data(C.signingKey).keyPublicationEvent < state.credentials(hash(C)).data.credPublicationEvent &&
-//      // the key was not revoked before credential publication event, and
-//      (
-//        // either the key was never revoked
-//        state.dids(C.issuerDID.suffix).data(C.signingKey).keyRevocationEvent.isEmpty ||
-//          // or was revoked after signing the credential
-//          state.credentials(hash(C)).data.credPublicationEvent < state.dids(C.issuerDID.suffix).data(C.signingKey).keyRevocationEvent.get
-//        )
   }
 
   private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {

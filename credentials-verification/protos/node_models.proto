@@ -1,8 +1,12 @@
 syntax = "proto3";
 
-import "common_models.proto";
-
 package io.iohk.prism.protos;
+
+message TimestampInfo {
+    uint64 blockTimestamp = 1; // timestamp provided from the underlying blockchain
+    uint32 blockSequenceNumber = 2; // transaction index inside the underlying blockchain block
+    uint32 operationSequenceNumber = 3; // operation index inside the AtalaBlock
+}
 
 enum KeyUsage {
     // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want user to explicitly choose the usage
@@ -22,6 +26,8 @@ message ECKeyData {
 message PublicKey {
     string id = 1;
     KeyUsage usage = 2;
+    TimestampInfo addedOn = 3;
+    TimestampInfo revokedOn = 4;
     oneof keyData {
         ECKeyData ecKeyData = 8;
     };
@@ -36,7 +42,6 @@ message CredentialData {
     string id = 1;
     string issuer = 2;
     bytes contentHash = 3;
-    Date issuanceDate = 4;
 }
 
 message CreateDIDOperation {
@@ -71,7 +76,6 @@ message IssueCredentialOperation {
 message RevokeCredentialOperation {
     bytes previousOperationHash = 1;
     string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
-    Date revocationDate = 3;
 }
 
 message AtalaOperation {

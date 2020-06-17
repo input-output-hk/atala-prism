@@ -6,7 +6,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.DIDData
+import io.iohk.node.grpc.ProtoCodecs
+import io.iohk.node.models.{DIDData, DIDPublicKey}
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -46,22 +47,30 @@ object CreateDIDOperationSpec {
               node_models.PublicKey(
                 "master",
                 node_models.KeyUsage.MASTER_KEY,
+                Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                None,
                 node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
               ),
               node_models
                 .PublicKey(
                   "issuing",
                   node_models.KeyUsage.ISSUING_KEY,
+                  Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                  None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
                 ),
               node_models.PublicKey(
                 "authentication",
                 node_models.KeyUsage.AUTHENTICATION_KEY,
+                Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                None,
                 node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
               ),
               node_models.PublicKey(
                 "communication",
                 node_models.KeyUsage.COMMUNICATION_KEY,
+                Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                None,
                 node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
               )
             )
@@ -191,7 +200,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
       for (key <- parsedOperation.keys) {
         val keyState = didDataRepository.findKey(parsedOperation.id, key.keyId).value.futureValue.right.value
-        keyState.toDIDPublicKey mustBe key
+        DIDPublicKey(keyState.didSuffix, keyState.keyId, keyState.keyUsage, keyState.key) mustBe key
         keyState.addedOn mustBe dummyTimestamp
         keyState.revokedOn mustBe None
       }

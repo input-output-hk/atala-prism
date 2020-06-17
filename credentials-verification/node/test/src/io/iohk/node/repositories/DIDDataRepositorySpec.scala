@@ -72,7 +72,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
         key <- didDataRepository.findKey(didSuffix, "issuing")
       } yield key).value.futureValue.right.value
 
-      result.toDIDPublicKey mustBe keys.tail.head
+      DIDPublicKey(result.didSuffix, result.keyId, result.keyUsage, result.key) mustBe keys.tail.head
       result.addedOn mustBe dummyTimestamp
       result.revokedOn mustBe None
     }

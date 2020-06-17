@@ -73,9 +73,3 @@ message GetCredentialStateResponse {
     TimestampInfo publicationDate = 2; // If present: underlying blockchain timestamp that refers to the transaction that                                // contains the IssueCredential operation associated to the credential
     TimestampInfo revocationDate = 3;  // If present: underlying blockchain timestamp that refers to the transaction that RevokeCredential operation associated to the credential
 }
-
-message TimestampInfo {
-    uint64 blockTimestamp = 1; // timestamp provided from the underlying blockchain
-    uint32 blockSequenceNumber = 2; // transaction index inside the underlying blockchain block
-    uint32 operationSequenceNumber = 3; // operation index inside the AtalaBlock
-}

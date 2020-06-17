@@ -11,6 +11,7 @@ import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.node.errors.NodeError
 import io.iohk.node.errors.NodeError.UnknownValueError
+import io.iohk.node.grpc.ProtoCodecs
 import io.iohk.node.models.nodeState.CredentialState
 import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.path.{Path, ValueAtPath}
@@ -24,7 +25,7 @@ import io.iohk.node.operations.{
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.node.services.{BlockProcessingServiceSpec, CredentialsService, DIDDataService, ObjectManagementService}
-import io.iohk.prism.protos.node_api.{GetBuildInfoRequest, GetCredentialStateRequest, GetCredentialStateResponse}
+import io.iohk.prism.protos.node_api.{GetBuildInfoRequest, GetCredentialStateRequest}
 import io.iohk.prism.protos.{node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -96,6 +97,8 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val publicKey = document.publicKeys.headOption.value
       publicKey.id mustBe "master"
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
+      ProtoCodecs.fromTimestampInfoProto(publicKey.addedOn.value) mustBe dummyTime
+      publicKey.revokedOn mustBe empty
 
       ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe key.key
     }
@@ -260,19 +263,18 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         )
       )
 
-      val timestampInfoProto = node_api
+      val timestampInfoProto = node_models
         .TimestampInfo()
         .withBlockTimestamp(issuedOn.atalaBlockTimestamp.toEpochMilli)
         .withBlockSequenceNumber(issuedOn.atalaBlockSequenceNumber)
         .withOperationSequenceNumber(issuedOn.operationSequenceNumber)
 
-      val expectedResponse = GetCredentialStateResponse()
-        .withIssuerDID(issuerDIDSuffix.suffix)
-        .withPublicationDate(timestampInfoProto)
-
       doReturn(repositoryResponse).when(credentialsService).getCredentialState(validCredentialId)
 
-      service.getCredentialState(requestWithValidId) must be(expectedResponse)
+      val response = service.getCredentialState(requestWithValidId)
+      response.issuerDID must be(issuerDIDSuffix.suffix)
+      response.publicationDate must be(Some(timestampInfoProto))
+      response.revocationDate must be(empty)
     }
   }
 }

@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.KeyUsage
+import io.iohk.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.node.operations.CreateDIDOperationSpec.randomProtoECKey
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.node.services.BlockProcessingServiceSpec
@@ -196,7 +196,10 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
 
       newKey.keyUsage mustBe KeyUsage.MasterKey
       newKey.didSuffix mustBe createDidOperation.id
-      newKey.toDIDPublicKey mustBe parsedOperation.actions(0).asInstanceOf[AddKeyAction].key
+      DIDPublicKey(newKey.didSuffix, newKey.keyId, newKey.keyUsage, newKey.key) mustBe parsedOperation
+        .actions(0)
+        .asInstanceOf[AddKeyAction]
+        .key
       newKey.addedOn mustBe dummyTimestamp
       newKey.revokedOn mustBe None
     }

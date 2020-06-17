@@ -37,8 +37,7 @@ object RevokeCredentialOperationSpec {
     operation = node_models.AtalaOperation.Operation.RevokeCredential(
       value = node_models.RevokeCredentialOperation(
         previousOperationHash = ByteString.copyFrom(credentialIssueOperation.digest.value),
-        credentialId = credentialIssueOperation.digest.hexValue,
-        revocationDate = None
+        credentialId = credentialIssueOperation.digest.hexValue
       )
     )
   )

@@ -30,7 +30,7 @@ package object models {
 
   object DIDSuffix {
     def apply(didSuffix: String): DIDSuffix = {
-      require(DIDSuffix.DID_SUFFIX_RE.pattern.matcher(didSuffix).matches(), s"match error: $didSuffix")
+      require(DIDSuffix.DID_SUFFIX_RE.pattern.matcher(didSuffix).matches(), s"invalid DID format: $didSuffix")
 
       new DIDSuffix(didSuffix)
     }
@@ -58,13 +58,6 @@ package object models {
     val CREDENTIAL_ID_RE = "^[0-9a-f]{64}$".r
   }
 
-  case class Credential(
-      credentialId: CredentialId,
-      issuerDIDSuffix: DIDSuffix,
-      contentHash: SHA256Digest,
-      lastOperation: SHA256Digest
-  )
-
   case class AtalaObject(
       objectId: SHA256Digest,
       objectTimestamp: Instant,
@@ -82,9 +75,7 @@ package object models {
         issuedOn: TimestampInfo,
         revokedOn: Option[TimestampInfo] = None,
         lastOperation: SHA256Digest
-    ) {
-      def toCredential: Credential = Credential(credentialId, issuerDIDSuffix, contentHash, lastOperation)
-    }
+    )
 
     case class DIDPublicKeyState(
         didSuffix: DIDSuffix,
@@ -93,19 +84,12 @@ package object models {
         key: PublicKey,
         addedOn: TimestampInfo,
         revokedOn: Option[TimestampInfo]
-    ) {
-      def toDIDPublicKey: DIDPublicKey = DIDPublicKey(didSuffix, keyId, keyUsage, key)
-    }
+    )
 
     case class DIDDataState(
         didSuffix: DIDSuffix,
         keys: List[DIDPublicKeyState],
         lastOperation: SHA256Digest
-    ) {
-      def toDIDData: DIDData = {
-        DIDData(didSuffix, keys map { _.toDIDPublicKey }, lastOperation)
-      }
-    }
-
+    )
   }
 }

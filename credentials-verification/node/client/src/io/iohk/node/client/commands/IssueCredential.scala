@@ -1,11 +1,9 @@
 package io.iohk.node.client.commands
 
-import java.time.LocalDate
-
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.client.{Config, StateStorage}
-import io.iohk.prism.protos.{common_models, node_api, node_models}
+import io.iohk.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
@@ -16,10 +14,6 @@ case class IssueCredential(issuer: Option[String] = None, contentHash: Option[SH
     val state = StateStorage.load(config.stateStorage)
     val keys = state.keys
 
-    val issuanceJavaDate = LocalDate.now()
-    val issuanceDate =
-      common_models.Date(issuanceJavaDate.getYear, issuanceJavaDate.getMonthValue, issuanceJavaDate.getDayOfMonth)
-
     val issuerVal = issuer
       .orElse(state.didSuffix)
       .getOrElse(
@@ -28,11 +22,7 @@ case class IssueCredential(issuer: Option[String] = None, contentHash: Option[SH
 
     val issueCredentialOp = node_models.IssueCredentialOperation(
       credentialData = Some(
-        node_models.CredentialData(
-          issuer = issuerVal,
-          contentHash = ByteString.copyFrom(contentHash.get.value),
-          issuanceDate = Some(issuanceDate)
-        )
+        node_models.CredentialData(issuer = issuerVal, contentHash = ByteString.copyFrom(contentHash.get.value))
       )
     )
 

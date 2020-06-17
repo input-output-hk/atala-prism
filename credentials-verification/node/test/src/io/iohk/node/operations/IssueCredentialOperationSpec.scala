@@ -1,7 +1,6 @@
 package io.iohk.node.operations
 
 import java.security.MessageDigest
-import java.time.LocalDate
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
@@ -9,7 +8,7 @@ import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.prism.protos.{common_models, node_models}
+import io.iohk.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 
@@ -30,7 +29,6 @@ object IssueCredentialOperationSpec {
   lazy val issuer = issuerOperation.id
   val content = ""
   val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes)).value
-  val issuanceDate = LocalDate.of(2019, 12, 16)
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.IssueCredential(
@@ -38,9 +36,7 @@ object IssueCredentialOperationSpec {
         credentialData = Some(
           node_models.CredentialData(
             issuer = issuer.suffix,
-            contentHash = ByteString.copyFrom(contentHash),
-            issuanceDate =
-              Some(common_models.Date(issuanceDate.getYear, issuanceDate.getMonthValue, issuanceDate.getDayOfMonth))
+            contentHash = ByteString.copyFrom(contentHash)
           )
         )
       )
@@ -138,7 +134,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
   }
 
   "IssueCredentialOperation.applyState" should {
-    "create the DID information in the database" in {
+    "create the credential information in the database" in {
       didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
 

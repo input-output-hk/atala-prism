@@ -114,7 +114,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
             node_models.PublicKey(
               "master",
               node_models.KeyUsage.MASTER_KEY,
-              node_models.PublicKey.KeyData
+              keyData = node_models.PublicKey.KeyData
                 .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(ECKeys.generateKeyPair().getPublic))
             )
           )
@@ -129,7 +129,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
             node_models.PublicKey(
               "rootkey",
               node_models.KeyUsage.MASTER_KEY,
-              node_models.PublicKey.KeyData
+              keyData = node_models.PublicKey.KeyData
                 .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(operation3Keys.getPublic))
             )
           )

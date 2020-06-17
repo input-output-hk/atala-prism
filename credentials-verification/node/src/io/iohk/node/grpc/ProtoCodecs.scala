@@ -21,33 +21,46 @@ object ProtoCodecs {
     credentialState.revokedOn.fold(c)(toTimeStampInfoProto _ andThen c.withRevocationDate)
   }
 
-  def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_api.TimestampInfo = {
-    node_api
+  def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_models.TimestampInfo = {
+    node_models
       .TimestampInfo()
       .withBlockTimestamp(timestampInfo.atalaBlockTimestamp.toEpochMilli)
       .withBlockSequenceNumber(timestampInfo.atalaBlockSequenceNumber)
       .withOperationSequenceNumber(timestampInfo.operationSequenceNumber)
   }
 
-  def toDIDDataProto(didData: models.DIDData): node_models.DIDData = {
+  def toDIDDataProto(didDataState: models.nodeState.DIDDataState): node_models.DIDData = {
     node_models
       .DIDData()
-      .withId(didData.didSuffix.suffix)
+      .withId(didDataState.didSuffix.suffix)
       .withPublicKeys(
-        didData.keys.map(key => toProtoPublicKey(key.keyId, toECKeyData(key.key), toProtoKeyUsage(key.keyUsage)))
+        didDataState.keys.map(key =>
+          toProtoPublicKey(
+            key.keyId,
+            toECKeyData(key.key),
+            toProtoKeyUsage(key.keyUsage),
+            toTimeStampInfoProto(key.addedOn),
+            key.revokedOn map toTimeStampInfoProto
+          )
+        )
       )
   }
 
   def toProtoPublicKey(
       id: String,
       ecKeyData: node_models.ECKeyData,
-      keyUsage: node_models.KeyUsage
+      keyUsage: node_models.KeyUsage,
+      addedOn: node_models.TimestampInfo,
+      revokedOn: Option[node_models.TimestampInfo]
   ): node_models.PublicKey = {
-    node_models
+    val withoutRevKey = node_models
       .PublicKey()
       .withId(id)
       .withEcKeyData(ecKeyData)
       .withUsage(keyUsage)
+      .withAddedOn(addedOn)
+
+    revokedOn.fold(withoutRevKey)(revTime => withoutRevKey.withRevokedOn(revTime))
   }
 
   def toECKeyData(key: PublicKey): node_models.ECKeyData = {
@@ -71,7 +84,7 @@ object ProtoCodecs {
   // TODO: Manage proper validations.
   //       This implies making default values for operation sequence number to be 1
   //       (it is currently 0). The block sequence number starts at 1 already.
-  def fromTimestampInfoProto(timestampInfoProto: node_api.TimestampInfo): TimestampInfo = {
+  def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): TimestampInfo = {
     TimestampInfo(
       Instant.ofEpochMilli(timestampInfoProto.blockTimestamp),
       timestampInfoProto.blockSequenceNumber,

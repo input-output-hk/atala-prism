@@ -6,6 +6,7 @@ import java.security.{PrivateKey, PublicKey}
 
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.{ECKeys, ECSignature, SHA256Digest}
+import io.iohk.node.grpc.ProtoCodecs
 import io.iohk.node.models.DIDSuffix
 import io.iohk.node.poc.NodeSDK
 import io.iohk.prism.protos.{node_api, node_models}
@@ -106,12 +107,13 @@ case class WalletWithOdyssey(
     val parsedVCDataModel = VCDataModel.fromJwsCompactSer(verifier, compactJws).futureValue
 
     // extract user DIDSuffix and keyId from credential
-    val issuerDID = parsedVCDataModel.issuer.noSpaces
-    val issuanceKeyId = getKeyId(compactJws).drop(1).dropRight(1)
+    val issuerDID = parsedVCDataModel.issuer.noSpaces.drop(1).dropRight(1)
+    // we remove the external quotes (") the part "did:prism:64 chars suffix" and the separator "#"
+    val issuanceKeyId = getKeyId(compactJws).drop(66 + "did:prism:".length).dropRight(1)
 
     // request credential state to the node
     val hash = SHA256Digest.compute(compactJws.getBytes(StandardCharsets.UTF_8))
-    val issuerDIDSuffix = DIDSuffix(issuerDID.drop(1 + "did:prism:".length).dropRight(1))
+    val issuerDIDSuffix = DIDSuffix(issuerDID.drop("did:prism:".length))
     val issuanceOperation = NodeSDK.buildIssueCredentialOp(hash, issuerDIDSuffix)
     val credentialId = NodeSDK.computeCredId(issuanceOperation)
 
@@ -120,37 +122,46 @@ case class WalletWithOdyssey(
         credentialId.id
       )
     )
+    val credentialIssuanceDate = ProtoCodecs.fromTimestampInfoProto(credentialState.publicationDate.value)
+    val credentialRevocationDate = credentialState.revocationDate map ProtoCodecs.fromTimestampInfoProto
 
     println(credentialState)
 
-    // resolve DID key through the resolver
-    val issuancekeyFuture = keyResolver.resolvePublicKey(new URI(issuanceKeyId))
-    // just added to block until the future returns
-    issuancekeyFuture.futureValue
+    // resolve DID through the node
+    val didDocumentOption = node
+      .getDidDocument(
+        node_api.GetDidDocumentRequest(
+          did = issuerDID
+        )
+      )
+      .document
+    val didDocument = didDocumentOption.value
+
+    val issuancekeyProtoOption = didDocument.publicKeys.find(_.id == issuanceKeyId)
+    val issuancekeyData = issuancekeyProtoOption.value
+    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value)
+    val issuanceKeyRevokedOn = issuancekeyData.revokedOn map ProtoCodecs.fromTimestampInfoProto
 
     // run all verifications, inclusing signature
-    // the credential was posted in the chain, and
 
+    // the credential was posted in the chain, and
     credentialState.publicationDate.nonEmpty &&
-    credentialState.revocationDate.isEmpty &&
+    credentialRevocationDate.isEmpty &&
     // the issuer DID that signed the credential is registered, and
+    didDocumentOption.nonEmpty &&
     // the key used to signed the credential is in the DID, and
-    issuancekeyFuture.value.value.isSuccess
+    issuancekeyProtoOption.nonEmpty &&
+    // the key was in the DID before the credential publication event, and
+    issuanceKeyAddedOn.occurredBefore(credentialIssuanceDate) &&
+    // the key was not revoked before credential publication event, and
+    (
+      // either the key was never revoked
+      issuanceKeyRevokedOn.isEmpty ||
+      // or was revoked after signing the credential
+      credentialIssuanceDate.occurredBefore(issuanceKeyRevokedOn.value)
+    )
     // the signature is valid
     // NOTE: Signature validation is done when the JWS is decoded to VCDataModel
-
-    // TODO: We are missing key timestamp data in the response of getDidDocument
-    //       We need to correct that and implement the checks that follow
-    // the key was in the DID before the credential publication event, and
-    //    issuancekeyData.keyData.ecKeyData.value
-    //    state.dids(C.issuerDID.suffix).data(C.signingKey).keyPublicationEvent < state.credentials(hash(C)).data.credPublicationEvent &&
-    //      // the key was not revoked before credential publication event, and
-    //      (
-    //        // either the key was never revoked
-    //        state.dids(C.issuerDID.suffix).data(C.signingKey).keyRevocationEvent.isEmpty ||
-    //          // or was revoked after signing the credential
-    //          state.credentials(hash(C)).data.credPublicationEvent < state.dids(C.issuerDID.suffix).data(C.signingKey).keyRevocationEvent.get
-    //        )
   }
 
   private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {
