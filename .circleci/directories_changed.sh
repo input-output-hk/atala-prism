@@ -51,7 +51,7 @@ changed_files=$(
       grep -v "\.gitignore$")
 for dir in "$@" ; do
   # Matches a line starting with the directory name, followed by a slash
-  dir_regex="[^\n]$dir/"
+  dir_regex="(^|\n)$dir/"
   if [[ $changed_files =~ $dir_regex ]] ; then
     echo "Directory '$dir' has changed"
     exit 1
