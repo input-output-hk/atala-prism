@@ -3,8 +3,10 @@ import java.time.{LocalDateTime, ZoneOffset}
 import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION`
+import $ivy.`io.github.davidgregory084::mill-tpolecat:0.1.3`
 import ammonite.ops._
 import coursier.maven.MavenRepository
+import io.github.davidgregory084.TpolecatModule
 import mill._
 import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scalapblib._
@@ -58,10 +60,48 @@ object GitSupport {
   }
 }
 
-trait PrismScalaModule extends ScalaModule {
+trait PrismScalaModule extends TpolecatModule {
   def scalaVersion = versions.scala
 
-  override def scalacOptions = Seq("-Ywarn-unused:imports", "-deprecation", "-Xfatal-warnings", "-feature")
+  override def compileIvyDeps =
+    super.compileIvyDeps.map {
+      _ ++ Agg(ivy"com.github.ghik::silencer-lib:${versions.silencer}")
+    }
+
+  override def scalacPluginIvyDeps =
+    super.scalacPluginIvyDeps.map {
+      _ ++ Agg(ivy"com.github.ghik::silencer-plugin:${versions.silencer}")
+    }
+
+  // TODO: Fix warnings and enable more options
+  override def scalacOptions =
+    T {
+      super
+        .scalacOptions()
+        .filterNot(
+          Set(
+            "-Xlint:adapted-args",
+            "-Xlint:package-object-classes",
+            "-Xlint:private-shadow",
+            "-Xlint:type-parameter-shadow",
+            "-Yno-adapted-args",
+            "-Ypartial-unification",
+            "-Ywarn-dead-code",
+            "-Ywarn-numeric-widen",
+            "-Ywarn-unused:implicits",
+            "-Ywarn-unused:locals",
+            "-Ywarn-unused:params",
+            "-Ywarn-unused:patvars",
+            "-Ywarn-unused:privates",
+            "-Ywarn-value-discard"
+          )
+        ) ++ Seq("-P:silencer:checkUnused")
+    }
+
+  trait PrismTestsModule extends Tests {
+    // ScalaModule.Tests does not reuse outer compile deps, so do that
+    override def compileIvyDeps = PrismScalaModule.this.compileIvyDeps
+  }
 }
 
 object app extends PrismScalaModule {
@@ -75,7 +115,7 @@ object app extends PrismScalaModule {
       ivy"com.beachape::enumeratum:1.5.13"
     )
 
-  object test extends Tests {
+  object test extends PrismTestsModule {
     override def ivyDeps =
       Agg(
         ivy"org.scalatest::scalatest:3.0.8",
@@ -158,7 +198,7 @@ object common extends PrismScalaModule {
       )
   }
 
-  object test extends Tests {
+  object test extends PrismTestsModule {
     override def moduleDeps = Seq(`test-util`) ++ super.moduleDeps
     override def ivyDeps =
       Agg(
@@ -223,7 +263,7 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
       )
     }
 
-  trait `tests-common` extends Tests {
+  trait `tests-common` extends PrismTestsModule {
 
     val mockitoDeps = Agg(
       ivy"org.mockito::mockito-scala:1.7.1",
@@ -321,16 +361,6 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule {
   def twirlVersion = versions.twirl
 
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
-
-  override def compileIvyDeps =
-    super.compileIvyDeps.map {
-      _ ++ Agg(ivy"com.github.ghik::silencer-plugin:${versions.silencer}")
-    }
-
-  override def scalacPluginIvyDeps =
-    super.scalacPluginIvyDeps.map {
-      _ ++ Agg(ivy"com.github.ghik::silencer-plugin:${versions.silencer}")
-    }
 
   // Disable unused import warnings in Twirl generated classes
   override def scalacOptions =
