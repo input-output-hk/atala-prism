@@ -107,7 +107,7 @@ class IntDemoStateMachine[D](
     ): Future[intdemo_models.SubjectStatus] = {
       val actionTableWithErrors = actionTable.withDefaultValue(error(currentStatus))
 
-      actionTableWithErrors(isRequiredDataAvailable(maybeRequiredData), isWalletConnected(maybeConnection))(
+      actionTableWithErrors((isRequiredDataAvailable(maybeRequiredData), isWalletConnected(maybeConnection)))(
         maybeRequiredData,
         maybeConnection
       )

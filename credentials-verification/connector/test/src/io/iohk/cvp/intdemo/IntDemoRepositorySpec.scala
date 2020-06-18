@@ -72,7 +72,7 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
 
       rowCount shouldBe 1
       sql"""SELECT first_name, date_of_birth FROM intdemo_id_personal_info WHERE token=$token"""
-        .runUnique[(String, LocalDate)]() shouldBe (v._2, v._3)
+        .runUnique[(String, LocalDate)]() shouldBe ((v._2, v._3))
     }
 
     "update when one does" in {
@@ -85,7 +85,7 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
 
       rowCount shouldBe 1
       sql"""SELECT first_name, date_of_birth FROM intdemo_id_personal_info WHERE token=$token"""
-        .runUnique[(String, LocalDate)]() shouldBe (v2._2, v2._3)
+        .runUnique[(String, LocalDate)]() shouldBe ((v2._2, v2._3))
     }
   }
 
@@ -98,7 +98,7 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
 
       val (actualName, actualDoB) = repository.findPersonalInfo(token).futureValue.get
 
-      (actualName, actualDoB) shouldBe (expectedName, expectedDoB)
+      (actualName, actualDoB) shouldBe ((expectedName, expectedDoB))
     }
   }
 }

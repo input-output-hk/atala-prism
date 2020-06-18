@@ -80,7 +80,6 @@ trait PrismScalaModule extends TpolecatModule {
         .scalacOptions()
         .filterNot(
           Set(
-            "-Xlint:adapted-args",
             "-Xlint:package-object-classes",
             "-Xlint:private-shadow",
             "-Xlint:type-parameter-shadow",
