@@ -120,7 +120,6 @@ object CardanoLedgerService {
   )
 
   def apply(config: Config, keyValueService: KeyValueService, onNewObject: ObjectHandler)(implicit
-      ec: ExecutionContext,
       scheduler: Scheduler
   ): CardanoLedgerService = {
     val walletId = WalletId

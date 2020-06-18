@@ -2,9 +2,7 @@ package io.iohk.node
 
 import java.time.Instant
 
-import cats.effect.IO
 import com.typesafe.config.{Config, ConfigFactory}
-import doobie.util.transactor.Transactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
@@ -115,9 +113,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  private def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler)(implicit
-      xa: Transactor[IO]
-  ): AtalaService = {
+  private def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler): AtalaService = {
     logger.info("Creating bitcoin client")
     val bitcoinClient = BitcoinClient(NodeConfig.bitcoinConfig(config))
 

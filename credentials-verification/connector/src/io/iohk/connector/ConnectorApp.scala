@@ -150,7 +150,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val adminService = new AdminServiceImpl(adminRepository)(executionContext)
 
     // interactive demo services
-    val intDemoRepository = new IntDemoRepository(xa)(executionContext)
+    val intDemoRepository = new IntDemoRepository(xa)
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)(executionContext)
     val idService =
       new IdServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)

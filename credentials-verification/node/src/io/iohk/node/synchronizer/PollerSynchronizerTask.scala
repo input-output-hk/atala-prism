@@ -4,14 +4,13 @@ import io.iohk.node.bitcoin.BitcoinClient
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class PollerSynchronizerTask(
     config: SynchronizerConfig,
     bitcoin: BitcoinClient,
     synchronizer: LedgerSynchronizerService
-)(implicit ec: ExecutionContext, scheduler: Scheduler) {
+)(implicit scheduler: Scheduler) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

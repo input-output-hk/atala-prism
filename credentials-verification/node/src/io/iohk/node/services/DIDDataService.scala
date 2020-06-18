@@ -8,9 +8,7 @@ import io.iohk.node.models.DIDSuffix
 import io.iohk.node.models.nodeState.DIDDataState
 import io.iohk.node.repositories.DIDDataRepository
 
-import scala.concurrent.ExecutionContext
-
-class DIDDataService(didDataRepository: DIDDataRepository)(implicit ec: ExecutionContext) {
+class DIDDataService(didDataRepository: DIDDataRepository) {
 
   private val DID__RE = "(did:prism:)([0-9a-f]{64}$)".r
 

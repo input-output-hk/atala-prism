@@ -8,7 +8,7 @@ import io.iohk.node.cardano.models.{Block, BlockError}
 
 import scala.concurrent.ExecutionContext
 
-class CardanoDbSyncClient(cardanoBlockRepository: CardanoBlockRepository)(implicit ec: ExecutionContext) {
+class CardanoDbSyncClient(cardanoBlockRepository: CardanoBlockRepository) {
   def getFullBlock(blockNo: Int): Result[BlockError.NotFound, Block.Full] = {
     cardanoBlockRepository.getFullBlock(blockNo)
   }

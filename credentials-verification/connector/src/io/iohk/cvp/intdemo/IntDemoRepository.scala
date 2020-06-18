@@ -9,9 +9,9 @@ import io.iohk.connector.model.TokenString
 import io.iohk.cvp.intdemo.IntDemoRepository.valueOf
 import io.iohk.prism.intdemo.protos.intdemo_models
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class IntDemoRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+class IntDemoRepository(xa: Transactor[IO]) {
 
   def mergeSubjectStatus(token: TokenString, status: intdemo_models.SubjectStatus): Future[Int] = {
     IntDemoRepository

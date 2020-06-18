@@ -109,7 +109,7 @@ object FutureEither {
   }
 
   implicit class EitherOps[E, A](val value: Either[E, A]) extends AnyVal {
-    def toFutureEither(implicit ec: ExecutionContext): FutureEither[E, A] = {
+    def toFutureEither: FutureEither[E, A] = {
       Future.successful(value).toFutureEither
     }
   }

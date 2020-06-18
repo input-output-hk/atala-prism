@@ -14,9 +14,7 @@ import io.iohk.node.operations.TimestampInfo
 import io.iohk.node.repositories.daos.CredentialsDAO
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData
 
-import scala.concurrent.ExecutionContext
-
-class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+class CredentialsRepository(xa: Transactor[IO]) {
   def create(
       data: CreateCredentialData
   ): FutureEither[NodeError, Unit] = {
