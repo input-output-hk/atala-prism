@@ -74,12 +74,6 @@ case class UpdateDIDOperation(
     // we need to create a way to construct the Monad from the underlying type T
     type ConnectionIOEitherTError[T] = EitherT[ConnectionIO, StateError, T]
 
-    // there are two implicit implementations for cats.Monad[doobie.free.connection.ConnectionIO],
-    // one from doobie, the other for cats, making it ambiguous
-    // we need to choose one
-    implicit def _connectionIOMonad: cats.Monad[doobie.free.connection.ConnectionIO] =
-      doobie.free.connection.AsyncConnectionIO
-
     for {
       _ <- OptionT(DIDDataDAO.findByDidSuffix(id)).toRight(StateError.EntityMissing("DID", id.suffix))
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)

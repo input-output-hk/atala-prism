@@ -32,7 +32,7 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
       val issuer = createIssuer("Issuer X").id
       val credA = createStudent(issuer, "A")
       val credB = createStudent(issuer, "B")
-      val credC = createStudent(issuer, "C")
+      createStudent(issuer, "C")
 
       val result = repository.getBy(issuer, 2, None, None).value.futureValue.right.value
       result.toSet must be(Set(credA, credB))
@@ -44,7 +44,7 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
       val groupB = createIssuerGroup(issuer, IssuerGroup.Name("Group 2"))
 
       val credA = createStudent(issuer, "A", Some(groupA))
-      val credB = createStudent(issuer, "B", Some(groupB))
+      createStudent(issuer, "B", Some(groupB))
       val credC = createStudent(issuer, "C", Some(groupA))
 
       val result = repository.getBy(issuer, 2, None, Some(groupA.name)).value.futureValue.right.value
@@ -53,10 +53,10 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
 
     "paginate by the last seen student" in {
       val issuer = createIssuer("Issuer X").id
-      val credA = createStudent(issuer, "A")
-      val credB = createStudent(issuer, "B")
+      createStudent(issuer, "A")
+      createStudent(issuer, "B")
       val credC = createStudent(issuer, "C")
-      val credD = createStudent(issuer, "D")
+      createStudent(issuer, "D")
 
       val first = repository.getBy(issuer, 2, None, None).value.futureValue.right.value
       val result = repository.getBy(issuer, 1, first.lastOption.map(_.id), None).value.futureValue.right.value
@@ -68,9 +68,9 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
       val groupA = createIssuerGroup(issuer, IssuerGroup.Name("Group 1"))
       val groupB = createIssuerGroup(issuer, IssuerGroup.Name("Group 2"))
 
-      val credA = createStudent(issuer, "A", Some(groupA))
-      val credB = createStudent(issuer, "B", Some(groupA))
-      val credC = createStudent(issuer, "C", Some(groupB))
+      createStudent(issuer, "A", Some(groupA))
+      createStudent(issuer, "B", Some(groupA))
+      createStudent(issuer, "C", Some(groupB))
       val credD = createStudent(issuer, "D", Some(groupA))
 
       val first = repository.getBy(issuer, 2, None, Some(groupA.name)).value.futureValue.right.value

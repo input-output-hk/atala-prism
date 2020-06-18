@@ -45,8 +45,6 @@ object ConnectionsRepository {
     val logger: Logger = LoggerFactory.getLogger(getClass)
 
     override def insertToken(initiator: ParticipantId, token: TokenString): FutureEither[Nothing, TokenString] = {
-      implicit val loggingContext = LoggingContext("token" -> token, "initiator" -> initiator)
-
       ConnectionTokensDAO
         .insert(initiator, token)
         .transact(xa)

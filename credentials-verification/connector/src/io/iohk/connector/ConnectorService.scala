@@ -400,8 +400,6 @@ class ConnectorService(
         val nonce: ClientNonce = new ClientNonce(request.nonce)
         val amount: BigDecimal = BigDecimal(request.amount)
 
-        implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
-
         val result = for {
           maybe <- paymentsRepository.find(userId, nonce)
           payment <- maybe match {

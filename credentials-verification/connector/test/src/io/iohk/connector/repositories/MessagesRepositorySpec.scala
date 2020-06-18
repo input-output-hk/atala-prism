@@ -80,11 +80,11 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = createConnection(issuer, holder)
       val zeroTime = LocalDateTime.of(2019, 10, 10, 12, 14, 17, 5000).toEpochSecond(ZoneOffset.UTC)
 
-      val messageIds = (for (i <- 0 to 20) yield {
+      for (i <- 0 to 20) yield {
         val messageId =
           createMessage(connection, issuer, holder, Instant.ofEpochMilli(zeroTime + i), s"hello$i".getBytes())
         i -> messageId
-      }).toMap
+      }
 
       val all = messagesRepository
         .getMessagesPaginated(holder, 20, Option.empty)

@@ -66,7 +66,6 @@ case class CreateDid(
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 
     val response = api.createDID(node_api.CreateDIDRequest().withSignedOperation(signedAtalaOp))
-    val didSuffix = response.id
     println(response.toProtoString)
 
     println(s"Created did with didSuffix: ${response.id}")

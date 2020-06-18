@@ -196,7 +196,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         val proofId = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
         val request =
           cstore_api.StoreCredentialRequest(individualId, issuerDid, proofId, ByteString.EMPTY, ByteString.EMPTY)
-        val response = serviceStub.storeCredential(request)
+        serviceStub.storeCredential(request)
 
         val credential = StoredCredentialsDAO
           .getFor(verifierId, ParticipantId(individualId))
@@ -263,7 +263,6 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     }
 
     "return first holders when referenced holder does not exist" in {
-      val individualNames = (1 to 9).map(i => i.toString)
       usingApiAs(verifierId) { serviceStub =>
         for (h <- holders) {
           val request = cstore_api.CreateHolderRequest(jsonData = h.noSpaces)

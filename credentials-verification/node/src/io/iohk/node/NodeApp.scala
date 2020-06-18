@@ -9,18 +9,14 @@ import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.objects.{ObjectStorageService, S3ObjectStorageService}
-import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
-import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.node.services._
 import io.iohk.node.services.models.{AtalaObjectUpdate, ObjectHandler}
-import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
 import io.iohk.prism.protos.node_api._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.regions.Region
 
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 /**
@@ -58,7 +54,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     logger.info("Connecting to the database")
     implicit val xa = TransactorFactory(databaseConfig)
-    val atalaObjectsRepository = new AtalaObjectsRepository(xa)
 
     val storage = globalConfig.getString("storage") match {
       case "in-memory" => new ObjectStorageService.InMemory()
@@ -126,15 +121,17 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Creating bitcoin client")
     val bitcoinClient = BitcoinClient(NodeConfig.bitcoinConfig(config))
 
-    val blocksRepository = new BlocksRepository(xa)
-
     val atalaService = AtalaService(bitcoinClient, onAtalaReference)
 
+    // TODO: Re-enable Bitcoin syncer
+    /*
+    val blocksRepository = new BlocksRepository(xa)
     val synchronizerConfig = SynchronizerConfig(30.seconds)
     val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)
     val synchronizerService =
       new LedgerSynchronizerService(bitcoinClient, blocksRepository, syncStatusService, atalaService)
-    //val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
+    val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
+     */
 
     atalaService
   }

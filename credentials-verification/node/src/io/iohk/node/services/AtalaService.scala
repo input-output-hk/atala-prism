@@ -65,27 +65,25 @@ class AtalaServiceImpl(
       .getFullBlock(blockhash)
       .flatMap { block =>
         logger trace "Block just retrieved from the Bitcoin blockchain"
-        val atalaReferences = block.transactions.zipWithIndex.flatMap {
-          case (tx, zeroBasedIndex) =>
-            val txIndex = zeroBasedIndex + 1
-            tx.vout.flatMap { out =>
-              logger trace "VOut of a Block detected"
-              binaryOps
-                .extractOpReturn(out.scriptPubKey.asm)
-                .flatMap { opData =>
-                  logger trace s"OP_RETURN detected in a transaction: ${out.scriptPubKey.asm}"
-                  val trimmed = binaryOps.trimZeros(opData)
-                  if (trimmed.startsWith(ATALA_HEADER)) {
-                    // this is an Atala transaction
-                    val data = trimmed.drop(ATALA_HEADER.length)
-                    logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
-                    val atalaObjectId = SHA256Digest(data)
-                    Some(atalaObjectId)
-                  } else {
-                    None
-                  }
+        val atalaReferences = block.transactions.flatMap { tx =>
+          tx.vout.flatMap { out =>
+            logger trace "VOut of a Block detected"
+            binaryOps
+              .extractOpReturn(out.scriptPubKey.asm)
+              .flatMap { opData =>
+                logger trace s"OP_RETURN detected in a transaction: ${out.scriptPubKey.asm}"
+                val trimmed = binaryOps.trimZeros(opData)
+                if (trimmed.startsWith(ATALA_HEADER)) {
+                  // this is an Atala transaction
+                  val data = trimmed.drop(ATALA_HEADER.length)
+                  logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
+                  val atalaObjectId = SHA256Digest(data)
+                  Some(atalaObjectId)
+                } else {
+                  None
                 }
-            }
+              }
+          }
         }
         logger trace s"Found ${atalaReferences.size} ATALA references"
 

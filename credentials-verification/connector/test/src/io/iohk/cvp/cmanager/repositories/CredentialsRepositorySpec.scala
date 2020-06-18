@@ -51,7 +51,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       val student = createStudent(issuer, "IOHK Student", group.name).id
       val credA = createCredential(issuer, student, "A")
       val credB = createCredential(issuer, student, "B")
-      val credC = createCredential(issuer, student, "C")
+      createCredential(issuer, student, "C")
 
       val result = credentialsRepository.getUniversityCredentialsBy(issuer, 2, None).value.futureValue.right.value
       result.toSet must be(Set(credA, credB))
@@ -61,10 +61,10 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       val issuer = createIssuer("Issuer X").id
       val group = createIssuerGroup(issuer, IssuerGroup.Name("grp1"))
       val student = createStudent(issuer, "IOHK Student", group.name).id
-      val credA = createCredential(issuer, student, "A")
-      val credB = createCredential(issuer, student, "B")
+      createCredential(issuer, student, "A")
+      createCredential(issuer, student, "B")
       val credC = createCredential(issuer, student, "C")
-      val credD = createCredential(issuer, student, "D")
+      createCredential(issuer, student, "D")
 
       val first = credentialsRepository.getUniversityCredentialsBy(issuer, 2, None).value.futureValue.right.value
       val result =

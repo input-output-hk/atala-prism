@@ -111,7 +111,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
     "select subset of connections according to the last seen connection and limit" in {
       val verifierId = createVerifier()
       val zeroTime = LocalDateTime.of(2019, 10, 8, 20, 12, 17, 5000).toEpochSecond(ZoneOffset.UTC)
-      val participantConnections: Map[String, ConnectionId] = createExampleConnections(verifierId, zeroTime)
+      createExampleConnections(verifierId, zeroTime)
 
       val all = connectionsRepository
         .getConnectionsPaginated(verifierId, 20, Option.empty)

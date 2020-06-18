@@ -83,7 +83,6 @@ package object errors {
 
     implicit class InternalServerErrorLoggingOps(error: InternalServerError) {
       def logErr(implicit lc: LoggingContext): InternalServerError = {
-        val status = error.toStatus
         logger.error(s"Issuing ${error.getClass.getSimpleName} ($lc)", error.cause)
         error
       }

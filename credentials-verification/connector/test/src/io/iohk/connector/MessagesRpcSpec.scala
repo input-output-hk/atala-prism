@@ -21,7 +21,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       usingApiAs(issuerId) { blockingStub =>
         val request = connector_api.SendMessageRequest(connectionId.id.toString, ByteString.copyFrom("test".getBytes))
-        val response = blockingStub.sendMessage(request)
+        blockingStub.sendMessage(request)
         val msg =
           MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeToFuture().futureValue.head
         msg.connection mustBe connectionId

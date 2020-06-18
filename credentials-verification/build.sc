@@ -89,7 +89,6 @@ trait PrismScalaModule extends TpolecatModule {
             "-Ywarn-dead-code",
             "-Ywarn-numeric-widen",
             "-Ywarn-unused:implicits",
-            "-Ywarn-unused:locals",
             "-Ywarn-unused:params",
             "-Ywarn-unused:patvars",
             "-Ywarn-unused:privates",
