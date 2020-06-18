@@ -20,7 +20,7 @@ import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, _}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 object WalletManager {
   val CURVE_NAME = "secp256k1"
@@ -95,7 +95,9 @@ private[background] class WalletManager(
   val ec: EC = new EC(WalletManager.CURVE_NAME)
   private var storageKey: Option[CryptoKey] = None
   type SessionID = String
-  var session: Option[SessionID] = None
+  type Origin = String
+  private[this] var session = Set[(SessionID, Origin)]()
+
   var walletData: Option[WalletData] = None
   var signingRequests: Map[Int, (SigningRequest, Promise[String])] = Map.empty
   var requestCounter: Int = 0
@@ -218,27 +220,23 @@ private[background] class WalletManager(
     }
   }
 
-  def getUserDetails(password: String): Future[Option[UserDetails]] = {
-
-    def getUser(sessionId: SessionID): Future[Option[UserDetails]] = {
-      Future.successful {
-        walletData.map { walletData =>
-          UserDetails(
-            sessionId,
-            walletData.organisationName,
-            walletData.role.toString,
-            walletData.logo
+  def getLoggedInUserSession(origin: Origin): Future[UserDetails] = {
+    Future.fromTry {
+      Try {
+        val wallet =
+          walletData.getOrElse(
+            throw new RuntimeException("You need to create the wallet before logging in and creating session")
           )
-        }
+        val sessionId: SessionID = UUID.randomUUID().toString
+        session += (sessionId -> origin)
+        UserDetails(
+          sessionId,
+          wallet.organisationName,
+          wallet.role.toString,
+          wallet.logo
+        )
       }
     }
-
-    for {
-      _ <- unlock(password)
-      _ <- Future.successful(session = Some(UUID.randomUUID().toString))
-      user <- getUser(session.getOrElse("No Session"))
-    } yield user
-
   }
 
   def generateSecretKey(password: String): Future[CryptoKey] = {

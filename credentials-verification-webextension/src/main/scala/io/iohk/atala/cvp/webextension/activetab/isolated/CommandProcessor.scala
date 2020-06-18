@@ -6,17 +6,19 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
-  def process(cmd: Command): Future[Event] = {
+  def process(cmd: Command)(implicit origin: String): Future[Event] = {
     cmd match {
-      case Command.GetWalletStatus() =>
+      case Command.GetWalletStatus =>
         backgroundAPI
           .getWalletStatus()
           .map(response => Event.GotWalletStatus(response.status.toString))
 
-      case Command.GetUserDetails(password) =>
+      case Command.CreateSession =>
         backgroundAPI
-          .getUserDetails(password)
-          .map(response => Event.GotUserDetails(response.map(u => UserDetails(u.sessionId, u.name, u.role, u.logo))))
+          .login(origin)
+          .map(response =>
+            Event.GotUserSession(UserDetails(response.sessionId, response.name, response.role, response.logo))
+          )
     }
   }
 }

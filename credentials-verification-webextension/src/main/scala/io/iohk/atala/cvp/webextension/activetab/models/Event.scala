@@ -14,7 +14,7 @@ private[activetab] object Event {
   // TODO: Find a better way, possible returning something like Either[CommandRejected, Event]
   final case class CommandRejected(reason: String) extends Event
   final case class GotWalletStatus(status: String) extends Event
-  final case class GotUserDetails(userDetails: Option[UserDetails]) extends Event
+  final case class GotUserSession(userDetails: UserDetails) extends Event
 
   def decode(string: String): Try[Event] = {
     parse(string).toTry

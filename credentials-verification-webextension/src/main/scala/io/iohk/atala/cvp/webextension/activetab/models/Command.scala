@@ -12,9 +12,9 @@ private[activetab] sealed trait Command extends Product with Serializable
 
 private[activetab] object Command {
 
-  final case class GetWalletStatus() extends Command
+  final case object GetWalletStatus extends Command
 
-  final case class GetUserDetails(password: String) extends Command
+  final case object CreateSession extends Command
 
   def decode(string: String): Try[Command] = {
     parse(string).toTry

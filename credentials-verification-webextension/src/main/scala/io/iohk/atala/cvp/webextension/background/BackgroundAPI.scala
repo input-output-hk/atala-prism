@@ -66,8 +66,8 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.GetWalletStatus)
   }
 
-  def getUserDetails(password: String): Future[Option[UserDetails]] = {
-    process(Command.GetUserDetails(password))
+  def login(origin: String): Future[UserDetails] = {
+    process(Command.GetUserSession(origin))
   }
 
   def recoverWallet(

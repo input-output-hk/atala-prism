@@ -31,17 +31,17 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 class ExtensionAPI()(implicit ec: ExecutionContext) {
 
   def getWalletStatus(): Future[Event.GotWalletStatus] = {
-    val cmd = Command.GetWalletStatus()
+    val cmd = Command.GetWalletStatus
     processCommand(cmd).collect {
       case r: Event.GotWalletStatus => r
       case x => throw new RuntimeException(s"Unknown response: $x")
     }
   }
 
-  def getUserDetails(password: String): Future[Event.GotUserDetails] = {
-    val cmd = Command.GetUserDetails(password)
+  def login(): Future[Event.GotUserSession] = {
+    val cmd = Command.CreateSession
     processCommand(cmd).collect {
-      case r: Event.GotUserDetails => r
+      case r: Event.GotUserSession => r
       case x => throw new RuntimeException(s"Unknown response: $x")
     }
   }
