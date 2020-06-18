@@ -73,7 +73,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
 
     private void registerTokenInfoObserver() {
         ActivityUtils.registerObserver((MainActivity) getActivity(),
-                viewModel, issuerConnections);
+                viewModel);
     }
 
     private int getTitleId() {

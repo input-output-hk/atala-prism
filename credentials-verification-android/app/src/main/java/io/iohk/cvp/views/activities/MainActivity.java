@@ -3,13 +3,11 @@ package io.iohk.cvp.views.activities;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import androidx.biometric.BiometricPrompt;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,8 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -60,7 +57,6 @@ import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 import io.iohk.prism.protos.ConnectionInfo;
 import lombok.Getter;
-import lombok.NonNull;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
@@ -303,7 +299,12 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     public void setIssuerConnections(List<ConnectionInfo> issuerConnections) {
-        this.issuerConnections = issuerConnections;
+        this.issuerConnections.addAll(issuerConnections.stream()
+                .filter(conn -> !this.issuerConnections.contains(conn)).collect(Collectors.toList()));
+    }
+
+    public List<ConnectionInfo> getIssuerConnections() {
+        return this.issuerConnections;
     }
 
     @Override

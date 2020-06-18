@@ -160,7 +160,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     private void registerTokenInfoObserver() {
         ActivityUtils.registerObserver((MainActivity) getActivity(),
-                viewModel, issuerConnections);
+                viewModel);
     }
 
     public void listConnections(Set<String> userIds) {
@@ -191,7 +191,6 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                                         return false;
                                     }
                                 }
-                                getProofRequest();
                                 return true;
                             }
                             return false;
@@ -213,6 +212,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     }
 
     public void getProofRequest() {
+        loading.setVisibility(View.VISIBLE);
         credentialLiveData = viewModel.getMessages(this.getUserIds());
         if (!credentialLiveData.hasActiveObservers()) {
             credentialLiveData.observe(this, result -> {
@@ -250,7 +250,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                                 ProofRequest proofRequest = AtalaMessage.parseFrom(proofRequestMessage.getMessage()).getProofRequest();
                                 //Search for conection
                                 ConnectionInfo shareConnection = null;
-                                for (ConnectionInfo connection : shareConnections) {
+                                for (ConnectionInfo connection : ((MainActivity)getActivity()).getIssuerConnections()) {
                                     if (connection.getToken().equals(proofRequest.getConnectionToken())) {
                                         shareConnection = connection;
                                         break;
@@ -268,12 +268,11 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                                                 return Stream.empty();
                                             }
                                         })
-                                        .filter(acceptedMessage ->
-                                                proofRequest.getTypeIdsList().contains(acceptedMessage.getTypeId())
-                                        )
+                                        .filter(credential -> proofRequest.getTypeIdsList().contains(credential.getTypeId()))
+                                        .distinct()
                                         .collect(Collectors.toList());
 
-                                if (shareConnection != null && credentialsToShare.size() == proofRequest.getTypeIdsList().size() &&
+                                if (shareConnection != null && !credentialsToShare.isEmpty() &&
                                         !proofRequestOpen.contains(proofRequest.getConnectionToken())) {
 
                                     proofRequestOpen.add(proofRequest.getConnectionToken());
@@ -286,6 +285,8 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                     }
                 } catch (Exception e) {
                     Crashlytics.logException(e);
+                } finally {
+                    loading.setVisibility(View.GONE);
                 }
             });
         }

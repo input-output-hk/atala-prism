@@ -32,7 +32,7 @@ public class ActivityUtils {
         }
     }
 
-    public static void registerObserver(MainActivity activity, NewConnectionsViewModel viewModel, List<ConnectionInfo> issuerConnections) {
+    public static void registerObserver(MainActivity activity, NewConnectionsViewModel viewModel) {
         LiveData<AsyncTaskResult<ParticipantInfoResponse>> liveData = viewModel.getConnectionTokenInfoLiveData();
         if(!liveData.hasActiveObservers()){
             liveData.observe(activity, response -> {
@@ -44,7 +44,7 @@ public class ActivityUtils {
                             return;
                         }
 
-                        boolean isAcceptedConnection = issuerConnections.stream()
+                        boolean isAcceptedConnection = activity.getIssuerConnections().stream()
                                 .anyMatch(connection -> connection.getParticipantInfo().getIssuer().getDID().equals(response.getResult().getParticipantInfo().getIssuer().getDID()));
 
                         String title, buttonDescription;

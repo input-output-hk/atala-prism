@@ -120,7 +120,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
     private void registerTokenInfoObserver() {
             ActivityUtils.registerObserver((MainActivity) getActivity(),
-                    viewModel, issuerConnections);
+                    viewModel);
     }
 
     public void listNewCredentials() {
