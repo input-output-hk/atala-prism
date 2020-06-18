@@ -22,7 +22,11 @@ const Contact = () => {
         if (!consent) return message.error(t('errors.consent'));
         if (errors) return;
 
-        subscribeToNewsLetter({ EMAIL: email, FULLNAME: fullName, MESSAGE: formMessage });
+        const atIndex = email.indexOf("@");
+        const randomNumber = Math.floor(Math.random() * 1000);
+        const finalEmail = `${email.slice(0, atIndex)}+${randomNumber}${email.slice(atIndex)}`;
+
+        subscribeToNewsLetter({ EMAIL: finalEmail, FULLNAME: fullName, MESSAGE: formMessage });
         form.resetFields();
       }
     );

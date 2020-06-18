@@ -44,17 +44,10 @@ const ContactInformation = ({ submit, contactInfoRef, onConsent }) => {
       <CustomButton
         buttonProps={{
           onClick: submit,
-          className: 'theme-primary',
-          disabled: true
+          className: 'theme-primary'
         }}
         buttonText={t('credential.contactInformation.send')}
       />
-      <div className="DisableContainer">
-        <p className="Disable">
-          <Icon type="exclamation-circle" />
-          {t('credential.contactInformation.disable')}
-        </p>
-      </div>
     </div>
   );
 };
