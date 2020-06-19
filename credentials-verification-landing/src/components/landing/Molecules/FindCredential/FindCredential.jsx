@@ -45,7 +45,7 @@ const FindCredential = ({ redirector: { redirectToCredentials } }) => {
           />
         </div>
       </div>
-      <InteractiveMap />
+      <InteractiveMap controlsEnabled={false}/>
     </div>
   );
 };
