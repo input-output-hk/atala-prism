@@ -1,5 +1,5 @@
 //
-
+// swiftlint:disable todo
 class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
                         CommonViewCellPresenterDelegate, HistoryViewCellPresenterDelegate {
 

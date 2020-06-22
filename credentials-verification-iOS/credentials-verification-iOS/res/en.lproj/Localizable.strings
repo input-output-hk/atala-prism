@@ -59,7 +59,7 @@
 "connections_scan_qr_confirm_button" = "Confirm";
 "connections_scan_qr_confirm_duplicated_button" = "Connect again";
 "connections_scan_qr_confirm_title" = "Would you like to connect with";
-"connections_scan_qr_confirm_duplicated_title" = "You have already connected to:";
+"connections_scan_qr_confirm_duplicated_title" = "You have already connected with %1$@. Please reset the data in the settings and reset the interactive city map.";
 "connections_scan_qr_confirm_error" = "Failed to confirm connection. Try again.";
 "connections_scan_qr_confirm_payment_error" = "Failed to confirm payment. Try again.";
 "connections_universities" = "Universities";
@@ -124,6 +124,8 @@
 "settings_nav_title" = "Settings";
 "settings_backup_title" = "Backup Account";
 "settings_backup_subtitle" = "Create a backup now";
+"settings_reset_title" = "Reset Data";
+"settings_reset_subtitle" = "Delete contacts & credentials";
 "settings_security_title" = "Security";
 "settings_security_subtitle" = "Secure app with a Pin or Biometrics";
 "settings_pin_title" = "PIN Code";
@@ -132,6 +134,10 @@
 "settings_support_subtitle" = "Get in touch with us";
 "settings_about_title" = "About";
 "settings_about_subtitle" = "Legal and version information";
+"settings_reset_confrimation_title" = "Are you sure you want to reset data?";
+"settings_reset_confrimation_subtitle" = "Your contacts and credentials will be deleted";
+"settings_reset" = "Reset";
+"settings_reset_success" = "Contacts and credentials successfully removed!";
 
 // <!-- Login: Welcome -->
 "welcome_title" = "Welcome";

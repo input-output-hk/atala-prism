@@ -1,6 +1,6 @@
 //
 
-protocol RegisterSeedViewDelegate: UIViewController {}
+protocol RegisterSeedViewDelegate: class {}
 
 class RegisterSeedView: BaseNibLoadingView {
 

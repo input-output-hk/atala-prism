@@ -40,6 +40,8 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     lazy var initialStaticCells: [InitialCellValue] = [
         InitialCellValue(icon: "logo_backup", title: "settings_backup_title",
                          subtitle: "settings_backup_subtitle", action: nil),
+        InitialCellValue(icon: "logo_reset", title: "settings_reset_title",
+                        subtitle: "settings_reset_subtitle", action: actionRowReset),
         InitialCellValue(icon: "logo_security", title: "settings_security_title",
                          subtitle: "settings_security_subtitle", action: actionRowSecurity),
         InitialCellValue(icon: "logo_support", title: "settings_support_title",
@@ -68,6 +70,10 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         return false
     }
 
+    lazy var actionRowReset = SelectorAction(action: { [weak self] in
+        self?.viewImpl?.resetData()
+    })
+
     lazy var actionRowSupport = SelectorAction(action: { [weak self] in
         self?.viewImpl?.changeScreenToBrowser(urlStr: Common.URL_SUPPORT)
     })
@@ -79,6 +85,14 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     lazy var actionRowSecurity = SelectorAction(action: { [weak self] in
         self?.viewImpl?.changeScreenToSecurity()
     })
+
+    func clearAppData() {
+        sharedMemory.loggedUser?.connectionUserIds?.removeAll()
+        sharedMemory.loggedUser?.messagesAcceptedIds?.removeAll()
+        sharedMemory.loggedUser?.messagesRejectedIds?.removeAll()
+        sharedMemory.loggedUser = sharedMemory.loggedUser
+        viewImpl?.showSuccessMessage(doShow: true, message: "settings_reset_success".localize(), title: "")
+    }
 
     // MARK: ListingBaseTableUtilsPresenterDelegate
 

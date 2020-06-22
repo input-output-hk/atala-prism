@@ -1,5 +1,5 @@
 //
-
+// swiftlint:disable todo
 class CredentialPayPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
     CredentialPayViewCellPresenterDelegate, FieldViewCellPresenterDelegate, ConfirmationViewCellPresenterDelegate {
 

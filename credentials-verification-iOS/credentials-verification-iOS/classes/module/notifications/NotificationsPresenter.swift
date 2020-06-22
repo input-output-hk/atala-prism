@@ -490,11 +490,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     }
 
     func tappedConfirmAction(for viewController: ConnectionConfirmViewController) {
-        if viewController.isDuplicated {
-            Tracker.global.trackConnectionRepeat()
-        } else {
-            Tracker.global.trackConnectionAccept()
-        }
+
+        Tracker.global.trackConnectionAccept()
         self.connectionsWorker.confirmQrCode()
     }
 
@@ -514,9 +511,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         self.viewImpl?.showErrorMessage(doShow: doShow, message: message)
     }
 
-    func showNewConnectMessage(type: Int, title: String?, logoData: Data?, isDuplicated: Bool) {
+    func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
         self.viewImpl?.onBackPressed()
-        self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData, isDuplicated: isDuplicated)
+        self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData)
     }
 
     func conectionAccepted() {

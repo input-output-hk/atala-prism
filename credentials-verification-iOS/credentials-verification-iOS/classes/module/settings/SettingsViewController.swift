@@ -109,4 +109,14 @@ class SettingsViewController: ListingBaseViewController {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "SecuritySegue", params: nil)
 
     }
+
+    func resetData() {
+
+        let confirmation = ResetDataViewController.makeThisView()
+        confirmation.config {
+            self.presenterImpl.clearAppData()
+        }
+        customPresentViewController(confirmation.presentr, viewController: confirmation, animated: true)
+
+    }
 }

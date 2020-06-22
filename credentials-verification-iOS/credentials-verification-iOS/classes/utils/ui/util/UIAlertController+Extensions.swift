@@ -21,7 +21,6 @@ extension UIAlertController {
                      message: String? = nil, tintColor: UIColor? = nil) {
         self.init(title: title, message: message, preferredStyle: style)
 
-        // TODO: for iPad or other views
         let isPad: Bool = UIDevice.current.userInterfaceIdiom == .pad
         let root = UIApplication.shared.keyWindow?.rootViewController?.view
 
@@ -56,7 +55,6 @@ extension UIAlertController {
     public func show(animated: Bool = true, vibrate: Bool = false, style: UIBlurEffect.Style? = nil,
                      completion: (() -> Void)? = nil) {
 
-        // TODO: change UIBlurEffectStyle
         if let style = style {
             for subview in view.allSubViewsOf(type: UIVisualEffectView.self) {
                 subview.effect = UIBlurEffect(style: style)

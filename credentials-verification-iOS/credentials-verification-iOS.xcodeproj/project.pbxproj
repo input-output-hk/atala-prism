@@ -14,6 +14,8 @@
 		B3025508244A4FE900C8E9C0 /* ConnectionsWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */; };
 		B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */; };
 		B32A7B72243288A500B52586 /* ConnectionProofRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */; };
+		B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B33B708D249BA09D00F620D6 /* ResetData.storyboard */; };
+		B33B7090249BB17000F620D6 /* ResetDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33B708F249BB17000F620D6 /* ResetDataViewController.swift */; };
 		B35181AB24195CAD007CA8F1 /* connector_api.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A824195CAC007CA8F1 /* connector_api.proto */; };
 		B35181AC24195CAD007CA8F1 /* connector_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A924195CAC007CA8F1 /* connector_models.proto */; };
 		B35181AD24195CAD007CA8F1 /* node_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181AA24195CAD007CA8F1 /* node_models.proto */; };
@@ -243,6 +245,8 @@
 		B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsWorker.swift; sourceTree = "<group>"; };
 		B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConnectionProofRequest.storyboard; sourceTree = "<group>"; };
 		B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestViewController.swift; sourceTree = "<group>"; };
+		B33B708D249BA09D00F620D6 /* ResetData.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ResetData.storyboard; sourceTree = "<group>"; };
+		B33B708F249BB17000F620D6 /* ResetDataViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetDataViewController.swift; sourceTree = "<group>"; };
 		B35181A824195CAC007CA8F1 /* connector_api.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_api.proto; sourceTree = "<group>"; };
 		B35181A924195CAC007CA8F1 /* connector_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_models.proto; sourceTree = "<group>"; };
 		B35181AA24195CAD007CA8F1 /* node_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = node_models.proto; sourceTree = "<group>"; };
@@ -1113,6 +1117,7 @@
 			children = (
 				EE8FD4E923726AC000EFF62E /* Settings.storyboard */,
 				B36F27BC2406E2C400FF751B /* About.storyboard */,
+				B33B708D249BA09D00F620D6 /* ResetData.storyboard */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1183,6 +1188,7 @@
 				EE8FD4E323726A4000EFF62E /* SettingsViewController.swift */,
 				B36F27C02406F38C00FF751B /* AboutPresenter.swift */,
 				B36F27BE2406F37600FF751B /* AboutViewController.swift */,
+				B33B708F249BB17000F620D6 /* ResetDataViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1400,6 +1406,7 @@
 				B3F94E8A247455720087EBFD /* Security.storyboard in Resources */,
 				EE7D4D1523693A13007C31A8 /* Connections.storyboard in Resources */,
 				EE904F1E2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib in Resources */,
+				B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */,
 				EE7D4C792366B9C4007C31A8 /* Localizable.strings in Resources */,
 				EE7185862384FBC200C58F62 /* CredentialPay.storyboard in Resources */,
 				B3F94E86247455650087EBFD /* Lock.storyboard in Resources */,
@@ -1692,6 +1699,7 @@
 				EE7D4CE623673C39007C31A8 /* UISearchBar+Extensions.swift in Sources */,
 				EE904F112373AB4400EE6344 /* DetailPropertyViewCell.swift in Sources */,
 				EE48AC132377544800C0A441 /* TermsViewController.swift in Sources */,
+				B33B7090249BB17000F620D6 /* ResetDataViewController.swift in Sources */,
 				EE7185642384B77600C58F62 /* BrowserPresenter.swift in Sources */,
 				EE7D4BB82366B9C4007C31A8 /* TableUtils.swift in Sources */,
 				EE7D4CE523673C39007C31A8 /* UISegmentedControl+Extensions.swift in Sources */,
@@ -1947,7 +1955,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 38;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -1973,7 +1981,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

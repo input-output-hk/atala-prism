@@ -13,7 +13,7 @@ protocol ConnectionsWorkerDelegate: class {
     func connectionsFetched(connections: [ConnectionBase])
     func config(isLoading: Bool)
     func showErrorMessage(doShow: Bool, message: String?)
-    func showNewConnectMessage(type: Int, title: String?, logoData: Data?, isDuplicated: Bool)
+    func showNewConnectMessage(type: Int, title: String?, logoData: Data?)
     func conectionAccepted()
 }
 
@@ -76,10 +76,16 @@ class ConnectionsWorker: NSObject {
         }, success: {
             let isDuplicated = connections.contains { $0.did == self.connectionRequest?.info?.did }
             self.delegate?.config(isLoading: false)
-            self.delegate?.showNewConnectMessage(type: self.connectionRequest?.type ?? 0,
-                                                 title: self.connectionRequest!.info?.name,
-                                                 logoData: self.connectionRequest?.info?.logoData,
-                                                 isDuplicated: isDuplicated)
+            if isDuplicated {
+                self.delegate?.showErrorMessage(doShow: true,
+                                                message: String(format:
+                                                    "connections_scan_qr_confirm_duplicated_title".localize(),
+                                                                self.connectionRequest!.info?.name ?? ""))
+            } else {
+                self.delegate?.showNewConnectMessage(type: self.connectionRequest?.type ?? 0,
+                                                     title: self.connectionRequest!.info?.name,
+                                                     logoData: self.connectionRequest?.info?.logoData)
+            }
         }, error: { _ in
             self.delegate?.config(isLoading: false)
             self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize())

@@ -5,7 +5,7 @@
 import Foundation
 
 // https://github.com/apple/swift-evolution/blob/master/proposals/0121-remove-optional-comparison-operators.md
-// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Comparison operators with optionals were removed from the Swift Standard Libary.
 // Consider refactoring the code to use the non-optional operators.
 // swiftlint:disable identifier_name
 public func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {

@@ -19,8 +19,6 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
 
     weak var delegate: ConnectionConfirmPresenterDelegate?
 
-    var isDuplicated: Bool = false
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -60,14 +58,11 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
     }()
 
     func config(delegate: ConnectionConfirmPresenterDelegate?, lead: String?, title: String?,
-                logoData: Data?, placeholderNamed: String?, isDuplicated: Bool) {
+                logoData: Data?, placeholderNamed: String?) {
 
         self.delegate = delegate
         labelLead.text = lead
         labelTitle.text = title
-        if isDuplicated {
-            buttonConfirm.setTitle("connections_scan_qr_confirm_duplicated_button".localize(), for: .normal)
-        }
         imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
     }
 
