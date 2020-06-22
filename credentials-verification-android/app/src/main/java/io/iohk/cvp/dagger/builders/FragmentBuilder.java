@@ -12,10 +12,12 @@ import io.iohk.cvp.dagger.modules.PaymentsModule;
 import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.fragments.AboutFragment;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
+import io.iohk.cvp.views.fragments.AlreadyConnectedDialogFragment;
 import io.iohk.cvp.views.fragments.BackendIpFragment;
 import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.CredentialDetailFragment;
+import io.iohk.cvp.views.fragments.DeleteAllConnectionsDialogFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
@@ -108,4 +110,11 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector
   abstract ForegroundBackgroundListener foregroundBackgroundListener();
+
+  @ContributesAndroidInjector
+  abstract DeleteAllConnectionsDialogFragment deleteAllConnectionsDialogFragment();
+
+  @ContributesAndroidInjector
+  abstract AlreadyConnectedDialogFragment alreadyConnectedDialogFragment();
+
 }

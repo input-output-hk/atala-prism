@@ -9,7 +9,9 @@ import com.google.protobuf.ByteString;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -238,5 +240,17 @@ public class Preferences {
         return prefs.getBoolean(FIRST_LAUNCH, true);
     }
 
-
+    public void deleteUserConnections(List<String> connectionIdList) {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        Editor editor = prefs.edit();
+        connectionIdList.forEach(s -> {
+            if(prefs.contains(s.concat(CONNECTION_USER_ID_KEY)))
+                editor.remove(s.concat(CONNECTION_USER_ID_KEY));
+            if(prefs.contains(s.concat(CONNECTION_LOGO_KEY)))
+                editor.remove(s.concat(CONNECTION_LOGO_KEY));
+        });
+        List<String> keyToRemove = Arrays.asList(USER_ID_LIST_KEY, CONNECTION_TOKEN_TO_ACCEPT, PROOF_REQUEST_SHARED_KEY, PROOF_REQUEST_CANCEL_KEY, ACCEPTED_MESSAGES_KEY, REJECTED_MESSAGES_KEY);
+        keyToRemove.forEach(editor::remove);
+        editor.commit();
+    }
 }

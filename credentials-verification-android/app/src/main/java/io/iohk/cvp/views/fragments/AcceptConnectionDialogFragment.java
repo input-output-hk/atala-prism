@@ -113,10 +113,6 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
     public void onResume() {
         super.onResume();
         Window window = getDialog().getWindow();
-        if (window == null) {
-            return;
-        }
-
         WindowManager.LayoutParams params = window.getAttributes();
         float factor = getContext().getResources().getDisplayMetrics().density;
         params.width = (int) (350 * factor);

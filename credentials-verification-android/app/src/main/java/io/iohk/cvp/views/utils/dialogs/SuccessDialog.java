@@ -1,6 +1,7 @@
 package io.iohk.cvp.views.utils.dialogs;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,15 +16,21 @@ import androidx.fragment.app.Fragment;
 import java.util.Objects;
 
 import io.iohk.cvp.R;
+import io.iohk.cvp.views.fragments.SettingsFragment;
 
 public class SuccessDialog extends DialogFragment {
 
   private Fragment context;
 
   public static SuccessDialog newInstance(Fragment context, int description) {
+    return newInstance(context, description, false);
+  }
+
+  public static SuccessDialog newInstance(Fragment context, int description, boolean removeTitle) {
     SuccessDialog frag = new SuccessDialog();
     Bundle args = new Bundle();
     args.putInt("description", description);
+    args.putBoolean("removeTitle", removeTitle);
     frag.context = context;
     frag.setArguments(args);
     return frag;
@@ -33,6 +40,7 @@ public class SuccessDialog extends DialogFragment {
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     int description = getArguments().getInt("description");
+    boolean hideTitle = getArguments().getBoolean("removeTitle", false);
 
     // Use the Builder class for convenient dialog construction
     AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
@@ -42,6 +50,8 @@ public class SuccessDialog extends DialogFragment {
 
     TextView descriptionTextView = dialogView.findViewById(R.id.description_text_view);
     descriptionTextView.setText(description);
+    if(hideTitle)
+      dialogView.findViewById(R.id.title_text_view).setVisibility(View.GONE);
 
     Button btnOk = dialogView.findViewById(R.id.btn_ok);
     btnOk.setOnClickListener(new View.OnClickListener() {

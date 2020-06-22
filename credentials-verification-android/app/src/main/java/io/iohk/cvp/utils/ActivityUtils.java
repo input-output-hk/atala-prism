@@ -14,6 +14,7 @@ import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.viewmodel.NewConnectionsViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
+import io.iohk.cvp.views.fragments.AlreadyConnectedDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.prism.protos.ConnectionInfo;
@@ -47,19 +48,17 @@ public class ActivityUtils {
                         boolean isAcceptedConnection = activity.getIssuerConnections().stream()
                                 .anyMatch(connection -> connection.getParticipantInfo().getIssuer().getDID().equals(response.getResult().getParticipantInfo().getIssuer().getDID()));
 
-                        String title, buttonDescription;
-                        if(isAcceptedConnection){
-                            title =  activity.getResources().getString(R.string.connection_re_acept_title);
-                            buttonDescription =  activity.getResources().getString(R.string.connection_re_acept_button);
-                        }else{
-                            title = activity.getResources().getString(R.string.connection_acept_title);
-                            buttonDescription = activity.getResources().getString(R.string.connection_acept_button);
+                        if(isAcceptedConnection) {
+                            activity.getNavigator().showDialogFragment(fragmentManager,
+                                    AlreadyConnectedDialogFragment.newInstance(response.getResult().getParticipantInfo()), "ALREADY_CONNECTED_DIALOG_FRAGMENT");
+                        } else {
+                            activity.getNavigator().showDialogFragment(fragmentManager,
+                                    AcceptConnectionDialogFragment.newInstance(activity.getResources().getString(R.string.connection_acept_title),
+                                            activity.getResources().getString(R.string.connection_acept_button), response.getResult().getToken(),
+                                            response.getResult().getParticipantInfo()),
+                                    "ACCEPT_CONNECTION_DIALOG_FRAGMENT");
                         }
 
-                        activity.getNavigator().showDialogFragment(fragmentManager,
-                                AcceptConnectionDialogFragment.newInstance(title, buttonDescription, response.getResult().getToken(),
-                                        response.getResult().getParticipantInfo()),
-                                "ACCEPT_CONNECTION_DIALOG_FRAGMENT");
                     }
             );
         }

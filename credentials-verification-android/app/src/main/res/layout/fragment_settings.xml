@@ -27,6 +27,22 @@
             app:primaryText="@string/backup_button_name"
             app:secondaryText="@string/backup_button_description" />
 
+      <io.iohk.cvp.views.utils.components.OptionItem
+          android:id="@+id/delete_credentials"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="@dimen/activity_default_side_margin"
+          android:layout_marginTop="16dp"
+          android:layout_marginEnd="@dimen/activity_default_side_margin"
+          app:actionImage="@drawable/arrow_right_grey"
+          app:isAvailable="true"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/backup"
+          app:logoImage="@drawable/ic_reset"
+          app:primaryText="@string/reset"
+          app:secondaryText="@string/delete_contacts_credentials" />
+
         <io.iohk.cvp.views.utils.components.OptionItem
             android:id="@+id/security"
             android:layout_width="0dp"
@@ -38,7 +54,7 @@
             app:isAvailable="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/backup"
+            app:layout_constraintTop_toBottomOf="@id/delete_credentials"
             app:logoImage="@drawable/ic_security"
             app:primaryText="@string/security_button_name"
             app:secondaryText="@string/security_button_description" />
@@ -89,6 +105,7 @@
             app:logoImage="@drawable/ic_about"
             app:primaryText="Backend config"
             app:secondaryText="Set api url and port" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

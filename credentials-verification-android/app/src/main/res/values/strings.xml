@@ -118,7 +118,7 @@
 
 
     <!-- Settings option labels -->
-    <string name="backup_button_name">Backup Account</string>
+    <string name="backup_button_name">Backup Data</string>
     <string name="backup_button_description">Create a backup now</string>
     <string name="security_button_name">Security</string>
     <string name="security_button_description">Secure app with a Pin or Biometrics</string>
@@ -196,7 +196,7 @@
     <string name="connection_acept_button">Confirm</string>
     <string name="connection_re_acept_button">Connect again</string>
     <string name="employee_name">Employee Name</string>
-
+    <string name="already_connected_reset_data">You have already connected with %1$s. Please reset the data in the settings and reset the interactive city map.</string>
 
     <!-- Security screen labels -->
     <string name="setting_up">Setup</string>
@@ -217,5 +217,13 @@
     <string name="same_pin_required">Pins has to be the same</string>
     <string name="incorrect_current_pin">Your current PIN is incorrect</string>
     <string name="wrong_pin_size">Pin length must be %1$d characters long</string>
+    <string name="reset_data">Reset Data</string>
+    <string name="delete_contacts_credentials"><![CDATA[Delete contacts & credentials]]></string>
+    <string name="reset">Reset</string>
+    <string name="you_have_already_connected">You have already connected with:</string>
+    <string name="connections_remove_success">Contacts and credentials successfully removed</string>
+    <string name="delete_all_data_body">Are your sure you want to\nreset data?</string>
+    <string name="delete_all_data_title">Your contacts and credentials\nwill be deleted</string>
+    <string name="please_reset_data">Please reset the data in the settings\nand reset the inactive city map.</string>
 
 </resources>

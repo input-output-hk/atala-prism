@@ -28,5 +28,6 @@
   <color name="purple">#66268D</color>
 
   <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#E5E5E5</color>
+    <color name="black_effective">#2a2a2a</color>
 
 </resources>

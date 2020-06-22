@@ -10,6 +10,7 @@ import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -40,6 +41,7 @@ import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
@@ -274,19 +276,23 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     public void acceptConnection(String connectionToken, Preferences prefs) {
         try {
-            viewModel
-                    .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), "")
-                    .observe(this, response -> {
-                        if (response.getError() != null) {
-                            getNavigator().showPopUp(getSupportFragmentManager(), getResources().getString(
-                                    R.string.server_error_message));
-                            return;
-                        }
-                        AddConnectionFromTokenResponse info = response.getResult();
-                        prefs.addConnection(info);
-                        onNavigation(BottomAppBarOption.CONTACTS, info.getUserId());
-                        bottomAppBar.setItemColors(BottomAppBarOption.CONTACTS);
-                    });
+            LiveData<AsyncTaskResult<AddConnectionFromTokenResponse>> asyncTaskResultLiveData = viewModel
+                    .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), "");
+
+            if(asyncTaskResultLiveData.hasActiveObservers()) {
+                return;
+            }
+            asyncTaskResultLiveData.observe(this, response -> {
+                if (response.getError() != null) {
+                    getNavigator().showPopUp(getSupportFragmentManager(), getResources().getString(
+                            R.string.server_error_message));
+                    return;
+                }
+                AddConnectionFromTokenResponse info = response.getResult();
+                prefs.addConnection(info);
+                onNavigation(BottomAppBarOption.CONTACTS, info.getUserId());
+                bottomAppBar.setItemColors(BottomAppBarOption.CONTACTS);
+            });
 
         } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
             Crashlytics.logException(e);
@@ -307,11 +313,13 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         return this.issuerConnections;
     }
 
+    public void clearIssueConnections() {
+        this.issuerConnections = new ArrayList<>();
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
 
     }
-
-
 }

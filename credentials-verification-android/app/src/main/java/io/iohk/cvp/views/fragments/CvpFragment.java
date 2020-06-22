@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import io.iohk.cvp.views.fragments.utils.CommonUtils;
 import lombok.Getter;
 
 public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
@@ -31,6 +33,8 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
     @Getter
     @Inject
     Navigator navigator;
+
+    private ProgressDialog mProgressDialog;
 
     public abstract T getViewModel();
 
@@ -53,6 +57,17 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         viewModel = getViewModel();
+    }
+
+    public void showLoading() {
+        hideLoading();
+        mProgressDialog = CommonUtils.showLoadingDialog(this.getContext());
+    }
+
+    public void hideLoading() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.cancel();
+        }
     }
 
     @Override
