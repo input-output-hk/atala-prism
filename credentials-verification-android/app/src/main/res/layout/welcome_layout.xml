@@ -18,7 +18,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/atala_welcome" />
+        app:srcCompat="@drawable/ic_atala_prism_logo_new" />
 
     <TextView
         android:id="@+id/textView3"

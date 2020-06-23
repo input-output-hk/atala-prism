@@ -7,7 +7,18 @@
     android:background="@drawable/bg_unlock"
     tools:context=".views.activities.UnlockActivity">
 
+    <ImageView
+        android:id="@+id/imageView9"
+        android:layout_width="200dp"
+        android:layout_height="61dp"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_logoatalaprismwhite" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_top_corners_white"
