@@ -11,7 +11,7 @@ const Footer = () => {
     <div className="Footer">
       <div className="FooterContent">
         <button type="button" onClick={scrollToTop}>
-          <img src="images/atala-prism-black.svg" alt={t('atalaLogo')} />
+          <img src="images/atala-prism-logo-suite.svg" alt={t('atalaLogo')} />
         </button>
         <div className="FooterText">
           <p>

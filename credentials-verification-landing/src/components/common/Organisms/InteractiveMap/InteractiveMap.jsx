@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { AtalaPrismDemo } from 'atala-prism-demo';
-import atalaLogo from '../../../../images/logo-atala-prism.svg';
-import cardanoLogo from '../../../../images/logo-cardano.svg';
+import atalaLogo from '../../../../images/atala-prism-logo-suite.svg';
+import atalaLogo360 from '../../../../images/360-digital-credential-demo.svg';
+import cardanoLogo from '../../../../images/powered-by-cardano.svg';
 import './_style.scss';
 
 const FirstStep = 1;
@@ -43,9 +44,16 @@ class InteractiveMap extends Component {
   render() {
     return (
       <div className="MapContainer">
-        <img src={atalaLogo} alt="Atala" className="AtalaLogo" />
+        <div className="LogoContainer">
+          <img src={atalaLogo} alt="Atala" className="AtalaLogo" />
+          <img src={atalaLogo360} alt="Atala 360 Digital Credentials Demo" className="AtalaLogoDemo" />
+        </div>
         <div className={'AtalaPrismDemoMap'}>
-          <AtalaPrismDemo ref="demo" style={'outline:none;'} controlsEnabled={this.props.controlsEnabled}/>
+          <AtalaPrismDemo
+            ref="demo"
+            style={'outline:none;'}
+            controlsEnabled={this.props.controlsEnabled}
+          />
         </div>
         <img src={cardanoLogo} alt="Cardano" className="CardanoLogo" />
       </div>
