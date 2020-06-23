@@ -94,7 +94,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
         if (!PermissionUtils
                 .checkIfAlreadyHavePermission(getActivity().getApplicationContext(),
                         Manifest.permission.CAMERA)) {
-            PermissionUtils.requestForSpecificPermission(getActivity(), ActivitiesRequestCodes
+            PermissionUtils.requestForSpecificPermission(this, ActivitiesRequestCodes
                     .QR_SCANNER_REQUEST_PERMISSION, Manifest.permission.CAMERA);
         } else {
             navigator.showQrScanner(this);

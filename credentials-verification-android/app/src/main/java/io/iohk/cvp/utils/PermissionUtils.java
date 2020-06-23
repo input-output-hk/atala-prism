@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
+import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 
 public class PermissionUtils {
 
@@ -16,5 +19,10 @@ public class PermissionUtils {
   public static void requestForSpecificPermission(Activity activity,
       int requestCode, String... permissions) {
     ActivityCompat.requestPermissions(activity, permissions, requestCode);
+  }
+
+  public static void requestForSpecificPermission(Fragment fragment,
+                                                  int requestCode, String... permissions) {
+    fragment.requestPermissions(permissions, requestCode);
   }
 }
