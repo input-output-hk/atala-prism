@@ -1,10 +1,5 @@
 package io.iohk.cvp.views;
 
-import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
-import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.FIRST_WORD_INDEX_KEY;
-import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SECOND_WORD_INDEX_KEY;
-import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SEED_PHRASE_KEY;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +12,11 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.braintreepayments.api.dropin.DropInRequest;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
@@ -33,11 +33,13 @@ import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
+import io.iohk.cvp.views.fragments.SecuritySettingsStep1Fragment;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
+import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
+import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.FIRST_WORD_INDEX_KEY;
+import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SECOND_WORD_INDEX_KEY;
+import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SEED_PHRASE_KEY;
 
 public class Navigator {
 
@@ -141,25 +143,31 @@ public class Navigator {
         from.startActivity(intent);
     }
 
-    public void showFragment(FragmentManager supportFragmentManager, CvpFragment cvpFragment, String tag) {
+    public void showFragment(FragmentManager supportFragmentManager, CvpFragment cvpFragment,
+                             String tag, String transactionTag) {
         FragmentTransaction ft = supportFragmentManager.beginTransaction();
         ft.replace(R.id.fragment_layout, cvpFragment, tag);
-        ft.addToBackStack(tag);
+        ft.addToBackStack(transactionTag);
         ft.commit();
-
     }
 
     public void showFragmentOnTop(FragmentManager supportFragmentManager, CvpFragment cvpFragment) {
-       showFragment(supportFragmentManager, cvpFragment, null);
+       showFragment(supportFragmentManager, cvpFragment, MAIN_FRAGMENT_TAG,null);
     }
 
     public void showFragmentOnTopOfMenu(FragmentManager supportFragmentManager,
                                         CvpFragment cvpFragment) {
         FragmentTransaction ft = supportFragmentManager.beginTransaction();
-        ft.replace(R.id.fragment_layout_over_menu, cvpFragment);
+        ft.replace(R.id.fragment_layout_over_menu, cvpFragment, MAIN_FRAGMENT_TAG);
         ft.addToBackStack(null);
         ft.commit();
+    }
 
+    public void showFragmentOnTopOfMenuNoBackstack(FragmentManager supportFragmentManager,
+                                        CvpFragment cvpFragment) {
+        FragmentTransaction ft = supportFragmentManager.beginTransaction();
+        ft.replace(R.id.fragment_layout_over_menu, cvpFragment, MAIN_FRAGMENT_TAG);
+        ft.commit();
     }
 
     public void showDialogFragment(FragmentManager supportFragmentManager,
@@ -178,4 +186,5 @@ public class Navigator {
         myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         ctx.startActivity(myIntent);
     }
+
 }

@@ -157,7 +157,7 @@ public class SecurityChangePinFragment extends CvpFragment implements PinEditTex
             if(securityPinNew.equals(securityPinConfirm)) {
                 if(prefs.getSecurityPin().equals(securityCurrentPin)){
                     prefs.saveSecurityPin(securityPinNew);
-                    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecurityFragment());
+                    getFragmentManager().popBackStack();
                 } else {
                     Toast.makeText(getActivity(), R.string.incorrect_current_pin, Toast.LENGTH_SHORT).show();
                 }

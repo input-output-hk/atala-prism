@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
@@ -52,6 +53,7 @@ import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.MyCredentials;
 import io.iohk.cvp.views.fragments.ProfileFragment;
+import io.iohk.cvp.views.fragments.SecurityFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
@@ -62,10 +64,13 @@ import lombok.Getter;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
+import static io.iohk.cvp.views.fragments.SettingsFragment.SECURITY_SELECTED_TRANSACTION;
 
 public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener {
 
     public static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT";
+
+    private static final String INITIAL_TRANSACTION = "initialTransaction";
 
     @Inject
     HomeFragment homeFragment;
@@ -140,8 +145,6 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     }
 
-
-
     @Override
     public MainViewModel getViewModel() {
         MainViewModel viewModel = ViewModelProviders.of(this, factory).get(MainViewModel.class);
@@ -158,6 +161,30 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     @Override
+    public void onBackPressed() {
+        Fragment currentFragment = getCurrentFragment();
+
+        if(isBottomBarOptionScreen(currentFragment) || isFirstConnetionContacts(currentFragment)) {
+            getSupportFragmentManager().popBackStack(INITIAL_TRANSACTION, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            bottomAppBar.setItemColors(null);
+            fab.setBackgroundTintList(colorRed);
+        } else if(isInitialScreen(currentFragment)) {
+            this.finish();
+        } else {
+            getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
+            getSupportFragmentManager().popBackStack();
+        }
+    }
+
+    private boolean isFirstConnetionContacts(Fragment currentFragment) {
+        return currentFragment instanceof FirstConnectionFragment && ((FirstConnectionFragment)currentFragment).getIdTitle() == R.string.contacts;
+    }
+
+    private boolean isBottomBarOptionScreen(Fragment currentFragment) {
+        return currentFragment instanceof MyCredentials || currentFragment instanceof ContactsFragment || currentFragment instanceof SettingsFragment || currentFragment instanceof ProfileFragment;
+    }
+
+    @Override
     public void onNavigation(BottomAppBarOption option, String userId) {
         if (BottomAppBarOption.HOME.equals(option) || BottomAppBarOption.FIRSTCONNECTION.equals(option)) {
             fab.setBackgroundTintList(colorRed);
@@ -168,15 +195,15 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
         getFragmentToRender(option)
                 .ifPresent(cvpFragment -> {
-                    Fragment currentFragment = this.getSupportFragmentManager()
-                            .findFragmentByTag(MAIN_FRAGMENT_TAG);
+                    Fragment currentFragment = getCurrentFragment();
 
                     if (currentFragment instanceof ContactsFragment && cvpFragment instanceof ContactsFragment) {
                         Set<String> userIds = new HashSet<>();
                         userIds.add(userId);
                         ((ContactsFragment) currentFragment).listConnections(userIds);
                     } else {
-                        navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG);
+                        String transactionTag = isInitialScreen(currentFragment) ? INITIAL_TRANSACTION : null;
+                        navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG, transactionTag);
                     }
                 });
     }
@@ -207,6 +234,15 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                                 ErrorCode.STEP_NOT_FOUND));
                 return Optional.empty();
         }
+    }
+
+    private Fragment getCurrentFragment() {
+        return this.getSupportFragmentManager()
+                .findFragmentByTag(MAIN_FRAGMENT_TAG);
+    }
+
+    private boolean isInitialScreen(Fragment currentFragment) {
+        return currentFragment instanceof  HomeFragment || currentFragment instanceof FirstConnectionFragment;
     }
 
     @Override

@@ -63,7 +63,7 @@ public class SecuritySettingsStep2Fragment extends CvpFragment {
             @Override
             public void onClick(View v) {
                 prefs.saveSecurityTouch(true);
-                navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecurityFragment());
+                navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
             }
         });
 
@@ -71,7 +71,7 @@ public class SecuritySettingsStep2Fragment extends CvpFragment {
             @Override
             public void onClick(View v) {
                 prefs.saveSecurityTouch(false);
-                navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecurityFragment());
+                navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
             }
         });
 

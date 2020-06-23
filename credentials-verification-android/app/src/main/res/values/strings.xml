@@ -37,7 +37,7 @@
     <string name="about_policy_title">Privacy Policy</string>
     <string name="about_policy_date">Last Updated: May 20, 2019</string>
     <string name="about_built">Atala PRISM powered by Cardano</string>
-    <string name="about_year">© 2020 iohk</string>
+    <string name="about_year">© 2020 IOHK</string>
 
 
     <!-- Wallet setup -->

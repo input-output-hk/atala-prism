@@ -25,6 +25,7 @@ import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.prism.protos.ConnectionInfo;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -32,8 +33,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityViewModel> {
 
-
     private ViewModelProvider.Factory factory;
+
+    @Getter
     private int idTitle;
 
     private List<ConnectionInfo> issuerConnections;

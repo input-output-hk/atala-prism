@@ -41,6 +41,8 @@ import io.iohk.prism.protos.ConnectionInfo;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
+
 @Setter
 @NoArgsConstructor
 public class SettingsFragment extends CvpFragment implements DeleteAllConnectionsDialogFragment.OnResetDataListener {
@@ -50,6 +52,8 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
   private ViewModelProvider.Factory factory;
   private ConnectionsActivityViewModel connectionsActivityViewModel;
   private LiveData<AsyncTaskResult<List<ConnectionInfo>>> liveData;
+
+  public static final String SECURITY_SELECTED_TRANSACTION = "securitySelectedTransaction";
 
   @Inject
   public SettingsFragment(ViewModelProvider.Factory factory) {
@@ -78,7 +82,7 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                           Bundle savedInstanceState) {
+      Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
     if (!BuildConfig.DEBUG) {

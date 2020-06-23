@@ -84,7 +84,12 @@ public class AboutFragment extends CvpFragment {
         ss.setSpan(boldSpan, 9, 13, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
         ss.setSpan(boldSpan1, 25, 30, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
         labelBuilt.setText(ss);
-        versionLabel.setText(BuildConfig.VERSION_NAME);
+        if (BuildConfig.DEBUG) {
+            versionLabel.setText(BuildConfig.VERSION_NAME + " - Testing");
+        } else {
+            versionLabel.setText(BuildConfig.VERSION_NAME);
+        }
+
         return view;
     }
 

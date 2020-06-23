@@ -144,9 +144,9 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
             if(securityPin.equals(securityPinConfirm)) {
                 prefs.saveSecurityPin(securityPin);
                 if(BiometricManager.from(getActivity()).canAuthenticate() == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE) {
-                    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecurityFragment());
+                    navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
                 } else {
-                    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecuritySettingsStep2Fragment());
+                    navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecuritySettingsStep2Fragment());
                 }
             } else {
                 Toast.makeText(getActivity(), R.string.same_pin_required, Toast.LENGTH_SHORT).show();
