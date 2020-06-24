@@ -89,7 +89,7 @@ export const CONTACT_US_NAME = 'contactUs';
 
 export const APP_STORE_URL = 'https://www.apple.com/la/ios/app-store/';
 export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store';
-export const TESTFLIGHT_URL = 'https://testflight.apple.com/join/n2zFCcUv';
+export const TESTFLIGHT_URL = 'https://testflight.apple.com/join/0GdpydQS';
 export const ANDROID_APK_URL = 'https://drive.google.com/file/d/1rlYyMRIdao5SCRfXeOjA2YNPaLp3hTmH/view';
 
 // EXAMPLE CERTIFICATE CARD VALUES
