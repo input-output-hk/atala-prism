@@ -74,7 +74,7 @@ object DockerPostgresService extends DockerKit {
 
       container
         .getPorts()(dockerExecutor, ec)
-        .map { ports =>
+        .map { _ =>
           try {
             Class.forName("org.postgresql.Driver")
             val url = s"jdbc:postgresql://${dockerExecutor.host}:$PostgresExposedPort/"

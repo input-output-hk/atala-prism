@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 
+import com.github.ghik.silencer.silent
 import io.iohk.cvp.crypto.ECKeys
 import org.scalatest.{MustMatchers, WordSpec}
 
@@ -71,8 +72,11 @@ class CryptoSDKSpec extends WordSpec with MustMatchers {
       )
 
       // some toy helper methods
+      @silent("never used")
       def getIssuer(credential: String): String = issuerDID
+      @silent("never used")
       def getKeyId(credential: String) = keyId
+      @silent("never used")
       def getKey(issuerDID: String, keyId: String) = publicKey
 
       // a tiny simulation of sending the credential

@@ -14,7 +14,7 @@ object StoredCredentialsDAO {
       signature: Array[Byte]
   )
 
-  def insert(userId: ParticipantId, data: StoredCredentialCreateData): ConnectionIO[Unit] = {
+  def insert(data: StoredCredentialCreateData): ConnectionIO[Unit] = {
     // TODO: should we verify that individualId belongs to the user here?
     sql"""INSERT INTO stored_credentials (individual_id, issuer_did, proof_id, content, signature, stored_at)
          |VALUES (${data.individualId}, ${data.issuerDid}, ${data.proofId},

@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * connector tables, to the cmanager and cstore tables, so that they are in sync.
   */
 class ParticipantPropagatorService(xa: Transactor[IO])(implicit ec: ExecutionContext) {
-  def propagate(id: ParticipantId, tpe: ParticipantType, name: String, did: String): Future[Unit] = {
+  def propagate(id: ParticipantId, tpe: ParticipantType): Future[Unit] = {
     tpe match {
       case ParticipantType.Holder => Future.unit // nothing to do
       case ParticipantType.Issuer => addIssuer(Issuer.Id(id.uuid))

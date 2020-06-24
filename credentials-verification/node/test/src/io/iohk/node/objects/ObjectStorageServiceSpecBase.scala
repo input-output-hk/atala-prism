@@ -3,7 +3,6 @@ package io.iohk.node.objects
 import java.nio.file.Files
 
 import io.iohk.node
-import io.iohk.node.services.BinaryOps
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{BeforeAndAfterAll, MustMatchers, WordSpec}
@@ -46,7 +45,6 @@ class FileBasedObjectStorageServiceSpec
     with BeforeAndAfterAll {
 
   private val tempDir = Files.createTempDirectory("prism-node-tests").toFile
-  private val binaryOps = BinaryOps()
 
   private def clearTempDir(): Unit = {
     if (tempDir.exists()) {
@@ -57,7 +55,7 @@ class FileBasedObjectStorageServiceSpec
 
   override def createStorage: ObjectStorageService = {
     clearTempDir()
-    new node.objects.ObjectStorageService.FileBased(Path(tempDir.getAbsolutePath), binaryOps)
+    new node.objects.ObjectStorageService.FileBased(Path(tempDir.getAbsolutePath))
   }
 
   override def afterAll(): Unit = {

@@ -1,5 +1,6 @@
 package io.iohk.node.poc.toyflow
 
+import com.github.ghik.silencer.silent
 import io.iohk.node.models.DIDSuffix
 
 // This SDK would allow to build generic credentials and manipulate them
@@ -30,7 +31,10 @@ object GenericCredentialsSDK {
        |}""".stripMargin
   }
 
+  @silent("never used")
   def getIssuerDID(credential: String): String = s"did:prism:$issuerDIDUsed"
+  @silent("never used")
   def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed
+  @silent("never used")
   def getKeyId(credential: String) = keyIdUsed
 }

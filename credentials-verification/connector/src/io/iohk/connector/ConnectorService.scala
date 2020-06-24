@@ -80,7 +80,7 @@ class ConnectorService(
             .map(UUID.fromString)
             .map(model.ConnectionId.apply)
             .fold(
-              ex => Left(InvalidArgumentError("lastSeenConnectionId", "valid id", id).logWarn),
+              _ => Left(InvalidArgumentError("lastSeenConnectionId", "valid id", id).logWarn),
               id => Right(Some(id))
             )
       }
@@ -263,7 +263,7 @@ class ConnectorService(
               case Right(x) => x
             }
 
-        _ <- participantPropagatorService.propagate(id = result.id, tpe = tpe, name = request.name, did = result.did)
+        _ <- participantPropagatorService.propagate(id = result.id, tpe = tpe)
       } yield connector_api.RegisterDIDResponse(did = result.did)
     }
   }
@@ -328,7 +328,7 @@ class ConnectorService(
             .map(UUID.fromString)
             .map(model.MessageId.apply)
             .fold(
-              ex => Left(InvalidArgumentError("lastSeenMessageId", "valid id", id).logWarn),
+              _ => Left(InvalidArgumentError("lastSeenMessageId", "valid id", id).logWarn),
               id => Right(Some(id))
             )
       }
@@ -361,7 +361,7 @@ class ConnectorService(
           .map(UUID.fromString)
           .map(model.ConnectionId.apply)
           .fold(
-            ex => Left(InvalidArgumentError("connectionId", "valid id", request.connectionId).logWarn),
+            _ => Left(InvalidArgumentError("connectionId", "valid id", request.connectionId).logWarn),
             id => Right(id)
           )
 

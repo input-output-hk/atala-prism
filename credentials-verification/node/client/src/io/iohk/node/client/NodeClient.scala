@@ -59,25 +59,25 @@ object NodeClient {
         .valueName("<key-storage-path>")
         .action((x, c) => c.copy(stateStorage = new File(x))),
       cmd("resolve")
-        .action((x, c) => c.copy(command = Some(Resolve())))
+        .action((_, c) => c.copy(command = Some(Resolve())))
         .children(Resolve.parser),
       cmd("create-did")
-        .action((x, c) => c.copy(command = Some(CreateDid())))
+        .action((_, c) => c.copy(command = Some(CreateDid())))
         .children(CreateDid.parser),
       cmd("update-did")
-        .action((x, c) => c.copy(command = Some(UpdateDid())))
+        .action((_, c) => c.copy(command = Some(UpdateDid())))
         .children(UpdateDid.parser),
       cmd("issue-credential")
-        .action((x, c) => c.copy(command = Some(IssueCredential())))
+        .action((_, c) => c.copy(command = Some(IssueCredential())))
         .children(IssueCredential.parser),
       cmd("revoke-credential")
-        .action((x, c) => c.copy(command = Some(RevokeCredential())))
+        .action((_, c) => c.copy(command = Some(RevokeCredential())))
         .children(RevokeCredential.parser),
       cmd("send-operation")
         .text("Sends base64-encoded SignedAtalaOperation to the node")
-        .action((x, c) => c.copy(command = Some(SendOperation()))),
+        .action((_, c) => c.copy(command = Some(SendOperation()))),
       cmd("get-build-info")
-        .action((x, c) => c.copy(command = Some(GetBuildInfo())))
+        .action((_, c) => c.copy(command = Some(GetBuildInfo())))
     )
   }
 

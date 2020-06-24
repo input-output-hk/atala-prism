@@ -25,9 +25,9 @@ class StoredCredentialsService(xa: Transactor[IO])(implicit ec: ExecutionContext
       .toFutureEither
   }
 
-  def storeCredential(userId: ParticipantId, data: StoredCredentialCreateData): FutureEither[Nothing, Unit] = {
+  def storeCredential(data: StoredCredentialCreateData): FutureEither[Nothing, Unit] = {
     StoredCredentialsDAO
-      .insert(userId, data)
+      .insert(data)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

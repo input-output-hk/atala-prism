@@ -3,19 +3,19 @@ package io.iohk.cvp.cmanager.grpc.services
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs
 import io.iohk.cvp.cmanager.models.IssuerGroup
+import io.iohk.cvp.cmanager.repositories.CredentialsRepository
 import io.iohk.cvp.cmanager.repositories.common.DataPreparation
-import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.cmanager_api
 import io.iohk.prism.protos.cmanager_api.CredentialsServiceGrpc
 import org.mockito.MockitoSugar.mock
-import org.scalatest.OptionValues._
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationDouble
 
@@ -25,7 +25,6 @@ class CredentialsServiceImplSpec extends RpcSpecBase {
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 
-  private lazy val issuersRepository = new IssuersRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
@@ -41,7 +40,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase {
     Seq(
       cmanager_api.CredentialsServiceGrpc
         .bindService(
-          new CredentialsServiceImpl(issuersRepository, credentialsRepository, authenticator),
+          new CredentialsServiceImpl(credentialsRepository, authenticator),
           executionContext
         )
     )

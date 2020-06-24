@@ -26,7 +26,7 @@ object ConnectorClient {
       opt[String]('u', "userId")
         .action((userId, c) => c.copy(userId = Some(userId))),
       cmd("register")
-        .action((x, c) => c.copy(command = Register())),
+        .action((_, c) => c.copy(command = Register())),
       cmd("accept-connection")
         .action((_, c) => c.copy(command = AcceptConnection))
         .children(
@@ -65,7 +65,7 @@ object ConnectorClient {
             .action((message, c) => c.copy(base64Message = Some(message)))
         ),
       cmd("get-build-info")
-        .action((x, c) => c.copy(command = GetBuildInfo()))
+        .action((_, c) => c.copy(command = GetBuildInfo()))
     )
   }
 

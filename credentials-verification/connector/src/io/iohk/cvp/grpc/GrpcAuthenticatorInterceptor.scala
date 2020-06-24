@@ -15,12 +15,12 @@ class GrpcAuthenticatorInterceptor extends ServerInterceptor {
     val context = getDIDSignatureContext(headers)
       .orElse(getPublicKeySignatureContext(headers))
       .orElse(getLegacyAuthenticationContext(headers))
-      .getOrElse(getDefaultContext(headers))
+      .getOrElse(getDefaultContext())
 
     Contexts.interceptCall(context, call, headers, next)
   }
 
   // Unauthenticated request default context
-  private def getDefaultContext(headers: Metadata): Context = Context.current()
+  private def getDefaultContext(): Context = Context.current()
 
 }

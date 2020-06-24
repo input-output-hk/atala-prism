@@ -17,7 +17,6 @@ import io.iohk.cvp.cmanager.repositories.{
   CredentialsRepository,
   IssuerGroupsRepository,
   IssuerSubjectsRepository,
-  IssuersRepository,
   StudentsRepository
 }
 import io.iohk.cvp.cstore.CredentialsStoreService
@@ -123,13 +122,12 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     )
 
     // cmanager
-    val issuersRepository = new IssuersRepository(xa)(executionContext)
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val studentsRepository = new StudentsRepository(xa)(executionContext)
     val subjectsRepository = new IssuerSubjectsRepository(xa)(executionContext)
     val issuerGroupsRepository = new IssuerGroupsRepository(xa)(executionContext)
     val credentialsService =
-      new CredentialsServiceImpl(issuersRepository, credentialsRepository, authenticator)(executionContext)
+      new CredentialsServiceImpl(credentialsRepository, authenticator)(executionContext)
     val subjectsService = new SubjectsServiceImpl(subjectsRepository, credentialsRepository, authenticator)(
       executionContext
     )

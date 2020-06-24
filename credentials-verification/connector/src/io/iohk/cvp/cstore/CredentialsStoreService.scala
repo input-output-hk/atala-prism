@@ -154,7 +154,7 @@ class CredentialsStoreService(
       )
 
       storedCredentials
-        .storeCredential(participantId, createData)
+        .storeCredential(createData)
         .wrapExceptions
         .successMap { _ =>
           cstore_api.StoreCredentialResponse()

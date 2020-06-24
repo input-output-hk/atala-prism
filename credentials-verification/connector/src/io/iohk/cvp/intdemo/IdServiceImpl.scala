@@ -4,6 +4,7 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import com.github.ghik.silencer.silent
 import io.circe.Json.fromString
 import io.circe._
 import io.grpc.Status
@@ -74,6 +75,7 @@ object IdServiceImpl {
 
   val credentialTypeId = "VerifiableCredential/RedlandIdCredential"
 
+  @silent("never used")
   def noProofRequests(connection: Connection): Future[Unit] =
     Future.unit
 

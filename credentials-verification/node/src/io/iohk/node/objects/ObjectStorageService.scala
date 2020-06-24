@@ -1,7 +1,5 @@
 package io.iohk.node.objects
 
-import io.iohk.node.services.BinaryOps
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -31,8 +29,7 @@ object ObjectStorageService {
   type ObjectId = String
 
   def apply()(implicit ec: ExecutionContext): ObjectStorageService = {
-    val binaryOps = BinaryOps()
-    new FileBased(os.pwd / ".node", binaryOps)
+    new FileBased(os.pwd / ".node")
   }
 
   class InMemory extends ObjectStorageService {
@@ -47,8 +44,7 @@ object ObjectStorageService {
     }
   }
 
-  class FileBased(baseDirectory: os.Path, binaryOps: BinaryOps)(implicit ec: ExecutionContext)
-      extends ObjectStorageService {
+  class FileBased(baseDirectory: os.Path)(implicit ec: ExecutionContext) extends ObjectStorageService {
     override def put(id: ObjectId, data: Array[Byte]): Future[Unit] = {
       val path = baseDirectory / id
       Future {

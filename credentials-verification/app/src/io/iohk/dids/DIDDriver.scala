@@ -3,6 +3,8 @@ package io.iohk.dids
 import java.net.URI
 import java.util.UUID
 
+import com.github.ghik.silencer.silent
+
 import scala.util.matching.Regex
 
 trait DIDDriver {
@@ -57,6 +59,7 @@ class InMemoryDIDDriver extends DIDDriver with SimpleDIDManagement {
     }
   }
 
+  @silent("never used")
   private def changeAllowed(identifier: UUID, newValue: Document, oldValue: Document): Boolean = true
 
   override def update(uri: URI, value: Document): Unit = {

@@ -3,6 +3,7 @@ package io.iohk.node.poc
 import java.time.LocalDate
 import java.util.UUID
 
+import com.github.ghik.silencer.silent
 import io.iohk.prism.protos.cmanager_models.CManagerGenericCredential
 import io.iohk.prism.protos.node_api
 import io.iohk.prism.protos.node_api.{IssuerCredentialRequest, RevokeCredentialRequest}
@@ -30,6 +31,7 @@ case class CManager(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   // this is a toy API to simulate what the CManager would do
   // NOTE: If needed we could have a batched version of this method to issue a batch of credentials at once
   //       but we would need to wait for the batching release
+  @silent("never used")
   def issueCredential(credentialId: String, issueCredentialOperation: SignedAtalaOperation): String = {
     // First some storage stuff to mark a credential as stored
     // It then send posts the operation to the node
@@ -39,6 +41,7 @@ case class CManager(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     //       Note that the same situation happens with DID registration
   }
 
+  @silent("never used")
   def revokeCredential(credentialId: String, revokeCredentialOperation: SignedAtalaOperation): Unit = {
     // First storage stuff
     // then, posting things on the blockchain through the node

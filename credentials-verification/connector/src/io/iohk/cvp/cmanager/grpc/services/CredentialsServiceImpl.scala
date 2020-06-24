@@ -6,7 +6,7 @@ import io.iohk.connector.Authenticator
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
 import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
-import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository}
+import io.iohk.cvp.cmanager.repositories.CredentialsRepository
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.prism.protos.cmanager_api
 import io.iohk.prism.protos.cmanager_api.{
@@ -21,7 +21,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class CredentialsServiceImpl(
-    issuersRepository: IssuersRepository,
     credentialsRepository: CredentialsRepository,
     authenticator: Authenticator
 )(implicit
