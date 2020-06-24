@@ -48,7 +48,7 @@ class ObjectManagementService(
     }
 
     val content = objectUpdate match {
-      case AtalaObjectUpdate.Reference(ref) => None
+      case AtalaObjectUpdate.Reference(_) => None
       case AtalaObjectUpdate.ByteContent(bytes) => Some(bytes)
     }
 

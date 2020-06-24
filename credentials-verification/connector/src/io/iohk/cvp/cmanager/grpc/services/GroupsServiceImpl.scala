@@ -18,7 +18,7 @@ class GroupsServiceImpl(issuerGroupsRepository: IssuerGroupsRepository, authenti
         .create(issuerId, IssuerGroup.Name(request.name))
         .value
         .map {
-          case Right(x) => cmanager_api.CreateGroupResponse()
+          case Right(_) => cmanager_api.CreateGroupResponse()
           case Left(e) => throw new RuntimeException(s"FAILED: $e")
         }
     }

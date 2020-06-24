@@ -112,7 +112,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
         .update(_.createDid.didData.publicKeys(0).ecKeyData.curve := "")
 
       inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
           path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "ecKeyData", "curve")
       }
     }

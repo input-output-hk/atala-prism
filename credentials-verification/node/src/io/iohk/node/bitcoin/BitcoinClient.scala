@@ -128,9 +128,9 @@ object BitcoinClient {
 
     def withErrors[E](f: PartialFunction[Any, E])(implicit ec: ExecutionContext): Result[E, A] =
       lr.mapLeft {
-        case ErrorResponse(name, BitcoinError(code, message)) if f.isDefinedAt((name, code)) =>
+        case ErrorResponse(name, BitcoinError(code, _)) if f.isDefinedAt((name, code)) =>
           f((name, code))
-        case ErrorResponse(_, BitcoinError(code, message)) if f.isDefinedAt(code) =>
+        case ErrorResponse(_, BitcoinError(code, _)) if f.isDefinedAt(code) =>
           f(code)
         case ErrorResponse(name, BitcoinError(code, message)) =>
           throw new RuntimeException(s"Bitcoin API Error invoking $name: [$code] $message")

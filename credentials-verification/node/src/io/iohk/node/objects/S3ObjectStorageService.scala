@@ -87,9 +87,9 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
           err match {
             case ex: CompletionException =>
               ex.getCause match {
-                case exx: NoSuchKeyException =>
+                case _: NoSuchKeyException =>
                   promise.success(None)
-                case exx =>
+                case _ =>
                   promise.failure(ex)
               }
             case ex =>

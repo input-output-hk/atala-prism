@@ -187,7 +187,7 @@ class ConnectorService(
                   }
                   .getOrElse(throw new RuntimeException("Missing public key"))
               } catch {
-                case NonFatal(e) =>
+                case NonFatal(_) =>
                   toEncodedPublicKey(ECKeys.generateKeyPair().getPublic)
               }
             }
