@@ -157,6 +157,7 @@ object IdServiceImplSpec {
     when(repository.findPersonalInfo(token)).thenReturn(Future(personalInfo))
 
     testCode(connectorIntegration, repository, service)
+    ()
   }
 
   def today(): intdemo_models.Date = toDate(LocalDate.now())

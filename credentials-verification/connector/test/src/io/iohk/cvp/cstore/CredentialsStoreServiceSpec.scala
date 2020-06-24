@@ -76,6 +76,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
       .insert(VerifierCreationData(Verifier.Id(verifierId.uuid)))
       .value
       .futureValue
+    ()
   }
 
   "createIndividual" should {

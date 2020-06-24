@@ -38,6 +38,7 @@ object TestCardanoBlockRepository {
          |    block_index INT4 NOT NULL
          |);
       """.stripMargin.update.run.transact(database).unsafeRunSync()
+    ()
   }
 
   def insertBlock(block: Block.Full)(implicit database: Transactor[IO]): Unit = {
@@ -63,6 +64,7 @@ object TestCardanoBlockRepository {
          |    (SELECT id FROM block WHERE hash = ${transaction.blockHash.value}),
          |    $blockIndex)
     """.stripMargin.update.run.transact(database).unsafeRunSync()
+    ()
   }
 
   /**

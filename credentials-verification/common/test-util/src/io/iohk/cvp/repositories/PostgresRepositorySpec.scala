@@ -76,6 +76,7 @@ trait PostgresRepositorySpec
       """.stripMargin.update.run.transact(database).unsafeRunSync()
 
     SchemaMigrations.migrate(config)
+    ()
   }
 
   override def beforeEach(): Unit = {
@@ -105,5 +106,6 @@ trait PostgresRepositorySpec
          |END;
          |$$$$
          |""".stripMargin.update.run.transact(database).unsafeRunSync()
+    ()
   }
 }

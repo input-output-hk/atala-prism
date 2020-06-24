@@ -57,9 +57,6 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
     new FutureEither(newFuture)
   }
 
-  def foreach[B](f: A => B)(implicit ec: ExecutionContext): Unit =
-    map(f)
-
   def recoverLeft[A2 >: A](f: E => A2)(implicit ec: ExecutionContext): FutureEither[Nothing, A2] = {
     new FutureEither(value.map(e => Right(e.fold(f, identity))))
   }

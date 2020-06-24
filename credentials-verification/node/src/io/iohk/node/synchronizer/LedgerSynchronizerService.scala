@@ -53,8 +53,6 @@ class LedgerSynchronizerService(
           if (goal.length >= 10) {
             logger.info("Synchronization completed")
           }
-
-          Right(())
         }
 
       case SynchronizationStatus.PendingReorganization(cutPoint, goal) =>
@@ -115,8 +113,6 @@ class LedgerSynchronizerService(
       if (newBlock.height % 5000 == 0) {
         logger.info(s"Caught up to block ${newBlock.height}")
       }
-
-      Right(())
     }
   }
 }

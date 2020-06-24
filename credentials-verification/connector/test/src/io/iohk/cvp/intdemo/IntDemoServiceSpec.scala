@@ -215,6 +215,7 @@ object IntDemoServiceSpec {
     )
 
     testCode(connectorIntegration, repository, service)
+    ()
   }
 
   private def credentialMatcher: credential_models.Credential = {

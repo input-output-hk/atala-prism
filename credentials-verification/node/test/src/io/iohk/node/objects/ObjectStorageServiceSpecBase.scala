@@ -52,6 +52,7 @@ class FileBasedObjectStorageServiceSpec
     if (tempDir.exists()) {
       new Directory(tempDir).deleteRecursively()
     }
+    ()
   }
 
   override def createStorage: ObjectStorageService = {

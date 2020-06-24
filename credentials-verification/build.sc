@@ -85,8 +85,7 @@ trait PrismScalaModule extends TpolecatModule {
             "-Ypartial-unification",
             "-Ywarn-dead-code",
             "-Ywarn-unused:params",
-            "-Ywarn-unused:privates",
-            "-Ywarn-value-discard"
+            "-Ywarn-unused:privates"
           )
         ) ++ Seq("-P:silencer:checkUnused")
     }

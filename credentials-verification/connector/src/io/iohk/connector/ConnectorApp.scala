@@ -185,12 +185,14 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       self.stop()
       System.err.println("*** server shut down")
     }
+    ()
   }
 
   private def stop(): Unit = {
     if (server != null) {
       server.shutdown()
     }
+    ()
   }
 
   private def blockUntilShutdown(): Unit = {

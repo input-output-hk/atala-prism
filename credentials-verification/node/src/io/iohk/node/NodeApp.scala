@@ -72,6 +72,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     def onAtalaReference(ref: AtalaObjectUpdate, timestamp: Instant): Future[Unit] = {
       objectManagementServicePromise.future.map { objectManagementService =>
         objectManagementService.saveObject(ref, timestamp)
+        ()
       }
     }
 
@@ -111,6 +112,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       self.stop()
       System.err.println("*** server shut down")
     }
+    ()
   }
 
   private def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler): AtalaService = {
@@ -145,6 +147,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     if (server != null) {
       server.shutdown()
     }
+    ()
   }
 
   private def blockUntilShutdown(): Unit = {

@@ -76,6 +76,7 @@ object ConnectorClient {
       case Some(config) =>
         if (config.command == UnitCommand) {
           OParser.usage(parser)
+          ()
         } else {
           val api = ConnectorServiceGrpc.blockingStub(getChannel(config))
           config.command.run(api, config)

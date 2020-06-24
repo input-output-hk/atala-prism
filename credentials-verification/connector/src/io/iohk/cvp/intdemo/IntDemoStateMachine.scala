@@ -51,6 +51,7 @@ class IntDemoStateMachine[D](
     try {
       responseObserver.onNext(response)
       scheduler.scheduleOnce(schedulerPeriod)(tick())
+      ()
     } catch (withLoggingHandler)
   }
 

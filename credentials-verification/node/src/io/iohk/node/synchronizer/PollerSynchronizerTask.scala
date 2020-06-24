@@ -21,6 +21,7 @@ class PollerSynchronizerTask(
     scheduler.scheduleOnce(config.delay) {
       run()
     }
+    ()
   }
 
   private def run(): Unit = {

@@ -47,15 +47,16 @@ class CardanoLedgerService private[services] (
 
   private def scheduleSync(delay: FiniteDuration): Unit = {
     scheduler.scheduleOnce(delay) {
-      for {
-        // Avoid failing so next run is scheduled
-        _ <- syncAtalaObjects().recover {
+      // Ensure run is scheduled after completion, even if current run fails
+      syncAtalaObjects()
+        .recover {
           case e => logger.error(s"Could not sync Atala objects", e)
         }
-        // Schedule next run
-        _ = scheduleSync(20.seconds)
-      } yield ()
+        .onComplete { _ =>
+          scheduleSync(20.seconds)
+        }
     }
+    ()
   }
 
   private[services] def syncAtalaObjects(): Future[Unit] = {

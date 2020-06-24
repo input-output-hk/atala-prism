@@ -33,6 +33,7 @@ class V11__IssuerIcons extends BaseJavaMigration {
     setLogo(uuid("6c170e91-92b0-4265-909d-951c11f30caa"), cupPng)
     setLogo(uuid("12c28b34-95be-4801-951e-c775f89d05ba"), employPng)
     setLogo(uuid("a1cb7eee-65c1-4d7f-9417-db8a37a6212a"), group363Png)
+    ()
   }
 
   private def uuid(u: String): UUID = UUID.fromString(u)

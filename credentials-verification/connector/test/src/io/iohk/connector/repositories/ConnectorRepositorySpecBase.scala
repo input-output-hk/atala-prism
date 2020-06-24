@@ -14,10 +14,11 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
 
   implicit class SqlTestOps(val sql: fragment.Fragment) {
     def runUpdate(): Unit = {
-      sql.update.run.transact(database).unsafeToFuture().futureValue
+      sql.update.run.transact(database).unsafeRunSync()
+      ()
     }
     def runUnique[T: Read](): T = {
-      sql.query[T].unique.transact(database).unsafeToFuture().futureValue
+      sql.query[T].unique.transact(database).unsafeRunSync()
     }
   }
 

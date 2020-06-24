@@ -61,6 +61,7 @@ class IntDemoService[D](
       )
 
     scheduler.scheduleOnce(schedulerPeriod)(stateMachine.tick())
+    ()
   }
 }
 

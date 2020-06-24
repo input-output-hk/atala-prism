@@ -50,6 +50,7 @@ object ConnectorIntegrationImplSpec {
     when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]]))
       .thenReturn(Right(messageId).toFutureEither)
     testCode(connectorIntegration, messagesService)
+    ()
   }
 
   private def decodesTo(credential: credential_models.Credential): Array[Byte] = {

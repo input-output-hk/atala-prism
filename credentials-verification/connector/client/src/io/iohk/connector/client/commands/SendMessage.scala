@@ -18,5 +18,6 @@ case object SendMessage extends Command {
     val connection = api.getConnectionByToken(GetConnectionByTokenRequest(connectionToken)).getConnection
 
     api.sendMessage(SendMessageRequest(connection.connectionId, message))
+    ()
   }
 }

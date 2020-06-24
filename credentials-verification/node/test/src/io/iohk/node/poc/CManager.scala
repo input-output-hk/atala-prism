@@ -44,5 +44,6 @@ case class CManager(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     // then, posting things on the blockchain through the node
     node.revokeCredential(RevokeCredentialRequest(Some(revokeCredentialOperation)))
     // similar TODOs as the method above
+    ()
   }
 }
