@@ -82,7 +82,6 @@ trait PrismScalaModule extends TpolecatModule {
           Set(
             "-Xlint:package-object-classes",
             "-Xlint:private-shadow",
-            "-Xlint:type-parameter-shadow",
             "-Yno-adapted-args",
             "-Ypartial-unification",
             "-Ywarn-dead-code",

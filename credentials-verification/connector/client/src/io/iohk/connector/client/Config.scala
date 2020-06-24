@@ -16,15 +16,17 @@ object Config {
     * Optional is an optics that points to a possible field. Reading from it returns Option[T]
     * where T is the underlying type, while writing modifies the field iff it is present.
     */
-  implicit class OptifyHelper[Config, Field](optional: POptional[Config, Config, Field, Field]) {
+  implicit class OptifyHelper[ConfigType, FieldType](
+      optional: POptional[ConfigType, ConfigType, FieldType, FieldType]
+  ) {
 
     /** Sets the field to value provided by user */
-    def optify: (Field, Config) => Config = { (value: Field, c: Config) =>
+    def optify: (FieldType, ConfigType) => ConfigType = { (value: FieldType, c: ConfigType) =>
       optional.set(value)(c)
     }
 
     /** Sets the field to transformation of value provided by user */
-    def optify[T](f: T => Field): (T, Config) => Config = { (value: T, c: Config) =>
+    def optify[T](f: T => FieldType): (T, ConfigType) => ConfigType = { (value: T, c: ConfigType) =>
       optional.set(f(value))(c)
     }
   }
