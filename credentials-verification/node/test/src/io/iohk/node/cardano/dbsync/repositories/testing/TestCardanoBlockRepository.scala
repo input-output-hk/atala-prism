@@ -73,7 +73,7 @@ object TestCardanoBlockRepository {
     val genesisTime = Instant.now().minusSeconds(1000)
     // Create n+1 blocks, where the first block with index 0 is the genesis block
     for (blockNo <- 0 to n) yield {
-      val time = genesisTime.plusSeconds(20 * blockNo)
+      val time = genesisTime.plusSeconds(20L * blockNo)
       val blockHash = TestCardanoBlockRepository.randomBlockHash()
       val block = Block.Full(
         BlockHeader(blockHash, blockNo, time, previousBlockHash),

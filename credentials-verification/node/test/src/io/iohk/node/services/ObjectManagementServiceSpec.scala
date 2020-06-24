@@ -157,7 +157,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         val block = exampleBlock(signedOp)
         val objectUpdate = createExampleObjectUpdate(block, includeBlock, includeObject)
 
-        objectManagmentService.saveObject(objectUpdate, Instant.ofEpochMilli(i)).futureValue
+        objectManagmentService.saveObject(objectUpdate, Instant.ofEpochMilli(i.toLong)).futureValue
 
         val objectHash = objectUpdate match {
           case AtalaObjectUpdate.Reference(hash) => hash
