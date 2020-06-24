@@ -22,8 +22,6 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
   */
 object NodeApp {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
   def main(args: Array[String]): Unit = {
     val server = new NodeApp(ExecutionContext.global)
     server.start()

@@ -97,7 +97,7 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
     }
   }
 
-  private def createStudent(issuer: Issuer.Id, tag: String = "", groupMaybe: Option[IssuerGroup] = None): Student = {
+  private def createStudent(issuer: Issuer.Id, tag: String, groupMaybe: Option[IssuerGroup] = None): Student = {
     val group = groupMaybe.getOrElse {
       createIssuerGroup(issuer, IssuerGroup.Name(s"Grp 1 - $tag"))
     }

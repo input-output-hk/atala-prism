@@ -78,13 +78,13 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 }
 
 object BlocksRepository {
-  private implicit val blockhashGet: Get[Blockhash] = Get[List[Byte]].tmap { bytes =>
+  implicit val blockhashGet: Get[Blockhash] = Get[List[Byte]].tmap { bytes =>
     Blockhash
       .from(bytes)
       .getOrElse(throw new RuntimeException("Corrupted blockhash"))
   }
 
-  private implicit val blockRead: Read[BlockHeader] = {
+  implicit val blockRead: Read[BlockHeader] = {
     Read[(Blockhash, Int, Long, Option[Blockhash])]
       .map((BlockHeader.apply _).tupled)
   }

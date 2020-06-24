@@ -38,19 +38,6 @@ case class CardanoKeyResolverStub(nodeService: node_api.NodeServiceGrpc.NodeServ
     }
   }
 
-  private def didParts(did: URI): (String, String, String) = {
-    didParts(did.toString)
-  }
-
-  private def didParts(did: String): (String, String, String) = {
-    val parts = did.split(':')
-    if (parts.length != 3) {
-      throw new IllegalArgumentException(s"Expected did parts did:prism:<suffix>. Got ${parts.mkString(":")}.")
-    } else {
-      (parts(0), parts(1), parts(2))
-    }
-  }
-
   private def lift[A, B](f: A => B): A => Future[B] = { a =>
     Future.fromTry(Try(f(a)))
   }

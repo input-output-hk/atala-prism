@@ -17,12 +17,9 @@ import org.mockito.MockitoSugar.mock
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationDouble
-
 class CredentialsServiceImplSpec extends RpcSpecBase {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-  private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 
   private lazy val credentialsRepository = new CredentialsRepository(database)

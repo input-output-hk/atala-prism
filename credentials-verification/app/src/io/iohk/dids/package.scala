@@ -179,13 +179,13 @@ package object dids {
 
   case class Document(id: String, publicKey: List[PublicKey])
 
-  private implicit val jwtPublicKeyFormat: Format[JWKPublicKey] =
+  implicit val jwtPublicKeyFormat: Format[JWKPublicKey] =
     Json.format[JWKPublicKey]
 
   implicit val jwtPrivateKeyFormat: Format[JWKPrivateKey] =
     Json.format[JWKPrivateKey]
 
-  private implicit val publicKeyFormat: Format[PublicKey] = Json.format[PublicKey]
+  implicit val publicKeyFormat: Format[PublicKey] = Json.format[PublicKey]
 
   implicit val documentFormat: Format[Document] = OFormat.apply(
     Json.reads[Document],

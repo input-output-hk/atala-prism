@@ -4,7 +4,7 @@ import java.util.UUID
 
 import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
-import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
 import io.iohk.cvp.cmanager.repositories.{
@@ -33,7 +33,6 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val studentsRepository = new StudentsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
-  private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
