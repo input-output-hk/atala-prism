@@ -65,12 +65,12 @@ trait PrismScalaModule extends TpolecatModule {
 
   override def compileIvyDeps =
     super.compileIvyDeps.map {
-      _ ++ Agg(ivy"com.github.ghik::silencer-lib:${versions.silencer}")
+      _ ++ Agg(ivy"com.github.ghik:::silencer-lib:${versions.silencer}")
     }
 
   override def scalacPluginIvyDeps =
     super.scalacPluginIvyDeps.map {
-      _ ++ Agg(ivy"com.github.ghik::silencer-plugin:${versions.silencer}")
+      _ ++ Agg(ivy"com.github.ghik:::silencer-plugin:${versions.silencer}")
     }
 
   // TODO: Fix warnings and enable more options
@@ -136,7 +136,7 @@ object versions {
   val grpc = "1.24.0"
   val monocle = "2.0.0"
   val scopt = "4.0.0-RC2"
-  val silencer = "1.4.2"
+  val silencer = "1.6.0"
   val twirl = "1.5.0"
 }
 
