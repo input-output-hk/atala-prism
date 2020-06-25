@@ -15,6 +15,7 @@ import OrganizationInfo from './Organisms/OrganizationInfo/OrganizationInfo';
 import Congratulations from './Atoms/Congratulations/Congratulations';
 import Logger from '../../helpers/Logger';
 import { imageToFileReader } from '../../helpers/fileHelpers';
+import { ISSUER } from '../../helpers/constants';
 
 const TERMS_AND_CONDITIONS_STEP = 0;
 const PRIVACY_POLICY_STEP = 1;
@@ -119,14 +120,14 @@ const RegistrationContainer = ({ api }) => {
 
         api.wallet
           .createWallet(password, organizationName, organizationRole, logo[0])
-          .then(createOperation => {
+          .then(createOperation =>
             api.connector.registerUser(
               createOperation,
               organizationName,
               logo,
-              api.wallet.isIssuer()
-            );
-          })
+              organizationRole === ISSUER
+            )
+          )
           .then(lockWallet)
           .then(nextStep)
           .catch(error => {

@@ -22,7 +22,7 @@ const getInput = (key, initialValue, t, onChange) => ({
   input: <Input onChange={onChange} />
 });
 
-const GroupForm = React.forwardRef(({ ref, updateForm, groupName }) => {
+const GroupForm = React.forwardRef(({ updateForm, groupName }, ref) => {
   const { t } = useTranslation();
 
   const items = [getInput('groupName', groupName, t, ({ target: { value } }) => updateForm(value))];
@@ -58,7 +58,6 @@ GroupForm.defaultProps = {
 };
 
 GroupForm.propTypes = {
-  ref: PropTypes.shape().isRequired,
   updateForm: PropTypes.func.isRequired,
   groupName: PropTypes.string
 };

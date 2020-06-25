@@ -18,7 +18,7 @@ const Registration = ({ renderContent, footerProps, renderFooter }) => (
 );
 
 Registration.propTypes = {
-  renderContent: PropTypes.element.isRequired,
+  renderContent: PropTypes.func.isRequired,
   footerProps: PropTypes.shape({
     next: PropTypes.func,
     previous: PropTypes.func,

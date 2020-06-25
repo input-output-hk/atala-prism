@@ -43,7 +43,7 @@ const OrganizationInfo = ({
       key: 'organizationRole',
       className: 'organizationRole',
       input: (
-        <Select value={organizationRole}>
+        <Select>
           <Select.Option value="">{t('registration.organizationInfo.defaultRole')}</Select.Option>
           <Select.Option value={ISSUER}>
             {t(`registration.organizationInfo.${ISSUER}`)}

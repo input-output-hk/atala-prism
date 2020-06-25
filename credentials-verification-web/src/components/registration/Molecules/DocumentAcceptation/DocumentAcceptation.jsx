@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { shortDateFormatter } from '../../../../helpers/formatters';
 
 import './_style.scss';
@@ -23,7 +24,7 @@ const DocumentAcceptation = ({ title, lastUpdated, content }) => {
 
 DocumentAcceptation.propTypes = {
   title: PropTypes.string.isRequired,
-  lastUpdated: PropTypes.number.isRequired,
+  lastUpdated: PropTypes.instanceOf(moment).isRequired,
   content: PropTypes.string.isRequired
 };
 

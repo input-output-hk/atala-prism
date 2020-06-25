@@ -74,6 +74,10 @@ FileUploader.defaultProps = {
   disabled: false
 };
 
+FileUploader.defaultProps = {
+  updateFile: undefined
+};
+
 FileUploader.propTypes = {
   hint: PropTypes.string,
   field: PropTypes.string.isRequired,
@@ -82,9 +86,9 @@ FileUploader.propTypes = {
   uploadText: PropTypes.string.isRequired,
   formRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.object })])
     .isRequired,
-  initialValue: PropTypes.shape(),
+  initialValue: PropTypes.arrayOf(PropTypes.instanceOf(ArrayBuffer)),
   disabled: PropTypes.bool,
-  updateFile: PropTypes.func.isRequired
+  updateFile: PropTypes.func
 };
 
 export default FileUploader;
