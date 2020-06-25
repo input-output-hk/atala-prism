@@ -73,7 +73,6 @@ trait PrismScalaModule extends TpolecatModule {
       _ ++ Agg(ivy"com.github.ghik:::silencer-plugin:${versions.silencer}")
     }
 
-  // TODO: Fix warnings and enable more options
   override def scalacOptions =
     T {
       super
