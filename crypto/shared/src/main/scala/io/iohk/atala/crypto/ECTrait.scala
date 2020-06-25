@@ -14,5 +14,5 @@ private[crypto] trait ECTrait {
     */
   def generateKeyPair(): ECKeyPair
 
-  // TODO: Define more behavior
+  // TODO: Define more behavior.
 }

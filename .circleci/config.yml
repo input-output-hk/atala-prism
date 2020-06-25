@@ -346,6 +346,38 @@ jobs:
           name: Run Unit Tests
           command: cd credentials-verification-webextension && sbt test
 
+  build-crypto:
+    working_directory: ~/repo
+    docker:
+        - image: circleci/openjdk:8-jdk-node
+    steps:
+      - checkout
+
+      - halt-step-if-not-changed:
+          directories: "crypto"
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - crypto-cache-v1-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
+            # fallback to using the latest cache if no exact match is found
+            - crypto-cache-v1-
+
+      - run:
+          name: Compile crypto and its tests
+          command: cd crypto && sbt test:compile
+
+      - save_cache:
+          paths:
+            - ~/.cache/coursier
+            - ~/.ivy2
+            - ~/.m2
+          key: crypto-cache-v1-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
+
+      - run:
+          name: Run unit tests
+          command: cd crypto && sbt test
+
 workflows:
   version: 2.1
   build-and-deploy:
@@ -355,6 +387,7 @@ workflows:
       - build-credentials-verification-landing
       - build-credentials-verification-web
       - build-credentials-verification-webextension
+      - build-crypto
       - deploy-ecr-images:
           filters:
             branches:
