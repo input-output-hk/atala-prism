@@ -3,8 +3,10 @@ package io.iohk.cvp.cmanager.repositories.daos
 import java.time.Instant
 import java.util.UUID
 
+import doobie._
+import cats.implicits._
 import doobie.implicits._
-import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
+import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential, PublishCredential}
 import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
 
 object CredentialsDAO {
@@ -179,5 +181,25 @@ object CredentialsDAO {
          |      c.subject_id = $subjectId
          |ORDER BY c.created_on ASC, credential_id
          |""".stripMargin.query[GenericCredential].to[List]
+  }
+
+  def storePublicationData(issuerId: Issuer.Id, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {
+    sql"""
+         | INSERT INTO published_credentials (credential_id, node_credential_id, operation_hash, encoded_signed_credential)
+         | SELECT credential_id, ${credentialData.nodeCredentialId}, ${credentialData.issuanceOperationHash}, ${credentialData.encodedSignedCredential}
+         | FROM credentials
+         | WHERE credential_id = ${credentialData.credentialId} AND
+         |       issuer_id = $issuerId
+         |""".stripMargin.update.run.flatTap { n =>
+      FC.raiseError(new RuntimeException(s"The credential was not issued by the specified issuer")).whenA(n != 1)
+    }
+  }
+
+  def getPublicationData(credentialId: GenericCredential.Id): doobie.ConnectionIO[Option[PublishCredential]] = {
+    sql"""
+         | SELECT credential_id, operation_hash, node_credential_id, encoded_signed_credential
+         | FROM published_credentials
+         | WHERE credential_id = $credentialId
+         |""".stripMargin.query[PublishCredential].option
   }
 }

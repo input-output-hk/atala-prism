@@ -3,7 +3,7 @@ package io.iohk.cvp.cmanager.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
+import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential, PublishCredential}
 import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
 import io.iohk.cvp.cmanager.repositories.daos.CredentialsDAO
 import io.iohk.cvp.utils.FutureEither
@@ -73,6 +73,15 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBy(issuedBy: Issuer.Id, subjectId: Subject.Id): FutureEither[Nothing, List[GenericCredential]] = {
     CredentialsDAO
       .getBy(issuedBy, subjectId)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def storePublicationData(issuerId: Issuer.Id, credentialData: PublishCredential): FutureEither[Nothing, Int] = {
+    CredentialsDAO
+      .storePublicationData(issuerId, credentialData)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

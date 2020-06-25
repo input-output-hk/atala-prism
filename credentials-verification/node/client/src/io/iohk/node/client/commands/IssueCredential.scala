@@ -32,7 +32,7 @@ case class IssueCredential(issuer: Option[String] = None, contentHash: Option[SH
     val signedAtalaOp = Command.signOperation(atalaOp, issuingKeyId, issuingKey)
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 
-    val response = api.issueCredential(node_api.IssuerCredentialRequest().withSignedOperation(signedAtalaOp))
+    val response = api.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(signedAtalaOp))
     println(response.toProtoString)
 
     println(s"Created credential with id: ${response.id}")

@@ -5,7 +5,9 @@ import java.util.UUID
 import doobie.util.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.connector.model.ConnectionId
+import io.iohk.cvp.cmanager.models
 import io.iohk.cvp.cmanager.models._
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.models.ParticipantId
 
 trait BaseDAO {
@@ -24,6 +26,10 @@ trait BaseDAO {
 
   implicit val jsonPut: Put[Json] = doobie.postgres.circe.json.implicits.jsonPut
   implicit val jsonGet: Get[Json] = doobie.postgres.circe.json.implicits.jsonGet
+
+  implicit val sha256Meta: Meta[SHA256Digest] = Meta[String].timap(SHA256Digest.fromHex)(_.hexValue)
+  implicit val genericCredentialIdMeta: Meta[models.GenericCredential.Id] =
+    uuidMeta.timap(GenericCredential.Id.apply)(_.value)
 }
 
 object BaseDAO extends BaseDAO

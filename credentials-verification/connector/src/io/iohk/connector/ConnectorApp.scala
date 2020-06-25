@@ -127,7 +127,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val subjectsRepository = new IssuerSubjectsRepository(xa)(executionContext)
     val issuerGroupsRepository = new IssuerGroupsRepository(xa)(executionContext)
     val credentialsService =
-      new CredentialsServiceImpl(credentialsRepository, authenticator)(executionContext)
+      new CredentialsServiceImpl(credentialsRepository, authenticator, node)(executionContext)
     val subjectsService = new SubjectsServiceImpl(subjectsRepository, credentialsRepository, authenticator)(
       executionContext
     )

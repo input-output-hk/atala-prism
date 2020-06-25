@@ -16,6 +16,8 @@ grpc.web = require('grpc-web');
 var cmanager_models_pb = require('./cmanager_models_pb.js')
 
 var common_models_pb = require('./common_models_pb.js')
+
+var node_models_pb = require('./node_models_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};
@@ -391,6 +393,86 @@ proto.io.iohk.prism.protos.CredentialsServicePromiseClient.prototype.getGenericC
       request,
       metadata || {},
       methodDescriptor_CredentialsService_GetGenericCredentials);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.PublishCredentialRequest,
+ *   !proto.io.iohk.prism.protos.PublishCredentialResponse>}
+ */
+const methodDescriptor_CredentialsService_PublishCredential = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.CredentialsService/PublishCredential',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.PublishCredentialRequest,
+  proto.io.iohk.prism.protos.PublishCredentialResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.PublishCredentialRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.PublishCredentialResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.PublishCredentialRequest,
+ *   !proto.io.iohk.prism.protos.PublishCredentialResponse>}
+ */
+const methodInfo_CredentialsService_PublishCredential = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.PublishCredentialResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.PublishCredentialRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.PublishCredentialResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.PublishCredentialRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.PublishCredentialResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.PublishCredentialResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.CredentialsServiceClient.prototype.publishCredential =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/PublishCredential',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_PublishCredential,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.PublishCredentialRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.PublishCredentialResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.CredentialsServicePromiseClient.prototype.publishCredential =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/PublishCredential',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_PublishCredential);
 };
 
 

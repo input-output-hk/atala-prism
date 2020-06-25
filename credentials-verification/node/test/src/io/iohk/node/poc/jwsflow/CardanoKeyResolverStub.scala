@@ -3,6 +3,7 @@ package io.iohk.node.poc.jwsflow
 import java.net.URI
 import java.security.PublicKey
 
+import io.iohk.cvp.utils.syntax._
 import io.iohk.node.grpc.ProtoCodecs
 import io.iohk.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.prism.protos.node_models.DIDData
@@ -11,7 +12,6 @@ import net.jtownson.odyssey.PublicKeyResolver
 import org.scalatest.OptionValues._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 // We define some classes to illustrate what happens in the different components
 case class CardanoKeyResolverStub(nodeService: node_api.NodeServiceGrpc.NodeServiceBlockingStub)(implicit
@@ -39,7 +39,7 @@ case class CardanoKeyResolverStub(nodeService: node_api.NodeServiceGrpc.NodeServ
   }
 
   private def lift[A, B](f: A => B): A => Future[B] = { a =>
-    Future.fromTry(Try(f(a)))
+    f(a).tryF
   }
 
   /**

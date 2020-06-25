@@ -23,7 +23,7 @@ case class SendOperation() extends Command {
       case Some(_: node_models.AtalaOperation.Operation.UpdateDid) =>
         api.updateDID(node_api.UpdateDIDRequest().withSignedOperation(signedOperation))
       case Some(_: node_models.AtalaOperation.Operation.IssueCredential) =>
-        api.issueCredential(node_api.IssuerCredentialRequest().withSignedOperation(signedOperation))
+        api.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(signedOperation))
       case Some(_: node_models.AtalaOperation.Operation.RevokeCredential) =>
         api.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(signedOperation))
       case Some(_: node_models.AtalaOperation.Operation.Empty.type) | None =>

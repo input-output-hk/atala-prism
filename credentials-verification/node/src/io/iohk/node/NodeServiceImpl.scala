@@ -2,6 +2,7 @@ package io.iohk.node
 
 import io.grpc.Status
 import io.iohk.cvp.BuildInfo
+import io.iohk.cvp.utils.syntax._
 import io.iohk.node.errors.NodeError
 import io.iohk.node.grpc.ProtoCodecs
 import io.iohk.node.models.CredentialId
@@ -11,7 +12,6 @@ import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialSt
 import io.iohk.prism.protos.node_api
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class NodeServiceImpl(
     didDataService: DIDDataService,
@@ -51,7 +51,7 @@ class NodeServiceImpl(
     } yield node_api.UpdateDIDResponse()
   }
 
-  override def issueCredential(request: node_api.IssuerCredentialRequest): Future[node_api.IssueCredentialResponse] = {
+  override def issueCredential(request: node_api.IssueCredentialRequest): Future[node_api.IssueCredentialResponse] = {
     val operationF = Future {
       request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
     }
@@ -77,12 +77,11 @@ class NodeServiceImpl(
   }
 
   override def getCredentialState(request: GetCredentialStateRequest): Future[GetCredentialStateResponse] = {
-    val credentialIdF = Future.fromTry {
-      Try(CredentialId(request.credentialId))
-    } recover {
-      case ex: IllegalArgumentException =>
-        throw new RuntimeException(ex.getMessage)
-    }
+    val credentialIdF =
+      CredentialId(request.credentialId).tryF recover {
+        case ex: IllegalArgumentException =>
+          throw new RuntimeException(ex.getMessage)
+      }
     for {
       credentialId <- credentialIdF
       credentialStateEither <- credentialsService.getCredentialState(credentialId).value

@@ -6,7 +6,7 @@ import java.util.UUID
 import com.github.ghik.silencer.silent
 import io.iohk.prism.protos.cmanager_models.CManagerGenericCredential
 import io.iohk.prism.protos.node_api
-import io.iohk.prism.protos.node_api.{IssuerCredentialRequest, RevokeCredentialRequest}
+import io.iohk.prism.protos.node_api.{IssueCredentialRequest, RevokeCredentialRequest}
 import io.iohk.prism.protos.node_models.SignedAtalaOperation
 
 case class CManager(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
@@ -35,7 +35,7 @@ case class CManager(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   def issueCredential(credentialId: String, issueCredentialOperation: SignedAtalaOperation): String = {
     // First some storage stuff to mark a credential as stored
     // It then send posts the operation to the node
-    node.issueCredential(IssuerCredentialRequest(Some(issueCredentialOperation))).id
+    node.issueCredential(IssueCredentialRequest(Some(issueCredentialOperation))).id
     // TODO: Define what component is responsible to get the credential published.
     //       We are currently assuming a happy path where the credential will get on-chain
     //       Note that the same situation happens with DID registration

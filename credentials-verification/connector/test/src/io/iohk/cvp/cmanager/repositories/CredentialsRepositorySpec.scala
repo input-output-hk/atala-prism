@@ -1,14 +1,19 @@
 package io.iohk.cvp.cmanager.repositories
 
 import java.time.LocalDate
+import java.util.UUID
 
+import doobie.implicits._
 import io.circe.Json
-import io.iohk.cvp.cmanager.models.IssuerGroup
-import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
+import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, IssuerGroup}
+import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential, PublishCredential}
 import io.iohk.cvp.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.cvp.cmanager.repositories.common.DataPreparation._
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 import io.circe.syntax._
+import io.iohk.cvp.cmanager.repositories.daos.CredentialsDAO
+import io.iohk.cvp.crypto.SHA256Digest
 
 class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
@@ -165,6 +170,91 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
       val result = credentialsRepository.getBy(issuerId, subjectId).value.futureValue.right.value
       result must be(empty)
+    }
+  }
+
+  "storePublicationData" should {
+    "insert credential data in db" in {
+      val issuerId = createIssuer("Issuer X").id
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subjectId = createSubject(issuerId, "IOHK Student 2", group.name).id
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+
+      val mockOperationHash = SHA256Digest.compute("000".getBytes())
+      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val inserted = credentialsRepository
+        .storePublicationData(
+          issuerId,
+          PublishCredential(
+            credential.credentialId,
+            mockOperationHash,
+            mockNodeCredentialId,
+            mockEncodedSignedCredential
+          )
+        )
+        .value
+        .futureValue
+
+      inserted.right.value must be(1)
+
+      val storedCredential =
+        CredentialsDAO.getPublicationData(credential.credentialId).transact(database).unsafeRunSync().value
+
+      storedCredential.credentialId must be(credential.credentialId)
+      storedCredential.nodeCredentialId must be(mockNodeCredentialId)
+      storedCredential.issuanceOperationHash must be(mockOperationHash)
+      storedCredential.encodedSignedCredential must be(mockEncodedSignedCredential)
+    }
+
+    "fail when credential_id is not registered" in {
+      val issuerId = createIssuer("Issuer X").id
+
+      val mockOperationHash = SHA256Digest.compute("000".getBytes())
+      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      intercept[RuntimeException](
+        credentialsRepository
+          .storePublicationData(
+            issuerId,
+            PublishCredential(
+              GenericCredential.Id(UUID.randomUUID()),
+              mockOperationHash,
+              mockNodeCredentialId,
+              mockEncodedSignedCredential
+            )
+          )
+          .value
+          .futureValue
+      )
+    }
+
+    "fail when issuer_id does not belong to the credential_id" in {
+      val issuerId = createIssuer("Issuer X").id
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subjectId = createSubject(issuerId, "IOHK Student 2", group.name).id
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+
+      val mockOperationHash = SHA256Digest.compute("000".getBytes())
+      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      intercept[RuntimeException](
+        credentialsRepository
+          .storePublicationData(
+            Issuer.Id(UUID.randomUUID()),
+            PublishCredential(
+              credential.credentialId,
+              mockOperationHash,
+              mockNodeCredentialId,
+              mockEncodedSignedCredential
+            )
+          )
+          .value
+          .futureValue
+      )
     }
   }
 }

@@ -11,7 +11,7 @@ service NodeService {
 
     rpc UpdateDID(UpdateDIDRequest) returns (UpdateDIDResponse) {}
 
-    rpc IssueCredential(IssuerCredentialRequest) returns (IssueCredentialResponse) {}
+    rpc IssueCredential(IssueCredentialRequest) returns (IssueCredentialResponse) {}
 
     rpc RevokeCredential(RevokeCredentialRequest) returns (RevokeCredentialResponse) {}
 
@@ -41,7 +41,7 @@ message UpdateDIDRequest {
 message UpdateDIDResponse {
 }
 
-message IssuerCredentialRequest {
+message IssueCredentialRequest {
     SignedAtalaOperation signed_operation = 1;
 }
 message IssueCredentialResponse {
