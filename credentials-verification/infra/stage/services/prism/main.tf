@@ -271,16 +271,6 @@ module "prism_service" {
   atala_prism_domain = var.atala_prism_domain
 }
 
-# public DNS record for the intdemo
-resource aws_route53_record intdemo_dns_entry {
-  count   = var.intdemo_enabled ? 1 : 0
-  zone_id = var.atala_prism_zoneid
-  name    = "${var.env_name_short}.${var.atala_prism_domain}"
-  type    = "CNAME"
-  ttl     = "300"
-  records = [module.prism_service.envoy_lb_dns_name]
-}
-
 # public DNS record for the PRISM console
 resource aws_route53_record console_dns_entry {
   count   = var.geud_enabled ? 1 : 0
@@ -341,4 +331,105 @@ resource aws_cloudwatch_metric_alarm alarm {
   alarm_description = "This alarm is raised when there is no response from the landing page in environment ${var.env_name_short}."
   alarm_actions = [data.aws_sns_topic.atala_prism_service_alerts.arn]
   ok_actions = [data.aws_sns_topic.atala_prism_service_alerts.arn]
+}
+
+
+data aws_acm_certificate cf-tls-cert {
+  provider            = aws.us-east-1
+  domain = var.atala_prism_domain
+  statuses = ["ISSUED"]
+}
+
+resource aws_cloudfront_distribution intdemo_cf_dist {
+  count   = var.intdemo_enabled ? 1 : 0
+
+  origin {
+    domain_name = module.prism_service.envoy_lb_dns_name
+    origin_id   = "${var.env_name_short}-cf-origin-id"
+
+    custom_origin_config {
+      http_port = 80
+      https_port = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols = ["TLSv1.2"]
+    }
+  }
+
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "${var.env_name_short} Cloudfront distribution"
+  default_root_object = "index.html"
+
+  aliases = ["${var.env_name_short}.${var.atala_prism_domain}", var.atala_prism_domain]
+
+  default_cache_behavior {
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "${var.env_name_short}-cf-origin-id"
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  tags = {
+    Name = "${var.env_name_short}-cf-distribution"
+    Environment = var.env_name_short
+  }
+
+  viewer_certificate {
+    acm_certificate_arn = data.aws_acm_certificate.cf-tls-cert.arn
+    ssl_support_method = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2018"
+  }
+}
+
+# public DNS record for the intdemo
+resource aws_route53_record intdemo_dns_entry {
+  count   = var.intdemo_enabled ? 1 : 0
+  zone_id = var.atala_prism_zoneid
+  name    = "${var.env_name_short}.${var.atala_prism_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name]
+}
+
+# public DNS record for the grpc proxy
+resource aws_route53_record grpc_dns_entry {
+  count   = var.intdemo_enabled ? 1 : 0
+  zone_id = var.atala_prism_zoneid
+  name    = "grpc-${var.env_name_short}.${var.atala_prism_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [module.prism_service.envoy_lb_dns_name]
+}
+
+# public DNS record for the base domain (only used in www)
+data dns_a_record_set envoy_dns {
+  host = module.prism_service.envoy_lb_dns_name
+}
+
+resource aws_route53_record bare_domain_dns_entry {
+  count   = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
+  zone_id = var.atala_prism_zoneid
+  name    = var.atala_prism_domain
+  type    = "A"
+  ttl     = "300"
+  records = data.dns_a_record_set.envoy_dns.addrs
 }

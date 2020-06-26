@@ -16,9 +16,10 @@ static_resources:
                 codec_type: auto
                 stat_prefix: ingress_http
                 route_config:
+                  name: local_route
                   virtual_hosts:
                     - name: landing_page
-                      domains: ["$ATALA_PRISM_LANDING_DOMAIN"]
+                      domains: ["$ATALA_PRISM_DOMAIN", "$ATALA_PRISM_LANDING_DOMAIN"]
                       routes:
                         - match: { prefix: "/" }
                           route: { cluster: landing_page_service }
@@ -29,6 +30,7 @@ static_resources:
                           route: { cluster: prism_console_service }
                 http_filters:
                   - name: envoy.router
+
     - name: grpc_proxy_listener
       address:
         socket_address: { address: 0.0.0.0, port_value: 8080 }
@@ -60,6 +62,7 @@ static_resources:
                   - name: envoy.filters.http.grpc_stats
                   - name: envoy.cors
                   - name: envoy.router
+
     - name: connector_grpc_listener
       address:
         socket_address: { address: 0.0.0.0, port_value: 50051 }
