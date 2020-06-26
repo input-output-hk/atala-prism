@@ -98,13 +98,13 @@ object InsuranceServiceImpl {
       )
   }
 
-  private def getInsuranceCredential(requiredInsuranceData: RequiredInsuranceData): credential_models.Credential = {
+  def getInsuranceCredential(requiredInsuranceData: RequiredInsuranceData): credential_models.Credential = {
 
     val idData = IdData.toIdData(requiredInsuranceData.idCredential)
 
     val employmentData = EmploymentData.toEmploymentData(requiredInsuranceData.employmentCredential)
 
-    val insuranceCredential = insuranceCredentialJsonTemplate(
+    val insuranceCredentialJson = insuranceCredentialJsonTemplate(
       id = "unknown",
       issuanceDate = LocalDate.now(),
       expiryDate = LocalDate.now().plusYears(1),
@@ -115,12 +115,18 @@ object InsuranceServiceImpl {
       subjectDateOfBirth = idData.dob,
       employerName = employmentData.employerName,
       employerAddress = employmentData.employerAddress
-    ).printWith(jsonPrinter)
+    )
 
-    credential_models.Credential(typeId = credentialTypeId, credentialDocument = insuranceCredential)
+    // Append "view.html"
+    val credentialHtml = insuranceCredentialHtmlTemplate(insuranceCredentialJson)
+    val insuranceCredentialJsonWithView =
+      insuranceCredentialJson.deepMerge(Json.obj("view" -> Json.obj("html" -> fromString(credentialHtml))))
+    val credentialDocument = insuranceCredentialJsonWithView.printWith(jsonPrinter)
+
+    credential_models.Credential(typeId = credentialTypeId, credentialDocument = credentialDocument)
   }
 
-  def insuranceCredentialJsonTemplate(
+  private def insuranceCredentialJsonTemplate(
       id: String,
       issuanceDate: LocalDate,
       expiryDate: LocalDate,
@@ -153,5 +159,9 @@ object InsuranceServiceImpl {
         )
       )
     )
+  }
+
+  private def insuranceCredentialHtmlTemplate(credentialJson: Json): String = {
+    io.iohk.cvp.intdemo.html.HealthCredential(credential = credentialJson).body
   }
 }

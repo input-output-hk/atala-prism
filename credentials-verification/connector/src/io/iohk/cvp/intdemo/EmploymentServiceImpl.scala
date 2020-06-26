@@ -102,22 +102,27 @@ object EmploymentServiceImpl {
 
     val idData = IdData.toIdData(requiredEmploymentData.idCredential)
 
-    val employmentCredential = employmentCredentialJsonTemplate(
+    val employmentCredentialJson = employmentCredentialJsonTemplate(
       id = "unknown",
       issuanceDate = LocalDate.now(),
       subjectFullName = idData.name,
       subjectDid = "unknown",
       employmentStartDate = LocalDate.now().minusMonths(1),
       employmentStatus = "Full-time"
-    ).printWith(jsonPrinter)
+    )
+    val credentialHtml = employmentCredentialHtmlTemplate(employmentCredentialJson)
+    // Append "view.html"
+    val employmentCredentialJsonWithView =
+      employmentCredentialJson.deepMerge(Json.obj("view" -> Json.obj("html" -> fromString(credentialHtml))))
+    val credentialDocument = employmentCredentialJsonWithView.printWith(jsonPrinter)
 
     credential_models.Credential(
       typeId = EmploymentServiceImpl.credentialTypeId,
-      credentialDocument = employmentCredential
+      credentialDocument = credentialDocument
     )
   }
 
-  def employmentCredentialJsonTemplate(
+  private def employmentCredentialJsonTemplate(
       id: String,
       issuanceDate: LocalDate,
       subjectFullName: String,
@@ -143,4 +148,7 @@ object EmploymentServiceImpl {
     )
   }
 
+  private def employmentCredentialHtmlTemplate(credentialJson: Json): String = {
+    io.iohk.cvp.intdemo.html.ProofOfEmployment(credential = credentialJson).body
+  }
 }

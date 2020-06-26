@@ -89,40 +89,8 @@ class IdServiceImplSpec extends FlatSpec {
     document.jsonStr("credentialSubject.dateOfBirth") shouldBe "1973-06-02"
 
     // Verify HTML view
-    document.jsonStr("view.html") shouldBe
-      s"""<div style="height: 310px; width: 600px; border: 1px solid #e5e5e5; border-radius: 10px; font-family: Helvetica; font-size: 18px">
-         |    <div style="overflow: hidden; background-color: #e5e5e5; padding: 30px">
-         |        <div style="float: left">
-         |            <div style="font-size: 23px; color: #828282; margin-bottom: 15px">National ID Card</div>
-         |            <div style="font-size: 30px; margin-bottom: 15px">Metropol City Government</div>
-         |        </div>
-         |        <div style="float: right; margin-top: 10px">
-         |            <div style="height: 60px; width: 90px; background-color: #ffeaeb; text-align: center; border-radius: 5px">
-         |                <p style="vertical-align: middle; display: inline-block; line-height: 1.5; color: #ff2d3b">Flag</p>
-         |            </div>
-         |        </div>
-         |    </div>
-         |    <div style="overflow: hidden; padding: 15px">
-         |        <div style="float: left; margin: 0 5px">
-         |            <div style="height: 120px; width: 120px; background-color: #ffeaeb; text-align: center; border-radius: 10px; margin: 0 10px">
-         |                <p style="vertical-align: middle; display: inline-block; line-height: 5; color: #ff2d3b">Picture</p>
-         |            </div>
-         |        </div>
-         |        <div style="float: left; margin: 0 20px">
-         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Full Name</div>
-         |            <div style="margin-bottom: 20px">first-name</div>
-         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Identity Number</div>
-         |            <div>RL-2DF6E5A51</div>
-         |        </div>
-         |        <div style="float: right; margin-right: 35px">
-         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Date of Birth</div>
-         |            <div style="margin-bottom: 20px">1973-06-02</div>
-         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Expiration Date</div>
-         |            <div>$formattedExpiryDate</div>
-         |        </div>
-         |    </div>
-         |</div>
-         |""".stripMargin
+    val expectedHtmlView = readResource("id_credential.html").replace("@expiryDate", formattedExpiryDate)
+    document.jsonStr("view.html") shouldBe expectedHtmlView
   }
 }
 

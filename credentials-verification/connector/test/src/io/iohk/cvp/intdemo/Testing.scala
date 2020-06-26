@@ -5,7 +5,7 @@ import org.mockito.Mockito
 import org.mockito.Mockito.timeout
 import org.mockito.verification.{VerificationMode, VerificationWithTimeout}
 
-object Testing {
+private[intdemo] object Testing {
 
   /**
     * Usage: {{{ verify(mock, eventually.times(1)).someMethod() }}}
@@ -17,6 +17,17 @@ object Testing {
     * Usage: {{{ verify(mock, neverEver).someMethod() }}}
     */
   def neverEver: VerificationMode = Mockito.after(100).never
+
+  /**
+    * Returns the contents of the given resource file located in {@code intdemo}.
+    */
+  def readResource(resource: String): String = {
+    try {
+      scala.io.Source.fromResource(s"intdemo/$resource").mkString
+    } catch {
+      case _: Throwable => throw new RuntimeException(s"Resource $resource not found")
+    }
+  }
 
   /**
     * Extract fields from JSON using dot notation names.

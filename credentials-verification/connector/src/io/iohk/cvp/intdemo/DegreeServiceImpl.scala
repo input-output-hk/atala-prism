@@ -84,28 +84,36 @@ object DegreeServiceImpl {
 
     val degreeData = DegreeData(idData)
 
-    val degreeCredential = degreeCredentialJsonTemplate(
+    val degreeCredentialJson = degreeCredentialJsonTemplate(
       id = "unknown",
       issuanceDate = LocalDate.now(),
       subjectFullName = idData.name,
       degreeAwarded = degreeData.degreeAwarded,
       degreeResult = degreeData.degreeResult,
+      startDate = LocalDate.now().minusYears(4),
       graduationYear = degreeData.graduationYear,
       subjectDid = "unknown"
-    ).printWith(jsonPrinter)
+    )
+
+    // Append "view.html"
+    val credentialHtml = degreeCredentialHtmlTemplate(degreeCredentialJson)
+    val insuranceCredentialJsonWithView =
+      degreeCredentialJson.deepMerge(Json.obj("view" -> Json.obj("html" -> fromString(credentialHtml))))
+    val credentialDocument = insuranceCredentialJsonWithView.printWith(jsonPrinter)
 
     credential_models.Credential(
       typeId = credentialTypeId,
-      credentialDocument = degreeCredential
+      credentialDocument = credentialDocument
     )
   }
 
-  def degreeCredentialJsonTemplate(
+  private def degreeCredentialJsonTemplate(
       id: String,
       issuanceDate: LocalDate,
       subjectFullName: String,
       degreeAwarded: String,
       degreeResult: String,
+      startDate: LocalDate,
       graduationYear: Int,
       subjectDid: String
   ): Json = {
@@ -113,8 +121,7 @@ object DegreeServiceImpl {
       "id" -> fromString(id),
       "type" -> Json.arr(fromString("VerifiableCredential"), fromString("AirsideDegreeCredential")),
       "issuer" -> Json.obj(
-        fields =
-          "id" -> fromString("did:atala:6c170e91-92b0-4265-909d-951c11f30caa"),
+        "id" -> fromString("did:atala:6c170e91-92b0-4265-909d-951c11f30caa"),
         "name" -> fromString("University of Innovation and Technology")
       ),
       "issuanceDate" -> fromString(formatDate(issuanceDate)),
@@ -123,8 +130,13 @@ object DegreeServiceImpl {
         "name" -> fromString(subjectFullName),
         "degreeAwarded" -> fromString(degreeAwarded),
         "degreeResult" -> fromString(degreeResult),
+        "startDate" -> fromString(formatDate(startDate)),
         "graduationYear" -> fromString(String.valueOf(graduationYear))
       )
     )
+  }
+
+  private def degreeCredentialHtmlTemplate(credentialJson: Json): String = {
+    io.iohk.cvp.intdemo.html.UniversityDegree(credential = credentialJson).body
   }
 }

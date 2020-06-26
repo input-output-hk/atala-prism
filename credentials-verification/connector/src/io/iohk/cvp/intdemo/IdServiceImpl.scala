@@ -108,8 +108,8 @@ object IdServiceImpl {
     )
   }
 
-  private def idCredentialHtmlTemplate(idCredentialJson: Json): String = {
-    io.iohk.cvp.intdemo.html.IdCredential(credential = idCredentialJson).body
+  private def idCredentialHtmlTemplate(credentialJson: Json): String = {
+    io.iohk.cvp.intdemo.html.IdCredential(credential = credentialJson).body
   }
 
   private def getPersonalData(

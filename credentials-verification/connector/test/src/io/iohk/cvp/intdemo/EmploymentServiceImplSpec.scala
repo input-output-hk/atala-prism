@@ -1,33 +1,48 @@
 package io.iohk.cvp.intdemo
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
+import io.circe.parser.parse
+import io.iohk.cvp.intdemo.EmploymentServiceImpl.RequiredEmploymentData
 import io.iohk.cvp.intdemo.Testing._
+import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 
 class EmploymentServiceImplSpec extends FlatSpec {
 
-  "employmentCredentialJsonTemplate" should "render an employment credential correctly" in {
-    val json = EmploymentServiceImpl.employmentCredentialJsonTemplate(
-      id = "credential-id",
-      issuanceDate = LocalDate.of(1980, 2, 2),
-      subjectDid = "did:atala:subject-did",
-      subjectFullName = "name",
-      employmentStartDate = LocalDate.of(1980, 1, 1),
-      employmentStatus = "Some status"
-    )
+  "getEmploymentCredential" should "return a correct employment credential" in {
+    val idCredential = IdServiceImpl.getIdCredential(("name", LocalDate.of(1973, 6, 2)))
+    val degreeCredential = DegreeServiceImpl.getDegreeCredential(idCredential)
 
-    val c = json.hcursor
-    c.jsonStr("id") shouldBe "credential-id"
-    c.jsonArr("type") shouldBe List("VerifiableCredential", "AtalaEmploymentCredential")
-    c.jsonStr("issuer.id") shouldBe "did:atala:12c28b34-95be-4801-951e-c775f89d05ba"
-    c.jsonStr("issuer.name") shouldBe "Decentralized Inc."
-    c.jsonStr("issuer.address") shouldBe "67 Clasper Way, Herefoot, HF1 0AF"
-    c.jsonStr("issuanceDate") shouldBe "1980-02-02"
-    c.jsonStr("employmentStartDate") shouldBe "1980-01-01"
-    c.jsonStr("employmentStatus") shouldBe "Some status"
-    c.jsonStr("credentialSubject.id") shouldBe "did:atala:subject-did"
-    c.jsonStr("credentialSubject.name") shouldBe "name"
+    val credential =
+      EmploymentServiceImpl.getEmploymentCredential(RequiredEmploymentData(idCredential, degreeCredential))
+
+    // Verify type
+    credential.typeId shouldBe "VerifiableCredential/AtalaEmploymentCredential"
+
+    // Verify JSON document
+    val document = parse(credential.credentialDocument).right.value.hcursor
+    val issuanceDate = LocalDate.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(document.jsonStr("issuanceDate")))
+    val employmentStartDate = DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate.minusMonths(1))
+    val today = LocalDate.now().atStartOfDay().toLocalDate
+    val yesterday = today.minusDays(1)
+
+    document.jsonStr("id") shouldBe "unknown"
+    document.jsonArr("type") shouldBe List("VerifiableCredential", "AtalaEmploymentCredential")
+    document.jsonStr("issuer.id") shouldBe "did:atala:12c28b34-95be-4801-951e-c775f89d05ba"
+    document.jsonStr("issuer.name") shouldBe "Decentralized Inc."
+    document.jsonStr("issuer.address") shouldBe "67 Clasper Way, Herefoot, HF1 0AF"
+    // Test issuance to be today or yesterday, in case the test started to run yesterday
+    issuanceDate should (be(today) or be(yesterday))
+    document.jsonStr("employmentStartDate") shouldBe employmentStartDate
+    document.jsonStr("employmentStatus") shouldBe "Full-time"
+    document.jsonStr("credentialSubject.id") shouldBe "unknown"
+    document.jsonStr("credentialSubject.name") shouldBe "name"
+
+    // Verify HTML view
+    val expectedHtmlView = readResource("proof_of_employment.html").replace("@employmentStartDate", employmentStartDate)
+    document.jsonStr("view.html") shouldBe expectedHtmlView
   }
 }
