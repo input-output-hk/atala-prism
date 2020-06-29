@@ -152,7 +152,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
   lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
-  lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
+  lazy val connectionsService =
+    new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, nodeMock)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
@@ -188,11 +189,12 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       name: String,
       tpe: ParticipantType,
       logo: Option[ParticipantLogo] = None,
-      publicKey: Option[EncodedPublicKey] = None
+      publicKey: Option[EncodedPublicKey] = None,
+      did: Option[String] = None
   ): ParticipantId = {
     val id = ParticipantId.random()
     ParticipantsDAO
-      .insert(ParticipantInfo(id, tpe, publicKey, name, None, logo))
+      .insert(ParticipantInfo(id, tpe, publicKey, name, did, logo))
       .transact(database)
       .unsafeToFuture()
       .futureValue
@@ -200,11 +202,25 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     id
   }
 
-  protected def createHolder(name: String): ParticipantId = createParticipant(name, ParticipantType.Holder)
-  protected def createIssuer(name: String, publicKey: Option[EncodedPublicKey] = None): ParticipantId =
-    createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))), publicKey)
-  protected def createVerifier(name: String, publicKey: Option[EncodedPublicKey] = None): ParticipantId =
-    createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))), publicKey)
+  protected def createHolder(name: String, publicKey: Option[EncodedPublicKey] = None): ParticipantId = {
+    createParticipant(name, ParticipantType.Holder, publicKey = publicKey)
+  }
+
+  protected def createIssuer(
+      name: String,
+      publicKey: Option[EncodedPublicKey] = None,
+      did: Option[String] = None
+  ): ParticipantId = {
+    createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))), publicKey, did)
+  }
+
+  protected def createVerifier(
+      name: String,
+      publicKey: Option[EncodedPublicKey] = None,
+      did: Option[String] = None
+  ): ParticipantId = {
+    createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))), publicKey, did)
+  }
 
   protected def createToken(initiator: ParticipantId): TokenString = {
     val tokenString = TokenString.random()

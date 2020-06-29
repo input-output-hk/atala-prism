@@ -79,6 +79,9 @@ service ConnectorService {
   // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
   rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
 
+  // Returns public keys that can be used for secure communication with the other end of connection
+  rpc GetConnectionCommunicationKeys (GetConnectionCommunicationKeysRequest) returns (GetConnectionCommunicationKeysResponse) {}
+
   // Send message over a connection
   //
   // Available to: Issuer, Holder, Validator
@@ -176,6 +179,16 @@ message GetMessagesForConnectionRequest {
 }
 message GetMessagesForConnectionResponse {
   repeated io.iohk.prism.protos.ReceivedMessage messages = 1;
+}
+
+message GetConnectionCommunicationKeysRequest {
+  string connectionId = 1;
+}
+
+message GetConnectionCommunicationKeysResponse {
+  // keys that can be used for communication with the other end of connection with their ids
+  // keyId inside might be empty if there is just one key in the collection
+  repeated io.iohk.prism.protos.ConnectionKey keys = 1;
 }
 
 // Request to send message

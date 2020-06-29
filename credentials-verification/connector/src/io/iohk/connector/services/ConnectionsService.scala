@@ -6,18 +6,25 @@ import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, PaymentsRepository}
+import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.prism.protos.node_api
+import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ConnectionsService(
     connectionsRepository: ConnectionsRepository,
     paymentsRepository: PaymentsRepository,
-    braintreePayments: BraintreePayments
+    braintreePayments: BraintreePayments,
+    nodeService: NodeServiceGrpc.NodeService
 )(implicit ec: ExecutionContext) {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
     connectionsRepository.getConnectionByToken(token)
@@ -66,5 +73,38 @@ class ConnectionsService(
       lastSeenConnectionId: Option[ConnectionId]
   ): FutureEither[ConnectorError, Seq[ConnectionInfo]] = {
     connectionsRepository.getConnectionsPaginated(userId, limit, lastSeenConnectionId)
+  }
+
+  def getConnectionCommunicationKeys(
+      connectionId: ConnectionId,
+      userId: ParticipantId
+  ): FutureEither[ConnectorError, Seq[(String, EncodedPublicKey)]] = {
+    def getDidCommunicationKeys(did: String): FutureEither[ConnectorError, Seq[(String, EncodedPublicKey)]] = {
+      val request = node_api.GetDidDocumentRequest(did = did)
+      val result = for {
+        response <- nodeService.getDidDocument(request)
+        allKeys = response.document.map(_.publicKeys).getOrElse(Seq.empty)
+        validKeys = allKeys.filter(key => key.revokedOn.isEmpty)
+        // TODO: select communication keys only, once we provision them and make frontend use them
+      } yield validKeys.map { key =>
+        val keyData = key.keyData.ecKeyData.getOrElse(throw new Exception("Node returned key without keyData"))
+        (key.id, ECKeys.toEncodedPublicKey(keyData.curve, keyData.x.toByteArray, keyData.y.toByteArray))
+      }
+
+      result.map(Right(_)).recover { case ex => Left(InternalServerError(ex)) }.toFutureEither
+    }
+
+    for {
+      participantInfo <- connectionsRepository.getOtherSideInfo(connectionId, userId).map(_.get)
+      keys <- (participantInfo.did, participantInfo.publicKey) match {
+        case (Some(did), keyOpt) =>
+          if (keyOpt.isDefined) {
+            logger.warn(s"Both DID and keys found for user ${userId}, using DID keys only")
+          }
+          getDidCommunicationKeys(did)
+        case (None, Some(key)) => Future.successful(Right(Seq(("", key)))).toFutureEither
+        case (None, None) => Future.successful(Right(Seq.empty)).toFutureEither
+      }
+    } yield keys
   }
 }

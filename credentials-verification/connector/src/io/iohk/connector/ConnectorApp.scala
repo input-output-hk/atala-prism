@@ -106,7 +106,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     // connector services
     val participantPropagatorService = new ParticipantPropagatorService(xa)(executionContext)
     val connectionsService =
-      new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)(executionContext)
+      new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, node)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
     val registrationService = new RegistrationService(participantsRepository, node)(executionContext)
     val connectorService = new ConnectorService(

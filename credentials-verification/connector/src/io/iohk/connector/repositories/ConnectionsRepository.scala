@@ -1,6 +1,6 @@
 package io.iohk.connector.repositories
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -34,6 +34,11 @@ trait ConnectionsRepository {
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
   ): FutureEither[ConnectorError, Seq[ConnectionInfo]]
+
+  def getOtherSideInfo(
+      id: ConnectionId,
+      participant: ParticipantId
+  ): FutureEither[ConnectorError, Option[ParticipantInfo]]
 
   def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]]
 }
@@ -129,6 +134,22 @@ object ConnectionsRepository {
           .map(seq => Right(seq))
           .toFutureEither
       }
+    }
+
+    override def getOtherSideInfo(
+        id: ConnectionId,
+        userId: ParticipantId
+    ): FutureEither[ConnectorError, Option[ParticipantInfo]] = {
+      val query = for {
+        participantId <- OptionT(ConnectionsDAO.getOtherSide(id, userId))
+        participantInfo <- ParticipantsDAO.findBy(participantId)
+      } yield participantInfo
+
+      query.value
+        .transact(xa)
+        .unsafeToFuture()
+        .map(Right(_))
+        .toFutureEither
     }
 
     override def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {

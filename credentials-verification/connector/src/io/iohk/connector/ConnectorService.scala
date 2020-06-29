@@ -213,7 +213,9 @@ class ConnectorService(
         .flatten
     }
 
-    authenticator.public("addConnectionFromToken", request) { f() }
+    authenticator.public("addConnectionFromToken", request) {
+      f()
+    }
   }
 
   /** Delete active connection
@@ -375,6 +377,44 @@ class ConnectorService(
     }
 
     authenticator.authenticated("getMessagesForConnection", request) { participantId =>
+      f(participantId)
+    }
+  }
+
+  /** Returns public keys that can be used for secure communication with the other end of connection
+    */
+  override def getConnectionCommunicationKeys(
+      request: connector_api.GetConnectionCommunicationKeysRequest
+  ): Future[connector_api.GetConnectionCommunicationKeysResponse] = {
+
+    def f(userId: ParticipantId) = {
+      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+
+      Future
+        .fromTry(Try(Right(ConnectionId.apply(request.connectionId))))
+        .toFutureEither
+        .flatMap { connectionId =>
+          connections.getConnectionCommunicationKeys(connectionId, userId)
+        }
+        .wrapExceptions
+        .successMap { keys =>
+          connector_api.GetConnectionCommunicationKeysResponse(
+            keys = keys.map {
+              case (keyId, key) =>
+                connector_models.ConnectionKey(
+                  keyId = keyId,
+                  key = Some(
+                    connector_models.EncodedPublicKey(
+                      publicKey = ByteString.copyFrom(key.bytes.toArray)
+                    )
+                  )
+                )
+            }
+          )
+        }
+    }
+
+    authenticator.authenticated("getConnectionCommunicationKeys", request) { participantId =>
       f(participantId)
     }
   }

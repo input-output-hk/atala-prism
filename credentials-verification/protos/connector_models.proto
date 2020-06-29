@@ -63,6 +63,13 @@ message ConnectionInfo {
     string token = 4; // the token used to generate the connection
 }
 
+// Communication key for connection participant
+message ConnectionKey {
+  // identifier of the key; can be empty if participant uses one key only
+  string keyId = 1;
+  EncodedPublicKey key = 2;
+}
+
 
 // MESSAGES
 

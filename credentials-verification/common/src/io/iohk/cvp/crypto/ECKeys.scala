@@ -84,6 +84,12 @@ object ECKeys {
     }
   }
 
+  def toEncodedPublicKey(curve: String, xBytes: Array[Byte], yBytes: Array[Byte]): EncodedPublicKey = {
+    assert(curve == CURVE_NAME)
+    val encodedBytes = encodePoint(xBytes, yBytes, ecParameterSpec.getCurve)
+    EncodedPublicKey(encodedBytes.toVector)
+  }
+
   def toEncodedPublicKey(publicKey: PublicKey): EncodedPublicKey = {
     val encodeBytes = encodePoint(getECPoint(publicKey), ecParameterSpec.getCurve)
     EncodedPublicKey(encodeBytes.toVector)
@@ -101,14 +107,25 @@ object ECKeys {
     * @see sun.security.util.ECUtil#encodePoint()
     */
   private def encodePoint(ecPoint: JavaECPoint, ecCurve: ECCurve): Array[Byte] = {
+    val xBytes = toUnsignedByteArray(ecPoint.getAffineX)
+    val yBytes = toUnsignedByteArray(ecPoint.getAffineY)
+    encodePoint(xBytes, yBytes, ecCurve)
+  }
+
+  /**
+    * @param xBytes byte encoding of curve point x coordinate
+    * @param yBytes byte encoding of curve point x coordinate
+    * @param ecCurve an elliptic curve
+    * @return Array[Byte]
+    * @see sun.security.util.ECUtil#encodePoint()
+    */
+  private def encodePoint(xBytes: Array[Byte], yBytes: Array[Byte], ecCurve: ECCurve): Array[Byte] = {
     val size = ecCurve.getFieldSize + 7 >> 3
-    val xArr = toUnsignedByteArray(ecPoint.getAffineX)
-    val yArr = toUnsignedByteArray(ecPoint.getAffineY)
-    if (xArr.length <= size && yArr.length <= size) {
+    if (xBytes.length <= size && yBytes.length <= size) {
       val arr = new Array[Byte](1 + (size << 1))
       arr(0) = 4 //Uncompressed point indicator for encoding
-      Array.copy(xArr, 0, arr, size - xArr.length + 1, xArr.length)
-      Array.copy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
+      Array.copy(xBytes, 0, arr, size - xBytes.length + 1, xBytes.length)
+      Array.copy(yBytes, 0, arr, arr.length - yBytes.length, yBytes.length)
       arr
     } else throw new RuntimeException("Point coordinates do not match field size")
   }

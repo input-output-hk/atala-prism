@@ -56,6 +56,16 @@ object ConnectionsDAO {
       .option
   }
 
+  def getConnection(id: ConnectionId): doobie.ConnectionIO[Option[Connection]] = {
+    sql"""
+         |SELECT token, id
+         |FROM connections
+         |WHERE id = $id
+         |""".stripMargin
+      .query[Connection]
+      .option
+  }
+
   def getConnectionByToken(token: TokenString): doobie.ConnectionIO[Option[Connection]] = {
     sql"""
          |SELECT token, id
