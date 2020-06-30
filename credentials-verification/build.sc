@@ -264,7 +264,7 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
   }
 }
 
-trait ServerPBCommon extends ServerCommon with ScalaPBModule {
+trait PBCommon extends ScalaPBModule {
   def scalaPBVersion = versions.scalaPB
 
   // merge service files, otherwise GRPC client doesn't work:
@@ -275,7 +275,7 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
     )
 
   override def ivyDeps =
-    super[ServerCommon].ivyDeps.map { deps =>
+    super.ivyDeps.map { deps =>
       deps ++ Agg(
         ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}",
         ivy"io.grpc:grpc-services:${versions.grpc}"
@@ -284,9 +284,11 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
 
   override def scalaPBSources: Sources =
     T.sources {
-      millOuterCtx.millSourcePath / 'protos
+      os.pwd / 'protos
     }
 }
+
+trait ServerPBCommon extends ServerCommon with PBCommon
 
 object node extends ServerPBCommon with CVPDockerModule {
 
@@ -394,6 +396,25 @@ object wallet extends ServerPBCommon {
   override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
 
   object test extends `tests-common` {}
+}
+
+object util extends mill.Module {
+  object keyderivation extends PrismScalaModule with PBCommon {
+    override def moduleDeps = Seq(common) ++ super.moduleDeps
+
+    override def repositories =
+      super.repositories ++ Seq(
+        MavenRepository("https://oss.sonatype.org/content/repositories/snapshots")
+      )
+
+    override def ivyDeps =
+      super.ivyDeps.map { deps =>
+        deps ++ Agg(
+          ivy"fr.acinq::bitcoin-lib:0.16-SNAPSHOT",
+          ivy"com.beachape::enumeratum:1.6.1"
+        )
+      }
+  }
 }
 
 trait CVPDockerModule extends Module { self: JavaModule =>

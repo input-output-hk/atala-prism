@@ -246,4 +246,97 @@ Issuers and verifiers currently have their credentials in the credentials manage
 connector. The recovery process will consist of generating keys used to communicate with services (e.g. authorization 
 keys) from the master seed and call adequate APIs to get credentials stored by these components.
 
-Note that the above process should be updated according to implementation updates.  
+Note that the above process should be updated according to implementation updates.
+
+## Test vectors
+
+Test vectors are available as [JSON file](key-derivation-test-vectors.json).
+
+### Vector 1
+
+Seed phrase: abandon amount liar amount expire adjust cage candy arch gather drum buyer
+  * [DID: 1]
+    * DID: did:prism:6fe5591aabaf1e41744f074336001f37be74534c00a99c3874c3a4690981dced
+    * [Key master 0]
+      * Key ID: master-0
+      * BIP32 Path: m/1'/0'/0'
+      * Secret key
+        * (hex): dd7115d710d2eaa591f241145ebead016f7a2b90f2b86f5f743731fe37aa3ac5
+      * Public key
+        * (hex): 03cba11a413c631c853685bfd852b3163ffb124c03712f4a81cd115f72d6ced9f9
+        * (x-hex): cba11a413c631c853685bfd852b3163ffb124c03712f4a81cd115f72d6ced9f9
+        * (y-hex): 69278cf55b5d72ea6ad01f1a14787c2ee316cbe8f96897c6f8e9b23b13efe565
+    * [Key master 1]
+      * Key ID: master-1
+      * BIP32 Path: m/1'/0'/1'
+      * Secret key
+        * (hex): 3c10eeba06cd6efefe017146fdf400d7e78b9fa461a6c7cd953e1fe235d35416
+      * Public key
+        * (hex): 03cdd203ac26fbc3282abd9a422558a3185371a27406164e2433a155a7bf901fa8
+        * (x-hex): cdd203ac26fbc3282abd9a422558a3185371a27406164e2433a155a7bf901fa8
+        * (y-hex): e9b72fe04894b19a8931d483a6b0979e95e3bbb34f786b6ac8512199989d2703
+    * [Key issuing 5]
+      * Key ID: issuing-5
+      * BIP32 Path: m/1'/1'/5'
+      * Secret key
+        * (hex): f3222b9f1eeea1c11ceaaf39ff428c140c0f03e323d82d13ba94ca067ef1b79b
+      * Public key
+        * (hex): 0208e12a3029d8e6635ed40788250014831d47f58ed9e9ff5ddb217ab9fe931c09
+        * (x-hex): 08e12a3029d8e6635ed40788250014831d47f58ed9e9ff5ddb217ab9fe931c09
+        * (y-hex): 2eb3147e1c0d93908189f708657ac35b4e06a563b98bf09731d997be719a0d5e
+    * [Key communication 20]
+      * Key ID: communication-20
+      * BIP32 Path: m/1'/2'/20'
+      * Secret key
+        * (hex): f8047dd871d8e79f54d9f202910eba779e67761d60b1b09ad1b8e72f2acbab2d
+      * Public key
+        * (hex): 02c10a63a773514bebfc8c9425737963ed135936172cec6aa13c9777201ffac50c
+        * (x-hex): c10a63a773514bebfc8c9425737963ed135936172cec6aa13c9777201ffac50c
+        * (y-hex): 58eaf1c1ed59a0eb56525498aabf8256e93953baca0c320c24827ea203b33ec4
+    * [Key authentication 27]
+      * Key ID: authentication-27
+      * BIP32 Path: m/1'/3'/27'
+      * Secret key
+        * (hex): 0251a9f0c65de414c9522834afe62806d8c1a538c5282abbebf51f9f92f1eab5
+      * Public key
+        * (hex): 02ae26207160333e91fad88529b784bdbd9cd1a95e5ab6bbdc93ef289fa617c72e
+        * (x-hex): ae26207160333e91fad88529b784bdbd9cd1a95e5ab6bbdc93ef289fa617c72e
+        * (y-hex): c48c13b927248aab32874c0506dd26b6a90ef8452ab86147a4317045aed8f958
+  * [DID: 17]
+    * DID: did:prism:60e5c0b68701bac49873bc273017ad199a063e1b614444312dd2e97e1e9fb164
+    * [Key master 0]
+      * Key ID: master-0
+      * BIP32 Path: m/17'/0'/0'
+      * Secret key
+        * (hex): 038ff9d6e6830ca7f5e875d4400c2a9f973551cafc7b077e5dfb23e49eb13e3f
+      * Public key
+        * (hex): 023d372976f436182400d21c07404b6d42fb87f84e59b5a7c715025cf85a5a3362
+        * (x-hex): 3d372976f436182400d21c07404b6d42fb87f84e59b5a7c715025cf85a5a3362
+        * (y-hex): dd0be8438eacd02d82e2e0c3069b20f71bda8e9f57a49183f73f4f4c127435d4
+    * [Key master 17]
+      * Key ID: master-17
+      * BIP32 Path: m/17'/0'/17'
+      * Secret key
+        * (hex): 415590b46f2e4b0453da62328b8701becdacffd582fcd1008973774589199457
+      * Public key
+        * (hex): 02855112018b81d80d0187480fee241d0abf38e2f80dcab0039344f1b4a97cb7ab
+        * (x-hex): 855112018b81d80d0187480fee241d0abf38e2f80dcab0039344f1b4a97cb7ab
+        * (y-hex): 5dcc4c3877189fceaf1809aed0fd4491b900ed48b637f8529bc91bd305787b1c
+    * [Key authentication 0]
+      * Key ID: authentication-0
+      * BIP32 Path: m/17'/3'/0'
+      * Secret key
+        * (hex): 7da8202ee5c58aebe3e3b1003c5217c8e9a841ff5da9e6358010635ed126383c
+      * Public key
+        * (hex): 03f6ede796792f949807db272c40f451811faf0f7eecb7fb2c6c0fd15d1c62b778
+        * (x-hex): f6ede796792f949807db272c40f451811faf0f7eecb7fb2c6c0fd15d1c62b778
+        * (y-hex): 217cb6a49fce5b20e646015422d7ad7c9c70ff7e6f2d02a1228eaff0ada9d66d
+    * [Key authentication 17]
+      * Key ID: authentication-17
+      * BIP32 Path: m/17'/3'/17'
+      * Secret key
+        * (hex): 9f60801c2bf70b18071e8dd2d01d851a5e15602a407a79ff110e6dfb8371e6ce
+      * Public key
+        * (hex): 021b22881120925cf10381f5a247634665a677f98505bf183726a9b90f245a8a95
+        * (x-hex): 1b22881120925cf10381f5a247634665a677f98505bf183726a9b90f245a8a95
+        * (y-hex): 5a1b2feb44de35e5071810f931b8b4cf93bb6103eb86665563c65e120f6d9bc8
