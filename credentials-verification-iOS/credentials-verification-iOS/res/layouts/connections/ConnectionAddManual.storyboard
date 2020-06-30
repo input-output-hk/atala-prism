@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Connection Add Manual View Controller-->
+        <scene sceneID="viY-PO-DKk">
+            <objects>
+                <viewController storyboardIdentifier="ConnectionAddManual" useStoryboardIdentifierAsRestorationIdentifier="YES" id="lx5-SL-59F" customClass="ConnectionAddManualViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="ZA9-vS-0G3">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vas-2i-ky4">
+                                <rect key="frame" x="20" y="0.0" width="374" height="896"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nxT-UT-plq">
+                                        <rect key="frame" x="0.0" y="346.5" width="374" height="203.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="248" text="Enter connection code" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dbw-z0-js8">
+                                                <rect key="frame" x="24" y="26" width="326" height="21.5"/>
+                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="connections_enter_code"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </label>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5hf-N3-aUK" userLabel="ViewBottom">
+                                                <rect key="frame" x="24" y="116.5" width="326" height="1"/>
+                                                <color key="backgroundColor" red="0.46666666670000001" green="0.52549019610000003" blue="0.61960784310000006" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="displayP3"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="1" id="Wmt-Un-now"/>
+                                                </constraints>
+                                            </view>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="7at-X3-oKG">
+                                                <rect key="frame" x="24" y="137.5" width="326" height="45"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Heh-Qq-hF5">
+                                                        <rect key="frame" x="0.0" y="0.0" width="156" height="45"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                                        <state key="normal" title="Button">
+                                                            <color key="titleColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="string" keyPath="localized" value="proof_request_cancel"/>
+                                                            <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
+                                                        </userDefinedRuntimeAttributes>
+                                                        <connections>
+                                                            <action selector="actionDeclineButtonTapped:" destination="lx5-SL-59F" eventType="touchUpInside" id="60R-sE-9Kp"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jDr-QH-yQq">
+                                                        <rect key="frame" x="170" y="0.0" width="156" height="45"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                                        <state key="normal" title="Button">
+                                                            <color key="titleColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="string" keyPath="localized" value="confirm"/>
+                                                            <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
+                                                        </userDefinedRuntimeAttributes>
+                                                        <connections>
+                                                            <action selector="actionConfirmButtonTapped:" destination="lx5-SL-59F" eventType="touchUpInside" id="Uic-aA-AW6"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="45" id="czY-16-wbQ"/>
+                                                </constraints>
+                                            </stackView>
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ovi-Xr-W7p">
+                                                <rect key="frame" x="27" y="87.5" width="320" height="21"/>
+                                                <color key="textColor" white="0.17000000000000001" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="dbw-z0-js8" firstAttribute="leading" secondItem="nxT-UT-plq" secondAttribute="leading" constant="24" id="03h-aI-Lr3"/>
+                                            <constraint firstAttribute="bottom" secondItem="7at-X3-oKG" secondAttribute="bottom" constant="21" id="4hc-NB-abR"/>
+                                            <constraint firstItem="7at-X3-oKG" firstAttribute="leading" secondItem="5hf-N3-aUK" secondAttribute="leading" id="4p6-l0-gnh"/>
+                                            <constraint firstAttribute="trailing" secondItem="dbw-z0-js8" secondAttribute="trailing" constant="24" id="OES-4m-gZn"/>
+                                            <constraint firstAttribute="trailing" secondItem="5hf-N3-aUK" secondAttribute="trailing" constant="24" id="Ref-Re-Bku"/>
+                                            <constraint firstItem="ovi-Xr-W7p" firstAttribute="top" secondItem="dbw-z0-js8" secondAttribute="bottom" constant="40" id="WdI-6j-55h"/>
+                                            <constraint firstItem="7at-X3-oKG" firstAttribute="top" secondItem="5hf-N3-aUK" secondAttribute="bottom" constant="20" id="bhO-ea-s50"/>
+                                            <constraint firstItem="7at-X3-oKG" firstAttribute="trailing" secondItem="5hf-N3-aUK" secondAttribute="trailing" id="gWX-AT-pXF"/>
+                                            <constraint firstItem="5hf-N3-aUK" firstAttribute="top" secondItem="ovi-Xr-W7p" secondAttribute="bottom" constant="8" id="k6G-67-BaR"/>
+                                            <constraint firstItem="5hf-N3-aUK" firstAttribute="leading" secondItem="nxT-UT-plq" secondAttribute="leading" constant="24" id="seb-ZJ-BCl"/>
+                                            <constraint firstItem="dbw-z0-js8" firstAttribute="top" secondItem="nxT-UT-plq" secondAttribute="top" constant="26" id="siF-QO-u5U"/>
+                                            <constraint firstAttribute="trailing" secondItem="ovi-Xr-W7p" secondAttribute="trailing" constant="27" id="uOj-pX-Tim"/>
+                                            <constraint firstItem="ovi-Xr-W7p" firstAttribute="leading" secondItem="nxT-UT-plq" secondAttribute="leading" constant="27" id="xHC-Wf-a8O"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="nxT-UT-plq" firstAttribute="centerY" secondItem="vas-2i-ky4" secondAttribute="centerY" id="3rw-Dx-BEZ"/>
+                                    <constraint firstItem="nxT-UT-plq" firstAttribute="leading" secondItem="vas-2i-ky4" secondAttribute="leading" id="YXq-MX-cKa"/>
+                                    <constraint firstAttribute="trailing" secondItem="nxT-UT-plq" secondAttribute="trailing" id="sb1-q4-0Xv"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="vas-2i-ky4" firstAttribute="leading" secondItem="ZA9-vS-0G3" secondAttribute="leadingMargin" id="92I-dj-iga"/>
+                            <constraint firstItem="vas-2i-ky4" firstAttribute="top" secondItem="ZA9-vS-0G3" secondAttribute="topMargin" id="Pss-y8-NyT"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="vas-2i-ky4" secondAttribute="bottom" id="gfu-0E-Ooo"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="vas-2i-ky4" secondAttribute="trailing" id="ygU-k6-Oi1"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="1aO-OO-u18"/>
+                    </view>
+                    <connections>
+                        <outlet property="buttonConfirm" destination="jDr-QH-yQq" id="ett-rg-ydC"/>
+                        <outlet property="buttonDecline" destination="Heh-Qq-hF5" id="4Cb-fb-Vyl"/>
+                        <outlet property="connectionTf" destination="ovi-Xr-W7p" id="wnj-BI-RUX"/>
+                        <outlet property="labelTitle" destination="dbw-z0-js8" id="uYn-UJ-YN7"/>
+                        <outlet property="viewBg" destination="nxT-UT-plq" id="XCU-9S-OOs"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="zPB-pf-mxb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-23.188405797101453" y="4.6875"/>
+        </scene>
+    </scenes>
+</document>

@@ -9,15 +9,20 @@ class NavBarCustomStyle: NSObject {
     var hasBackButton: Bool
     var rightIconName: String?
     var rightIconAction: SelectorAction?
+    var textButtonTitle: NSAttributedString?
+    var textButtonAction: SelectorAction?
 
     init(hasNavBar: Bool, isWhite: Bool = false, title: String? = nil, hasBackButton: Bool = false,
-         rightIconName: String? = nil, rightIconAction: SelectorAction? = nil) {
+         rightIconName: String? = nil, rightIconAction: SelectorAction? = nil,
+         textButtonTitle: NSAttributedString? = nil, textButtonAction: SelectorAction? = nil) {
         self.hasNavBar = hasNavBar
         self.isWhite = isWhite
         self.title = title
         self.hasBackButton = hasBackButton
         self.rightIconName = rightIconName
         self.rightIconAction = rightIconAction
+        self.textButtonTitle = textButtonTitle
+        self.textButtonAction = textButtonAction
         super.init()
     }
 }
@@ -32,7 +37,8 @@ class NavBarCustom: BaseNibLoadingView {
     @IBOutlet weak var constraintLabelTitleShort: NSLayoutConstraint!
     @IBOutlet weak var constraintLabelTitleLong: NSLayoutConstraint!
     @IBOutlet weak var buttonRight: UIButton!
-
+    @IBOutlet weak var buttonText: UIButton!
+    
     private static func findNavBarIn(view: UIView) -> NavBarCustom? {
         return view.subviews.first(where: { $0.tag == NAV_BAR_TAG }) as? NavBarCustom
     }
@@ -93,6 +99,8 @@ class NavBarCustom: BaseNibLoadingView {
             let rightImg = UIImage(named: style.rightIconName!)
             navBar?.buttonRight.setImage(rightImg, for: .normal)
         }
+        navBar?.buttonText.isHidden = style.textButtonTitle == nil
+        navBar?.buttonText.setAttributedTitle(style.textButtonTitle, for: .normal)
         view.layoutIfNeeded()
     }
 
@@ -102,5 +110,9 @@ class NavBarCustom: BaseNibLoadingView {
 
     @IBAction func actionRightButton(_ sender: Any) {
         containerViewController?.navBarCustomStyle().rightIconAction?.action()
+    }
+
+    @IBAction func actionTextButton(_ sender: Any) {
+        containerViewController?.navBarCustomStyle().textButtonAction?.action()
     }
 }

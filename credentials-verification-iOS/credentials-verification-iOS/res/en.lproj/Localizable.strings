@@ -65,6 +65,8 @@
 "connections_universities" = "Universities";
 "connections_employers" = "Employers";
 "connections_more_info" = "More Info";
+"connections_add_new" = "Add new";
+"connections_enter_code" = "Enter connection code";
 
 // <!-- Credentials -->
 "credentials_nav_title" = "Credentials";

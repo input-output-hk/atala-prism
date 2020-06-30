@@ -75,9 +75,17 @@ class ConnectionsViewController: ListingBaseViewController {
 
         // Change the nav bar
         let navTitle = isScanningQr ? "connections_scan_qr_nav_title".localize() : "connections_nav_title".localize()
+        let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 12),
+        .foregroundColor: UIColor.appGrey,
+        .underlineStyle: NSUnderlineStyle.single.rawValue]
+        let attributeString = (!isScanningQr && mode != .fetching && !Env.isProduction())
+            ? NSAttributedString(string: "connections_add_new".localize(), attributes: attributes)
+            : nil
         let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr,
-                                   rightIconName: navIconName, rightIconAction: actionScan)
+                                   rightIconName: navIconName, rightIconAction: actionScan,
+                                   textButtonTitle: attributeString, textButtonAction: actionInput)
         NavBarCustom.config(view: self)
     }
 
@@ -121,6 +129,19 @@ class ConnectionsViewController: ListingBaseViewController {
     lazy var actionScan = SelectorAction(action: { [weak self] in
         self?.presenterImpl.tappedScanButton()
     })
+
+    lazy var actionInput = SelectorAction(action: { [weak self] in
+        self?.presenterImpl.tappedAddNewnButton()
+    })
+
+    func showManualInput() {
+
+        let confirmation = ConnectionAddManualViewController.makeThisView()
+        confirmation.config { token in
+            self.presenterImpl.scannedQrCode(token)
+        }
+        self.customPresentViewController(confirmation.presentr, viewController: confirmation, animated: true)
+    }
 
     // MARK: Scan QR
 

@@ -44,6 +44,10 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         startQrScanning()
     }
 
+    func tappedAddNewnButton() {
+        viewImpl?.showManualInput()
+    }
+
     @discardableResult
     func tappedBackButton() -> Bool {
 

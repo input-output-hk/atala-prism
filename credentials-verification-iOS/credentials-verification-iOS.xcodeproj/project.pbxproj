@@ -29,6 +29,8 @@
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
 		B3C760182489777C00AC46DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C760172489777C00AC46DC /* Env.swift */; };
 		B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */; };
+		B3EA097F24A519E50082B71B /* ConnectionAddManual.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3EA097E24A519E50082B71B /* ConnectionAddManual.storyboard */; };
+		B3EA098124A51C260082B71B /* ConnectionAddManualViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3EA098024A51C260082B71B /* ConnectionAddManualViewController.swift */; };
 		B3F94E86247455650087EBFD /* Lock.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3F94E85247455650087EBFD /* Lock.storyboard */; };
 		B3F94E8A247455720087EBFD /* Security.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3F94E88247455720087EBFD /* Security.storyboard */; };
 		B3F94E8B247455720087EBFD /* SecurityMainViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3F94E89247455720087EBFD /* SecurityMainViewCell.xib */; };
@@ -262,6 +264,8 @@
 		B3C760172489777C00AC46DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
 		B3E8ADD523EE025B00D63D0A /* credentials-verification-iOSTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "credentials-verification-iOSTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MnemonicsTests.swift; sourceTree = "<group>"; };
+		B3EA097E24A519E50082B71B /* ConnectionAddManual.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConnectionAddManual.storyboard; sourceTree = "<group>"; };
+		B3EA098024A51C260082B71B /* ConnectionAddManualViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionAddManualViewController.swift; sourceTree = "<group>"; };
 		B3F94E85247455650087EBFD /* Lock.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Lock.storyboard; sourceTree = "<group>"; };
 		B3F94E88247455720087EBFD /* Security.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Security.storyboard; sourceTree = "<group>"; };
 		B3F94E89247455720087EBFD /* SecurityMainViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SecurityMainViewCell.xib; sourceTree = "<group>"; };
@@ -1080,6 +1084,7 @@
 				EE7D4D0C23693588007C31A8 /* ConnectionsViewController.swift */,
 				B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */,
 				B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */,
+				B3EA098024A51C260082B71B /* ConnectionAddManualViewController.swift */,
 			);
 			path = connections;
 			sourceTree = "<group>";
@@ -1090,6 +1095,7 @@
 				EE7D4D1423693A13007C31A8 /* Connections.storyboard */,
 				EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */,
 				B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */,
+				B3EA097E24A519E50082B71B /* ConnectionAddManual.storyboard */,
 			);
 			path = connections;
 			sourceTree = "<group>";
@@ -1396,6 +1402,7 @@
 				EE904F182373B9EC00EE6344 /* DetailHeaderViewCell.xib in Resources */,
 				EE48AC2123775E3200C0A441 /* Success.storyboard in Resources */,
 				EE7D4CB82366B9C5007C31A8 /* ListingErrorRetryViewCell.xib in Resources */,
+				B3EA097F24A519E50082B71B /* ConnectionAddManual.storyboard in Resources */,
 				EE8CD810237B691100614578 /* TextFieldTitledView.xib in Resources */,
 				EE7185732384D5E200C58F62 /* FieldViewCell.xib in Resources */,
 				EE904F1C2373BA0700EE6344 /* DocumentViewCell.xib in Resources */,
@@ -1725,6 +1732,7 @@
 				EE48AC1C23775DFC00C0A441 /* SuccessPresenter.swift in Sources */,
 				EE7D4CF723673C39007C31A8 /* UIAlertController+Extensions.swift in Sources */,
 				EE7D4BFD2366B9C4007C31A8 /* BaseViewController.swift in Sources */,
+				B3EA098124A51C260082B71B /* ConnectionAddManualViewController.swift in Sources */,
 				EE7D4CF923673C39007C31A8 /* Date+Extension.swift in Sources */,
 				EE7D4D29236F8DE9007C31A8 /* ListingEmptyViewCell.swift in Sources */,
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
@@ -1955,7 +1963,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 41;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -1981,7 +1989,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 41;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

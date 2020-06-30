@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="NavBarCustom" customModule="ATALA" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="NavBarCustom" customModule="Atala_PRISM" customModuleProvider="target">
             <connections>
                 <outlet property="buttonBack" destination="Uik-6c-9p7" id="zjX-7D-61I"/>
                 <outlet property="buttonRight" destination="mHv-AR-dfz" id="naT-41-PwH"/>
+                <outlet property="buttonText" destination="3aD-eU-bJj" id="LtQ-EV-TOq"/>
                 <outlet property="constraintLabelTitleLong" destination="30B-P0-6ls" id="r0b-sC-iYf"/>
                 <outlet property="constraintLabelTitleShort" destination="n4T-68-FQS" id="udB-BN-2af"/>
                 <outlet property="labelTitle" destination="VUZ-Jd-1P8" id="ulI-fx-4pu"/>
@@ -34,18 +35,33 @@
                         <action selector="actionBackButton:" destination="-1" eventType="touchUpInside" id="KE9-e2-dkc"/>
                     </connections>
                 </button>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mHv-AR-dfz">
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="PtL-qL-PAQ">
                     <rect key="frame" x="441" y="70" width="26" height="26"/>
-                    <constraints>
-                        <constraint firstAttribute="width" constant="26" id="JYY-Bx-pMg"/>
-                        <constraint firstAttribute="height" constant="26" id="WzS-4C-Mbk"/>
-                    </constraints>
-                    <connections>
-                        <action selector="actionRightButton:" destination="-1" eventType="touchUpInside" id="Vlg-2S-4G4"/>
-                    </connections>
-                </button>
+                    <subviews>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3aD-eU-bJj">
+                            <rect key="frame" x="0.0" y="0.0" width="0.0" height="26"/>
+                            <state key="normal" title="Button"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appGrey"/>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="actionTextButton:" destination="-1" eventType="touchUpInside" id="Rmx-pU-B0w"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mHv-AR-dfz">
+                            <rect key="frame" x="0.0" y="0.0" width="26" height="26"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="26" id="JYY-Bx-pMg"/>
+                                <constraint firstAttribute="height" constant="26" id="WzS-4C-Mbk"/>
+                            </constraints>
+                            <connections>
+                                <action selector="actionRightButton:" destination="-1" eventType="touchUpInside" id="Vlg-2S-4G4"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                </stackView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VUZ-Jd-1P8">
-                    <rect key="frame" x="69" y="71" width="356" height="24"/>
+                    <rect key="frame" x="69" y="71" width="50.5" height="24"/>
                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="20"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -55,12 +71,12 @@
             <constraints>
                 <constraint firstItem="VUZ-Jd-1P8" firstAttribute="leading" secondItem="Uik-6c-9p7" secondAttribute="trailing" priority="750" constant="11" id="30B-P0-6ls"/>
                 <constraint firstItem="Uik-6c-9p7" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="topMargin" constant="24" id="3uZ-27-M24"/>
-                <constraint firstAttribute="trailing" secondItem="mHv-AR-dfz" secondAttribute="trailing" constant="32" id="ALc-1v-JbU"/>
+                <constraint firstItem="PtL-qL-PAQ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="VUZ-Jd-1P8" secondAttribute="trailing" constant="16" id="YXr-y0-aMM"/>
+                <constraint firstAttribute="trailing" secondItem="PtL-qL-PAQ" secondAttribute="trailing" constant="32" id="cEs-wW-xRJ"/>
                 <constraint firstItem="Uik-6c-9p7" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="28" id="cN9-6J-fII"/>
                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Uik-6c-9p7" secondAttribute="bottom" constant="5" id="fih-In-OL5"/>
-                <constraint firstItem="mHv-AR-dfz" firstAttribute="centerY" secondItem="Uik-6c-9p7" secondAttribute="centerY" id="m76-Mz-h6b"/>
                 <constraint firstItem="VUZ-Jd-1P8" firstAttribute="leading" secondItem="GBp-Qu-VRc" secondAttribute="leading" priority="250" constant="32" id="n4T-68-FQS"/>
-                <constraint firstItem="mHv-AR-dfz" firstAttribute="leading" secondItem="VUZ-Jd-1P8" secondAttribute="trailing" constant="16" id="s5Y-0Q-wvs"/>
+                <constraint firstItem="PtL-qL-PAQ" firstAttribute="centerY" secondItem="Uik-6c-9p7" secondAttribute="centerY" id="oAg-RM-yaP"/>
                 <constraint firstItem="VUZ-Jd-1P8" firstAttribute="centerY" secondItem="Uik-6c-9p7" secondAttribute="centerY" id="wcS-5C-2Gb"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
