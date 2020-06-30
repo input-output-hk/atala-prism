@@ -87,8 +87,8 @@ export const GET_STARTED_NAME = 'getStarted';
 export const FAQ_NAME = 'faq';
 export const CONTACT_US_NAME = 'contactUs';
 
-export const APP_STORE_URL = 'https://play.google.com/store/apps/details?id=io.iohk.cvp';
-export const GOOGLE_PLAY_STORE_URL = 'https://apps.apple.com/app/atala-prism/id1515523675';
+export const APP_STORE_URL = 'https://apps.apple.com/app/atala-prism/id1515523675';
+export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=io.iohk.cvp';
 
 // EXAMPLE CERTIFICATE CARD VALUES
 export const CARD_UNIVERSITY_TITLE = 'Bachelor of Science';
