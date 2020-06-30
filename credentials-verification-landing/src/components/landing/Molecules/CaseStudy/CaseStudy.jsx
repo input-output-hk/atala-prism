@@ -17,7 +17,7 @@ const CaseStudy = () => {
         </div>
       </div>
       <div className="ImageContainer">
-        <img src="images/case-study-georgia.png" alt={t('landing.caseStudy.caseStudyAlt')} />
+        <img src="images/case-study-georgia.svg" alt={t('landing.caseStudy.caseStudyAlt')} />
       </div>
     </div>
   );

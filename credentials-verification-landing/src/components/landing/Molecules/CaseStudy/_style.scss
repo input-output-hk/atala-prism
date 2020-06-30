@@ -10,12 +10,13 @@
 
     .CaseStudyDescription {
       width: 70%;
+      margin-top: 4em;
       h1 {
         @include secondary-text($h1, $black);
         line-height: 30px;
       }
       p {
-        @include primary-text($label, $black);
+        @include primary-text($body, $black);
         margin-top: 3em;
       }
     }
@@ -27,6 +28,7 @@
     justify-content: center;
     img {
       margin-top: -2em;
+      height: 560px;
     }
   }
 }
