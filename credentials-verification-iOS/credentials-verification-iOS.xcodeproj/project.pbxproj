@@ -300,9 +300,6 @@
 		EE48AC282379221000C0A441 /* SwitchCustomView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SwitchCustomView.xib; sourceTree = "<group>"; };
 		EE631CFC23C66259001EAA0F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EE631CFF23C66285001EAA0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		EE684D3B23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/Localizable.strings; sourceTree = "<group>"; };
-		EE684D3C23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ka; path = ka.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		EE684D3D23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EE71854D237DBF4700C58F62 /* WelcomePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomePresenter.swift; sourceTree = "<group>"; };
 		EE71854F237DBF5400C58F62 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		EE718551237DCDB100C58F62 /* Welcome.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Welcome.storyboard; sourceTree = "<group>"; };
@@ -1379,7 +1376,6 @@
 			knownRegions = (
 				en,
 				Base,
-				ka,
 			);
 			mainGroup = F5E3893C234BC34D0001F1E3;
 			productRefGroup = F5E38946234BC34D0001F1E3 /* Products */;
@@ -1812,7 +1808,6 @@
 			children = (
 				EE631CFC23C66259001EAA0F /* en */,
 				EE631CFF23C66285001EAA0F /* Base */,
-				EE684D3D23CFE46D0050EF71 /* ka */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -1822,7 +1817,6 @@
 			children = (
 				EE7D4B112366B9C3007C31A8 /* en */,
 				EE7D4B162366B9C3007C31A8 /* Base */,
-				EE684D3B23CFE46D0050EF71 /* ka */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1832,7 +1826,6 @@
 			children = (
 				EE7D4B132366B9C3007C31A8 /* en */,
 				EE7D4B172366B9C3007C31A8 /* Base */,
-				EE684D3C23CFE46D0050EF71 /* ka */,
 			);
 			name = Localizable.stringsdict;
 			sourceTree = "<group>";
