@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ import io.iohk.cvp.utils.comparator.ConnectionInfoComparator;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
@@ -103,9 +105,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem paymentHistoryMenuItem;
-        paymentHistoryMenuItem = menu.findItem(R.id.action_new_connection);
-        paymentHistoryMenuItem.setVisible(true);
+        ActionBarUtils.setupMenu(menu);
     }
 
     @Override
@@ -294,10 +294,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_new_connection) {
-            navigator.showQrScanner(this);
-            return true;
-        }
+        ActionBarUtils.menuItemClicked(navigator, item,this);
         // If we got here, the user's action was not recognized.
         // Invoke the superclass to handle it.
         return super.onOptionsItemSelected(item);

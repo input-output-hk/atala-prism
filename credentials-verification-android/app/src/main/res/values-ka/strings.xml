@@ -223,5 +223,8 @@
   <string name="delete_all_data_body">Are your sure you want to\nreset data?</string>
   <string name="delete_all_data_title">Your contacts and credentials\nwill be deleted</string>
   <string name="please_reset_data">Please reset the data in the settings\nand reset the inactive city map.</string>
+  <string name="add_new"><u>Add new</u></string>
+  <string name="enter_connection_code">Enter connection code</string>
+  <string name="cancel">Cancel</string>
 
 </resources>

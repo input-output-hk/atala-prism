@@ -5,6 +5,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +24,7 @@ import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.prism.protos.ConnectionInfo;
@@ -89,6 +92,27 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
     @Override
     protected AppBarConfigurator getAppBarConfigurator() {
         return new RootAppBar(getTitleId());
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        ActionBarUtils.setupMenuQrOptional(menu, false);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (ActionBarUtils.menuItemClicked(navigator, item, this)) {
+            return true;
+        }
+        // If we got here, the user's action was not recognized.
+        // Invoke the superclass to handle it.
+        return super.onOptionsItemSelected(item);
     }
 
     @OnClick(R.id.scan_qr)

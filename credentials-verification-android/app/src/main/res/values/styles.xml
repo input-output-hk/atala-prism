@@ -26,6 +26,10 @@
 
     <item name="android:ambientShadowAlpha">0.05</item>
     <item name="android:spotShadowAlpha">0.05</item>
+
+    <!-- Style over text on toolbar-->
+    <item name="actionMenuTextColor">@color/grey_4</item>
+    <item name="android:textAllCaps">false</item>
   </style>
 
   <!-- Action bar theme. -->

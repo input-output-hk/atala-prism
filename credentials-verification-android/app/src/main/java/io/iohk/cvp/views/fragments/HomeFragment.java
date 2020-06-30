@@ -36,6 +36,7 @@ import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.NewCredentialsRecyclerViewAdapter;
@@ -160,7 +161,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
                         if (newMessages.isEmpty()) {
                             ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.FIRSTCONNECTION, null);
-                        }else{
+                        } else {
                             //SHOW QR BUTTON
                             setHasOptionsMenu(true);
                         }
@@ -220,18 +221,14 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem paymentHistoryMenuItem;
-        paymentHistoryMenuItem = menu.findItem(R.id.action_new_connection);
-        paymentHistoryMenuItem.setVisible(true);
+        ActionBarUtils.setupMenu(menu);
     }
 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_new_connection) {
-            navigator.showQrScanner(this);
+        if (ActionBarUtils.menuItemClicked(navigator, item, this))
             return true;
-        }
         // If we got here, the user's action was not recognized.
         // Invoke the superclass to handle it.
         return super.onOptionsItemSelected(item);

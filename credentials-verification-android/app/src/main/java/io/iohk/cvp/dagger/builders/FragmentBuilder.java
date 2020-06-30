@@ -12,6 +12,7 @@ import io.iohk.cvp.dagger.modules.PaymentsModule;
 import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.fragments.AboutFragment;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
+import io.iohk.cvp.views.fragments.AddQrCodeDialogFragment;
 import io.iohk.cvp.views.fragments.AlreadyConnectedDialogFragment;
 import io.iohk.cvp.views.fragments.BackendIpFragment;
 import io.iohk.cvp.views.fragments.ConnectionsListFragment;
@@ -117,4 +118,6 @@ public abstract class FragmentBuilder {
   @ContributesAndroidInjector
   abstract AlreadyConnectedDialogFragment alreadyConnectedDialogFragment();
 
+  @ContributesAndroidInjector
+  abstract AddQrCodeDialogFragment addQrCodeDialogFragment();
 }
