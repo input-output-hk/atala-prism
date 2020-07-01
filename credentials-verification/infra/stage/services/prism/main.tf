@@ -271,16 +271,6 @@ module "prism_service" {
   atala_prism_domain = var.atala_prism_domain
 }
 
-# public DNS record for the PRISM console
-resource aws_route53_record console_dns_entry {
-  count   = var.geud_enabled ? 1 : 0
-  zone_id = var.atala_prism_zoneid
-  name    = "console-${var.env_name_short}.${var.atala_prism_domain}"
-  type    = "CNAME"
-  ttl     = "300"
-  records = [module.prism_service.envoy_lb_dns_name]
-}
-
 // Monitoring config
 // NB: cloudwatch alarms and associated SNS topic MUST be in us-east-1
 // (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-checks.html)
@@ -341,7 +331,7 @@ data aws_acm_certificate cf-tls-cert {
 }
 
 resource aws_cloudfront_distribution intdemo_cf_dist {
-  count   = var.intdemo_enabled ? 1 : 0
+  count   = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
 
   origin {
     domain_name = module.prism_service.envoy_lb_dns_name
@@ -360,7 +350,7 @@ resource aws_cloudfront_distribution intdemo_cf_dist {
   comment             = "${var.env_name_short} Cloudfront distribution"
   default_root_object = "index.html"
 
-  aliases = ["${var.env_name_short}.${var.atala_prism_domain}", var.atala_prism_domain]
+  aliases = [var.atala_prism_domain]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -400,36 +390,52 @@ resource aws_cloudfront_distribution intdemo_cf_dist {
   }
 }
 
-# public DNS record for the intdemo
-resource aws_route53_record intdemo_dns_entry {
+# public DNS record for the loadbalancer/grpc proxy/other backend services
+# This points to <env>.atalaprism.io
+resource aws_route53_record grpc_dns_entry {
   count   = var.intdemo_enabled ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = "${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
   ttl     = "300"
-  records = [aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name]
-}
-
-# public DNS record for the grpc proxy
-resource aws_route53_record grpc_dns_entry {
-  count   = var.intdemo_enabled ? 1 : 0
-  zone_id = var.atala_prism_zoneid
-  name    = "grpc-${var.env_name_short}.${var.atala_prism_domain}"
-  type    = "CNAME"
-  ttl     = "300"
   records = [module.prism_service.envoy_lb_dns_name]
 }
 
-# public DNS record for the base domain (only used in www)
-data dns_a_record_set envoy_dns {
-  host = module.prism_service.envoy_lb_dns_name
+# Landing page DNS
+# for www/prod, use the bare domain atalaprism.io
+# for other envs, use landing-<env>.atalaprism.io
+
+# query A record for cloudfront domain
+data dns_a_record_set cf_dns {
+  host = aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name
 }
 
-resource aws_route53_record bare_domain_dns_entry {
+# create a matching one for atalaprism.io
+resource aws_route53_record domain_dns_entry {
   count   = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = var.atala_prism_domain
   type    = "A"
   ttl     = "300"
-  records = data.dns_a_record_set.envoy_dns.addrs
+  records = data.dns_a_record_set.cf_dns.addrs
+}
+
+# for other envs, create a landing-<env>.atalaprism.io CNAME entry
+resource aws_route53_record landing_dns_entry {
+  count   = var.intdemo_enabled && var.env_name_short != "www" ? 1 : 0
+  zone_id = var.atala_prism_zoneid
+  name    = "landing-${var.env_name_short}.${var.atala_prism_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [module.prism_service.envoy_lb_dns_name]
+}
+
+# public DNS record for the PRISM console
+resource aws_route53_record console_dns_entry {
+  count   = var.geud_enabled ? 1 : 0
+  zone_id = var.atala_prism_zoneid
+  name    = "console-${var.env_name_short}.${var.atala_prism_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [module.prism_service.envoy_lb_dns_name]
 }

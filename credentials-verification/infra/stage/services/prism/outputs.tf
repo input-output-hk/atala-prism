@@ -1,19 +1,19 @@
 locals {
-  intdemo_hostname = var.intdemo_enabled ? aws_route53_record.intdemo_dns_entry[0].name : ""
-  geud_hostname    = var.geud_enabled ? aws_route53_record.console_dns_entry[0].name : ""
-  hostname         = var.intdemo_enabled ? local.intdemo_hostname : (var.geud_enabled ? local.geud_hostname : module.prism_service.envoy_lb_dns_name)
+  backend_hostname = var.intdemo_enabled ? aws_route53_record.grpc_dns_entry[0].name : ""
+  landing_hostname = var.intdemo_enabled ? (var.env_name_short != "www" ? "landing-${var.env_name_short}.${var.atala_prism_domain}" : var.atala_prism_domain) : ""
+  geud_hostname    = var.geud_enabled ? "console-${var.env_name_short}.${var.atala_prism_domain}" : ""
 }
 
 output "command_to_test_connector" {
-  value = "grpcurl -import-path ../../../../protos/ -proto connector_api.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext ${local.hostname}:${var.connector_port} io.iohk.prism.protos.ConnectorService/GenerateConnectionToken"
+  value = "grpcurl -import-path ../../../../protos/ -proto connector_api.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext ${local.backend_hostname}:${var.connector_port} io.iohk.prism.protos.ConnectorService/GenerateConnectionToken"
 }
 
 output "command_to_test_envoy_proxy" {
-  value = "curl -ik -XOPTIONS -H'Host: ${var.env_name_short}.${var.atala_prism_domain}:4433' -H'Accept: */*' -H'Accept-Language: en-GB,en;q=0.5' -H'Accept-Encoding: gzip, deflate' -H'Access-Control-Request-Method: POST' -H'Access-Control-Request-Headers: content-type,userid,x-grpc-web,x-user-agent' -H'Referer: https://localhost:3000/connections' -H'Origin: https://localhost:3000' 'https://${local.hostname}:4433/io.iohk.prism.protos.ConnectorService/GenerateConnectionToken'"
+  value = "curl -ik -XOPTIONS -H'Host: ${local.backend_hostname}:4433' -H'Accept: */*' -H'Accept-Language: en-GB,en;q=0.5' -H'Accept-Encoding: gzip, deflate' -H'Access-Control-Request-Method: POST' -H'Access-Control-Request-Headers: content-type,userid,x-grpc-web,x-user-agent' -H'Referer: https://localhost:3000/connections' -H'Origin: https://localhost:3000' 'https://${local.backend_hostname}:4433/io.iohk.prism.protos.ConnectorService/GenerateConnectionToken'"
 }
 
 output "command_to_test_intdemo_web_app" {
-  value = var.intdemo_enabled ? "curl -ik 'https://${local.intdemo_hostname}'" : "Intdemo disabled"
+  value = var.intdemo_enabled ? "curl -ik 'https://${local.landing_hostname}'" : "Intdemo disabled"
 }
 
 output "command_to_test_geud_web_app" {
