@@ -104,7 +104,7 @@ const CredentialsContainer = ({
     const isIdCredential = currentCredential === GOVERNMENT_ISSUED_DIGITAL_IDENTITY;
     if (token && isIntroductionStep) initQRStep();
     if (token && isIntroductionStep && isIdCredential) setMapInitFirstStep(true);
-  }, [token, currentStep]);
+  }, [token]);
 
   useEffect(() => {
     const isSuccessStep = currentStep === SUCCESS_STEP;

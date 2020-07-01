@@ -25,9 +25,13 @@ import GetStarted from './Molecules/GetStarted/GetStarted';
 import FaqPanel from './Molecules/FaqPanel/FaqPanel';
 import ContactPanel from './Organisms/ContactPanel/ContactPanel';
 import UseCasesPanel from './Organisms/UseCasesPanel/UseCasesPanel';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 const Landing = () => {
   const { t } = useTranslation();
+
+  const [currentSection, setCurrentSection] = useState(null);
 
   const visionSection = useRef(null);
   const demoSection = useRef(null);
@@ -56,8 +60,12 @@ const Landing = () => {
   return (
     <div className="LandingContainer">
       <div className="LandingHeader">
-        <Header executeScroll={executeScroll} />
-        <div className="LadingHeaderContent">
+        <Header
+          executeScroll={executeScroll}
+          currentSection={currentSection}
+          setCurrent={key => setCurrentSection(key)}
+        />
+        <div className="LadingHeaderContent" onMouseOver={() => setCurrentSection(null)}>
           <div className="HeaderText">
             <h1>{t('landing.start.info')}</h1>
             <h3>{t('landing.start.subtitle')}</h3>
@@ -67,34 +75,34 @@ const Landing = () => {
           </div>
         </div>
       </div>
-      <div ref={visionSection}>
+      <div ref={visionSection} onMouseOver={() => setCurrentSection(VISION_NAME)}>
         <IntroSection />
+        <QuotesPanel />
       </div>
-      <QuotesPanel />
 
-      <div ref={demoSection}>
+      <div ref={demoSection} onMouseOver={() => setCurrentSection(DEMO_NAME)}>
         <FindCredential />
       </div>
 
-      <div ref={componentsSection}>
+      <div ref={componentsSection} onMouseOver={() => setCurrentSection(COMPONENTS_NAME)}>
         <CredentialSection />
       </div>
-      <div ref={benefitsSection}>
+      <div ref={benefitsSection} onMouseOver={() => setCurrentSection(BENEFITS_NAME)}>
         <TrustSection />
       </div>
-      <div ref={useCasesSection}>
+      <div ref={useCasesSection} onMouseOver={() => setCurrentSection(USE_CASES_NAME)}>
         <UseCasesPanel />
       </div>
-      <div ref={caseStudySection}>
+      <div ref={caseStudySection} onMouseOver={() => setCurrentSection(CASE_STUDY_NAME)}>
         <CaseStudy />
       </div>
-      <div ref={getStartedSection}>
+      <div ref={getStartedSection} onMouseOver={() => setCurrentSection(GET_STARTED_NAME)}>
         <GetStarted executeScroll={executeScroll} />
       </div>
-      <div ref={faqSection}>
+      <div ref={faqSection} onMouseOver={() => setCurrentSection(FAQ_NAME)}>
         <FaqPanel />
       </div>
-      <div ref={contactUsSection}>
+      <div ref={contactUsSection} onMouseOver={() => setCurrentSection(CONTACT_US_NAME)}>
         <ContactPanel />
       </div>
       <Footer executeScroll={executeScroll} />

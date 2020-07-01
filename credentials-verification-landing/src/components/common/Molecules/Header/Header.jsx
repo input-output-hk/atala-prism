@@ -7,10 +7,15 @@ import './_style.scss';
 const Header = props => {
   const { t } = useTranslation();
 
+  const handleClick = () => {
+    props.setCurrent(null);
+    scrollToTop();
+  };
+
   return (
     <div className="Header">
       <div className="Logo">
-        <button type="button" onClick={scrollToTop}>
+        <button type="button" onClick={handleClick}>
           <img src="images/atala-prism-logo-suite.svg" alt={t('atalaLogo')} />
         </button>
       </div>

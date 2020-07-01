@@ -17,10 +17,8 @@ import {
 
 import './_style.scss';
 
-const NavBar = ({ executeScroll }) => {
+const NavBar = ({ executeScroll, currentSection, setCurrent }) => {
   const { t } = useTranslation();
-
-  const [current, setCurrent] = useState('mail');
 
   const handleClick = ({ key }) => {
     setCurrent(key);
@@ -39,7 +37,7 @@ const NavBar = ({ executeScroll }) => {
   ];
 
   return (
-    <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal" className="ulMain">
+    <Menu onClick={handleClick} selectedKeys={[currentSection]} mode="horizontal" className="ulMain">
       {keys.map(key => (
         <Menu.Item key={key}>{t(`navBar.menuItems.${key}`)}</Menu.Item>
       ))}
