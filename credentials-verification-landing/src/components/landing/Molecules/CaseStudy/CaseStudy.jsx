@@ -11,7 +11,6 @@ const CaseStudy = () => {
       <div className="TextContainer">
         <div className="CaseStudyDescription">
         <h1>{t('landing.caseStudy.title')}</h1>
-        <h1>{t('landing.caseStudy.title2')}</h1>
         <p>{t('landing.caseStudy.part1')}</p>
         <p>{t('landing.caseStudy.part2')}</p>
         </div>

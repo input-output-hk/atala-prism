@@ -39,6 +39,18 @@ const FaqPanel = () => {
             <h3>{t('landing.faqPanel.titlefaq7')}</h3>
             <p>{t('landing.faqPanel.faq7')}</p>
           </div>
+          <div className="FaqItem">
+            <h3>{t('landing.faqPanel.titlefaq8')}</h3>
+            <p>{t('landing.faqPanel.faq8')}</p>
+          </div>
+          <div className="FaqItem">
+            <h3>{t('landing.faqPanel.titlefaq9')}</h3>
+            <p>{t('landing.faqPanel.faq9')}</p>
+          </div>
+          <div className="FaqItem">
+            <h3>{t('landing.faqPanel.titlefaq10')}</h3>
+            <p>{t('landing.faqPanel.faq10')}</p>
+          </div>
         </div>
       </div>
     </div>
