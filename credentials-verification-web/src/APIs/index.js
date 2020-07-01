@@ -13,7 +13,7 @@ export { mockApi };
 function getIndividuals(issuer) {
   const functionByRole = issuer
     ? this.subjectsManager.getSubjectsAsIssuer.bind(this.subjectsManager)
-    : this.credentialStore.getIndividualsAsVerifier.bind(this.credentialStore);
+    : this.credentialStore.getHoldersAsVerifier.bind(this.credentialStore);
 
   return (limit, lastSeenId) => functionByRole(lastSeenId, limit);
 }
@@ -21,7 +21,7 @@ function getIndividuals(issuer) {
 function generateConnectionToken(issuer) {
   const functionByRole = issuer
     ? this.subjectsManager.generateConnectionTokenAsIssuer.bind(this.subjectsManager)
-    : this.credentialStore.generateConnectionTokenForIndividual.bind(this.credentialStore);
+    : this.credentialStore.generateConnectionTokenForHolder.bind(this.credentialStore);
 
   return id => functionByRole(id);
 }

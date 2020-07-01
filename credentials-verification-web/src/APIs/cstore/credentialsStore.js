@@ -1,30 +1,32 @@
 import { CredentialsStoreServicePromiseClient } from '../../protos/cstore_api_grpc_web_pb';
+import { holderToIndividual } from '../helpers';
 import Logger from '../../helpers/Logger';
 
 const {
   GenerateConnectionTokenForRequest,
-  GetIndividualsRequest,
-  CreateIndividualRequest
+  GetHoldersRequest,
+  CreateHolderRequest
 } = require('../../../src/protos/cstore_api_pb');
 
-async function getIndividuals(lastSeenId, limit = 10) {
-  Logger.info(`Getting individuals limit ${limit}, lastSeenId ${lastSeenId}`);
-  const getIndividualsRequest = new GetIndividualsRequest();
-  getIndividualsRequest.setLimit(limit);
-  if (lastSeenId) getIndividualsRequest.setLastseenindividualid(lastSeenId);
+async function getHolders(lastSeenId, limit = 10) {
+  Logger.info(`Getting holders limit ${limit}, lastSeenId ${lastSeenId}`);
+  const getHoldersRequest = new GetHoldersRequest();
+  getHoldersRequest.setLimit(limit);
+  if (lastSeenId) getHoldersRequest.setLastseenholderid(lastSeenId);
 
-  const metadata = await this.auth.getMetadata(getIndividualsRequest);
+  const metadata = await this.auth.getMetadata(getHoldersRequest);
 
-  const response = await this.client.getIndividuals(getIndividualsRequest, metadata);
-  const { individualsList } = response.toObject();
+  const response = await this.client.getHolders(getHoldersRequest, metadata);
+  const { holdersList } = response.toObject();
 
-  return individualsList;
+  return holdersList.map(holderToIndividual);
 }
 
-async function generateConnectionTokenForIndividual(individualId) {
-  Logger.info(`Generating connection token for individualId ${individualId}`);
+async function generateConnectionTokenForHolder(holderId) {
+  Logger.info(`Generating connection token for holderId ${holderId}`);
   const request = new GenerateConnectionTokenForRequest();
-  request.setIndividualid(individualId);
+  // TODO: rename to holderid when teh API changes
+  request.setIndividualid(holderId);
 
   const metadata = await this.auth.getMetadata(request);
 
@@ -33,17 +35,16 @@ async function generateConnectionTokenForIndividual(individualId) {
   return res.getToken();
 }
 
-async function createIndividual(fullName, email) {
-  const request = new CreateIndividualRequest();
+async function createHolder(fullname, email) {
+  const request = new CreateHolderRequest();
 
-  request.setFullname(fullName);
-  request.setEmail(email);
+  request.setJsondata(JSON.stringify({ fullname, email }));
 
   const metadata = await this.auth.getMetadata(request);
 
-  const individual = await this.client.createIndividual(request, metadata);
+  const { holder } = (await this.client.createHolder(request, metadata)).toObject();
 
-  return individual.toObject();
+  return holderToIndividual(holder);
 }
 
 function CredentialsStore(config, auth) {
@@ -52,8 +53,8 @@ function CredentialsStore(config, auth) {
   this.client = new CredentialsStoreServicePromiseClient(this.config.grpcClient, null, null);
 }
 
-CredentialsStore.prototype.getIndividualsAsVerifier = getIndividuals;
-CredentialsStore.prototype.generateConnectionTokenForIndividual = generateConnectionTokenForIndividual;
-CredentialsStore.prototype.createIndividual = createIndividual;
+CredentialsStore.prototype.getHoldersAsVerifier = getHolders;
+CredentialsStore.prototype.generateConnectionTokenForHolder = generateConnectionTokenForHolder;
+CredentialsStore.prototype.createHolder = createHolder;
 
 export default CredentialsStore;
