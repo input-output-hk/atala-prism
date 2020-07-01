@@ -1,6 +1,6 @@
 locals {
   backend_hostname = var.intdemo_enabled ? aws_route53_record.grpc_dns_entry[0].name : ""
-  landing_hostname = var.intdemo_enabled ? (var.env_name_short != "www" ? "landing-${var.env_name_short}.${var.atala_prism_domain}" : var.atala_prism_domain) : ""
+  landing_hostname = var.intdemo_enabled ? (var.env_name_short != "www" ? "${var.env_name_short}.${var.atala_prism_domain}" : var.atala_prism_domain) : ""
   geud_hostname    = var.geud_enabled ? "console-${var.env_name_short}.${var.atala_prism_domain}" : ""
 }
 

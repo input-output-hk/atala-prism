@@ -403,10 +403,9 @@ resource aws_route53_record grpc_dns_entry {
 
 # Landing page DNS
 # for www/prod, use the bare domain atalaprism.io
-# for other envs, use landing-<env>.atalaprism.io
-
 # query A record for cloudfront domain
 data dns_a_record_set cf_dns {
+  count = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
   host = aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name
 }
 
@@ -417,17 +416,7 @@ resource aws_route53_record domain_dns_entry {
   name    = var.atala_prism_domain
   type    = "A"
   ttl     = "300"
-  records = data.dns_a_record_set.cf_dns.addrs
-}
-
-# for other envs, create a landing-<env>.atalaprism.io CNAME entry
-resource aws_route53_record landing_dns_entry {
-  count   = var.intdemo_enabled && var.env_name_short != "www" ? 1 : 0
-  zone_id = var.atala_prism_zoneid
-  name    = "landing-${var.env_name_short}.${var.atala_prism_domain}"
-  type    = "CNAME"
-  ttl     = "300"
-  records = [module.prism_service.envoy_lb_dns_name]
+  records = data.dns_a_record_set.cf_dns[0].addrs
 }
 
 # public DNS record for the PRISM console
