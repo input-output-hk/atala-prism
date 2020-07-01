@@ -1,21 +1,6 @@
 @import '../../../../css/general_styling';
 
-//Acá piso estilos de Antd del menú
-
-.ant-menu {
-  background-color: transparent;
-  color: $dark-grey;
-  border-bottom: transparent;
-  @include primary-text($body, $dark-grey);
-  -webkit-transition: 500ms ease-out;
-  -moz-transition: 500ms ease-out;
-  -o-transition: 500ms ease-out;
-}
-
-.ant-menu-item,
-.ant-menu-submenu-title {
-  padding: 0 15px;
-}
+// Change Antd Menu Styles
 
 .ant-menu-horizontal > .ant-menu-item:hover {
   border-bottom: 2px solid transparent;
@@ -40,11 +25,29 @@
   color: $black;
 }
 
-.ant-menu-submenu-popup {
-  background-color: transparent;
+@media only screen and (min-width: 1081px) {
+  .ant-menu {
+    background-color: transparent;
+    color: $dark-grey;
+    border-bottom: transparent;
+    @include primary-text($body, $dark-grey);
+    -webkit-transition: 500ms ease-out;
+    -moz-transition: 500ms ease-out;
+    -o-transition: 500ms ease-out;
+    width: 920px;
+  }
+
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    padding: 0 15px;
+  }
+
+  .ant-menu-submenu-popup {
+    background-color: transparent;
+  }
 }
 
-@media only screen and (max-width: 1024px) {
+@media only screen and (max-width: 1080px) {
   .ulMain {
     width: 24px;
     background-image: url(../../../../images/icon-menu.svg);
@@ -52,7 +55,11 @@
     background-position: center center;
   }
 
-  .ant-menu-submenu > .ant-menu{
+  .ant-menu-horizontal{
+    border-bottom: none;
+  }
+
+  .ant-menu-submenu > .ant-menu {
     padding-bottom: 1em;
   }
 
