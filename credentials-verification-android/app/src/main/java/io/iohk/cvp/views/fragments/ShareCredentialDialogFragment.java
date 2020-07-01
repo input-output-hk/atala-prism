@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
@@ -19,6 +21,8 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -112,10 +116,36 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
                     adapter.notifyDataSetChanged();
                 });
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Crashlytics.logException(e);
         }
+
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        liveData = viewModel.getMessageLiveData();
+
+        if (liveData.hasActiveObservers()) {
+            return;
+        }
+        liveData.observe(getViewLifecycleOwner(), response -> {
+            FragmentManager fm = getFragmentManager();
+            if (response.getError() != null) {
+                SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
+                        .show(fm, "");
+                getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                        R.string.server_error_message));
+            } else {
+                SuccessDialog.newInstance(this, R.string.server_share_successfully)
+                        .show(getActivity().getSupportFragmentManager(), "dialog");
+                getFragmentManager().popBackStack();
+            }
+
+        });
+
     }
 
     @OnClick(R.id.background)
@@ -153,31 +183,11 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
                         new SharedPrefencesDataNotFoundException(
                                 "Couldn't find user id for connection id " + connectionId,
                                 ErrorCode.USER_ID_NOT_FOUND));
-
-                liveData = viewModel.sendMessage(userId, connectionId,
-                        Credential.parseFrom(getArguments().getByteArray(CREDENTIAL_DATA_KEY)).toByteString());
-
-                if (!liveData.hasActiveObservers()) {
-                    liveData.observe(this, response -> {
-                        FragmentManager fm = getFragmentManager();
-                        if (response.getError() != null) {
-                            SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
-                                    .show(fm, "");
-                            getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                                    R.string.server_error_message));
-                            return;
-                        } else {
-                            SuccessDialog.newInstance(this, R.string.server_share_successfully)
-                                    .show(getFragmentManager(), "dialog");
-                        }
-                    });
-                }
-
+                viewModel.sendMultipleMessage(userId, connectionId, Collections.singletonList(Credential.parseFrom(getArguments().getByteArray(CREDENTIAL_DATA_KEY))));
             } catch (Exception e) {
                 Crashlytics.logException(e);
             }
         });
-        onBackgroundClick();
     }
 
     public void updateSelectedVerifiers(String connectionId, Boolean isSelected) {

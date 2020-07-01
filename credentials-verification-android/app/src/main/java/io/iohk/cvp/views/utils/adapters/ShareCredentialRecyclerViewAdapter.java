@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.crashlytics.android.Crashlytics;
+
 import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -94,10 +96,14 @@ public class ShareCredentialRecyclerViewAdapter extends
 
         void setConnectionInfo(ConnectionListable connectionInfo) {
             this.connectionInfo = connectionInfo;
-            verifierName.setText(connectionInfo.getIssuerName());
-            if (connectionInfo.getVerifierLogo().length > 0) {
-                verifierLogo.setImageBitmap(
-                        ImageUtils.getBitmapFromByteArray(connectionInfo.getVerifierLogo()));
+            verifierName.setText(connectionInfo.getName());
+            try {
+                if (connectionInfo.getLogo().length > 0) {
+                    verifierLogo.setImageBitmap(
+                            ImageUtils.getBitmapFromByteArray(connectionInfo.getLogo()));
+                }
+            } catch (Exception e) {
+                Crashlytics.logException(e);
             }
             setBackground();
         }

@@ -51,7 +51,7 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
                 ConnectorServiceGrpc.ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
                 try {
                     A result = grpcRunnable.run(blockingStub, stub, params).getResult();
-                    if(result instanceof List){
+                    if (result instanceof List) {
                         returnList.addAll((List) result);
                     } else {
                         returnList.add(result);
@@ -94,7 +94,7 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
                 return null;
             }
             return (Set<String>) params[0];
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
