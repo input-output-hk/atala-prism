@@ -29,7 +29,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const formRef = React.createRef();
 
   const saveCredential = async () => {
-    const students = await api.studentsManager.getAllStudents(group.name);
+    const students = await api.subjectsManager.getAllSubjects(group.name);
     api.credentialsManager
       .createCredential({
         title: degreeName,
@@ -172,7 +172,7 @@ NewCredentialContainer.propTypes = {
     saveDraft: PropTypes.func,
     getGroups: PropTypes.func,
     credentialsManager: PropTypes.shape({ createCredential: PropTypes.func }).isRequired,
-    studentsManager: PropTypes.shape({ getAllStudents: PropTypes.func }).isRequired
+    subjectsManager: PropTypes.shape({ getAllSubjects: PropTypes.func }).isRequired
   }).isRequired,
   redirector: PropTypes.shape({
     redirectToCredentials: PropTypes.func

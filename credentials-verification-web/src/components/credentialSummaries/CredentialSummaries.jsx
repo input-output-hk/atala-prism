@@ -15,7 +15,7 @@ import './_style.scss';
 
 const CredentialSummaries = ({
   credentialSummaries,
-  getStudentCredentials,
+  getSubjectCredentials,
   getCredentialSummaries,
   noSummaries,
   hasMore
@@ -38,7 +38,7 @@ const CredentialSummaries = ({
   };
 
   const viewSummary = summary => {
-    getStudentCredentials(summary.id)
+    getSubjectCredentials(summary.id)
       .then(credentials => setCurrentCredentialSummary({ ...summary, credentials }))
       .catch(() => {
         message.error(t('errors.errorGetting', { model: 'Credentials' }));
@@ -86,7 +86,7 @@ CredentialSummaries.defaultProps = {
 
 CredentialSummaries.propTypes = {
   credentialSummaries: PropTypes.arrayOf(credentialSummaryShape),
-  getStudentCredentials: PropTypes.func.isRequired,
+  getSubjectCredentials: PropTypes.func.isRequired,
   getCredentialSummaries: PropTypes.func.isRequired,
   noSummaries: PropTypes.bool.isRequired,
   hasMore: PropTypes.bool.isRequired

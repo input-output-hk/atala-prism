@@ -3,7 +3,7 @@ import { mockApi } from './__mocks__';
 import Connector from './connector/connector';
 import Wallet from './wallet/wallet';
 import CredentialsManager from './credentials/credentialsManager';
-import StudentsManager from './credentials/studentsManager';
+import SubjectsManager from './credentials/subjectsManager';
 import GroupsManager from './credentials/groupsManager';
 import CredentialsStore from './cstore/credentialsStore';
 import Admin from './admin/admin';
@@ -12,7 +12,7 @@ export { mockApi };
 
 function getIndividuals(issuer) {
   const functionByRole = issuer
-    ? this.studentsManager.getIndividualsAsIssuer.bind(this.studentsManager)
+    ? this.subjectsManager.getSubjectsAsIssuer.bind(this.subjectsManager)
     : this.credentialStore.getIndividualsAsVerifier.bind(this.credentialStore);
 
   return (limit, lastSeenId) => functionByRole(lastSeenId, limit);
@@ -20,7 +20,7 @@ function getIndividuals(issuer) {
 
 function generateConnectionToken(issuer) {
   const functionByRole = issuer
-    ? this.studentsManager.generateConnectionTokenAsIssuer.bind(this.studentsManager)
+    ? this.subjectsManager.generateConnectionTokenAsIssuer.bind(this.subjectsManager)
     : this.credentialStore.generateConnectionTokenForIndividual.bind(this.credentialStore);
 
   return id => functionByRole(id);
@@ -43,7 +43,7 @@ function Api(configuration, authenticator) {
   this.wallet = new Wallet(this.configuration);
   this.authenticator = new authenticator(this.configuration, this.wallet);
   this.credentialStore = new CredentialsStore(this.configuration, this.authenticator);
-  this.studentsManager = new StudentsManager(this.configuration, this.authenticator);
+  this.subjectsManager = new SubjectsManager(this.configuration, this.authenticator);
   this.groupsManager = new GroupsManager(this.configuration, this.authenticator);
   this.connector = new Connector(this.configuration, this.authenticator);
   this.credentialsManager = new CredentialsManager(this.configuration, this.authenticator);

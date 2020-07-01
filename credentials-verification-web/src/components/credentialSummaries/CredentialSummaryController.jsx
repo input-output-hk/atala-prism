@@ -31,8 +31,8 @@ const CredentialSummaryController = ({ api }) => {
 
     setNoSummaries(!id && !_date && !_name);
 
-    return api.studentsManager
-      .getIndividualsAsIssuer(userId, id)
+    return api.subjectsManager
+      .getSubjectsAsIssuer(userId, id)
       .then(summariesResponse => {
         const parsedSummaries = summariesResponse
           .filter(({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED)
@@ -66,12 +66,12 @@ const CredentialSummaryController = ({ api }) => {
     if (hasMore && !credentialSummaries.length) getCredentialSummaries();
   }, [hasMore, credentialSummaries]);
 
-  const getStudentCredentials = studentId => api.studentsManager.getStudentCredentials(studentId);
+  const getSubjectCredentials = studentId => api.subjectsManager.getSubjectCredentials(studentId);
 
   const credentialSummariesProps = {
     getCredentialSummaries,
     credentialSummaries,
-    getStudentCredentials,
+    getSubjectCredentials,
     hasMore,
     noSummaries
   };
@@ -81,9 +81,9 @@ const CredentialSummaryController = ({ api }) => {
 
 CredentialSummaryController.propTypes = {
   api: PropTypes.shape({
-    studentsManager: PropTypes.shape({
-      getStudentCredentials: PropTypes.func,
-      getIndividualsAsIssuer: PropTypes.func
+    subjectsManager: PropTypes.shape({
+      getSubjectCredentials: PropTypes.func,
+      getSubjectsAsIssuer: PropTypes.func
     }).isRequired,
     getConnections: PropTypes.func
   }).isRequired

@@ -14,7 +14,7 @@ function verify_protos {
   # Clean up on exit
   trap 'rm -rf ${PROTO_DIR} && mv ${OLD_PROTO_DIR} ${PROTO_DIR}' EXIT
   # Exit if there is a diff
-  if [[ $(diff -qr ${PROTO_DIR} ${OLD_PROTO_DIR}) ]] ; then
+  if ! diff -qr ${PROTO_DIR} ${OLD_PROTO_DIR} ; then
     echo "JavaScript proto files need to be updated, please run ${PROTO_UPDATE}"
     exit 1
   fi

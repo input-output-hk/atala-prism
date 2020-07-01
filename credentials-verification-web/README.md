@@ -62,3 +62,10 @@ For development purposes copy `.env` file to `.env.local`. This file is excluded
 You should avoid destructuring or `...` operator with Api object in components. As I noticed, when using such features combined with `function` and `prototype` it produces to loose "this" context. 
 
 In some components, you should also find some functions wrapped in other functions that look as unnecessary. This is a hack to preserve "this" context.
+
+## scripts
+
+- [compile-protos.sh](./scripts/compile-protos.sh): Compile the js bindings for the gRPC API.
+- [nukestate.sh](./scripts/nukestate.sh): Used to reset the application state (to start over with a new database). This does not reset the browser's state, you must do that by deleting all the entries in its localstorage.
+To run it, you must shut down the node, wallet and connector first.
+*warning*: It'll `stop` and `rm` any container for which `docker ps` matches `\bpostgres\b`

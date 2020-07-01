@@ -40,7 +40,7 @@ const CredentialContainer = ({ api }) => {
   const issueCredential = async credential => {
     const { subjectId } = credential;
     try {
-      const student = await api.studentsManager.getStudentById(subjectId);
+      const student = await api.subjectsManager.getSubjectById(subjectId);
       const did = await api.wallet.getDid();
       const credentialBinary = await api.credentialsManager.getCredentialBinary(
         credential,
@@ -125,7 +125,7 @@ const CredentialContainer = ({ api }) => {
 
 CredentialContainer.propTypes = {
   api: PropTypes.shape({
-    studentsManager: PropTypes.shape({ getStudentById: PropTypes.func.isRequired }).isRequired,
+    subjectsManager: PropTypes.shape({ getSubjectById: PropTypes.func.isRequired }).isRequired,
     credentialsManager: PropTypes.shape({
       getCredentialBinary: PropTypes.func.isRequired,
       getCredentials: PropTypes.func.isRequired

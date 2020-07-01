@@ -110,12 +110,11 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
     if (invalidFieldos.length) return;
 
     const creationPromises = students.map(({ fullName, email, studentId, admissionDate }) =>
-      api.studentsManager.createStudent({
-        studentId,
-        fullName,
+      api.subjectsManager.createSubject(group, {
+        studentid: studentId,
+        fullname: fullName,
         email,
-        admissionDate: fromMomentToProtoDateFormatter(admissionDate),
-        groupName: group
+        admissiondate: fromMomentToProtoDateFormatter(admissionDate)
       })
     );
 
@@ -152,7 +151,7 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
 
 StudentCreationContainer.propTypes = {
   api: PropTypes.shape({
-    studentsManager: PropTypes.shape({ createStudent: PropTypes.func }).isRequired,
+    subjectsManager: PropTypes.shape({ createSubject: PropTypes.func }).isRequired,
     groupsManager: PropTypes.shape({ getGroups: PropTypes.func }).isRequired
   }).isRequired,
   redirector: PropTypes.shape({ redirectToConnections: PropTypes.func }).isRequired
