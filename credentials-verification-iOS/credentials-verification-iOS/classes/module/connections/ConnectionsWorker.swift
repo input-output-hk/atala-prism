@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftGRPC
 
 protocol ConnectionsWorkerDelegate: class {
 
@@ -86,9 +87,14 @@ class ConnectionsWorker: NSObject {
                                                      title: self.connectionRequest!.info?.name,
                                                      logoData: self.connectionRequest?.info?.logoData)
             }
-        }, error: { _ in
+        }, error: { error in
+            var msg = "service_error".localize()
+            if let err = error as? RPCError,
+                err.callResult?.statusMessage?.contains("Unknown token") ?? false {
+                msg = "connections_scan_qr_error".localize()
+            }
             self.delegate?.config(isLoading: false)
-            self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize())
+            self.delegate?.showErrorMessage(doShow: true, message: msg)
         })
     }
 

@@ -11,7 +11,9 @@ class ApiService: NSObject {
     // MARK: Service
 
     lazy var service: Io_Iohk_Prism_Protos_ConnectorServiceServiceClient = {
-        Io_Iohk_Prism_Protos_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
+        let serv = Io_Iohk_Prism_Protos_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
+        serv.channel.timeout = 10
+        return serv
     }()
 
     func makeMeta(_ userId: String? = nil) -> Metadata {
