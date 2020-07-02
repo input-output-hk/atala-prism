@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "777420890876",
+    "firebase_url": "https://atala-test.firebaseio.com",
+    "project_id": "atala-test",
+    "storage_bucket": "atala-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777420890876:android:96ccca17c87e4b80772d79",
+        "android_client_info": {
+          "package_name": "io.iohk.cvp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "777420890876-fed6k9i43endp1akm1qn0naoahmslf0f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3DdUZbBnRmD2UTIMOQG94oukRPc5U7rg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "777420890876-fed6k9i43endp1akm1qn0naoahmslf0f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "777420890876-34htb9jr4p13h71hcd2argjst5m4av2c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.iohk.cvp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
