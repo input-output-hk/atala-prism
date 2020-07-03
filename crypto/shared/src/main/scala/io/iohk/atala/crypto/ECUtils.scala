@@ -26,9 +26,8 @@ object ECUtils {
   }
 
   private def byteToHex(b: Byte): String = {
-    // Truncation is needed because ScalaJS will return negative values prefixed with "ffffff"
-    val str = "%02x".format(b)
-    str.substring(str.length - 2, str.length)
+    // Ensure only the last byte is used for formatting (needed in JavaScript)
+    "%02x".format(b & 0xff)
   }
 
   def toUnsignedByteArray(src: BigInt): Array[Byte] = {
