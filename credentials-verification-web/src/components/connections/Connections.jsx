@@ -21,7 +21,8 @@ const Connections = ({
   tableProps,
   inviteHolder,
   isIssuer,
-  handleHoldersRequest
+  handleHoldersRequest,
+  refreshConnections
 }) => {
   const { t } = useTranslation();
 
@@ -67,6 +68,11 @@ const Connections = ({
       .catch(() => message.error(t('errors.errorGetting', { model: 'Credentials' })));
   };
 
+  const onQRClosed = () => {
+    showQRModal(false);
+    refreshConnections();
+  };
+
   return (
     <div className="Wrapper">
       <Drawer
@@ -97,7 +103,7 @@ const Connections = ({
       )}
       <QRModal
         visible={QRModalIsOpen}
-        onCancel={() => showQRModal(false)}
+        onCancel={onQRClosed}
         qrValue={connectionToken}
         tPrefix="connections"
       />
@@ -114,7 +120,8 @@ Connections.propTypes = {
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired,
+  refreshConnections: PropTypes.func.isRequired
 };
 
 export default withRedirector(Connections);
