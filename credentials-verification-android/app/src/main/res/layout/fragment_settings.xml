@@ -66,6 +66,7 @@
             android:layout_marginStart="@dimen/activity_default_side_margin"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="@dimen/activity_default_side_margin"
+            app:isAvailable="true"
             app:actionImage="@drawable/arrow_right_grey"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

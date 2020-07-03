@@ -19,6 +19,7 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -100,10 +101,9 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
     connectionsActivityViewModel.setContext(getContext());
   }
 
-  // Disable for the time being
   @OnClick(R.id.support)
   void onSupportClick() {
-//    navigator.showWebView(Objects.requireNonNull(this.getActivity()));
+    navigator.showWebView(Objects.requireNonNull(this.getActivity()));
   }
 
   @OnClick(R.id.backend_ip)

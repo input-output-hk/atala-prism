@@ -22,7 +22,7 @@ public class WebViewActivity extends AppCompatActivity {
     webView = findViewById(R.id.web_view);
     webView.getSettings().setJavaScriptEnabled(true);
     webView.setWebViewClient(new WebViewClient());
-    webView.loadUrl("https://www.zendesk.com/");
+    webView.loadUrl("https://iohk.zendesk.com/hc/en-us/requests/new");
 
   }
 
