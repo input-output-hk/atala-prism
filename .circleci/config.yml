@@ -46,6 +46,36 @@ commands:
               chmod +x $archive
               sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
 
+  install-coursier:
+    description: "Install coursier"
+    steps:
+      - run:
+          name: "Install coursier"
+          command: curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
+
+  install-scalafmt:
+    description: "Install scalafmt"
+    parameters:
+      version:
+        type: string
+        default: "2.5.0-RC2"
+    steps:
+      - run:
+          name: "Install scalafmt"
+          command: |
+            ./coursier bootstrap \
+                org.scalameta:scalafmt-cli_<< pipeline.parameters.scala-version >>:<< parameters.version >> \
+                -r bintray:scalameta/maven \
+                -o scalafmt \
+                --main org.scalafmt.cli.Cli
+
+  scalafmt-test:
+    description: "Test Scala code is properly formatted"
+    steps:
+      - run:
+          name: "Test Scala code is properly formatted"
+          command: ./scalafmt --test
+
 jobs:
   deploy-ecr-images:
     docker:
@@ -194,17 +224,11 @@ jobs:
             - cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
             - cv-cache-v1-
 
-      - run:
-          name: install coursier
-          command: curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
+      - install-coursier
 
-      - run:
-          name: install scalafmt
-          command: ./coursier bootstrap org.scalameta:scalafmt-cli_2.12:2.5.0-RC2 -r bintray:scalameta/maven -o scalafmt --main org.scalafmt.cli.Cli
+      - install-scalafmt
 
-      - run:
-          name: check that the code is formatted properly
-          command: ./scalafmt --test
+      - scalafmt-test
 
       - run:
           name: Configure AWS
@@ -319,6 +343,12 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - webextension-cache-v1-
 
+      - install-coursier
+
+      - install-scalafmt
+
+      - scalafmt-test
+
       - run:
           name: Compile extension and its tests
           command: cd credentials-verification-webextension && sbt test:compile
@@ -362,6 +392,12 @@ jobs:
             - crypto-cache-v1-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
             # fallback to using the latest cache if no exact match is found
             - crypto-cache-v1-
+
+      - install-coursier
+
+      - install-scalafmt
+
+      - scalafmt-test
 
       - run:
           name: Compile crypto and its tests
