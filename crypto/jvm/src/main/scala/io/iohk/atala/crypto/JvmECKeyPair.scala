@@ -1,7 +1,8 @@
 package io.iohk.atala.crypto
 
-import java.security.{Key => JavaKey, KeyPair => JavaKeyPair, PrivateKey => JavaPrivateKey, PublicKey => JavaPublicKey}
-import javax.xml.bind.DatatypeConverter
+import java.security.{KeyPair => JavaKeyPair, PrivateKey => JavaPrivateKey, PublicKey => JavaPublicKey}
+
+import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPublicKey}
 
 private[crypto] class JvmECKeyPair(val privateKey: JvmECPrivateKey, val publicKey: JvmECPublicKey) extends ECKeyPair {
   override def getPrivateKey: ECPrivateKey = privateKey
@@ -9,18 +10,26 @@ private[crypto] class JvmECKeyPair(val privateKey: JvmECPrivateKey, val publicKe
   override def getPublicKey: ECPublicKey = publicKey
 }
 
-object JvmECKeyPair {
+private[crypto] object JvmECKeyPair {
   def apply(keyPair: JavaKeyPair): JvmECKeyPair = {
     new JvmECKeyPair(new JvmECPrivateKey(keyPair.getPrivate), new JvmECPublicKey(keyPair.getPublic))
   }
 }
 
-private class JvmECKey(private val key: JavaKey) extends ECKey {
-  override def getEncoded: Array[Byte] = key.getEncoded
-
-  override def getHexEncoded: String = DatatypeConverter.printHexBinary(getEncoded)
+private[crypto] class JvmECPrivateKey(val key: JavaPrivateKey) extends ECPrivateKey {
+  override def getD: BigInt = {
+    key match {
+      case k: BCECPrivateKey => k.getD
+    }
+  }
 }
 
-private class JvmECPrivateKey(private val key: JavaPrivateKey) extends JvmECKey(key) with ECPrivateKey {}
-
-private class JvmECPublicKey(private val key: JavaPublicKey) extends JvmECKey(key) with ECPublicKey {}
+private[crypto] class JvmECPublicKey(val key: JavaPublicKey) extends ECPublicKey {
+  override def getCurvePoint: ECPoint = {
+    key match {
+      case k: BCECPublicKey =>
+        val point = k.getW
+        ECPoint(point.getAffineX, point.getAffineY)
+    }
+  }
+}

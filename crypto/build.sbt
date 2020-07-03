@@ -1,4 +1,5 @@
 resolvers += Resolver.sonatypeRepo("releases")
+resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 enablePlugins(GitVersioning)
@@ -38,12 +39,13 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test
   )
   .jvmSettings(
+    Test / fork := true, // Avoid classloader issues during testing with `sbt ~test`
     libraryDependencies ++= Seq(
       "org.bouncycastle" % "bcpkix-jdk15on" % bouncycastle,
       "org.bouncycastle" % "bcprov-jdk15on" % bouncycastle
     )
   )
-  .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin))
+  .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
   .jsSettings(
-    npmDependencies in Test ++= Seq("elliptic" -> "6.5.2")
+    npmDependencies in Test ++= Seq("elliptic" -> "6.5.2", "hash.js" -> "1.1.7")
   )

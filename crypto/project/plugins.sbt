@@ -1,3 +1,7 @@
+resolvers += Resolver.bintrayRepo("oyvindberg", "converter")
+
+addSbtPlugin("org.scalablytyped.converter" % "sbt-converter" % "1.0.0-beta12")
+
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.0.1")
 
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")

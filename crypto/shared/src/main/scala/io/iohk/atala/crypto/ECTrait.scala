@@ -1,5 +1,7 @@
 package io.iohk.atala.crypto
 
+import io.iohk.atala.crypto.ECUtils.toBigInt
+
 /**
   * Trait that implements all shared behavior between js/EC and jvm/EC.
   *
@@ -7,12 +9,85 @@ package io.iohk.atala.crypto
   * downstream cross-compiled projects to work seamlessly.
   */
 private[crypto] trait ECTrait {
-  protected val CURVE_NAME = "secp256k1"
 
   /**
     * Generates a P-256k/secp256k1/prime256v1 key-pair.
     */
   def generateKeyPair(): ECKeyPair
 
-  // TODO: Define more behavior.
+  /**
+    * Returns the private key represented by the given byte array.
+    */
+  def toPrivateKey(d: Array[Byte]): ECPrivateKey = {
+    toPrivateKey(toBigInt(d))
+  }
+
+  /**
+    * Returns the private key represented by the given number.
+    */
+  def toPrivateKey(d: BigInt): ECPrivateKey
+
+  /**
+    * Returns the public key represented by the given encoded byte array.
+    */
+  def toPublicKey(encoded: Array[Byte]): ECPublicKey = {
+    val expectedLength = 1 + 2 * ECConfig.CURVE_FIELD_BYTE_SIZE
+    require(
+      encoded.length == expectedLength,
+      s"Encoded byte array's expected length is $expectedLength, but got ${encoded.length}"
+    )
+    require(encoded(0) == 4, s"First byte was expected to be 4, but got ${encoded(0)}")
+
+    val xBytes = encoded.slice(1, 1 + ECConfig.CURVE_FIELD_BYTE_SIZE)
+    val yBytes = encoded.slice(1 + ECConfig.CURVE_FIELD_BYTE_SIZE, encoded.length)
+    toPublicKey(xBytes, yBytes)
+  }
+
+  /**
+    * Returns the public key represented by the given coordinates as byte arrays.
+    */
+  def toPublicKey(x: Array[Byte], y: Array[Byte]): ECPublicKey = {
+    toPublicKey(toBigInt(x), toBigInt(y))
+  }
+
+  /**
+    * Returns the public key represented by the given coordinates.
+    */
+  def toPublicKey(x: BigInt, y: BigInt): ECPublicKey
+
+  /**
+    * Returns the public key represented by the given private key's `D` as byte array.
+    */
+  def toPublicKeyFromPrivateKey(d: Array[Byte]): ECPublicKey = {
+    toPublicKeyFromPrivateKey(toBigInt(d))
+  }
+
+  /**
+    * Returns the public key represented by the given private key's `D` as number.
+    */
+  def toPublicKeyFromPrivateKey(d: BigInt): ECPublicKey
+
+  /**
+    * Signs the given text with the given private key.
+    */
+  def sign(text: String, privateKey: ECPrivateKey): ECSignature = {
+    sign(text.getBytes("UTF-8"), privateKey)
+  }
+
+  /**
+    * Signs the given data with the given private key.
+    */
+  def sign(data: Array[Byte], privateKey: ECPrivateKey): ECSignature
+
+  /**
+    * Verifies whether the given text matches the given signature with the given public key.
+    */
+  def verify(text: String, publicKey: ECPublicKey, signature: ECSignature): Boolean = {
+    verify(text.getBytes("UTF-8"), publicKey, signature)
+  }
+
+  /**
+    * Verifies whether the given data matches the given signature with the given public key.
+    */
+  def verify(data: Array[Byte], publicKey: ECPublicKey, signature: ECSignature): Boolean
 }
