@@ -3,11 +3,13 @@ import { withRouter } from 'react-router-dom';
 import Main from './components/main/Main';
 import { api } from './APIs';
 import { FirebaseAppProvider } from 'reactfire';
-import firebaseConfig from './firebase-config';
+
+const { REACT_APP_FIREBASE_CONFIG } = window._env_;
+const firebaseConfig = JSON.parse(REACT_APP_FIREBASE_CONFIG);
 
 const App = () => (
   <FirebaseAppProvider firebaseConfig={firebaseConfig}>
-    <Suspense fallback="" >
+    <Suspense fallback="">
       <Main apiProvider={{ ...api }} />
     </Suspense>
   </FirebaseAppProvider>

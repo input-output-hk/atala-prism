@@ -27,7 +27,7 @@ do
   [[ -z $value ]] && value=${varvalue-}
 
   # Append configuration property to JS file
-  echo "  $varname: \"$value\"," >> ./env-config.js
+  echo "  $varname: '$value'," >> ./env-config.js
 done < .env
 
 echo "}" >> ./env-config.js
