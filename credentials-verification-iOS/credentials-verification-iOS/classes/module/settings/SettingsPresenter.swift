@@ -75,6 +75,7 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     })
 
     lazy var actionRowSupport = SelectorAction(action: { [weak self] in
+        Tracker.global.trackSupport()
         self?.viewImpl?.changeScreenToBrowser(urlStr: Common.URL_SUPPORT)
     })
 
@@ -87,6 +88,7 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     })
 
     func clearAppData() {
+        Tracker.global.trackResetData()
         sharedMemory.loggedUser?.connectionUserIds?.removeAll()
         sharedMemory.loggedUser?.messagesAcceptedIds?.removeAll()
         sharedMemory.loggedUser?.messagesRejectedIds?.removeAll()

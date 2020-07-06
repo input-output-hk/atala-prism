@@ -61,4 +61,14 @@ class Tracker {
         Analytics.logEvent("new_credential_view", parameters: nil)
     }
 
+    // MARK: Settings
+
+    func trackResetData() {
+        Analytics.logEvent("reset_data", parameters: nil)
+    }
+
+    func trackSupport() {
+        Analytics.logEvent("support", parameters: nil)
+    }
+
 }
