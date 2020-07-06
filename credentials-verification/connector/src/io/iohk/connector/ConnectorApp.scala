@@ -22,6 +22,7 @@ import io.iohk.cvp.cmanager.repositories.{
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.repositories.VerifierHoldersRepository
 import io.iohk.cvp.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
+import io.iohk.cvp.cviews.CredentialViewsService
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.cvp.intdemo._
@@ -41,6 +42,7 @@ import io.iohk.prism.protos.cmanager_api.{
 }
 import io.iohk.prism.protos.connector_api
 import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
+import io.iohk.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
@@ -142,6 +144,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new CredentialsStoreService(storeIndividualsService, storedCredentialsService, holdersRepository, authenticator)(
         executionContext
       )
+    val credentialViewsService = new CredentialViewsService(authenticator)(executionContext)
 
     // admin
     val adminRepository = new AdminRepository(xa)(executionContext)
@@ -169,6 +172,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
+      .addService(CredentialViewsServiceGrpc.bindService(credentialViewsService, executionContext))
       .addService(IDServiceGrpc.bindService(idService, executionContext))
       .addService(DegreeServiceGrpc.bindService(degreeService, executionContext))
       .addService(EmploymentServiceGrpc.bindService(employmentService, executionContext))

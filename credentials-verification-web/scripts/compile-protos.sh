@@ -27,7 +27,9 @@ protoc -I=$OUT_DIR \
     credential_models.proto \
     admin_api.proto \
     intdemo_models.proto \
-    intdemo_api.proto
+    intdemo_api.proto \
+    cviews_models.proto \
+    cviews_api.proto
 
 # Add /* eslint-disable */ as first line in all protobuf generated files
 # This is needed because react has an unresolved issue that prevents ignoring all files in a folder.

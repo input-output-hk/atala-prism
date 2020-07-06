@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package io.iohk.prism.protos;
+
+import "cviews_models.proto";
+
+service CredentialViewsService {
+    rpc GetCredentialViewTemplates (GetCredentialViewTemplatesRequest) returns (GetCredentialViewTemplatesResponse) {}
+}
+
+message GetCredentialViewTemplatesRequest {}
+
+message GetCredentialViewTemplatesResponse {
+    repeated CredentialViewTemplate templates = 1;
+}
