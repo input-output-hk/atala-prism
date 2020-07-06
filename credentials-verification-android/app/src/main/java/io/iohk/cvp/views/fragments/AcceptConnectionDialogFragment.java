@@ -130,13 +130,13 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
     @OnClick(R.id.cancel_button)
     public void onCancelClick() {
-        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_DECLINE);
+        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_DECLINE);
         this.dismiss();
     }
 
     @OnClick(R.id.connect_button)
     public void onConnectClick() {
-        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_CONFIRM);
+        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_CONFIRM);
         viewModel.getTokenizationKey().observe(this, response -> {
             this.dismiss();
 

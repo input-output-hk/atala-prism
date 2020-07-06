@@ -9,8 +9,8 @@ android {
         applicationId "io.iohk.cvp"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 4
-        versionName "0.1.6"
+        versionCode 5
+        versionName "0.1.7"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

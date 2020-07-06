@@ -30,6 +30,7 @@ import butterknife.OnClick;
 import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.R;
 import io.iohk.cvp.grpc.AsyncTaskResult;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
@@ -122,13 +123,13 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
 
   @OnClick(R.id.about)
   void onAboutClick() {
+    ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.SUPPORT);
     navigator.showFragmentOnTopOfMenu(getFragmentManager(), new AboutFragment());
   }
 
 
   @OnClick(R.id.delete_credentials)
   void onDeleteCredentialsClicked() {
-
     DeleteAllConnectionsDialogFragment deleteAllConnectionsDialogFragment = DeleteAllConnectionsDialogFragment.newInstance();
     deleteAllConnectionsDialogFragment.setTargetFragment(this, DELETE_ALL_CONNECTIONS_REQUEST_CODE);
     getNavigator().showDialogFragment(getFragmentManager(),
@@ -137,6 +138,7 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
 
   @Override
   public void resetData() {
+    ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.RESET_DATA);
     Preferences prefs = new Preferences(getContext());
     liveData = connectionsActivityViewModel.getConnections(prefs.getUserIds());
     if (liveData.hasActiveObservers()) {

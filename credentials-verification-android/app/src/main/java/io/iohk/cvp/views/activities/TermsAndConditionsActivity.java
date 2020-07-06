@@ -63,8 +63,6 @@ public class TermsAndConditionsActivity extends CvpActivity {
 
     firstCheckbox.setListeners(
             isClicked -> {
-              mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_TCS, null);
-
               termsAndConditionsChecked = isClicked;
               updateButtonState();
             },
@@ -72,8 +70,6 @@ public class TermsAndConditionsActivity extends CvpActivity {
     );
     secondCheckbox.setListeners(
             isClicked -> {
-              mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_PP, null);
-
               privacyPolicyChecked = isClicked;
               updateButtonState();
             },

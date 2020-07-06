@@ -9,10 +9,13 @@ import android.widget.TextView;
 
 import androidx.lifecycle.ViewModel;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
@@ -23,6 +26,7 @@ import lombok.Setter;
 public class SecuritySettingsStep2Fragment extends CvpFragment {
 
     private Preferences prefs;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Inject
     public SecuritySettingsStep2Fragment() {
@@ -58,11 +62,13 @@ public class SecuritySettingsStep2Fragment extends CvpFragment {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
         prefs = new Preferences(getContext());
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
         launchAuthentication.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 prefs.saveSecurityTouch(true);
+                mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.SECURE_APP_FINGERPRINT,null);
                 navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
             }
         });

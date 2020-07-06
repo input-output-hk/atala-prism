@@ -108,7 +108,7 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
       FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }else{
       Bundle bundle = new Bundle();
-      bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.VERIFY_RECOVERY_PHRASE_FIAL);
+      bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.VERIFY_RECOVERY_PHRASE_FAIL);
       FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }
 

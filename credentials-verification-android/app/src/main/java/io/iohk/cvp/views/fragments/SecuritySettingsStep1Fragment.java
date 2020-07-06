@@ -12,6 +12,8 @@ import android.widget.Toast;
 import androidx.biometric.BiometricManager;
 import androidx.lifecycle.ViewModel;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +29,7 @@ import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.WrongPinLengthException;
 import io.iohk.cvp.data.preferences.SecurityPin;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
@@ -44,6 +47,7 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
 
     private List<PinEditText> pinEditTexts = new ArrayList<>();
     private List<PinEditText> pinRepeatEditTexts = new ArrayList<>();
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Inject
     public SecuritySettingsStep1Fragment() {
@@ -115,6 +119,7 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
         pinRepeatEditTexts.addAll(Arrays.asList(pinRepeatCharacter1, pinRepeatCharacter2, pinRepeatCharacter3, pinRepeatCharacter4));
         initPinEditTexts();
 
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
         return view;
     }
 
@@ -143,6 +148,7 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
             SecurityPin securityPinConfirm = new SecurityPin(getRepeatedPin());
             if(securityPin.equals(securityPinConfirm)) {
                 prefs.saveSecurityPin(securityPin);
+                mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.SECURE_APP_FINGERPRINT_PASSCODE,null);
                 if(BiometricManager.from(getActivity()).canAuthenticate() == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE) {
                     navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
                 } else {

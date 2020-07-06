@@ -33,6 +33,7 @@ import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.ActivityUtils;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
@@ -204,6 +205,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     public void onCredentialClicked(Boolean isNew, Credential credential,
                                     String connectionId, String messageId) {
 
+        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_VIEW);
         credentialFragment.setCredential(credential);
         credentialFragment.setCredentialIsNew(isNew);
         credentialFragment.setConnectionId(connectionId);
