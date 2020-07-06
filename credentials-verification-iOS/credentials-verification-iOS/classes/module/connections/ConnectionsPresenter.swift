@@ -26,6 +26,8 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     var connectionsWorker = ConnectionsWorker()
 
+    var reachability: Reachability!
+
     override init() {
         super.init()
         connectionsWorker.delegate = self
@@ -160,6 +162,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             // Already asked for proof rquest do nothing
         }, error: { _ in
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+            self.observeReachability()
         })
     }
 
@@ -215,6 +218,29 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
+    }
+
+    func observeReachability() {
+        self.reachability = try? Reachability()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.reachabilityChanged),
+                                               name: NSNotification.Name.reachabilityChanged, object: nil)
+        do {
+            try self.reachability.startNotifier()
+        } catch let error {
+            print("Error occured while starting reachability notifications : \(error.localizedDescription)")
+        }
+    }
+
+    @objc func reachabilityChanged(note: Notification) {
+        guard let reachability = note.object as? Reachability else { return }
+        switch reachability.connection {
+        case .cellular, .wifi:
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.reachabilityChanged, object: nil)
+            reachability.stopNotifier()
+            fetchCredentials()
+        default:
+            break
+        }
     }
 
     // MARK: Table

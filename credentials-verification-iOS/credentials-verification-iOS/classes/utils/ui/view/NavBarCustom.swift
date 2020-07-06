@@ -38,7 +38,7 @@ class NavBarCustom: BaseNibLoadingView {
     @IBOutlet weak var constraintLabelTitleLong: NSLayoutConstraint!
     @IBOutlet weak var buttonRight: UIButton!
     @IBOutlet weak var buttonText: UIButton!
-    
+
     private static func findNavBarIn(view: UIView) -> NavBarCustom? {
         return view.subviews.first(where: { $0.tag == NAV_BAR_TAG }) as? NavBarCustom
     }

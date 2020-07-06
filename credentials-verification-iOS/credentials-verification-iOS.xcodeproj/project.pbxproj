@@ -26,6 +26,7 @@
 		B36F27BD2406E2C400FF751B /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F27BC2406E2C400FF751B /* About.storyboard */; };
 		B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27BE2406F37600FF751B /* AboutViewController.swift */; };
 		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
+		B38D944A24AE53440053CE36 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D944924AE53430053CE36 /* Reachability.swift */; };
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
 		B3C760182489777C00AC46DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C760172489777C00AC46DC /* Env.swift */; };
 		B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */; };
@@ -259,6 +260,7 @@
 		B36F27BC2406E2C400FF751B /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
 		B36F27BE2406F37600FF751B /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
+		B38D944924AE53430053CE36 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
 		B3C7601524896B9600AC46DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B3C760172489777C00AC46DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
@@ -898,6 +900,7 @@
 		EE7D4AC22366B9C3007C31A8 /* general */ = {
 			isa = PBXGroup;
 			children = (
+				B38D944924AE53430053CE36 /* Reachability.swift */,
 				EE7D4AC32366B9C3007C31A8 /* Array+Extensions.swift */,
 				EE7D4AC42366B9C3007C31A8 /* String+Extensions.swift */,
 				EE7D4AC52366B9C3007C31A8 /* Collection+Extension.swift */,
@@ -1747,6 +1750,7 @@
 				EE7D4C722366B9C4007C31A8 /* RemoteImages.swift in Sources */,
 				EE7D4C6C2366B9C4007C31A8 /* SharedMemory.swift in Sources */,
 				EE7D4BBA2366B9C4007C31A8 /* UserUtils.swift in Sources */,
+				B38D944A24AE53440053CE36 /* Reachability.swift in Sources */,
 				B35181B324196689007CA8F1 /* common_models.proto in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
 				EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */,
@@ -1964,7 +1968,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.6;
+				MARKETING_VERSION = 0.1.7;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Ddebug";
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = "Atala PRISM";
@@ -1989,7 +1993,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.6;
+				MARKETING_VERSION = 0.1.7;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Drelease";
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = "Atala PRISM";
