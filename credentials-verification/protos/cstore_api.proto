@@ -45,11 +45,8 @@ message GenerateConnectionTokenForResponse {
 }
 
 message StoreCredentialRequest {
-  string individualId = 1;
-  string issuerDid = 2;
-  string proofId = 3;
-  bytes content = 4;
-  bytes signature = 5;
+  string connectionId = 1; // connection id retrieved from the connector message that carried the credential
+  string encodedSignedCredential = 2; // the encoded signed data
 }
 
 message StoreCredentialResponse {
@@ -61,7 +58,7 @@ message GetStoredCredentialsForRequest {
 }
 
 message GetStoredCredentialsForResponse {
-  repeated SignedCredential credentials = 1;
+  repeated StoredSignedCredential credentials = 1;
 }
 
 // Generic versions

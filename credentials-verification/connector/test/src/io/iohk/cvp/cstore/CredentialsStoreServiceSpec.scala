@@ -2,10 +2,9 @@ package io.iohk.cvp.cstore
 
 import java.util.UUID
 
-import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.circe.Json
-import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
+import io.iohk.connector.model.{ConnectionId, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
@@ -13,7 +12,7 @@ import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, Verifier}
 import io.iohk.cvp.cstore.repositories.VerifiersRepository.VerifierCreationData
 import io.iohk.cvp.cstore.repositories.daos.{StoredCredentialsDAO, VerifierHoldersDAO}
 import io.iohk.cvp.cstore.repositories.{VerifierHoldersRepository, VerifiersRepository}
-import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
+import io.iohk.cvp.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.{cstore_api, cstore_models}
@@ -33,7 +32,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   )
 
   lazy val individuals = new VerifierHoldersService(database)
-  lazy val storedCredentials = new StoredCredentialsService(database)
+  lazy val storedCredentials = new StoredCredentialsRepository(database)
   private lazy val holdersRepository = new VerifierHoldersRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
@@ -193,23 +192,29 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         val individualId =
           serviceStub.createIndividual(cstore_api.CreateIndividualRequest("Individual")).individual.get.individualId
 
-        val issuerDid = "did:atala:7cd7b833ba072944ab6579da20706301ec6ab863992a41ae9d80d56d14559b39"
-        val proofId = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+        val connectionToken =
+          serviceStub.generateConnectionTokenFor(cstore_api.GenerateConnectionTokenForRequest(individualId)).token
+        val mockConnectionId = ConnectionId(UUID.randomUUID())
+        VerifierHoldersDAO
+          .addConnection(TokenString(connectionToken), mockConnectionId)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+
+        val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
         val request =
-          cstore_api.StoreCredentialRequest(individualId, issuerDid, proofId, ByteString.EMPTY, ByteString.EMPTY)
+          cstore_api.StoreCredentialRequest(mockConnectionId.id.toString, encodedSignedCredential)
         serviceStub.storeCredential(request)
 
         val credential = StoredCredentialsDAO
-          .getFor(verifierId, ParticipantId(individualId))
+          .getStoredCredentialsFor(verifierId, ParticipantId(individualId))
           .transact(database)
           .unsafeToFuture()
           .futureValue
           .head
 
-        credential.proofId mustBe proofId
-        credential.issuerDid mustBe issuerDid
-        credential.content must be(empty)
-        credential.signature must be(empty)
+        credential.individualId.uuid.toString mustBe individualId
+        credential.encodedSignedCredential mustBe encodedSignedCredential
       }
     }
   }
@@ -220,10 +225,19 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         val individualId =
           serviceStub.createIndividual(cstore_api.CreateIndividualRequest("Individual")).individual.get.individualId
 
-        val issuerDid = "did:atala:7cd7b833ba072944ab6579da20706301ec6ab863992a41ae9d80d56d14559b39"
-        val proofId = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+        val connectionToken =
+          serviceStub.generateConnectionTokenFor(cstore_api.GenerateConnectionTokenForRequest(individualId)).token
+        val mockConnectionId = ConnectionId(UUID.randomUUID())
+        VerifierHoldersDAO
+          .addConnection(TokenString(connectionToken), mockConnectionId)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+
+        val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+
         serviceStub.storeCredential(
-          cstore_api.StoreCredentialRequest(individualId, issuerDid, proofId, ByteString.EMPTY, ByteString.EMPTY)
+          cstore_api.StoreCredentialRequest(mockConnectionId.id.toString, encodedSignedCredential)
         )
 
         val request = cstore_api.GetStoredCredentialsForRequest(individualId)
@@ -231,10 +245,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
 
         response.credentials.size mustBe 1
         val credential = response.credentials.head
-        credential.issuerDid mustBe issuerDid
-        credential.proofId mustBe proofId
-        credential.content.toByteArray must be(empty)
-        credential.signature.toByteArray must be(empty)
+        credential.individualId mustBe individualId
+        credential.encodedSignedCredential mustBe encodedSignedCredential
       }
     }
   }

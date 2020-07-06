@@ -28,9 +28,8 @@ message VerifierHolder {
     string connectionId = 5;
 }
 
-message SignedCredential {
-    string issuerDid = 1;
-    string proofId = 2;
-    bytes content = 3; // to be replaced with Credential message?
-    bytes signature = 4;
+message StoredSignedCredential {
+    string individualId = 1;
+    string encodedSignedCredential = 2;
+    int64 storedAt = 3; // the time when the credential was stored in the cstore database
 }

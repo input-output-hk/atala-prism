@@ -1246,11 +1246,8 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.toObject = function(
  */
 proto.io.iohk.prism.protos.StoreCredentialRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    individualid: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    issuerdid: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    proofid: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    content: msg.getContent_asB64(),
-    signature: msg.getSignature_asB64()
+    connectionid: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    encodedsignedcredential: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1289,23 +1286,11 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.deserializeBinaryFromReader = 
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setIndividualid(value);
+      msg.setConnectionid(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setIssuerdid(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setProofid(value);
-      break;
-    case 4:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setContent(value);
-      break;
-    case 5:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setSignature(value);
+      msg.setEncodedsignedcredential(value);
       break;
     default:
       reader.skipField();
@@ -1336,38 +1321,17 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.serializeBinary = fu
  */
 proto.io.iohk.prism.protos.StoreCredentialRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getIndividualid();
+  f = message.getConnectionid();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getIssuerdid();
+  f = message.getEncodedsignedcredential();
   if (f.length > 0) {
     writer.writeString(
       2,
-      f
-    );
-  }
-  f = message.getProofid();
-  if (f.length > 0) {
-    writer.writeString(
-      3,
-      f
-    );
-  }
-  f = message.getContent_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      4,
-      f
-    );
-  }
-  f = message.getSignature_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      5,
       f
     );
   }
@@ -1375,10 +1339,10 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.serializeBinaryToWriter = func
 
 
 /**
- * optional string individualId = 1;
+ * optional string connectionId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getIndividualid = function() {
+proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getConnectionid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -1387,16 +1351,16 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getIndividualid = fu
  * @param {string} value
  * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setIndividualid = function(value) {
+proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setConnectionid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional string issuerDid = 2;
+ * optional string encodedSignedCredential = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getIssuerdid = function() {
+proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getEncodedsignedcredential = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -1405,110 +1369,8 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getIssuerdid = funct
  * @param {string} value
  * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setIssuerdid = function(value) {
+proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setEncodedsignedcredential = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string proofId = 3;
- * @return {string}
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getProofid = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setProofid = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional bytes content = 4;
- * @return {string}
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getContent = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * optional bytes content = 4;
- * This is a type-conversion wrapper around `getContent()`
- * @return {string}
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getContent_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getContent()));
-};
-
-
-/**
- * optional bytes content = 4;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getContent()`
- * @return {!Uint8Array}
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getContent_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getContent()));
-};
-
-
-/**
- * @param {!(string|Uint8Array)} value
- * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setContent = function(value) {
-  return jspb.Message.setProto3BytesField(this, 4, value);
-};
-
-
-/**
- * optional bytes signature = 5;
- * @return {string}
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getSignature = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
-};
-
-
-/**
- * optional bytes signature = 5;
- * This is a type-conversion wrapper around `getSignature()`
- * @return {string}
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getSignature_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getSignature()));
-};
-
-
-/**
- * optional bytes signature = 5;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getSignature()`
- * @return {!Uint8Array}
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getSignature_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getSignature()));
-};
-
-
-/**
- * @param {!(string|Uint8Array)} value
- * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
- */
-proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setSignature = function(value) {
-  return jspb.Message.setProto3BytesField(this, 5, value);
 };
 
 
@@ -1783,7 +1645,7 @@ proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.toObject = 
 proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     credentialsList: jspb.Message.toObjectList(msg.getCredentialsList(),
-    cstore_models_pb.SignedCredential.toObject, includeInstance)
+    cstore_models_pb.StoredSignedCredential.toObject, includeInstance)
   };
 
   if (includeInstance) {
@@ -1821,8 +1683,8 @@ proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.deserializeBinaryFrom
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new cstore_models_pb.SignedCredential;
-      reader.readMessage(value,cstore_models_pb.SignedCredential.deserializeBinaryFromReader);
+      var value = new cstore_models_pb.StoredSignedCredential;
+      reader.readMessage(value,cstore_models_pb.StoredSignedCredential.deserializeBinaryFromReader);
       msg.addCredentials(value);
       break;
     default:
@@ -1859,24 +1721,24 @@ proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.serializeBinaryToWrit
     writer.writeRepeatedMessage(
       1,
       f,
-      cstore_models_pb.SignedCredential.serializeBinaryToWriter
+      cstore_models_pb.StoredSignedCredential.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * repeated SignedCredential credentials = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.SignedCredential>}
+ * repeated StoredSignedCredential credentials = 1;
+ * @return {!Array<!proto.io.iohk.prism.protos.StoredSignedCredential>}
  */
 proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.getCredentialsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.SignedCredential>} */ (
-    jspb.Message.getRepeatedWrapperField(this, cstore_models_pb.SignedCredential, 1));
+  return /** @type{!Array<!proto.io.iohk.prism.protos.StoredSignedCredential>} */ (
+    jspb.Message.getRepeatedWrapperField(this, cstore_models_pb.StoredSignedCredential, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.SignedCredential>} value
+ * @param {!Array<!proto.io.iohk.prism.protos.StoredSignedCredential>} value
  * @return {!proto.io.iohk.prism.protos.GetStoredCredentialsForResponse} returns this
 */
 proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.setCredentialsList = function(value) {
@@ -1885,12 +1747,12 @@ proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.setCredenti
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.SignedCredential=} opt_value
+ * @param {!proto.io.iohk.prism.protos.StoredSignedCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.SignedCredential}
+ * @return {!proto.io.iohk.prism.protos.StoredSignedCredential}
  */
 proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.addCredentials = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.SignedCredential, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.StoredSignedCredential, opt_index);
 };
 
 

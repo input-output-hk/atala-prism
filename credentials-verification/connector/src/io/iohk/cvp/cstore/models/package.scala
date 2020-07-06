@@ -65,11 +65,9 @@ package object models {
     }
   }
 
-  case class StoredCredential(
+  case class StoredSignedCredential(
       individualId: ParticipantId,
-      issuerDid: String,
-      proofId: String,
-      content: Array[Byte],
-      signature: Array[Byte]
+      encodedSignedCredential: String,
+      storedAt: Instant
   )
 }

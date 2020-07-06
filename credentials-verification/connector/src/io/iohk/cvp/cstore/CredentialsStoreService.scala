@@ -2,15 +2,15 @@ package io.iohk.cvp.cstore
 
 import java.util.UUID
 
-import com.google.protobuf.ByteString
 import io.iohk.connector.Authenticator
 import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
+import io.iohk.connector.model.ConnectionId
 import io.iohk.cvp.cstore.grpc.ProtoCodecs._
 import io.iohk.cvp.cstore.models.Verifier
 import io.iohk.cvp.cstore.repositories.VerifierHoldersRepository
-import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredCredentialCreateData
+import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredSignedCredentialData
 import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData
-import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
+import io.iohk.cvp.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.cstore_api.{GetHoldersRequest, GetHoldersResponse}
 import io.iohk.prism.protos.{cstore_api, cstore_models}
@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsStoreService(
     individuals: VerifierHoldersService,
-    storedCredentials: StoredCredentialsService,
+    storedCredentials: StoredCredentialsRepository,
     holdersRepository: VerifierHoldersRepository,
     authenticator: Authenticator
 )(implicit
@@ -145,12 +145,9 @@ class CredentialsStoreService(
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
-      val createData = StoredCredentialCreateData(
-        ParticipantId.apply(request.individualId),
-        request.issuerDid,
-        request.proofId,
-        request.content.toByteArray,
-        request.signature.toByteArray
+      val createData = StoredSignedCredentialData(
+        ConnectionId.apply(request.connectionId),
+        request.encodedSignedCredential
       )
 
       storedCredentials
@@ -180,10 +177,10 @@ class CredentialsStoreService(
         .successMap { credentials =>
           cstore_api.GetStoredCredentialsForResponse(
             credentials = credentials.map { credential =>
-              cstore_models.SignedCredential(
-                issuerDid = credential.issuerDid,
-                proofId = credential.proofId,
-                content = ByteString.copyFrom(credential.content)
+              cstore_models.StoredSignedCredential(
+                individualId = credential.individualId.uuid.toString,
+                encodedSignedCredential = credential.encodedSignedCredential,
+                storedAt = credential.storedAt.toEpochMilli
               )
             }
           )

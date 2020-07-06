@@ -179,7 +179,7 @@ message GetGenericCredentialsResponse {
 message PublishCredentialRequest {
     string encodedSignedCredential = 1; // the encoded credential to publish
     string cmanagerCredentialId = 2; // cmanager internal credential id
-    SignedAtalaOperation issueCredentialOperation = 3; // an sign instance of IssueCredential operation
+    SignedAtalaOperation issueCredentialOperation = 3; // a signed instance of IssueCredential operation
     string nodeCredentialId = 4; // the credentialId computed by the protocol
     string operationHash = 5; // the hash of the AtalaOperation sent inside the
                               // SignedAtalaOperation represented by the issueCredential

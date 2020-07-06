@@ -185,8 +185,8 @@ object CredentialsDAO {
 
   def storePublicationData(issuerId: Issuer.Id, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {
     sql"""
-         | INSERT INTO published_credentials (credential_id, node_credential_id, operation_hash, encoded_signed_credential)
-         | SELECT credential_id, ${credentialData.nodeCredentialId}, ${credentialData.issuanceOperationHash}, ${credentialData.encodedSignedCredential}
+         | INSERT INTO published_credentials (credential_id, node_credential_id, operation_hash, encoded_signed_credential, stored_at)
+         | SELECT credential_id, ${credentialData.nodeCredentialId}, ${credentialData.issuanceOperationHash}, ${credentialData.encodedSignedCredential}, now()
          | FROM credentials
          | WHERE credential_id = ${credentialData.credentialId} AND
          |       issuer_id = $issuerId
