@@ -15,10 +15,15 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
 
       case Command.CreateSession =>
         backgroundAPI
-          .login(origin)
+          .login()
           .map(response =>
             Event.GotUserSession(UserDetails(response.sessionId, response.name, response.role, response.logo))
           )
+
+      case Command.RequestSignature(sessionId, subject) =>
+        backgroundAPI
+          .requestSignature(sessionId, subject)
+          .map(_ => Event.RequestSignatureAck)
     }
   }
 }

@@ -1,7 +1,12 @@
 package io.iohk.atala.cvp.webextension.activetab.context
 
+import io.circe.Json
+import io.circe.parser.parse
+import io.circe.generic.auto._
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
 import io.iohk.atala.cvp.webextension.activetab.models.UserDetails
+import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
+
 import scala.concurrent.ExecutionContext
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
@@ -31,7 +36,8 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         value = js.Dictionary(
           "log" -> js.Any.fromFunction1(log), // TODO: Remove
           "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus),
-          "login" -> js.Any.fromFunction0(login)
+          "login" -> js.Any.fromFunction0(login),
+          "requestSignature" -> js.Any.fromFunction2(requestSignature)
         )
       }
     )
@@ -45,7 +51,26 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     extensionAPI.login().map(_.userDetails).toJSPromise
   }
 
+  def requestSignature(sessionId: String, payloadAsJson: String): Unit = {
+    val subject = readJsonAs[CredentialSubject](payloadAsJson)
+    extensionAPI.requestSignature(sessionId, subject)
+  }
+
   def log(text: String): Unit = {
     println(s"PrismSdk: $text")
+  }
+
+  private def readJsonAs[T](jsonAsString: String)(implicit decoder: io.circe.Decoder[T]): T = {
+    val exampleJson = """{
+                        |  "id": "did:example:c276e12ec21ebfeb1f712ebc6f2",
+                        |  "properties": {
+                        |    "key1": "Example University",
+                        |    "key2": "en"
+                        |  }
+                        |}""".stripMargin
+    parse(jsonAsString)
+      .getOrElse(Json.obj())
+      .as[T]
+      .getOrElse(throw new RuntimeException(s"Type could not be loaded from JSON expected:\n $exampleJson"))
   }
 }

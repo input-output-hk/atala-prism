@@ -2,6 +2,7 @@ package io.iohk.atala.cvp.webextension.background
 
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
@@ -85,34 +86,28 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
     }
   }
 
-  "requestSignature" should {
-    "get the message signed" in {
+  "Login request" should {
+    "successful create a session" in {
       val api = new BackgroundAPI()
-
       for {
         _ <- setUpWallet(api, List(TEST_KEY))
-
-        // Fire request, but wait its result until signing happens
-        signatureResultFuture = api.requestSignature("sign-me")
-        _ <- api.signRequestWithKey(1, TEST_KEY)
-        signatureResult <- signatureResultFuture
+        userDetails <- api.login()
       } yield {
-        // signature is encoded so it's pointless to test its actual value
-        signatureResult.signature must not be empty
+        userDetails.name mustBe "IOHK"
       }
     }
+  }
 
-    "be able to request signature without the wallet loaded" in {
+  "requestSignature" should {
+    "create a successful signature request" in {
       val api = new BackgroundAPI()
-      // Fire request, but wait its result until signing happens
-      val signatureResultFuture = api.requestSignature("sign-me")
+      val subject = CredentialSubject("id", Map("key" -> "value"))
       for {
         _ <- setUpWallet(api, List(TEST_KEY))
-        _ <- api.signRequestWithKey(1, TEST_KEY)
-        signatureResult <- signatureResultFuture
+        u <- api.login()
+        res <- api.requestSignature(u.sessionId, subject)
       } yield {
-        // signature is encoded so it's pointless to test its actual value
-        signatureResult.signature must not be empty
+        res mustBe ()
       }
     }
   }
@@ -120,75 +115,18 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
   "getSignatureRequests" should {
     "return the pending signature requests" in {
       val api = new BackgroundAPI()
-
+      val subject = CredentialSubject("id", Map("key" -> "value"))
+      val origin = "http://test.atalaprism.io/"
       for {
         _ <- setUpWallet(api)
-        _ = api.requestSignature("sign-me")
-
+        u <- api.login()
+        _ <- api.requestSignature(u.sessionId, subject)
         signingRequests <- api.getSignatureRequests()
       } yield {
-        signingRequests.requests mustBe List(SigningRequest(1, "sign-me"))
+        signingRequests.requests mustBe List(SigningRequest(1, origin, u.sessionId, subject))
       }
     }
 
-    "return the pending signature requests even with the wallet not loaded" in {
-      val api = new BackgroundAPI()
-      api.requestSignature("sign-me")
-      for {
-        signingRequests <- api.getSignatureRequests()
-      } yield {
-        signingRequests.requests mustBe List(SigningRequest(1, "sign-me"))
-      }
-    }
-  }
-
-  "signRequestWithKey" should {
-    "sign the pending request" in {
-      val api = new BackgroundAPI()
-      for {
-        _ <- setUpWallet(api, List(TEST_KEY))
-        // Do not wait on the request
-        _ = api.requestSignature("sign-me")
-
-        _ <- api.signRequestWithKey(1, TEST_KEY)
-        signatureRequests <- api.getSignatureRequests()
-      } yield {
-        signatureRequests.requests mustBe empty
-      }
-    }
-
-    "fail when requestId does not exist" in {
-      val api = new BackgroundAPI()
-      recoverToExceptionIf[RuntimeException] {
-        for {
-          _ <- setUpWallet(api, List(TEST_KEY))
-
-          _ <- api.signRequestWithKey(1, TEST_KEY)
-        } yield ()
-      }.map(_.getMessage mustBe "Unknown request")
-    }
-
-    "fail when key does not exist" in {
-      val api = new BackgroundAPI()
-      recoverToExceptionIf[RuntimeException] {
-        for {
-          _ <- setUpWallet(api)
-          _ = api.requestSignature("sign-me")
-
-          _ <- api.signRequestWithKey(1, TEST_KEY)
-        } yield ()
-      }.map(_.getMessage mustBe "Unknown key test-key")
-    }
-
-    "fail when wallet is not loaded" in {
-      val api = new BackgroundAPI()
-      api.requestSignature("sign-me")
-      recoverToExceptionIf[RuntimeException] {
-        for {
-          _ <- api.signRequestWithKey(1, TEST_KEY)
-        } yield ()
-      }.map(_.getMessage mustBe "Unknown key test-key")
-    }
   }
 
   "getWalletStatus" should {

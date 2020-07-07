@@ -5,6 +5,7 @@ import java.util.UUID
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.activetab.models.{Command, Event, TaggedModel}
+import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
 import org.scalajs.dom
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -42,6 +43,14 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     val cmd = Command.CreateSession
     processCommand(cmd).collect {
       case r: Event.GotUserSession => r
+      case x => throw new RuntimeException(s"Unknown response: $x")
+    }
+  }
+
+  def requestSignature(sessionId: String, subject: CredentialSubject): Future[Unit] = {
+    val cmd = Command.RequestSignature(sessionId, subject)
+    processCommand(cmd).collect {
+      case Event.RequestSignatureAck => ()
       case x => throw new RuntimeException(s"Unknown response: $x")
     }
   }

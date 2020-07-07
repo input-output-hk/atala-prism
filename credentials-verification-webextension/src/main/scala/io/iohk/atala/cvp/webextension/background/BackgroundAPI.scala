@@ -4,16 +4,12 @@ import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
-import io.iohk.atala.cvp.webextension.background.models.Command.{
-  KeyList,
-  SignatureResult,
-  SigningRequests,
-  UserDetails,
-  WalletStatusResult
-}
+import io.iohk.atala.cvp.webextension.background.models.Command.{KeyList, SigningRequests, WalletStatusResult}
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
 import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
+
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.util.{Failure, Success, Try}
@@ -50,24 +46,24 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.ListKeys)
   }
 
-  def requestSignature(message: String): Future[SignatureResult] = {
-    process(Command.RequestSignature(message))
-  }
-
   def getSignatureRequests(): Future[SigningRequests] = {
     process(Command.GetSigningRequests)
-  }
-
-  def signRequestWithKey(requestId: Int, keyName: String): Future[Unit] = {
-    process(Command.SignRequestWithKey(requestId, keyName))
   }
 
   def getWalletStatus(): Future[WalletStatusResult] = {
     process(Command.GetWalletStatus)
   }
 
-  def login(origin: String): Future[UserDetails] = {
-    process(Command.GetUserSession(origin))
+  def login(): Future[UserDetails] = {
+    process(Command.GetUserSession)
+  }
+
+  def requestSignature(sessionId: String, subject: CredentialSubject): Future[Unit] = {
+    process(Command.RequestSignature(sessionId, subject))
+  }
+
+  def signRequestAndPublish(requestId: Int): Future[Unit] = {
+    process(Command.SignRequest(requestId))
   }
 
   def recoverWallet(
@@ -115,7 +111,6 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     // - If the extensionId is omitted, the message will be sent to your own extension.
     chrome.runtime.Runtime
       .sendMessage(message = message, responseCallback = callback)
-
     promise.future
   }
 

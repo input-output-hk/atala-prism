@@ -4,11 +4,16 @@ import io.circe.generic.auto._
 import io.circe.{Encoder, Json}
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.models.Command
-import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
+import io.iohk.atala.cvp.webextension.background.services.browser.{
+  BrowserActionService,
+  BrowserNotificationService,
+  BrowserTabService
+}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 import io.iohk.atala.cvp.webextension.common.I18NMessages
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -66,6 +71,8 @@ class Runner(
       }
       .listen { message =>
         message.value.foreach { any =>
+          implicit lazy val origin: String = message.sender.url.toOption
+            .getOrElse(throw new RuntimeException("Origin of the request Unknown"))
           val response = Future
             .fromTry { Try(any.asInstanceOf[String]).flatMap(Command.decode) }
             .map { cmd =>
@@ -108,9 +115,10 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
+    val tabActionService = new BrowserTabService
     val connectorClientService = ConnectorClientService(config.connectorUrl)
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService)
+      new WalletManager(browserActionService, storage, connectorClientService, tabActionService)
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, browserActionService, walletManager)
@@ -123,8 +131,10 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
+    val tabActionService = new BrowserTabService
+
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService)
+      new WalletManager(browserActionService, storage, connectorClientService, tabActionService)
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, browserActionService, walletManager)

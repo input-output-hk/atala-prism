@@ -15,6 +15,7 @@ private[activetab] object Event {
   final case class CommandRejected(reason: String) extends Event
   final case class GotWalletStatus(status: String) extends Event
   final case class GotUserSession(userDetails: UserDetails) extends Event
+  final case object RequestSignatureAck extends Event
 
   def decode(string: String): Try[Event] = {
     parse(string).toTry

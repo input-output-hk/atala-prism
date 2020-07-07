@@ -102,6 +102,7 @@ object ECKeyOperation {
 }
 
 case class EcKeyPair(privateKeyPair: KeyPair, publicKeyPair: KeyPair)
+
 object EcKeyPair {
   val CURVE_NAME = "secp256k1"
   val ec = new ec(CURVE_NAME)

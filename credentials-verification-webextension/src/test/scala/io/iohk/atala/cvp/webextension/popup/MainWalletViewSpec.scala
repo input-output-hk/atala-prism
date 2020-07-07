@@ -3,15 +3,18 @@ package io.iohk.atala.cvp.webextension.popup
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
+import io.iohk.atala.cvp.webextension.popup.Wallet._
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
+import org.scalajs.dom.raw.HTMLDivElement
 import org.scalatest.Assertion
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
 import scalatags.JsDom.all.div
-import typings.std.{HTMLElement, HTMLLabelElement, document}
-import Wallet._
-import scala.concurrent.{ExecutionContext, Future}
+import typings.std.document
+
+import scala.concurrent.Future
 
 class MainWalletViewSpec extends AsyncWordSpec with WalletDomSpec with ScalaFutures {
 
@@ -24,63 +27,27 @@ class MainWalletViewSpec extends AsyncWordSpec with WalletDomSpec with ScalaFutu
   }
 
   "MainWalletView" should {
-    "load Main view with wallet status missing" in {
-      withWallet {
-        val backgroundAPI = new BackgroundAPI()
-        val container = div().render
-        document.body.appendChild(container)
-        MainWalletView(backgroundAPI).mainWalletScreen(container).map { _ =>
-          val statusLabel = document
-            .querySelector("._label_update")
-            .asInstanceOf[HTMLLabelElement]
-          val mainView =
-            document.querySelector("#mainView").asInstanceOf[HTMLElement]
-          mainView must not be null
-          statusLabel.textContent mustBe "Missing"
-        }
-      }
-    }
 
-    "load Main view with wallet status Unlocked" in {
+    "load Main view with pending requests" in {
       withWallet {
         val backgroundAPI = new BackgroundAPI()
-        setUpWallet {
-          backgroundAPI.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
-        }.flatMap { _ =>
-          val container = div().render
-          document.body.appendChild(container)
-          MainWalletView(backgroundAPI).mainWalletScreen(container).map { _ =>
-            val statusLabel = document
-              .querySelector("._label_update")
-              .asInstanceOf[HTMLLabelElement]
-            val mainView =
-              document.querySelector("#mainView").asInstanceOf[HTMLElement]
-            mainView must not be null
-            statusLabel.textContent mustBe "Unlocked"
-          }
-        }
-      }
-    }
-
-    "load Main view with wallet status Locked" in {
-      withWallet {
-        val backgroundAPI = new BackgroundAPI()
+        val did = "did:prism:sign-me"
+        val subject = CredentialSubject(did, Map("key" -> "value"))
         setUpWallet {
           for {
             _ <- backgroundAPI.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
-            _ <- backgroundAPI.lockWallet()
+            u <- backgroundAPI.login()
+            _ <- backgroundAPI.requestSignature(u.sessionId, subject)
           } yield ()
         }.flatMap { _ =>
           val container = div().render
           document.body.appendChild(container)
           MainWalletView(backgroundAPI).mainWalletScreen(container).map { _ =>
-            val statusLabel = document
-              .querySelector("._label_update")
-              .asInstanceOf[HTMLLabelElement]
-            val mainView =
-              document.querySelector("#mainView").asInstanceOf[HTMLElement]
-            mainView must not be null
-            statusLabel.textContent mustBe "Locked"
+            val divElement = document
+              .querySelector(".div__btn")
+              .asInstanceOf[HTMLDivElement]
+            divElement must not be null
+            divElement.textContent mustBe "did:prism:sign-me"
           }
         }
       }

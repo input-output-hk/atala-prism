@@ -81,6 +81,7 @@ class RecoveryView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) 
             MainWalletView(backgroundAPI).mainWalletScreen(divElement)
           }
           .onComplete {
+            case Success(_) => ()
             case Failure(ex) =>
               println(s"Failed recovering wallet : ${ex.getMessage}")
               throw ex

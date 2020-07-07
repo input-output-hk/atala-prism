@@ -1,12 +1,7 @@
 package io.iohk.atala.cvp.webextension.background
 
 import io.circe.generic.auto._
-import io.iohk.atala.cvp.webextension.background.models.Command.{
-  KeyList,
-  SignatureResult,
-  SigningRequests,
-  WalletStatusResult
-}
+import io.iohk.atala.cvp.webextension.background.models.Command.{KeyList, SigningRequests, WalletStatusResult}
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
@@ -22,7 +17,7 @@ private[background] class CommandProcessor(
     walletManager: WalletManager
 )(implicit ec: ExecutionContext) {
 
-  def process(command: Command): Future[CommandResponse[_]] =
+  def process(command: Command)(implicit origin: String): Future[CommandResponse[_]] =
     command match {
       case Command.SendBrowserNotification(title, message) =>
         browserNotificationService.notify(title, message)
@@ -31,22 +26,20 @@ private[background] class CommandProcessor(
         Future.successful(CommandResponse[KeyList] {
           KeyList(walletManager.listKeys().toList)
         })
-      case Command.SignRequestWithKey(requestId, keyName) =>
-        Future.successful(CommandResponse {
-          walletManager.signWith(requestId, keyName)
-        })
-      case Command.RequestSignature(message) =>
-        walletManager.requestSignature(message).map(SignatureResult.apply).map(CommandResponse.apply)
+      case Command.RequestSignature(sessionId, subject) =>
+        walletManager.requestSignature(origin, sessionId, subject).map(CommandResponse.apply)
       case Command.GetSigningRequests =>
         Future.successful(CommandResponse {
           SigningRequests(walletManager.getSigningRequests().toList)
         })
       case Command.CreateKey(keyName) =>
-        walletManager.createKey(keyName).map(_ => CommandResponse())
+        walletManager.createKey(keyName).map(_ => CommandResponse(()))
       case Command.GetWalletStatus =>
         walletManager.getStatus().map(WalletStatusResult.apply).map(CommandResponse.apply)
-      case Command.GetUserSession(origin) =>
+      case Command.GetUserSession =>
         walletManager.getLoggedInUserSession(origin).map(CommandResponse.apply)
+      case Command.SignRequest(requestId) =>
+        walletManager.signRequestAndPublish(requestId).map(_ => CommandResponse(()))
       case Command.CreateWallet(password, mnemonic, role, organisationName, logo) =>
         walletManager.createWallet(password, mnemonic, role, organisationName, logo).map(CommandResponse.apply)
       case Command.RecoverWallet(password, mnemonic) =>

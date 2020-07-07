@@ -2,6 +2,7 @@ package io.iohk.atala.cvp.webextension.activetab.models
 
 import io.circe.generic.auto._
 import io.circe.parser.parse
+import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
 
 import scala.util.Try
 
@@ -15,6 +16,8 @@ private[activetab] object Command {
   final case object GetWalletStatus extends Command
 
   final case object CreateSession extends Command
+
+  final case class RequestSignature(sessionId: String, subject: CredentialSubject) extends Command
 
   def decode(string: String): Try[Command] = {
     parse(string).toTry

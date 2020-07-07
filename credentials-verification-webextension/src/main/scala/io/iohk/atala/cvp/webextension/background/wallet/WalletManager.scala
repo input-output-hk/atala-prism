@@ -7,10 +7,10 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
-import io.iohk.atala.cvp.webextension.background.models.Command.UserDetails
-import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
+import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserTabService}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
@@ -29,7 +29,7 @@ object WalletManager {
   val PASSWORD_SALT = "kkmarcbr/a"
 }
 
-case class SigningRequest(id: Int, message: String)
+case class SigningRequest(id: Int, origin: String, sessionId: String, subject: CredentialSubject)
 
 sealed trait WalletStatus
 
@@ -88,7 +88,8 @@ case class WalletData(
 private[background] class WalletManager(
     browserActionService: BrowserActionService,
     storageService: StorageService,
-    connectorClientService: ConnectorClientService
+    connectorClientService: ConnectorClientService,
+    browserTabService: BrowserTabService
 )(implicit
     ectx: ExecutionContext
 ) {
@@ -105,6 +106,10 @@ private[background] class WalletManager(
   private def updateBadge(): Unit = {
     val badgeText = if (signingRequests.nonEmpty) signingRequests.size.toString else ""
     browserActionService.setBadgeText(badgeText)
+  }
+
+  private def updateTab(): Unit = {
+    browserTabService.createOrUpdateTab
   }
 
   private def updateStorageKeyAndWalletData(storageKey: CryptoKey, walletData: WalletData): Unit = {
@@ -133,39 +138,24 @@ private[background] class WalletManager(
     walletData.map(_.keys.keys.toSeq).getOrElse(Seq.empty)
   }
 
-  def requestSignature(message: String): Future[String] = {
-    val signaturePromise = Promise[String]()
-
-    requestCounter += 1
-    val request = SigningRequest(requestCounter, message)
-    signingRequests += requestCounter -> ((request, signaturePromise))
-    updateBadge()
-
-    signaturePromise.future
-  }
-
   def getSigningRequests(): Seq[SigningRequest] = {
     signingRequests.values.map(_._1).toSeq
   }
 
-  def signWith(requestId: Int, keyName: String): Unit = {
-    val (request, promise) = signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
-    val key = getKey(keyName)
-
-    val signature = key.sign(request.message)
+  def signRequestAndPublish(requestId: Int): Future[String] = {
+    val (request, promise) =
+      signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
+    walletData.map { data =>
+      data.mnemonic //TODO sign and publish
+    }
+    val signature = "" //TODO SIGN
 
     signingRequests -= requestId
     updateBadge()
-    promise.success(signature.toDER("hex"))
-  }
-
-  private def getKey(keyName: String): KeyPair = {
-    val serializedKey =
-      walletData
-        .map(_.keys)
-        .getOrElse(Map.empty)
-        .getOrElse(keyName, throw new RuntimeException(s"Unknown key $keyName"))
-    ec.keyFromPrivate(serializedKey, "hex")
+    updateTab()
+    println(s"Signed and Published = ${request.subject.id}")
+    promise.success(signature) //TODO signature hex
+    promise.future
   }
 
   def initialAesCtr: crypto.AesCtrParams = {
@@ -235,6 +225,28 @@ private[background] class WalletManager(
           wallet.role.toString,
           wallet.logo
         )
+      }
+    }
+  }
+
+  def requestSignature(origin: Origin, sessionID: SessionID, subject: CredentialSubject): Future[Unit] = {
+
+    Future.fromTry {
+      Try {
+        session
+          .find(_ == (sessionID -> origin))
+          .map { _ =>
+            val signaturePromise = Promise[String]()
+            requestCounter += 1
+            val request = SigningRequest(requestCounter, origin, sessionID, subject)
+            signingRequests += requestCounter -> ((request, signaturePromise))
+            updateBadge()
+            updateTab()
+            signaturePromise.future
+          }
+          .getOrElse(
+            throw new RuntimeException("Invalid request not associated with a session")
+          )
       }
     }
   }

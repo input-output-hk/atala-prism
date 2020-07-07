@@ -135,6 +135,7 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
                 MainWalletView(backgroundAPI).mainWalletScreen(divElement)
               }
               .onComplete {
+                case Success(_) => ()
                 case Failure(ex) =>
                   println(s"Failed creating wallet : ${ex.getMessage}")
                   throw ex
@@ -156,6 +157,7 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
               MainWalletView(backgroundAPI).mainWalletScreen(divElement)
             }
             .onComplete {
+              case Success(_) => ()
               case Failure(ex) =>
                 println(s"Failed creating wallet : ${ex.getMessage}")
                 throw ex

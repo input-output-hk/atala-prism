@@ -4,6 +4,7 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
 
 import scala.util.Try
 
@@ -17,7 +18,8 @@ private[background] object Command {
 
   final case class SendBrowserNotification(title: String, message: String) extends CommandWithResponse[Event]
 
-  final case class RequestSignature(message: String) extends CommandWithResponse[SignatureResult]
+  final case class RequestSignature(sessionId: String, subject: CredentialSubject) extends CommandWithResponse[Unit]
+
   final case class SignatureResult(signature: String)
 
   final case class CreateKey(keyName: String) extends CommandWithResponse[Unit]
@@ -28,13 +30,12 @@ private[background] object Command {
   final case object GetSigningRequests extends CommandWithResponse[SigningRequests]
   final case class SigningRequests(requests: List[SigningRequest])
 
-  final case class SignRequestWithKey(requestId: Int, keyName: String) extends CommandWithResponse[Unit]
+  final case class SignRequest(requestId: Int) extends CommandWithResponse[Unit]
 
   final case object GetWalletStatus extends CommandWithResponse[WalletStatusResult];
   final case class WalletStatusResult(status: WalletStatus)
 
-  final case class GetUserSession(origin: String) extends CommandWithResponse[UserDetails];
-  final case class UserDetails(sessionId: String, name: String, role: String, logo: Array[Byte])
+  final case object GetUserSession extends CommandWithResponse[UserDetails];
 
   final case class CreateWallet(
       password: String,

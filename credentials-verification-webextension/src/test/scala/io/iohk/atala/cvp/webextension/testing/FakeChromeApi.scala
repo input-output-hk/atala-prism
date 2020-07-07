@@ -2,6 +2,8 @@ package io.iohk.atala.cvp.webextension.testing
 
 import chrome.runtime.bindings.Runtime.AppID
 import chrome.runtime.bindings.SendMessageOptions
+import chrome.tabs.bindings.TabCreateProperties
+import org.scalajs.dom
 
 import scala.collection.mutable.ListBuffer
 import scala.scalajs.js
@@ -29,12 +31,22 @@ object FakeChromeApi extends js.Object() {
     }
   }
 
+  val tabs = new js.Object() {
+    def create(tab: TabCreateProperties): Unit = {}
+  }
+
   val runtime: js.Object = new js.Object() {
     val id = "id"
+
+    val messageSender = new js.Object() {
+      val url = "http://test.atalaprism.io/"
+    }
+
     val listeners: ListBuffer[js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]] =
       ListBuffer()
 
     val onMessage: js.Object = new js.Object() {
+
       def addListener(callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]): Unit = {
         listeners += callback
       }
@@ -63,7 +75,7 @@ object FakeChromeApi extends js.Object() {
         responseCallback: js.UndefOr[js.Function1[js.Any, _]] = js.undefined
     ): Unit = {
       listeners foreach { listener =>
-        listener(message, new js.Object(), responseCallback.get)
+        listener(message, messageSender, responseCallback.get)
       }
     }
   }
