@@ -2,43 +2,45 @@ package io.iohk.atala.crypto
 
 import io.iohk.atala.crypto.ECConfig.CURVE_NAME
 import io.iohk.atala.crypto.ECUtils.toHex
-import io.iohk.atala.crypto.facades.JsNativeEC
+import typings.elliptic.AnonX
+import typings.elliptic.mod.ec
+import typings.elliptic.mod.ec.KeyPair
 import typings.hashJs.{hashJsStrings, mod => hash}
 
-import scala.scalajs.js
 import scala.scalajs.js.typedarray.{Uint8Array, _}
 
 /**
   * JavaScript implementation of {@link ECTrait}.
   */
 object EC extends ECTrait {
-  private val nativeEc = new JsNativeEC(CURVE_NAME)
+  private val HEX_ENC = "hex"
+  private val nativeEc = new ec(CURVE_NAME)
 
   override def generateKeyPair(): ECKeyPair = {
     JsECKeyPair(nativeEc.genKeyPair())
   }
 
   override def toPrivateKey(d: BigInt): ECPrivateKey = {
-    new JsECPrivateKey(nativeEc.keyFromPrivate(toHex(d), 16).getPrivate())
+    new JsECPrivateKey(nativeEc.keyFromPrivate(toHex(d), HEX_ENC).getPrivate())
   }
 
   override def toPublicKey(x: BigInt, y: BigInt): ECPublicKey = {
     new JsECPublicKey(
       nativeEc
-        .keyFromPublic(js.Dynamic.literal(x = toHex(x), y = toHex(y)))
+        .keyFromPublic(AnonX(x = toHex(x), y = toHex(y)))
         .getPublic()
     )
   }
 
   override def toPublicKeyFromPrivateKey(d: BigInt): ECPublicKey = {
-    new JsECPublicKey(nativeEc.keyFromPrivate(toHex(d), 16).getPublic())
+    new JsECPublicKey(nativeEc.keyFromPrivate(toHex(d), HEX_ENC).getPublic())
   }
 
   override def sign(data: Array[Byte], privateKey: ECPrivateKey): ECSignature = {
     privateKey match {
       case key: JsECPrivateKey =>
-        val signature = nativeEc.sign(sha256(data), key.privateKey)
-        val hexSignature = signature.toDER("hex")
+        val signature = nativeEc.sign(sha256(data), key.privateKey.toBuffer())
+        val hexSignature = signature.toDER(HEX_ENC).toString
         ECSignature(ECUtils.toUnsignedByteArray(ECUtils.toBigInt(hexSignature)))
     }
   }
@@ -49,7 +51,7 @@ object EC extends ECTrait {
         nativeEc.verify(
           sha256(data),
           ECUtils.bytesToHex(signature.data),
-          key.publicKey
+          key.publicKey.asInstanceOf[KeyPair] // Force the type, as JS can actually get this type
         )
     }
   }

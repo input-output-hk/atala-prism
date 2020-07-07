@@ -47,5 +47,9 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
   )
   .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
   .jsSettings(
-    npmDependencies in Test ++= Seq("elliptic" -> "6.5.2", "hash.js" -> "1.1.7")
+    npmDependencies in Compile ++= Seq(
+      "elliptic" -> "6.5.2",
+      "hash.js" -> "1.1.7",
+      "@types/elliptic" -> "6.4.12"
+    )
   )
