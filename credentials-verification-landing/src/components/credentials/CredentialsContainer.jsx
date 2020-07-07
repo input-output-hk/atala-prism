@@ -24,9 +24,7 @@ import {
   STEP_1_EVENT,
   STEP_2_EVENT,
   STEP_3_EVENT,
-  STEP_4_EVENT,
-  LANDING_PAGE,
-  CREDENTIALS_PAGE
+  STEP_4_EVENT
 } from '../../helpers/constants';
 import Credentials from './Credentials';
 import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInside';
@@ -34,6 +32,7 @@ import { UserContext } from '../providers/userContext';
 import { withRedirector } from '../providers/withRedirector';
 import InteractiveMap from '../common/Organisms/InteractiveMap/InteractiveMap';
 import PersonasModal from './Molecules/PersonasModal/PersonasModal';
+import SupportButton from '../common/Atoms/SupportButton/SupportButton';
 
 // Credentials steps
 const INTRODUCTION_STEP = 0;
@@ -255,6 +254,7 @@ const CredentialsContainer = ({
         showContactButton={showContactButton}
         showCongrats={showCongrats}
       />
+      <SupportButton />
     </div>
   );
 };

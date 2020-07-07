@@ -8,6 +8,7 @@ import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
 import '../credentials/_style.scss';
 import './_style.scss';
+import SupportButton from '../common/Atoms/SupportButton/SupportButton';
 
 const ContactContainer = ({ redirector: { redirectToLanding } }) => {
   const { t } = useTranslation();
@@ -46,6 +47,7 @@ const ContactContainer = ({ redirector: { redirectToLanding } }) => {
           </Col>
         </Row>
       </div>
+      <SupportButton />
       <div className="LogoContent">
         <img src="images/logo-cardano.svg" alt={t('atalaLogo')} />
       </div>

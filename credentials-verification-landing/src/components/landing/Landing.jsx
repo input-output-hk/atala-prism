@@ -25,8 +25,8 @@ import GetStarted from './Molecules/GetStarted/GetStarted';
 import FaqPanel from './Molecules/FaqPanel/FaqPanel';
 import ContactPanel from './Organisms/ContactPanel/ContactPanel';
 import UseCasesPanel from './Organisms/UseCasesPanel/UseCasesPanel';
-import { useEffect } from 'react';
 import { useState } from 'react';
+import SupportButton from '../common/Atoms/SupportButton/SupportButton';
 
 const Landing = () => {
   const { t } = useTranslation();
@@ -106,6 +106,8 @@ const Landing = () => {
         <ContactPanel />
       </div>
       <Footer executeScroll={executeScroll} />
+
+      <SupportButton />
     </div>
   );
 };
