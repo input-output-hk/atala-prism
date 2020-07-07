@@ -76,12 +76,11 @@ const CredentialContainer = ({ api }) => {
 
     return api.credentialsManager
       .getCredentials(CREDENTIAL_PAGE_SIZE, id)
-      .then(({ credentials: credentialsList }) => {
+      .then(credentialsList => {
         if (isFirstCall) setNoCredentials(!credentialsList.length);
 
-        if (!credentialsList.length) {
+        if (credentialsList.length < CREDENTIAL_PAGE_SIZE) {
           setHasMore(false);
-          return;
         }
 
         setCredentials(oldCredentials.concat(credentialsList));

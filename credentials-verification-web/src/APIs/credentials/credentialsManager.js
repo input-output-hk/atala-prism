@@ -31,11 +31,12 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
     const credentialData = JSON.parse(cred.getCredentialdata());
     const subjectId = cred.getSubjectid();
     const groupname = cred.getGroupname();
+    const id = cred.getCredentialid();
     const subjectData = JSON.parse(cred.getSubjectdata());
-    return Object.assign({ subjectId, groupname, subjectData }, credentialData);
+    return Object.assign({ id, subjectId, groupname, subjectData }, credentialData);
   });
 
-  return { credentials: credentialsList, count: credentialsList.length };
+  return credentialsList;
 }
 
 function createAndPopulateCreationRequest(studentId, credentialData, groupName) {

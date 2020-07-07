@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import CredentialSummaries from './CredentialSummaries';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
-import { CONNECTION_ACCEPTED } from '../../helpers/constants';
+import { CONNECTION_ACCEPTED, HOLDER_PAGE_SIZE } from '../../helpers/constants';
 
 const CredentialSummaryController = ({ api }) => {
   const { t } = useTranslation();
@@ -19,12 +19,7 @@ const CredentialSummaryController = ({ api }) => {
   // are some that match the filter updates the last
   // received id and the property has more for the
   // infinite scroll
-  const getCredentialSummaries = (
-    oldCredentialSummaries = credentialSummaries,
-    _date,
-    _name,
-    userId
-  ) => {
+  const getCredentialSummaries = (oldCredentialSummaries = credentialSummaries, _date, _name) => {
     const { id } = credentialSummaries.length
       ? credentialSummaries[credentialSummaries.length - 1]
       : {};
@@ -32,7 +27,7 @@ const CredentialSummaryController = ({ api }) => {
     setNoSummaries(!id && !_date && !_name);
 
     return api.subjectsManager
-      .getSubjectsAsIssuer(userId, id)
+      .getSubjectsAsIssuer(id, HOLDER_PAGE_SIZE)
       .then(summariesResponse => {
         const parsedSummaries = summariesResponse
           .filter(({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED)
@@ -42,9 +37,8 @@ const CredentialSummaryController = ({ api }) => {
             user: { email, fullname }
           }));
 
-        if (!parsedSummaries.length) {
+        if (parsedSummaries.length < HOLDER_PAGE_SIZE) {
           setHasMore(false);
-          return;
         }
 
         setCredentialSummaries(oldCredentialSummaries.concat(parsedSummaries));
