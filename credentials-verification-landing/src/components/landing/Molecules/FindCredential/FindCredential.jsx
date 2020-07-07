@@ -6,7 +6,7 @@ import InteractiveMap from '../../../common/Organisms/InteractiveMap/Interactive
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../../../providers/withRedirector';
 import DownloadButtons from '../DownloadButtons/DownloadButtons';
-import { GET_CREDENTIALS} from '../../../../helpers/constants';
+import { GET_CREDENTIALS_EVENT} from '../../../../helpers/constants';
 
 import './_style.scss';
 
@@ -15,7 +15,7 @@ const FindCredential = ({ redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
   const startDemo = () => {
-    firebase.logEvent(GET_CREDENTIALS);
+    firebase.logEvent(GET_CREDENTIALS_EVENT);
     redirectToCredentials();
   };
 

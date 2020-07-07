@@ -101,8 +101,11 @@ export const CARD_INSURANCE_PROVIDER = 'Verified Insurance Ltd.';
 export const CARD_INSURANCE_CLASS = 'Health Insurance';
 export const CARD_INSURANCE_POLICY_NUMBER = 'ABC-123456789';
 
+
+export const GET_CREDENTIALS_EVENT = 'Get_Credentials';
 export const SUPPORT_EVENT = 'support';
-export const GET_CREDENTIALS = 'Get_Credentials';
+export const RESET_DEMO_EVENT = 'reset_demo';
+export const CONTACT_US_EVENT = 'contact_us';
 export const STEP_1_EVENT = 'step_1_event';
 export const STEP_2_EVENT = 'step_2_event';
 export const STEP_3_EVENT = 'step_3_event';

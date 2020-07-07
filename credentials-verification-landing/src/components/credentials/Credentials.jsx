@@ -2,11 +2,12 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { useAnalytics } from 'reactfire';
 import SplittedPage from './Organisms/SplittedPage/SplittedPage';
 import CredentialsList from './Organisms/CredentialList/CredentialsList';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { LEFT } from '../../helpers/constants';
+import { LEFT, RESET_DEMO_EVENT } from '../../helpers/constants';
 import buttonReset from '../../images/icon-reset.svg';
 import { UserContext } from '../providers/userContext';
 
@@ -19,6 +20,7 @@ const Credentials = ({
   showCongrats
 }) => {
   const { t } = useTranslation();
+  const firebase = useAnalytics();
 
   const { setUser } = useContext(UserContext);
 
@@ -32,11 +34,16 @@ const Credentials = ({
     />
   );
 
+  const handleReset = () => {
+    firebase.logEvent(RESET_DEMO_EVENT);
+    setUser(null);
+  };
+
   return (
     <div className="CredentialContainer">
       <div className="CredentialStepContent">
         <Row className="ControlButtons">
-          <button onClick={() => setUser(null)}>
+          <button onClick={handleReset}>
             <img src={buttonReset} alt="ButtonReset" className="ButtonReset" />
           </button>
           <hr />
