@@ -3,14 +3,14 @@ package io.iohk.atala.crypto
 import java.security.spec.{KeySpec, ECParameterSpec => JavaECParameterSpec}
 
 import io.iohk.atala.crypto.ECConfig.CURVE_NAME
-import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPublicKeySpec}
+import org.spongycastle.jce.ECNamedCurveTable
+import org.spongycastle.jce.provider.BouncyCastleProvider
+import org.spongycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPublicKeySpec}
 
 /**
-  * JVM implementation of {@link ECTrait}.
+  * Android implementation of {@link ECTrait}.
   */
-object EC extends GenericEC(new BouncyCastleProvider) {
+object AndroidEC extends GenericEC(new BouncyCastleProvider) {
   private lazy val ecParameterSpec = ECNamedCurveTable.getParameterSpec(CURVE_NAME)
 
   override protected val ecNamedCurveSpec: JavaECParameterSpec = new ECNamedCurveSpec(
