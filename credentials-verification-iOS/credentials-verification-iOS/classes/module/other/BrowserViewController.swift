@@ -7,12 +7,13 @@ class BrowserViewController: BaseViewController {
     override var presenter: BasePresenter { return presenterImpl }
 
     @IBOutlet weak var webView: WKWebView!
+    @IBOutlet weak var titleLbl: UILabel!
 
     var titleText: String? = ""
     var url: String? = ""
 
     override func navBarCustomStyle() -> NavBarCustomStyle {
-        return NavBarCustomStyle(hasNavBar: true, title: titleText, hasBackButton: true)
+        return NavBarCustomStyle(hasNavBar: true, title: "", hasBackButton: true)
     }
 
     override func viewDidLoad() {
@@ -20,6 +21,7 @@ class BrowserViewController: BaseViewController {
 
         // Setup
         setupWebView()
+        setutpTitle()
     }
 
     // MARK: Setup
@@ -29,6 +31,10 @@ class BrowserViewController: BaseViewController {
         webView.allowsBackForwardNavigationGestures = true
         webView.allowsLinkPreview = true
         loadlUrl(urlStr: url)
+    }
+ 
+    func setutpTitle() {
+        titleLbl.text = titleText
     }
 
     func loadlUrl(urlStr: String?) {
