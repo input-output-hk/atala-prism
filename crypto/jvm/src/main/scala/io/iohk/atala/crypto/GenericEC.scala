@@ -32,7 +32,8 @@ abstract class GenericEC(proviver: java.security.Provider) extends ECTrait {
     val keyGen = KeyPairGenerator.getInstance("ECDSA", proviver)
     val ecSpec = new JavaECGenParameterSpec(CURVE_NAME)
     keyGen.initialize(ecSpec, new SecureRandom())
-    JvmECKeyPair(keyGen.generateKeyPair())
+    val keyPair = keyGen.generateKeyPair()
+    ECKeyPair(new JvmECPrivateKey(keyPair.getPrivate), new JvmECPublicKey(keyPair.getPublic))
   }
 
   override def toPrivateKey(d: BigInt): ECPrivateKey = {

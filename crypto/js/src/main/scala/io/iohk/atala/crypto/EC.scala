@@ -17,7 +17,8 @@ object EC extends ECTrait {
   private val nativeEc = new ec(CURVE_NAME)
 
   override def generateKeyPair(): ECKeyPair = {
-    JsECKeyPair(nativeEc.genKeyPair())
+    val nativeKeyPair = nativeEc.genKeyPair()
+    ECKeyPair(new JsECPrivateKey(nativeKeyPair.getPrivate()), new JsECPublicKey(nativeKeyPair.getPublic()))
   }
 
   override def toPrivateKey(d: BigInt): ECPrivateKey = {

@@ -2,11 +2,7 @@ package io.iohk.atala.crypto
 
 import io.iohk.atala.crypto.ECUtils.toUnsignedByteArray
 
-trait ECKeyPair {
-  def getPrivateKey: ECPrivateKey
-
-  def getPublicKey: ECPublicKey
-}
+case class ECKeyPair(privateKey: ECPrivateKey, publicKey: ECPublicKey)
 
 trait ECKey {
   def getEncoded: Array[Byte]

@@ -13,10 +13,10 @@ object PrismJsSdk {
   def generateKeyPair(): js.Dictionary[_] = {
     val pair = EC.generateKeyPair()
     js.Dictionary(
-      "privateKey" -> pair.getPrivateKey.getD.toString,
+      "privateKey" -> pair.privateKey.getD.toString,
       "publicKey" -> js.Dictionary(
-        "x" -> pair.getPublicKey.getCurvePoint.x.toString,
-        "y" -> pair.getPublicKey.getCurvePoint.y.toString
+        "x" -> pair.publicKey.getCurvePoint.x.toString,
+        "y" -> pair.publicKey.getCurvePoint.y.toString
       )
     )
   }

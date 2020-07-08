@@ -16,6 +16,20 @@ private[crypto] trait ECTrait {
   def generateKeyPair(): ECKeyPair
 
   /**
+    * Returns the key-pair represented by the given private key's `D` as byte array.
+    */
+  def toKeyPairFromPrivateKey(d: Array[Byte]): ECKeyPair = {
+    toKeyPairFromPrivateKey(toBigInt(d))
+  }
+
+  /**
+    * Returns the key-pair represented by the given private key's `D` as number.
+    */
+  def toKeyPairFromPrivateKey(d: BigInt): ECKeyPair = {
+    ECKeyPair(toPrivateKey(d), toPublicKeyFromPrivateKey(d))
+  }
+
+  /**
     * Returns the private key represented by the given byte array.
     */
   def toPrivateKey(d: Array[Byte]): ECPrivateKey = {

@@ -17,41 +17,41 @@ abstract class ECSpecBase(val ec: ECTrait) extends AnyWordSpec {
     "generate a key pair" in {
       val keyPair = ec.generateKeyPair()
 
-      keyPair.getPrivateKey.getEncoded.length mustBe >(0)
-      keyPair.getPrivateKey.getHexEncoded.length mustBe 2 * keyPair.getPrivateKey.getEncoded.length
-      keyPair.getPublicKey.getEncoded.length mustBe (ECConfig.CURVE_FIELD_BYTE_SIZE * 2 + 1)
-      keyPair.getPublicKey.getHexEncoded.length mustBe 2 * keyPair.getPublicKey.getEncoded.length
+      keyPair.privateKey.getEncoded.length mustBe >(0)
+      keyPair.privateKey.getHexEncoded.length mustBe 2 * keyPair.privateKey.getEncoded.length
+      keyPair.publicKey.getEncoded.length mustBe (ECConfig.CURVE_FIELD_BYTE_SIZE * 2 + 1)
+      keyPair.publicKey.getHexEncoded.length mustBe 2 * keyPair.publicKey.getEncoded.length
     }
 
     "generate the private key from the encoded byte array" in {
       val keyPair = ec.generateKeyPair()
-      val encodedPrivateKey = keyPair.getPrivateKey.getEncoded
+      val encodedPrivateKey = keyPair.privateKey.getEncoded
 
-      ec.toPrivateKey(encodedPrivateKey) mustBe keyPair.getPrivateKey
-      ec.toPrivateKey(BigInt(1, encodedPrivateKey)) mustBe keyPair.getPrivateKey
+      ec.toPrivateKey(encodedPrivateKey) mustBe keyPair.privateKey
+      ec.toPrivateKey(BigInt(1, encodedPrivateKey)) mustBe keyPair.privateKey
     }
 
     "generate the public key from the curve point" in {
       val keyPair = ec.generateKeyPair()
-      val ecPoint = keyPair.getPublicKey.getCurvePoint
+      val ecPoint = keyPair.publicKey.getCurvePoint
 
-      ec.toPublicKey(ecPoint.x, ecPoint.y) mustBe keyPair.getPublicKey
-      ec.toPublicKey(ecPoint.x.toByteArray, ecPoint.y.toByteArray) mustBe keyPair.getPublicKey
+      ec.toPublicKey(ecPoint.x, ecPoint.y) mustBe keyPair.publicKey
+      ec.toPublicKey(ecPoint.x.toByteArray, ecPoint.y.toByteArray) mustBe keyPair.publicKey
     }
 
     "generate the public key from the encoded byte array" in {
       val keyPair = ec.generateKeyPair()
-      val encodedPublicKey = keyPair.getPublicKey.getEncoded
+      val encodedPublicKey = keyPair.publicKey.getEncoded
 
-      ec.toPublicKey(encodedPublicKey) mustBe keyPair.getPublicKey
+      ec.toPublicKey(encodedPublicKey) mustBe keyPair.publicKey
     }
 
     "generate the public key from private key" in {
       val keyPair = ec.generateKeyPair()
-      val encodedPrivateKey = keyPair.getPrivateKey.getEncoded
+      val encodedPrivateKey = keyPair.privateKey.getEncoded
 
-      ec.toPublicKeyFromPrivateKey(encodedPrivateKey) mustBe keyPair.getPublicKey
-      ec.toPublicKeyFromPrivateKey(BigInt(1, encodedPrivateKey)) mustBe keyPair.getPublicKey
+      ec.toPublicKeyFromPrivateKey(encodedPrivateKey) mustBe keyPair.publicKey
+      ec.toPublicKeyFromPrivateKey(BigInt(1, encodedPrivateKey)) mustBe keyPair.publicKey
     }
 
     "generate the same private key across all implementations" in {
@@ -75,18 +75,18 @@ abstract class ECSpecBase(val ec: ECTrait) extends AnyWordSpec {
       val keyPair = ec.generateKeyPair()
       val text = "The quick brown fox jumps over the lazy dog"
 
-      val signature = ec.sign(text, keyPair.getPrivateKey)
+      val signature = ec.sign(text, keyPair.privateKey)
 
-      ec.verify(text, keyPair.getPublicKey, signature) mustBe true
+      ec.verify(text, keyPair.publicKey, signature) mustBe true
     }
 
     "sign and verify data" in {
       val keyPair = ec.generateKeyPair()
       val data = TEST_BYTES
 
-      val signature = ec.sign(data, keyPair.getPrivateKey)
+      val signature = ec.sign(data, keyPair.privateKey)
 
-      ec.verify(data, keyPair.getPublicKey, signature) mustBe true
+      ec.verify(data, keyPair.publicKey, signature) mustBe true
     }
 
     "not verify the wrong input" in {
@@ -95,12 +95,12 @@ abstract class ECSpecBase(val ec: ECTrait) extends AnyWordSpec {
       val text = "The quick brown fox jumps over the lazy dog"
       val wrongText = "Wrong text"
 
-      val signature = ec.sign(text, keyPair.getPrivateKey)
-      val wrongSignature = ec.sign(wrongText, keyPair.getPrivateKey)
+      val signature = ec.sign(text, keyPair.privateKey)
+      val wrongSignature = ec.sign(wrongText, keyPair.privateKey)
 
-      ec.verify(wrongText, keyPair.getPublicKey, signature) mustBe false
-      ec.verify(text, wrongKeyPair.getPublicKey, signature) mustBe false
-      ec.verify(text, keyPair.getPublicKey, wrongSignature) mustBe false
+      ec.verify(wrongText, keyPair.publicKey, signature) mustBe false
+      ec.verify(text, wrongKeyPair.publicKey, signature) mustBe false
+      ec.verify(text, keyPair.publicKey, wrongSignature) mustBe false
     }
 
     "verify the same signature in all implementations" in {
