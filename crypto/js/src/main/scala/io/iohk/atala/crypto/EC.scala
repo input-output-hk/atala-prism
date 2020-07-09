@@ -5,8 +5,9 @@ import io.iohk.atala.crypto.ECUtils.toHex
 import typings.elliptic.AnonX
 import typings.elliptic.mod.ec
 import typings.elliptic.mod.ec.KeyPair
-import typings.hashJs.{hashJsStrings, mod => hash}
+import typings.hashJs.{mod => hash}
 
+import scala.scalajs.js
 import scala.scalajs.js.typedarray.{Uint8Array, _}
 
 /**
@@ -57,10 +58,9 @@ object EC extends ECTrait {
     }
   }
 
-  private def sha256(bytes: Array[Byte]): String = {
-    val byteArray = bytes.toTypedArray
-    val uint8Array = new Uint8Array(byteArray.buffer, byteArray.byteOffset, byteArray.length)
+  private def sha256(bytes: Array[Byte]): js.Array[Double] = {
+    val uint8Array = new Uint8Array(bytes.toTypedArray.asInstanceOf[Uint8Array])
     val sha256 = hash.sha256().update(uint8Array)
-    sha256.digest_hex(hashJsStrings.hex)
+    sha256.digest()
   }
 }
