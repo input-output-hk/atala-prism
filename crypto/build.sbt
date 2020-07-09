@@ -60,7 +60,8 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
     npmDependencies in Compile ++= Seq(
       "elliptic" -> "6.5.2",
       "hash.js" -> "1.1.7",
-      "@types/elliptic" -> "6.4.12"
+      "@types/elliptic" -> "6.4.12",
+      "@types/node" -> "14.0.0"
     ),
     webpackBundlingMode := BundlingMode.LibraryAndApplication("PrismSdk")
   )

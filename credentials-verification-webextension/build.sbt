@@ -126,7 +126,8 @@ npmDependencies in Compile ++= Seq(
   "@types/elliptic" -> "6.4.12",
   "grpc-web" -> "1.0.7",
   "bitcoinjs-lib" -> "5.1.8",
-  "hash.js" -> "1.1.7"
+  "hash.js" -> "1.1.7",
+  "@types/node" -> "14.0.0"
 )
 
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
