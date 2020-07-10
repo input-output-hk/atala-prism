@@ -1,15 +1,13 @@
 package io.iohk.atala.cvp.webextension.common
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.cvp.webextension.facades.bn.ReducedBigNumber
+import io.iohk.atala.crypto.{EC, ECKeyPair, ECPublicKey, ECUtils}
 import io.iohk.prism.protos.node_models._
 import typings.bip32.bip32Mod.BIP32Interface
 import typings.bip32.{mod => bip32}
-import typings.elliptic.mod.ec
-import typings.elliptic.mod.ec.{KeyPair, Signature}
 import typings.hashJs.{hashJsStrings, mod => hash}
+import typings.node.Buffer
 
-import scala.scalajs.js
 import scala.scalajs.js.typedarray._
 
 object ECKeyOperation {
@@ -19,8 +17,8 @@ object ECKeyOperation {
   // https://github.com/input-output-hk/atala/blob/develop/credentials-verification/docs/protocol/key-derivation.md
   private val firstMasterChild = "m/0'/0'/0'"
 
-  def didFromMasterKey(ecKeyPair: EcKeyPair): String = {
-    val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKeyPair), KeyUsage.MASTER_KEY)
+  def didFromMasterKey(ecKeyPair: ECKeyPair): String = {
+    val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
     val atalaOperation = createAtalaOperation(Seq(publicKey))
     val byteArray = atalaOperation.toByteArray.toTypedArray
     val uint8Array = new Uint8Array(byteArray.buffer, byteArray.byteOffset, byteArray.length)
@@ -30,14 +28,9 @@ object ECKeyOperation {
     did
   }
 
-  def createDIDOperation(ecKeyPair: EcKeyPair): AtalaOperation = {
-    val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKeyPair), KeyUsage.MASTER_KEY)
+  def createDIDOperation(ecKeyPair: ECKeyPair): AtalaOperation = {
+    val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
     createAtalaOperation(Seq(publicKey))
-  }
-
-  def createECKeyPair(mnemonic: Mnemonic): EcKeyPair = {
-    val root: BIP32Interface = bip32.fromSeed(mnemonic.toSyncBuffer)
-    EcKeyPair(root.derivePath(firstMasterChild))
   }
 
   private def createAtalaOperation(publicKeys: Seq[PublicKey]): AtalaOperation = {
@@ -49,43 +42,26 @@ object ECKeyOperation {
 
   def toSignedAtalaOperation(mnemonic: Mnemonic): SignedAtalaOperation = {
     val root: BIP32Interface = bip32.fromSeed(mnemonic.toSyncBuffer)
-    val ecKeyPair = EcKeyPair(root.derivePath(firstMasterChild))
+    val ecKeyPair = toKeyPair(root.derivePath(firstMasterChild))
     val publicKey =
-      toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKeyPair), KeyUsage.MASTER_KEY)
+      toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
     val atalaOperation = createAtalaOperation(Seq(publicKey))
-    val byteArray = atalaOperation.toByteArray.toTypedArray
-    val uint8Array = new Uint8Array(byteArray.buffer, byteArray.byteOffset, byteArray.length)
-    val sha256 = hash.sha256().update(uint8Array)
-    val hashed = sha256.digest_hex(hashJsStrings.hex)
-    val signature: Signature =
-      ecKeyPair.privateKeyPair.sign(hashed)
+    val signature = EC.sign(atalaOperation.toByteArray, ecKeyPair.privateKey)
 
     SignedAtalaOperation(
       signedWith = firstMasterKeyId,
-      signature = ByteString.copyFrom(signature.toDER().asInstanceOf[Int8Array].toArray),
+      signature = ByteString.copyFrom(signature.data),
       operation = Some(atalaOperation)
     )
   }
 
-  private def toECKeyData(key: KeyPair): ECKeyData = {
-    val publicKey = key.getPublic()
-    val x = coordinateToByteArray(publicKey.getX)
-    val y = coordinateToByteArray(publicKey.getY)
+  private def toECKeyData(publicKey: ECPublicKey): ECKeyData = {
+    val point = publicKey.getCurvePoint
 
     ECKeyData()
       .withCurve(CURVE_NAME)
-      .withX(ByteString.copyFrom(x))
-      .withY(ByteString.copyFrom(y))
-  }
-
-  private def coordinateToByteArray(coordinate: js.Any): Array[Byte] = {
-    val hex = coordinate.asInstanceOf[ReducedBigNumber].toString("hex")
-    hex
-      .grouped(2)
-      .map { h =>
-        Integer.parseInt(h, 16).toByte
-      }
-      .toArray
+      .withX(ByteString.copyFrom(point.x.toByteArray))
+      .withY(ByteString.copyFrom(point.y.toByteArray))
   }
 
   private def toPublicKey(
@@ -99,14 +75,23 @@ object ECKeyOperation {
       .withUsage(keyUsage)
   }
 
-}
+  // TODO: Move these two methods to EC.
+  def toKeyPair(mnemonic: Mnemonic): ECKeyPair = {
+    val root: BIP32Interface = bip32.fromSeed(mnemonic.toSyncBuffer)
+    toKeyPair(root.derivePath(firstMasterChild))
+  }
 
-case class EcKeyPair(privateKeyPair: KeyPair, publicKeyPair: KeyPair)
+  private def toKeyPair(root: BIP32Interface): ECKeyPair = {
+    val privateKey = ECUtils.toBigInt(toBytes(root.privateKey.get))
+    EC.toKeyPairFromPrivateKey(privateKey)
+  }
 
-object EcKeyPair {
-  val CURVE_NAME = "secp256k1"
-  val ec = new ec(CURVE_NAME)
-  def apply(root: BIP32Interface): EcKeyPair = {
-    new EcKeyPair(ec.keyFromPrivate(root.privateKey.get), ec.keyFromPublic(root.publicKey))
+  private def toBytes(buffer: Buffer): Array[Byte] = {
+    val len = buffer.length.toInt
+    val bytes = new Array[Byte](len)
+    for (i <- 0 until len) {
+      bytes(i) = buffer(i).get.toByte
+    }
+    bytes
   }
 }

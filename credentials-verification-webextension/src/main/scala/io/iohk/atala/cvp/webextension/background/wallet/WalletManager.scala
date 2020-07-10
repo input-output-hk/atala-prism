@@ -7,12 +7,12 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
+import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserTabService}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
-import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
@@ -93,7 +93,6 @@ private[background] class WalletManager(
 )(implicit
     ectx: ExecutionContext
 ) {
-  val ec: EC = new EC(WalletManager.CURVE_NAME)
   private var storageKey: Option[CryptoKey] = None
   type SessionID = String
   type Origin = String
@@ -117,14 +116,14 @@ private[background] class WalletManager(
     this.walletData = Some(walletData)
   }
 
-  def createKey(name: String): Future[KeyPair] = {
+  def createKey(name: String): Future[ECKeyPair] = {
     (walletData, storageKey) match {
       case (Some(wallet), Some(encryptionKey)) =>
         if (wallet.keys.contains(name)) {
           Future.failed(new IllegalArgumentException("Key exists"))
         } else {
-          val newKeyPair = ec.genKeyPair()
-          val newWalletData = wallet.addKey(name, newKeyPair.getPrivate("hex"))
+          val newKeyPair = EC.generateKeyPair()
+          val newWalletData = wallet.addKey(name, newKeyPair.privateKey.getHexEncoded)
           for {
             _ <- save(encryptionKey, newWalletData)
             _ = updateStorageKeyAndWalletData(storageKey.get, newWalletData)
@@ -385,7 +384,7 @@ private[background] class WalletManager(
   }
 
   private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {
-    val eckeyPair = ECKeyOperation.createECKeyPair(mnemonic)
+    val eckeyPair = ECKeyOperation.toKeyPair(mnemonic)
     connectorClientService.getCurrentUser(eckeyPair).map { res =>
       WalletData(
         keys = Map.empty,

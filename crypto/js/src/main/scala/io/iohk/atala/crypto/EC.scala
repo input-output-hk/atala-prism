@@ -2,12 +2,15 @@ package io.iohk.atala.crypto
 
 import io.iohk.atala.crypto.ECConfig.CURVE_NAME
 import io.iohk.atala.crypto.ECUtils.toHex
+import typings.bnJs.mod.^
 import typings.elliptic.AnonX
+import typings.elliptic.mod.curve.base.BasePoint
 import typings.elliptic.mod.ec
 import typings.elliptic.mod.ec.KeyPair
 import typings.hashJs.{mod => hash}
 
 import scala.scalajs.js
+import scala.scalajs.js.`|`
 import scala.scalajs.js.typedarray.{Uint8Array, _}
 
 /**
@@ -41,7 +44,7 @@ object EC extends ECTrait {
   override def sign(data: Array[Byte], privateKey: ECPrivateKey): ECSignature = {
     privateKey match {
       case key: JsECPrivateKey =>
-        val signature = nativeEc.sign(sha256(data), key.privateKey.toBuffer())
+        val signature = nativeEc.sign(sha256(data), asKeyPair(key.privateKey))
         val hexSignature = signature.toDER(HEX_ENC).toString
         ECSignature(ECUtils.toUnsignedByteArray(ECUtils.toBigInt(hexSignature)))
     }
@@ -53,7 +56,7 @@ object EC extends ECTrait {
         nativeEc.verify(
           sha256(data),
           ECUtils.bytesToHex(signature.data),
-          key.publicKey.asInstanceOf[KeyPair] // Force the type, as JS can actually get this type
+          asKeyPair(key.publicKey)
         )
     }
   }
@@ -62,5 +65,10 @@ object EC extends ECTrait {
     val uint8Array = new Uint8Array(bytes.toTypedArray.asInstanceOf[Uint8Array])
     val sha256 = hash.sha256().update(uint8Array)
     sha256.digest()
+  }
+
+  private def asKeyPair(key: ^ | BasePoint): KeyPair = {
+    // The type can be enforced as the JS implementation can figure it out at runtime
+    key.asInstanceOf[KeyPair]
   }
 }

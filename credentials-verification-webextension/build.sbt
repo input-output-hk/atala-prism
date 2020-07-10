@@ -118,15 +118,10 @@ libraryDependencies += "com.lihaoyi" %%% "scalatags" % scalatagsVersion
 // js
 npmDependencies in Compile ++= Seq(
   "uuid" -> "3.1.0",
-  "elliptic" -> "6.5.2",
   "bip39" -> "3.0.2",
   "bip32" -> "2.0.5",
-  "bn.js" -> "5.1.1", // already provides types
-  "elliptic" -> "6.5.2",
-  "@types/elliptic" -> "6.4.12",
   "grpc-web" -> "1.0.7",
   "bitcoinjs-lib" -> "5.1.8",
-  "hash.js" -> "1.1.7",
   "@types/node" -> "14.0.0"
 )
 
@@ -134,6 +129,10 @@ libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 
 // grpc libraries
 libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % grpcWebVersion
+
+// Internal libraries
+lazy val cryptoLib = ProjectRef(file("../crypto"), "cryptoJS")
+dependsOn(cryptoLib)
 
 // Enable DOM testing with Chrome under Selenium
 requireJsDomEnv in Test := true
