@@ -7,11 +7,8 @@ import typings.elliptic.AnonX
 import typings.elliptic.mod.curve.base.BasePoint
 import typings.elliptic.mod.ec
 import typings.elliptic.mod.ec.KeyPair
-import typings.hashJs.{mod => hash}
 
-import scala.scalajs.js
 import scala.scalajs.js.`|`
-import scala.scalajs.js.typedarray.{Uint8Array, _}
 
 /**
   * JavaScript implementation of {@link ECTrait}.
@@ -44,7 +41,7 @@ object EC extends ECTrait {
   override def sign(data: Array[Byte], privateKey: ECPrivateKey): ECSignature = {
     privateKey match {
       case key: JsECPrivateKey =>
-        val signature = nativeEc.sign(sha256(data), asKeyPair(key.privateKey))
+        val signature = nativeEc.sign(SHA256Digest.compute(data).hexValue, asKeyPair(key.privateKey))
         val hexSignature = signature.toDER(HEX_ENC).toString
         ECSignature(ECUtils.toUnsignedByteArray(ECUtils.toBigInt(hexSignature)))
     }
@@ -54,17 +51,11 @@ object EC extends ECTrait {
     publicKey match {
       case key: JsECPublicKey =>
         nativeEc.verify(
-          sha256(data),
+          SHA256Digest.compute(data).hexValue,
           ECUtils.bytesToHex(signature.data),
           asKeyPair(key.publicKey)
         )
     }
-  }
-
-  private def sha256(bytes: Array[Byte]): js.Array[Double] = {
-    val uint8Array = new Uint8Array(bytes.toTypedArray.asInstanceOf[Uint8Array])
-    val sha256 = hash.sha256().update(uint8Array)
-    sha256.digest()
   }
 
   private def asKeyPair(key: ^ | BasePoint): KeyPair = {
