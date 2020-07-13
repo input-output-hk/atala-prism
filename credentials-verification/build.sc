@@ -142,6 +142,7 @@ object versions {
 object common extends PrismScalaModule {
   override def ivyDeps =
     Agg(
+      ivy"io.iohk::crypto:latest.integration",
       ivy"org.flywaydb:flyway-core:6.0.2",
       ivy"org.postgresql:postgresql:42.2.6",
       ivy"com.typesafe:config:1.3.4",
@@ -155,6 +156,18 @@ object common extends PrismScalaModule {
       ivy"com.lihaoyi::os-lib:0.2.7",
       ivy"net.jtownson::odyssey:0.1.5"
     )
+
+  override def compile =
+    T {
+      publishLocalDeps()
+      super.compile()
+    }
+
+  def publishLocalDeps =
+    T {
+      println("Publishing local dependencies")
+      os.proc("sbt", "cryptoJVM/publishLocal").call(cwd = os.pwd / up / 'crypto)
+    }
 
   object `test-util` extends PrismScalaModule {
     override def moduleDeps = Seq(common) ++ super.moduleDeps

@@ -21,6 +21,20 @@ commands:
             # Halt the job if directories_changed.sh fails (i.e., detected a change). and avoid failing with "|| true"
             (./.circleci/directories_changed.sh << parameters.directories >> && circleci-agent step halt) || true
 
+  install-sbt:
+    description: "Install sbt"
+    parameters:
+      version:
+        type: string
+        default: "1.3.8"
+    steps:
+      - run:
+          name: "Install sbt"
+          command: |
+            apt update && apt install -y curl
+            curl -L -o sbt-<< parameters.version >>.deb https://dl.bintray.com/sbt/debian/sbt-<< parameters.version >>.deb
+            dpkg -i sbt-<< parameters.version >>.deb
+
   install-protoc:
     description: "Install protoc and its plugins"
     parameters:
@@ -217,12 +231,14 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification"
+          directories: "credentials-verification crypto"
 
       - restore_cache:
           keys:
             - cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
             - cv-cache-v1-
+
+      - install-sbt
 
       - install-coursier
 
@@ -334,7 +350,7 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification credentials-verification-webextension"
+          directories: "credentials-verification credentials-verification-webextension crypto"
 
       # Download and cache dependencies
       - restore_cache:

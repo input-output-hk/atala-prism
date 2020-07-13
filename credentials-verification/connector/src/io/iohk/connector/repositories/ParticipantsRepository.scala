@@ -5,10 +5,10 @@ import java.util.Base64
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.connector.errors.{ConnectorError, LoggingContext, UnknownValueError, _}
 import io.iohk.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.connector.repositories.daos.ParticipantsDAO
-import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -54,15 +54,16 @@ class ParticipantsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) 
       .toFutureEither
   }
 
-  def findBy(encodedPublicKey: EncodedPublicKey): FutureEither[ConnectorError, ParticipantInfo] = {
+  def findBy(publicKey: ECPublicKey): FutureEither[ConnectorError, ParticipantInfo] = {
+    val encodedPublicKey = Base64.getEncoder.encodeToString(publicKey.getEncoded)
     implicit val loggingContext = LoggingContext("encodedPublicKey" -> encodedPublicKey)
 
     ParticipantsDAO
-      .findByPublicKey(encodedPublicKey)
+      .findByPublicKey(publicKey)
       .toRight(
         UnknownValueError(
           "encodedPublicKey",
-          Base64.getEncoder.encodeToString(encodedPublicKey.bytes.toArray)
+          encodedPublicKey
         ).logWarn
       )
       .transact(xa)

@@ -1,12 +1,12 @@
 package io.iohk.node.services
 
-import java.security.KeyPair
 import java.time.Instant
 
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
-import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
+import io.iohk.atala.crypto.{EC, ECKeyPair}
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
@@ -23,23 +23,23 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object ObjectManagementServiceSpec {
-  private val newKeysPairs = List.fill(10) { ECKeys.generateKeyPair() }
+  private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
 
   val exampleOperations = newKeysPairs.zipWithIndex.map {
-    case (keyPair: KeyPair, i) =>
+    case (keyPair: ECKeyPair, i) =>
       BlockProcessingServiceSpec.createDidOperation.update(_.createDid.didData.publicKeys.modify { keys =>
         keys :+ node_models.PublicKey(
           id = s"key$i",
           usage = node_models.KeyUsage.AUTHENTICATION_KEY,
           keyData = node_models.PublicKey.KeyData.EcKeyData(
-            CreateDIDOperationSpec.protoECKeyFromPublicKey(keyPair.getPublic)
+            CreateDIDOperationSpec.protoECKeyFromPublicKey(keyPair.publicKey)
           )
         )
       })
   }
 
   val exampleSignedOperations = exampleOperations.map { operation =>
-    BlockProcessingServiceSpec.signOperation(operation, "master", CreateDIDOperationSpec.masterKeys.getPrivate)
+    BlockProcessingServiceSpec.signOperation(operation, "master", CreateDIDOperationSpec.masterKeys.privateKey)
   }
 }
 

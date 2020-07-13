@@ -2,8 +2,8 @@ package io.iohk.connector.repositories.daos
 
 import cats.data.OptionT
 import doobie.implicits._
+import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.connector.model.{ParticipantInfo, TokenString}
-import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 
 object ParticipantsDAO {
@@ -45,7 +45,7 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
     }
 
-  def findByPublicKey(publicKey: EncodedPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+  def findByPublicKey(publicKey: ECPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
          |SELECT id, tpe, public_key, name, did, logo

@@ -5,7 +5,7 @@ import java.time.Instant
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Put, Read, Write}
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.atala.crypto.{EC, ECConfig}
 import io.iohk.node.bitcoin.models.{Blockhash, TransactionId}
 import io.iohk.node.models.nodeState.DIDPublicKeyState
 import io.iohk.node.models.{CredentialId, DIDSuffix, KeyUsage}
@@ -41,15 +41,15 @@ package object daos {
           Option[Int]
       )
     ].contramap { key =>
-      val curveName = ECKeys.CURVE_NAME
-      val point = ECKeys.getECPoint(key.key)
+      val curveName = ECConfig.CURVE_NAME
+      val point = key.key.getCurvePoint
       (
         key.didSuffix,
         key.keyId,
         key.keyUsage,
         curveName,
-        point.getAffineX.toByteArray,
-        point.getAffineY.toByteArray,
+        point.x.toByteArray,
+        point.y.toByteArray,
         key.addedOn.atalaBlockTimestamp,
         key.addedOn.atalaBlockSequenceNumber,
         key.addedOn.operationSequenceNumber,
@@ -78,8 +78,8 @@ package object daos {
       )
     ].map {
       case (didSuffix, keyId, keyUsage, curveId, x, y, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
-        assert(curveId == ECKeys.CURVE_NAME)
-        val javaPublicKey = ECKeys.toPublicKey(x, y)
+        assert(curveId == ECConfig.CURVE_NAME)
+        val javaPublicKey = EC.toPublicKey(x, y)
         val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield TimestampInfo(t, absn, osn)
         DIDPublicKeyState(
           didSuffix,

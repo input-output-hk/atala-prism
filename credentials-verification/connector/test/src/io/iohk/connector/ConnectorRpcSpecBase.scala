@@ -1,20 +1,18 @@
 package io.iohk.connector
 
-import java.security.KeyPair
 import java.time.Instant
 import java.util.concurrent.{Executor, TimeUnit}
 
 import doobie.implicits._
 import io.grpc._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
+import io.iohk.atala.crypto.{EC, ECKeyPair, ECPublicKey, ECSignature}
 import io.iohk.connector.model._
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
-import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
-import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{
   GrpcAuthenticationHeader,
   GrpcAuthenticationHeaderParser,
@@ -32,12 +30,11 @@ import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
-  def apply[T](requestNonce: Vector[Byte], signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T
-  def apply[T](requestNonce: Vector[Byte], keys: KeyPair, request: GeneratedMessage)(f: STUB => T): T = {
-    val encodedPublicKey = ECKeys.toEncodedPublicKey(keys.getPublic)
+  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T
+  def apply[T](requestNonce: Vector[Byte], keys: ECKeyPair, request: GeneratedMessage)(f: STUB => T): T = {
     val payload = SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
-    val signature = ECSignature.sign(keys.getPrivate, payload.array).toVector
-    apply(requestNonce, signature, encodedPublicKey)(f)
+    val signature = EC.sign(payload.array, keys.privateKey)
+    apply(requestNonce, signature, keys.publicKey)(f)
   }
   def unlogged[T](f: STUB => T): T
 }
@@ -102,7 +99,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         val blockingStub = stubFactory(channelHandle, callOptions)
         f(blockingStub)
       }
-      override def apply[T](requestNonce: Vector[Byte], signature: Vector[Byte], publicKey: EncodedPublicKey)(
+      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(
           f: STUB => T
       ): T = {
 
@@ -189,7 +186,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       name: String,
       tpe: ParticipantType,
       logo: Option[ParticipantLogo] = None,
-      publicKey: Option[EncodedPublicKey] = None,
+      publicKey: Option[ECPublicKey] = None,
       did: Option[String] = None
   ): ParticipantId = {
     val id = ParticipantId.random()
@@ -202,13 +199,13 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     id
   }
 
-  protected def createHolder(name: String, publicKey: Option[EncodedPublicKey] = None): ParticipantId = {
+  protected def createHolder(name: String, publicKey: Option[ECPublicKey] = None): ParticipantId = {
     createParticipant(name, ParticipantType.Holder, publicKey = publicKey)
   }
 
   protected def createIssuer(
       name: String,
-      publicKey: Option[EncodedPublicKey] = None,
+      publicKey: Option[ECPublicKey] = None,
       did: Option[String] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))), publicKey, did)
@@ -216,7 +213,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
 
   protected def createVerifier(
       name: String,
-      publicKey: Option[EncodedPublicKey] = None,
+      publicKey: Option[ECPublicKey] = None,
       did: Option[String] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))), publicKey, did)

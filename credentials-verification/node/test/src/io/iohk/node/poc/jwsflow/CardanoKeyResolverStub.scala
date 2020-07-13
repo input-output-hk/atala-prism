@@ -5,9 +5,9 @@ import java.security.PublicKey
 
 import io.iohk.cvp.utils.syntax._
 import io.iohk.node.grpc.ProtoCodecs
+import io.iohk.prism.protos.node_api
 import io.iohk.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.prism.protos.node_models.DIDData
-import io.iohk.prism.protos.node_api
 import net.jtownson.odyssey.PublicKeyResolver
 import org.scalatest.OptionValues._
 
@@ -59,7 +59,7 @@ case class CardanoKeyResolverStub(nodeService: node_api.NodeServiceGrpc.NodeServ
       maybeKey = didData.publicKeys.find(publicKey => publicKey.id == keyId)
       pk <- maybeKey.fold[Future[PublicKey]](
         Future.failed(new Exception(s"No key found matching key id ${publicKeyRef.toString}"))
-      )(nodeKey => Future.successful(ProtoCodecs.fromProtoKey(nodeKey).value))
+      )(nodeKey => Future.successful(ProtoCodecs.fromProtoKeyLegacy(nodeKey).value))
     } yield {
       pk
     }

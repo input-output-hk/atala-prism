@@ -19,8 +19,8 @@ object IssueCredentialOperationSpec {
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
   lazy val issuerDidKeys = List(
-    DIDPublicKey(issuer, "master", KeyUsage.MasterKey, masterKeys.getPublic),
-    DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublic)
+    DIDPublicKey(issuer, "master", KeyUsage.MasterKey, masterKeys.publicKey),
+    DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.publicKey)
   )
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
@@ -128,7 +128,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
         .right
         .value
 
-      key mustBe issuingKeys.getPublic
+      key mustBe issuingKeys.publicKey
       previousOperation mustBe None
     }
   }
