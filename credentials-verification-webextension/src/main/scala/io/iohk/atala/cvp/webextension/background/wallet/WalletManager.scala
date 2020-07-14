@@ -11,6 +11,7 @@ import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserTabService}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
@@ -77,6 +78,7 @@ case class WalletData(
     keys: Map[String, String],
     mnemonic: Mnemonic,
     organisationName: String,
+    did: String,
     role: Role,
     logo: Array[Byte]
 ) {
@@ -141,20 +143,34 @@ private[background] class WalletManager(
     signingRequests.values.map(_._1).toSeq
   }
 
-  def signRequestAndPublish(requestId: Int): Future[String] = {
-    val (request, promise) =
-      signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
-    walletData.map { data =>
-      data.mnemonic //TODO sign and publish
-    }
-    val signature = "" //TODO SIGN
+  def signRequestAndPublish(requestId: Int): Future[Unit] = {
 
-    signingRequests -= requestId
-    updateBadge()
-    updateTab()
-    println(s"Signed and Published = ${request.subject.id}")
-    promise.success(signature) //TODO signature hex
-    promise.future
+    val signingRequestsF = Future.fromTry {
+      Try {
+        signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
+      }
+    }
+
+    val walletDataF = Future.fromTry {
+      Try {
+        walletData.getOrElse(
+          throw new RuntimeException("You need to create the wallet before logging in and creating session")
+        )
+      }
+    }
+
+    for {
+      (request, _) <- signingRequestsF
+      walletData <- walletDataF
+      ecKeyPair = ecKeyPairFromSeed(walletData.mnemonic)
+      dataAsJson = request.subject.asJson.noSpaces
+      _ <- connectorClientService.publishCredential(ecKeyPair, walletData.did, request.subject.id, dataAsJson)
+    } yield {
+      signingRequests -= requestId
+      println(s"Signed and Published = ${request.subject.id}")
+      updateBadge()
+      updateTab()
+    }
   }
 
   def initialAesCtr: crypto.AesCtrParams = {
@@ -291,10 +307,10 @@ private[background] class WalletManager(
   ): Future[Unit] = {
     val result = for {
       aesKey <- generateSecretKey(password)
-      newWalletData = WalletData(Map.empty, mnemonic, organisationName, role, logo)
+      did <- registerDid(mnemonic, role, organisationName, logo)
+      newWalletData = WalletData(Map.empty, mnemonic, organisationName, did, role, logo)
       _ <- save(aesKey, newWalletData)
       _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
-      _ <- registerDid(mnemonic, role, organisationName, logo)
     } yield ()
 
     result.onComplete {
@@ -367,28 +383,38 @@ private[background] class WalletManager(
     this.walletData = None
   }
 
-  private def registerDid(mnemonic: Mnemonic, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
+  private def registerDid(
+      mnemonic: Mnemonic,
+      role: Role,
+      organisationName: String,
+      logo: Array[Byte]
+  ): Future[String] = {
+
     val connectRole = Role.toConnectorApiRole(role)
     val logoByteString = ByteString.copyFrom(logo)
+    val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
+
     val registerDIDRequest =
       RegisterDIDRequest(
-        Some(ECKeyOperation.toSignedAtalaOperation(mnemonic)),
+        Some(signedAtalaOperation(ecKeyPair, createDIDAtalaOperation(ecKeyPair))),
         connectRole,
         organisationName,
         logoByteString
       )
     connectorClientService.registerDID(registerDIDRequest).map { response =>
       println(s"*****RegisteredDID******=${response.did}")
-      ()
+      response.did
     }
   }
 
   private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {
-    val eckeyPair = ECKeyOperation.toKeyPair(mnemonic)
-    connectorClientService.getCurrentUser(eckeyPair).map { res =>
+    val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
+    val did = didFromMasterKey(ecKeyPair)
+    connectorClientService.getCurrentUser(ecKeyPair, did).map { res =>
       WalletData(
         keys = Map.empty,
         mnemonic = mnemonic,
+        did = did,
         organisationName = res.name,
         role = Role.toRole(res.role),
         logo = res.logo.bytes

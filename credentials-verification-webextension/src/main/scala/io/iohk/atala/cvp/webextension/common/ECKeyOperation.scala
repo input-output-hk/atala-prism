@@ -1,14 +1,11 @@
 package io.iohk.atala.cvp.webextension.common
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.crypto.{EC, ECKeyPair, ECPublicKey, ECUtils}
+import io.iohk.atala.crypto._
 import io.iohk.prism.protos.node_models._
 import typings.bip32.bip32Mod.BIP32Interface
 import typings.bip32.{mod => bip32}
-import typings.hashJs.{hashJsStrings, mod => hash}
 import typings.node.Buffer
-
-import scala.scalajs.js.typedarray._
 
 object ECKeyOperation {
   val CURVE_NAME = "secp256k1"
@@ -18,36 +15,32 @@ object ECKeyOperation {
   private val firstMasterChild = "m/0'/0'/0'"
 
   def didFromMasterKey(ecKeyPair: ECKeyPair): String = {
-    val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
-    val atalaOperation = createAtalaOperation(Seq(publicKey))
-    val byteArray = atalaOperation.toByteArray.toTypedArray
-    val uint8Array = new Uint8Array(byteArray.buffer, byteArray.byteOffset, byteArray.length)
-    val sha256 = hash.sha256().update(uint8Array)
-    val didSuffix = sha256.digest_hex(hashJsStrings.hex)
+    val atalaOperation = createDIDAtalaOperation(ecKeyPair)
+    val didSuffix = SHA256Digest.compute(atalaOperation.toByteArray).hexValue
     val did = s"did:prism:$didSuffix"
     did
   }
 
-  def createDIDOperation(ecKeyPair: ECKeyPair): AtalaOperation = {
-    val publicKey = toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
-    createAtalaOperation(Seq(publicKey))
-  }
-
-  private def createAtalaOperation(publicKeys: Seq[PublicKey]): AtalaOperation = {
-    val didData = DIDData(publicKeys = publicKeys)
+  def createDIDAtalaOperation(ecKeyPair: ECKeyPair): AtalaOperation = {
+    val publicKey =
+      toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
+    val didData = DIDData(publicKeys = Seq(publicKey))
     val createDIDOperation = CreateDIDOperation(Some(didData))
     val atalaOperation = AtalaOperation(AtalaOperation.Operation.CreateDid(createDIDOperation))
     atalaOperation
   }
 
-  def toSignedAtalaOperation(mnemonic: Mnemonic): SignedAtalaOperation = {
-    val root: BIP32Interface = bip32.fromSeed(mnemonic.toSyncBuffer)
-    val ecKeyPair = toKeyPair(root.derivePath(firstMasterChild))
-    val publicKey =
-      toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
-    val atalaOperation = createAtalaOperation(Seq(publicKey))
-    val signature = EC.sign(atalaOperation.toByteArray, ecKeyPair.privateKey)
+  def issuerOperation(issuerDid: String, dataAsJson: String): AtalaOperation = {
+    val contentHash = ByteString.copyFrom(dataAsJson.getBytes)
+    val credentialData = CredentialData(issuer = issuerDid, contentHash = contentHash)
+    val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
+    val atalaOperation = AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation))
+    atalaOperation
+  }
 
+  def signedAtalaOperation(ecKeyPair: ECKeyPair, func: => AtalaOperation): SignedAtalaOperation = {
+    val atalaOperation = func
+    val signature = EC.sign(atalaOperation.toByteArray, ecKeyPair.privateKey)
     SignedAtalaOperation(
       signedWith = firstMasterKeyId,
       signature = ByteString.copyFrom(signature.data),
@@ -76,7 +69,7 @@ object ECKeyOperation {
   }
 
   // TODO: Move these two methods to EC.
-  def toKeyPair(mnemonic: Mnemonic): ECKeyPair = {
+  def ecKeyPairFromSeed(mnemonic: Mnemonic): ECKeyPair = {
     val root: BIP32Interface = bip32.fromSeed(mnemonic.toSyncBuffer)
     toKeyPair(root.derivePath(firstMasterChild))
   }

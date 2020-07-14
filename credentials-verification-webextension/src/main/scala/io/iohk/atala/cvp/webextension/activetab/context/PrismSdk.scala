@@ -62,7 +62,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
 
   private def readJsonAs[T](jsonAsString: String)(implicit decoder: io.circe.Decoder[T]): T = {
     val exampleJson = """{
-                        |  "id": "did:example:c276e12ec21ebfeb1f712ebc6f2",
+                        |  "id": "credentialId is a UUID",
                         |  "properties": {
                         |    "key1": "Example University",
                         |    "key2": "en"

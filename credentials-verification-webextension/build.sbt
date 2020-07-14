@@ -159,7 +159,14 @@ addCompilerPlugin(
 
 PB.protoSources in Compile := Seq(file("../credentials-verification/protos"))
 val dependencyProtoList =
-  Seq("connector_api.proto", "connector_models.proto", "node_models.proto", "common_models.proto")
+  Seq(
+    "connector_api.proto",
+    "connector_models.proto",
+    "node_models.proto",
+    "common_models.proto",
+    "cmanager_models.proto",
+    "cmanager_api.proto"
+  )
 
 includeFilter in PB.generate := new SimpleFileFilter((f: File) => dependencyProtoList.contains(f.getName))
 
