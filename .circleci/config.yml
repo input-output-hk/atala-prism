@@ -245,15 +245,37 @@ jobs:
             echo "export ENV=$branchPrefix" >> $BASH_ENV;
             . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
+      # Compile each component separately to avoid hitting out-of-memory errors
+      - run:
+          name: Compile credentials-verification components
+          command: |
+            cd credentials-verification
+            mill common.__.compile && \
+                mill connector.__.compile && \
+                mill node.__.compile && \
+                mill __.compile
+
       - run:
           name: Test credentials-verification components
-          command: cd credentials-verification && mill -i __.compile && mill -i __.test
+          command: cd credentials-verification && mill -i __.test
 
       - save_cache:
           key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
           paths:
             - ~/.cache/coursier
             - ~/.ivy2
+
+      - run:
+          name: Generate code coverage reports
+          command: cd credentials-verification && mill _.scoverage.htmlReport
+
+      # Store code coverage reports
+      - store_artifacts:
+          path: credentials-verification/out/common/scoverage/htmlReport/dest
+      - store_artifacts:
+          path: credentials-verification/out/connector/scoverage/htmlReport/dest
+      - store_artifacts:
+          path: credentials-verification/out/node/scoverage/htmlReport/dest
 
   build-credentials-verification-landing:
     working_directory: ~/repo
@@ -413,6 +435,14 @@ jobs:
       - run:
           name: Run unit tests
           command: cd crypto && sbt test
+
+      - run:
+          name: Generate code coverage reports
+          command: cd crypto && sbt coverageReport
+
+      # Store code coverage reports
+      - store_artifacts:
+          path: crypto/jvm/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
 
 workflows:
   version: 2.1

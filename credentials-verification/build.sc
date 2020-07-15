@@ -2,6 +2,7 @@ import java.time.{LocalDateTime, ZoneOffset}
 
 import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
+import $ivy.`com.lihaoyi::mill-contrib-scoverage:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION`
 import $ivy.`io.github.davidgregory084::mill-tpolecat:0.1.3`
 import ammonite.ops._
@@ -10,6 +11,7 @@ import io.github.davidgregory084.TpolecatModule
 import mill._
 import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scalapblib._
+import mill.contrib.scoverage.ScoverageModule
 import mill.define.{Sources, Target}
 import mill.modules.Assembly.Rule
 import mill.scalalib._
@@ -60,8 +62,9 @@ object GitSupport {
   }
 }
 
-trait PrismScalaModule extends TpolecatModule {
+trait PrismScalaModule extends TpolecatModule with ScoverageModule {
   def scalaVersion = versions.scala
+  def scoverageVersion = versions.scoverage
 
   override def compileIvyDeps =
     super.compileIvyDeps.map {
@@ -86,7 +89,7 @@ trait PrismScalaModule extends TpolecatModule {
         ) ++ Seq("-P:silencer:checkUnused")
     }
 
-  trait PrismTestsModule extends Tests {
+  trait PrismTestsModule extends ScoverageTests {
     // Override with T.input to avoid caching
     // Ref: https://www.lihaoyi.com/mill/page/tasks.html#millapictxenv
     override def forkEnv: Target[Map[String, String]] =
@@ -126,6 +129,7 @@ object app extends PrismScalaModule {
 object versions {
   def scalaPB = "0.9.6"
   val scala = "2.12.10"
+  val scoverage = "1.4.1"
   val circe = "0.12.2"
   // circe-optics does not release the same as circe, so use the closest version
   val circeOptics = "0.12.0"
