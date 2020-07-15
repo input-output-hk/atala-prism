@@ -33,6 +33,7 @@ lazy val root = project
 val bouncycastle = "1.62"
 val spongycastle = "1.58.0.0"
 val scalatest = "3.1.1"
+val circe = "0.13.0"
 
 lazy val crypto = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
@@ -63,5 +64,9 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
       "@types/elliptic" -> "6.4.12",
       "@types/node" -> "14.0.0"
     ),
-    webpackBundlingMode := BundlingMode.LibraryAndApplication("PrismSdk")
+    webpackBundlingMode := BundlingMode.LibraryAndApplication("PrismSdk"),
+    libraryDependencies ++= Seq(
+      "io.circe" %%% "circe-core" % circe,
+      "io.circe" %%% "circe-parser" % circe
+    )
   )

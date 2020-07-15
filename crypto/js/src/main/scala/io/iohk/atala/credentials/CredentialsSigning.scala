@@ -7,9 +7,9 @@ package io.iohk.atala.credentials
   * first iteration to define the missing structure and close the flows of verifiable
   * credentials issuance and verification
   */
-import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import io.iohk.atala.credentials.SignedCredential.DecomposedSignedCredential
 import io.iohk.atala.crypto._
 
 import scala.util.Try
@@ -23,29 +23,29 @@ case class Base64URLSignature(value: String) extends AnyVal
  */
 case class SignedCredential private (credential: Base64URLCredential, signature: Base64URLSignature) {
   def canonicalForm: String = s"${credential.value}${SignedCredential.SEPARATOR}${signature.value}"
-  def bytes: Array[Byte] = canonicalForm.getBytes(SignedCredential.usedCharSet)
+  def signedCredentialBytes: Array[Byte] = canonicalForm.getBytes(charsetUsed)
+  def decompose[A: UnsignedCredentialBuilder]: DecomposedSignedCredential = {
+    DecomposedSignedCredential(
+      credential = UnsignedCredentialBuilder[A].fromBytes(unsignedCredentialBytes),
+      signature = signatureBytes
+    )
+  }
+  def unsignedCredentialBytes: Array[Byte] = SignedCredential.decoder.decode(credential.value.getBytes(charsetUsed))
+  def signatureBytes: Array[Byte] = SignedCredential.decoder.decode(signature.value.getBytes(charsetUsed))
 }
 
 object SignedCredential {
 
-  case class DecomposedSignedCredential(credential: Array[Byte], signature: Array[Byte])
+  case class DecomposedSignedCredential(credential: UnsignedCredential, signature: Array[Byte])
 
   private val SEPARATOR = '.'
-  private val usedCharSet = StandardCharsets.UTF_8
   private def encoder: Base64.Encoder = Base64.getUrlEncoder()
   private def decoder: Base64.Decoder = Base64.getUrlDecoder()
 
-  def decompose(sc: SignedCredential): DecomposedSignedCredential = {
-    DecomposedSignedCredential(
-      credential = decoder.decode(sc.credential.value.getBytes(usedCharSet)),
-      signature = decoder.decode(sc.signature.value.getBytes(usedCharSet))
-    )
-  }
-
-  def from(credential: Array[Byte], signature: Array[Byte]): SignedCredential =
+  def from(credential: UnsignedCredential, signature: Array[Byte]): SignedCredential =
     new SignedCredential(
-      credential = Base64URLCredential(new String(encoder.encode(credential), usedCharSet)),
-      signature = Base64URLSignature(new String(encoder.encode(signature), usedCharSet))
+      credential = Base64URLCredential(encoder.encode(credential.bytes).asString),
+      signature = Base64URLSignature(encoder.encode(signature).asString)
     )
 
   def from(s: String): Try[SignedCredential] =
@@ -63,9 +63,9 @@ object SignedCredential {
 }
 
 trait CredentialsSigning {
-  // We receive a credential as Array[Byte] keeping serialization process orthogonal
+  // We receive a credential as UnsignedCredential keeping representation orthogonal
   // to the cryptographic one
-  def signCredential(credential: Array[Byte], privateKey: ECPrivateKey): SignedCredential
+  def signCredential(credential: UnsignedCredential, privateKey: ECPrivateKey): SignedCredential
 
   // We assume that the public key is present or can be retrieved from the representation
   // of the signed bytes
@@ -77,18 +77,17 @@ trait CredentialsSigning {
 
 object CredentialsCryptoSDKImpl extends CredentialsSigning {
 
-  override def signCredential(credential: Array[Byte], privateKey: ECPrivateKey): SignedCredential =
+  override def signCredential(credential: UnsignedCredential, privateKey: ECPrivateKey): SignedCredential =
     SignedCredential.from(
       credential,
-      EC.sign(credential, privateKey).data
+      EC.sign(credential.bytes, privateKey).data
     )
 
   override def verifyCredentialSignature(signedCredential: SignedCredential, publicKey: ECPublicKey): Boolean = {
-    val decomposedSignedCredential = SignedCredential.decompose(signedCredential)
-    EC.verify(decomposedSignedCredential.credential, publicKey, ECSignature(decomposedSignedCredential.signature))
+    EC.verify(signedCredential.unsignedCredentialBytes, publicKey, ECSignature(signedCredential.signatureBytes))
   }
 
   override def hash(signedCredential: SignedCredential): SHA256Digest = {
-    SHA256Digest.compute(signedCredential.bytes)
+    SHA256Digest.compute(signedCredential.signedCredentialBytes)
   }
 }

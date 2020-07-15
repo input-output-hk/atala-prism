@@ -1,20 +1,23 @@
 package io.iohk.atala.credentials
 
+import io.circe.Json
 import io.iohk.atala.crypto.EC
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.TryValues._
 
 class CredentialsSigningSpec extends AnyWordSpec {
-  // Test bytes generated randomly with `Array.fill(20)((scala.util.Random.nextInt(256) - 128).toByte)`
-  private val TEST_CREDENTIAL_BYTES =
-    Array[Byte](-107, 101, 68, 118, 27, 74, 29, 50, -32, 72, 47, -127, -49, 3, -8, -55, -63, -66, 46, 125)
+
+  import JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
+
+  private val TEST_UNSIGNED_CREDENTIAL =
+    UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom("", "", Json.obj())
 
   "CredentialsSigning.signCredential and CredentialsSigning.verifyCredentialSignature" should {
     "verify as valid a properly signed credential" in {
       val keyPair = EC.generateKeyPair()
 
-      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_CREDENTIAL_BYTES, keyPair.privateKey)
+      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
 
       CredentialsCryptoSDKImpl.verifyCredentialSignature(credential, keyPair.publicKey) must be(true)
     }
@@ -22,7 +25,7 @@ class CredentialsSigningSpec extends AnyWordSpec {
     "verify as valid a properly signed credential after reconstructing from String" in {
       val keyPair = EC.generateKeyPair()
 
-      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_CREDENTIAL_BYTES, keyPair.privateKey)
+      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
       val encoded = credential.canonicalForm
       val recovered = SignedCredential.from(encoded).success.value
 
@@ -32,8 +35,8 @@ class CredentialsSigningSpec extends AnyWordSpec {
     "verify as valid a properly signed credential after reconstructing from array pair" in {
       val keyPair = EC.generateKeyPair()
 
-      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_CREDENTIAL_BYTES, keyPair.privateKey)
-      val decomposedCredential = SignedCredential.decompose(credential)
+      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
+      val decomposedCredential = credential.decompose
       val recovered = SignedCredential.from(decomposedCredential.credential, decomposedCredential.signature)
 
       CredentialsCryptoSDKImpl.verifyCredentialSignature(recovered, keyPair.publicKey) must be(true)
@@ -43,7 +46,7 @@ class CredentialsSigningSpec extends AnyWordSpec {
       val keyPair = EC.generateKeyPair()
       val anotherKeyPair = EC.generateKeyPair()
 
-      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_CREDENTIAL_BYTES, keyPair.privateKey)
+      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
 
       CredentialsCryptoSDKImpl.verifyCredentialSignature(credential, anotherKeyPair.publicKey) must be(false)
     }
@@ -54,7 +57,7 @@ class CredentialsSigningSpec extends AnyWordSpec {
     "obtain the original value when reconstructing from String" in {
       val keyPair = EC.generateKeyPair()
 
-      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_CREDENTIAL_BYTES, keyPair.privateKey)
+      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
       val encoded = credential.canonicalForm
       val recovered = SignedCredential.from(encoded).success.value
 
@@ -64,8 +67,8 @@ class CredentialsSigningSpec extends AnyWordSpec {
     "obtain the original value when reconstructing from array pair" in {
       val keyPair = EC.generateKeyPair()
 
-      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_CREDENTIAL_BYTES, keyPair.privateKey)
-      val decomposedCredential = SignedCredential.decompose(credential)
+      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
+      val decomposedCredential = credential.decompose
       val recovered = SignedCredential.from(decomposedCredential.credential, decomposedCredential.signature)
 
       credential must be(recovered)
@@ -81,11 +84,20 @@ class CredentialsSigningSpec extends AnyWordSpec {
     "obtain the original credential when we decompose the credential" in {
       val keyPair = EC.generateKeyPair()
 
-      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_CREDENTIAL_BYTES, keyPair.privateKey)
-      val decomposedCredential = SignedCredential.decompose(credential)
+      val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
+      val decomposedCredential = credential.decompose
 
-      TEST_CREDENTIAL_BYTES must contain theSameElementsAs decomposedCredential.credential
+      TEST_UNSIGNED_CREDENTIAL must be(decomposedCredential.credential)
     }
+  }
 
+  "CredentialsSigning.unsignedCredentialBytes and CredentialsSigning.signatureBytes be consistent with input" in {
+    val keyPair = EC.generateKeyPair()
+
+    val credential = CredentialsCryptoSDKImpl.signCredential(TEST_UNSIGNED_CREDENTIAL, keyPair.privateKey)
+    val decomposedCredential = credential.decompose
+
+    credential.signatureBytes must contain theSameElementsAs decomposedCredential.signature
+    credential.unsignedCredentialBytes must contain theSameElementsAs TEST_UNSIGNED_CREDENTIAL.bytes
   }
 }
