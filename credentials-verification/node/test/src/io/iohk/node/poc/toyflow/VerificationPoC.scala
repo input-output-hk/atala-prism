@@ -124,23 +124,24 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
       val cmanagerCredential = cmanager.getCredential()
 
       // 4- she builds a generic credential
+      val issuanceKeyId = "issuance0"
+
       val credentialToSign =
         GenericCredentialsSDK.buildGenericCredential(
           "university-degree",
           didSuffix,
-          "issuance0",
+          issuanceKeyId,
           cmanagerCredential.credentialData
         )
 
       // 5. she signs it with the wallet
-      val signedCredential = wallet.signCredential(credentialToSign, "issuance0", didSuffix)
+      val signedCredential = wallet.signCredential(credentialToSign, issuanceKeyId, didSuffix)
 
       // 6. she issues the credential through the cmanager
       // we create the issuance operation
       val hash = cryptoSDK.hash(signedCredential)
       val issueCredentialOp = NodeSDK.buildIssueCredentialOp(hash, didSuffix)
       val calculatedCredentialId = NodeSDK.computeCredId(issueCredentialOp)
-      val issuanceKeyId = "issuance0"
       val signedIssueCredentialOp = wallet.signOperation(issueCredentialOp, issuanceKeyId, didSuffix)
 
       val credentialIdReturned = cmanager.issueCredential("some adequate id", signedIssueCredentialOp)

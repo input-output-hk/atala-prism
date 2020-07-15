@@ -1,7 +1,5 @@
 package io.iohk.node.operations
 
-import java.security.MessageDigest
-
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -38,9 +36,14 @@ case class IssueCredentialOperation(
       }
       data <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
-          keyState.keyUsage == KeyUsage.IssuingKey,
+          // TODO: ATA-2854 related, take this change back to
+          //         keyState.keyUsage == KeyUsage.IssuingKey
+          //       after updating key usage in the wallet
+          keyState.keyUsage == KeyUsage.IssuingKey || keyState.keyUsage == KeyUsage.MasterKey,
           CorrectnessData(keyState.key, None),
-          StateError.InvalidKeyUsed("issuing key"): StateError
+          StateError.InvalidKeyUsed(
+            s"The key type expected is Issuing key. Type used: ${keyState.keyUsage}"
+          ): StateError
         )
       }
     } yield data
@@ -67,7 +70,7 @@ object IssueCredentialOperation extends SimpleOperationCompanion[IssueCredential
       operation: node_models.AtalaOperation,
       timestampInfo: TimestampInfo
   ): Either[ValidationError, IssueCredentialOperation] = {
-    val operationDigest = SHA256Digest(MessageDigest.getInstance("SHA-256").digest(operation.toByteArray))
+    val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val credentialId = CredentialId(operationDigest)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getIssueCredential, "issueCredential")
 
