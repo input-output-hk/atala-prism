@@ -4,11 +4,16 @@ import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
-import io.iohk.atala.cvp.webextension.background.models.Command.{KeyList, SigningRequests, WalletStatusResult}
+import io.iohk.atala.cvp.webextension.background.models.Command.{
+  KeyList,
+  SignedConnectorResponse,
+  SigningRequests,
+  WalletStatusResult
+}
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
 import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, UserDetails}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
@@ -60,6 +65,10 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
 
   def requestSignature(sessionId: String, subject: CredentialSubject): Future[Unit] = {
     process(Command.RequestSignature(sessionId, subject))
+  }
+
+  def signConnectorRequest(sessionId: String, request: ConnectorRequest): Future[SignedConnectorResponse] = {
+    process(Command.SignConnectorRequest(sessionId, request))
   }
 
   def signRequestAndPublish(requestId: Int): Future[Unit] = {

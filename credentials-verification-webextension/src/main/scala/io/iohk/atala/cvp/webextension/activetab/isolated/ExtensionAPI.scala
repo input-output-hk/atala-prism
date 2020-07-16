@@ -5,7 +5,7 @@ import java.util.UUID
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.activetab.models.{Command, Event, TaggedModel}
-import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
 import org.scalajs.dom
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -55,6 +55,14 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     }
   }
 
+  def signConnectorRequest(sessionId: String, request: ConnectorRequest): Future[Event.GotSignedResponse] = {
+    val cmd = Command.SignConnectorRequest(sessionId, request)
+    processCommand(cmd).collect {
+      case r: Event.GotSignedResponse => r
+      case x => throw new RuntimeException(s"Unknown response: $x")
+    }
+  }
+
   /**
     * Process a command, waiting for a response.
     *
@@ -64,7 +72,6 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
   private def processCommand(cmd: Command): Future[Event] = {
     val tagged = TaggedModel(UUID.randomUUID(), cmd)
     val msg = tagged.asJson.noSpaces
-
     // subscribe for the result before sending the command to avoid latency-related race-conditions
     val result = listenFor(tagged.tag)
 
@@ -121,7 +128,4 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     promise.future
   }
 
-  private def log(msg: String): Unit = {
-    println(s"ExtensionAPI: $msg")
-  }
 }

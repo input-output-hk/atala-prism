@@ -1,11 +1,11 @@
 package io.iohk.atala.cvp.webextension.activetab.context
 
 import io.circe.Json
-import io.circe.parser.parse
 import io.circe.generic.auto._
+import io.circe.parser.parse
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
-import io.iohk.atala.cvp.webextension.activetab.models.UserDetails
-import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
+import io.iohk.atala.cvp.webextension.activetab.models.{JsSignedMessage, JsUserDetails}
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
 
 import scala.concurrent.ExecutionContext
 import scala.scalajs.js
@@ -34,10 +34,10 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         configurable = false
         // NOTE: The highlighted error is a bug on IntelliJ as the code compiles properly
         value = js.Dictionary(
-          "log" -> js.Any.fromFunction1(log), // TODO: Remove
           "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus),
           "login" -> js.Any.fromFunction0(login),
-          "requestSignature" -> js.Any.fromFunction2(requestSignature)
+          "requestSignature" -> js.Any.fromFunction2(requestSignature),
+          "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest)
         )
       }
     )
@@ -47,8 +47,12 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     extensionAPI.getWalletStatus().map(_.status).toJSPromise
   }
 
-  def login(): js.Promise[UserDetails] = {
-    extensionAPI.login().map(_.userDetails).toJSPromise
+  def login(): js.Promise[JsUserDetails] = {
+    extensionAPI
+      .login()
+      .map(_.userDetails)
+      .map(ud => JsUserDetails(ud.sessionId, ud.name, ud.role, ud.logo.toJSArray))
+      .toJSPromise
   }
 
   def requestSignature(sessionId: String, payloadAsJson: String): Unit = {
@@ -56,8 +60,12 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     extensionAPI.requestSignature(sessionId, subject)
   }
 
-  def log(text: String): Unit = {
-    println(s"PrismSdk: $text")
+  def signConnectorRequest(sessionId: String, request: js.Array[Byte]): js.Promise[JsSignedMessage] = {
+    extensionAPI
+      .signConnectorRequest(sessionId, ConnectorRequest(request.toArray))
+      .map(_.signedMessage)
+      .map(sm => JsSignedMessage(sm.did, sm.didKeyId, sm.signature.toJSArray))
+      .toJSPromise
   }
 
   private def readJsonAs[T](jsonAsString: String)(implicit decoder: io.circe.Decoder[T]): T = {

@@ -1,7 +1,6 @@
 package io.iohk.atala.cvp.webextension.activetab.isolated
-import io.iohk.atala.cvp.webextension.activetab.models.{Command, Event, UserDetails}
+import io.iohk.atala.cvp.webextension.activetab.models.{Command, Event, JsUserDetails}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-
 import scala.concurrent.{ExecutionContext, Future}
 
 private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
@@ -16,14 +15,17 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
       case Command.CreateSession =>
         backgroundAPI
           .login()
-          .map(response =>
-            Event.GotUserSession(UserDetails(response.sessionId, response.name, response.role, response.logo))
-          )
+          .map(response => Event.GotUserSession(response))
 
       case Command.RequestSignature(sessionId, subject) =>
         backgroundAPI
           .requestSignature(sessionId, subject)
           .map(_ => Event.RequestSignatureAck)
+
+      case Command.SignConnectorRequest(sessionId, request) =>
+        backgroundAPI
+          .signConnectorRequest(sessionId, request)
+          .map(response => Event.GotSignedResponse(response.signedMessage))
     }
   }
 }

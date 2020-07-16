@@ -4,7 +4,7 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, SignedMessage, UserDetails}
 
 import scala.util.Try
 
@@ -19,6 +19,11 @@ private[background] object Command {
   final case class SendBrowserNotification(title: String, message: String) extends CommandWithResponse[Event]
 
   final case class RequestSignature(sessionId: String, subject: CredentialSubject) extends CommandWithResponse[Unit]
+
+  final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest)
+      extends CommandWithResponse[SignedConnectorResponse]
+
+  final case class SignedConnectorResponse(signedMessage: SignedMessage) extends CommandWithResponse[Event]
 
   final case class SignatureResult(signature: String)
 

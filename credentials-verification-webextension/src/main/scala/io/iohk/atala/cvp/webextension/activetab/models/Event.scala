@@ -2,6 +2,8 @@ package io.iohk.atala.cvp.webextension.activetab.models
 
 import io.circe.generic.auto._
 import io.circe.parser.parse
+import io.iohk.atala.cvp.webextension.common.models.{SignedMessage, UserDetails}
+
 import scala.util.Try
 
 /**
@@ -16,6 +18,7 @@ private[activetab] object Event {
   final case class GotWalletStatus(status: String) extends Event
   final case class GotUserSession(userDetails: UserDetails) extends Event
   final case object RequestSignatureAck extends Event
+  final case class GotSignedResponse(signedMessage: SignedMessage) extends Event
 
   def decode(string: String): Try[Event] = {
     parse(string).toTry

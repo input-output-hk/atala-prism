@@ -12,11 +12,18 @@ import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserAction
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
-import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, UserDetails}
+import io.iohk.atala.cvp.webextension.common.models.{
+  ConnectorRequest,
+  CredentialSubject,
+  RequestNonce,
+  SignedMessage,
+  UserDetails
+}
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
+import io.iohk.prism.protos.node_models.KeyUsage
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
@@ -242,6 +249,38 @@ private[background] class WalletManager(
         )
       }
     }
+  }
+
+  def signConnectorRequest(origin: Origin, sessionID: SessionID, request: ConnectorRequest): Future[SignedMessage] = {
+    val walletDataF = Future.fromTry {
+      Try {
+        walletData.getOrElse(
+          throw new RuntimeException("You need to create the wallet before logging in and creating session")
+        )
+      }
+    }
+    val validSessionF = Future.fromTry {
+      Try {
+        session
+          .find(_ == (sessionID -> origin))
+          .getOrElse(throw new RuntimeException("You need a valid session to sign the request"))
+      }
+    }
+
+    for {
+      walletData <- walletDataF
+      _ <- validSessionF
+    } yield {
+      val ecKeyPair = ecKeyPairFromSeed(walletData.mnemonic)
+      val signature = createSignature(ecKeyPair, request)
+      SignedMessage(did = walletData.did, KeyUsage.MASTER_KEY.name, signature.data)
+    }
+
+  }
+
+  private def createSignature(ecKeyPair: ECKeyPair, request: ConnectorRequest) = {
+    val requestNonce = RequestNonce()
+    EC.sign(requestNonce + request.bytes, ecKeyPair.privateKey)
   }
 
   def requestSignature(origin: Origin, sessionID: SessionID, subject: CredentialSubject): Future[Unit] = {

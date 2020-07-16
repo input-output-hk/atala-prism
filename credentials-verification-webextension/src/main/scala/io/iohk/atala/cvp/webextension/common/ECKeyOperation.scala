@@ -87,4 +87,5 @@ object ECKeyOperation {
     }
     bytes
   }
+
 }

@@ -1,7 +1,12 @@
 package io.iohk.atala.cvp.webextension.background
 
 import io.circe.generic.auto._
-import io.iohk.atala.cvp.webextension.background.models.Command.{KeyList, SigningRequests, WalletStatusResult}
+import io.iohk.atala.cvp.webextension.background.models.Command.{
+  KeyList,
+  SignedConnectorResponse,
+  SigningRequests,
+  WalletStatusResult
+}
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
@@ -32,6 +37,11 @@ private[background] class CommandProcessor(
         Future.successful(CommandResponse {
           SigningRequests(walletManager.getSigningRequests().toList)
         })
+      case Command.SignConnectorRequest(sessionId, request) =>
+        walletManager
+          .signConnectorRequest(origin, sessionId, request)
+          .map(SignedConnectorResponse.apply)
+          .map(CommandResponse.apply)
       case Command.CreateKey(keyName) =>
         walletManager.createKey(keyName).map(_ => CommandResponse(()))
       case Command.GetWalletStatus =>
