@@ -257,7 +257,7 @@ jobs:
 
       - run:
           name: Test credentials-verification components
-          command: cd credentials-verification && mill -i __.test
+          command: cd credentials-verification && mill -i __.test -u out/test-results
 
       - save_cache:
           key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
@@ -268,6 +268,9 @@ jobs:
       - run:
           name: Generate code coverage reports
           command: cd credentials-verification && mill _.scoverage.htmlReport
+
+      - store_test_results:
+          path: credentials-verification/out/test-results
 
       # Store code coverage reports
       - store_artifacts:
@@ -398,6 +401,9 @@ jobs:
           name: Run Unit Tests
           command: cd credentials-verification-webextension && sbt test
 
+      - store_test_results:
+          path: credentials-verification-webextension/target/test-reports
+
   build-crypto:
     working_directory: ~/repo
     docker:
@@ -439,6 +445,11 @@ jobs:
       - run:
           name: Generate code coverage reports
           command: cd crypto && sbt coverageReport
+
+      - store_test_results:
+          path: crypto/js/target/test-reports
+      - store_test_results:
+          path: crypto/jvm/target/test-reports
 
       # Store code coverage reports
       - store_artifacts:
