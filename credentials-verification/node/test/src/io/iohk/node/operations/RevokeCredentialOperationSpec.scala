@@ -18,8 +18,8 @@ object RevokeCredentialOperationSpec {
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
   lazy val issuerDidKeys = List(
-    DIDPublicKey(issuer, "master", KeyUsage.MasterKey, masterKeys.publicKey),
-    DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.publicKey)
+    DIDPublicKey(issuer, "master", KeyUsage.MasterKey, masterKeys.getPublic),
+    DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublic)
   )
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
@@ -120,7 +120,7 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
         .right
         .value
 
-      key mustBe issuingKeys.publicKey
+      key mustBe issuingKeys.getPublic
       previousOperation mustBe Some(credentialIssueOperation.digest)
     }
   }

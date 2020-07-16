@@ -5,9 +5,10 @@ import java.util.UUID
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.crypto.EC
 import io.iohk.connector.model.RequestNonce
 import io.iohk.connector.repositories.daos.MessagesDAO
+import io.iohk.cvp.crypto.ECKeys.toEncodedPublicKey
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.SignedRequestsHelper
 import io.iohk.prism.protos.connector_api
 
@@ -43,21 +44,22 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return messages  authenticating by signature" in {
-      val keys = EC.generateKeyPair()
-      val privateKey = keys.privateKey
+      val keys = ECKeys.generateKeyPair()
+      val privateKey = keys.getPrivate
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       val request = connector_api.GetMessagesPaginatedRequest("", 10)
 
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
-        EC.sign(
-          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray,
-          privateKey
+        ECSignature.sign(
+          privateKey,
+          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
         )
-      val issuerId = createIssuer("Issuer", Some(keys.publicKey))
+      val issuerId = createIssuer("Issuer", Some(encodedPublicKey))
 
       val messages = createExampleMessages(issuerId)
 
-      usingApiAs(requestNonce, signature, keys.publicKey) { blockingStub =>
+      usingApiAs(requestNonce, signature, encodedPublicKey) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }

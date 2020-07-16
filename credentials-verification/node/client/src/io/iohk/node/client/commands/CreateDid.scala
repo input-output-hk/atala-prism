@@ -1,7 +1,6 @@
 package io.iohk.node.client.commands
 
-import io.iohk.atala.crypto.EC
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
 import io.iohk.node.client.{Config, ProtoUtils, State, StateStorage}
 import io.iohk.prism.protos.{node_api, node_models}
 import monocle.Optional
@@ -37,8 +36,8 @@ case class CreateDid(
     }
     val generatedKeys = keysToGenerate.map {
       case (keyId, usage) =>
-        val keyPair = EC.generateKeyPair()
-        (keyId, usage, keyPair.privateKey, keyPair.publicKey)
+        val keyPair = ECKeys.generateKeyPair()
+        (keyId, usage, keyPair.getPrivate, keyPair.getPublic)
     }
 
     val keys = generatedKeys ++ state.keys

@@ -7,13 +7,12 @@ import com.google.protobuf.ByteString
 import enumeratum.values._
 import fr.acinq.bitcoin.DeterministicWallet._
 import fr.acinq.bitcoin.MnemonicCode._
-import io.circe.syntax._
 import io.circe.{Json, Printer}
-import io.iohk.atala.crypto.ECConfig
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
 import io.iohk.prism.protos.node_models
 import org.spongycastle.math.ec.ECFieldElement
 import scodec.bits._
+import io.circe.syntax._
 
 sealed abstract class KeyType(val value: Int, val name: String) extends IntEnumEntry
 
@@ -75,7 +74,7 @@ object KeyDerivationTestVectors {
       usage = KeyType.keyUsage(masterKey.tpe),
       keyData = node_models.PublicKey.KeyData.EcKeyData(
         node_models.ECKeyData(
-          curve = ECConfig.CURVE_NAME,
+          curve = ECKeys.CURVE_NAME,
           x = ByteString.copyFrom(xCoord.toArray),
           y = ByteString.copyFrom(yCoord.toArray)
         )

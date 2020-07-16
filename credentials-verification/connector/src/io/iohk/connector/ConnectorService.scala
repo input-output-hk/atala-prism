@@ -1,10 +1,10 @@
 package io.iohk.connector
 
+import java.security.PublicKey
 import java.util.UUID
 
 import com.google.protobuf.ByteString
 import io.grpc.Context
-import io.iohk.atala.crypto.{EC, ECPublicKey}
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
@@ -12,6 +12,8 @@ import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ParticipantsRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.cvp.crypto.ECKeys._
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
@@ -134,7 +136,7 @@ class ConnectorService(
   ): Future[connector_api.AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
 
-    def verifyRequestSignature(publicKey: ECPublicKey): FutureEither[ConnectorError, Unit] = {
+    def verifyRequestSignature(publicKey: PublicKey): FutureEither[ConnectorError, Unit] = {
       val ctx = Context.current()
       val header = authenticator.grpcAuthenticationHeaderParser.parse(ctx)
 
@@ -144,12 +146,12 @@ class ConnectorService(
 
           val resultEither = for {
             _ <- Either.cond(
-              headerPublicKey == publicKey,
+              ECKeys.toPublicKey(headerPublicKey) == publicKey,
               (),
               InvalidArgumentError("publicKey", "key matching one in GRPC header", "different key")
             )
             _ <- Either.cond(
-              EC.verify(payload, publicKey, signature),
+              ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
               (),
               SignatureVerificationError()
             )
@@ -164,9 +166,9 @@ class ConnectorService(
       Future
         .fromTry(Try {
           val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
-          val publicKey: ECPublicKey = request.holderEncodedPublicKey
+          val publicKey = request.holderEncodedPublicKey
             .map { encodedKey =>
-              EC.toPublicKey(encodedKey.publicKey.toByteArray)
+              io.iohk.cvp.crypto.ECKeys.EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
             }
             .getOrElse {
               // The iOS app has a key hardcoded which is not a valid ECKey
@@ -176,22 +178,24 @@ class ConnectorService(
               try {
                 request.holderPublicKey
                   .map { protoKey =>
-                    EC.toPublicKey(
-                      x = BigInt(protoKey.x),
-                      y = BigInt(protoKey.y)
+                    toEncodedPublicKey(
+                      toPublicKey(
+                        x = BigInt(protoKey.x),
+                        y = BigInt(protoKey.y)
+                      )
                     )
                   }
                   .getOrElse(throw new RuntimeException("Missing public key"))
               } catch {
                 case NonFatal(_) =>
-                  EC.generateKeyPair().publicKey
+                  toEncodedPublicKey(ECKeys.generateKeyPair().getPublic)
               }
             }
 
           val result = for {
             _ <-
               if (requireSignatureOnConnectionCreation) {
-                verifyRequestSignature(publicKey)
+                verifyRequestSignature(ECKeys.toPublicKey(publicKey))
               } else Future.successful(Right(())).toFutureEither
             connectionCreationResult <-
               connections
@@ -401,7 +405,7 @@ class ConnectorService(
                   keyId = keyId,
                   key = Some(
                     connector_models.EncodedPublicKey(
-                      publicKey = ByteString.copyFrom(key.getEncoded)
+                      publicKey = ByteString.copyFrom(key.bytes.toArray)
                     )
                   )
                 )

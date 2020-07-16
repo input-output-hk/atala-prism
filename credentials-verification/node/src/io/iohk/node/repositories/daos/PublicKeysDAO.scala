@@ -2,18 +2,18 @@ package io.iohk.node.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.crypto.ECConfig
+import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.models.nodeState.DIDPublicKeyState
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix}
 import io.iohk.node.operations.TimestampInfo
 
 object PublicKeysDAO {
   def insert(key: DIDPublicKey, timestampInfo: TimestampInfo): ConnectionIO[Unit] = {
-    val curveName = ECConfig.CURVE_NAME
-    val point = key.key.getCurvePoint
+    val curveName = ECKeys.CURVE_NAME
+    val point = ECKeys.getECPoint(key.key)
 
-    val xBytes = point.x.toByteArray
-    val yBytes = point.y.toByteArray
+    val xBytes = point.getAffineX.toByteArray
+    val yBytes = point.getAffineY.toByteArray
 
     sql"""
          |INSERT INTO public_keys (did_suffix, key_id, key_usage, curve, x, y, added_on, added_on_absn, added_on_osn)

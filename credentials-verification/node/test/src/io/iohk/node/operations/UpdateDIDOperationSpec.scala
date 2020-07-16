@@ -2,7 +2,7 @@ package io.iohk.node.operations
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.crypto.EC
+import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.node.operations.CreateDIDOperationSpec.randomProtoECKey
@@ -18,7 +18,7 @@ object UpdateDIDOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
-  val newMasterKeys = EC.generateKeyPair()
+  val newMasterKeys = ECKeys.generateKeyPair()
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
   lazy val createDidOperation =
@@ -173,7 +173,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
         .right
         .value
 
-      key mustBe masterKeys.publicKey
+      key mustBe masterKeys.getPublic
       previousOperation mustBe Some(createDidOperation.digest)
     }
   }

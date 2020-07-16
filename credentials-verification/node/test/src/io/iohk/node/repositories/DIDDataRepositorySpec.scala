@@ -1,6 +1,6 @@
 package io.iohk.node.repositories
 
-import io.iohk.atala.crypto.EC
+import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.errors.NodeError.UnknownValueError
 import io.iohk.node.models.{DIDData, DIDPublicKey, KeyUsage}
@@ -22,25 +22,25 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
       didSuffix = didSuffix,
       keyId = "master",
       keyUsage = KeyUsage.MasterKey,
-      key = EC.generateKeyPair().publicKey
+      key = ECKeys.generateKeyPair().getPublic
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "issuing",
       keyUsage = KeyUsage.IssuingKey,
-      key = EC.generateKeyPair().publicKey
+      key = ECKeys.generateKeyPair().getPublic
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "authentication",
       keyUsage = KeyUsage.AuthenticationKey,
-      key = EC.generateKeyPair().publicKey
+      key = ECKeys.generateKeyPair().getPublic
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "communication",
       keyUsage = KeyUsage.CommunicationKey,
-      key = EC.generateKeyPair().publicKey
+      key = ECKeys.generateKeyPair().getPublic
     )
   )
 

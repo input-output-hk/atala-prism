@@ -5,7 +5,6 @@ import java.time.Instant
 
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.models.DIDSuffix
 import io.iohk.node.operations.path._
@@ -88,7 +87,7 @@ package object operations {
   }
 
   /** Data required to verify the correctness of the operation */
-  case class CorrectnessData(key: ECPublicKey, previousOperation: Option[SHA256Digest])
+  case class CorrectnessData(key: PublicKey, previousOperation: Option[SHA256Digest])
 
   case class TimestampInfo(
       atalaBlockTimestamp: Instant, // timestamp provided from the underlying blockchain

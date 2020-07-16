@@ -3,9 +3,9 @@ package io.iohk.connector.repositories
 import doobie.postgres.implicits._
 import doobie.util.Meta
 import doobie.util.invariant.InvalidEnum
-import io.iohk.atala.crypto.{EC, ECPublicKey}
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.{MessageId, ParticipantLogo, ParticipantType}
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.daos.BaseDAO
 
 package object daos extends BaseDAO {
@@ -21,8 +21,8 @@ package object daos extends BaseDAO {
   implicit val participantLogoMeta: Meta[ParticipantLogo] =
     Meta[Array[Byte]].timap(b => ParticipantLogo.apply(b.toVector))(_.bytes.toArray)
 
-  implicit val ecPublicKeyMeta: Meta[ECPublicKey] =
-    Meta[Array[Byte]].timap(b => EC.toPublicKey(b))(_.getEncoded)
+  implicit val encodedPublicKeyMeta: Meta[EncodedPublicKey] =
+    Meta[Array[Byte]].timap(b => EncodedPublicKey.apply(b.toVector))(_.bytes.toArray)
 
   implicit val paymentIdMeta: Meta[Payment.Id] = uuidMeta.timap(Payment.Id.apply)(_.uuid)
   implicit val clientNonceMeta: Meta[ClientNonce] = Meta[String].timap(new ClientNonce(_))(_.string)

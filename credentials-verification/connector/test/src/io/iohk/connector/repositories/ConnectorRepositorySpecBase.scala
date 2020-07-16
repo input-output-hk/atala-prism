@@ -4,9 +4,9 @@ import java.time.Instant
 
 import doobie.implicits._
 import doobie.util.{Read, fragment}
-import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 
@@ -26,7 +26,7 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
       tpe: ParticipantType,
       name: String,
       did: String,
-      publicKey: Option[ECPublicKey],
+      publicKey: Option[EncodedPublicKey],
       logo: Option[ParticipantLogo]
   ): ParticipantId = {
     sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo) VALUES
@@ -39,7 +39,7 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
     createParticipant(ParticipantType.Issuer, name, s"did:test:${name.toLowerCase}", None, logo)
   }
 
-  protected def createHolder(name: String = "Holder", publicKey: Option[ECPublicKey] = None): ParticipantId = {
+  protected def createHolder(name: String = "Holder", publicKey: Option[EncodedPublicKey] = None): ParticipantId = {
     createParticipant(ParticipantType.Holder, name, s"did:test:${name.toLowerCase}", publicKey, None)
   }
 

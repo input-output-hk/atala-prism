@@ -217,7 +217,7 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification crypto"
+          directories: "credentials-verification"
 
       - restore_cache:
           keys:
@@ -356,7 +356,7 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification credentials-verification-webextension crypto"
+          directories: "credentials-verification credentials-verification-webextension"
 
       # Download and cache dependencies
       - restore_cache:

@@ -1,12 +1,13 @@
 package io.iohk.connector.services
 
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, PaymentsRepository}
+import io.iohk.cvp.crypto.ECKeys
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -39,7 +40,7 @@ class ConnectionsService(
 
   def addConnectionFromToken(
       tokenString: TokenString,
-      publicKey: ECPublicKey,
+      publicKey: EncodedPublicKey,
       paymentNonce: Option[ClientNonce]
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
     val connectionPrice = 5
@@ -77,8 +78,8 @@ class ConnectionsService(
   def getConnectionCommunicationKeys(
       connectionId: ConnectionId,
       userId: ParticipantId
-  ): FutureEither[ConnectorError, Seq[(String, ECPublicKey)]] = {
-    def getDidCommunicationKeys(did: String): FutureEither[ConnectorError, Seq[(String, ECPublicKey)]] = {
+  ): FutureEither[ConnectorError, Seq[(String, EncodedPublicKey)]] = {
+    def getDidCommunicationKeys(did: String): FutureEither[ConnectorError, Seq[(String, EncodedPublicKey)]] = {
       val request = node_api.GetDidDocumentRequest(did = did)
       val result = for {
         response <- nodeService.getDidDocument(request)
@@ -87,8 +88,7 @@ class ConnectionsService(
         // TODO: select communication keys only, once we provision them and make frontend use them
       } yield validKeys.map { key =>
         val keyData = key.keyData.ecKeyData.getOrElse(throw new Exception("Node returned key without keyData"))
-        assert(keyData.curve == ECConfig.CURVE_NAME)
-        (key.id, EC.toPublicKey(keyData.x.toByteArray, keyData.y.toByteArray))
+        (key.id, ECKeys.toEncodedPublicKey(keyData.curve, keyData.x.toByteArray, keyData.y.toByteArray))
       }
 
       result.map(Right(_)).recover { case ex => Left(InternalServerError(ex)) }.toFutureEither

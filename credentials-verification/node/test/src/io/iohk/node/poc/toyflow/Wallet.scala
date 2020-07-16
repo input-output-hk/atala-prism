@@ -127,7 +127,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val issuancekeyData = issuancekeyProtoOption.value
     val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value)
     val issuanceKeyRevokedOn = issuancekeyData.revokedOn map ProtoCodecs.fromTimestampInfoProto
-    val issuancekey = issuancekeyProtoOption flatMap ProtoCodecs.fromProtoKeyLegacy
+    val issuancekey = issuancekeyProtoOption flatMap ProtoCodecs.fromProtoKey
 
     // run all verifications, including signature
 

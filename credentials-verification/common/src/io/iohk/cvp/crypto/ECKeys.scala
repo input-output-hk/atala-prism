@@ -2,13 +2,13 @@ package io.iohk.cvp.crypto
 
 import java.io.IOException
 import java.math.BigInteger
+import java.security.{PublicKey, _}
 import java.security.spec.{
   ECGenParameterSpec => JavaECGenParameterSpec,
   ECPoint => JavaECPoint,
   ECPrivateKeySpec => JavaECPrivateKeySpec,
   ECPublicKeySpec => JavaECPublicKeySpec
 }
-import java.security.{PublicKey, _}
 
 import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPublicKey}
 import org.bouncycastle.jce.ECNamedCurveTable
@@ -16,7 +16,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPublicKeySpec}
 import org.bouncycastle.math.ec.ECCurve
 
-// TODO: Delete this when usage has stopped.
 object ECKeys {
 
   java.security.Security.addProvider(new BouncyCastleProvider)

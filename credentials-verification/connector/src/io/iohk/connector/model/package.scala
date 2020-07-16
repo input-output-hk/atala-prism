@@ -6,7 +6,7 @@ import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.connector_models
 
@@ -44,7 +44,7 @@ case class ParticipantLogo(bytes: Vector[Byte]) extends AnyVal
 case class ParticipantInfo(
     id: ParticipantId,
     tpe: ParticipantType,
-    publicKey: Option[ECPublicKey],
+    publicKey: Option[EncodedPublicKey],
     name: String,
     did: Option[String],
     logo: Option[ParticipantLogo]

@@ -4,12 +4,12 @@ import cats.data.{EitherT, OptionT}
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.cmanager.models
 import io.iohk.cvp.cmanager.repositories.daos.IssuerSubjectsDAO
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
@@ -26,7 +26,7 @@ trait ConnectionsRepository {
 
   def addConnectionFromToken(
       token: TokenString,
-      publicKey: ECPublicKey
+      publicKey: EncodedPublicKey
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)]
 
   def getConnectionsPaginated(
@@ -72,7 +72,7 @@ object ConnectionsRepository {
 
     override def addConnectionFromToken(
         token: TokenString,
-        publicKey: ECPublicKey
+        publicKey: EncodedPublicKey
     ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
 
       implicit val loggingContext = LoggingContext("token" -> token)

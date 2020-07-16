@@ -1,10 +1,10 @@
 package io.iohk.node.operations
 
+import java.security.PublicKey
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.node.operations.path.ValueAtPath
@@ -30,15 +30,15 @@ object ParsingUtils {
   }
   val KEY_ID_RE = "^\\w+$".r
 
-  def parseECKey(ecData: ValueAtPath[node_models.ECKeyData]): Either[ValidationError, ECPublicKey] = {
-    if (ecData(_.curve) != ECConfig.CURVE_NAME) {
+  def parseECKey(ecData: ValueAtPath[node_models.ECKeyData]): Either[ValidationError, PublicKey] = {
+    if (ecData(_.curve) != ECKeys.CURVE_NAME) {
       Left(ecData.child(_.curve, "curve").invalid("Unsupported curve"))
     } else if (ecData(_.x.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "x").missing())
     } else if (ecData(_.y.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "y").missing())
     } else {
-      Try(EC.toPublicKey(ecData(_.x.toByteArray), ecData(_.y.toByteArray))).toEither.left
+      Try(ECKeys.toPublicKey(ecData(_.x.toByteArray), ecData(_.y.toByteArray))).toEither.left
         .map(ex => InvalidValue(ecData.path, "", s"Unable to initialize the key: ${ex.getMessage}"))
     }
   }

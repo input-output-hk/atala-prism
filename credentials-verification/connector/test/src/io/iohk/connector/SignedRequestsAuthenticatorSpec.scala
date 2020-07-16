@@ -1,13 +1,15 @@
 package io.iohk.connector
 
+import java.security.PublicKey
 import java.util.UUID
 
 import com.google.protobuf.ByteString
 import io.grpc.Context
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toEncodedPublicKey}
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -63,19 +65,20 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
 
     "accept the public key authentication" in {
-      val keys = EC.generateKeyPair()
-      val privateKey = keys.privateKey
+      val keys = ECKeys.generateKeyPair()
+      val privateKey = keys.getPrivate
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       val requestNonce = UUID.randomUUID.toString.getBytes.toVector
       val signature =
-        EC.sign(
-          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray,
-          privateKey
+        ECSignature.sign(
+          privateKey,
+          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
         )
 
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
           requestNonce = RequestNonce(requestNonce),
-          publicKey = keys.publicKey,
+          publicKey = encodedPublicKey,
           signature = signature
         )
 
@@ -88,13 +91,14 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
 
     "reject wrong public key authentication" in {
-      val keys = EC.generateKeyPair()
+      val keys = ECKeys.generateKeyPair()
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       // signed with the wrong key
-      val signature = EC.sign(request.toByteArray, EC.generateKeyPair().privateKey)
+      val signature = ECSignature.sign(ECKeys.generateKeyPair().getPrivate, request.toByteArray)
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
           RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
-          publicKey = keys.publicKey,
+          publicKey = encodedPublicKey,
           signature = signature
         )
 
@@ -109,12 +113,13 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
 
     "reject public key authentication when the reusing a nonce" in {
-      val keys = EC.generateKeyPair()
-      val signature = EC.sign(request.toByteArray, keys.privateKey)
+      val keys = ECKeys.generateKeyPair()
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
+      val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
           RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
-          publicKey = keys.publicKey,
+          publicKey = encodedPublicKey,
           signature = signature
         )
       val authenticator =
@@ -131,12 +136,12 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "accept the DID authentication" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val keys = EC.generateKeyPair()
-      val privateKey = keys.privateKey
+      val keys = ECKeys.generateKeyPair()
+      val privateKey = keys.getPrivate
       val requestNonce = UUID.randomUUID.toString.getBytes.toVector
-      val signature = EC.sign(
-        SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray,
-        privateKey
+      val signature = ECSignature.sign(
+        privateKey,
+        SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
       )
 
       val nodeResponse = node_api
@@ -144,7 +149,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
         .withDocument(
           node_models.DIDData(
             id = did,
-            publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
+            publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
         )
 
@@ -167,16 +172,16 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "reject wrong DID authentication" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val keys = EC.generateKeyPair()
+      val keys = ECKeys.generateKeyPair()
       // The request is signed with a different key
-      val signature = EC.sign(request.toByteArray, EC.generateKeyPair().privateKey)
+      val signature = ECSignature.sign(ECKeys.generateKeyPair().getPrivate, request.toByteArray)
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
             id = did,
-            publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
+            publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
         )
 
@@ -200,9 +205,9 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "fail when the did is not in our database" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val keys = EC.generateKeyPair()
-      val privateKey = keys.privateKey
-      val signature = EC.sign(request.toByteArray, privateKey)
+      val keys = ECKeys.generateKeyPair()
+      val privateKey = keys.getPrivate
+      val signature = ECSignature.sign(privateKey, request.toByteArray)
 
       val participantsRepository = mock[ParticipantsRepository]
       participantsRepository.findBy(any[String]).returns {
@@ -240,8 +245,8 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "fail when the did is not in the node" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val keys = EC.generateKeyPair()
-      val signature = EC.sign(request.toByteArray, keys.privateKey)
+      val keys = ECKeys.generateKeyPair()
+      val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
 
       val header = GrpcAuthenticationHeader
         .DIDBased(
@@ -263,15 +268,15 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "fail when the key doesn't belong to the did" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val keys = EC.generateKeyPair()
-      val signature = EC.sign(request.toByteArray, keys.privateKey)
+      val keys = ECKeys.generateKeyPair()
+      val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
             id = did,
-            publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
+            publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
         )
 
@@ -295,15 +300,15 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "fail when the nonce is reused" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val keys = EC.generateKeyPair()
-      val signature = EC.sign(request.toByteArray, keys.privateKey)
+      val keys = ECKeys.generateKeyPair()
+      val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
             id = did,
-            publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
+            publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
         )
 
@@ -329,15 +334,14 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
   }
 
-  private def createNodePublicKey(keyId: String, publicKey: ECPublicKey): node_models.PublicKey = {
-    val point = publicKey.getCurvePoint
-    val x = ByteString.copyFrom(point.x.toByteArray)
-    val y = ByteString.copyFrom(point.y.toByteArray)
+  private def createNodePublicKey(keyId: String, data: PublicKey): node_models.PublicKey = {
+    val point = ECKeys.getECPoint(data)
+    val x = ByteString.copyFrom(point.getAffineX.toByteArray)
+    val y = ByteString.copyFrom(point.getAffineY.toByteArray)
     node_models.PublicKey(
       id = keyId,
       usage = node_models.KeyUsage.AUTHENTICATION_KEY,
-      keyData =
-        node_models.PublicKey.KeyData.EcKeyData(node_models.ECKeyData(curve = ECConfig.CURVE_NAME, x = x, y = y))
+      keyData = node_models.PublicKey.KeyData.EcKeyData(node_models.ECKeyData(curve = ECKeys.CURVE_NAME, x = x, y = y))
     )
   }
 
@@ -362,7 +366,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       }
     }
 
-    participantsRepository.findBy(any[ECPublicKey]).returns {
+    participantsRepository.findBy(any[EncodedPublicKey]).returns {
       getuserId() match {
         case Some(userId) =>
           Future.successful(Right(dummyParticipantInfo(userId))).toFutureEither
