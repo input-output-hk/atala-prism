@@ -1,6 +1,8 @@
 package io.iohk.atala.cvp.webextension.common
 
 import com.google.protobuf.ByteString
+import io.circe.{Json, ParsingFailure}
+import io.iohk.atala.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential, UnsignedCredentialBuilder}
 import io.iohk.atala.crypto._
 import io.iohk.prism.protos.node_models._
 import typings.bip32.bip32Mod.BIP32Interface
@@ -30,12 +32,25 @@ object ECKeyOperation {
     atalaOperation
   }
 
-  def issuerOperation(issuerDid: String, dataAsJson: String): AtalaOperation = {
-    val contentHash = ByteString.copyFrom(dataAsJson.getBytes)
-    val credentialData = CredentialData(issuer = issuerDid, contentHash = contentHash)
-    val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
-    val atalaOperation = AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation))
-    atalaOperation
+  def issuerOperation(
+      issuerDID: String,
+      signingKeyId: String,
+      signingKey: ECKeyPair,
+      claimsString: String
+  ): Either[ParsingFailure, AtalaOperation] = {
+    io.circe.parser.parse(claimsString) map { claims =>
+      val unsignedCreedential =
+        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(
+          issuerDID = issuerDID,
+          issuanceKeyId = signingKeyId,
+          claims = claims
+        )
+      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCreedential, signingKey.privateKey)
+      val contentHash = ByteString.copyFrom(signedCredential.signedCredentialBytes)
+      val credentialData = CredentialData(issuer = issuerDID, contentHash = contentHash)
+      val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
+      AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation))
+    }
   }
 
   def signedAtalaOperation(ecKeyPair: ECKeyPair, func: => AtalaOperation): SignedAtalaOperation = {

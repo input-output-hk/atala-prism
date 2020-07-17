@@ -171,7 +171,15 @@ private[background] class WalletManager(
       walletData <- walletDataF
       ecKeyPair = ecKeyPairFromSeed(walletData.mnemonic)
       dataAsJson = request.subject.asJson.noSpaces
-      _ <- connectorClientService.publishCredential(ecKeyPair, walletData.did, request.subject.id, dataAsJson)
+      signingKeyId = "master0" // TODO: this key id should eventually be selected by the user
+      //       this should be done when we complete the key derivation flow
+      _ <- connectorClientService.signAndPublishCredential(
+        ecKeyPair,
+        walletData.did,
+        signingKeyId,
+        request.subject.id,
+        dataAsJson
+      )
     } yield {
       signingRequests -= requestId
       println(s"Signed and Published = ${request.subject.id}")

@@ -1,11 +1,11 @@
 package io.iohk.atala.cvp.webextension.background.services.connector
 
 import java.util.Base64
+
 import io.iohk.atala.crypto.{EC, ECKeyPair, ECPrivateKey, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
 import io.iohk.atala.cvp.webextension.common.models.RequestNonce
-import io.iohk.atala.cvp.webextension.common.models.RequestNonce._
 import io.iohk.prism.protos.cmanager_api.{PublishCredentialRequest, PublishCredentialResponse}
 import io.iohk.prism.protos.connector_api.{
   GetCurrentUserRequest,
@@ -19,6 +19,7 @@ import scalapb.grpc.Channels
 
 import scala.concurrent.Future
 import scala.scalajs.js.JSConverters._
+import scala.util.{Success, Failure}
 
 class ConnectorClientService(url: String) {
   val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
@@ -35,22 +36,31 @@ class ConnectorClientService(url: String) {
     connectorApi.getCurrentUser(request, metadata.toJSDictionary)
   }
 
-  def publishCredential(
+  def signAndPublishCredential(
       ecKeyPair: ECKeyPair,
       did: String,
+      signingKeyId: String,
       credentialId: String, //Credential Manager Id
-      dataAsJson: String
+      credentialClaims: String
   ): Future[PublishCredentialResponse] = {
-    val operation = signedAtalaOperation(ecKeyPair, issuerOperation(did, dataAsJson))
-    val sha256Hashed = SHA256Digest.compute(dataAsJson.getBytes).hexValue
-    val request = PublishCredentialRequest()
-      .withCmanagerCredentialId(credentialId)
-      .withEncodedSignedCredential(generateUrlEncodedSignature(dataAsJson.getBytes, ecKeyPair.privateKey))
-      .withIssueCredentialOperation(operation)
-      .withOperationHash(sha256Hashed) //TODO Fix this as discussed when Protobuf is updated
-      .withNodeCredentialId(sha256Hashed)
-    val metadata: Map[String, String] = metadataForRequest(ecKeyPair, did, request)
-    credentialsServiceApi.publishCredential(request, metadata.toJSDictionary)
+    val inputTry = for {
+      issuanceOperation <- issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims).toTry
+      operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
+      sha256Hashed = SHA256Digest.compute(credentialClaims.getBytes).hexValue
+      request =
+        PublishCredentialRequest()
+          .withCmanagerCredentialId(credentialId)
+          .withEncodedSignedCredential(generateUrlEncodedSignature(credentialClaims.getBytes, ecKeyPair.privateKey))
+          .withIssueCredentialOperation(operation)
+          .withOperationHash(sha256Hashed) //TODO Fix this as discussed when Protobuf is updated
+          .withNodeCredentialId(sha256Hashed)
+      metadata = metadataForRequest(ecKeyPair, did, request)
+    } yield (request, metadata)
+
+    inputTry match {
+      case Success((request, metadata)) => credentialsServiceApi.publishCredential(request, metadata.toJSDictionary)
+      case Failure(error) => Future.failed(error)
+    }
   }
 }
 
