@@ -1,10 +1,10 @@
 package io.iohk.node
 
-import java.security.PublicKey
 import java.time.Instant
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
+import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.operations.TimestampInfo
 
@@ -43,7 +43,7 @@ package object models {
     val DID_SUFFIX_RE = "^[0-9a-f]{64}$".r
   }
 
-  case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: PublicKey)
+  case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
 
   case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey], lastOperation: SHA256Digest)
 
@@ -84,7 +84,7 @@ package object models {
         didSuffix: DIDSuffix,
         keyId: String,
         keyUsage: KeyUsage,
-        key: PublicKey,
+        key: ECPublicKey,
         addedOn: TimestampInfo,
         revokedOn: Option[TimestampInfo]
     )

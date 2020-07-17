@@ -1,13 +1,12 @@
 package io.iohk.node.services
 
-import java.security.PublicKey
 import java.time.Instant
 
 import cats.data.EitherT
 import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
-import io.iohk.cvp.crypto.ECSignature
+import io.iohk.atala.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.node.operations.ValidationError.InvalidValue
 import io.iohk.node.operations._
 import io.iohk.node.operations.path.Path
@@ -145,10 +144,10 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     result.value
   }
 
-  def verifySignature(key: PublicKey, protoOperation: node_models.SignedAtalaOperation): Either[StateError, Unit] = {
+  def verifySignature(key: ECPublicKey, protoOperation: node_models.SignedAtalaOperation): Either[StateError, Unit] = {
     try {
       Either.cond(
-        ECSignature.verify(key, protoOperation.getOperation.toByteArray, protoOperation.signature.toByteArray.toVector),
+        EC.verify(protoOperation.getOperation.toByteArray, key, ECSignature(protoOperation.signature.toByteArray)),
         (),
         StateError.InvalidSignature()
       )

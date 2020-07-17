@@ -1,13 +1,10 @@
 package io.iohk.connector
 
-import java.security.PublicKey
-
 import io.grpc.Context
+import io.iohk.atala.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.model.RequestNonce
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.cvp.crypto.ECKeys.toPublicKey
-import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
@@ -98,16 +95,16 @@ class SignedRequestsAuthenticator(
     */
   private def verifyRequestSignature(
       participantId: ParticipantId,
-      publicKey: PublicKey,
+      publicKey: ECPublicKey,
       request: Array[Byte],
       requestNonce: RequestNonce,
-      signature: Vector[Byte]
+      signature: ECSignature
   )(implicit ec: ExecutionContext): FutureEither[SignatureVerificationError, ParticipantId] = {
     val payload = SignedRequestsHelper.merge(requestNonce, request).toArray
     val verificationResultF = Future {
       Either
         .cond(
-          ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
+          EC.verify(payload, publicKey, signature),
           participantId,
           SignatureVerificationError()
         )
@@ -135,8 +132,8 @@ class SignedRequestsAuthenticator(
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
       participantId <- participantsRepository.findBy(authenticationHeader.publicKey).map(_.id)
-      signature <- Future { Right(authenticationHeader.signature) }.toFutureEither
-      publicKey <- Future { Right(toPublicKey(authenticationHeader.publicKey)) }.toFutureEither
+      signature = authenticationHeader.signature
+      publicKey = authenticationHeader.publicKey
       _ <- verifyRequestSignature(
         participantId = participantId,
         publicKey = publicKey,
@@ -169,7 +166,7 @@ class SignedRequestsAuthenticator(
           .flatMap(_.keyData.ecKeyData)
           .map { data =>
             // TODO: Validate curve, right now we support a single curve
-            ECKeys.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
+            EC.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
           }
           .getOrElse(throw new RuntimeException("Unknown public key id"))
 

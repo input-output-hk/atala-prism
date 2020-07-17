@@ -1,10 +1,8 @@
 package io.iohk.node.operations
 
-import java.security.PublicKey
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.grpc.ProtoCodecs
 import io.iohk.node.models.{DIDData, DIDPublicKey}
@@ -16,26 +14,26 @@ import org.scalatest.Inside._
 import scala.concurrent.duration._
 
 object CreateDIDOperationSpec {
-  def protoECKeyFromPublicKey(key: PublicKey) = {
-    val point = ECKeys.getECPoint(key)
+  def protoECKeyFromPublicKey(key: ECPublicKey) = {
+    val point = key.getCurvePoint
 
     node_models.ECKeyData(
-      curve = ECKeys.CURVE_NAME,
-      x = ByteString.copyFrom(point.getAffineX.toByteArray),
-      y = ByteString.copyFrom(point.getAffineY.toByteArray)
+      curve = ECConfig.CURVE_NAME,
+      x = ByteString.copyFrom(point.x.toByteArray),
+      y = ByteString.copyFrom(point.y.toByteArray)
     )
   }
 
   def randomProtoECKey = {
-    val keyPair = ECKeys.generateKeyPair()
-    protoECKeyFromPublicKey(keyPair.getPublic)
+    val keyPair = EC.generateKeyPair()
+    protoECKeyFromPublicKey(keyPair.publicKey)
   }
 
-  val masterKeys = ECKeys.generateKeyPair()
-  val masterEcKey = protoECKeyFromPublicKey(masterKeys.getPublic)
+  val masterKeys = EC.generateKeyPair()
+  val masterEcKey = protoECKeyFromPublicKey(masterKeys.publicKey)
 
-  val issuingKeys = ECKeys.generateKeyPair()
-  val issuingEcKey = protoECKeyFromPublicKey(issuingKeys.getPublic)
+  val issuingKeys = EC.generateKeyPair()
+  val issuingEcKey = protoECKeyFromPublicKey(issuingKeys.publicKey)
 
   val exampleOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
@@ -179,7 +177,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
         .right
         .value
 
-      key mustBe masterKeys.getPublic
+      key mustBe masterKeys.publicKey
       previousOperation mustBe None
     }
   }

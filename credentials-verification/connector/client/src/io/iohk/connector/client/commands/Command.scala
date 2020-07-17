@@ -1,10 +1,8 @@
 package io.iohk.connector.client.commands
 
-import java.security.{PrivateKey => JPrivateKey}
-
 import com.google.protobuf.ByteString
+import io.iohk.atala.crypto.{EC, ECPrivateKey}
 import io.iohk.connector.client.Config
-import io.iohk.cvp.crypto.ECSignature
 import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.prism.protos.node_models
 
@@ -17,12 +15,12 @@ object Command {
   def signOperation(
       operation: node_models.AtalaOperation,
       keyId: String,
-      key: JPrivateKey
+      key: ECPrivateKey
   ): node_models.SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(ECSignature.sign(key, operation.toByteArray).toArray)
+      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).data)
     )
   }
 }

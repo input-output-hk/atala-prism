@@ -4,9 +4,8 @@ import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import io.grpc.{Status, StatusRuntimeException}
+import io.iohk.atala.crypto.EC
 import io.iohk.connector.model.RequestNonce
-import io.iohk.cvp.crypto.ECKeys.toEncodedPublicKey
-import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.SignedRequestsHelper
 import io.iohk.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
@@ -40,24 +39,23 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
   "getCurrentUser" should {
     def prepareSignedRequest() = {
-      val keys = ECKeys.generateKeyPair()
-      val privateKey = keys.getPrivate
-      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
+      val keys = EC.generateKeyPair()
+      val privateKey = keys.privateKey
       val request = connector_api.GetCurrentUserRequest()
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
-      val signature = ECSignature.sign(
-        privateKey,
-        SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+      val signature = EC.sign(
+        SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray,
+        privateKey
       )
-      (requestNonce, signature, encodedPublicKey, request)
+      (requestNonce, signature, keys.publicKey, request)
     }
 
     "return the verifier details" in {
-      val (requestNonce, signature, encodedPublicKey, request) = prepareSignedRequest()
+      val (requestNonce, signature, publicKey, request) = prepareSignedRequest()
       val name = "Verifier"
-      val _ = createVerifier(name, Some(encodedPublicKey))
+      val _ = createVerifier(name, Some(publicKey))
 
-      usingApiAs(requestNonce, signature, encodedPublicKey) { blockingStub =>
+      usingApiAs(requestNonce, signature, publicKey) { blockingStub =>
         val response = blockingStub.getCurrentUser(request)
         response.logo.toByteArray mustNot be(empty)
         response.name must be(name)
@@ -66,12 +64,12 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
     }
 
     "return the issuer details" in {
-      val (requestNonce, signature, encodedPublicKey, request) = prepareSignedRequest()
+      val (requestNonce, signature, publicKey, request) = prepareSignedRequest()
 
       val name = "Issuer"
-      val _ = createIssuer(name, Some(encodedPublicKey))
+      val _ = createIssuer(name, Some(publicKey))
 
-      usingApiAs(requestNonce, signature, encodedPublicKey) { blockingStub =>
+      usingApiAs(requestNonce, signature, publicKey) { blockingStub =>
         val response = blockingStub.getCurrentUser(request)
         response.logo.toByteArray mustNot be(empty)
         response.name must be(name)
@@ -80,9 +78,9 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
     }
 
     "fail on unknown user" in {
-      val (requestNonce, signature, encodedPublicKey, request) = prepareSignedRequest()
+      val (requestNonce, signature, publicKey, request) = prepareSignedRequest()
 
-      usingApiAs(requestNonce, signature, encodedPublicKey) { blockingStub =>
+      usingApiAs(requestNonce, signature, publicKey) { blockingStub =>
         val ex = intercept[StatusRuntimeException] {
           blockingStub.getCurrentUser(request)
         }

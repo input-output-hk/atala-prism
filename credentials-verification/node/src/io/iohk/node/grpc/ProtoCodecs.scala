@@ -4,6 +4,7 @@ import java.security.PublicKey
 import java.time.Instant
 
 import com.google.protobuf.ByteString
+import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.models
 import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
@@ -63,13 +64,13 @@ object ProtoCodecs {
     revokedOn.fold(withoutRevKey)(revTime => withoutRevKey.withRevokedOn(revTime))
   }
 
-  def toECKeyData(key: PublicKey): node_models.ECKeyData = {
-    val point = ECKeys.getECPoint(key)
+  def toECKeyData(key: ECPublicKey): node_models.ECKeyData = {
+    val point = key.getCurvePoint
     node_models
       .ECKeyData()
-      .withCurve(ECKeys.CURVE_NAME)
-      .withX(ByteString.copyFrom(point.getAffineX.toByteArray))
-      .withY(ByteString.copyFrom(point.getAffineY.toByteArray))
+      .withCurve(ECConfig.CURVE_NAME)
+      .withX(ByteString.copyFrom(point.x.toByteArray))
+      .withY(ByteString.copyFrom(point.y.toByteArray))
   }
 
   def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {
@@ -92,7 +93,15 @@ object ProtoCodecs {
     )
   }
 
-  def fromProtoKey(protoKey: node_models.PublicKey): Option[PublicKey] = {
+  def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {
+    for {
+      maybeX <- protoKey.keyData.ecKeyData
+      maybeY <- protoKey.keyData.ecKeyData
+    } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
+  }
+
+  // TODO: Remove this once the `io.iohk.node.poc` package can be removed or migrated.
+  def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] = {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData

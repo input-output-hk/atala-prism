@@ -4,9 +4,9 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
+import io.iohk.atala.crypto.EC
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
-import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
 
@@ -52,13 +52,12 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   "addConnectionFromToken" should {
     "add connection from existing token" in {
       val issuerId = createIssuer()
-      val publicKey = "some-bytes".getBytes.toVector
-      val encodedPublicKey = EncodedPublicKey(publicKey)
+      val publicKey = EC.generateKeyPair().publicKey
 
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
-      val result = connectionsRepository.addConnectionFromToken(token, encodedPublicKey).value.futureValue
+      val result = connectionsRepository.addConnectionFromToken(token, publicKey).value.futureValue
       val connectionId = result.right.value._2.id
 
       sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1

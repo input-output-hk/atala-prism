@@ -1,10 +1,8 @@
 package io.iohk.connector.client.commands
 
-import java.security.{PublicKey => JPublicKey}
-
 import com.google.protobuf.ByteString
+import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.connector.client.Config
-import io.iohk.cvp.crypto.ECKeys
 import io.iohk.prism.protos.{connector_api, node_models}
 
 case class Register(
@@ -12,21 +10,19 @@ case class Register(
 ) extends Command {
   import Command.signOperation
 
-  private def protoECKeyFromPublicKey(key: JPublicKey) = {
-    val point = ECKeys.getECPoint(key)
-
+  private def protoECKeyFromPublicKey(key: ECPublicKey) = {
     node_models.ECKeyData(
-      curve = ECKeys.CURVE_NAME,
-      x = ByteString.copyFrom(point.getAffineX.toByteArray),
-      y = ByteString.copyFrom(point.getAffineY.toByteArray)
+      curve = ECConfig.CURVE_NAME,
+      x = ByteString.copyFrom(key.getCurvePoint.x.toByteArray),
+      y = ByteString.copyFrom(key.getCurvePoint.y.toByteArray)
     )
   }
 
   override def run(api: connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub, config: Config): Unit = {
     val generatedKeys = keysToGenerate.map {
       case (keyId, usage) =>
-        val keyPair = ECKeys.generateKeyPair()
-        (keyId, usage, keyPair.getPrivate, keyPair.getPublic)
+        val keyPair = EC.generateKeyPair()
+        (keyId, usage, keyPair.privateKey, keyPair.publicKey)
     }
 
     val publicKeys = generatedKeys.map {

@@ -3,8 +3,8 @@ package io.iohk.cvp.grpc
 import java.util.{Base64, UUID}
 
 import io.grpc.{Context, Metadata, Status, StatusRuntimeException}
+import io.iohk.atala.crypto.{EC, ECSignature}
 import io.iohk.connector.model.RequestNonce
-import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 
 import scala.util.Try
@@ -105,12 +105,12 @@ private[grpc] object GrpcAuthenticationContext {
 
   def parsePublicKeyAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.PublicKeyBased] = {
     (ctx.getOpt(RequestNonceKeys), ctx.getOpt(SignatureKeys), ctx.getOpt(PublicKeyKeys)) match {
-      case (Some(requestNonce), Some(signature), Some(publicKey)) =>
-        val encodedPublicKey = EncodedPublicKey(publicKey.toVector)
+      case (Some(requestNonce), Some(signature), Some(encodedPublicKey)) =>
+        val publicKey = EC.toPublicKey(encodedPublicKey)
         val header = GrpcAuthenticationHeader.PublicKeyBased(
           requestNonce = RequestNonce(requestNonce.toVector),
-          publicKey = encodedPublicKey,
-          signature = signature.toVector
+          publicKey = publicKey,
+          signature = ECSignature(signature)
         )
         Some(header)
 
@@ -147,7 +147,7 @@ private[grpc] object GrpcAuthenticationContext {
           requestNonce = RequestNonce(requestNonce.toVector),
           did = did,
           keyId = keyId,
-          signature = signature.toVector
+          signature = ECSignature(signature)
         )
         Some(header)
 

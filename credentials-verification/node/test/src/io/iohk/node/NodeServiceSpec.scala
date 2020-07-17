@@ -86,7 +86,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val didSuffix = DIDSuffix(didDigest)
       val dummyTime = TimestampInfo.dummyTime
       DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
-      val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublic)
+      val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
       PublicKeysDAO.insert(key, dummyTime).transact(database).unsafeRunSync()
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.suffix}"))
@@ -109,7 +109,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivate
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       doReturn(Future.successful(())).when(objectManagementService).publishAtalaOperation(*)
@@ -124,7 +124,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation.update(_.createDid.didData.id := "abc"),
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivate
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -139,7 +139,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val operation = BlockProcessingServiceSpec.signOperation(
         IssueCredentialOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivate
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       doReturn(Future.successful(())).when(objectManagementService).publishAtalaOperation(*)
@@ -154,7 +154,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val operation = BlockProcessingServiceSpec.signOperation(
         IssueCredentialOperationSpec.exampleOperation.update(_.issueCredential.credentialData.id := "abc"),
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivate
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -169,7 +169,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val operation = BlockProcessingServiceSpec.signOperation(
         RevokeCredentialOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivate
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       doReturn(Future.successful(())).when(objectManagementService).publishAtalaOperation(*)
@@ -184,7 +184,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val operation = BlockProcessingServiceSpec.signOperation(
         RevokeCredentialOperationSpec.exampleOperation.update(_.revokeCredential.credentialId := ""),
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivate
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       val error = intercept[StatusRuntimeException] {
