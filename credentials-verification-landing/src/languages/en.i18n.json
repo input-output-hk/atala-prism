@@ -795,7 +795,13 @@
       "form": {
         "fullName": "Full Name",
         "email": "Email address",
-        "formMessage": "Message"
+        "inquiryType": "Inquiry type",
+        "formMessage": "Message",
+        "inquiryTypeOptions": {
+          "Product":"Product",
+          "Commercial":"Commercial",
+          "General":"General"
+        }
       }
     },
     "introductionInformation": {

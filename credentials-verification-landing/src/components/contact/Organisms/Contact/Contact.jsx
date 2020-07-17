@@ -20,8 +20,8 @@ const Contact = () => {
   const submitForm = () => {
     const form = contactInfoRef.current.getForm();
     form.validateFields(
-      ['fullName', 'email', 'formMessage'],
-      (errors, { fullName, email, formMessage }) => {
+      ['fullName', 'email', 'inquiryType', 'formMessage'],
+      (errors, { fullName, email, inquiryType, formMessage }) => {
         if (!consent) return message.error(t('errors.consent'));
         if (errors) return;
 
@@ -29,7 +29,12 @@ const Contact = () => {
         const randomNumber = Math.floor(Math.random() * 1000);
         const finalEmail = `${email.slice(0, atIndex)}+${randomNumber}${email.slice(atIndex)}`;
 
-        subscribeToNewsLetter({ EMAIL: finalEmail, FULLNAME: fullName, MESSAGE: formMessage });
+        subscribeToNewsLetter({
+          EMAIL: finalEmail,
+          FULLNAME: fullName,
+          INQUIRY: inquiryType,
+          MESSAGE: formMessage
+        });
         form.resetFields();
       }
     );

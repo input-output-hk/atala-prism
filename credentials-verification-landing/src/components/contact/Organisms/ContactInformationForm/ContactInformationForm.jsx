@@ -1,12 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Input } from 'antd';
+import { Input, Select } from 'antd';
 import { noEmptyInput, emailFormatValidation } from '../../../../helpers/formRules';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 
 import './_style.scss';
 
 const { TextArea } = Input;
+const { Option } = Select;
+const inquiryTypeOptionsValues = ['Product', 'Commercial', 'General'];
 
 const TemplateForm = React.forwardRef((_props, ref) => {
   const { t } = useTranslation();
@@ -28,6 +30,24 @@ const TemplateForm = React.forwardRef((_props, ref) => {
     };
   };
 
+  const InquiryTypeInput = {
+    fieldDecoratorData: {
+      rules: [noEmptyInput(t('errors.form.emptyField'))]
+    },
+    label: t(`credential.contactInformation.form.inquiryType`),
+    key: 'inquiryType',
+    className: 'itemFormInfo',
+    input: (
+      <Select placeholder="Select option">
+        {inquiryTypeOptionsValues.map(key => (
+          <Option key={key} value={key}>
+            {t(`credential.contactInformation.form.inquiryTypeOptions.${key}`)}
+          </Option>
+        ))}
+      </Select>
+    )
+  };
+
   const items = [
     getInput('fullName'),
     getInput(
@@ -39,6 +59,7 @@ const TemplateForm = React.forwardRef((_props, ref) => {
       },
       value => value && value.trim()
     ),
+    InquiryTypeInput,
     { ...getInput('formMessage'), input: <TextArea rows={4} placeholder="Tell us more..." /> }
   ];
 
