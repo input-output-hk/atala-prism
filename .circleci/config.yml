@@ -86,7 +86,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
           name: Set tag convention
@@ -182,7 +182,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
           name: Set tag convention
@@ -221,8 +221,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
-            - cv-cache-v1-
+            - cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
+            - cv-cache-v3-
 
       - install-coursier
 
@@ -260,10 +260,10 @@ jobs:
           command: cd credentials-verification && mill -i __.test -u out/test-results
 
       - save_cache:
-          key: cv-cache-v1-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
           paths:
             - ~/.cache/coursier
-            - ~/.ivy2
+            - ~/.ivy2/cache
 
       - run:
           name: Generate code coverage reports
@@ -385,7 +385,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.cache/coursier
-            - ~/.ivy2
+            - ~/.ivy2/cache
             - ~/.m2
             - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/main/node_modules
             - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/test/node_modules
@@ -434,13 +434,13 @@ jobs:
       - save_cache:
           paths:
             - ~/.cache/coursier
-            - ~/.ivy2
+            - ~/.ivy2/cache
             - ~/.m2
           key: crypto-cache-v1-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
 
       - run:
           name: Run unit tests
-          command: cd crypto && sbt test
+          command: cd crypto && sbt coverage test
 
       - run:
           name: Generate code coverage reports

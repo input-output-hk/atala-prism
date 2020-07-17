@@ -38,7 +38,6 @@ val circe = "0.13.0"
 lazy val crypto = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(
-    coverageEnabled := true,
     coverageScalacPluginVersion := "1.4.1",
     libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test
   )
