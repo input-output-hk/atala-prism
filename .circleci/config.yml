@@ -335,6 +335,7 @@ jobs:
           directories: "credentials-verification-android"
       - run: yes | sdkmanager --licenses || exit 0
       - run: yes | sdkmanager --update || exit 0
+
       - restore_cache:
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
       - run:
@@ -344,12 +345,22 @@ jobs:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
+
       - run:
           name: Run Lint Tests
           command: cd credentials-verification-android && ./gradlew lint test
       - run:
           name: Run Unit Tests
           command: cd credentials-verification-android && ./gradlew test
+      - run:
+          name: Assemble APK
+          command: cd credentials-verification-android && ./gradlew assembleDebug
+
+      - store_test_results:
+          path: credentials-verification-android/app/build/test-results
+      # Upload APK
+      - store_artifacts:
+          path: credentials-verification-android/app/build/outputs/apk/debug/app-debug.apk
 
   build-credentials-verification-webextension:
     working_directory: ~/repo
