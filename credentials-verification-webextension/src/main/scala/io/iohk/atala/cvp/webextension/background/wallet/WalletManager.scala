@@ -10,20 +10,15 @@ import io.circe.syntax._
 import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserTabService}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
+import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
-import io.iohk.atala.cvp.webextension.common.models.{
-  ConnectorRequest,
-  CredentialSubject,
-  RequestNonce,
-  SignedMessage,
-  UserDetails
-}
+import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
+import io.iohk.prism.protos.node_models.KeyUsage
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
-import io.iohk.prism.protos.node_models.KeyUsage
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
@@ -98,7 +93,8 @@ private[background] class WalletManager(
     browserActionService: BrowserActionService,
     storageService: StorageService,
     connectorClientService: ConnectorClientService,
-    browserTabService: BrowserTabService
+    browserTabService: BrowserTabService,
+    nodeClientService: NodeClientService
 )(implicit
     ectx: ExecutionContext
 ) {
@@ -284,6 +280,25 @@ private[background] class WalletManager(
       SignedMessage(did = walletData.did, KeyUsage.MASTER_KEY.name, signature.data)
     }
 
+  }
+
+  def verifySignedCredential(
+      origin: Origin,
+      sessionID: String,
+      signedCredentialStringRepresentation: String
+  ): Future[Boolean] = {
+    val validSessionF = Future.fromTry {
+      Try {
+        session
+          .find(_ == (sessionID -> origin))
+          .getOrElse(throw new RuntimeException("You need a valid session"))
+      }
+    }
+
+    for {
+      _ <- validSessionF
+      x <- nodeClientService.verifyCredential(signedCredentialStringRepresentation)
+    } yield x
   }
 
   private def createSignature(ecKeyPair: ECKeyPair, request: ConnectorRequest) = {

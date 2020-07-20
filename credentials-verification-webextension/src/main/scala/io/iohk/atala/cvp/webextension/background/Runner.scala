@@ -10,6 +10,7 @@ import io.iohk.atala.cvp.webextension.background.services.browser.{
   BrowserTabService
 }
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
+import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 import io.iohk.atala.cvp.webextension.common.I18NMessages
@@ -116,9 +117,10 @@ object Runner {
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
     val tabActionService = new BrowserTabService
-    val connectorClientService = ConnectorClientService(config.connectorUrl)
+    val connectorClientService = ConnectorClientService(config.backendUrl)
+    val nodeClientService = NodeClientService(config.backendUrl)
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, tabActionService)
+      new WalletManager(browserActionService, storage, connectorClientService, tabActionService, nodeClientService)
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, browserActionService, walletManager)
@@ -126,7 +128,9 @@ object Runner {
     new Runner(commandProcessor)
   }
 
-  def apply(config: Config, connectorClientService: ConnectorClientService)(implicit ec: ExecutionContext): Runner = {
+  def apply(config: Config, connectorClientService: ConnectorClientService, nodeClientService: NodeClientService)(
+      implicit ec: ExecutionContext
+  ): Runner = {
     val storage = new StorageService
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
@@ -134,7 +138,7 @@ object Runner {
     val tabActionService = new BrowserTabService
 
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, tabActionService)
+      new WalletManager(browserActionService, storage, connectorClientService, tabActionService, nodeClientService)
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, browserActionService, walletManager)

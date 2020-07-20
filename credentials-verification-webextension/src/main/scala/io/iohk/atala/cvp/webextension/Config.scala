@@ -9,7 +9,7 @@ import io.iohk.atala.cvp.webextension.activetab.ActiveTabConfig
   */
 case class Config(
     activeTabConfig: activetab.ActiveTabConfig,
-    connectorUrl: String
+    backendUrl: String
 )
 
 object Config {
@@ -17,14 +17,14 @@ object Config {
   def default(activeTabContextScripts: Seq[String], overrideConnectorUrl: Option[String] = None): Config = {
     Config(
       ActiveTabConfig(contextScripts = activeTabContextScripts),
-      connectorUrl = overrideConnectorUrl.getOrElse("http://console-develop.atalaprism.io")
+      backendUrl = overrideConnectorUrl.getOrElse("http://console-develop.atalaprism.io")
     )
   }
 
   def dev(activeTabContextScripts: Seq[String], overrideConnectorUrl: Option[String] = None): Config = {
     Config(
       ActiveTabConfig(contextScripts = activeTabContextScripts),
-      connectorUrl = overrideConnectorUrl.getOrElse("http://localhost:10000")
+      backendUrl = overrideConnectorUrl.getOrElse("http://localhost:10000")
     )
   }
 }

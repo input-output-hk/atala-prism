@@ -42,6 +42,11 @@ private[background] class CommandProcessor(
           .signConnectorRequest(origin, sessionId, request)
           .map(SignedConnectorResponse.apply)
           .map(CommandResponse.apply)
+      case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation) =>
+        walletManager
+          .verifySignedCredential(origin, sessionId, signedCredentialStringRepresentation)
+          .map(Command.VerifySignedCredentialResponse.apply)
+          .map(CommandResponse.apply)
       case Command.CreateKey(keyName) =>
         walletManager.createKey(keyName).map(_ => CommandResponse(()))
       case Command.GetWalletStatus =>

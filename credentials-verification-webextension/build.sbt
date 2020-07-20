@@ -115,6 +115,9 @@ libraryDependencies += "io.circe" %%% "circe-generic" % circe
 libraryDependencies += "io.circe" %%% "circe-parser" % circe
 
 libraryDependencies += "com.lihaoyi" %%% "scalatags" % scalatagsVersion
+
+libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "1.0.0"
+
 // js
 npmDependencies in Compile ++= Seq(
   "uuid" -> "3.1.0",

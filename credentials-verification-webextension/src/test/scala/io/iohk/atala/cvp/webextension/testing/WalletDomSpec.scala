@@ -3,6 +3,7 @@ package io.iohk.atala.cvp.webextension.testing
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.activetab.ActiveTabConfig
 import io.iohk.atala.cvp.webextension.background.Runner
+import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import org.scalajs.dom.html
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import scalatags.JsDom.all.div
@@ -35,9 +36,10 @@ trait WalletDomSpec extends Suite with BeforeAndAfterAll with BeforeAndAfterEach
     Runner(
       Config(
         ActiveTabConfig(List.empty),
-        connectorUrl = "http://localhost:10000/test"
+        backendUrl = "http://localhost:10000/test"
       ),
-      FakeConnectorClientService
+      FakeConnectorClientService,
+      new NodeClientService("http://localhost:10000/test")
     ).run()
 
     // Add view to be tested

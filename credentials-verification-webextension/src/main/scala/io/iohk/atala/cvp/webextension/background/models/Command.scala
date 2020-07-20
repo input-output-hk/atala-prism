@@ -22,8 +22,11 @@ private[background] object Command {
 
   final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest)
       extends CommandWithResponse[SignedConnectorResponse]
+  final case class SignedConnectorResponse(signedMessage: SignedMessage)
 
-  final case class SignedConnectorResponse(signedMessage: SignedMessage) extends CommandWithResponse[Event]
+  final case class VerifySignedCredential(sessionId: String, signedCredentialStringRepresentation: String)
+      extends CommandWithResponse[VerifySignedCredentialResponse]
+  final case class VerifySignedCredentialResponse(result: Boolean)
 
   final case class SignatureResult(signature: String)
 

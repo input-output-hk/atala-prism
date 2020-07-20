@@ -19,6 +19,7 @@ private[activetab] object Event {
   final case class GotUserSession(userDetails: UserDetails) extends Event
   final case object RequestSignatureAck extends Event
   final case class GotSignedResponse(signedMessage: SignedMessage) extends Event
+  final case class SignedCredentialVerified(result: Boolean) extends Event
 
   def decode(string: String): Try[Event] = {
     parse(string).toTry

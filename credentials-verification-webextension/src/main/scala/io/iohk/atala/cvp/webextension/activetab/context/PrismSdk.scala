@@ -37,8 +37,9 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
           "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus),
           "login" -> js.Any.fromFunction0(login),
           "requestSignature" -> js.Any.fromFunction2(requestSignature),
-          "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest)
-        )
+          "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest),
+          "verifySignedCredential" -> js.Any.fromFunction2(verifySignedCredential)
+        ): js.UndefOr[js.Any]
       }
     )
   }
@@ -65,6 +66,13 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
       .signConnectorRequest(sessionId, ConnectorRequest(request.toArray))
       .map(_.signedMessage)
       .map(sm => JsSignedMessage(sm.did, sm.didKeyId, sm.signature.toJSArray))
+      .toJSPromise
+  }
+
+  def verifySignedCredential(sessionId: String, signedCredentialStringRepresentation: String): js.Promise[Boolean] = {
+    extensionAPI
+      .verifySignedCredential(sessionId, signedCredentialStringRepresentation)
+      .map(_.result)
       .toJSPromise
   }
 

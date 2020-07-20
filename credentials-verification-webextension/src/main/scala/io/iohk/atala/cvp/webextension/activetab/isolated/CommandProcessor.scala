@@ -26,6 +26,11 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
         backgroundAPI
           .signConnectorRequest(sessionId, request)
           .map(response => Event.GotSignedResponse(response.signedMessage))
+
+      case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation) =>
+        backgroundAPI
+          .verifySignedCredential(sessionId, signedCredentialStringRepresentation)
+          .map(response => Event.SignedCredentialVerified(response.result))
     }
   }
 }
