@@ -18,7 +18,8 @@ object ECUtils {
   }
 
   def hexToBytes(hexEncoded: String): Array[Byte] = {
-    toBigInt(hexEncoded).toByteArray
+    require(hexEncoded.length % 2 == 0, "Hex length needs to be even")
+    hexEncoded.grouped(2).map(hexToByte).toArray
   }
 
   def bytesToHex(bytes: Array[Byte]): String = {
@@ -28,6 +29,10 @@ object ECUtils {
   private def byteToHex(b: Byte): String = {
     // Ensure only the last byte is used for formatting (needed in JavaScript)
     "%02x".format(b & 0xff)
+  }
+
+  private def hexToByte(h: String): Byte = {
+    Integer.parseInt(h, 16).toByte
   }
 
   def toUnsignedByteArray(src: BigInt): Array[Byte] = {

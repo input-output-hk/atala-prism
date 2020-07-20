@@ -32,14 +32,22 @@ lazy val root = project
 // Dependency versions
 val bouncycastle = "1.62"
 val spongycastle = "1.58.0.0"
-val scalatest = "3.1.1"
+val scalatest = "3.1.2"
+val scalatestplus = "3.1.2.0"
 val circe = "0.13.0"
 
 lazy val crypto = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(
     coverageScalacPluginVersion := "1.4.1",
-    libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test
+    libraryDependencies ++= Seq(
+      "io.circe" %%% "circe-core" % circe,
+      "io.circe" %%% "circe-parser" % circe
+    ),
+    libraryDependencies ++= Seq(
+      "org.scalatest" %%% "scalatest" % scalatest % Test,
+      "org.scalatestplus" %%% "scalacheck-1-14" % scalatestplus % Test
+    )
   )
   .jvmSettings(
     Test / fork := true, // Avoid classloader issues during testing with `sbt ~test`
@@ -55,7 +63,8 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "com.madgag.spongycastle" % "bcpkix-jdk15on" % spongycastle % "provided",
       "com.madgag.spongycastle" % "prov" % spongycastle % "provided"
-    )
+    ),
+    libraryDependencies += "org.bitcoinj" % "bitcoinj-core" % "0.15.7" % "provided"
   )
   .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
   .jsSettings(
@@ -67,9 +76,5 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
       "@types/elliptic" -> "6.4.12",
       "@types/node" -> "14.0.0"
     ),
-    webpackBundlingMode := BundlingMode.LibraryAndApplication("PrismSdk"),
-    libraryDependencies ++= Seq(
-      "io.circe" %%% "circe-core" % circe,
-      "io.circe" %%% "circe-parser" % circe
-    )
+    webpackBundlingMode := BundlingMode.LibraryAndApplication("PrismSdk")
   )
