@@ -526,7 +526,7 @@ class ConnectorService(
 
   override def getBuildInfo(request: connector_api.GetBuildInfoRequest): Future[connector_api.GetBuildInfoResponse] = {
     nodeService
-      .getBuildInfo(node_api.GetBuildInfoRequest())
+      .getNodeBuildInfo(node_api.GetNodeBuildInfoRequest())
       .map(nodeBuildInfo =>
         connector_api
           .GetBuildInfoResponse()

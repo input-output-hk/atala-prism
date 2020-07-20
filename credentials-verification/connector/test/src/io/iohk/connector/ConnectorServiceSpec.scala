@@ -19,8 +19,8 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { service =>
         // Use a month so that's long enough to not cache the build date but short enough to be helpful for the test
         val aMonthAgo = LocalDateTime.now(ZoneOffset.UTC).minusMonths(1)
-        nodeMock.getBuildInfo(*).returns {
-          Future.successful(node_api.GetBuildInfoResponse().withVersion("node-version"))
+        nodeMock.getNodeBuildInfo(*).returns {
+          Future.successful(node_api.GetNodeBuildInfoResponse().withVersion("node-version"))
         }
 
         val buildInfo = service.getBuildInfo(connector_api.GetBuildInfoRequest())

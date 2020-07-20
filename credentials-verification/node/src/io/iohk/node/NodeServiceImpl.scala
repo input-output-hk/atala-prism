@@ -93,11 +93,13 @@ class NodeServiceImpl(
     }
   }
 
-  override def getBuildInfo(request: node_api.GetBuildInfoRequest): Future[node_api.GetBuildInfoResponse] = {
+  override def getNodeBuildInfo(
+      request: node_api.GetNodeBuildInfoRequest
+  ): Future[node_api.GetNodeBuildInfoResponse] = {
     Future
       .successful(
         node_api
-          .GetBuildInfoResponse()
+          .GetNodeBuildInfoResponse()
           .withVersion(BuildInfo.version)
           .withScalaVersion(BuildInfo.scalaVersion)
           .withMillVersion(BuildInfo.millVersion)

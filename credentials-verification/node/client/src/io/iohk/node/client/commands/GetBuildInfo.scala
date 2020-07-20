@@ -5,7 +5,7 @@ import io.iohk.prism.protos.node_api
 
 case class GetBuildInfo() extends Command {
   override def run(api: node_api.NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
-    val response = api.getBuildInfo(node_api.GetBuildInfoRequest())
+    val response = api.getNodeBuildInfo(node_api.GetNodeBuildInfoRequest())
     print(response.toProtoString)
   }
 }

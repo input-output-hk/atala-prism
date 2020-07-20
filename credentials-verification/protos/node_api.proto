@@ -17,7 +17,7 @@ service NodeService {
 
     rpc GetCredentialState(GetCredentialStateRequest) returns (GetCredentialStateResponse) {}
 
-    rpc GetBuildInfo(GetBuildInfoRequest) returns (GetBuildInfoResponse) {}
+    rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
 }
 
 message GetDidDocumentRequest {
@@ -54,9 +54,9 @@ message RevokeCredentialRequest {
 message RevokeCredentialResponse {
 }
 
-message GetBuildInfoRequest {
+message GetNodeBuildInfoRequest {
 }
-message GetBuildInfoResponse {
+message GetNodeBuildInfoResponse {
     string version = 1;
     string scalaVersion = 2;
     string millVersion = 3;

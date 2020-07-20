@@ -25,7 +25,7 @@ import io.iohk.node.operations.{
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.node.services.{BlockProcessingServiceSpec, CredentialsService, DIDDataService, ObjectManagementService}
-import io.iohk.prism.protos.node_api.{GetBuildInfoRequest, GetCredentialStateRequest}
+import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
 import io.iohk.prism.protos.{node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -199,7 +199,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       // Use a month so that's long enough to not cache the build date but short enough to be helpful for the test
       val aMonthAgo = LocalDateTime.now(ZoneOffset.UTC).minusMonths(1)
 
-      val buildInfo = service.getBuildInfo(GetBuildInfoRequest())
+      val buildInfo = service.getNodeBuildInfo(GetNodeBuildInfoRequest())
 
       // This changes greatly, so just test something was set
       buildInfo.version must not be empty

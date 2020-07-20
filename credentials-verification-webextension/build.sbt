@@ -162,6 +162,7 @@ val dependencyProtoList =
   Seq(
     "connector_api.proto",
     "connector_models.proto",
+    "node_api.proto",
     "node_models.proto",
     "common_models.proto",
     "cmanager_models.proto",

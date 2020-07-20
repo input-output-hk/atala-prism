@@ -23,7 +23,6 @@ import scala.util.{Success, Failure}
 
 class ConnectorClientService(url: String) {
   val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
-
   val credentialsServiceApi = cmanager_api.CredentialsServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
 
   def registerDID(request: RegisterDIDRequest): Future[RegisterDIDResponse] = {
@@ -91,5 +90,4 @@ object ConnectorClientService {
     val metadata: Map[String, String] = Map(didKeyValue, didKeyId, didSignature, requestNoncePair)
     metadata
   }
-
 }
