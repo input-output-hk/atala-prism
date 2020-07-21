@@ -14,6 +14,9 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
   import org.scalacheck.Arbitrary.arbitrary
 
   val seedGen = Gen.containerOfN[Array, Byte](64, arbitrary[Byte])
+  val pathGen = Gen
+    .containerOf[Vector, Int](arbitrary[Int])
+    .map(axes => DerivationPath(axes.map(axis => new DerivationAxis(axis))))
 
   "randomMnemonicCode" should {
     "generate 12-word mnemonics" in {
@@ -64,9 +67,9 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
   "deriveKey" should {
     "return the same result as manual derivation from key" in {
       forAll(seedGen, arbitrary[Seq[Int]]) { (seed, axes) =>
-        val path = DerivationPath(axes.toVector)
+        val path = DerivationPath(axes.toVector.map(new DerivationAxis(_)))
         val rootKey = keyDerivation.derivationRoot(seed.toVector)
-        val manualKey = axes.foldLeft(rootKey)((key, axis) => key.derive(axis))
+        val manualKey = axes.foldLeft(rootKey)((key, axis) => key.derive(new DerivationAxis(axis)))
         val obtainedKey = keyDerivation.deriveKey(seed.toVector, path)
         obtainedKey.path mustBe manualKey.path
         obtainedKey.privateKey.getEncoded must contain theSameElementsInOrderAs manualKey.privateKey.getEncoded
@@ -76,14 +79,14 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
 
   "DerivationPath" should {
     "properly apply derivations" in {
-      forAll { axes: Vector[Int] =>
-        axes.foldLeft(DerivationPath())((path, axis) => path.derive(axis)) mustBe DerivationPath(axes)
+      forAll(pathGen) { path =>
+        path.axes.foldLeft(DerivationPath())((path, axis) => path.derive(axis)) mustBe path
       }
     }
 
     "parse string representations of path" in {
-      forAll { axes: Vector[Int] =>
-        DerivationPath(DerivationPath(axes).toString).axes must contain theSameElementsInOrderAs axes
+      forAll(pathGen) { path =>
+        DerivationPath(path.toString).axes must contain theSameElementsInOrderAs path.axes
       }
     }
   }

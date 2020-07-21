@@ -5,31 +5,63 @@ package io.iohk.atala.crypto
   */
 case class MnemonicCode(words: List[String])
 
-/** Represents derivation path in BIP 32 protocol */
-case class DerivationPath(axes: Vector[Int]) {
+/** Represent an axis on BIP 32 key derivation path
+  *
+  * BIP 32 standard defines how keys can be derived from another one for index between 0 and 2^32^ - 1, where
+  * indices between 0 and 2^31^ - 1 are called normal indices and between 2^31^ and 2^32^ - 1 hardened indices.
+  * Natural way to represent such thing is unsigned 32-bit integer, but JVM (and Scala) doesn't support such
+  * data type. That is why signed 32-bit is used instead, with the same bit representation. In other words
+  * unsigned index used here is equivalent to canonical, unsigned one modulo 2^32^.
+  *
+  * Implementation details are mostly hidden from the user, so user can either choose to create a normal
+  * axis, providing number between 0 and 2^31^ - 1 or hardened one, providing a number from the same range.
+  */
+class DerivationAxis private[crypto] (val i: Int) extends AnyVal {
 
-  private def axisToString(axis: Int): String = {
-    if (((axis >> 31) & 1) == 1) {
-      (axis & ~(1 << 31)).toString + "'"
+  /** Checks if the axis is hardened */
+  def isHardened: Boolean = ((i >> 31) & 1) == 1
+
+  /** Returns number corresponding to the axis (different for index), always between 0 and 2^31^ */
+  def number: Int = i & ~(1 << 31)
+
+  /** Renders axis as number with optional ' for hardened path, e.g. 1 or 7' */
+  def axisToString(): String = {
+    if (isHardened) {
+      number.toString + "'"
     } else {
-      axis.toString
+      i.toString
     }
   }
+}
+
+object DerivationAxis {
+
+  /** Creates normal (non-hardened) axis
+    * @param num number corresponding to the axis, must be between 0 and 2^31^ - 1
+    */
+  def normal(num: Int): DerivationAxis = {
+    require(num >= 0)
+    new DerivationAxis(num)
+  }
+
+  /** Creates hardened axis
+    * @param num number corresponding to the axis, must be between 0 and 2^31^ - 1
+    */
+  def hardened(num: Int): DerivationAxis = {
+    require(num >= 0)
+    new DerivationAxis(num | (1 << 31))
+  }
+}
+
+/** Represents derivation path in BIP 32 protocol */
+case class DerivationPath(axes: Vector[DerivationAxis]) {
 
   /** Creates child derivation path for given index, hardened or not */
-  def derive(axis: Int): DerivationPath = {
+  def derive(axis: DerivationAxis): DerivationPath = {
     copy(axes = axes :+ axis)
   }
 
-  /** Creates child derivation path for hardened child
-    *
-    * @param axis number of hardened child, 2^31^ is added to obtain the index
-    */
-  def deriveHardened(axis: Int): DerivationPath = {
-    copy(axes = axes :+ (axis | (1 << 31)))
-  }
-
-  override def toString = ("m" +: axes.map(axisToString)).mkString("/")
+  override def toString = ("m" +: axes.map(_.axisToString())).mkString("/")
 }
 
 object DerivationPath {
@@ -51,14 +83,11 @@ object DerivationPath {
     }
   }
 
-  /** Computes hardened index for given number */
-  def harden(i: Int): Int = i | (1 << 31)
-
-  private def parseAxis(axis: String): Int = {
+  private def parseAxis(axis: String): DerivationAxis = {
     val hardened = axis.endsWith("'")
     val axisNumStr = if (hardened) axis.substring(0, axis.length - 1) else axis
     val axisNum = Integer.parseInt(axisNumStr)
-    if (hardened) harden(axisNum) else axisNum
+    if (hardened) DerivationAxis.hardened(axisNum) else DerivationAxis.normal(axisNum)
   }
 
 }
@@ -78,10 +107,7 @@ trait ExtendedKey {
   def keyPair: ECKeyPair = ECKeyPair(privateKey, publicKey)
 
   /** Generates child extended key for given index */
-  def derive(axis: Int): ExtendedKey
-
-  /** Generates child extended key for hardened index */
-  def deriveHardened(axis: Int): ExtendedKey
+  def derive(axis: DerivationAxis): ExtendedKey
 }
 
 /**

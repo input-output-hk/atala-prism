@@ -50,7 +50,7 @@ class GenericKeyDerivation(ec: GenericEC) extends KeyDerivationTrait {
 private[crypto] class JvmExtendedKey(key: DeterministicKey, ec: GenericEC) extends ExtendedKey {
   override def path = {
     DerivationPath(
-      key.getPath.asScala.map(_.i).toVector
+      key.getPath.asScala.map(axis => new DerivationAxis(axis.i)).toVector
     )
   }
 
@@ -63,12 +63,8 @@ private[crypto] class JvmExtendedKey(key: DeterministicKey, ec: GenericEC) exten
     ec.toPrivateKey(key.getPrivKey)
   }
 
-  override def derive(axis: Int): ExtendedKey = {
-    new JvmExtendedKey(HDKeyDerivation.deriveChildKey(key, new ChildNumber(axis)), ec)
-  }
-
-  override def deriveHardened(axis: Int): ExtendedKey = {
-    derive(axis | ChildNumber.HARDENED_BIT)
+  override def derive(axis: DerivationAxis): ExtendedKey = {
+    new JvmExtendedKey(HDKeyDerivation.deriveChildKey(key, new ChildNumber(axis.i)), ec)
   }
 }
 
