@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19E287" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Contact" representedClassName="Contact" syncable="YES">
+        <attribute name="connectionId" optional="YES" attributeType="String"/>
+        <attribute name="dateCreated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="did" optional="YES" attributeType="String"/>
+        <attribute name="lastMessageId" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="token" optional="YES" attributeType="String"/>
+        <attribute name="userId" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="Credential" representedClassName="Credential" syncable="YES">
+        <attribute name="credentialId" optional="YES" attributeType="String"/>
+        <attribute name="dateReceived" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="encoded" optional="YES" attributeType="Binary"/>
+        <attribute name="htmlView" optional="YES" attributeType="String"/>
+        <attribute name="issuerId" optional="YES" attributeType="String"/>
+        <attribute name="issuerName" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="viewed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="CredentialHistory" representedClassName="CredentialHistory" syncable="YES">
+        <attribute name="dateShared" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="isRequested" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <relationship name="connection" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Contact"/>
+        <relationship name="credential" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Credential"/>
+    </entity>
+    <elements>
+        <element name="Contact" positionX="146.6640625" positionY="-16.45703125" width="128" height="148"/>
+        <element name="Credential" positionX="-63" positionY="-18" width="128" height="163"/>
+        <element name="CredentialHistory" positionX="38.82421875" positionY="166.625" width="128" height="103"/>
+    </elements>
+</model>
