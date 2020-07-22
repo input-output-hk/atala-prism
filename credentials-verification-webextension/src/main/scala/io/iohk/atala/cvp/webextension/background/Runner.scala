@@ -30,13 +30,17 @@ private object Logger {
 class Runner(
     commandProcessor: CommandProcessor
 )(implicit ec: ExecutionContext) {
-
+  val browserTabService = new BrowserTabService()
   implicit val encodeNothing = new Encoder[Nothing] {
     override def apply(a: Nothing): Json = ???
   }
 
   def run(): Unit = {
     Logger.log("This was run by the background script")
+    chrome.browserAction.BrowserAction.setPopup("") //Need to disable popup for using tab
+    chrome.browserAction.BrowserAction.onClicked.addListener(_ => {
+      browserTabService.createOrUpdateTab
+    })
     processExternalMessages()
   }
 

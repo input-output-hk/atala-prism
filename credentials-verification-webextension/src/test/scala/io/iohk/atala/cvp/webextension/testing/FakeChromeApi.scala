@@ -82,5 +82,10 @@ object FakeChromeApi extends js.Object() {
 
   val browserAction: js.Object = new js.Object() {
     def setPopup(details: js.Any, callback: js.UndefOr[js.Function0[_]] = js.undefined): Unit = {}
+    val onClicked: js.Object = new js.Object() {
+      def addListener(
+          callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]
+      ): Unit = {}
+    }
   }
 }
