@@ -79,4 +79,5 @@ abstract class GenericEC(proviver: java.security.Provider) extends ECTrait {
         verifier.verify(signature.data)
     }
   }
+
 }

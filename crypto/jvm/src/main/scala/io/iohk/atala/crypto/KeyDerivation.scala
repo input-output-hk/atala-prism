@@ -10,6 +10,8 @@ import scala.collection.JavaConverters._
 
 class GenericKeyDerivation(ec: GenericEC) extends KeyDerivationTrait {
 
+  def instance: GenericKeyDerivation = this
+
   private def mnemonicCodeEnglishInputStream = {
     val wordsText = MnemonicCodeEnglish.WordList.mkString("", "\n", "\n")
     new ByteArrayInputStream(wordsText.getBytes("UTF-8"))

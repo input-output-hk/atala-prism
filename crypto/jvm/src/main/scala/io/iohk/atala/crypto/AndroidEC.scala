@@ -13,6 +13,8 @@ import org.spongycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPubli
 object AndroidEC extends GenericEC(new BouncyCastleProvider) {
   private lazy val ecParameterSpec = ECNamedCurveTable.getParameterSpec(CURVE_NAME)
 
+  def instance: GenericEC = this
+
   override protected val ecNamedCurveSpec: JavaECParameterSpec = new ECNamedCurveSpec(
     ecParameterSpec.getName,
     ecParameterSpec.getCurve,
