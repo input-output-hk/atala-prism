@@ -8,7 +8,7 @@ import io.iohk.atala.crypto.ECUtils.toBigInt
   * <p>Client code should use `EC` without thinking on which implementation (JS, JVM) is being used. This will allow
   * downstream cross-compiled projects to work seamlessly.
   */
-private[crypto] trait ECTrait {
+trait ECTrait {
 
   /**
     * Generates a P-256k/secp256k1/prime256v1 key-pair.
