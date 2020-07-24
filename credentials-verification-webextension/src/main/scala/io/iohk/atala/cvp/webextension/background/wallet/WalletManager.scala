@@ -15,6 +15,7 @@ import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
+import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
 import io.iohk.prism.protos.node_models.KeyUsage
 import org.scalajs.dom.crypto
@@ -98,6 +99,8 @@ private[background] class WalletManager(
 )(implicit
     ectx: ExecutionContext
 ) {
+  private val requestAuthenticator = new RequestAuthenticator(EC)
+
   private var storageKey: Option[CryptoKey] = None
   type SessionID = String
   type Origin = String
@@ -276,8 +279,8 @@ private[background] class WalletManager(
       _ <- validSessionF
     } yield {
       val ecKeyPair = ecKeyPairFromSeed(walletData.mnemonic)
-      val signature = createSignature(ecKeyPair, request)
-      SignedMessage(did = walletData.did, KeyUsage.MASTER_KEY.name, signature.data)
+      val signedRequest = requestAuthenticator.signConnectorRequest(request.bytes, ecKeyPair.privateKey)
+      SignedMessage(did = walletData.did, didKeyId = KeyUsage.MASTER_KEY.name, signature = signedRequest.signature)
     }
 
   }
@@ -299,11 +302,6 @@ private[background] class WalletManager(
       _ <- validSessionF
       x <- nodeClientService.verifyCredential(signedCredentialStringRepresentation)
     } yield x
-  }
-
-  private def createSignature(ecKeyPair: ECKeyPair, request: ConnectorRequest) = {
-    val requestNonce = RequestNonce()
-    EC.sign(requestNonce + request.bytes, ecKeyPair.privateKey)
   }
 
   def requestSignature(origin: Origin, sessionID: SessionID, subject: CredentialSubject): Future[Unit] = {

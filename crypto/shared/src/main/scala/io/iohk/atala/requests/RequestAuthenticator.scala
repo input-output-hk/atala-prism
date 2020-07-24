@@ -2,7 +2,7 @@ package io.iohk.atala.requests
 
 import java.util.Base64
 
-import io.iohk.atala.crypto.{ECPrivateKey, ECSignature, ECTrait}
+import io.iohk.atala.crypto.{ECPrivateKey, ECTrait}
 
 class RequestAuthenticator(ec: ECTrait) {
 
@@ -15,16 +15,20 @@ class RequestAuthenticator(ec: ECTrait) {
   ): SignedConnectorRequest = {
     val requestNonce = RequestNonce()
     val signature = ec.sign(requestNonce + request, privateKey)
-    SignedConnectorRequest(encodedSignature = encode(signature), encodedRequestNonce = encode(requestNonce))
-  }
-
-  private def encode(signature: ECSignature): String = {
-    Base64.getUrlEncoder.encodeToString(signature.data)
-  }
-
-  private def encode(requestNonce: RequestNonce): String = {
-    Base64.getUrlEncoder.encodeToString(requestNonce.bytes)
+    SignedConnectorRequest(signature = signature.data, requestNonce = requestNonce.bytes)
   }
 }
 
-case class SignedConnectorRequest(encodedSignature: String, encodedRequestNonce: String)
+case class SignedConnectorRequest(signature: Array[Byte], requestNonce: Array[Byte]) {
+  def encodedSignature: String = {
+    encode(signature)
+  }
+
+  def encodedRequestNonce: String = {
+    encode(requestNonce)
+  }
+
+  private def encode(bytes: Array[Byte]): String = {
+    Base64.getUrlEncoder.encodeToString(bytes)
+  }
+}

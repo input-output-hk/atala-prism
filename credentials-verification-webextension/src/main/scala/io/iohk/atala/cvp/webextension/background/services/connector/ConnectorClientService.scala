@@ -5,7 +5,7 @@ import java.util.Base64
 import io.iohk.atala.crypto.{EC, ECKeyPair, ECPrivateKey, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
-import io.iohk.atala.cvp.webextension.common.models.RequestNonce
+import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.cmanager_api.{PublishCredentialRequest, PublishCredentialResponse}
 import io.iohk.prism.protos.connector_api.{
   GetCurrentUserRequest,
@@ -19,11 +19,11 @@ import scalapb.grpc.Channels
 
 import scala.concurrent.Future
 import scala.scalajs.js.JSConverters._
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 class ConnectorClientService(url: String) {
-  val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
-  val credentialsServiceApi = cmanager_api.CredentialsServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
+  private val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
+  private val credentialsServiceApi = cmanager_api.CredentialsServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
 
   def registerDID(request: RegisterDIDRequest): Future[RegisterDIDResponse] = {
     connectorApi.registerDID(request)
@@ -64,6 +64,7 @@ class ConnectorClientService(url: String) {
 }
 
 object ConnectorClientService {
+  private val requestAuthenticator = new RequestAuthenticator(EC)
 
   def apply(url: String): ConnectorClientService = new ConnectorClientService(url)
 
@@ -72,22 +73,17 @@ object ConnectorClientService {
     Base64.getUrlEncoder.encodeToString(signature.data)
   }
 
-  def getUrlEncodedRequestNonce(requestNonce: RequestNonce): String = {
-    Base64.getUrlEncoder.encodeToString(requestNonce.bytes)
-  }
-
   def metadataForRequest[Request <: GeneratedMessage](
       ecKeyPair: ECKeyPair,
       did: String,
       request: Request
   ): Map[String, String] = {
-    val requestNonce = RequestNonce()
-    val didKeyValue = "did" -> did
-    val didKeyId = "didKeyId" -> firstMasterKeyId
-    val didSignature =
-      "didSignature" -> generateUrlEncodedSignature(requestNonce + request.toByteArray, ecKeyPair.privateKey)
-    val requestNoncePair = "requestNonce" -> getUrlEncodedRequestNonce(requestNonce)
-    val metadata: Map[String, String] = Map(didKeyValue, didKeyId, didSignature, requestNoncePair)
-    metadata
+    val signedConnectorRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, ecKeyPair.privateKey)
+    Map(
+      "did" -> did,
+      "didKeyId" -> firstMasterKeyId,
+      "didSignature" -> signedConnectorRequest.encodedSignature,
+      "requestNonce" -> signedConnectorRequest.encodedRequestNonce
+    )
   }
 }

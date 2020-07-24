@@ -20,7 +20,9 @@ abstract class RequestAuthenticatorSpecBase(ec: ECTrait) extends AnyWordSpec {
       val signedRequest = requestAuthenticator.signConnectorRequest(request, keyPair.privateKey)
 
       val signature = Base64.getUrlDecoder.decode(signedRequest.encodedSignature)
+      signedRequest.signature must contain theSameElementsInOrderAs signature
       val requestNonce = Base64.getUrlDecoder.decode(signedRequest.encodedRequestNonce)
+      signedRequest.requestNonce must contain theSameElementsInOrderAs requestNonce
       val requestWithNonce = requestNonce ++ request
       ec.verify(requestWithNonce, keyPair.publicKey, ECSignature(signature)) mustBe true
     }
