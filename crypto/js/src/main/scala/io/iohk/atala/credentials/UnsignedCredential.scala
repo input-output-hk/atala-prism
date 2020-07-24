@@ -27,11 +27,11 @@ class JsonBasedUnsignedCredential private (credentialBytes: Array[Byte]) extends
   lazy val bytes: Array[Byte] = credentialBytes
 
   lazy val issuerDID: Option[String] = {
-    json.hcursor.get[String](JsonBasedUnsignedCredential.keyIdFieldName).toOption
+    json.hcursor.get[String](JsonBasedUnsignedCredential.issuerDIDFieldName).toOption
   }
 
   lazy val issuanceKeyId: Option[String] = {
-    json.hcursor.get[String](JsonBasedUnsignedCredential.issuerDIDFieldName).toOption
+    json.hcursor.get[String](JsonBasedUnsignedCredential.keyIdFieldName).toOption
   }
 
   override def equals(obj: Any): Boolean = {
@@ -77,8 +77,8 @@ object JsonBasedUnsignedCredential {
         new JsonBasedUnsignedCredential(
           Json
             .obj(
-              keyIdFieldName -> issuerDID.asJson,
-              issuerDIDFieldName -> issuanceKeyId.asJson,
+              issuerDIDFieldName -> issuerDID.asJson,
+              keyIdFieldName -> issuanceKeyId.asJson,
               claimsFieldName -> claims
             )
             .noSpaces

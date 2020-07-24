@@ -3,6 +3,7 @@ package io.iohk.atala.cvp.webextension.background.services.node
 import io.iohk.atala.credentials.{
   CredentialData,
   CredentialVerification,
+  CredentialsCryptoSDKImpl,
   JsonBasedUnsignedCredential,
   KeyData,
   SignedCredential
@@ -13,7 +14,6 @@ import io.iohk.prism.protos.node_api
 import scalapb.grpc.Channels
 
 import scala.concurrent.{ExecutionContext, Future}
-
 import NodeUtils._
 
 class NodeClientService(url: String) {
@@ -31,7 +31,7 @@ class NodeClientService(url: String) {
       keyData <- getKeyData(issuerDID = issuerDID, issuanceKeyId = issuanceKeyId)
       credentialData <- getCredentialData(
         computeNodeCredentialId(
-          credentialHash = SHA256Digest.compute(signedCredential.signedCredentialBytes),
+          credentialHash = CredentialsCryptoSDKImpl.hash(signedCredential),
           didSuffix = issuerDID.stripPrefix("did:prism:")
         )
       )

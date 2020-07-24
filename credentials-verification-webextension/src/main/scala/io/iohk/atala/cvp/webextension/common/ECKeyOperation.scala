@@ -11,7 +11,7 @@ import typings.node.Buffer
 
 object ECKeyOperation {
   val CURVE_NAME = "secp256k1"
-  val firstMasterKeyId = "master"
+  val firstMasterKeyId = "master0"
 
   // https://github.com/input-output-hk/atala/blob/develop/credentials-verification/docs/protocol/key-derivation.md
   private val firstMasterChild = "m/0'/0'/0'"
@@ -37,7 +37,7 @@ object ECKeyOperation {
       signingKeyId: String,
       signingKey: ECKeyPair,
       claimsString: String
-  ): Either[ParsingFailure, AtalaOperation] = {
+  ): Either[ParsingFailure, (AtalaOperation, String)] = {
     io.circe.parser.parse(claimsString) map { claims =>
       val unsignedCreedential =
         UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(
@@ -46,10 +46,13 @@ object ECKeyOperation {
           claims = claims
         )
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCreedential, signingKey.privateKey)
-      val contentHash = ByteString.copyFrom(signedCredential.signedCredentialBytes)
-      val credentialData = CredentialData(issuer = issuerDID, contentHash = contentHash)
+      val contentHash = ByteString.copyFrom(CredentialsCryptoSDKImpl.hash(signedCredential).value)
+      val credentialData = CredentialData(issuer = issuerDID.stripPrefix("did:prism:"), contentHash = contentHash)
       val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
-      AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation))
+      (
+        AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation)),
+        signedCredential.canonicalForm
+      )
     }
   }
 

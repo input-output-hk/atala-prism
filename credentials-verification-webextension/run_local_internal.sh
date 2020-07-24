@@ -11,7 +11,7 @@ tmux split-window -h
 # Start the node
 tmux select-pane -t 1 -T Node
 tmux send-keys \
-  "cd ../credentials-verification && mill -i node.run" \
+  "cd ../credentials-verification && GEUD_NODE_LEDGER="in-memory" mill -i node.run" \
   C-m
 
 # Start the connector

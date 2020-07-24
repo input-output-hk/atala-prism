@@ -43,13 +43,13 @@ class ConnectorClientService(url: String) {
       credentialClaims: String
   ): Future[PublishCredentialResponse] = {
     val inputTry = for {
-      issuanceOperation <- issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims).toTry
+      (issuanceOperation, signedCredential) <- issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims).toTry
       operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
       sha256Hashed = SHA256Digest.compute(credentialClaims.getBytes).hexValue
       request =
         PublishCredentialRequest()
           .withCmanagerCredentialId(credentialId)
-          .withEncodedSignedCredential(generateUrlEncodedSignature(credentialClaims.getBytes, ecKeyPair.privateKey))
+          .withEncodedSignedCredential(signedCredential)
           .withIssueCredentialOperation(operation)
           .withOperationHash(sha256Hashed) //TODO Fix this as discussed when Protobuf is updated
           .withNodeCredentialId(sha256Hashed)
