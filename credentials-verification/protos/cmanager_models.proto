@@ -63,4 +63,9 @@ message CManagerGenericCredential {
     string issuerName = 5; // the name of the issuer according to the cmanager/connector internal data
     string groupName = 6; // group name associated to the credential in the cmanager internal data
     string subjectData = 7; // internal data from the related subject stored in cmanager tables
+    // the fields below will only be populated after the credential is published in the blockchain
+    string nodeCredentialId = 8; // the id assigned to the published credential by the protocol
+    bytes issuanceOperationHash = 9; // the hash of the associated issuance operation
+    string encodedSignedCredential = 10; // the actual published credential
+    uint64 publicationStoredAt = 11; // the time when the publication data was stored in the database
 }

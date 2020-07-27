@@ -3,7 +3,6 @@ package io.iohk.cvp.cmanager.repositories
 import java.time.LocalDate
 import java.util.UUID
 
-import doobie.implicits._
 import io.circe.Json
 import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, IssuerGroup}
 import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential, PublishCredential}
@@ -12,7 +11,6 @@ import io.iohk.cvp.cmanager.repositories.common.DataPreparation._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import io.circe.syntax._
-import io.iohk.cvp.cmanager.repositories.daos.CredentialsDAO
 import io.iohk.cvp.crypto.SHA256Digest
 
 class CredentialsRepositorySpec extends CManagerRepositorySpec {
@@ -110,6 +108,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       credential.issuerName must be(issuerName)
       credential.subjectData must be(subject.data)
       credential.groupName must be(request.groupName)
+      credential.publicationData must be(empty)
     }
   }
 
@@ -178,7 +177,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       val issuerId = createIssuer("Issuer X").id
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId = createSubject(issuerId, "IOHK Student 2", group.name).id
-      val credential = createGenericCredential(issuerId, subjectId, "A")
+      val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockNodeCredentialId = mockOperationHash.hexValue
@@ -188,7 +187,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
         .storePublicationData(
           issuerId,
           PublishCredential(
-            credential.credentialId,
+            originalCredential.credentialId,
             mockOperationHash,
             mockNodeCredentialId,
             mockEncodedSignedCredential
@@ -199,13 +198,18 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
       inserted.right.value must be(1)
 
-      val storedCredential =
-        CredentialsDAO.getPublicationData(credential.credentialId).transact(database).unsafeRunSync().value
+      val credentialList =
+        credentialsRepository.getBy(issuerId, subjectId).value.futureValue.right.value
 
-      storedCredential.credentialId must be(credential.credentialId)
-      storedCredential.nodeCredentialId must be(mockNodeCredentialId)
-      storedCredential.issuanceOperationHash must be(mockOperationHash)
-      storedCredential.encodedSignedCredential must be(mockEncodedSignedCredential)
+      credentialList.length must be(1)
+
+      val updatedCredential = credentialList.headOption.value
+
+      updatedCredential.publicationData.value.nodeCredentialId must be(mockNodeCredentialId)
+      updatedCredential.publicationData.value.issuanceOperationHash must be(mockOperationHash)
+      updatedCredential.publicationData.value.encodedSignedCredential must be(mockEncodedSignedCredential)
+      // the rest should remain unchanged
+      updatedCredential.copy(publicationData = None) must be(originalCredential)
     }
 
     "fail when credential_id is not registered" in {
@@ -229,13 +233,18 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
           .value
           .futureValue
       )
+
+      val credentialList =
+        credentialsRepository.getBy(issuerId, 10, None).value.futureValue.right.value
+
+      credentialList must be(empty)
     }
 
     "fail when issuer_id does not belong to the credential_id" in {
       val issuerId = createIssuer("Issuer X").id
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId = createSubject(issuerId, "IOHK Student 2", group.name).id
-      val credential = createGenericCredential(issuerId, subjectId, "A")
+      val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockNodeCredentialId = mockOperationHash.hexValue
@@ -246,7 +255,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
           .storePublicationData(
             Issuer.Id(UUID.randomUUID()),
             PublishCredential(
-              credential.credentialId,
+              originalCredential.credentialId,
               mockOperationHash,
               mockNodeCredentialId,
               mockEncodedSignedCredential
@@ -255,6 +264,16 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
           .value
           .futureValue
       )
+
+      val credentialList =
+        credentialsRepository.getBy(issuerId, subjectId).value.futureValue.right.value
+
+      credentialList.length must be(1)
+
+      val updatedCredential = credentialList.headOption.value
+
+      updatedCredential must be(originalCredential)
+      updatedCredential.publicationData must be(empty)
     }
   }
 }

@@ -113,10 +113,11 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT inserted.*, PTS.name AS issuer_name, issuer_subjects.subject_data
+         |SELECT inserted.*, PTS.name AS issuer_name, issuer_subjects.subject_data, pc.*
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN issuer_subjects USING (subject_id)
+         |     LEFT JOIN published_credentials pc USING (credential_id)
          |""".stripMargin.query[GenericCredential].unique
   }
 
@@ -138,10 +139,12 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data,
+             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN issuer_subjects USING (subject_id)
+             |     LEFT JOIN published_credentials pc USING (credential_id)
              |WHERE c.issuer_id = $issuedBy AND
              |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
              |ORDER BY c.created_on ASC, credential_id
@@ -154,10 +157,12 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data,
+             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN issuer_subjects USING (subject_id)
+             |     LEFT JOIN published_credentials pc USING (credential_id)
              |WHERE c.issuer_id = $issuedBy
              |ORDER BY c.created_on ASC, credential_id
              |LIMIT $limit
@@ -173,10 +178,12 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data
+         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data,
+         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN issuer_subjects USING (subject_id)
+         |     LEFT JOIN published_credentials pc USING (credential_id)
          |WHERE c.issuer_id = $issuedBy AND
          |      c.subject_id = $subjectId
          |ORDER BY c.created_on ASC, credential_id
@@ -193,13 +200,5 @@ object CredentialsDAO {
          |""".stripMargin.update.run.flatTap { n =>
       FC.raiseError(new RuntimeException(s"The credential was not issued by the specified issuer")).whenA(n != 1)
     }
-  }
-
-  def getPublicationData(credentialId: GenericCredential.Id): doobie.ConnectionIO[Option[PublishCredential]] = {
-    sql"""
-         | SELECT credential_id, operation_hash, node_credential_id, encoded_signed_credential
-         | FROM published_credentials
-         | WHERE credential_id = $credentialId
-         |""".stripMargin.query[PublishCredential].option
   }
 }

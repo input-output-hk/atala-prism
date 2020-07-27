@@ -1377,7 +1377,11 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.toObject = function(include
     credentialdata: jspb.Message.getFieldWithDefault(msg, 4, ""),
     issuername: jspb.Message.getFieldWithDefault(msg, 5, ""),
     groupname: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    subjectdata: jspb.Message.getFieldWithDefault(msg, 7, "")
+    subjectdata: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    nodecredentialid: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    issuanceoperationhash: msg.getIssuanceoperationhash_asB64(),
+    encodedsignedcredential: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    publicationstoredat: jspb.Message.getFieldWithDefault(msg, 11, 0)
   };
 
   if (includeInstance) {
@@ -1441,6 +1445,22 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.deserializeBinaryFromReader
     case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setSubjectdata(value);
+      break;
+    case 8:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNodecredentialid(value);
+      break;
+    case 9:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setIssuanceoperationhash(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEncodedsignedcredential(value);
+      break;
+    case 11:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setPublicationstoredat(value);
       break;
     default:
       reader.skipField();
@@ -1517,6 +1537,34 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.serializeBinaryToWriter = f
   if (f.length > 0) {
     writer.writeString(
       7,
+      f
+    );
+  }
+  f = message.getNodecredentialid();
+  if (f.length > 0) {
+    writer.writeString(
+      8,
+      f
+    );
+  }
+  f = message.getIssuanceoperationhash_asU8();
+  if (f.length > 0) {
+    writer.writeBytes(
+      9,
+      f
+    );
+  }
+  f = message.getEncodedsignedcredential();
+  if (f.length > 0) {
+    writer.writeString(
+      10,
+      f
+    );
+  }
+  f = message.getPublicationstoredat();
+  if (f !== 0) {
+    writer.writeUint64(
+      11,
       f
     );
   }
@@ -1646,6 +1694,102 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getSubjectdata = 
  */
 proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setSubjectdata = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional string nodeCredentialId = 8;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getNodecredentialid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setNodecredentialid = function(value) {
+  return jspb.Message.setProto3StringField(this, 8, value);
+};
+
+
+/**
+ * optional bytes issuanceOperationHash = 9;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getIssuanceoperationhash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
+};
+
+
+/**
+ * optional bytes issuanceOperationHash = 9;
+ * This is a type-conversion wrapper around `getIssuanceoperationhash()`
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getIssuanceoperationhash_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getIssuanceoperationhash()));
+};
+
+
+/**
+ * optional bytes issuanceOperationHash = 9;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getIssuanceoperationhash()`
+ * @return {!Uint8Array}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getIssuanceoperationhash_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getIssuanceoperationhash()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setIssuanceoperationhash = function(value) {
+  return jspb.Message.setProto3BytesField(this, 9, value);
+};
+
+
+/**
+ * optional string encodedSignedCredential = 10;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getEncodedsignedcredential = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setEncodedsignedcredential = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
+};
+
+
+/**
+ * optional uint64 publicationStoredAt = 11;
+ * @return {number}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getPublicationstoredat = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setPublicationstoredat = function(value) {
+  return jspb.Message.setProto3IntField(this, 11, value);
 };
 
 

@@ -181,7 +181,7 @@ message PublishCredentialRequest {
     string cmanagerCredentialId = 2; // cmanager internal credential id
     SignedAtalaOperation issueCredentialOperation = 3; // a signed instance of IssueCredential operation
     string nodeCredentialId = 4; // the credentialId computed by the protocol
-    string operationHash = 5; // the hash of the AtalaOperation sent inside the
+    bytes operationHash = 5;  // the hash of the AtalaOperation sent inside the
                               // SignedAtalaOperation represented by the issueCredential
                               // field. This is needed for revocation as it represents
                               // the previous operation hash

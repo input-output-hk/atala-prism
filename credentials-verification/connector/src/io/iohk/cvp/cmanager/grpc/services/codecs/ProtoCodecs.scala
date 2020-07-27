@@ -2,6 +2,7 @@ package io.iohk.cvp.cmanager.grpc.services.codecs
 
 import java.time.LocalDate
 
+import com.google.protobuf.ByteString
 import io.iohk.cvp.cmanager.models.{GenericCredential, Student, Subject, UniversityCredential}
 import io.iohk.prism.protos.{cmanager_models, common_models}
 import io.scalaland.chimney.Transformer
@@ -66,7 +67,7 @@ object ProtoCodecs {
   }
 
   def genericCredentialToProto(credential: GenericCredential): cmanager_models.CManagerGenericCredential = {
-    cmanager_models
+    val model = cmanager_models
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.value.toString)
       .withIssuerId(credential.issuedBy.value.toString)
@@ -76,5 +77,12 @@ object ProtoCodecs {
       .withGroupName(credential.groupName)
       .withSubjectData(credential.subjectData.noSpaces)
 
+    credential.publicationData.fold(model) { data =>
+      model
+        .withNodeCredentialId(data.nodeCredentialId)
+        .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value))
+        .withEncodedSignedCredential(data.encodedSignedCredential)
+        .withPublicationStoredAt(data.storedAt.toEpochMilli)
+    }
   }
 }

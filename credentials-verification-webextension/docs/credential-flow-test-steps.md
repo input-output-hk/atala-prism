@@ -22,15 +22,14 @@ We will build everything from scratch.
 
 1. First, we will start the Postgres server. If you already have this up and running, you can skip this step.
    ``` 
-   $ cd atala
-   atala$ docker run -it --rm -e POSTGRES_DB=geud_connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres 
+   $ docker run -it --rm -e POSTGRES_DB=geud_connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres 
    ```
    
    The above command will start a docker Postgres container with a database necessary for the connector.
    Given that we will also need a database for the node, open a postgres client and create the needed database as follows:
    
    ``` 
-   atala$ psql geud_connector_db \
+   $ psql geud_connector_db \
        -U postgres \
        -h localhost \
        -p 5432
@@ -50,7 +49,6 @@ We will build everything from scratch.
 
    **NOTE:** If you are a *linux* user, you could alternatively go to `credentials-verification-webextension`, and run
    `$ ./run_local.sh`, and move directly to step 4. 
-   **This was not done while testing the steps in this document**. 
    
    Connector
    ```
@@ -90,7 +88,7 @@ Activate the developer mode (top right corner of the page) and click on `Load un
 mode), in the dialog opened go to `atala/credentials-verification-webextension/target/chrome`, select `unpacked-fast`
 folder and click `Open`. Now the wallet should be found in your plugins. Do not open the wallet yet.
 
-At this point you have all the needed components up to run the wallet locally. 
+At this point, you have all the needed components up to run the wallet locally. 
 We now move to the testing part.
 
 ## Fun part
@@ -158,6 +156,13 @@ and we will not need to remember any other data apart from the organization name
    ```
    In our case is the id `db4e7c01-3912-4be9-b41b-7e0e4a79ce4e`
 
+1. For future use, go to the browser console an `id` variable with the uuid extracted from the 
+   previous step. In this example, it would be:
+
+   ```
+   > id = "db4e7c01-3912-4be9-b41b-7e0e4a79ce4e"
+   ```
+
 1. In order to publish a credential, we need to have a credential in the cmanager. 
    In order to add a credential in the cmanager, we need to assign to it a `subject` and an `issuer_group`
    Given the backend validations and db constraints, we need to create all the rows in the databases in a way 
@@ -224,11 +229,10 @@ and we will not need to remember any other data apart from the organization name
 
 1. Now we are ready to publish a credential using the PrismSdk from the browser console.
 
-   Go to the console, and replace in the following command the `id` we use, for the one that 
-   matches yours:
+   Go to the browser console, and execute:
    
    ```
-   > window.prism.requestSignature(sessionId, '{ "id" : "db4e7c01-3912-4be9-b41b-7e0e4a79ce4e", "properties": { "degree" : "CS Degree" } }')
+   > window.prism.requestSignature(sessionId, '{ "id" : "' + id + '", "properties": { "degree" : "CS Degree" } }')
    ```
    a pop-up (or new tab) will appear requesting authorization to sign a request. The pop-up, at the time of this 
    writing, displays the `id` used in a green button. Click on the button and then go back to the console.
@@ -265,18 +269,17 @@ and we will not need to remember any other data apart from the organization name
    ```
    {"issuer":"did:prism:498629716f863b6ce282930f77c5f82bdc1b9fe57c4341ca0df37860cf2ee25e","keyId":"master0","claims":{"degree":"CS Degree"}}
    ```
-   
-1. Let us finish the test by verifying the credential using the PrismSdk through the console. 
-   Copy the full credential (remember to copy your credential and not the one in this instructions), in our case:
-   
+1. Define in the console the following variable to represent your encoded signed credential. In this example, this would be:
+
    ``` 
-   eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-T
+   > credential = 'eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-T'
    ```
-   
-   and type
+    
+1. Let us finish the test by verifying the credential using the PrismSdk through the console. 
+   Execute:
    
    ``` 
-   > window.prism.verifySignedCredential(sessionId,"eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-T")
+   > window.prism.verifySignedCredential(sessionId, credential)
    Promise {<pending>}
    main-bundle.js:110650 BackgroundAPI: Sending command {"VerifySignedCredential":{"sessionId":"63dc6e84-37cd-4117-8a3c-0b733cc350e4","signedCredentialStringRepresentation":"eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-T"}}
    main-bundle.js:110650 BackgroundAPI: Received response {"Right":{"value":{"result":true}}}
@@ -287,7 +290,10 @@ and we will not need to remember any other data apart from the organization name
    of the `true` response. For example, if we change the last `T` in the string for a `U`, we get:
     
    ```
-   > window.prism.verifySignedCredential(sessionId,"eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-U")
+   > credential = "eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-U"
+   "eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-U"
+   
+   > window.prism.verifySignedCredential(sessionId, credential)
    Promise {<pending>}
    main-bundle.js:110650 BackgroundAPI: Sending command {"VerifySignedCredential":{"sessionId":"63dc6e84-37cd-4117-8a3c-0b733cc350e4","signedCredentialStringRepresentation":"eyJpc3N1ZXIiOiJkaWQ6cHJpc206NDk4NjI5NzE2Zjg2M2I2Y2UyODI5MzBmNzdjNWY4MmJkYzFiOWZlNTdjNDM0MWNhMGRmMzc4NjBjZjJlZTI1ZSIsImtleUlkIjoibWFzdGVyMCIsImNsYWltcyI6eyJkZWdyZWUiOiJDUyBEZWdyZWUifX0=.MEYCIQCFqUMF099bwKbqcm676uD4q13M1CIa1UI1e4Ydw3TiiQIhAMIYBcmOSTBHOSGjCv2qzoDoB6SGFbdUkj96HatMQD-U"}}
    main-bundle.js:110650 BackgroundAPI: Received response {"Left":{"value":"2: Unknown credential_id: f38a58293bdc3e6dc93f61ce41751af2fb3b57724133335913c47c69580a5f22"}}

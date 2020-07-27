@@ -5,7 +5,6 @@ import java.util.UUID
 import com.google.protobuf.ByteString
 import io.circe.Json
 import io.circe.syntax._
-import doobie.implicits._
 import io.grpc.ServerServiceDefinition
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
@@ -13,7 +12,6 @@ import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs
 import io.iohk.cvp.cmanager.models.{GenericCredential, IssuerGroup}
 import io.iohk.cvp.cmanager.repositories.CredentialsRepository
 import io.iohk.cvp.cmanager.repositories.common.DataPreparation
-import io.iohk.cvp.cmanager.repositories.daos.CredentialsDAO
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
@@ -80,6 +78,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         response.issuerName must be(issuerName)
         response.groupName must be(issuerGroup.name.value)
         io.circe.parser.parse(response.subjectData).right.value must be(subject.data)
+        response.nodeCredentialId must be(empty)
+        response.issuanceOperationHash must be(empty)
+        response.encodedSignedCredential must be(empty)
+        response.publicationStoredAt must be(0)
       }
     }
   }
@@ -138,7 +140,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuer = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuer.id, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createSubject(issuer.id, "Subject 1", issuerGroup.name)
-      val credential = DataPreparation.createGenericCredential(issuer.id, subject.id)
+      val originalCredential = DataPreparation.createGenericCredential(issuer.id, subject.id)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -161,23 +163,28 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       usingApiAs(ParticipantId(issuer.id.value)) { serviceStub =>
         val request = cmanager_api
           .PublishCredentialRequest()
-          .withCmanagerCredentialId(credential.credentialId.value.toString)
+          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(mockOperationHash.hexValue)
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
         serviceStub.publishCredential(request)
 
         verify(nodeMock).issueCredential(nodeRequest)
 
-        val storedCredential =
-          CredentialsDAO.getPublicationData(credential.credentialId).transact(database).unsafeRunSync().value
+        val credentialList =
+          credentialsRepository.getBy(issuer.id, subject.id).value.futureValue.right.value
 
-        storedCredential.credentialId must be(credential.credentialId)
-        storedCredential.nodeCredentialId must be(mockNodeCredentialId)
-        storedCredential.issuanceOperationHash must be(mockOperationHash)
-        storedCredential.encodedSignedCredential must be(mockEncodedSignedCredential)
+        credentialList.length must be(1)
+
+        val updatedCredential = credentialList.headOption.value
+
+        updatedCredential.publicationData.value.nodeCredentialId must be(mockNodeCredentialId)
+        updatedCredential.publicationData.value.issuanceOperationHash must be(mockOperationHash)
+        updatedCredential.publicationData.value.encodedSignedCredential must be(mockEncodedSignedCredential)
+        // the rest should remain unchanged
+        updatedCredential.copy(publicationData = None) must be(originalCredential)
       }
     }
 
@@ -186,7 +193,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuer = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuer.id, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createSubject(issuer.id, "Subject 1", issuerGroup.name)
-      val credential = DataPreparation.createGenericCredential(issuer.id, subject.id)
+      val originalCredential = DataPreparation.createGenericCredential(issuer.id, subject.id)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -203,11 +210,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       usingApiAs(ParticipantId(wrongIssuerId)) { serviceStub =>
         val request = cmanager_api
           .PublishCredentialRequest()
-          .withCmanagerCredentialId(credential.credentialId.value.toString)
+          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(mockOperationHash.hexValue)
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
         verifyNoMoreInteractions(nodeMock)
 
@@ -215,7 +222,15 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           serviceStub.publishCredential(request)
         )
 
-        CredentialsDAO.getPublicationData(credential.credentialId).transact(database).unsafeRunSync() must be(empty)
+        val credentialList =
+          credentialsRepository.getBy(issuer.id, subject.id).value.futureValue.right.value
+
+        credentialList.length must be(1)
+
+        val updatedCredential = credentialList.headOption.value
+
+        updatedCredential must be(originalCredential)
+        updatedCredential.publicationData must be(empty)
       }
     }
 
@@ -242,7 +257,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(mockOperationHash.hexValue)
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
         verifyNoMoreInteractions(nodeMock)
 
@@ -250,7 +265,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           serviceStub.publishCredential(request)
         )
 
-        CredentialsDAO.getPublicationData(unknownCredentialId).transact(database).unsafeRunSync() must be(empty)
+        val credentialList =
+          credentialsRepository.getBy(issuer.id, 10, None).value.futureValue.right.value
+
+        credentialList must be(empty)
       }
     }
 
@@ -259,7 +277,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuer = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuer.id, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createSubject(issuer.id, "Subject 1", issuerGroup.name)
-      val credential = DataPreparation.createGenericCredential(issuer.id, subject.id)
+      val originalCredential = DataPreparation.createGenericCredential(issuer.id, subject.id)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -276,11 +294,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       usingApiAs(ParticipantId(wrongIssuerId)) { serviceStub =>
         val request = cmanager_api
           .PublishCredentialRequest()
-          .withCmanagerCredentialId(credential.credentialId.value.toString)
+          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockIncorrectNodeCredentialId)
-          .withOperationHash(mockOperationHash.hexValue)
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
         verifyNoMoreInteractions(nodeMock)
 
@@ -288,7 +306,15 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           serviceStub.publishCredential(request)
         )
 
-        CredentialsDAO.getPublicationData(credential.credentialId).transact(database).unsafeRunSync() must be(empty)
+        val credentialList =
+          credentialsRepository.getBy(issuer.id, subject.id).value.futureValue.right.value
+
+        credentialList.length must be(1)
+
+        val updatedCredential = credentialList.headOption.value
+
+        updatedCredential must be(originalCredential)
+        updatedCredential.publicationData must be(empty)
       }
     }
 
@@ -297,7 +323,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuer = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuer.id, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createSubject(issuer.id, "Subject 1", issuerGroup.name)
-      val credential = DataPreparation.createGenericCredential(issuer.id, subject.id)
+      val originalCredential = DataPreparation.createGenericCredential(issuer.id, subject.id)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -313,11 +339,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       usingApiAs(ParticipantId(issuer.id.value)) { serviceStub =>
         val request = cmanager_api
           .PublishCredentialRequest()
-          .withCmanagerCredentialId(credential.credentialId.value.toString)
+          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEmptyEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(mockOperationHash.hexValue)
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
         verifyNoMoreInteractions(nodeMock)
 
@@ -325,7 +351,15 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           serviceStub.publishCredential(request)
         )
 
-        CredentialsDAO.getPublicationData(credential.credentialId).transact(database).unsafeRunSync() must be(empty)
+        val credentialList =
+          credentialsRepository.getBy(issuer.id, subject.id).value.futureValue.right.value
+
+        credentialList.length must be(1)
+
+        val updatedCredential = credentialList.headOption.value
+
+        updatedCredential must be(originalCredential)
+        updatedCredential.publicationData must be(empty)
       }
     }
   }

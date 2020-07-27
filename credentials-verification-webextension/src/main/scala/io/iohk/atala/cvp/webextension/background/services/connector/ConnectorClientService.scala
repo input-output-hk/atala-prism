@@ -2,6 +2,7 @@ package io.iohk.atala.cvp.webextension.background.services.connector
 
 import java.util.Base64
 
+import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.{EC, ECKeyPair, ECPrivateKey, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
@@ -45,14 +46,13 @@ class ConnectorClientService(url: String) {
     val inputTry = for {
       (issuanceOperation, signedCredential) <- issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims).toTry
       operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
-      sha256Hashed = SHA256Digest.compute(credentialClaims.getBytes).hexValue
-      request =
-        PublishCredentialRequest()
-          .withCmanagerCredentialId(credentialId)
-          .withEncodedSignedCredential(signedCredential)
-          .withIssueCredentialOperation(operation)
-          .withOperationHash(sha256Hashed) //TODO Fix this as discussed when Protobuf is updated
-          .withNodeCredentialId(sha256Hashed)
+      sha256Hashed = SHA256Digest.compute(credentialClaims.getBytes)
+      request = PublishCredentialRequest()
+        .withCmanagerCredentialId(credentialId)
+        .withEncodedSignedCredential(signedCredential)
+        .withIssueCredentialOperation(operation)
+        .withOperationHash(ByteString.copyFrom(sha256Hashed.value))
+        .withNodeCredentialId(sha256Hashed.hexValue)
       metadata = metadataForRequest(ecKeyPair, did, request)
     } yield (request, metadata)
 

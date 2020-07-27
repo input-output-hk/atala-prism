@@ -5814,7 +5814,7 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.toObject = function(includeI
     cmanagercredentialid: jspb.Message.getFieldWithDefault(msg, 2, ""),
     issuecredentialoperation: (f = msg.getIssuecredentialoperation()) && node_models_pb.SignedAtalaOperation.toObject(includeInstance, f),
     nodecredentialid: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    operationhash: jspb.Message.getFieldWithDefault(msg, 5, "")
+    operationhash: msg.getOperationhash_asB64()
   };
 
   if (includeInstance) {
@@ -5869,7 +5869,7 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.deserializeBinaryFromReader 
       msg.setNodecredentialid(value);
       break;
     case 5:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setOperationhash(value);
       break;
     default:
@@ -5930,9 +5930,9 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getOperationhash();
+  f = message.getOperationhash_asU8();
   if (f.length > 0) {
-    writer.writeString(
+    writer.writeBytes(
       5,
       f
     );
@@ -6032,7 +6032,7 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setNodecredentiali
 
 
 /**
- * optional string operationHash = 5;
+ * optional bytes operationHash = 5;
  * @return {string}
  */
 proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash = function() {
@@ -6041,11 +6041,35 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash =
 
 
 /**
- * @param {string} value
+ * optional bytes operationHash = 5;
+ * This is a type-conversion wrapper around `getOperationhash()`
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getOperationhash()));
+};
+
+
+/**
+ * optional bytes operationHash = 5;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getOperationhash()`
+ * @return {!Uint8Array}
+ */
+proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getOperationhash()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
  * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest} returns this
  */
 proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setOperationhash = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3BytesField(this, 5, value);
 };
 
 

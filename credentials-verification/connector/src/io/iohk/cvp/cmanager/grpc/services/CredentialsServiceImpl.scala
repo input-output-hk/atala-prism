@@ -109,7 +109,7 @@ class CredentialsServiceImpl(
         issuerId <- Issuer.Id(participantId.uuid).tryF
         credentialId = GenericCredential.Id(UUID.fromString(request.cmanagerCredentialId))
         credentialProtocolId = request.nodeCredentialId
-        issuanceOperationHash = SHA256Digest.fromHex(request.operationHash)
+        issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray)
         encodedSignedCredential = request.encodedSignedCredential
         issueCredentialOp =
           request.issueCredentialOperation
