@@ -31,7 +31,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.WrongPinLengthException;
-import io.iohk.cvp.data.preferences.SecurityPin;
+import io.iohk.cvp.data.local.preferences.SecurityPin;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import lombok.NonNull;

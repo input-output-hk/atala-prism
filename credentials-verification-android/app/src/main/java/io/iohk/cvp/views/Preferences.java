@@ -18,7 +18,7 @@ import java.util.Set;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.core.exception.WrongPinLengthException;
-import io.iohk.cvp.data.preferences.SecurityPin;
+import io.iohk.cvp.data.local.preferences.SecurityPin;
 import io.iohk.cvp.utils.KeyStoreUtils;
 import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 

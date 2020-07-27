@@ -1,8 +1,6 @@
-package io.iohk.cvp.data.preferences;
-
+package io.iohk.cvp.data.local.preferences;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.CvpApplication;

@@ -1,5 +1,6 @@
 package io.iohk.cvp.dagger.modules;
 
+import io.iohk.cvp.data.DataManager;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import dagger.Module;
 import dagger.Provides;

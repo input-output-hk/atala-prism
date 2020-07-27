@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -25,7 +24,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.WrongPinLengthException;
-import io.iohk.cvp.data.preferences.SecurityPin;
+import io.iohk.cvp.data.local.preferences.SecurityPin;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
@@ -34,9 +33,6 @@ import io.iohk.cvp.views.fragments.utils.SecurityPinHelper;
 import io.iohk.cvp.views.utils.components.PinEditText;
 import io.iohk.cvp.views.utils.interfaces.PinEditTextListener;
 import lombok.Setter;
-
-import static io.iohk.cvp.views.fragments.utils.SecurityPinHelper.changePinsState;
-
 
 @Setter
 public class SecurityChangePinFragment extends CvpFragment implements PinEditTextListener {
