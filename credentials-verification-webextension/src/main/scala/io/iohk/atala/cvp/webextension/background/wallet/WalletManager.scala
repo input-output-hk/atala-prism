@@ -431,7 +431,7 @@ private[background] class WalletManager(
   }
 
   private def parseWalletDataFromJson(json: String): WalletData = {
-    println(s"Parsing wallet data from: ${json}")
+    println(s"Parsing wallet data from: $json")
     parse(json)
       .getOrElse(Json.obj())
       .as[WalletData]

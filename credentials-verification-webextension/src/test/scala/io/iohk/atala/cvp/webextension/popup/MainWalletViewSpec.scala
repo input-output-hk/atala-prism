@@ -4,17 +4,14 @@ import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
-import io.iohk.atala.cvp.webextension.popup.Wallet._
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
+import io.iohk.atala.cvp.webextension.testing.WalletTestHelper._
 import org.scalajs.dom.raw.HTMLDivElement
-import org.scalatest.Assertion
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
 import scalatags.JsDom.all.div
 import typings.std.document
-
-import scala.concurrent.Future
 
 class MainWalletViewSpec extends AsyncWordSpec with WalletDomSpec with ScalaFutures {
 
@@ -54,23 +51,4 @@ class MainWalletViewSpec extends AsyncWordSpec with WalletDomSpec with ScalaFutu
     }
 
   }
-}
-
-object Wallet {
-  val PASSWORD = "test-password"
-  val TEST_KEY = "test-key"
-  val ORGANISATION_NAME = "IOHK"
-
-  def setUpWallet(f: => Future[Unit]): Future[Unit] = {
-    f
-  }
-
-  def withWallet(test: => Future[Assertion]): Future[Assertion] = {
-    try {
-      test
-    } finally {
-      println("Test complete")
-    }
-  }
-
 }

@@ -35,5 +35,14 @@ class InitialWalletViewSpec extends AnyWordSpec with WalletDomSpec {
       val registrationScreen = document.querySelector("#registrationScreen")
       registrationScreen must not be null
     }
+
+    "load unlock wallet view" in {
+      val unlockScreenButton = document.querySelector("#unlockScreenButton").asInstanceOf[HTMLElement]
+
+      unlockScreenButton.click()
+
+      val unlockScreen = document.querySelector("#unlockScreen")
+      unlockScreen must not be null
+    }
   }
 }

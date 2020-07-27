@@ -33,8 +33,20 @@ class InitialWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionCont
         }
       ).render
 
-    containerDiv.appendChild(recoverDiv)
+    lazy val unlockWalletDiv =
+      div(
+        cls := "div__btn",
+        id := "unlockScreenButton",
+        "Unlock Wallet",
+        onclick := { () =>
+          UnlockWalletView(backgroundAPI).unlock(containerDiv)
+        }
+      ).render
+
     containerDiv.appendChild(registrationDiv)
+    containerDiv.appendChild(recoverDiv)
+    containerDiv.appendChild(unlockWalletDiv)
+
     val htmlBody = body(
       link(rel := "stylesheet", href := "css/popup.css"),
       script(src := "scripts/common.js"),
