@@ -8,15 +8,17 @@ import io.iohk.atala.credentials.{
   KeyData,
   SignedCredential
 }
-import io.iohk.atala.crypto.SHA256Digest
-import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetDidDocumentRequest}
+import io.iohk.atala.crypto.{EC, ECTrait}
+import io.iohk.atala.cvp.webextension.background.services.node.NodeUtils._
 import io.iohk.prism.protos.node_api
+import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetDidDocumentRequest}
 import scalapb.grpc.Channels
 
 import scala.concurrent.{ExecutionContext, Future}
-import NodeUtils._
 
 class NodeClientService(url: String) {
+  private implicit val ec: ECTrait = EC
+
   private val nodeServiceApi = node_api.NodeServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
 
   def verifyCredential(

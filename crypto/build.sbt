@@ -70,6 +70,7 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
   .jsSettings(
     // Scoverage has not been released for ScalaJS 1.x: https://github.com/scoverage/scalac-scoverage-plugin/issues/290
     coverageEnabled := false,
+    libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "1.0.0",
     npmDependencies in Compile ++= Seq(
       "elliptic" -> "6.5.2",
       "hash.js" -> "1.1.7",

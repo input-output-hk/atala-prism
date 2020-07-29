@@ -23,6 +23,7 @@ package object credentials {
       revokedOn: Option[TimestampInfo]
   )
 
+  // TODO: Move to its own file and add tests
   // copied from node models
   case class TimestampInfo(
       atalaBlockTimestamp: Instant, // timestamp provided from the underlying blockchain

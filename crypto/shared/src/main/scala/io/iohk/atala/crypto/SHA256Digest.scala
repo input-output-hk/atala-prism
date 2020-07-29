@@ -1,9 +1,5 @@
 package io.iohk.atala.crypto
 
-import typings.hashJs.{mod => hash}
-
-import scala.scalajs.js.typedarray.{Uint8Array, _}
-
 case class SHA256Digest(value: Array[Byte]) {
   require(value.length == SHA256Digest.BYTE_LENGTH)
 
@@ -23,12 +19,9 @@ case class SHA256Digest(value: Array[Byte]) {
 
 object SHA256Digest {
   val BYTE_LENGTH = 32
-  private val HEX_STRING_RE = "^(?:[0-9a-fA-F]{2})+$".r
 
   def compute(bytes: Array[Byte]): SHA256Digest = {
-    val byteArray = bytes.toTypedArray
-    val uint8Array = new Uint8Array(byteArray.buffer, byteArray.byteOffset, byteArray.length)
-    val sha256 = hash.sha256().update(uint8Array)
-    SHA256Digest(sha256.digest().toArray map (_.toByte))
+    // Actual hashing is done by the platform implementation
+    new SHA256Digest(SHA256DigestImpl.compute(bytes))
   }
 }

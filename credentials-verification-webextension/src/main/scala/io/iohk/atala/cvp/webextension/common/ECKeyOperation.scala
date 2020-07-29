@@ -13,6 +13,7 @@ object ECKeyOperation {
   val CURVE_NAME = "secp256k1"
   val firstMasterKeyId = "master0"
 
+  private implicit val ec: ECTrait = EC
   // https://github.com/input-output-hk/atala/blob/develop/credentials-verification/docs/protocol/key-derivation.md
   private val firstMasterChild = "m/0'/0'/0'"
 

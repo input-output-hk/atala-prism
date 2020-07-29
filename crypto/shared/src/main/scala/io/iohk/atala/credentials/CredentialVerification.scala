@@ -1,6 +1,6 @@
 package io.iohk.atala.credentials
 
-import java.time.Instant
+import io.iohk.atala.crypto.ECTrait
 
 object CredentialVerification {
 
@@ -22,7 +22,7 @@ object CredentialVerification {
       keyData: KeyData,
       credentialData: CredentialData,
       signedCredential: SignedCredential
-  ): Boolean = {
+  )(implicit ec: ECTrait): Boolean = {
     // the credential is not revoked
     credentialData.revokedOn.isEmpty &&
     // the key was added before the credential was issued

@@ -65,11 +65,15 @@ object SignedCredential {
 trait CredentialsSigning {
   // We receive a credential as UnsignedCredential keeping representation orthogonal
   // to the cryptographic one
-  def signCredential(credential: UnsignedCredential, privateKey: ECPrivateKey): SignedCredential
+  def signCredential(credential: UnsignedCredential, privateKey: ECPrivateKey)(implicit
+      ec: ECTrait
+  ): SignedCredential
 
   // We assume that the public key is present or can be retrieved from the representation
   // of the signed bytes
-  def verifyCredentialSignature(signedCredential: SignedCredential, publicKey: ECPublicKey): Boolean
+  def verifyCredentialSignature(signedCredential: SignedCredential, publicKey: ECPublicKey)(implicit
+      ec: ECTrait
+  ): Boolean
 
   // This method hashes the canonical representation of a signed credential
   def hash(signedCredential: SignedCredential): SHA256Digest
@@ -77,14 +81,18 @@ trait CredentialsSigning {
 
 object CredentialsCryptoSDKImpl extends CredentialsSigning {
 
-  override def signCredential(credential: UnsignedCredential, privateKey: ECPrivateKey): SignedCredential =
+  override def signCredential(credential: UnsignedCredential, privateKey: ECPrivateKey)(implicit
+      ec: ECTrait
+  ): SignedCredential =
     SignedCredential.from(
       credential,
-      EC.sign(credential.bytes, privateKey).data
+      ec.sign(credential.bytes, privateKey).data
     )
 
-  override def verifyCredentialSignature(signedCredential: SignedCredential, publicKey: ECPublicKey): Boolean = {
-    EC.verify(signedCredential.unsignedCredentialBytes, publicKey, ECSignature(signedCredential.signatureBytes))
+  override def verifyCredentialSignature(signedCredential: SignedCredential, publicKey: ECPublicKey)(implicit
+      ec: ECTrait
+  ): Boolean = {
+    ec.verify(signedCredential.unsignedCredentialBytes, publicKey, ECSignature(signedCredential.signatureBytes))
   }
 
   override def hash(signedCredential: SignedCredential): SHA256Digest = {
