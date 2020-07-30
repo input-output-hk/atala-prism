@@ -65,7 +65,14 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     extensionAPI
       .signConnectorRequest(sessionId, ConnectorRequest(request.toArray))
       .map(_.signedMessage)
-      .map(sm => JsSignedMessage(sm.did, sm.didKeyId, sm.signature.toJSArray))
+      .map { sm =>
+        JsSignedMessage(
+          did = sm.did,
+          didKeyId = sm.didKeyId,
+          encodedSignature = sm.base64UrlSignature,
+          encodedNonce = sm.base64UrlNonce
+        )
+      }
       .toJSPromise
   }
 

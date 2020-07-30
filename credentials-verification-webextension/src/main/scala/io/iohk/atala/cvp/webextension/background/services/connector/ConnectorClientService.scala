@@ -1,9 +1,7 @@
 package io.iohk.atala.cvp.webextension.background.services.connector
 
-import java.util.Base64
-
 import com.google.protobuf.ByteString
-import io.iohk.atala.crypto.{EC, ECKeyPair, ECPrivateKey, SHA256Digest}
+import io.iohk.atala.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
 import io.iohk.atala.requests.RequestAuthenticator
@@ -67,11 +65,6 @@ object ConnectorClientService {
   private val requestAuthenticator = new RequestAuthenticator(EC)
 
   def apply(url: String): ConnectorClientService = new ConnectorClientService(url)
-
-  private def generateUrlEncodedSignature(data: Array[Byte], privateKey: ECPrivateKey): String = {
-    val signature = EC.sign(data, privateKey)
-    Base64.getUrlEncoder.encodeToString(signature.data)
-  }
 
   def metadataForRequest[Request <: GeneratedMessage](
       ecKeyPair: ECKeyPair,

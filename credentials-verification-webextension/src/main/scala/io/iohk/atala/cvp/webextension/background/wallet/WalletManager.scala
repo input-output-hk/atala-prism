@@ -280,9 +280,13 @@ private[background] class WalletManager(
     } yield {
       val ecKeyPair = ecKeyPairFromSeed(walletData.mnemonic)
       val signedRequest = requestAuthenticator.signConnectorRequest(request.bytes, ecKeyPair.privateKey)
-      SignedMessage(did = walletData.did, didKeyId = KeyUsage.MASTER_KEY.name, signature = signedRequest.signature)
+      SignedMessage(
+        did = walletData.did,
+        didKeyId = ECKeyOperation.firstMasterKeyId,
+        base64UrlSignature = signedRequest.encodedSignature,
+        base64UrlNonce = signedRequest.encodedRequestNonce
+      )
     }
-
   }
 
   def verifySignedCredential(
