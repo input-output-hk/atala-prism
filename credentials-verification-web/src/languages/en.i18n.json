@@ -305,9 +305,9 @@
     "accept": "Accept ",
     "alt": "Wallet Image",
     "downloadWallet": {
-      "title": "Download LocalWallet",
-      "subtitle": "Download and execute this file to create the wallet that will allow you to access and operate Atala",
-      "action": "Download File"
+      "title": "Download and configure your browser wallet",
+      "subtitle": "Download and install our Chrome wallet that will create and store your Decentralised Identity.",
+      "action": "Download extension"
     },
     "password": {
       "title": "Create your Password",
@@ -520,7 +520,8 @@
     "saveDraft": "Error while saving New Credential draft",
     "emptyCredential": "Trying to save empty credential",
     "invalidCredential": "The credential has invalid fields",
-    "walletNotRunning": "You must have your local wallet running to continue",
+    "walletNotRunning": "You must have the browser wallet extension installed",
+    "walletNotRegistered": "You must register your organization using your browser wallet",
     "errorDuringRegister": "An error ocurred while registering, please try again or contact the FAQs",
     "form": {
       "emptyField": "This field is mandatory"

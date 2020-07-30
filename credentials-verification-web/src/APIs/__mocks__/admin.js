@@ -1,5 +1,3 @@
 export const isAdminSupported = () => true;
 
-export const populateDemoDataset = () => {
-  return null;
-};
+export const populateDemoDataset = () => null;

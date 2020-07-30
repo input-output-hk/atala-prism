@@ -14,7 +14,7 @@ import { toProtoDate } from './helpers';
 import { getCredentialSummaries } from './credentialSummaries';
 import { getPayments, getCurrencies, getAmounts } from './payments';
 import { getSettings, editSettings } from './settings';
-import { isWalletUnlocked } from './login';
+import { isWalletUnlocked, getSession } from './login';
 import { isAdminSupported, populateDemoDataset } from './admin';
 
 // TODO update mock api.
@@ -47,6 +47,7 @@ export const mockApi = {
   isAdminSupported,
   populateDemoDataset,
   wallet: {
-    isWalletUnlocked
+    isWalletUnlocked,
+    getSession
   }
 };

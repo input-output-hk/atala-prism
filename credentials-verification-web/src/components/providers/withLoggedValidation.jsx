@@ -3,46 +3,35 @@ import Landing from '../landing/Landing';
 import Dashboard from '../dashboard/Dashboard';
 import Loading from '../common/Atoms/Loading/Loading';
 import { withSideBar } from './withSideBar';
-import Logger from '../../helpers/Logger';
 import { withApi } from './withApi';
-import { USER_ROLE } from '../../helpers/constants';
-import { makeCancelable, PromiseCancellationError } from '../../helpers/promises';
+import { USER_ROLE, UNLOCKED } from '../../helpers/constants';
 
 const withLoggedValidationComponent = (Component, validRoles) => props => {
   const DashboardWithSidebar = withSideBar(Dashboard);
-
-  const [loading, setLoading] = useState(true);
-  const [isWalletUnlocked, setIsWalletUnlocked] = useState(false);
   const {
     api: { wallet }
   } = props;
 
-  useEffect(() => {
-    // This component is unmounted before promise resolution sometimes.
-    // Therefore checkIsWalletUnlocked was made cancellable.
-    const cancelablePromise = makeCancelable(wallet.isWalletUnlocked());
-    cancelablePromise.promise
-      .then(response => {
-        setIsWalletUnlocked(response);
-        setLoading(false);
-      })
-      .catch(error => {
-        if (error instanceof PromiseCancellationError) {
-          Logger.info('Promise was cancelled');
-          return;
-        }
-        Logger.error('Error while getting if wallet is unlocked', error);
-        setIsWalletUnlocked(false);
-        setLoading(false);
-      });
+  const [loading, setLoading] = useState(true);
+  const [walletSessionIsValid, setWalletSessionIsValid] = useState();
 
-    return () => cancelablePromise.cancel();
+  useEffect(() => {
+    const isWalletRequired = !!validRoles.length;
+
+    const fetchSession = async () => {
+      const session = await wallet.getSession({ timeout: 5000 });
+      const sessionIsValid = session?.sessionState === UNLOCKED;
+      setLoading(false);
+      setWalletSessionIsValid(sessionIsValid);
+    };
+
+    if (isWalletRequired) fetchSession();
+    else setLoading(false);
   }, []);
 
   if (loading) return <Loading />;
 
   // Here is where the validations are made
-
   const role = localStorage.getItem(USER_ROLE);
   const userHasRole = !!role;
 
@@ -54,12 +43,12 @@ const withLoggedValidationComponent = (Component, validRoles) => props => {
     // If the route is public, aka does not require the wallet being unlocked,
     // it needs only the wallet to be locked or no role to be in the local
     // storage to show it, since it means no user is logged.
-    const canRenderPublic = !(isWalletRequired || (isWalletUnlocked && userHasRole));
+    const canRenderPublic = !(isWalletRequired || (walletSessionIsValid && userHasRole));
 
     // The role is valid only if the current role is in the array passed to the
     // provider.
     const isValidRole = validRoles.includes(role);
-    return canRenderPublic || (isWalletUnlocked && isValidRole);
+    return canRenderPublic || (walletSessionIsValid && isValidRole);
   };
 
   // If is either public and no user is logger or meets the requeriments, the
@@ -72,7 +61,7 @@ const withLoggedValidationComponent = (Component, validRoles) => props => {
   // walled status is checked. If the wallet is locked or there is no rolethen
   // the validation failed because someone not logged tried to enter a private
   // route.
-  if (!isWalletUnlocked || !userHasRole) return <Landing />;
+  if (!walletSessionIsValid || !userHasRole) return <Landing />;
 
   // Otherwise it is because the logged user has a role that has no access to
   // that route and therefore is redirected to the dashboard.

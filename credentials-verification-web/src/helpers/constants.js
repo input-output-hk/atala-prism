@@ -1,6 +1,10 @@
 import __ from 'lodash';
 
 // eslint-disable-next-line camelcase
+export const BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS = 3000; // The allowed delay for the extension to inject it's sdk
+// eslint-disable-next-line camelcase
+export const BROWSER_WALLET_CHECK_INTERVAL_MS = 500; // Delay before checking if the extension has injected it's SDK
+// eslint-disable-next-line camelcase
 const DEFAUlT_PAGE_SIZE = 10;
 // eslint-disable-next-line camelcase
 export const HOLDER_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
@@ -61,6 +65,10 @@ export const ANY = 'any';
 export const INVALID_TYPE = 'invalidType';
 export const TOO_LARGE = 'tooLarge';
 
+// Session storage item names
+export const SESSION_ID = 'sessionId';
+export const SESSION_STATE = 'sessionState';
+
 // Local storage item names
 export const USER_ROLE = 'userRole';
 export const ORGANISATION_NAME = 'organisationName';
@@ -74,11 +82,10 @@ export const ISSUER = 'ISSUER';
 
 // Wallet
 export const MISSING_WALLET_ERROR = 'Wallet cannot be Unlocked';
-const MISSING = 'MISSING';
 export const UNLOCKED = 'UNLOCKED';
-const LOCKED = 'LOCKED';
+export const LOCKED = 'LOCKED';
+
 const WalletStatuses = {
-  0: MISSING,
   1: UNLOCKED,
   2: LOCKED
 };

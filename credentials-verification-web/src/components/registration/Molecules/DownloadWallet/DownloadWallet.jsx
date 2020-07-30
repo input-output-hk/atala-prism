@@ -20,18 +20,20 @@ const DownloadWallet = ({ walletError }) => {
         </Link>
       </div>
       <div className="ErrorContainer">
-        {walletError && <p className="WalletError">{t('errors.walletNotRunning')}</p>}
+        {walletError && <p className="WalletError">{t(walletError.message)}</p>}
       </div>
     </div>
   );
 };
 
 DownloadWallet.defaultProps = {
-  walletError: false
+  walletError: null
 };
 
 DownloadWallet.propTypes = {
-  walletError: PropTypes.bool
+  walletError: PropTypes.shape({
+    message: PropTypes.string
+  })
 };
 
 export default DownloadWallet;

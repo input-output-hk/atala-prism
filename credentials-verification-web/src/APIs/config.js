@@ -1,4 +1,10 @@
-import { LOGO, ORGANISATION_NAME, USER_ROLE } from '../helpers/constants';
+import {
+  SESSION_ID,
+  SESSION_STATE,
+  LOGO,
+  ORGANISATION_NAME,
+  USER_ROLE
+} from '../helpers/constants';
 
 const {
   REACT_APP_VERIFIER,
@@ -7,8 +13,8 @@ const {
   REACT_APP_WALLET_GRPC_CLIENT
 } = window._env_;
 
-const issuerId = get('issuerId') || REACT_APP_ISSUER;
-const verifierId = get('verifierId') || REACT_APP_VERIFIER;
+const issuerId = getFromLocalStorage('issuerId') || REACT_APP_ISSUER;
+const verifierId = getFromLocalStorage('verifierId') || REACT_APP_VERIFIER;
 
 function getUserId(isIssuer) {
   return isIssuer ? issuerId : verifierId;
@@ -17,30 +23,51 @@ function getUserId(isIssuer) {
 export const config = {
   issuerId,
   verifierId,
-  grpcClient: get('backendUrl') || REACT_APP_GRPC_CLIENT,
-  walletGrpcClient: get('walletUrl') || REACT_APP_WALLET_GRPC_CLIENT,
+  sessionId: newSession(SESSION_ID),
+  sessionState: newSession(SESSION_STATE),
+  grpcClient: getFromLocalStorage('backendUrl') || REACT_APP_GRPC_CLIENT,
+  walletGrpcClient: getFromLocalStorage('walletUrl') || REACT_APP_WALLET_GRPC_CLIENT,
   userId: getUserId,
   userRole: newConfig(USER_ROLE),
   organizationName: newConfig(ORGANISATION_NAME),
   logo: newConfig(LOGO)
 };
 
-function get(key) {
+function getFromLocalStorage(key) {
   return window.localStorage.getItem(key);
 }
 
-function set(key) {
+function setToLocalStorage(key) {
   return value => window.localStorage.setItem(key, value);
 }
 
-function remove(key) {
+function removeFromLocalStorage(key) {
   return () => window.localStorage.removeItem(key);
+}
+function getFromSessionStorage(key) {
+  return window.sessionStorage.getItem(key);
+}
+
+function setToSessionStorage(key) {
+  return value => window.sessionStorage.setItem(key, value);
+}
+
+function removeFromSessionStorage(key) {
+  return () => window.sessionStorage.removeItem(key);
 }
 
 function newConfig(key) {
   return {
-    get: () => get(key),
-    set: set(key),
-    remove: remove(key)
+    get: () => getFromLocalStorage(key),
+    set: setToLocalStorage(key),
+    remove: removeFromLocalStorage(key)
+  };
+}
+
+function newSession(key) {
+  return {
+    get: () => getFromSessionStorage(key),
+    set: setToSessionStorage(key),
+    remove: removeFromSessionStorage(key)
   };
 }

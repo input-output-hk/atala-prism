@@ -29,3 +29,23 @@ export const makeCancelable = promise => {
     }
   };
 };
+
+export const retry = (fn, retriesLeft = 5, interval = 1000) => {
+  return new Promise((resolve, reject) => {
+    fn()
+      .then(resolve)
+      .catch(error => {
+        setTimeout(() => {
+          if (retriesLeft <= 1) {
+            // maximum retries exceeded
+            reject(error);
+            return;
+          }
+
+          retry(fn, interval, retriesLeft - 1)
+            .then(resolve)
+            .catch(reject);
+        }, interval);
+      });
+  });
+};
