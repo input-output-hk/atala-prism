@@ -4,22 +4,18 @@ import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
+import io.iohk.atala.cvp.webextension.testing.WalletTestHelper._
 import org.scalajs.dom.raw.{HTMLElement, HTMLLabelElement}
+import org.scalatest.concurrent.TestExecutionContext
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
 import scalatags.JsDom.all.div
 import typings.std.document
-import io.iohk.atala.cvp.webextension.testing.WalletTestHelper._
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.scalajs.concurrent.JSExecutionContext
 
 class UnlockWalletViewSpec extends AsyncWordSpec with WalletDomSpec {
-  override implicit def executionContext: ExecutionContextExecutor = JSExecutionContext.Implicits.queue
-  override def beforeEach(): Unit = {
-
-    super.beforeEach()
-  }
+  override implicit def executionContext: ExecutionContextExecutor = TestExecutionContext.runNow
 
   "UnlockView" should {
     "unlock wallet for valid password" in {
@@ -34,8 +30,8 @@ class UnlockWalletViewSpec extends AsyncWordSpec with WalletDomSpec {
           setInputValue("#password", PASSWORD)
           val unlockButton = document.querySelector("#unlockButton").asInstanceOf[HTMLElement]
           unlockButton.click()
-          val statusLabel = document.querySelector("._label_update").asInstanceOf[HTMLLabelElement]
 
+          val statusLabel = document.querySelector("._label_update").asInstanceOf[HTMLLabelElement]
           futureResult(statusLabel.textContent must be(""))
         }
       }
@@ -54,15 +50,11 @@ class UnlockWalletViewSpec extends AsyncWordSpec with WalletDomSpec {
           setInputValue("#password", "AWrongPassword")
           val unlockButton = document.querySelector("#unlockButton").asInstanceOf[HTMLElement]
           unlockButton.click()
+
           val statusLabel = document.querySelector("._label_update").asInstanceOf[HTMLLabelElement]
-
           futureResult(statusLabel.textContent must be("Invalid Password"))
-
         }
       }
-
     }
-
   }
-
 }
