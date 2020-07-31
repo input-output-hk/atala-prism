@@ -17,7 +17,6 @@ import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
-import io.iohk.prism.protos.node_models.KeyUsage
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
@@ -242,11 +241,17 @@ private[background] class WalletManager(
   def getLoggedInUserSession(origin: Origin): Future[UserDetails] = {
     Future.fromTry {
       Try {
-        val wallet =
-          walletData.getOrElse(
-            throw new RuntimeException("You need to create the wallet before logging in and creating session")
-          )
-        val sessionId: SessionID = UUID.randomUUID().toString
+        val wallet = walletData.getOrElse(
+          throw new RuntimeException("You need to create the wallet before logging in and creating session")
+        )
+
+        // We need to reuse an existing session to avoid breaking the websites while using many tabs
+        // otherwise, each tab would keep it's own session, breaking the others.
+        val sessionId = session
+          .find(_._2 == origin)
+          .map(_._1)
+          .getOrElse { UUID.randomUUID().toString }
+
         session += (sessionId -> origin)
         UserDetails(
           sessionId,
