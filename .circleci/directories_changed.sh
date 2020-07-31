@@ -44,11 +44,17 @@ echo "Base commit is $base_commit"
 
 # Detect changed files, ignoring doc files (.md and everything inside a docs directory) and other files not affecting
 # builds or tests
+set +e # Ignore grep returning an exit code of 1 when no line is selected
 changed_files=$(
   git diff "$base_commit".."$current_commit" --name-only | \
       grep -v "\.md$" | \
       grep -v "/docs/" | \
       grep -v "\.gitignore$")
+set -e # Re-enable check
+
+echo "Changed files:
+$changed_files"
+
 for dir in "$@" ; do
   # Matches a line starting with the directory name, followed by a slash
   dir_regex="(^|
