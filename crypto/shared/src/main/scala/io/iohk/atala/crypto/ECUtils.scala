@@ -1,5 +1,7 @@
 package io.iohk.atala.crypto
 
+import io.iohk.atala.util.ArrayOps._
+
 object ECUtils {
   def toHex(bigInt: BigInt): String = {
     bigInt.toString(16)
@@ -19,11 +21,11 @@ object ECUtils {
 
   def hexToBytes(hexEncoded: String): Array[Byte] = {
     require(hexEncoded.length % 2 == 0, "Hex length needs to be even")
-    hexEncoded.grouped(2).map(hexToByte).toArray
+    hexEncoded.grouped(2).toVector.map(hexToByte).toByteArray
   }
 
   def bytesToHex(bytes: Array[Byte]): String = {
-    bytes.map(ECUtils.byteToHex).mkString
+    bytes.toVector.map(ECUtils.byteToHex).mkString
   }
 
   private def byteToHex(b: Byte): String = {

@@ -3,6 +3,7 @@ package io.iohk.atala.crypto
 import java.io.ByteArrayInputStream
 import java.security.SecureRandom
 
+import io.iohk.atala.util.ArrayOps._
 import org.bitcoinj.crypto.{ChildNumber, DeterministicKey, HDKeyDerivation, MnemonicCode => JMnemonicCode}
 import org.bitcoinj.wallet.DeterministicSeed
 
@@ -41,7 +42,7 @@ class GenericKeyDerivation(ec: GenericEC) extends KeyDerivationTrait {
   }
 
   override def derivationRoot(seed: Vector[Byte]): ExtendedKey = {
-    new JvmExtendedKey(HDKeyDerivation.createMasterPrivateKey(seed.toArray), ec)
+    new JvmExtendedKey(HDKeyDerivation.createMasterPrivateKey(seed.toByteArray), ec)
   }
 
   override def deriveKey(seed: Vector[Byte], path: DerivationPath): ExtendedKey = {

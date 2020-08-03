@@ -1,6 +1,7 @@
 package io.iohk.atala.crypto.japi
 
-import scala.collection.JavaConverters._;
+import scala.collection.JavaConverters._
+import io.iohk.atala.util.ArrayOps._
 
 class ExtendedKeyFacade(key: io.iohk.atala.crypto.ExtendedKey) extends ExtendedKey {
   override def getPath(): DerivationPath = {
@@ -35,7 +36,7 @@ class KeyDerivationFacade(keyDerivation: io.iohk.atala.crypto.KeyDerivationTrait
         io.iohk.atala.crypto.MnemonicCode.apply(seed.getWords.asScala.toList),
         passphrase
       )
-      .toArray
+      .toByteArray
   }
 
   override def derivationRoot(seed: Array[Byte]): ExtendedKey = {
