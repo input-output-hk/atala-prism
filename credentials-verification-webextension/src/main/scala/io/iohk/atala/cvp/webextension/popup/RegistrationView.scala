@@ -19,25 +19,42 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
   def registrationScreen(divElement: Div): Unit = {
     console.info("**************************organisationScreen*****************************")
     val mnemonic = Mnemonic()
-    val seedDiv: Div = div(cls := "input__container")(mnemonic.seed).render
+
+    val seedDiv: Div = div(cls := "words_container").render
+    mnemonic.seed.split(" ").zipWithIndex.map { w =>
+      val word = s"${w._2 + 1}. ${w._1}"
+      seedDiv.appendChild(div(cls := "span_container", div(cls := "span", span(word))).render)
+    }
+
     val passwordInput: Input =
       input(id := "password", cls := "_input", `type` := "password", placeholder := "Enter Password").render
     val password2Input: Input =
-      input(id := "password2", cls := "_input", `type` := "password", placeholder := "Enter Password Again").render
+      input(id := "password2", cls := "_input", `type` := "password", placeholder := "Confirm password").render
     val orgNameInput: Input = input(id := "orgname", cls := "_input", placeholder := "Enter Organisation Name").render
     val selectRole: Select = select(id := "role", name := "role")(
       option(value := Issuer.toString)(Issuer.toString),
       option(value := Verifier.toString)(Verifier.toString)
     ).render
-    val logoInput: Input = input(id := "logo", `type` := "file", accept := "image/png, image/jpeg").render
+    val logoInput: Input =
+      input(cls := "inputfile", id := "logo", `type` := "file", accept := "image/png, image/jpeg").render
     val statusLabel: Label = label(cls := "_label_update")("").render
 
+    val htmlBody = body(
+      link(
+        rel := "stylesheet",
+        href := "https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600&display=swap"
+      )
+    ).render
+
     val registration = {
+
       div(id := "registrationScreen")(
+        h3(cls := "h3_register", id := "h3_register", "Account registration").render,
         div(cls := "div__field_group")(
-          label(cls := "_label")("Seed Phrase: "),
+          h4(cls := "h4_register")("Save your recovery phrase"),
           seedDiv
         ),
+        h4(cls := "h4_register", id := "h4_register", "Wallet information").render,
         div(cls := "div__field_group")(
           label(cls := "_label")("Password: "),
           div(cls := "input__container")(
@@ -45,27 +62,27 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
           )
         ),
         div(cls := "div__field_group")(
-          label(cls := "_label")("Verify Password: "),
+          label(cls := "_label")("Confirm Password: "),
           div(cls := "input__container")(
             password2Input
           )
         ),
         div(cls := "div__field_group")(
-          label(cls := "_label")("Organisation Name: "),
+          label(cls := "_label")("Organization Name"),
           div(cls := "input__container")(
             orgNameInput
           )
         ),
         div(cls := "div__field_group")(
-          label(cls := "_label", `for` := "role")("Choose Organisation Role: "),
+          label(cls := "_label", `for` := "role")("Select your Organization Role"),
           div(cls := "input__container")(
             selectRole
           )
         ),
         div(cls := "div__field_group")(
-          label(`for` := "logo")("Choose logo image: "),
           div(cls := "input__container")(
-            logoInput
+            logoInput,
+            label(`for` := "logo")("Upload your logo")
           )
         ),
         div(cls := "status_container")(
@@ -76,10 +93,10 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
         div(cls := "div__field_group")(
           div(
             id := "registerButton",
-            cls := "div__btn",
+            cls := "btn_register",
             onclick := { () =>
               registerOrganisation(
-                seedDiv,
+                mnemonic,
                 passwordInput,
                 password2Input,
                 orgNameInput,
@@ -99,7 +116,7 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
   }
 
   private def registerOrganisation(
-      seedDiv: Div,
+      mnemonic: Mnemonic,
       passwordInput: Input,
       password2Input: Input,
       orgNameInput: Input,
@@ -112,8 +129,6 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
       case Some(errors) => statusLabel.textContent = errors
       case None =>
         statusLabel.clear()
-        val mnemonic = Mnemonic(seedDiv.textContent)
-
         if (logoInput.files.length != 0) {
           console.log("file selected");
           val reader = new FileReader()

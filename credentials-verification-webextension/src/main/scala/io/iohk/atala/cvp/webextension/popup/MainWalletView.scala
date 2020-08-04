@@ -13,8 +13,8 @@ class MainWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext
 
     val mainScreen = {
       div(cls := "status_container", id := "mainView")(
-        div(cls := "input__container")(
-          "Click to Sign Pending Requests"
+        h3(cls := "h3_pending")(
+          "Pending request"
         )
       )
     }.render

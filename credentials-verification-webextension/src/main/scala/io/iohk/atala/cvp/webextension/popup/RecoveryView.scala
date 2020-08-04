@@ -16,46 +16,49 @@ class RecoveryView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) 
     console.info("**************************recover*****************************")
 
     val seedPhraseInput =
-      input(id := "seedphrase", cls := "_input", placeholder := "12-word seed phrase").render
+      input(id := "seedphrase", cls := "seedPhraseContainer", placeholder := "12-words").render
     val passwordInput =
-      input(id := "password", cls := "_input", `type` := "password", placeholder := "Password").render
+      input(id := "password", cls := "_input", `type` := "password", placeholder := "Enter Password").render
     val password2Input =
-      input(id := "password2", cls := "_input", `type` := "password", placeholder := "Password verification").render
+      input(id := "password2", cls := "_input", `type` := "password", placeholder := "Confirm Password").render
     val statusLabel: Label = label(cls := "_label_update")("").render
 
     val recover = {
       div(id := "recoveryScreen")(
-        div(cls := "div__field_group")(
-          label(cls := "_label")("Seed phrase: "),
-          div(cls := "input__container")(
-            seedPhraseInput
-          )
+        h3(cls := "h3_recover")("Recover your wallet"),
+        div(cls := "input__container")(
+          seedPhraseInput
         ),
         div(cls := "div__field_group")(
-          label(cls := "_label")("Password: "),
+          h4(cls := "h4_recover", id := "h4_recover", "Type your recovery phrase").render,
+          div(cls := "input__container")(
+            seedPhraseInput
+          ),
+          h4(cls := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it").render
+        ),
+        div(cls := "div__field_group")(
+          label(cls := "_label")("Password"),
           div(cls := "input__container")(
             passwordInput
           )
         ),
         div(cls := "div__field_group")(
-          label(cls := "_label")("Verify Password: "),
+          label(cls := "_label")("Confirm Password"),
           div(cls := "input__container")(
             password2Input
           )
         ),
         div(cls := "status_container")(
-          div(cls := "input__container")(
-            statusLabel
-          )
+          statusLabel
         ),
         div(cls := "div__field_group")(
           div(
             id := "recoverButton",
-            cls := "div__btn",
+            cls := "btn_verify",
             onclick := { () =>
               recoverWallet(seedPhraseInput, passwordInput, password2Input, statusLabel, divElement)
             }
-          )("Recover wallet")
+          )("Recover account")
         )
       )
     }
