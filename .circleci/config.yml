@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  slack: circleci/slack@3.4.2
+
 parameters:
   scala-version:
     type: string
@@ -310,7 +313,7 @@ jobs:
           name: Move to target folder then run linting validation script
           command: cd credentials-verification-web && ./web-linting-validation-script.sh
 
-  trigger-atala-qa-automation:
+  trigger-integration-tests:
     working_directory: ~/repo
     environment:
       BRANCH_TO_TRIGGER: "master"
@@ -322,6 +325,10 @@ jobs:
       - run:
           name: trigger a job in atala-qa-automation project
           command: python trigger_tests.py
+      - slack/status:
+          # mention Mark Griffin (Product Owner), Jacek Kurkowski (QA)
+          mentions: 'UFHNXC9RC,UGFJQ5ZBN'
+          only_for_branches: 'develop'
 
   build-credentials-verification-android:
     working_directory: ~/repo
@@ -514,3 +521,8 @@ workflows:
                 - /geud-test.*/
           requires:
             - deploy-ecr-images
+      - trigger-integration-tests:
+          filters:
+            branches:
+              only:
+                - develop
