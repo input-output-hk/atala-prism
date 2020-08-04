@@ -7,10 +7,11 @@ import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
 import io.iohk.atala.cvp.webextension.activetab.models.{JsSignedMessage, JsUserDetails}
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
 import scala.scalajs.js.PropertyDescriptor
+import scala.util.Try
 
 /**
   * This is the sdk object that can be accessed from any website to interact with our extension.
@@ -61,19 +62,27 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     extensionAPI.requestSignature(sessionId, subject)
   }
 
-  def signConnectorRequest(sessionId: String, request: js.Array[Byte]): js.Promise[JsSignedMessage] = {
-    extensionAPI
-      .signConnectorRequest(sessionId, ConnectorRequest(request.toArray))
-      .map(_.signedMessage)
-      .map { sm =>
-        JsSignedMessage(
-          did = sm.did,
-          didKeyId = sm.didKeyId,
-          encodedSignature = sm.base64UrlSignature,
-          encodedNonce = sm.base64UrlNonce
-        )
-      }
-      .toJSPromise
+  def signConnectorRequest(sessionId: String, request: js.Array[Double]): js.Promise[JsSignedMessage] = {
+    val scalaBytes = request.toArray.flatMap(x => Try(x.toByte).toOption)
+
+    if (scalaBytes.length != request.length) {
+      Future
+        .failed(new RuntimeException("The request should only contain bytes [0, 255], some of the values aren't bytes"))
+        .toJSPromise
+    } else {
+      extensionAPI
+        .signConnectorRequest(sessionId, ConnectorRequest(scalaBytes))
+        .map(_.signedMessage)
+        .map { sm =>
+          JsSignedMessage(
+            did = sm.did,
+            didKeyId = sm.didKeyId,
+            encodedSignature = sm.base64UrlSignature,
+            encodedNonce = sm.base64UrlNonce
+          )
+        }
+        .toJSPromise
+    }
   }
 
   def verifySignedCredential(sessionId: String, signedCredentialStringRepresentation: String): js.Promise[Boolean] = {

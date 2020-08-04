@@ -78,7 +78,8 @@ chromeManifest := new ExtensionManifest {
   override val contentScripts: List[ContentScript] = List(
     ContentScript(
       matches = List(
-        "*://*.atalaprism.io/"
+        "*://*.atalaprism.io/",
+        "*://*.localhost:*/*"
       ),
       css = List("css/active-tab.css"),
       js = manifestCommonScripts :+ "scripts/active-tab-script.js"
