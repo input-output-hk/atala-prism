@@ -54,6 +54,7 @@
     "filters": {
       "identityNumber": "Identity Number",
       "name": "Name",
+      "email": "Email",
       "status": "Status"
     },
     "buttons": {

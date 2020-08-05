@@ -12,20 +12,28 @@ const ConnectionsContainer = ({ api }) => {
   const { t } = useTranslation();
 
   const [subjects, setSubjects] = useState([]);
-  const [noConnections, setNoConnections] = useState(false);
+  const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [hasMore, setHasMore] = useState(true);
 
-  const getConnections = ({ pageSize, lastId, _name, _status, isRefresh, oldConnections }) => {
+  const getConnections = ({
+    pageSize,
+    lastId,
+    _name,
+    _status,
+    _email,
+    isRefresh,
+    oldConnections = []
+  }) => {
     const getIndividuals = api.getIndividuals(api.wallet.isIssuer());
 
-    return getIndividuals(pageSize, lastId)
+    return (hasMore || isRefresh ? getIndividuals(pageSize, lastId) : Promise.resolve([]))
       .then(connections => {
-        if (!isRefresh) {
-          const noFilters = !(_name || _status);
-          const showNoConnections = !lastId && noFilters;
-          setNoConnections(showNoConnections);
-
-          if (!connections.length) setHasMore(false);
+        if (connections.length < HOLDER_PAGE_SIZE) {
+          setHasMore(false);
+        } else {
+          Logger.warn(
+            'There were more rows than expected. Frontend-only filters will yield incomplete results'
+          );
         }
 
         const connectionsWithKey = connections.map(
@@ -41,11 +49,22 @@ const ConnectionsContainer = ({ api }) => {
           }
         );
 
-        const updatedConnections = oldConnections
-          ? oldConnections.concat(connectionsWithKey)
-          : connectionsWithKey;
+        const updatedConnections = oldConnections.concat(connectionsWithKey);
+
+        const filteredConnections = updatedConnections.filter(it => {
+          const caseInsensitiveMatch = (str1 = '', str2 = '') =>
+            str1.toLowerCase().includes(str2.toLowerCase());
+
+          const matchesName = caseInsensitiveMatch(it.fullname, _name);
+          const matchesEmail = caseInsensitiveMatch(it.email, _email);
+          // 0 is a valid status so it's not possible to check for !_status
+          const matchesStatus = [undefined, '', it.status].includes(_status);
+
+          return matchesStatus && matchesName && matchesEmail;
+        });
 
         setSubjects(updatedConnections);
+        setFilteredSubjects(filteredConnections);
       })
       .catch(error => {
         Logger.error('[Connections.getConnections] Error while getting connections', error);
@@ -55,15 +74,16 @@ const ConnectionsContainer = ({ api }) => {
 
   const refreshConnections = () => getConnections({ pageSize: subjects.length, isRefresh: true });
 
-  const handleHoldersRequest = (oldConnections = subjects, _name, _status) => {
-    const { id } = getLastArrayElementOrEmpty(oldConnections);
+  const handleHoldersRequest = (_name, _email, _status) => {
+    const { id } = getLastArrayElementOrEmpty(subjects);
 
     return getConnections({
       pageSize: HOLDER_PAGE_SIZE,
       lastId: id,
       _name,
       _status,
-      oldConnections
+      _email,
+      oldConnections: subjects
     });
   };
 
@@ -81,7 +101,7 @@ const ConnectionsContainer = ({ api }) => {
   const getCredentials = connectionId => api.connector.getMessagesForConnection(connectionId);
 
   const tableProps = {
-    subjects,
+    subjects: filteredSubjects,
     hasMore,
     getCredentials
   };
@@ -92,7 +112,6 @@ const ConnectionsContainer = ({ api }) => {
     <Connections
       tableProps={tableProps}
       handleHoldersRequest={handleHoldersRequest}
-      noConnections={noConnections}
       inviteHolder={inviteHolder}
       isIssuer={isIssuer}
       refreshConnections={refreshConnections}
