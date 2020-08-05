@@ -1,12 +1,17 @@
 package io.iohk.atala.cvp.webextension.popup
 
+import chrome.tabs.bindings.TabCreateProperties
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
+import io.iohk.atala.cvp.webextension.common.services.BrowserTabService
 import org.scalajs.dom.html.{Body, Div}
-import scalatags.JsDom.all.{div, script, img, _}
+import scalatags.JsDom.all.{div, img, script, _}
 
 import scala.concurrent.ExecutionContext
 
-class InitialWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
+class InitialWalletView(backgroundAPI: BackgroundAPI)(implicit
+    ec: ExecutionContext
+) {
+
   def htmlBody: Body = {
     val containerDiv: Div = div(
       cls := "container",
@@ -62,6 +67,7 @@ class InitialWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionCont
         id := "registrationScreenButton",
         "Register",
         onclick := { () =>
+          BrowserTabService().createOrUpdateTab(Some("register"))
           RegistrationView(backgroundAPI).registrationScreen(containerDiv)
         }
       ).render
@@ -103,8 +109,11 @@ class InitialWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionCont
     ).render
     htmlBody
   }
+
 }
 object InitialWalletView {
-  def apply(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext): InitialWalletView =
+  def apply(backgroundAPI: BackgroundAPI)(implicit
+      ec: ExecutionContext
+  ): InitialWalletView =
     new InitialWalletView(backgroundAPI)
 }

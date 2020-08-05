@@ -2,47 +2,64 @@ package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
+import org.scalatest.concurrent.TestExecutionContext
 import org.scalatest.matchers.must.Matchers._
-import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.wordspec.AsyncWordSpec
 import typings.std.{HTMLElement, document}
-
+import io.iohk.atala.cvp.webextension.testing.WalletTestHelper._
 import scala.concurrent.ExecutionContextExecutor
-import scala.scalajs.concurrent.JSExecutionContext
 
-class InitialWalletViewSpec extends AnyWordSpec with WalletDomSpec {
-  implicit def executionContext: ExecutionContextExecutor = JSExecutionContext.Implicits.queue
+class InitialWalletViewSpec extends AsyncWordSpec with WalletDomSpec {
+  override implicit def executionContext: ExecutionContextExecutor = TestExecutionContext.runNow
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    document.body = InitialWalletView(new BackgroundAPI()).htmlBody
+
   }
 
   "InitialWalletView" should {
     "load recovery view" in {
-      val recoveryScreenButton = document.querySelector("#recoveryScreenButton").asInstanceOf[HTMLElement]
+      withWallet {
+        val backgroundAPI = new BackgroundAPI()
+        document.body = InitialWalletView(backgroundAPI).htmlBody
+        val recoveryScreenButton = document.querySelector("#recoveryScreenButton").asInstanceOf[HTMLElement]
 
-      recoveryScreenButton.click()
+        recoveryScreenButton.click()
+        futureResult {
+          val recoveryScreen = document.querySelector("#recoveryScreen")
+          recoveryScreen must not be null
+        }
+      }
 
-      val recoveryScreen = document.querySelector("#recoveryScreen")
-      recoveryScreen must not be null
     }
 
     "load registration view" in {
-      val registrationScreenButton = document.querySelector("#registrationScreenButton").asInstanceOf[HTMLElement]
+      withWallet {
+        val backgroundAPI = new BackgroundAPI()
+        document.body = InitialWalletView(backgroundAPI).htmlBody
 
-      registrationScreenButton.click()
+        val registrationScreenButton = document.querySelector("#registrationScreenButton").asInstanceOf[HTMLElement]
 
-      val registrationScreen = document.querySelector("#registrationScreen")
-      registrationScreen must not be null
+        registrationScreenButton.click()
+        futureResult {
+          val registrationScreen = document.querySelector("#registrationScreen")
+          registrationScreen must not be null
+        }
+      }
     }
 
     "load unlock wallet view" in {
-      val unlockScreenButton = document.querySelector("#unlockScreenButton").asInstanceOf[HTMLElement]
+      withWallet {
+        val backgroundAPI = new BackgroundAPI()
+        document.body = InitialWalletView(backgroundAPI).htmlBody
+        val unlockScreenButton = document.querySelector("#unlockScreenButton").asInstanceOf[HTMLElement]
 
-      unlockScreenButton.click()
-
-      val unlockScreen = document.querySelector("#unlockScreen")
-      unlockScreen must not be null
+        unlockScreenButton.click()
+        futureResult {
+          val unlockScreen = document.querySelector("#unlockScreen")
+          unlockScreen must not be null
+        }
+      }
     }
   }
 }

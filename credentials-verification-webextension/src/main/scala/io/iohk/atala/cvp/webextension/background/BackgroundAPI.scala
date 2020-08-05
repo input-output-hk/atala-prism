@@ -32,7 +32,6 @@ import scala.util.{Failure, Success, Try}
   * The BackgroundAPI abstracts all that complex logic from the caller and gives a simple API based on futures.
   */
 class BackgroundAPI()(implicit ec: ExecutionContext) {
-
   def sendBrowserNotification(title: String, message: String): Future[Unit] = {
     val command = Command.SendBrowserNotification(title, message)
     process(command).collect {

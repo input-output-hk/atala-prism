@@ -5,13 +5,15 @@ import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.background.wallet.WalletStatus.Unlocked
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 import org.scalajs.dom
+import org.scalajs.dom.experimental.URLSearchParams
+import org.scalajs.dom.window
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
-  def getWalletStatus(): Unit = {
+  private def getWalletStatus(): Unit = {
     backgroundAPI.getWalletStatus().onComplete {
       case Success(walletStatus) =>
         log(s"Got wallet status: ${walletStatus.status}")
@@ -36,13 +38,24 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   }
 
   def run(): Unit = {
+    val view = Option(new URLSearchParams(window.location.search).get("view"))
     dom.window.onload = _ => {
+
       backgroundAPI.getWalletStatus().onComplete {
         case Success(walletStatus) =>
           log(s"Got wallet status: ${walletStatus.status}")
           walletStatus.status match {
             case Unlocked => dom.document.body = MainWalletView(backgroundAPI).htmlBody
-            case _ => dom.document.body = InitialWalletView(backgroundAPI).htmlBody
+            case _ => {
+              view
+                .filter(_ == "register")
+                .map { _ =>
+                  dom.document.body = RegistrationView(backgroundAPI).htmlBody
+                }
+                .getOrElse {
+                  dom.document.body = InitialWalletView(backgroundAPI).htmlBody
+                }
+            }
           }
         case Failure(ex) =>
           log(s"Failed obtaining wallet status: ${ex.getMessage}")

@@ -5,7 +5,7 @@ import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.background.wallet.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.popup.utils.ValidationUtils
-import org.scalajs.dom.html.{Div, Input, Label, Select}
+import org.scalajs.dom.html.{Body, Div, Input, Label, Select}
 import org.scalajs.dom.raw.FileReader
 import scalatags.JsDom.all.{div, label, _}
 import typings.std.console
@@ -17,9 +17,8 @@ import scala.util.{Failure, Success}
 class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
   def registrationScreen(divElement: Div): Unit = {
-    console.info("**************************organisationScreen*****************************")
-    val mnemonic = Mnemonic()
 
+    val mnemonic = Mnemonic()
     val seedDiv: Div = div(cls := "words_container").render
     mnemonic.seed.split(" ").zipWithIndex.map { w =>
       val word = s"${w._2 + 1}. ${w._1}"
@@ -113,6 +112,7 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
 
     divElement.clear()
     divElement.appendChild(registration.render)
+
   }
 
   private def registerOrganisation(
@@ -179,6 +179,26 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
             }
         }
     }
+  }
+
+  def htmlBody: Body = {
+    val containerDiv: Div = div(
+      cls := "container",
+      id := "containerId"
+    ).render
+
+    registrationScreen(containerDiv)
+
+    val htmlBody = body(
+      link(rel := "stylesheet", href := "css/popup.css"),
+      script(src := "scripts/common.js"),
+      script(src := "main-bundle.js"),
+      script(src := "scripts/popup-script.js"),
+      containerDiv.render
+    ).render
+
+    htmlBody
+
   }
 }
 

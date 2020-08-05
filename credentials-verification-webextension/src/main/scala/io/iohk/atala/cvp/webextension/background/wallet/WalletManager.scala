@@ -8,12 +8,13 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.crypto.{EC, ECKeyPair}
-import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserTabService}
+import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models._
+import io.iohk.atala.cvp.webextension.common.services.BrowserTabService
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
@@ -104,7 +105,6 @@ private[background] class WalletManager(
   type SessionID = String
   type Origin = String
   private[this] var session = Set[(SessionID, Origin)]()
-
   var walletData: Option[WalletData] = None
   var signingRequests: Map[Int, (SigningRequest, Promise[String])] = Map.empty
   var requestCounter: Int = 0
@@ -114,8 +114,10 @@ private[background] class WalletManager(
     browserActionService.setBadgeText(badgeText)
   }
 
-  private def updateTab(): Unit = {
-    browserTabService.createOrUpdateTab
+  def updateTab(): Future[Unit] = {
+    Future {
+      browserTabService.createOrUpdateTab()
+    }
   }
 
   private def updateStorageKeyAndWalletData(storageKey: CryptoKey, walletData: WalletData): Unit = {

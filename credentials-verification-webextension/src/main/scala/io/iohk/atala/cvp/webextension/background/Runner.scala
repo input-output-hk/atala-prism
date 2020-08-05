@@ -4,16 +4,13 @@ import io.circe.generic.auto._
 import io.circe.{Encoder, Json}
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.models.Command
-import io.iohk.atala.cvp.webextension.background.services.browser.{
-  BrowserActionService,
-  BrowserNotificationService,
-  BrowserTabService
-}
+import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 import io.iohk.atala.cvp.webextension.common.I18NMessages
+import io.iohk.atala.cvp.webextension.common.services.BrowserTabService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -37,10 +34,6 @@ class Runner(
 
   def run(): Unit = {
     Logger.log("This was run by the background script")
-    chrome.browserAction.BrowserAction.setPopup("") //Need to disable popup for using tab
-    chrome.browserAction.BrowserAction.onClicked.addListener(_ => {
-      browserTabService.createOrUpdateTab
-    })
     processExternalMessages()
   }
 
@@ -139,7 +132,7 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
-    val tabActionService = new BrowserTabService
+    val tabActionService = BrowserTabService()
 
     val walletManager =
       new WalletManager(browserActionService, storage, connectorClientService, tabActionService, nodeClientService)

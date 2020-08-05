@@ -24,7 +24,7 @@ object WalletTestHelper {
 
   def futureResult(assert: => Assertion)(implicit ec: ExecutionContext): Future[Assertion] = {
     val promise = Promise[Boolean]()
-    js.timers.setTimeout(5) {
+    js.timers.setTimeout(10) {
       promise.success(true)
     }
     promise.future.map(_ => {

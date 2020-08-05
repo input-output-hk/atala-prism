@@ -30,9 +30,12 @@ class UnlockWalletViewSpec extends AsyncWordSpec with WalletDomSpec {
           setInputValue("#password", PASSWORD)
           val unlockButton = document.querySelector("#unlockButton").asInstanceOf[HTMLElement]
           unlockButton.click()
-
           val statusLabel = document.querySelector("._label_update").asInstanceOf[HTMLLabelElement]
-          futureResult(statusLabel.textContent must be(""))
+
+          futureResult {
+            statusLabel.textContent must be("")
+          }
+
         }
       }
     }
@@ -50,9 +53,11 @@ class UnlockWalletViewSpec extends AsyncWordSpec with WalletDomSpec {
           setInputValue("#password", "AWrongPassword")
           val unlockButton = document.querySelector("#unlockButton").asInstanceOf[HTMLElement]
           unlockButton.click()
-
           val statusLabel = document.querySelector("._label_update").asInstanceOf[HTMLLabelElement]
-          futureResult(statusLabel.textContent must be("Invalid Password"))
+
+          futureResult {
+            statusLabel.textContent must be("Invalid Password")
+          }
         }
       }
     }
