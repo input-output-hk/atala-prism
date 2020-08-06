@@ -19,16 +19,14 @@ def trigger_new_build(project_name, branch):
     new_build_response = requests.post(
         all_builds_url, data=json.dumps(build_parameters), timeout=10, headers=headers
     )
-    text_response = json.loads(new_build_response.text)
-    try:
-        status_code = text_response["status"]
-    except KeyError:
-        raise ValueError("Cannot get \"status\" key! Error: {}".format(text_response))
-    if status_code != 200:
-        raise ValueError("200 was not returned, {} received instead. Error: {}".format(status_code, text_response))
+    if new_build_response.ok:
+        print("A new build was triggered!")
+    else:
+        raise ValueError("Wrong response, {} received instead. Error: {}".format(new_build_response.status_code,
+                                                                                 new_build_response.text))
 
 
-def get_build_number(branch):
+def get_builds_numbers(branch):
     all_builds_url = "https://circleci.com/api/v1.1/projects?circle-token={}".format(token)
     branch = branch.replace("/", "%2F")
     is_empty = True
@@ -45,36 +43,45 @@ def get_build_number(branch):
                 running_builds_list = projects_details["branches"][branch]["running_builds"]
                 list_size = len(running_builds_list)
                 if list_size == 0:
+                    print("Still waiting for build numbers...")
                     time.sleep(1)
                     continue
                 else:
-                    return running_builds_list[0]["build_num"]
+                    return running_builds_list
 
 
-def get_build_result(project_name, build_number):
-    print("Getting build result for [{}] build number".format(build_number))
-    build_url = "https://circleci.com/api/v1.1/project/github/input-output-hk/{}/{}?circle-token={}"\
-        .format(project_name, build_number, token)
-    text_response = None
-    job_status = None
-    iteration = 1
-    while job_status == "running" or job_status is None:
-        build_response = requests.get(build_url, timeout=10)
-        status_code = build_response.status_code
-        text_response = json.loads(build_response.text)
-        if status_code != 200:
-            raise ValueError("ERROR: 200 was not returned, {} received instead. Error: {}"
-                             .format(status_code, text_response))
-        job_status = text_response["outcome"]
-        print("Build status is [{}] for iteration nr {}".format(job_status, iteration))
-        iteration += 1
-        time.sleep(1)
-    return text_response["outcome"]
+def get_jobs_results(project_name, builds_list):
+    build_numbers = [build["build_num"] for build in builds_list]
+    print("Getting {} jobs results from [{}] builds list".format(len(build_numbers), build_numbers))
+    results = []
+    for build_number in build_numbers:
+        public_build_url = "https://circleci.com/gh/input-output-hk/{}/{}".format(project_name, build_number)
+        print("URL for the build is: {}".format(public_build_url))
+        build_url = "https://circleci.com/api/v1.1/project/github/input-output-hk/{}/{}?circle-token={}"\
+            .format(project_name, build_number, token)
+        text_response = None
+        job_status = None
+        iteration = 1
+        while job_status == "running" or job_status is None:
+            build_response = requests.get(build_url, timeout=10)
+            status_code = build_response.status_code
+            text_response = json.loads(build_response.text)
+            if status_code != 200:
+                raise ValueError("ERROR: 200 was not returned, {} received instead. Error: {}"
+                                 .format(status_code, text_response))
+            job_status = text_response["outcome"]
+            print("Job status for build [{}] is [{}] for iteration nr {}".format(build_number, job_status, iteration))
+            iteration += 1
+            time.sleep(1)
+        results.append(text_response["outcome"])
+    return results
 
 
-def check_build_result(build_result):
-    if build_result != "success":
-        raise ValueError("ERROR: Job did not return in success! [{}] was returned!".format(build_result))
+def check_jobs_results(results):
+    if all(result == "success" for result in results):
+        print("All jobs ended up successfully!")
+    else:
+        raise ValueError("ERROR: A least one of the jobs did not return in success! See the logs above.")
 
 
 token = get_env_variable("CIRCLE_CI_TOKEN")
@@ -82,6 +89,6 @@ branch_to_trigger = get_env_variable("BRANCH_TO_TRIGGER")
 project_name_to_trigger = get_env_variable("PROJECT_NAME_TO_TRIGGER")
 
 trigger_new_build(project_name_to_trigger, branch_to_trigger)
-build_nr = get_build_number(branch_to_trigger)
-result = get_build_result(project_name_to_trigger, build_nr)
-check_build_result(result)
+builds_numbers = get_builds_numbers(branch_to_trigger)
+jobs_results = get_jobs_results(project_name_to_trigger, builds_numbers)
+check_jobs_results(jobs_results)
