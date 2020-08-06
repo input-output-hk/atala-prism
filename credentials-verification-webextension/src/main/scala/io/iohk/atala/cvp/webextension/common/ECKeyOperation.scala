@@ -47,7 +47,7 @@ object ECKeyOperation {
           claims = claims
         )
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCreedential, signingKey.privateKey)
-      val contentHash = ByteString.copyFrom(CredentialsCryptoSDKImpl.hash(signedCredential).value)
+      val contentHash = ByteString.copyFrom(CredentialsCryptoSDKImpl.hash(signedCredential).value.toArray)
       val credentialData = CredentialData(issuer = issuerDID.stripPrefix("did:prism:"), contentHash = contentHash)
       val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
       (

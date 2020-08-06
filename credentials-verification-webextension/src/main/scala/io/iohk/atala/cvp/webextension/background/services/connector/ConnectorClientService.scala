@@ -49,7 +49,7 @@ class ConnectorClientService(url: String) {
         .withCmanagerCredentialId(credentialId)
         .withEncodedSignedCredential(signedCredential)
         .withIssueCredentialOperation(operation)
-        .withOperationHash(ByteString.copyFrom(sha256Hashed.value))
+        .withOperationHash(ByteString.copyFrom(sha256Hashed.value.toArray))
         .withNodeCredentialId(sha256Hashed.hexValue)
       metadata = metadataForRequest(ecKeyPair, did, request)
     } yield (request, metadata)

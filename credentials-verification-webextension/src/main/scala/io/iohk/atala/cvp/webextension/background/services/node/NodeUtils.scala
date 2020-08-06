@@ -36,7 +36,7 @@ object NodeUtils {
                 credentialData = Some(
                   node_models.CredentialData(
                     issuer = didSuffix,
-                    contentHash = ByteString.copyFrom(credentialHash.value)
+                    contentHash = ByteString.copyFrom(credentialHash.value.toArray)
                   )
                 )
               )
