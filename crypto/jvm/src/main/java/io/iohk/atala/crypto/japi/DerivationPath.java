@@ -49,7 +49,7 @@ public class DerivationPath {
      * @param path Path to parse in format m/axis1/axis2/.../axisn where all axes are number between 0 and 2^31^ - 1 and
      *             optionally a ' added after to mark hardened axis e.g. m/21/37'/0
      */
-    public DerivationPath parse(String path) {
+    public static DerivationPath parse(String path) {
         ArrayList<DerivationAxis> _axes = new ArrayList<>();
 
         for (io.iohk.atala.crypto.DerivationAxis scalaAxis : JavaConverters.asJavaIterable(

@@ -11,9 +11,17 @@ class ECKeyPairFacade(val keyPair: crypto.ECKeyPair) extends ECKeyPair {
 }
 
 class ECPublicKeyFacade(val publicKey: crypto.ECPublicKey) extends ECPublicKey {
+  override def getCurvePoint: ECPoint = new ECPointFacade(publicKey.getCurvePoint)
+
   override def getEncoded: Array[Byte] = publicKey.getEncoded
 
   override def getHexEncoded: String = publicKey.getHexEncoded
+}
+
+class ECPointFacade(val ecPoint: crypto.ECPoint) extends ECPoint {
+  override def getX: BigInteger = ecPoint.x.bigInteger
+
+  override def getY: BigInteger = ecPoint.y.bigInteger
 }
 
 class ECPrivateKeyFacade(val privateKey: crypto.ECPrivateKey) extends ECPrivateKey {
