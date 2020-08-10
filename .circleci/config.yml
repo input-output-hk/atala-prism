@@ -253,10 +253,12 @@ jobs:
           name: Compile credentials-verification components
           command: |
             cd credentials-verification
-            mill common.__.compile && \
-                mill connector.__.compile && \
-                mill node.__.compile && \
-                mill __.compile
+            # All compilation is retried once to avoid flakiness with CircleCI capacity
+            mill common.__.compile || mill common.__.compile
+            mill connector.__.compile || mill connector.__.compile
+            mill node.__.compile || mill node.__.compile
+            # Ensure everything gets compiled
+            mill __.compile || mill __.compile
 
       - run:
           name: Test credentials-verification components
@@ -447,7 +449,10 @@ jobs:
 
       - run:
           name: Compile crypto and its tests
-          command: cd crypto && sbt test:compile
+          command: |
+            cd crypto
+            # Retry on failure as this step is flaky
+            sbt test:compile || sbt test:compile
 
       - save_cache:
           paths:
