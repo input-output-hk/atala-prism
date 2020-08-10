@@ -25,6 +25,18 @@ class ApiService: NSObject {
         return meta
     }
 
+    func makeSignedMeta(requestData: Data, keyPath: String) -> Metadata {
+
+        let meta = Metadata()
+        if let signature = CryptoUtils.global.signData(data: requestData, keyPath: keyPath) {
+            try? meta.add(key: "signature", value: signature.0)
+            try? meta.add(key: "publickey", value: signature.1)
+            try? meta.add(key: "requestnonce", value: signature.2)
+        }
+        print(meta.dictionaryRepresentation.debugDescription)
+        return meta
+    }
+
     static func call(async: @escaping () -> Error?, success: @escaping () -> Void, error: @escaping (Error) -> Void) {
         DispatchQueue.global(qos: .background).async {
             let errorRes = async()
@@ -50,14 +62,15 @@ class ApiService: NSObject {
 
     func addConnectionToken(token: String,
                             nonce: String) throws -> Io_Iohk_Prism_Protos_AddConnectionFromTokenResponse {
-
-        let publicKey = FakeData.fakePublicKey()
-        let userId = FakeData.fakeUserId()
-        return try service.addConnectionFromToken(Io_Iohk_Prism_Protos_AddConnectionFromTokenRequest.with {
+        let keyPath = CryptoUtils.global.getNextPublicKeyPath()
+        let encodedPublicKey = CryptoUtils.global.encodedPublicKey(keyPath: keyPath)
+        let request = Io_Iohk_Prism_Protos_AddConnectionFromTokenRequest.with {
             $0.token = token
-            $0.holderPublicKey = publicKey
+            $0.holderEncodedPublicKey = encodedPublicKey
             $0.paymentNonce = nonce
-        }, metadata: makeMeta(userId))
+        }
+        let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: keyPath)
+        return try service.addConnectionFromToken(request, metadata: metadata)
     }
 
     func getConnections(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
@@ -77,49 +90,56 @@ class ApiService: NSObject {
 
     // MARK: Credentials
 
-    func getCredentials(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
+    func getCredentials(contacts: [Contact]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
         throws -> [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] {
 
         var responseList: [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] = []
-        for userId in userIds ?? [] {
-            let response = try service.getMessagesPaginated(Io_Iohk_Prism_Protos_GetMessagesPaginatedRequest.with {
+        for contact in contacts ?? [] {
+            let request = Io_Iohk_Prism_Protos_GetMessagesPaginatedRequest.with {
                 $0.limit = limit
-            }, metadata: makeMeta(userId))
+                if let lastMessage = contact.lastMessageId {
+                    $0.lastSeenMessageID = lastMessage
+                }
+            }
+            let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
+            let response = try service.getMessagesPaginated(request, metadata: metadata)
             responseList.append(response)
         }
         return responseList
     }
 
-    func shareCredential(userIds: [String]?, connectionIds: [String]?,
+    func shareCredential(contacts: [Contact],
                          degree: Degree) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
 
-        let messageData = try? degree.intCredential?.serializedData()
+        let messageData = degree.intCredential
 
         var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
 
-        for pos in 0 ..< (userIds ?? []).count {
-            let userId = userIds![pos]
-            let connectionId = connectionIds![pos]
-            let response = try service.sendMessage(Io_Iohk_Prism_Protos_SendMessageRequest.with {
+        for contact in contacts {
+            let request = Io_Iohk_Prism_Protos_SendMessageRequest.with {
                 $0.message = messageData!
-                $0.connectionID = connectionId
-            }, metadata: makeMeta(userId))
+                $0.connectionID = contact.connectionId
+            }
+            let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
+            let response = try service.sendMessage(request, metadata: metadata)
             responseList.append(response)
         }
         return responseList
     }
 
-    func shareCredentials(userId: String, connectionId: String,
-                          degrees: [Degree]) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
+    func shareCredentials(contact: Contact,
+                          credentials: [Credential]) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
 
         var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
 
-        for pos in 0 ..< (degrees).count {
-            let messageData = try? degrees[pos].intCredential?.serializedData()
-            let response = try service.sendMessage(Io_Iohk_Prism_Protos_SendMessageRequest.with {
-                $0.message = messageData!
-                $0.connectionID = connectionId
-            }, metadata: makeMeta(userId))
+        for credential in credentials {
+            let messageData = credential.encoded
+            let request = Io_Iohk_Prism_Protos_SendMessageRequest.with {
+                $0.message = messageData
+                $0.connectionID = contact.connectionId
+            }
+            let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
+            let response = try service.sendMessage(request, metadata: metadata)
             responseList.append(response)
         }
         return responseList

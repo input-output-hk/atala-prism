@@ -27,9 +27,9 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
     @IBOutlet weak var tableHeightCtrt: NSLayoutConstraint!
 
     weak var delegate: ConnectionProofRequestPresenterDelegate?
-    var connection: ConnectionBase?
-    var credentials: [Degree] = []
-    var selectedCredentials: [Degree] = []
+    var contact: Contact?
+    var credentials: [Credential] = []
+    var selectedCredentials: [Credential] = []
     var requiered: [String] = []
 
     override func viewDidLoad() {
@@ -69,15 +69,15 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
         return presenter
     }()
 
-    func config(delegate: ConnectionProofRequestPresenterDelegate?, connection: ConnectionBase,
-                credentials: [Degree], requiered: [String], logoData: Data?, placeholderNamed: String?) {
+    func config(delegate: ConnectionProofRequestPresenterDelegate?, contact: Contact,
+                credentials: [Credential], requiered: [String], logoData: Data?, placeholderNamed: String?) {
 
         self.delegate = delegate
         self.credentials = credentials
-        self.connection = connection
+        self.contact = contact
         self.requiered = requiered
         self.selectedCredentials.removeAll()
-        self.labelTitle.text = connection.name
+        self.labelTitle.text = contact.name
         self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
         if credentials.count > 1 {
             tableHeightCtrt.constant = 80
@@ -137,7 +137,7 @@ extension ConnectionProofRequestViewController: UITableViewDataSource, Connectio
         var isComplete = true
         for type in requiered {
             isComplete = isComplete && selectedCredentials.contains {
-                $0.type?.rawValue == type
+                $0.type == type
             }
         }
 

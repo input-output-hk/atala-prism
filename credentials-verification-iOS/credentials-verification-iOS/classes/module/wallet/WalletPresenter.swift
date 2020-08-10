@@ -166,40 +166,40 @@ class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDeleg
     }
 
     private func fetchHistory() {
-
-        guard let user = self.sharedMemory.loggedUser else {
-            return
-        }
-
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let responses = try ApiService.global.getPaymentsHistory(userIds: user.connectionUserIds?.valuesArray)
-                Logger.d("getPaymentsHistory responses: \(responses)")
-
-                var history: [PaymentHistory] = []
-                for response in responses {
-                    for intPayment in response.payments {
-                        if let payment = PaymentHistory.build(intPayment) {
-                            history.append(payment)
-                        }
-                    }
-                }
-                self.makePaymentHistoryRows(history: history)
-
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            self.startListing()
-        }, error: { _ in
-            self.viewImpl?.showErrorMessage(doShow: true,
-                                            message: "wallet_history_retrieve_error".localize(),
-                                            afterErrorAction: {
-                self.tappedBackButton()
-            })
-        })
+//Payment disabled
+//        guard let user = self.sharedMemory.loggedUser else {
+//            return
+//        }
+//
+//        // Call the service
+//        ApiService.call(async: {
+//            do {
+//                let responses = try ApiService.global.getPaymentsHistory(userIds: user.connectionUserIds?.valuesArray)
+//                Logger.d("getPaymentsHistory responses: \(responses)")
+//
+//                var history: [PaymentHistory] = []
+//                for response in responses {
+//                    for intPayment in response.payments {
+//                        if let payment = PaymentHistory.build(intPayment) {
+//                            history.append(payment)
+//                        }
+//                    }
+//                }
+//                self.makePaymentHistoryRows(history: history)
+//
+//            } catch {
+//                return error
+//            }
+//            return nil
+//        }, success: {
+//            self.startListing()
+//        }, error: { _ in
+//            self.viewImpl?.showErrorMessage(doShow: true,
+//                                            message: "wallet_history_retrieve_error".localize(),
+//                                            afterErrorAction: {
+//                self.tappedBackButton()
+//            })
+//        })
     }
 
     private func fetchCreditCards() {

@@ -24,6 +24,7 @@
 		B309C17324BF8F0B00AF70DF /* CredentialHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C17224BF8F0B00AF70DF /* CredentialHistoryDAO.swift */; };
 		B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */; };
 		B32A7B72243288A500B52586 /* ConnectionProofRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */; };
+		B32EC7F424C71B34004A5014 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32EC7F324C71B34004A5014 /* Data+Extensions.swift */; };
 		B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B33B708D249BA09D00F620D6 /* ResetData.storyboard */; };
 		B33B7090249BB17000F620D6 /* ResetDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33B708F249BB17000F620D6 /* ResetDataViewController.swift */; };
 		B35181AB24195CAD007CA8F1 /* connector_api.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A824195CAC007CA8F1 /* connector_api.proto */; };
@@ -268,6 +269,7 @@
 		B309C17224BF8F0B00AF70DF /* CredentialHistoryDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialHistoryDAO.swift; sourceTree = "<group>"; };
 		B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConnectionProofRequest.storyboard; sourceTree = "<group>"; };
 		B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestViewController.swift; sourceTree = "<group>"; };
+		B32EC7F324C71B34004A5014 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		B33B708D249BA09D00F620D6 /* ResetData.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ResetData.storyboard; sourceTree = "<group>"; };
 		B33B708F249BB17000F620D6 /* ResetDataViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetDataViewController.swift; sourceTree = "<group>"; };
 		B35181A824195CAC007CA8F1 /* connector_api.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_api.proto; sourceTree = "<group>"; };
@@ -973,6 +975,7 @@
 				EE7D4AC32366B9C3007C31A8 /* Array+Extensions.swift */,
 				EE7D4AC42366B9C3007C31A8 /* String+Extensions.swift */,
 				EE7D4AC52366B9C3007C31A8 /* Collection+Extension.swift */,
+				B32EC7F324C71B34004A5014 /* Data+Extensions.swift */,
 				EE7D4AC62366B9C3007C31A8 /* ErrorUtils.swift */,
 				EE7D4AC72366B9C3007C31A8 /* Logger.swift */,
 				EE7D4ACA2366B9C3007C31A8 /* Date+Extensions.swift */,
@@ -1711,6 +1714,7 @@
 				EE48AC112377543E00C0A441 /* TermsPresenter.swift in Sources */,
 				EE71856C2384D0B100C58F62 /* TabsViewCell.swift in Sources */,
 				EE7D4C002366B9C4007C31A8 /* BaseTableViewCell.swift in Sources */,
+				B32EC7F424C71B34004A5014 /* Data+Extensions.swift in Sources */,
 				EE904F0A2373AAFB00EE6344 /* DocumentViewCell.swift in Sources */,
 				EE8CD814237BA29700614578 /* ScanQrUtils.swift in Sources */,
 				EE7D4C472366B9C4007C31A8 /* UITextView+Placeholder.m in Sources */,
@@ -2040,7 +2044,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 52;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2048,7 +2052,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.7;
+				MARKETING_VERSION = 0.1.8;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Ddebug";
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = "Atala PRISM";
@@ -2066,14 +2070,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 52;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.7;
+				MARKETING_VERSION = 0.1.8;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Drelease";
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = "Atala PRISM";

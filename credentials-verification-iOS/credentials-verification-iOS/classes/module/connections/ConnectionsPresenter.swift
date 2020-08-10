@@ -20,7 +20,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     var stateSpecial: ConnectionsSpecialState = .none
 
-    var connections: [ConnectionBase] = []
+    var contacts: [Contact] = []
 
     var detailProofRequestMessageId: String?
 
@@ -78,7 +78,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     // MARK: ListingBaseTableUtilsPresenterDelegate
 
     func cleanData() {
-        connections = []
+        contacts = []
     }
 
     func fetchData() {
@@ -90,14 +90,14 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func hasData() -> Bool {
-        return connections.size() > 0
+        return contacts.size() > 0
     }
 
     func getElementCount() -> Int {
         if let baseValue = super.getBaseElementCount() {
             return baseValue
         }
-        return connections.size()
+        return contacts.size()
     }
 
     func getElementType(indexPath: IndexPath) -> ConnectionsCellType {
@@ -118,42 +118,36 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func fetchCredentials() {
 
-        guard let user = self.sharedMemory.loggedUser else {
-            return
-        }
+        let contactsDao = ContactDAO()
+        let contacts = contactsDao.listContacts()
+        let credentialsDao = CredentialDAO()
 
         // Call the service
         ApiService.call(async: {
             do {
-                let responses = try ApiService.global.getCredentials(userIds: user.connectionUserIds?.valuesArray)
+                let responses = try ApiService.global.getCredentials(contacts: contacts)
                 Logger.d("getCredentials responses: \(responses)")
 
-                var credentials: [Degree] = []
                 var proofRequest: Io_Iohk_Prism_Protos_ProofRequest?
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
-                        let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
-                        let isNew = !(user.messagesAcceptedIds?.contains(message.id) ?? false)
-                        if !isRejected {
-                            if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
-                                if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential,
-                                                                     messageId: message.id, isNew: isNew) {
-                                        credentials.append(credential)
-                                    }
-                                } else if !atalaMssg.proofRequest.connectionToken.isEmpty && isNew {
-                                    proofRequest = atalaMssg.proofRequest
-                                    self.detailProofRequestMessageId = message.id
-                                }
-                            }
+                        if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
+                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
+                                let credential = credentialsDao.createCredential(sentCredential:
+                                    atalaMssg.issuerSentCredential.credential, viewed: false,
+                                                                               messageId: message.id) {
+                                contactsDao.updateMessageId(did: credential.issuerId, messageId: message.id)
+                            } else if !atalaMssg.proofRequest.connectionToken.isEmpty {
+                                proofRequest = atalaMssg.proofRequest
+                                self.detailProofRequestMessageId = message.id
+                            }       
                         }
                     }
                 }
                 if proofRequest != nil {
-                    self.askProofRequest(credentials: credentials, proofRequest: proofRequest!)
+                    self.askProofRequest(proofRequest: proofRequest!)
                 }
-
             } catch {
                 return error
             }
@@ -166,40 +160,36 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         })
     }
 
-    func askProofRequest(credentials: [Degree], proofRequest: Io_Iohk_Prism_Protos_ProofRequest) {
+    func askProofRequest(proofRequest: Io_Iohk_Prism_Protos_ProofRequest) {
+        let credentialsDao = CredentialDAO()
+        let credentials = credentialsDao.listCredentials() ?? []
         let filteredCredentials = credentials.filter {
-            proofRequest.typeIds.contains($0.type!.rawValue)
+            proofRequest.typeIds.contains($0.type)
         }
-        let shareConnection = self.connections.first(where: {
+        let shareContact = self.contacts.first(where: {
             $0.token == proofRequest.connectionToken
         })
-        if !filteredCredentials.isEmpty && shareConnection != nil {
+        if !filteredCredentials.isEmpty && shareContact != nil {
             DispatchQueue.main.async {
                 self.viewImpl?.showNewProofRequestMessage(credentials: filteredCredentials,
                                                           requiered: proofRequest.typeIds,
-                                                          connection: shareConnection!,
-                                                          logoData: shareConnection?.logoData)
+                                                          contact: shareContact!,
+                                                          logoData: shareContact?.logo)
             }
         }
     }
 
-    private func shareCredentials(connection: ConnectionBase, credentials: [Degree]) {
+    private func shareCredentials(contact: Contact, credentials: [Credential]) {
 
         viewImpl?.config(isLoading: true)
 
         // Call the service
         ApiService.call(async: {
             do {
-                if let connId = connection.connectionId,
-                    let userId = self.sharedMemory.loggedUser?.connectionUserIds?[connId] {
 
-                let responses = try ApiService.global.shareCredentials(userId: userId,
-                                                                       connectionId: connId,
-                                                                       degrees: credentials)
+                let responses = try ApiService.global.shareCredentials(contact: contact,
+                                                                       credentials: credentials)
                 Logger.d("shareCredential response: \(responses)")
-                } else {
-                    return nil
-                }
 
             } catch {
                 return error
@@ -247,9 +237,8 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func setup(for cell: ConnectionMainViewCell) {
 
-        let university: ConnectionBase = connections[cell.indexPath!.row]
-        cell.config(title: university.name, isUniversity: university.type != 0,
-                    logoData: sharedMemory.imageBank?.logo(for: university.connectionId))
+        let contact = contacts[cell.indexPath!.row]
+        cell.config(title: contact.name, logoData: contact.logo)
 
     }
 
@@ -271,7 +260,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func scannedQrCode(_ str: String) {
         Logger.d("Scanned: \(str)")
-        self.connectionsWorker.validateQrCode(str, connections: self.connections)
+        self.connectionsWorker.validateQrCode(str, contacts: self.contacts)
     }
 
     func tappedDeclineAction(for: ConnectionConfirmViewController) {
@@ -287,28 +276,28 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     // MARK: ConnectionProofRequestPresenterDelegate
 
-    func tappedDeclineAction(for: ConnectionProofRequestViewController) {
-        sharedMemory.loggedUser?.messagesRejectedIds?.append(detailProofRequestMessageId!)
-        sharedMemory.loggedUser = sharedMemory.loggedUser
+    func tappedDeclineAction(for viewController: ConnectionProofRequestViewController) {
+        let contactDao = ContactDAO()
+        contactDao.updateMessageId(did: viewController.contact?.did ?? "", messageId: detailProofRequestMessageId!)
     }
 
     func tappedConfirmAction(for viewController: ConnectionProofRequestViewController) {
-        sharedMemory.loggedUser?.messagesAcceptedIds?.append(detailProofRequestMessageId!)
-        sharedMemory.loggedUser = sharedMemory.loggedUser
-        shareCredentials(connection: viewController.connection!, credentials: viewController.selectedCredentials)
+        let contactDao = ContactDAO()
+        contactDao.updateMessageId(did: viewController.contact?.did ?? "", messageId: detailProofRequestMessageId!)
+        shareCredentials(contact: viewController.contact!, credentials: viewController.selectedCredentials)
     }
 
     // MARK: ConnectionsWorkerDelegate
 
-    func connectionsFetched(connections: [ConnectionBase]) {
+    func contactsFetched(contacts: [Contact]) {
 
-        // Save logos
-        ImageBank.saveLogos(list: connections)
-        let sortedConnections = connections.sorted { $0.name < $1.name}
+        let sortedContacts = contacts.sorted { $0.name < $1.name}
         self.cleanData()
-        self.connections.append(sortedConnections)
+        self.contacts.append(sortedContacts)
         self.startListing()
-        self.fetchCredentials()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            self.fetchCredentials()
+        }
     }
 
     func config(isLoading: Bool) {

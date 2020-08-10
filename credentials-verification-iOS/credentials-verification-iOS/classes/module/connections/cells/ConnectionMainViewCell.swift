@@ -37,12 +37,11 @@ class ConnectionMainViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String?, isUniversity: Bool, logoData: Data?) {
+    func config(title: String?, logoData: Data?) {
 
         labelTitle.text = title
         labelSubtitle.isHidden = true
         constraintTitleVertical.constant = 0.0
-        let placeholder = isUniversity ? "ico_placeholder_university" : "ico_placeholder_credential"
-        imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholder)
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: "ico_placeholder_credential")
     }
 }

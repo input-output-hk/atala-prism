@@ -11,7 +11,7 @@ import SwiftGRPC
 
 protocol ConnectionsWorkerDelegate: class {
 
-    func connectionsFetched(connections: [ConnectionBase])
+    func contactsFetched(contacts: [Contact])
     func config(isLoading: Bool)
     func showErrorMessage(doShow: Bool, message: String?)
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?)
@@ -27,30 +27,12 @@ class ConnectionsWorker: NSObject {
 
     func fetchConnections() {
 
-        var connections: [ConnectionBase] = []
-
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let user = self.sharedMemory.loggedUser
-                let responses = try ApiService.global.getConnections(userIds: user?.connectionUserIds?.valuesArray)
-                Logger.d("getConnections responsed: \(responses)")
-
-                // Parse data
-                let parsedResponse = ConnectionMaker.parseResponseList(responses)
-                connections.append(contentsOf: parsedResponse)
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            self.delegate?.connectionsFetched(connections: connections)
-        }, error: { _ in
-            self.delegate?.showErrorMessage(doShow: true, message: "service_error".localize())
-        })
+        let dao = ContactDAO()
+        let contacts = dao.listContacts() ?? []
+        self.delegate?.contactsFetched(contacts: contacts)
     }
 
-    func validateQrCode(_ str: String, connections: [ConnectionBase]) {
+    func validateQrCode(_ str: String, contacts: [Contact]) {
 
         self.delegate?.config(isLoading: true)
 
@@ -75,7 +57,7 @@ class ConnectionsWorker: NSObject {
             }
             return nil
         }, success: {
-            let isDuplicated = connections.contains { $0.did == self.connectionRequest?.info?.did }
+            let isDuplicated = contacts.contains { $0.did == self.connectionRequest?.info?.did }
             self.delegate?.config(isLoading: false)
             if isDuplicated {
                 self.delegate?.showErrorMessage(doShow: true,
@@ -141,9 +123,12 @@ class ConnectionsWorker: NSObject {
                 let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!,
                                                                         nonce: self.connectionRequest!.paymentNonce!)
                 Logger.d("addConnectionToken response: \(response)")
-                // Save the userId
-                self.sharedMemory.loggedUser?.connectionUserIds?[response.connection.connectionID] = response.userID
-                self.sharedMemory.loggedUser = self.sharedMemory.loggedUser
+                // Save the contact
+                let keyPath = CryptoUtils.global.confirmNewKeyUsed()
+                let dao = ContactDAO()
+                _ = DispatchQueue.main.sync {
+                    dao.createContact(connectionInfo: response.connection, keyPath: keyPath)
+                }
             } catch {
                 return error
             }
@@ -151,7 +136,8 @@ class ConnectionsWorker: NSObject {
         }, success: {
             self.delegate?.config(isLoading: false)
             self.delegate?.conectionAccepted()
-        }, error: { _ in
+        }, error: { error in
+            print(error.localizedDescription)
             self.delegate?.config(isLoading: false)
             self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
         })

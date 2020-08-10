@@ -17,7 +17,7 @@ class ConnectionProofRequestCell: BaseTableViewCell, SwitchCustomDelegate {
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var checkbox: SwitchCustomView!
 
-    var credential: Degree!
+    var credential: Credential!
 
     override class func default_NibName() -> String {
         return "ConnectionProofRequestCell"
@@ -42,11 +42,11 @@ class ConnectionProofRequestCell: BaseTableViewCell, SwitchCustomDelegate {
 
     // MARK: Config
 
-    func config(credential: Degree) {
+    func config(credential: Credential) {
         self.checkbox.changeState(newState: false)
         checkbox.delegate = self
         self.credential = credential
-        switch credential.type {
+        switch CredentialType(rawValue: credential.type) {
         case .governmentIssuedId:
             labelTitle.text = "credentials_detail_title_type_government_id".localize()
         case .univerityDegree:

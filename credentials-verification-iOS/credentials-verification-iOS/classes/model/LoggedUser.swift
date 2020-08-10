@@ -8,9 +8,6 @@ class LoggedUser: Mappable {
     var email: String?
     var firstName: String?
     var lastName: String?
-    var connectionUserIds: [String: String]? // ConnectionId -> UserId
-    var messagesAcceptedIds: [String]?
-    var messagesRejectedIds: [String]?
 
     var idCode: String?
     var identityNumber: String?
@@ -26,15 +23,12 @@ class LoggedUser: Mappable {
 
     var seed: Data?
     var mnemonics: [String]?
+    var lastUsedKeyIndex: Int?
 
     var appPin: String?
     var appBiometrics: Bool?
 
-    init() {
-        connectionUserIds = [:]
-        messagesAcceptedIds = []
-        messagesRejectedIds = []
-    }
+    init() {}
 
     required init?(map: Map) {}
 
@@ -46,9 +40,6 @@ class LoggedUser: Mappable {
         email <- map["email"]
         firstName <- map["firstName"]
         lastName <- map["lastName"]
-        connectionUserIds <- map["connectionUserIds"]
-        messagesAcceptedIds <- map["messagesAcceptedIds"]
-        messagesRejectedIds <- map["messagesRejectedIds"]
 
         idCode <- map["idCode"]
         identityNumber <- map["identityNumber"]
@@ -64,6 +55,7 @@ class LoggedUser: Mappable {
 
         seed <- map["seed"]
         mnemonics <- map["mnemonics"]
+        lastUsedKeyIndex <- map["lastUsedKeyIndex"]
 
         appPin <- map["appPin"]
         appBiometrics <- map["appBiometrics"]

@@ -19,14 +19,6 @@ class ConnectionsViewController: ListingBaseViewController {
         return navBar
     }
 
-    lazy var confirmMessageViewController: ConnectionConfirmViewController = {
-        ConnectionConfirmViewController.makeThisView()
-    }()
-
-    lazy var confirmProofRequestViewController: ConnectionProofRequestViewController = {
-        ConnectionProofRequestViewController.makeThisView()
-    }()
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -169,26 +161,20 @@ class ConnectionsViewController: ListingBaseViewController {
 
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
 
-        let placeholder = type != 0 ? "ico_placeholder_university" : "ico_placeholder_credential"
-
-        if !confirmMessageViewController.isBeingPresented {
-            customPresentViewController(confirmMessageViewController.presentr,
-                                        viewController: confirmMessageViewController, animated: true)
-        }
-        confirmMessageViewController.config(delegate: presenterImpl,
-                                            lead: "connections_scan_qr_confirm_title".localize(),
-                                            title: title, logoData: logoData, placeholderNamed: placeholder)
+        let confirmMessage = ConnectionConfirmViewController.makeThisView()
+        customPresentViewController(confirmMessage.presentr, viewController: confirmMessage, animated: true)
+        confirmMessage.config(delegate: presenterImpl, lead: "connections_scan_qr_confirm_title".localize(),
+                              title: title, logoData: logoData, placeholderNamed: "ico_placeholder_credential")
     }
 
-    func showNewProofRequestMessage(credentials: [Degree], requiered: [String], connection: ConnectionBase,
+    func showNewProofRequestMessage(credentials: [Credential], requiered: [String], contact: Contact,
                                     logoData: Data?) {
 
-        if !confirmProofRequestViewController.isBeingPresented {
-            customPresentViewController(confirmProofRequestViewController.presentr,
-                                        viewController: confirmProofRequestViewController, animated: true)
-        }
-        confirmProofRequestViewController.config(delegate: presenterImpl, connection: connection,
-                                                 credentials: credentials, requiered: requiered,
-                                                 logoData: logoData, placeholderNamed: "ico_placeholder_university")
+        let confirmProofRequest = ConnectionProofRequestViewController.makeThisView()
+        customPresentViewController(confirmProofRequest.presentr, viewController: confirmProofRequest,
+                                    animated: true)
+        confirmProofRequest.config(delegate: presenterImpl, contact: contact, credentials: credentials,
+                                   requiered: requiered, logoData: logoData,
+                                   placeholderNamed: "ico_placeholder_university")
     }
 }

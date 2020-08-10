@@ -109,7 +109,6 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
                 user?.apiUrl = Common.URL_API
                 user?.mnemonics = CryptoUtils.global.mnemonics
                 user?.seed = CryptoUtils.global.seed
-                user?.privateKey = CryptoUtils.global.privateKey?.extended()
             }
 
             DispatchQueue.main.async {

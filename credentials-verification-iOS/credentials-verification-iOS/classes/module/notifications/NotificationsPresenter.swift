@@ -8,6 +8,7 @@
 
 import SwiftGRPC
 import SwiftProtobuf
+import ObjectMapper
 
 class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
                                 NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
@@ -57,7 +58,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     var connectionsWorker = ConnectionsWorker()
     var stateSpecial: ConnectionsSpecialState = .none
 
-    var connections: [ConnectionBase] = []
+    var contacts: [Contact] = []
+
+//    var isFetching = false
 
     override init() {
         super.init()
@@ -244,35 +247,33 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func fetchCredentials() {
 
-        guard let user = self.sharedMemory.loggedUser else {
-            return
-        }
+//        if isFetching { return }
+//        isFetching = true
+        let contactsDao = ContactDAO()
+        let contacts = contactsDao.listContacts()
 
         // Call the service
         ApiService.call(async: {
             do {
-                let responses = try ApiService.global.getCredentials(userIds: user.connectionUserIds?.valuesArray)
+                let responses = try ApiService.global.getCredentials(contacts: contacts)
                 Logger.d("getCredentials responses: \(responses)")
 
-                var credentials: [Degree] = []
+                let credentialsDao = CredentialDAO()
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
-                        let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
-                        let isNew = !(user.messagesAcceptedIds?.contains(message.id) ?? false)
-                        if !isRejected && isNew {
-                            if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
-                                if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential,
-                                                                     messageId: message.id, isNew: isNew) {
-                                        credentials.append(credential)
-                                    }
-                                }
+                        if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
+                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
+                                let credential = credentialsDao.createCredential(sentCredential:
+                                    atalaMssg.issuerSentCredential.credential, viewed: false,
+                                                                               messageId: message.id) {
+                                contactsDao.updateMessageId(did: credential.issuerId, messageId: message.id)
                             }
                         }
                     }
                 }
                 self.cleanData()
+                let credentials = credentialsDao.listNewCredentials() ?? []
                 self.makeDegreeRows(degrees: credentials)
 
             } catch {
@@ -280,13 +281,15 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             }
             return nil
         }, success: {
+//            self.isFetching = false
             self.startListing()
         }, error: { _ in
+//        self.isFetching = false
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
 
-    private func makeDegreeRows(degrees: [Degree]) {
+    private func makeDegreeRows(degrees: [Credential]) {
 
         // Transform data into rows
         if degrees.size() > 0 {
@@ -313,7 +316,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     func setup(for cell: NewDegreeViewCell) {
 
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
-            let degree = cellRow.value as? Degree else {
+            let credential = cellRow.value as? Credential else {
             return
         }
 
@@ -328,7 +331,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         }
         var title = ""
         var placeholder = ""
-        switch degree.type {
+        switch CredentialType(rawValue: credential.type) {
         case .univerityDegree:
             title = "credentials_university_degree".localize()
             placeholder = "icon_university"
@@ -345,26 +348,42 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             print("Unrecognized type")
         }
 
-        cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil,
+        cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
                     logoPlaceholderNamed: placeholder, isLast: isLast)
     }
 
     func tappedAction(for cell: NewDegreeViewCell) {
 
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
-            let degree = cellRow.value as? Degree else {
+            let credential = cellRow.value as? Credential else {
             return
         }
-        startShowingDetails(degree: degree)
+        // FIXME this should be updated for HTML credentials
+        if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
+
+            degree.intCredential = credential.encoded
+            degree.type = CredentialType(rawValue: credential.type)
+            degree.isNew = credential.viewed
+            degree.messageId = credential.credentialId
+            startShowingDetails(degree: degree)
+        }
     }
 
     func didSelectRowAt(indexPath: IndexPath) {
         if mode == .degrees {
             let rowIndex = indexPath.row
-            guard let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
+            guard let cellRow = degreeRows?[rowIndex], let credential = cellRow.value as? Credential else {
                 return
             }
-            startShowingDetails(degree: degree)
+            // FIXME this should be updated for HTML credentials
+            if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
+
+                degree.intCredential = credential.encoded
+                degree.type = CredentialType(rawValue: credential.type)
+                degree.isNew = credential.viewed
+                degree.messageId = credential.credentialId
+                startShowingDetails(degree: degree)
+            }
         }
     }
 
@@ -464,8 +483,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func tappedDeclineAction(for cell: DetailFooterViewCell?) {
 
-        sharedMemory.loggedUser?.messagesRejectedIds?.append(detailDegree!.messageId!)
-        sharedMemory.loggedUser = sharedMemory.loggedUser
         startShowingDegrees()
         actionPullToRefresh()
     }
@@ -473,7 +490,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     func tappedConfirmAction(for cell: DetailFooterViewCell?) {
 
         Tracker.global.trackCredentialNewConfirm()
-        sharedMemory.loggedUser?.messagesAcceptedIds?.append(detailDegree!.messageId!)
+        let credentialsDao = CredentialDAO()
+        credentialsDao.setViewed(credentialId: detailDegree?.messageId ?? "")
         sharedMemory.loggedUser = sharedMemory.loggedUser
     }
 
@@ -481,7 +499,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func scannedQrCode(_ str: String) {
         Logger.d("Scanned: \(str)")
-        self.connectionsWorker.validateQrCode(str, connections: self.connections)
+        self.connectionsWorker.validateQrCode(str, contacts: self.contacts)
     }
 
     func tappedDeclineAction(for: ConnectionConfirmViewController) {
@@ -497,9 +515,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     // MARK: ConnectionsWorkerDelegate
 
-    func connectionsFetched(connections: [ConnectionBase]) {
-        self.connections.removeAll()
-        self.connections.append(connections)
+    func contactsFetched(contacts: [Contact]) {
+        self.contacts.removeAll()
+        self.contacts.append(contacts)
         fetchCredentials()
     }
 

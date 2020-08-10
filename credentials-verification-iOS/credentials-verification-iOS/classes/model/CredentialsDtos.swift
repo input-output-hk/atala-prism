@@ -68,9 +68,7 @@ class Degree: Mappable {
     var employmentStatus: String?
     var policyNumber: String?
     var productClass: String?
-    // Note: Can't store Io_Iohk_Cvp_Credential_Credential because
-    // it doesn't implement Mappable.
-    var intCredential: Io_Iohk_Prism_Protos_Credential?
+    var intCredential: Data?
     var isNew: Bool?
     var messageId: String?
 
@@ -96,7 +94,7 @@ class Degree: Mappable {
 
         let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument)
 
-        credential?.intCredential = sentCredential
+        credential?.intCredential = try? sentCredential.serializedData()
         credential?.type = CredentialType(rawValue: sentCredential.typeID)
         credential?.isNew = isNew
         credential?.messageId = messageId

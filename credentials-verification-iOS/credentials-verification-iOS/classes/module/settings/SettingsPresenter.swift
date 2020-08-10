@@ -89,9 +89,12 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
 
     func clearAppData() {
         Tracker.global.trackResetData()
-        sharedMemory.loggedUser?.connectionUserIds?.removeAll()
-        sharedMemory.loggedUser?.messagesAcceptedIds?.removeAll()
-        sharedMemory.loggedUser?.messagesRejectedIds?.removeAll()
+        let credentialsDao = CredentialDAO()
+        credentialsDao.deleteAllCredentials()
+
+        let contactsDao = ContactDAO()
+        contactsDao.deleteAllContacts()
+
         sharedMemory.loggedUser = sharedMemory.loggedUser
         viewImpl?.showSuccessMessage(doShow: true, message: "settings_reset_success".localize(), title: "")
     }

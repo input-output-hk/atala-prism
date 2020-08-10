@@ -32,7 +32,7 @@ class BrowserViewController: BaseViewController {
         webView.allowsLinkPreview = true
         loadlUrl(urlStr: url)
     }
- 
+
     func setutpTitle() {
         titleLbl.text = titleText
     }

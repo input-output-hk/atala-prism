@@ -1,6 +1,7 @@
 //
 import SwiftGRPC
 import SwiftProtobuf
+import ObjectMapper
 
 class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
                             NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
@@ -41,8 +42,10 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     var detailDegree: Degree?
 
-    var shareEmployers: [ConnectionBase]?
-    var shareSelectedEmployers: [ConnectionBase]?
+    var shareEmployers: [Contact]?
+    var shareSelectedEmployers: [Contact]?
+
+//    var isFetching = false
 
     // MARK: Modes
 
@@ -193,54 +196,55 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func fetchElements() {
 
-        guard let user = self.sharedMemory.loggedUser else { return }
+//        if isFetching { return }
+//        isFetching = true
+        let contactsDao = ContactDAO()
+        let contacts = contactsDao.listContacts()
 
         // Call the service
         ApiService.call(async: {
             do {
-                let responses = try ApiService.global.getCredentials(userIds: user.connectionUserIds?.valuesArray)
+                let responses = try ApiService.global.getCredentials(contacts: contacts)
                 Logger.d("getCredentials responses: \(responses)")
 
                 self.cleanData()
+                let credentialsDao = CredentialDAO()
 
-                var credentials: [Degree] = []
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
-                        let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
-                        if !isRejected {
-                            if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
-                                if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential,
-                                                                     messageId: message.id, isNew: false) {
-                                        credentials.append(credential)
-                                    }
-                                }
+                        if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
+                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
+                                let credential = credentialsDao.createCredential(sentCredential:
+                                    atalaMssg.issuerSentCredential.credential, viewed: false,
+                                                                               messageId: message.id) {
+                                contactsDao.updateMessageId(did: credential.issuerId, messageId: message.id)
                             }
                         }
                     }
                 }
-                credentials.sort { (lhs, rhs) -> Bool in
-                    lhs.issuer?.name < rhs.issuer?.name
-                }
-                self.makeDegreeRows(degrees: credentials)
+                let credentials = credentialsDao.listCredentials() ?? []
+                self.makeDegreeRows(credentials: credentials)
 
             } catch {
                 return error
             }
             return nil
         }, success: {
+//            self.isFetching = false
             self.startListing()
-        }, error: { _ in
+        }, error: { error in
+            print(error.localizedDescription)
+//            self.isFetching = false
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
 
-    private func makeDegreeRows(degrees: [Degree]) {
+    private func makeDegreeRows(credentials: [Credential]) {
 
         // Transform data into rows
-        degrees.forEach { degree in
-            self.degreeRows?.append(CellRow(type: .degree, value: degree))
+        credentials.forEach { credential in
+            self.degreeRows?.append(CellRow(type: .degree, value: credential))
         }
         // NOTE: Won't add the National Id for now
         if getLoggedUser()?.identityNumber != nil {
@@ -252,42 +256,16 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         viewImpl?.config(isLoading: true)
 
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let responses = try ApiService.global.getConnections(userIds:
-                    self.sharedMemory.loggedUser?.connectionUserIds?.valuesArray)
-                Logger.d("getConnections response: \(responses)")
+        // Clean data
+        self.shareEmployers = []
+        self.shareSelectedEmployers = []
 
-                // Clean data
-                self.shareEmployers = []
-                self.shareSelectedEmployers = []
+        let contactsDao = ContactDAO()
+        let contacts = contactsDao.listContactsForShare(did: self.detailDegree?.issuer?.id ?? "") ?? []
+        self.shareEmployers?.append(contentsOf: contacts)
+        self.viewImpl?.config(isLoading: false)
+        self.viewImpl?.showShareDialog()
 
-                // Parse data
-                var parsedResponse = ConnectionMaker.parseResponseList(responses)
-                if let currentId = self.detailDegree?.issuer?.id?.suffix(from:
-                    (self.detailDegree?.issuer?.id?.lastIndex(of: ":"))!) {
-                    parsedResponse = parsedResponse.filter {
-                        !($0.did?.contains(currentId))!
-                    }
-                }
-                parsedResponse.sort(by: { (lhs, rhs) -> Bool in
-                    lhs.name < rhs.name
-                })
-                // Save logos
-                ImageBank.saveLogos(list: parsedResponse)
-                self.shareEmployers?.append(contentsOf: parsedResponse)
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showShareDialog()
-        }, error: { _ in
-            self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
-        })
     }
 
     private func shareWithSelectedEmployers() {
@@ -297,17 +275,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         // Call the service
         ApiService.call(async: {
             do {
-                var userIds: [String] = []
-                var connectionIds: [String] = []
-                for employer in self.shareSelectedEmployers ?? [] {
-                    if let connId = employer.connectionId,
-                        let userId = self.sharedMemory.loggedUser?.connectionUserIds?[connId] {
-                        connectionIds.append(connId)
-                        userIds.append(userId)
-                    }
-                }
-                let responses = try ApiService.global.shareCredential(userIds: userIds,
-                                                                      connectionIds: connectionIds,
+                let responses = try ApiService.global.shareCredential(contacts: self.shareSelectedEmployers ?? [],
                                                                       degree: self.detailDegree!)
                 Logger.d("shareCredential response: \(responses)")
 
@@ -346,7 +314,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func setup(for cell: NewDegreeViewCell) {
 
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
-            let degree = cellRow.value as? Degree else {
+            let credential = cellRow.value as? Credential else {
             return
         }
 
@@ -361,7 +329,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         }
         var title = ""
         var placeholder = ""
-        switch degree.type {
+        let type = CredentialType.init(rawValue: credential.type)
+        switch type {
         case .univerityDegree:
             title = "credentials_university_degree".localize()
             placeholder = "icon_university"
@@ -378,26 +347,39 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             print("Unrecognized type")
         }
 
-        cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil,
+        cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
                     logoPlaceholderNamed: placeholder, isLast: isLast)
     }
 
     func tappedAction(for cell: NewDegreeViewCell) {
 
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
-            let degree = cellRow.value as? Degree else {
+            let credential = cellRow.value as? Credential else {
             return
         }
-        startShowingDetails(degree: degree)
+        // FIXME this should be updated for HTML credentials
+        if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
+
+            degree.intCredential = credential.encoded
+            degree.type = CredentialType(rawValue: credential.type)
+            startShowingDetails(degree: degree)
+        }
     }
 
     func didSelectRowAt(indexPath: IndexPath) {
         if mode == .degrees {
             let rowIndex = indexPath.row
-            guard let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
+            guard let cellRow = degreeRows?[rowIndex], let credential = cellRow.value as? Credential else {
                 return
             }
-            startShowingDetails(degree: degree)
+            // FIXME this should be updated for HTML credentials
+            if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
+
+                degree.intCredential = credential.encoded
+                degree.type = CredentialType(rawValue: credential.type)
+
+                startShowingDetails(degree: degree)
+            }
         }
     }
 
@@ -405,10 +387,10 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         let cellRow = degreeRows?[cell.indexPath!.row]
         // Config for a Degree
-        if let degree = cellRow?.value as? Degree {
+        if let credential = cellRow?.value as? Credential {
             var title = ""
             var placeholder = ""
-            switch degree.type {
+            switch CredentialType(rawValue: credential.type) {
             case .univerityDegree:
                 title = "credentials_university_degree".localize()
                 placeholder = "icon_university"
@@ -424,12 +406,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             default:
                 print("Unrecognized type")
             }
-            cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil, logoPlaceholderNamed: placeholder)
-        }
-        // Config for an Id
-        else if cellRow?.value is LoggedUser {
-            cell.config(title: "credentials_document_title".localize(), subtitle: nil,
-                        logoData: nil, logoPlaceholderNamed: "ico_placeholder_credential")
+            cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
+                        logoPlaceholderNamed: placeholder)
         }
     }
 
@@ -538,7 +516,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         cell?.refreshView()
     }
 
-    func employerIsSelected(employer: ConnectionBase) -> Bool {
+    func employerIsSelected(employer: Contact) -> Bool {
         return shareSelectedEmployers?.contains(where: { $0.connectionId == employer.connectionId }) ?? false
     }
 
@@ -547,7 +525,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         let employer = shareEmployers![index]
         let isSelected = employerIsSelected(employer: employer)
         cell?.config(name: employer.name,
-                     logoData: sharedMemory.imageBank?.logo(for: employer.connectionId),
+                     logoData: employer.logo,
                      placeholderNamed: "ico_placeholder_employer", isSelected: isSelected)
     }
 }

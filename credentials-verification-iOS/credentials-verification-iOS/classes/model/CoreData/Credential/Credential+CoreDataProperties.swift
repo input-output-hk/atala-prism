@@ -16,13 +16,13 @@ extension Credential {
         return NSFetchRequest<Credential>(entityName: "Credential")
     }
 
-    @NSManaged public var credentialId: String?
-    @NSManaged public var dateReceived: Date?
-    @NSManaged public var htmlView: String?
-    @NSManaged public var issuerId: String?
-    @NSManaged public var issuerName: String?
-    @NSManaged public var type: String?
+    @NSManaged public var credentialId: String
+    @NSManaged public var dateReceived: Date
+    @NSManaged public var htmlView: String
+    @NSManaged public var issuerId: String
+    @NSManaged public var issuerName: String
+    @NSManaged public var type: String
     @NSManaged public var viewed: Bool
-    @NSManaged public var encoded: Data?
+    @NSManaged public var encoded: Data
 
 }

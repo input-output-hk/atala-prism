@@ -26,14 +26,6 @@ class NotificationsViewController: ListingBaseViewController {
         return navBar
     }
 
-    lazy var confirmMessageViewController: ConnectionConfirmViewController = {
-        ConnectionConfirmViewController.makeThisView()
-    }()
-
-    lazy var confirmProofRequestViewController: ConnectionProofRequestViewController = {
-        ConnectionProofRequestViewController.makeThisView()
-    }()
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -206,14 +198,10 @@ class NotificationsViewController: ListingBaseViewController {
 
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
 
-        let placeholder = type != 0 ? "ico_placeholder_university" : "ico_placeholder_credential"
+        let confirmMessage = ConnectionConfirmViewController.makeThisView()
 
-        if !confirmMessageViewController.isBeingPresented {
-            customPresentViewController(confirmMessageViewController.presentr,
-                                        viewController: confirmMessageViewController, animated: true)
-        }
-        confirmMessageViewController.config(delegate: presenterImpl,
-                                            lead: "connections_scan_qr_confirm_title".localize(), title: title,
-                                            logoData: logoData, placeholderNamed: placeholder)
+        customPresentViewController(confirmMessage.presentr, viewController: confirmMessage, animated: true)
+        confirmMessage.config(delegate: presenterImpl, lead: "connections_scan_qr_confirm_title".localize(),
+                              title: title, logoData: logoData, placeholderNamed: "ico_placeholder_credential")
     }
 }
