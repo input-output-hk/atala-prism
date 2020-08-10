@@ -13,13 +13,18 @@ import certificateIcon from '../../../../images/certificateIcon.svg';
 import credentialSummaryIcon from '../../../../images/credentialSummaryIcon.svg';
 import settingsIcon from '../../../../images/settingsIcon.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
+import { useSession } from '../../../providers/SessionContext';
+import { ISSUER, VERIFIER } from '../../../../helpers/constants';
+
 import './_style.scss';
-import { ISSUER, VERIFIER, USER_ROLE } from '../../../../helpers/constants';
 
 const { Sider } = Layout;
 
 const SideMenu = ({ location: { pathname } }) => {
   const { t } = useTranslation();
+  const { session } = useSession();
+
+  const role = session.userRole;
 
   const icons = [
     { icon: iconMenu, name: '', restrictedTo: [ISSUER, VERIFIER] },
@@ -33,9 +38,7 @@ const SideMenu = ({ location: { pathname } }) => {
     // { icon: iconTransactions, name: 'transactions' }
   ];
 
-  const iconsByRole = icons.filter(({ restrictedTo }) =>
-    restrictedTo.includes(localStorage.getItem(USER_ROLE))
-  );
+  const iconsByRole = icons.filter(({ restrictedTo }) => restrictedTo.includes(role));
 
   const bottomIcons = [
     { icon: settingsIcon, name: 'settings' },

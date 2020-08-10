@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { PulseLoader } from 'react-spinners';
 import icon from '../../../../images/registrationCongratulation.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import { withRedirector } from '../../../providers/withRedirector';
+import { useSession } from '../../../providers/SessionContext';
 
 import './_style.scss';
-import { withRedirector } from '../../../providers/withRedirector';
 
-const Congratulations = ({ redirector: { redirectToLogin } }) => {
+const Congratulations = ({ redirector: { redirectToHome } }) => {
   const { t } = useTranslation();
+  const { login } = useSession();
+
+  const [loading, setLoading] = useState();
+
+  const handleLogin = async () => {
+    setLoading(true);
+    await login();
+    redirectToHome();
+  };
 
   return (
     <div className="Congratulations Wrapper">
@@ -22,18 +33,22 @@ const Congratulations = ({ redirector: { redirectToLogin } }) => {
       </div>
       <CustomButton
         buttonProps={{
-          onClick: redirectToLogin,
+          onClick: handleLogin,
           className: 'theme-secondary'
         }}
         buttonText={t('registration.congratulations.login')}
+        loading={loading}
+        LoadingComponent={LoadingComponent}
       />
     </div>
   );
 };
 
+const LoadingComponent = () => <PulseLoader loading size={6} color="#000000" />;
+
 Congratulations.propTypes = {
   redirector: PropTypes.shape({
-    redirectToLogin: PropTypes.func
+    redirectToHome: PropTypes.func
   }).isRequired
 };
 

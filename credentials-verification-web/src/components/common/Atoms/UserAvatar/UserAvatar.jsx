@@ -1,14 +1,14 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Avatar, Col } from 'antd';
 import SettingsMenu from '../SettingsMenu/SettingsMenu';
+import { getInitials } from '../../../../helpers/genericHelpers';
+import { useSession } from '../../../providers/SessionContext';
 
 import './_style.scss';
-import { ORGANISATION_NAME } from '../../../../helpers/constants';
-import { getInitials } from '../../../../helpers/genericHelpers';
 
-const UserAvatar = ({ lockWallet }) => {
-  const organisationName = localStorage.getItem(ORGANISATION_NAME);
+const UserAvatar = () => {
+  const { session, logout } = useSession();
+  const organisationName = session?.organisationName;
 
   return (
     <Col lg={6} className="UserAvatar">
@@ -18,13 +18,9 @@ const UserAvatar = ({ lockWallet }) => {
         </Avatar>
         <p className="UserLabel">{organisationName}</p>
       </div>
-      <SettingsMenu lockWallet={lockWallet} />
+      <SettingsMenu logout={logout} />
     </Col>
   );
-};
-
-UserAvatar.propTypes = {
-  lockWallet: PropTypes.func.isRequired
 };
 
 export default UserAvatar;

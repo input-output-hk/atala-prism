@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PulseLoader } from 'react-spinners';
 import PropTypes from 'prop-types';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import preloginLogo from '../../images/atala-logo-loading.svg';
-
-import './_style.scss';
 import { withRedirector } from '../providers/withRedirector';
 import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelector';
+import { useSession } from '../providers/SessionContext';
 
-const Landing = ({ redirector: { redirectToLogin, redirectToRegistration } }) => {
+import './_style.scss';
+
+const Landing = ({ redirector: { redirectToRegistration } }) => {
   const { t } = useTranslation();
+  const { login } = useSession();
+
+  const [loading, setLoading] = useState();
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      await login();
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="LandingContainer">
@@ -21,6 +36,7 @@ const Landing = ({ redirector: { redirectToLogin, redirectToRegistration } }) =>
         <div className="WelcomeText">
           <h3>{t('landing.welcome')}</h3>
         </div>
+
         <div className="LandingOptions">
           <CustomButton
             buttonProps={{
@@ -30,8 +46,10 @@ const Landing = ({ redirector: { redirectToLogin, redirectToRegistration } }) =>
             buttonText={t('landing.register')}
           />
           <CustomButton
-            buttonProps={{ className: 'theme-secondary', onClick: redirectToLogin }}
+            buttonProps={{ className: 'theme-secondary', onClick: handleLogin }}
             buttonText={t('landing.login')}
+            loading={loading}
+            LoadingComponent={LoadingComponent}
           />
         </div>
       </div>
@@ -39,9 +57,11 @@ const Landing = ({ redirector: { redirectToLogin, redirectToRegistration } }) =>
   );
 };
 
+const LoadingComponent = () => <PulseLoader loading size={6} color="#000000" />;
+
 Landing.propTypes = {
   redirector: PropTypes.shape({
-    redirectToLogin: PropTypes.func
+    redirectToRegistration: PropTypes.func
   }).isRequired
 };
 

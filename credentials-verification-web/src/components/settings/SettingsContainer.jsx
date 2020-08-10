@@ -55,8 +55,11 @@ const SettingsContainer = ({ api: { getSettings, editSettings } }) => {
   );
 };
 
-Settings.propTypes = {
-  api: PropTypes.shape({ getSettings: PropTypes.func, editSettings: PropTypes.func }).isRequired
+SettingsContainer.propTypes = {
+  api: PropTypes.shape({
+    getSettings: PropTypes.func,
+    editSettings: PropTypes.func
+  }).isRequired
 };
 
 export default withApi(SettingsContainer);

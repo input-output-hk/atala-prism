@@ -521,6 +521,7 @@
     "emptyCredential": "Trying to save empty credential",
     "invalidCredential": "The credential has invalid fields",
     "walletNotRunning": "You must have the browser wallet extension installed",
+    "walletNotLogged": "You must login in with the browser wallet extension",
     "walletNotRegistered": "You must register your organization using your browser wallet",
     "errorDuringRegister": "An error ocurred while registering, please try again or contact the FAQs",
     "form": {

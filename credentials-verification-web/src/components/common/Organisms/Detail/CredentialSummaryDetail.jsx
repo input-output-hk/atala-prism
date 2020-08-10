@@ -4,12 +4,15 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CredentialSummaryData from '../../Atoms/CredentialData/CredentialSummaryData';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-import { drawerWidth, VERIFIER, USER_ROLE, ORGANISATION_NAME } from '../../../../helpers/constants';
+import { drawerWidth, VERIFIER } from '../../../../helpers/constants';
+import { useSession } from '../../../providers/SessionContext';
 
 const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
   const { t } = useTranslation();
-  const role = localStorage.getItem(USER_ROLE);
-  const university = localStorage.getItem(ORGANISATION_NAME);
+  const { session } = useSession();
+
+  const role = session.userRole;
+  const university = session.organizationName;
 
   return (
     <Drawer placement="right" width={drawerWidth} destroyOnClose {...drawerInfo}>

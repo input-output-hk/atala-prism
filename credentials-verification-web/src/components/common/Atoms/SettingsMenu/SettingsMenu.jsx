@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Menu, Dropdown, Icon, Col, message } from 'antd';
-import { useHistory } from 'react-router-dom';
+import { Menu, Dropdown, Icon, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../CustomButton/CustomButton';
 
@@ -21,14 +20,8 @@ const menu = (handleLogout, logoutText) => (
   </Menu>
 );
 
-const SettingsMenu = ({ lockWallet }) => {
-  const history = useHistory();
+const SettingsMenu = ({ logout }) => {
   const { t } = useTranslation();
-
-  const logout = () =>
-    lockWallet()
-      .then(() => history.push('/'))
-      .catch(() => message.error(t('errors.logout')));
 
   return (
     <Col className="SettingsMenu RightSide" xs={2} sm={2} md={2} lg={2}>
@@ -42,7 +35,7 @@ const SettingsMenu = ({ lockWallet }) => {
 };
 
 SettingsMenu.propTypes = {
-  lockWallet: PropTypes.func.isRequired
+  logout: PropTypes.func.isRequired
 };
 
 export default SettingsMenu;

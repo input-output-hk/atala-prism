@@ -1,45 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Landing from '../landing/Landing';
 import Dashboard from '../dashboard/Dashboard';
 import Loading from '../common/Atoms/Loading/Loading';
 import { withSideBar } from './withSideBar';
 import { withApi } from './withApi';
-import { USER_ROLE, UNLOCKED } from '../../helpers/constants';
+import { useSession } from './SessionContext';
+import { LOADING, UNLOCKED } from '../../helpers/constants';
 
 const withLoggedValidationComponent = (Component, validRoles) => props => {
   const DashboardWithSidebar = withSideBar(Dashboard);
-  const {
-    api: { wallet }
-  } = props;
 
-  const [loading, setLoading] = useState(true);
-  const [walletSessionIsValid, setWalletSessionIsValid] = useState();
+  const { session } = useSession();
 
-  useEffect(() => {
-    const isWalletRequired = !!validRoles.length;
-
-    const fetchSession = async () => {
-      const session = await wallet.getSession({ timeout: 5000 });
-      const sessionIsValid = session?.sessionState === UNLOCKED;
-      setLoading(false);
-      setWalletSessionIsValid(sessionIsValid);
-    };
-
-    if (isWalletRequired) fetchSession();
-    else setLoading(false);
-  }, []);
-
-  if (loading) return <Loading />;
+  if (session?.sessionState === LOADING) return <Loading />;
 
   // Here is where the validations are made
-  const role = localStorage.getItem(USER_ROLE);
+  const role = session?.userRole;
   const userHasRole = !!role;
+  const walletSessionIsValid = session?.sessionState === UNLOCKED;
 
   const canRender = () => {
     // The wallet is required to be unlocked only if any role is required for
     // the route.
     const isWalletRequired = !!validRoles.length;
-
     // If the route is public, aka does not require the wallet being unlocked,
     // it needs only the wallet to be locked or no role to be in the local
     // storage to show it, since it means no user is logged.

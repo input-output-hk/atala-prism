@@ -65,32 +65,21 @@ export const ANY = 'any';
 export const INVALID_TYPE = 'invalidType';
 export const TOO_LARGE = 'tooLarge';
 
-// Session storage item names
-export const SESSION_ID = 'sessionId';
-export const SESSION_STATE = 'sessionState';
-
 // Local storage item names
-export const USER_ROLE = 'userRole';
-export const ORGANISATION_NAME = 'organisationName';
-export const LOGO = 'logo';
+export const SESSION = 'session';
 export const DEFAULT_LANGUAGE = 'defaultLanguage';
-export const USER_ID = 'userId';
 
 // Roles
 export const VERIFIER = 'VERIFIER';
 export const ISSUER = 'ISSUER';
 
 // Wallet
-export const MISSING_WALLET_ERROR = 'Wallet cannot be Unlocked';
+export const LOADING = 'LOADING';
 export const UNLOCKED = 'UNLOCKED';
 export const LOCKED = 'LOCKED';
-
-const WalletStatuses = {
-  1: UNLOCKED,
-  2: LOCKED
-};
-
-export const translateStatus = status => WalletStatuses[status];
+export const MISSING_WALLET_ERROR = Error('errors.walletNotRunning');
+export const WALLET_NOT_LOGGED_ERROR = Error('errors.walletNotLogged');
+export const WALLET_NOT_REGISTERED_ERROR = Error('errors.walletNotRegistered');
 
 // Connection status
 export const CONNECTION_ACCEPTED = 2;

@@ -1,8 +1,6 @@
-import { LOGO } from './constants';
-
 const firstLetterAsUpperCase = word => customUpperCase(word.charAt(0));
 
-export const getInitials = name => {
+export const getInitials = (name = '') => {
   const words = name.split(' ');
 
   const initials = words.reduce((accumulator, nextWord) => {
@@ -14,7 +12,7 @@ export const getInitials = name => {
   return initials;
 };
 
-export const getLogoAsBase64 = () => `data:image/png;base64,${localStorage.getItem(LOGO)}`;
+export const getLogoAsBase64 = logo => `data:image/png;base64,${logo}`;
 
 export const getLastArrayElementOrEmpty = array => (array.length ? array[array.length - 1] : {});
 

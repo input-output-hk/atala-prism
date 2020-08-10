@@ -5,9 +5,10 @@ import moment from 'moment';
 import TemplateForm from '../TemplateForm/TemplateForm';
 import CredentialSummaryData from '../../../common/Atoms/CredentialData/CredentialSummaryData';
 import { dayMonthYearFormatter } from '../../../../helpers/formatters';
+import { getLogoAsBase64 } from '../../../../helpers/genericHelpers';
+import { useSession } from '../../../providers/SessionContext';
 
 import './_style.scss';
-import { getLogoAsBase64 } from '../../../../helpers/genericHelpers';
 
 const NewCredentialCreation = ({
   savePicture,
@@ -21,7 +22,9 @@ const NewCredentialCreation = ({
   const formattedStartDate = startDate && dayMonthYearFormatter(moment(startDate));
   const formattedGraduationDate = graduationDate && dayMonthYearFormatter(moment(graduationDate));
 
-  const logo = getLogoAsBase64();
+  const { session } = useSession();
+  const userLogo = session.logo;
+  const logo = getLogoAsBase64(userLogo);
 
   const formattedData = Object.assign({}, credentialData, {
     startDate: formattedStartDate,

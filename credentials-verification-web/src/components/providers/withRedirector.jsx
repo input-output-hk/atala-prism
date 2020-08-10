@@ -6,11 +6,11 @@ export const withRedirector = Component => props => {
 
   const redirectTo = route => history.push(`/${route}`);
 
+  const redirectToHome = () => history.push('/');
+
   const redirectToNewCredential = () => redirectTo('newCredential');
 
   const redirectToRegistration = () => redirectTo('registration');
-
-  const redirectToLogin = () => redirectTo('login');
 
   const redirectToCredentials = () => redirectTo('credentials');
 
@@ -27,9 +27,9 @@ export const withRedirector = Component => props => {
   const redirectToGroups = () => redirectTo('groups');
 
   const redirector = {
+    redirectToHome,
     redirectToNewCredential,
     redirectToRegistration,
-    redirectToLogin,
     redirectToCredentials,
     redirectToConnections,
     redirectToBulkImport,

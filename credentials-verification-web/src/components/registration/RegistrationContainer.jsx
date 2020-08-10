@@ -5,10 +5,9 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import DocumentAcceptation from './Molecules/DocumentAcceptation/DocumentAcceptation';
 import Registration from './Registration';
-import { withApi } from '../providers/withApi';
 import DownloadWallet from './Molecules/DownloadWallet/DownloadWallet';
 import Congratulations from './Atoms/Congratulations/Congratulations';
-import { LOCKED, UNLOCKED } from '../../helpers/constants';
+import { useSession } from '../providers/SessionContext';
 
 const TERMS_AND_CONDITIONS_STEP = 0;
 const PRIVACY_POLICY_STEP = 1;
@@ -17,6 +16,7 @@ const STEP_QUANTITY = 3;
 
 const RegistrationContainer = ({ api }) => {
   const { t } = useTranslation();
+  const { verifyRegistration } = useSession();
 
   const { getTermsAndConditions, getPrivacyPolicy } = api;
 
@@ -44,22 +44,15 @@ const RegistrationContainer = ({ api }) => {
   const nextStep = () => setCurrentStep(currentStep + 1);
 
   const nextIfUserRegistered = async () => {
-    const { wallet } = api;
-
-    const isUnlocked = session => session?.sessionState === UNLOCKED;
-    const isLocked = session => session?.sessionState === LOCKED;
-
-    setDisableNextButton(true);
-    const session = await wallet.getSession();
-    setDisableNextButton(false);
-
-    if (isUnlocked(session)) {
+    try {
+      setDisableNextButton(true);
+      await verifyRegistration();
       setWalletError(null);
       nextStep();
-    } else if (isLocked(session)) {
-      setWalletError(new Error('errors.walletNotRegistered'));
-    } else {
-      setWalletError(new Error('errors.walletNotRunning'));
+    } catch (error) {
+      setWalletError(error);
+    } finally {
+      setDisableNextButton(false);
     }
   };
 
@@ -126,13 +119,10 @@ RegistrationContainer.propTypes = {
   api: PropTypes.shape({
     getTermsAndConditions: PropTypes.func.isRequired,
     getPrivacyPolicy: PropTypes.func.isRequired,
-    wallet: PropTypes.shape({
-      getSession: PropTypes.func.isRequired
-    }).isRequired,
     connector: PropTypes.shape({
       registerUser: PropTypes.func.isRequired
     }).isRequired
   }).isRequired
 };
 
-export default withApi(RegistrationContainer);
+export default RegistrationContainer;

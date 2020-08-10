@@ -4,12 +4,15 @@ import PropTypes from 'prop-types';
 import { Icon } from 'antd';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../../../providers/withRedirector';
+import { useSession } from '../../../providers/SessionContext';
+import { ISSUER } from '../../../../helpers/constants';
 
 const AddUsersButtons = ({
-  isIssuer,
   redirector: { redirectToBulkImport, redirectToStudentCreation, redirectToIndividualCreation }
 }) => {
   const { t } = useTranslation();
+  const { session } = useSession();
+  const isIssuer = () => session.userRole === ISSUER;
 
   return (
     <div className="ControlButtons">
@@ -35,7 +38,6 @@ const AddUsersButtons = ({
 };
 
 AddUsersButtons.propTypes = {
-  isIssuer: PropTypes.func.isRequired,
   redirector: PropTypes.shape({
     redirectToBulkImport: PropTypes.func,
     redirectToStudentCreation: PropTypes.func,

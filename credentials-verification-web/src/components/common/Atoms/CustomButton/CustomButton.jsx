@@ -10,16 +10,18 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ icon, buttonText, buttonProps }) => (
-  <Button {...buttonProps}>
+const CustomButton = ({ icon, buttonText, buttonProps, loading, LoadingComponent }) => (
+  <Button {...buttonProps} disabled={loading}>
     {icon && icon}
-    {buttonText}
+    {loading ? <LoadingComponent /> : buttonText}
   </Button>
 );
 
 CustomButton.defaultProps = {
   buttonText: '',
-  icon: null
+  icon: null,
+  loading: false,
+  LoadingComponent: null
 };
 
 CustomButton.propTypes = {
@@ -35,7 +37,9 @@ CustomButton.propTypes = {
     onClick: PropTypes.func
   }).isRequired,
   buttonText: PropTypes.string,
-  icon: PropTypes.element
+  icon: PropTypes.element,
+  loading: PropTypes.bool,
+  LoadingComponent: PropTypes.oneOfType([PropTypes.node, PropTypes.func])
 };
 
 export default CustomButton;

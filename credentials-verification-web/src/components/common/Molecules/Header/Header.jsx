@@ -1,21 +1,21 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import UserAvatar from '../../Atoms/UserAvatar/UserAvatar';
-import { withApi } from '../../../providers/withApi';
 import { getLogoAsBase64 } from '../../../../helpers/genericHelpers';
 import LanguageSelector from '../LanguageSelector/LanguageSelector';
-import { theme } from '../../../../helpers/themeHelper';
+import { getThemeByRole } from '../../../../helpers/themeHelper';
+import { useSession } from '../../../providers/SessionContext';
 
 import './_style.scss';
 
-const Header = ({ api: { wallet } }) => {
-  const userLogo = getLogoAsBase64();
+const Header = () => {
   const { t } = useTranslation();
+  const { session } = useSession();
 
-  // This wrapper is necessary to preserve lockWallet context
-  const lockWallet = async () => wallet.lockWallet();
+  const userLogo = getLogoAsBase64(session.logo);
+
+  const theme = getThemeByRole(session.userRole);
 
   return (
     <Row type="flex" align="middle" className={`HeaderContainer ${theme.class()}`}>
@@ -33,19 +33,11 @@ const Header = ({ api: { wallet } }) => {
           src={userLogo || 'icon-free-university.svg'}
           alt="Free University Tbilisi"
         />
-        <UserAvatar lockWallet={lockWallet} />
+        <UserAvatar />
         <LanguageSelector />
       </Col>
     </Row>
   );
 };
 
-Header.propTypes = {
-  api: PropTypes.shape({
-    wallet: PropTypes.shape({
-      lockWallet: PropTypes.func.isRequired
-    }).isRequired
-  }).isRequired
-};
-
-export default withApi(Header);
+export default Header;

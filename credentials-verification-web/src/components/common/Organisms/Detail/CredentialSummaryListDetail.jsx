@@ -7,9 +7,10 @@ import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import Connection from '../../../credentialSummaries/Molecules/Connection/ConnectionSummary';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import defaultIcon from '../../../../images/holder-default-avatar.svg';
+import CredentialSummaryDetail from './CredentialSummaryDetail';
+import { useSession } from '../../../providers/SessionContext';
 
 import './_style.scss';
-import CredentialSummaryDetail from './CredentialSummaryDetail';
 
 const CredentialSummaryListDetail = ({ user, credentials, date }) => {
   const { icon, fullname } = user;
@@ -18,7 +19,8 @@ const CredentialSummaryListDetail = ({ user, credentials, date }) => {
   const [connectionInfo, setConnectionInfo] = useState();
 
   const genExtra = () => <Icon type="caret-down" />;
-  const role = localStorage.getItem('role');
+  const { session } = useSession();
+  const role = session.userRole;
 
   return (
     <div className="CredentialSummaryDetail">

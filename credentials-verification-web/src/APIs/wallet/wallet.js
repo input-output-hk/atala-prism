@@ -1,139 +1,20 @@
 import { v4 as uuidv4 } from 'uuid';
 import { fromByteArray } from 'base64-js';
-import { WalletServicePromiseClient } from '../../protos/wallet_api_grpc_web_pb';
-import Logger from '../../helpers/Logger';
 import { retry } from '../../helpers/promises';
 
 import {
-  ISSUER,
-  VERIFIER,
   UNLOCKED,
   LOCKED,
   BROWSER_WALLET_CHECK_INTERVAL_MS,
-  BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS,
+  VERIFIER,
+  ISSUER,
+  MISSING_WALLET_ERROR,
+  WALLET_NOT_LOGGED_ERROR
 } from '../../helpers/constants';
 
-const {
-  CreateWalletRequest,
-  GetDIDRequest,
-  LockWalletRequest,
-  UnlockWalletRequest,
-  GetWalletStatusRequest,
-  SignMessageRequest
-} = require('../../protos/wallet_api_pb');
-
-async function getDid() {
-  const didRequest = new GetDIDRequest();
-
-  const response = await this.client.getDID(didRequest, {});
-
-  const { did } = response.toObject();
-
-  return did;
-}
-
-function createAndPopulateRequest({ passphrase, organisationName, role, file }) {
-  const createWalletRequest = new CreateWalletRequest();
-  const binaryFile = new Uint8Array(file);
-
-  const roleDictionary = {
-    ISSUER: 0,
-    VERIFIER: 1
-  };
-
-  createWalletRequest.setPassphrase(passphrase);
-  createWalletRequest.setOrganisationname(organisationName);
-  createWalletRequest.setRole(roleDictionary[role]);
-  createWalletRequest.setLogo(binaryFile);
-
-  return createWalletRequest;
-}
-
-async function createWallet(passphrase, organisationName, role, file) {
-  try {
-    const createWalletRequest = createAndPopulateRequest({
-      passphrase,
-      organisationName,
-      role,
-      file
-    });
-
-    const response = await this.client.createWallet(createWalletRequest);
-    return response.getOperation();
-  } catch (e) {
-    Logger.info('Error at wallet creation', e);
-    throw new Error(e);
-  }
-}
-
-async function getWalletStatus() {
-  return window.prism.getWalletStatus();
-}
-
-function cleanUserData(configs) {
-  configs.userRole.remove();
-  configs.organizationName.remove();
-  configs.logo.remove();
-}
-
-async function lockWallet() {
-  const lockRequest = new LockWalletRequest();
-  await this.client.lockWallet(lockRequest, null);
-
-  cleanUserData(this.config);
-}
-
-function setUserData({ role, organisationname, logo }, configs) {
-  const logoBase64 = fromByteArray(logo);
-  configs.userRole.set(role);
-  configs.organizationName.set(organisationname);
-  configs.logo.set(logoBase64);
-}
-
-function setSessionData({ sessionId, sessionState }, configs) {
-  configs.sessionId.set(sessionId);
-  configs.sessionState.set(sessionState);
-}
-
-async function unlockWallet(passphrase) {
-  const unlockRequest = new UnlockWalletRequest();
-  unlockRequest.setPassphrase(passphrase);
-  const unlockResponse = await this.client.unlockWallet(unlockRequest, null);
-  setUserData(unlockResponse.toObject(), this.config);
-
-  return this.getWalletStatus();
-}
-
-// TODO: When registering as issuer and then as verifier, the role is not updated.
-function isIssuer() {
-  return this.config.userRole.get() === ISSUER;
-}
-
-function getNonce() {
-  const buffer = [];
-  uuidv4(null, buffer);
-  return Uint8Array.from(buffer);
-}
-
-function signMessage(unsignedRequest, nonce) {
-  const requestBytes = unsignedRequest.serializeBinary();
-  const toSign = new Uint8Array(nonce.length + requestBytes.length);
-  toSign.set(nonce);
-  toSign.set(requestBytes, nonce.length);
-  const request = new SignMessageRequest();
-  request.setMessage(toSign);
-  return this.client.signMessage(request, null);
-}
-
-function getStoredSession() {
-  return {
-    sessionId: this.config.sessionId.get(),
-    sessionState: this.config.sessionState.get()
-  };
-}
-
-function getSessionFromExtension(ms) {
-  return Promise.race([this.repeatGetSessionRequest(), timeoutPromise(ms)]);
+function getSessionFromExtension({ timeout = BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } = {}) {
+  return Promise.race([this.repeatGetSessionRequest(), timeoutPromise(timeout)]);
 }
 
 function repeatGetSessionRequest() {
@@ -143,22 +24,8 @@ function repeatGetSessionRequest() {
 
 const timeoutPromise = ms =>
   new Promise(resolve => {
-    setTimeout(resolve, ms);
+    setTimeout(resolve, ms, { error: MISSING_WALLET_ERROR });
   });
-
-function getSession({ timeout = BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } = {}) {
-  const session = this.getStoredSession();
-
-  if (!sessionIsValid(session)) {
-    return this.getSessionFromExtension(timeout);
-  }
-
-  return session;
-}
-
-function sessionIsValid(session) {
-  return session?.sessionState === UNLOCKED;
-}
 
 function getSessionRequest() {
   return new Promise((resolve, reject) => {
@@ -169,46 +36,101 @@ function getSessionRequest() {
     extensionApi
       .login()
       .then(session => {
-        const sessionParams = {
-          sessionId: session.sessionId,
-          sessionState: UNLOCKED
-        };
-        const userParams = {
-          role: session.role?.toUpperCase(),
-          organisationname: session.name,
-          logo: session.logo
-        };
-        setSessionData(sessionParams, this.config);
-        setUserData(userParams, this.config);
-        resolve(sessionParams);
+        if (isValidSession(session)) {
+          const newSessionState = this.setSessionState(session);
+          resolve({ sessionData: newSessionState, error: null });
+        } else resolve({ error: WALLET_NOT_LOGGED_ERROR });
       })
       .catch(error => {
-        const sessionParams = {
-          sessionId: null,
-          sessionState: LOCKED
-        };
-        setSessionData(sessionParams, this.config);
-        resolve(sessionParams);
+        resolve({ error: WALLET_NOT_LOGGED_ERROR });
       });
   });
 }
 
-function Wallet(config) {
-  this.config = config;
+function isValidSession(session) {
+  // TODO: improve token validation?
+  return !!session.sessionId;
 }
 
-Wallet.prototype.getDid = getDid;
-Wallet.prototype.createWallet = createWallet;
-Wallet.prototype.getWalletStatus = getWalletStatus;
-Wallet.prototype.lockWallet = lockWallet;
-Wallet.prototype.unlockWallet = unlockWallet;
+function verifyRegistration() {
+  return new Promise((resolve, reject) => {
+    const extensionApi = window.prism;
+
+    if (!extensionApi) reject(MISSING_WALLET_ERROR);
+
+    extensionApi
+      .login()
+      .then(session => {
+        if (isValidSession(session)) {
+          resolve();
+        } else reject(WALLET_NOT_LOGGED_ERROR);
+      })
+      .catch(error => {
+        reject(WALLET_NOT_LOGGED_ERROR);
+      });
+  });
+}
+
+function setSessionState(sessionData) {
+  this.session = {
+    sessionId: sessionData?.sessionId,
+    sessionState: UNLOCKED,
+    userRole: sessionData.role?.toUpperCase(),
+    organisationName: sessionData.name,
+    logo: fromByteArray(sessionData.logo)
+  };
+
+  return this.session;
+}
+
+function clearSession() {
+  this.session = defaultSessionState;
+  return this.session;
+}
+
+function isIssuer() {
+  return this.session.userRole === ISSUER;
+}
+
+function isVerifier() {
+  return this.session.userRole === VERIFIER;
+}
+
+function getNonce() {
+  const buffer = [];
+  uuidv4(null, buffer);
+  return Uint8Array.from(buffer);
+}
+
+async function signMessage(unsignedRequest) {
+  const { sessionId } = this.session;
+
+  const requestBytes = unsignedRequest.serializeBinary();
+  return window.prism.signConnectorRequest(sessionId, requestBytes);
+}
+
+function Wallet(config) {
+  this.config = config;
+  this.session = defaultSessionState;
+}
+
+const defaultSessionState = {
+  sessionId: null,
+  sessionState: LOCKED,
+  role: null,
+  organisationname: null,
+  logo: null
+};
+
+Wallet.prototype.getSessionFromExtension = getSessionFromExtension;
+Wallet.prototype.repeatGetSessionRequest = repeatGetSessionRequest;
+Wallet.prototype.getSessionRequest = getSessionRequest;
+Wallet.prototype.verifyRegistration = verifyRegistration;
+Wallet.prototype.setSessionState = setSessionState;
+Wallet.prototype.clearSession = clearSession;
 Wallet.prototype.isIssuer = isIssuer;
+Wallet.prototype.isVerifier = isVerifier;
 Wallet.prototype.getNonce = getNonce;
 Wallet.prototype.signMessage = signMessage;
-Wallet.prototype.getStoredSession = getStoredSession;
-Wallet.prototype.getSession = getSession;
-Wallet.prototype.getSessionFromExtension = getSessionFromExtension;
-Wallet.prototype.getSessionRequest = getSessionRequest;
-Wallet.prototype.repeatGetSessionRequest = repeatGetSessionRequest;
 
 export default Wallet;

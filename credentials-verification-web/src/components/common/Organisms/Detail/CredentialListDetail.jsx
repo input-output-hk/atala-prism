@@ -12,6 +12,7 @@ import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import CredentialDetail from './CredentialDetail';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 import { withRedirector } from '../../../providers/withRedirector';
+import { useSession } from '../../../providers/SessionContext';
 
 import './_style.scss';
 
@@ -23,10 +24,12 @@ const CredentialListDetail = ({
 }) => {
   const { t } = useTranslation();
 
+  const { session } = useSession();
+  const role = session.userRole;
+
   const [connectionInfo, setConnectionInfo] = useState();
 
   const genExtra = () => <Icon type="caret-down" />;
-  const role = localStorage.getItem('userRole');
 
   const hasCredentials = !!transactions.length;
 

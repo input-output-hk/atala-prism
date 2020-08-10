@@ -14,7 +14,12 @@ import { toProtoDate } from './helpers';
 import { getCredentialSummaries } from './credentialSummaries';
 import { getPayments, getCurrencies, getAmounts } from './payments';
 import { getSettings, editSettings } from './settings';
-import { isWalletUnlocked, getSession } from './login';
+import {
+  isWalletUnlocked,
+  getSessionFromExtension,
+  clearSession,
+  verifyRegistration
+} from './login';
 import { isAdminSupported, populateDemoDataset } from './admin';
 
 // TODO update mock api.
@@ -48,6 +53,8 @@ export const mockApi = {
   populateDemoDataset,
   wallet: {
     isWalletUnlocked,
-    getSession
+    getSessionFromExtension,
+    clearSession,
+    verifyRegistration
   }
 };

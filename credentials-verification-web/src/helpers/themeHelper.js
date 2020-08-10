@@ -1,9 +1,8 @@
 import { ISSUER } from './constants';
-import { config } from './config';
 
-const isIssuer = () => config.userRole() === ISSUER;
+const isIssuer = role => role === ISSUER;
 
-export const theme = {
-  class: () => (isIssuer() ? 'IssuerUser' : 'VerifierUser'),
-  title: () => (isIssuer() ? 'theme.title.issuer' : 'theme.title.verifier')
-};
+export const getThemeByRole = role => ({
+  class: () => (isIssuer(role) ? 'IssuerUser' : 'VerifierUser'),
+  title: () => (isIssuer(role) ? 'theme.title.issuer' : 'theme.title.verifier')
+});

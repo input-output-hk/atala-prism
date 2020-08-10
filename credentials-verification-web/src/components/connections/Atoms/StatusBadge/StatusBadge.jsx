@@ -2,15 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { connectionStatusesKeysShape } from '../../../../helpers/propShapes';
-import { USER_ROLE, ISSUER } from '../../../../helpers/constants';
+import { ISSUER } from '../../../../helpers/constants';
 
 import './_style.scss';
+import { useSession } from '../../../providers/SessionContext';
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
   const classname = `Label ${status}`;
 
-  const role = localStorage.getItem(USER_ROLE);
+  const { session } = useSession();
+  const role = session.userRole;
+
   const defaultStatus = role === ISSUER ? 'invitationMissing' : 'created';
   const lowerCaseRole = role.toLowerCase();
 

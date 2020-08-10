@@ -2,7 +2,6 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import Dashboard from './dashboard/Dashboard';
 import Landing from './landing/Landing';
-import Login from './login/LoginContainer';
 import I18nError from './I18nError';
 import Connections from './connections/ConnectionsContainer';
 import Registration from './registration/RegistrationContainer';
@@ -26,12 +25,6 @@ const verifier = [VERIFIER];
 const allRoles = [ISSUER, VERIFIER];
 const noRole = [];
 
-const loginRoute = {
-  exact: true,
-  path: '/login',
-  key: '/login',
-  component: withLoggedValidation(Login, noRole)
-};
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 
 const connections = {
@@ -125,7 +118,6 @@ const groupCreationRoute = {
 
 const routes = [
   adminRoute,
-  loginRoute,
   errorRoute,
   connections,
   groupCreationRoute,
