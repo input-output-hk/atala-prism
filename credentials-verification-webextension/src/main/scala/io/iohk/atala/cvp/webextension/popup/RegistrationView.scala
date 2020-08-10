@@ -17,7 +17,7 @@ import scala.util.{Failure, Success}
 class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
   def registrationScreen(divElement: Div): Unit = {
-
+    console.info("**************************organisationScreen*****************************")
     val mnemonic = Mnemonic()
     val seedDiv: Div = div(cls := "words_container").render
     mnemonic.seed.split(" ").zipWithIndex.map { w =>
@@ -64,6 +64,12 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
           label(cls := "_label")("Confirm Password: "),
           div(cls := "input__container")(
             password2Input
+          )
+        ),
+        div(cls := "div__field_group")(
+          label(cls := "_label")("Organization Name"),
+          div(cls := "input__container")(
+            orgNameInput
           )
         ),
         div(cls := "div__field_group")(
@@ -146,8 +152,8 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
                 orgNameInput.value,
                 arrayBytes
               )
-              .flatMap { _ =>
-                MainWalletView(backgroundAPI).mainWalletScreen(divElement)
+              .map { _ =>
+                WelcomeWalletView(backgroundAPI).registerWelcomeScreen(divElement)
               }
               .onComplete {
                 case Success(_) => ()
@@ -168,8 +174,8 @@ class RegistrationView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionConte
               orgNameInput.value,
               new Array[Byte](0)
             )
-            .flatMap { _ =>
-              MainWalletView(backgroundAPI).mainWalletScreen(divElement)
+            .map { _ =>
+              WelcomeWalletView(backgroundAPI).registerWelcomeScreen(divElement)
             }
             .onComplete {
               case Success(_) => ()

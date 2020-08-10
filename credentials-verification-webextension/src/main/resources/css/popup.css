@@ -22,7 +22,8 @@
 }
 
 .btn_register,
-.btn_verify {
+.btn_verify,
+.btn_sign {
   margin-bottom: 10px;
   user-select: none;
   cursor: pointer;
@@ -42,7 +43,8 @@
   background-color: #d3000e;
 }
 
-.btn_recover {
+.btn_recover,
+.btn_cancel {
   margin-bottom: 10px;
   user-select: none;
   cursor: pointer;
@@ -128,6 +130,12 @@
   font-size: 14px;
 }
 
+.description_signature {
+  color: #979797;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
 .div_img {
   margin: 70px 0 40px 0;
 }
@@ -142,11 +150,20 @@
 /**** REGISTRATION VIEW *****/
 
 .h3_register,
-.h3_recover,
-.h3_pending {
+.h3_recover {
   color: #ff2d3b;
   font-size: 18px;
   margin: 0;
+}
+.h3_pending {
+  color: #ff2d3b;
+  font-size: 22px;
+  margin: 0;
+}
+.h3_welcome_back {
+  color: #ff2d3b;
+  font-size: 22px;
+  text-align: center;
 }
 
 .h4_register {
@@ -266,15 +283,16 @@ input:focus {
 }
 
 .inputfile + label {
-  font-size: 1.25em;
+  font-size: 14px;
   color: #696969;
-  background-color: #ECE9F8;
-  border: 1px dashed #CAC7D7;
+  background-color: #ece9f8;
+  border: 1px dashed #cac7d7;
   display: inline-block;
   width: 100%;
   height: 30px;
   border-radius: 6px;
   padding-top: 10px;
+  text-align: center;
 }
 
 .inputfile:focus + label,
@@ -282,6 +300,120 @@ input:focus {
   background-color: rgb(179, 179, 179);
 }
 
-.label_unlock{
-    display:none
+.label_unlock {
+  display: none;
+}
+
+.pending_item {
+  background-color: #d3000e;
+}
+
+/**** SIGNATURE REQUEST VIEW *****/
+
+.degree_name_main_container {
+  background-color: #262324;
+  border-radius: 6px 6px 0px 0px;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  align-items: center;
+}
+
+.degree_name {
+  margin: 0;
+  color: #ffffff;
+  opacity: 0.7;
+  font-size: 12px;
+}
+.data {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 7px 0 0 0;
+}
+
+.details_container {
+  border-bottom: 1px solid #f5f5f526;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.details_last_container {
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.data_name {
+  margin: 0;
+  font-size: 9px;
+  line-height: 11px;
+  color: #ffffff;
+  opacity: 0.7;
+}
+
+.data_details {
+  font-weight: 600;
+  font-size: 14px;
+  color: #ffffff;
+  margin: 7px 0 0 0;
+}
+
+.details_main_container {
+  background: #3c393a;
+  box-shadow: 0px 2px 38px rgba(0, 0, 0, 0.153334);
+  border-radius: 0 0 6px 6px;
+  padding: 10px 20px 20px 20px;
+  margin-bottom: 70px;
+}
+
+.img-no-pending {
+  margin-top: 150px;
+}
+
+.welcome_img{
+    margin-top: 100px;
+    display: flex;
+    justify-content: center;
+}
+.welcome_text {
+  text-align: center;
+  color: #17282f;
+  font-size: 22px;
+}
+
+.lock_button {
+  background: white;
+  border: 1px solid #ff2d3b;
+  border-radius: 40px;
+  width: 180px;
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+.lock_button:hover {
+  background: rgba(255, 45, 59, 0.1)
+}
+
+.no-pending-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.txt_lock_button {
+  font-size: 14;
+  color: #17282f;
+  padding-left: 9px;
+}
+
+.welcome_registration_text{
+    margin-bottom: 80px;
+    text-align: center;
+    color: #17282f;
+    font-size: 22px;
 }

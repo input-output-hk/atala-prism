@@ -41,10 +41,10 @@ class MainWalletViewSpec extends AsyncWordSpec with WalletDomSpec with ScalaFutu
           document.body.appendChild(container)
           MainWalletView(backgroundAPI).mainWalletScreen(container).map { _ =>
             val divElement = document
-              .querySelector(".div__btn")
+              .querySelector("#mainView")
               .asInstanceOf[HTMLDivElement]
             divElement must not be null
-            divElement.textContent mustBe "did:prism:sign-me"
+            divElement.textContent mustBe "Signature requestYou have been requested to sign the following credential:"
           }
         }
       }

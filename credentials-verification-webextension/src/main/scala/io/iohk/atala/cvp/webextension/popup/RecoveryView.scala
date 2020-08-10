@@ -13,8 +13,6 @@ import scala.util.{Failure, Success}
 class RecoveryView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
   def recover(divElement: Div) = {
-    console.info("**************************recover*****************************")
-
     val seedPhraseInput =
       input(id := "seedphrase", cls := "seedPhraseContainer", placeholder := "12-words").render
     val passwordInput =
@@ -80,8 +78,8 @@ class RecoveryView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) 
         val mnemonic = Mnemonic(seedPhrase.value)
         backgroundAPI
           .recoverWallet(passwordInput.value, mnemonic)
-          .flatMap { _ =>
-            MainWalletView(backgroundAPI).mainWalletScreen(divElement)
+          .map { _ =>
+            WelcomeWalletView(backgroundAPI).recoverWelcomeScreen(divElement)
           }
           .onComplete {
             case Success(_) => ()

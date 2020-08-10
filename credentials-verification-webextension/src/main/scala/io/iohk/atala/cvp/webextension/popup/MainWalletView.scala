@@ -11,34 +11,65 @@ class MainWalletView(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext
 
   def mainWalletScreen(divElement: Div): Future[Node] = {
 
-    val mainScreen = {
-      div(cls := "status_container", id := "mainView")(
-        h3(cls := "h3_pending")(
-          "Pending request"
-        )
-      )
-    }.render
-
     divElement.clear()
-    divElement.appendChild(mainScreen)
     renderRequests(divElement).map { _ =>
       divElement
     }
   }
 
-  private def renderRequests(divElement: Div): Future[List[Node]] = {
+  private def renderRequests(divElement: Div): Future[Unit] = {
+
+    val cancelButton = div(cls := "btn_cancel", id := "btn_cancel")("Cancel").render
+
     backgroundAPI.getSignatureRequests().map { req =>
-      for (x <- req.requests) yield {
-        val signRequestDiv = div(
-          cls := "div__btn",
-          id := x.id,
-          x.subject.id,
-          onclick := { () =>
-            backgroundAPI.signRequestAndPublish(x.id)
-          }
-        )
-        divElement.appendChild(signRequestDiv.render)
+      if (req.requests.nonEmpty) {
+        for (x <- req.requests) yield {
+          val signRequestDiv = div(
+            cls := "btn_sign",
+            id := x.id,
+            "Sign",
+            onclick := { () =>
+              backgroundAPI.signRequestAndPublish(x.id)
+            }
+          )
+
+          val pendingRequestScreen = {
+            div(cls := "status_container", id := "mainView")(
+              h3(cls := "h3_pending")(
+                "Signature request"
+              ),
+              p(
+                cls := "description_signature",
+                id := "description_signature",
+                "You have been requested to sign the following credential:"
+              )
+            )
+          }.render
+
+          val divSignAndCancel = div(cancelButton, signRequestDiv).render
+          divElement.appendChild(pendingRequestScreen)
+          divElement.appendChild(divSignAndCancel)
+        }
+      } else {
+        val noRequestsScreen = {
+          div(cls := "no-pending-container", id := "mainView")(
+            div(cls := "img-no-pending")(img(src := "/assets/images/img-no-pending.png")),
+            p(cls := "welcome_text")(
+              "There are not pending requests"
+            ),
+            div(cls := "lock_button")(
+              div(cls := "img_lock")(
+                img(src := "/assets/images/padlock.png")
+              ),
+              div(
+                p(cls := "txt_lock_button")("Lock your account")
+              )
+            )
+          )
+        }.render
+        divElement.appendChild(noRequestsScreen)
       }
+
     }
   }
 
