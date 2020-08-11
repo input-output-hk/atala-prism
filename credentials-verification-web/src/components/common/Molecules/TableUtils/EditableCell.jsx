@@ -105,7 +105,7 @@ const EditableCell = ({
     const errorToShow = getError();
 
     return editing ? (
-      <div className={errorToShow ? 'InputWithError' : ''}>
+      <div className={errorToShow ? 'InputWithError' : 'InputWithoutError'}>
         <Form.Item>
           {errorToShow}
           {cellForm.getFieldDecorator(dataIndex, {

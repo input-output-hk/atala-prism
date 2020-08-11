@@ -39,6 +39,7 @@
 .ConnectionsTable {
   .PaginatedTable {
     .ant-table-body {
+      height: 60vh;
       overflow-x: auto !important;
       overflow-y: auto !important;
     }

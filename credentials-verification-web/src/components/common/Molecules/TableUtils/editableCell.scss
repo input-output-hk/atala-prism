@@ -3,12 +3,31 @@
 .ant-form-item-control.has-error {
   .has-error .ant-form-explain,
   .has-error .ant-form-split {
-    @include primary-text(11px, $primary-color);
+    @include primary-text(5px, $primary-color);
     @include letter-spacing();
   }
 }
 
+
+.ant-table {
+  
+  .ant-btn {
+    margin-left: 18px;
+  }
+} 
+
+.ant-table-thead > tr > th {
+  width: 200px;
+}
+
+.InputWithoutError {
+  padding-top: 20px;
+  margin:0;
+}
+
 .InputWithError {
+  width: auto;
+  height: 70px;  
   .ant-form-item-control {
     line-height: 20px;
   }
