@@ -5,12 +5,15 @@ import io.iohk.node.cardano.CardanoClient.Result
 import io.iohk.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.node.cardano.models._
 import io.iohk.node.cardano.wallet.CardanoWalletApiClient
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
 class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiClient: CardanoWalletApiClient)(implicit
     ec: ExecutionContext
 ) {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   def getFullBlock(blockNo: Int): Result[BlockError.NotFound, Block.Full] = {
     cardanoDbSyncClient.getFullBlock(blockNo)
   }
@@ -26,7 +29,10 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
   ): Result[PostTransactionError, TransactionId] = {
     cardanoWalletApiClient
       .postTransaction(walletId, payments, passphrase)
-      .mapLeft(_ => PostTransactionError.InvalidTransaction)
+      .mapLeft(e => {
+        logger.error(s"Could not post the Cardano transaction: $e")
+        PostTransactionError.InvalidTransaction
+      })
   }
 }
 

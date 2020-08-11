@@ -39,7 +39,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
 
   "publishReference" should {
     val reference = SHA256Digest.compute("AtalaObjectReference".getBytes)
-    val expectedWalletApiPath = s"v2/byron-wallets/$walletId/transactions"
+    val expectedWalletApiPath = s"v2/wallets/$walletId/transactions"
 
     "publish a reference" in {
       val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success(

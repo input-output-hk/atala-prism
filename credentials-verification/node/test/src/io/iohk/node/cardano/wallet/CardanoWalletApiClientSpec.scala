@@ -26,7 +26,7 @@ class CardanoWalletApiClientSpec extends WordSpec with ScalaFutures {
       Lovelace(42000000)
     )
     val passphrase = "Secure Passphrase"
-    val expectedPath = s"v2/byron-wallets/$walletId/transactions"
+    val expectedPath = s"v2/wallets/$walletId/transactions"
     val expectedJsonRequest = readResource("postTransaction_request.json")
 
     "post a new transaction" in {

@@ -22,7 +22,7 @@ private[api] object ApiRequest {
       walletId: WalletId,
       payments: List[Payment],
       passphrase: String
-  ) extends ApiRequest(s"v2/byron-wallets/$walletId/transactions", Method.POST) {
+  ) extends ApiRequest(s"v2/wallets/$walletId/transactions", Method.POST) {
     override def requestBody: Json = Json.obj(("payments", payments), ("passphrase", passphrase))
   }
 }

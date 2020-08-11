@@ -28,6 +28,10 @@ class CardanoLedgerService private[services] (
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  // Minimum amount that can be deposited in Cardano, from
+  // https://github.com/input-output-hk/cardano-node/blob/1f0171d96443eaf7a77072397e790b514b670414/configuration/cardano/shelley-genesis.json#L18
+  private val minUtxoDeposit = Lovelace(1000000)
+
   // Schedule the initial sync
   scheduleSync(30.seconds)
 
@@ -36,7 +40,7 @@ class CardanoLedgerService private[services] (
   override def publishReference(ref: SHA256Digest): Future[Unit] = {
     // TODO: Send `ref` as metadata
     cardanoClient
-      .postTransaction(walletId, List(Payment(paymentAddress, Lovelace(1))), walletPassphrase)
+      .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), walletPassphrase)
       .map(_ => ())
       .toFuture(_ => new RuntimeException("Could not publish reference"))
   }

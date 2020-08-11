@@ -18,8 +18,7 @@ class CardanoClientExample extends WordSpec {
   private lazy val clientConfig = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
 
   "CardanoClient example" should {
-    // TODO: Re-enable test
-    "be able to access db sync and wallet" ignore {
+    "be able to access db sync and wallet" in {
       assume(shouldTestCardanoIntegration(), "The integration test was cancelled because it hasn't been configured")
 
       val client = CardanoClient(clientConfig.cardanoClientConfig)
@@ -30,7 +29,7 @@ class CardanoClientExample extends WordSpec {
       client.getLatestBlock().value.futureValue(Timeout(1.minute)).right.value
 
       val payments = List(
-        Payment(Address(address), Lovelace(1))
+        Payment(Address(address), Lovelace(1000000))
       )
 
       client
