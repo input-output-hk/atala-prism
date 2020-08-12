@@ -5,8 +5,6 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import java.util.Date;
-
 @Entity(tableName = "contact", indices = {@Index(value = "connection_id", unique = true)})
 public class Contact {
 
@@ -33,4 +31,6 @@ public class Contact {
 
     @ColumnInfo(name = "user_id")
     public String userId;
+
+    public byte[] logo;
 }

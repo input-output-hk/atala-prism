@@ -6,37 +6,29 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.google.android.material.button.MaterialButton;
-
 import java.util.Objects;
-import java.util.Set;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
-import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.enums.CredentialType;
+import io.iohk.cvp.data.local.db.model.Credential;
 import io.iohk.cvp.utils.CredentialParse;
-import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
-import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
-import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
-import io.iohk.prism.protos.Credential;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -50,12 +42,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     private Credential credential;
 
     private CredentialDto credentialDto;
-
-    @Setter
-    private String connectionId;
-
-    @Setter
-    private String messageId;
 
     @Setter
     private Boolean credentialIsNew;
@@ -169,7 +155,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     private ShareCredentialDialogFragment getShareFragment() {
         ShareCredentialDialogFragment fragment = new ShareCredentialDialogFragment();
         Bundle args = new Bundle();
-        args.putByteArray(IntentDataConstants.CREDENTIAL_DATA_KEY, credential.toByteArray());
+        args.putString(IntentDataConstants.CREDENTIAL_DATA_KEY, credential.credentialDocument);
+        args.putString(IntentDataConstants.CREDENTIAL_TYPE_KEY, credential.credentialType);
+        args.putByteArray(IntentDataConstants.CREDENTIAL_ENCODED_KEY, credential.credentialEncoded.toByteArray());
         fragment.setArguments(args);
 
         return fragment;
@@ -178,15 +166,22 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        fillData(credential, connectionId);
-        saveCredential();
+        fillData(credential);
         return view;
     }
 
-    private void fillData(Credential credential, String connectionId) {
 
-        credentialDto = CredentialParse.parse(credential);
-        if (credential.getTypeId().equals(CredentialType.REDLAND_CREDENTIAL.getValue())) {
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getViewModel().setCredentialViewed(credential);
+    }
+
+    private void fillData(Credential credential) {
+
+        String credentialType = credential.credentialType;
+        credentialDto = CredentialParse.parse(credential.credentialType, credential.credentialDocument);
+        if (credentialType.equals(CredentialType.REDLAND_CREDENTIAL.getValue())) {
 
             goventmentConstraint.setVisibility(View.VISIBLE);
             universityConstraint.setVisibility(View.GONE);
@@ -207,7 +202,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
         } else {
 
-            if (credential.getTypeId().equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
+            if (credentialType.equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
 
                 textViewCredentialType.setText(getResources().getString(R.string.university_name));
                 textViewCredentialName.setText(credentialDto.getIssuer().getName());
@@ -227,7 +222,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
                 layoutUniversityName.setVisibility(View.VISIBLE);
 
-            } else if (credential.getTypeId().equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
+            } else if (credentialType.equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
 
                 textViewCredentialType.setText(getResources().getString(R.string.company_name));
                 textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
@@ -289,15 +284,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
             }
 
-        }
-    }
-
-    private void saveCredential() {
-        Preferences pref = new Preferences(getContext());
-
-        Set<String> acceptedMessagesIds = pref.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-        if(!acceptedMessagesIds.contains(messageId)){
-            pref.saveMessage(messageId, Preferences.ACCEPTED_MESSAGES_KEY);
         }
     }
 

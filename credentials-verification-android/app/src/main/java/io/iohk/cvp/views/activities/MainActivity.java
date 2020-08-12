@@ -25,12 +25,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -51,22 +46,22 @@ import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
-import io.iohk.cvp.views.fragments.MyCredentials;
+import io.iohk.cvp.views.fragments.MyCredentialsFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
-import io.iohk.cvp.views.fragments.SecurityFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
+import io.iohk.cvp.views.interfaces.ConnectionManageable;
+import io.iohk.cvp.views.interfaces.FirebaseEventLogger;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import io.iohk.prism.protos.AddConnectionFromTokenResponse;
-import io.iohk.prism.protos.ConnectionInfo;
 import lombok.Getter;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
-import static io.iohk.cvp.views.fragments.SettingsFragment.SECURITY_SELECTED_TRANSACTION;
+import static io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption.CONTACTS;
 
-public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener {
+public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener, FirebaseEventLogger, ConnectionManageable {
 
     public static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT";
 
@@ -76,7 +71,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     HomeFragment homeFragment;
 
     @Inject
-    MyCredentials myCredentialsFragment;
+    MyCredentialsFragment myCredentialsFragment;
 
     @Inject
     SettingsFragment settingsFragment;
@@ -116,8 +111,6 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     private FirebaseAnalytics mFirebaseAnalytics;
 
-    private List<ConnectionInfo> issuerConnections;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
@@ -126,23 +119,48 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
         bottomAppBar.setListener(this);
         fab.setBackgroundTintList(colorRed);
-        issuerConnections = new ArrayList<>();
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        if (new Preferences(getApplicationContext()).hasUserIdsStored()) {
-            ft.replace(R.id.fragment_layout, homeFragment, MAIN_FRAGMENT_TAG);
-        } else {
-            FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.notifications, issuerConnections);
-            ft.replace(R.id.fragment_layout, f, MAIN_FRAGMENT_TAG);
-        }
-        ft.commit();
+        init();
 
         Preferences prefs = new Preferences(this);
         if(prefs.isPinConfigured())
             navigator.showUnlockScreen(this);
 
+    }
+
+    private void init() {
+        viewModel.getHasConnectionsInitialScreenLiveData().observe(this, asyncTaskResult -> {
+            if(asyncTaskResult.getError() != null) {
+                Crashlytics.logException(asyncTaskResult.getError());
+                return;
+            }
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
+            if(asyncTaskResult.getResult()) {
+                FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.notifications);
+                ft.replace(R.id.fragment_layout, f, MAIN_FRAGMENT_TAG);
+            } else {
+                ft.replace(R.id.fragment_layout, homeFragment, MAIN_FRAGMENT_TAG);
+            }
+            ft.commit();
+        });
+        viewModel.getHasConnectionsMoveToContactLiveData().observe(this, asyncTaskResult -> {
+            if(asyncTaskResult.getError() != null) {
+                Crashlytics.logException(asyncTaskResult.getError());
+                return;
+            }
+
+            if(asyncTaskResult.getResult()) {
+                FirstConnectionFragment firstConnectionFragment = FirstConnectionFragment.newInstance(R.string.contacts);
+                changeFragment(firstConnectionFragment);
+            } else {
+                changeFragment(contactsFragment);
+            }
+        });
+
+        viewModel.checkIfHasConnectionsInitialScreen();
     }
 
     @Override
@@ -181,7 +199,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     private boolean isBottomBarOptionScreen(Fragment currentFragment) {
-        return currentFragment instanceof MyCredentials || currentFragment instanceof ContactsFragment || currentFragment instanceof SettingsFragment || currentFragment instanceof ProfileFragment;
+        return currentFragment instanceof MyCredentialsFragment || currentFragment instanceof ContactsFragment || currentFragment instanceof SettingsFragment || currentFragment instanceof ProfileFragment;
     }
 
     @Override
@@ -193,30 +211,30 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         }
         bottomAppBar.setItemColors(option);
 
+        if(option == CONTACTS) {
+            viewModel.checkIfHasConnectionsMoveToContacts();
+            return;
+        }
+
         getFragmentToRender(option)
                 .ifPresent(cvpFragment -> {
-                    Fragment currentFragment = getCurrentFragment();
-
-                    if (currentFragment instanceof ContactsFragment && cvpFragment instanceof ContactsFragment) {
-                        Set<String> userIds = new HashSet<>();
-                        userIds.add(userId);
-                        ((ContactsFragment) currentFragment).listConnections(userIds);
-                    } else {
-                        String transactionTag = isInitialScreen(currentFragment) ? INITIAL_TRANSACTION : null;
-                        navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG, transactionTag);
-                    }
+                   changeFragment(cvpFragment);
                 });
+    }
+
+    private void changeFragment(CvpFragment cvpFragment) {
+        Fragment currentFragment = getCurrentFragment();
+
+        if (currentFragment instanceof ContactsFragment && cvpFragment instanceof ContactsFragment) {
+            ((ContactsFragment) currentFragment).getViewModel().getAllMessages();
+        } else {
+            String transactionTag = isInitialScreen(currentFragment) ? INITIAL_TRANSACTION : null;
+            navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG, transactionTag);
+        }
     }
 
     private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
         switch (option) {
-            case CONTACTS:
-                if (new Preferences(getApplicationContext()).hasUserIdsStored()) {
-                    return Optional.of(contactsFragment);
-                }
-
-                FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.contacts, issuerConnections);
-                return Optional.of(f);
             case CREDENTIAL:
                 return Optional.of(myCredentialsFragment);
             case HOME:
@@ -226,7 +244,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
             case PROFILE:
                 return Optional.of(profileFragment);
             case FIRSTCONNECTION:
-                FirstConnectionFragment fragment = FirstConnectionFragment.newInstance(R.string.notifications, issuerConnections);
+                FirstConnectionFragment fragment = FirstConnectionFragment.newInstance(R.string.notifications);
                 return Optional.of(fragment);
             default:
                 Crashlytics.logException(
@@ -300,9 +318,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                             return;
                         }
                         AddConnectionFromTokenResponse info = response.getResult();
-                        prefs.addConnection(info);
-                        onNavigation(BottomAppBarOption.CONTACTS, info.getUserId());
-                        bottomAppBar.setItemColors(BottomAppBarOption.CONTACTS);
+                        onNavigation(CONTACTS, info.getUserId());
+                        bottomAppBar.setItemColors(CONTACTS);
                     });
         } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
             Crashlytics.logException(e);
@@ -325,9 +342,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                     return;
                 }
                 AddConnectionFromTokenResponse info = response.getResult();
-                prefs.addConnection(info);
-                onNavigation(BottomAppBarOption.CONTACTS, info.getUserId());
-                bottomAppBar.setItemColors(BottomAppBarOption.CONTACTS);
+                onNavigation(CONTACTS, info.getUserId());
+                bottomAppBar.setItemColors(CONTACTS);
             });
 
         } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
@@ -336,21 +352,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         }
     }
 
-    public void sentFirebaseAnalyticsEvent(String eventName){
+    public void sentFirebaseAnalyticsEvent(String eventName) {
         mFirebaseAnalytics.logEvent(eventName, null);
-    }
-
-    public void setIssuerConnections(List<ConnectionInfo> issuerConnections) {
-        this.issuerConnections.addAll(issuerConnections.stream()
-                .filter(conn -> !this.issuerConnections.contains(conn)).collect(Collectors.toList()));
-    }
-
-    public List<ConnectionInfo> getIssuerConnections() {
-        return this.issuerConnections;
-    }
-
-    public void clearIssueConnections() {
-        this.issuerConnections = new ArrayList<>();
     }
 
     @Override

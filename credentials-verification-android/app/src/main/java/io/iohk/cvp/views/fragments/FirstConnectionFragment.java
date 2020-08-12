@@ -1,6 +1,5 @@
 package io.iohk.cvp.views.fragments;
 
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,8 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -27,7 +24,6 @@ import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
-import io.iohk.prism.protos.ConnectionInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,25 +32,19 @@ import lombok.Setter;
 @NoArgsConstructor
 public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityViewModel> {
 
-    private ViewModelProvider.Factory factory;
+    @Inject
+    ViewModelProvider.Factory factory;
 
     @Getter
     private int idTitle;
 
-    private List<ConnectionInfo> issuerConnections;
 
-    public static FirstConnectionFragment newInstance(int idTitle, List<ConnectionInfo> issuerConnections) {
+    public static FirstConnectionFragment newInstance(int idTitle) {
 
         FirstConnectionFragment instance = new FirstConnectionFragment();
         instance.idTitle = idTitle;
-        instance.issuerConnections = issuerConnections;
 
         return instance;
-    }
-
-    @Inject
-    public FirstConnectionFragment(ViewModelProvider.Factory factory) {
-        this.factory = factory;
     }
 
     @Override
@@ -85,7 +75,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
         if (this.idTitle != 0) {
             return this.idTitle;
         } else {
-          return R.string.notifications;
+            return R.string.notifications;
         }
     }
 

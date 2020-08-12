@@ -83,7 +83,10 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
         recyclerView.setLayoutManager(linearLayoutManagerCredentials);
         recyclerView.setAdapter(adapter);
 
-        liveData = viewModel.getPayments(new Preferences(getContext()).getUserIds());
+        /* TODO - Payment is disabled for the time being,
+             when we have to enabled it again we need to get the data from the database instead shared preferences" */
+
+//        liveData = viewModel.getPayments(new Preferences(getContext()).getUserIds());
 
         if (!liveData.hasActiveObservers()) {
             liveData.observe(this, response -> {

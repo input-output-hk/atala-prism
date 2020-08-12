@@ -5,9 +5,6 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-
-import java.util.Date;
-
 import static androidx.room.ForeignKey.CASCADE;
 
 @Entity(tableName = "credential_history", foreignKeys = @ForeignKey(entity = Credential.class,

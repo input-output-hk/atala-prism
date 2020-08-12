@@ -5,13 +5,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Base64;
 
-import com.google.protobuf.ByteString;
-
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,14 +16,11 @@ import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.core.exception.WrongPinLengthException;
 import io.iohk.cvp.data.local.preferences.SecurityPin;
 import io.iohk.cvp.utils.KeyStoreUtils;
-import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class Preferences {
 
-    public static final String ACCEPTED_MESSAGES_KEY = "accepted_messages";
-    public static final String REJECTED_MESSAGES_KEY = "rejected_messages";
     public static final String USER_PROFILE_NAME = "user_profile_name";
     public static final String USER_PROFILE_COUNTRY = "user_profile_country";
     public static final String USER_PROFILE_BIRTH_DATE = "user_profile_birth_date";
@@ -38,11 +31,6 @@ public class Preferences {
     private static final String MY_PREFS_NAME = "IOHK.ATALA.CREDENTIAL.VERIFICATION";
     private static final String PK_KEY = "wallet_pk";
     private static final String USER_ID_LIST_KEY = "user_id";
-    private static final String CONNECTION_USER_ID_KEY = "connection_id_user_id";
-    private static final String CONNECTION_LOGO_KEY = "connection_logo";
-
-    public static final String PROOF_REQUEST_SHARED_KEY = "proof_request_shared";
-    public static final String PROOF_REQUEST_CANCEL_KEY = "proof_request_cancel";
 
     public static final String SECURITY_PIN = "security_pin";
     public static final String SECURITY_TOUCH_ENABLED = "security_touch_enabled";
@@ -85,30 +73,6 @@ public class Preferences {
         return pk.isPresent();
     }
 
-    public void saveMessage(String messageId, String prefKey) {
-        editStringSet(messageId, prefKey);
-    }
-
-    public Set<String> getStoredMessages(String messageTypeKey) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        return sharedPreferences.getStringSet(messageTypeKey, new HashSet<>());
-    }
-
-    public void saveUserId(String userId) {
-        editStringSet(userId, USER_ID_LIST_KEY);
-    }
-
-    public Set<String> getUserIds() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        return sharedPreferences
-                .getStringSet(USER_ID_LIST_KEY, new HashSet<>());
-    }
-
-    public boolean hasUserIdsStored() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        return !sharedPreferences.getStringSet(USER_ID_LIST_KEY, new HashSet<>()).isEmpty();
-    }
-
     public void saveSecurityPin(SecurityPin pin) {
         editString(pin.getPinString(), SECURITY_PIN);
     }
@@ -140,54 +104,6 @@ public class Preferences {
         editor.apply();
     }
 
-    private void editStringSet(String valueToAdd, String prefKey) {
-        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        Set<String> newItems = new HashSet<>(prefs.getStringSet(prefKey, new HashSet<>()));
-        newItems.add(valueToAdd);
-        Editor editor = prefs.edit();
-        editor.putStringSet(prefKey, newItems);
-        editor.apply();
-    }
-
-    public void saveConnectionWithUser(String connectionId, String userId) {
-        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        Editor editor = prefs.edit();
-        editor.putString(connectionId.concat(CONNECTION_USER_ID_KEY), userId);
-        editor.apply();
-    }
-
-    public Optional<String> getUserIdByConnection(String connectionId) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        return Optional.ofNullable(sharedPreferences
-                .getString(connectionId.concat(CONNECTION_USER_ID_KEY), null));
-    }
-
-    public void saveConnectionWithLogo(String connectionId, ByteString logo) {
-        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        Editor editor = prefs.edit();
-        editor.putString(connectionId.concat(CONNECTION_LOGO_KEY),
-                Base64.encodeToString(logo.toByteArray(), Base64.DEFAULT));
-        editor.apply();
-    }
-
-    public byte[] getConnectionLogo(String connectionId) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        String logoString = sharedPreferences
-                .getString(connectionId.concat(CONNECTION_LOGO_KEY), "");
-
-        return Base64.decode(logoString, Base64.DEFAULT);
-    }
-
-    public void addConnection(AddConnectionFromTokenResponse connectionInfo) {
-        this.saveUserId(connectionInfo.getUserId());
-        this.saveConnectionWithUser(
-                connectionInfo.getConnection().getConnectionId(),
-                connectionInfo.getUserId());
-        this.saveConnectionWithLogo(
-                connectionInfo.getConnection().getConnectionId(),
-                connectionInfo.getConnection().getParticipantInfo().getIssuer().getLogo());
-    }
-
     public void saveUserProfile(String name, String country, String birthDate, String email) {
         SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         Editor editor = prefs.edit();
@@ -202,13 +118,6 @@ public class Preferences {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         return sharedPreferences
                 .getString(key, "");
-    }
-
-    public void saveConnectionTokenToAccept(String token) {
-        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        Editor editor = prefs.edit();
-        editor.putString(CONNECTION_TOKEN_TO_ACCEPT, token);
-        editor.apply();
     }
 
     public void saveBackendData(String ip, String port) {
@@ -238,19 +147,5 @@ public class Preferences {
     public Boolean isFirstLaunch() {
         SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         return prefs.getBoolean(FIRST_LAUNCH, true);
-    }
-
-    public void deleteUserConnections(List<String> connectionIdList) {
-        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        Editor editor = prefs.edit();
-        connectionIdList.forEach(s -> {
-            if(prefs.contains(s.concat(CONNECTION_USER_ID_KEY)))
-                editor.remove(s.concat(CONNECTION_USER_ID_KEY));
-            if(prefs.contains(s.concat(CONNECTION_LOGO_KEY)))
-                editor.remove(s.concat(CONNECTION_LOGO_KEY));
-        });
-        List<String> keyToRemove = Arrays.asList(USER_ID_LIST_KEY, CONNECTION_TOKEN_TO_ACCEPT, PROOF_REQUEST_SHARED_KEY, PROOF_REQUEST_CANCEL_KEY, ACCEPTED_MESSAGES_KEY, REJECTED_MESSAGES_KEY);
-        keyToRemove.forEach(editor::remove);
-        editor.commit();
     }
 }

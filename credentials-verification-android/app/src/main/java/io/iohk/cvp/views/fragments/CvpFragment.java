@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -10,10 +11,14 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModel;
+
+import com.google.android.gms.common.SupportErrorDialogFragment;
 
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerFragment;
+import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
@@ -97,8 +102,11 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
 
     protected abstract int getViewId();
 
-    protected Set<String> getUserIds() {
-        return new Preferences(getContext()).getUserIds();
+    protected void showGenericError(){
+        FragmentManager fm = getFragmentManager();
+        SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
+                .show(fm, "");
+        getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                R.string.server_error_message));
     }
-
 }

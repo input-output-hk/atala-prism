@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "4fed0bd183b5920507cb4d4acef93158",
+    "identityHash": "185a24319061292a3451adc946c9a24e",
     "entities": [
       {
         "tableName": "credential",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `credential_id` TEXT, `date_received` INTEGER, `credentials_encoded` BLOB, `html_view` TEXT, `issuer_id` TEXT, `issuer_name` TEXT, `credential_type` TEXT, `viewed` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `credential_id` TEXT, `date_received` INTEGER, `credential_encoded` BLOB, `html_view` TEXT, `issuer_id` TEXT, `issuer_name` TEXT, `credential_type` TEXT, `connection_id` TEXT, `viewed` INTEGER, `credentials_document` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -27,8 +27,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "credential_encoded",
-            "columnName": "credentials_encoded",
+            "fieldPath": "credentialEncoded",
+            "columnName": "credential_encoded",
             "affinity": "BLOB",
             "notNull": false
           },
@@ -57,9 +57,21 @@
             "notNull": false
           },
           {
+            "fieldPath": "connectionId",
+            "columnName": "connection_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "viewed",
             "columnName": "viewed",
             "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentialDocument",
+            "columnName": "credentials_document",
+            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -130,7 +142,7 @@
       },
       {
         "tableName": "contact",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `connection_id` TEXT, `date_created` INTEGER, `did` TEXT, `last_message_id` TEXT, `name` TEXT, `token` TEXT, `user_id` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `connection_id` TEXT, `date_created` INTEGER, `did` TEXT, `last_message_id` TEXT, `name` TEXT, `token` TEXT, `user_id` TEXT, `logo` BLOB)",
         "fields": [
           {
             "fieldPath": "id",
@@ -179,6 +191,12 @@
             "columnName": "user_id",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "logo",
+            "columnName": "logo",
+            "affinity": "BLOB",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -203,7 +221,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4fed0bd183b5920507cb4d4acef93158')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '185a24319061292a3451adc946c9a24e')"
     ]
   }
 }

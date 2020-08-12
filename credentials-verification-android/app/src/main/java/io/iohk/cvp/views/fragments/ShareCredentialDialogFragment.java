@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,10 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
+import com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -34,28 +32,25 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.core.exception.ErrorCode;
-import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
-import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.CredentialParse;
 import io.iohk.cvp.viewmodel.ConnectionsListablesViewModel;
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
-import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.interfaces.SelectedVerifiersUpdateable;
 import io.iohk.cvp.views.utils.adapters.ShareCredentialRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.dialogs.SuccessDialog;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.Credential;
-import io.iohk.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 
 import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
+import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_ENCODED_KEY;
+import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_TYPE_KEY;
 
 @NoArgsConstructor
-public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListablesViewModel> {
+public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListablesViewModel> implements SelectedVerifiersUpdateable {
 
-    private ViewModelProvider.Factory factory;
+    @Inject
+    ViewModelProvider.Factory factory;
 
     @BindView(R.id.background)
     public ConstraintLayout background;
@@ -68,17 +63,9 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
     private ShareCredentialRecyclerViewAdapter adapter;
 
-    private Set<String> selectedVerifiers = new HashSet<>();
-
-    private LiveData<AsyncTaskResult<Boolean>> liveData;
+    private Set<ConnectionListable> selectedVerifiers = new HashSet<>();
 
     private CredentialDto credential;
-
-
-    @Inject
-    ShareCredentialDialogFragment(ViewModelProvider.Factory factory) {
-        this.factory = factory;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -86,36 +73,12 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
         View view = super.onCreateView(inflater, container, savedInstanceState);
         try {
-            adapter = new ShareCredentialRecyclerViewAdapter(this);
+            adapter = new ShareCredentialRecyclerViewAdapter(this, getResources().getDisplayMetrics().density);
             recyclerView.setLayoutManager(
                     new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
             recyclerView.setAdapter(adapter);
 
-            credential = CredentialParse.parse(Credential.parseFrom(getArguments().getByteArray(CREDENTIAL_DATA_KEY)));
-
-            LiveData<AsyncTaskResult<List<ConnectionListable>>> liveData = viewModel
-                    .getConnections(this.getUserIds());
-
-            if (!liveData.hasActiveObservers()) {
-                liveData.observe(this, response -> {
-
-                    if (response.getError() != null) {
-                        getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                                R.string.server_error_message));
-                        return;
-                    }
-
-                    List<ConnectionListable> connections = new ArrayList<>();
-                    connections.addAll(response.getResult().stream()
-                            .filter(conn -> {
-                                    return !conn.getDid().substring(conn.getDid().lastIndexOf(":"))
-                                            .equals(credential.getIssuer().getId().substring(credential.getIssuer().getId().lastIndexOf(":")));
-                            }).collect(Collectors.toList()));
-
-                    adapter.addConnections(connections);
-                    adapter.notifyDataSetChanged();
-                });
-            }
+            credential = CredentialParse.parse(getArguments().getString(CREDENTIAL_TYPE_KEY), getArguments().getString(CREDENTIAL_DATA_KEY));
         } catch (Exception e) {
             Crashlytics.logException(e);
         }
@@ -126,12 +89,11 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        liveData = viewModel.getMessageLiveData();
+        initObservers();
+    }
 
-        if (liveData.hasActiveObservers()) {
-            return;
-        }
-        liveData.observe(getViewLifecycleOwner(), response -> {
+    private void initObservers() {
+        viewModel.getMessageSentLiveData().observe(getViewLifecycleOwner(), response -> {
             FragmentManager fm = getFragmentManager();
             if (response.getError() != null) {
                 SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
@@ -139,13 +101,32 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
                 getNavigator().showPopUp(getFragmentManager(), getResources().getString(
                         R.string.server_error_message));
             } else {
-                SuccessDialog.newInstance(this, R.string.server_share_successfully)
-                        .show(getActivity().getSupportFragmentManager(), "dialog");
-                getFragmentManager().popBackStack();
+                if(response.getResult()) {
+                    SuccessDialog.newInstance(this, R.string.server_share_successfully)
+                            .show(getActivity().getSupportFragmentManager(), "dialog");
+                    getFragmentManager().popBackStack();
+                    viewModel.shouldNotShowSuccessDialog();
+                }
             }
-
         });
 
+        viewModel.allConnectionsLiveData().observe(getViewLifecycleOwner(), response -> {
+            if (response.getError() != null) {
+                getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                        R.string.server_error_message));
+                return;
+            }
+            if(response.getResult() != null) {
+                List<ConnectionListable> connections = new ArrayList<>(response.getResult().stream()
+                        .filter(conn -> !conn.did.substring(conn.did.lastIndexOf(":"))
+                                .equals(credential.getIssuer().getId().substring(credential.getIssuer().getId().lastIndexOf(":"))))
+                        .map(ConnectionListable::new).collect(Collectors.toList()));
+
+                adapter.addConnections(connections);
+                adapter.notifyDataSetChanged();
+            }
+        });
+        viewModel.getAllConnections();
     }
 
     @OnClick(R.id.background)
@@ -177,24 +158,14 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
     @OnClick(R.id.share_button)
     public void onShareClick() {
-        selectedVerifiers.forEach(connectionId -> {
-            try {
-                String userId = new Preferences(getContext()).getUserIdByConnection(connectionId).orElseThrow(() ->
-                        new SharedPrefencesDataNotFoundException(
-                                "Couldn't find user id for connection id " + connectionId,
-                                ErrorCode.USER_ID_NOT_FOUND));
-                viewModel.sendMultipleMessage(userId, connectionId, Collections.singletonList(Credential.parseFrom(getArguments().getByteArray(CREDENTIAL_DATA_KEY))));
-            } catch (Exception e) {
-                Crashlytics.logException(e);
-            }
-        });
+        viewModel.sendMessageToMultipleConnections(selectedVerifiers, ByteString.copyFrom(getArguments().getByteArray(CREDENTIAL_ENCODED_KEY)));
     }
 
-    public void updateSelectedVerifiers(String connectionId, Boolean isSelected) {
+    public void updateSelectedVerifiers(ConnectionListable connection, Boolean isSelected) {
         if (isSelected) {
-            selectedVerifiers.add(connectionId);
+            selectedVerifiers.add(connection);
         } else {
-            selectedVerifiers.remove(connectionId);
+            selectedVerifiers.remove(connection);
         }
     }
 }

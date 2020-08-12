@@ -3,8 +3,9 @@ package io.iohk.cvp.dagger.modules;
 import androidx.room.Room;
 
 import io.iohk.cvp.core.CvpApplication;
-import io.iohk.cvp.data.AppDataManager;
 import io.iohk.cvp.data.DataManager;
+import io.iohk.cvp.data.local.AppDataManager;
+
 import io.iohk.cvp.data.local.db.AppDatabase;
 import io.iohk.cvp.data.local.db.AppDbHelper;
 import io.iohk.cvp.data.local.db.DbHelper;

@@ -6,22 +6,15 @@ import android.content.Intent;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 
+import java.util.Objects;
+
 import io.iohk.cvp.R;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.grpc.ParticipantInfoResponse;
-import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
-import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.viewmodel.NewConnectionsViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
 import io.iohk.cvp.views.fragments.AlreadyConnectedDialogFragment;
-import io.iohk.cvp.views.fragments.CvpFragment;
-import io.iohk.cvp.views.fragments.HomeFragment;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.ParticipantInfo;
-
-import java.util.List;
-import java.util.Objects;
 
 public class ActivityUtils {
 
@@ -44,18 +37,15 @@ public class ActivityUtils {
                                     R.string.server_error_message));
                             return;
                         }
-
-                        boolean isAcceptedConnection = activity.getIssuerConnections().stream()
-                                .anyMatch(connection -> connection.getParticipantInfo().getIssuer().getDID().equals(response.getResult().getParticipantInfo().getIssuer().getDID()));
-
-                        if(isAcceptedConnection) {
+                        ParticipantInfoResponse result = response.getResult();
+                        if(result.getAlreadyAdded()) {
                             activity.getNavigator().showDialogFragment(fragmentManager,
-                                    AlreadyConnectedDialogFragment.newInstance(response.getResult().getParticipantInfo()), "ALREADY_CONNECTED_DIALOG_FRAGMENT");
+                                    AlreadyConnectedDialogFragment.newInstance(result.getParticipantInfo()), "ALREADY_CONNECTED_DIALOG_FRAGMENT");
                         } else {
                             activity.getNavigator().showDialogFragment(fragmentManager,
                                     AcceptConnectionDialogFragment.newInstance(activity.getResources().getString(R.string.connection_acept_title),
-                                            activity.getResources().getString(R.string.connection_acept_button), response.getResult().getToken(),
-                                            response.getResult().getParticipantInfo()),
+                                            activity.getResources().getString(R.string.connection_acept_button), result.getToken(),
+                                            result.getParticipantInfo()),
                                     "ACCEPT_CONNECTION_DIALOG_FRAGMENT");
                         }
 

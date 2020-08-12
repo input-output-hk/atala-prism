@@ -2,15 +2,16 @@ package io.iohk.cvp.grpc;
 
 import io.iohk.prism.protos.ParticipantInfo;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
 public class ParticipantInfoResponse {
-    ParticipantInfo participantInfo;
-    String token;
-    public ParticipantInfoResponse(ParticipantInfo participantInfo, String token) {
+    private final ParticipantInfo participantInfo;
+    private final String token;
+    private final Boolean alreadyAdded;
+
+    public ParticipantInfoResponse(ParticipantInfo participantInfo, String token, Boolean alreadyAdded) {
         this.token = token;
         this.participantInfo = participantInfo;
+        this.alreadyAdded = alreadyAdded;
     }
 }

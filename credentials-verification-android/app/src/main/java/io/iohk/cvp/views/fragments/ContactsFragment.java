@@ -1,10 +1,7 @@
 package io.iohk.cvp.views.fragments;
 
-import android.app.ActionBar;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,46 +10,33 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
-import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.common.SupportErrorDialogFragment;
 import com.google.android.material.tabs.TabLayout;
-import com.google.protobuf.InvalidProtocolBufferException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.data.local.db.model.Contact;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.ActivityUtils;
-import io.iohk.cvp.utils.comparator.ConnectionInfoComparator;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
-import io.iohk.cvp.views.Preferences;
+import io.iohk.cvp.viewmodel.dtos.CredentialsToShare;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
-import io.iohk.cvp.views.utils.adapters.UniversitiesRecyclerViewAdapter;
-import io.iohk.prism.protos.AtalaMessage;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.Credential;
-import io.iohk.prism.protos.ParticipantInfo;
-import io.iohk.prism.protos.ProofRequest;
-import io.iohk.prism.protos.ReceivedMessage;
+import io.iohk.cvp.views.utils.adapters.ContactsRecyclerViewAdapter;
 import lombok.Setter;
+
+import static io.iohk.cvp.views.fragments.ShareProofRequestDialogFragment.SHARE_PROOF_REQUEST_DIALOG;
 
 @Setter
 public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> {
@@ -71,18 +55,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     @Inject
     ConnectionsListFragment connectionsListFragment;
-
-    private LiveData<AsyncTaskResult<List<ConnectionInfo>>> liveData;
-
-    private MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> credentialLiveData;
-
-    private List<ReceivedMessage> proofRequestMessages;
-
-    private List<ConnectionInfo> shareConnections;
-
-    private List<String> proofRequestOpen;
-
-    private List<ConnectionInfo> issuerConnections;
+    private CvpDialogFragment dialogFragment;
 
 
     @Inject
@@ -113,12 +86,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        connectionsListFragment.setAdapter(new UniversitiesRecyclerViewAdapter());
-
-        issuerConnections = new ArrayList<>();
-        proofRequestMessages = new ArrayList<>();
-        shareConnections = new ArrayList<>();
-        proofRequestOpen = new ArrayList<>();
+        connectionsListFragment.setAdapter(new ContactsRecyclerViewAdapter());
 
         ConnectionTabsAdapter adapter = new ConnectionTabsAdapter(
                 getChildFragmentManager(), 1, connectionsListFragment);
@@ -149,147 +117,50 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     public void onResume() {
         super.onResume();
         connectionsListFragment.clearConnecitons();
-        listConnections(this.getUserIds());
+        showLoading();
+        getViewModel().getAllMessages();
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         registerTokenInfoObserver();
+        initObservers();
+    }
+
+    private void initObservers() {
+
+        MutableLiveData<AsyncTaskResult<List<Contact>>> contactsLiveData = getViewModel().getContactsLiveData();
+            contactsLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
+                if (connectionListResponse.getError() != null) {
+                    hideLoading();
+                    this.showGenericError();
+                    return;
+                }
+                List<Contact> contactsList = connectionListResponse.getResult();
+                if(contactsList != null)
+                    connectionsListFragment.addConnections(contactsList);
+            });
+        MutableLiveData<AsyncTaskResult<List<CredentialsToShare>>> credentialsToShareLiveData = getViewModel().getCredentialsToShareLiveData();
+            credentialsToShareLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
+                hideLoading();
+                if(connectionListResponse.getError() != null) {
+                    this.showGenericError();
+                    return;
+                }
+                List<CredentialsToShare> connectionList = connectionListResponse.getResult();
+
+                if(connectionList != null && !connectionList.isEmpty()) {
+                    dialogFragment = ShareProofRequestDialogFragment.newInstance(connectionList.get(0));
+                    getNavigator().showDialogFragment(getFragmentManager(),dialogFragment,SHARE_PROOF_REQUEST_DIALOG);
+                    viewModel.clearProofRequestToShow();
+                }
+            });
     }
 
     private void registerTokenInfoObserver() {
         ActivityUtils.registerObserver((MainActivity) getActivity(),
                 viewModel);
-    }
-
-    public void listConnections(Set<String> userIds) {
-        loading.setVisibility(View.VISIBLE);
-        liveData = viewModel.getConnections(userIds);
-        if (!liveData.hasActiveObservers()) {
-            liveData.observe(this, response -> {
-                if (response.getResult() == null) {
-                    return;
-                }
-
-                FragmentManager fm = getFragmentManager();
-                if (response.getError() != null) {
-                    SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
-                            .show(fm, "");
-                    getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                            R.string.server_error_message));
-                    return;
-                }
-
-                List<ConnectionInfo> connections = response.getResult();
-                shareConnections.addAll(connections.stream()
-                        .filter(conn -> {
-                            if (conn.getParticipantInfo().getParticipantCase().getNumber() == ParticipantInfo.ISSUER_FIELD_NUMBER) {
-                                for (ConnectionInfo issuerConnection : shareConnections) {
-                                    if (conn.getParticipantInfo().getIssuer().getName().equals(issuerConnection.getParticipantInfo()
-                                            .getIssuer().getName())) {
-                                        return false;
-                                    }
-                                }
-                                return true;
-                            }
-                            return false;
-                        }).collect(Collectors.toList()));
-
-                issuerConnections = connections.stream()
-                        .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
-                                == ParticipantInfo.ISSUER_FIELD_NUMBER)
-                        .collect(Collectors.toList());
-                issuerConnections.sort(new ConnectionInfoComparator());
-
-                connectionsListFragment.addConnections(issuerConnections);
-                ((MainActivity)getActivity()).setIssuerConnections(issuerConnections);
-
-                loading.setVisibility(View.GONE);
-                getProofRequest();
-            });
-        }
-    }
-
-    public void getProofRequest() {
-        loading.setVisibility(View.VISIBLE);
-        credentialLiveData = viewModel.getMessages(this.getUserIds());
-        if (!credentialLiveData.hasActiveObservers()) {
-            credentialLiveData.observe(this, result -> {
-                try {
-                    if (result.getError() == null) {
-                        Preferences pref = new Preferences(getContext());
-                        Set<String> acceptedProofRequesIds = pref.getStoredMessages(Preferences.PROOF_REQUEST_SHARED_KEY);
-                        Set<String> cancelProofRequestIds = pref.getStoredMessages(Preferences.PROOF_REQUEST_CANCEL_KEY);
-
-                        List<ReceivedMessage> messages = result.getResult();
-                        proofRequestMessages.addAll(messages.stream()
-                                .filter(msg -> {
-                                    try {
-                                        AtalaMessage newMessage = AtalaMessage.parseFrom(msg.getMessage());
-                                        if (!newMessage.getProofRequest().getTypeIdsList().isEmpty() &&
-                                                !acceptedProofRequesIds.contains(newMessage.getProofRequest().getConnectionToken()) &&
-                                                !cancelProofRequestIds.contains(newMessage.getProofRequest().getConnectionToken())) {
-
-                                            for (ReceivedMessage receivedMessage : proofRequestMessages) {
-                                                AtalaMessage current = AtalaMessage.parseFrom(receivedMessage.getMessage());
-                                                if (current.getProofRequest().getConnectionToken().equals(newMessage.getProofRequest().getConnectionToken())) {
-                                                    return false;
-                                                }
-                                            }
-                                            return true;
-                                        }
-                                        return false;
-                                    } catch (Exception e) {
-                                        return false;
-                                    }
-                                }).collect(Collectors.toList()));
-
-                        if (!proofRequestMessages.isEmpty() && !messages.isEmpty()) {
-                            for (ReceivedMessage proofRequestMessage : proofRequestMessages) {
-                                ProofRequest proofRequest = AtalaMessage.parseFrom(proofRequestMessage.getMessage()).getProofRequest();
-                                //Search for conection
-                                ConnectionInfo shareConnection = null;
-                                for (ConnectionInfo connection : ((MainActivity)getActivity()).getIssuerConnections()) {
-                                    if (connection.getToken().equals(proofRequest.getConnectionToken())) {
-                                        shareConnection = connection;
-                                        break;
-                                    }
-                                }
-
-                                //Search for credentials
-                                List<Credential> credentialsToShare = messages.stream()
-                                        .flatMap(message -> {
-                                            try {
-                                                Credential credential =  AtalaMessage.parseFrom(message.getMessage()).getIssuerSentCredential().getCredential();
-                                                return Stream.of(credential);
-                                            } catch (InvalidProtocolBufferException e) {
-                                                Log.d("ATALA - Contacs Fragment","Impossible to parse Credential");
-                                                return Stream.empty();
-                                            }
-                                        })
-                                        .filter(credential -> proofRequest.getTypeIdsList().contains(credential.getTypeId()))
-                                        .distinct()
-                                        .collect(Collectors.toList());
-
-                                if (shareConnection != null && !credentialsToShare.isEmpty() &&
-                                        !proofRequestOpen.contains(proofRequest.getConnectionToken())) {
-
-                                    proofRequestOpen.add(proofRequest.getConnectionToken());
-                                    getNavigator().showDialogFragment(getFragmentManager(),
-                                            ShareProofRequestDialogFragment.newInstance(proofRequest, credentialsToShare, shareConnection),
-                                            "SHARE_PROOF_REQUEST_DIALOG_FRAGMENT");
-                                }
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    Crashlytics.logException(e);
-                } finally {
-                    loading.setVisibility(View.GONE);
-                }
-            });
-        }
     }
 
     @Override

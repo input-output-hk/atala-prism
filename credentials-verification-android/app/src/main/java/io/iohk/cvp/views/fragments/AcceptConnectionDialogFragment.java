@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -15,7 +16,7 @@ import android.widget.TextView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-import java.util.List;
+import com.crashlytics.android.Crashlytics;
 
 import javax.inject.Inject;
 
@@ -26,8 +27,8 @@ import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.activities.MainActivity;
-import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.cvp.views.interfaces.ConnectionManageable;
+import io.iohk.cvp.views.interfaces.FirebaseEventLogger;
 import io.iohk.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 
@@ -54,6 +55,9 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
     private ViewModelProvider.Factory factory;
 
+    private ConnectionManageable connectionManageableListener;
+    private FirebaseEventLogger firebaseEventLogger;
+
     public static AcceptConnectionDialogFragment newInstance(String title, String buttonDescription,
                                                              String token, ParticipantInfo participantInfo) {
 
@@ -75,6 +79,8 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
         return instance;
     }
+
+
 
     @Inject
     AcceptConnectionDialogFragment(ViewModelProvider.Factory factory) {
@@ -99,15 +105,24 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
         participantNameTextView.setText(getArguments().getString(NAME_KEY));
         connectButton.setText(getArguments().getString(BUTTON_KEY));
 
-        try{
+        try {
             participantLogo.setImageBitmap(ImageUtils.getBitmapFromByteArray(getArguments().getByteArray(LOGO_DATA_KEY)));
-        }catch (Exception e){
-            //NOTHIG
-            //ByteArray is null or the image could not be decoded.
+        } catch (Exception e) {
+            Crashlytics.logException(e);
         }
         return view;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            connectionManageableListener = (ConnectionManageable) context;
+            firebaseEventLogger = (FirebaseEventLogger) context;
+        } catch (ClassCastException castException) {
+            Crashlytics.logException(castException);
+        }
+    }
 
     @Override
     public void onResume() {
@@ -130,25 +145,15 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
     @OnClick(R.id.cancel_button)
     public void onCancelClick() {
-        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_DECLINE);
+        firebaseEventLogger.sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_DECLINE);
         this.dismiss();
     }
 
     @OnClick(R.id.connect_button)
     public void onConnectClick() {
-        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_CONFIRM);
-        viewModel.getTokenizationKey().observe(this, response -> {
-            this.dismiss();
-
-            if (response.getError() != null) {
-                getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                        R.string.server_error_message));
-                return;
-            }
-
-            Preferences pref = new Preferences(getContext());
-            pref.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
-            ((MainActivity) getActivity()).acceptConnection(getArguments().getString(TOKEN_KEY), pref);
-        });
+        firebaseEventLogger.sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_CONFIRM);
+        this.dismiss();
+        Preferences pref = new Preferences(getContext());
+        connectionManageableListener.acceptConnection(getArguments().getString(TOKEN_KEY), pref);
     }
 }

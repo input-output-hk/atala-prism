@@ -5,23 +5,18 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -39,33 +34,26 @@ import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.components.OptionItem;
 import io.iohk.cvp.views.utils.dialogs.SuccessDialog;
-import io.iohk.prism.protos.ConnectionInfo;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
-
 @Setter
 @NoArgsConstructor
-public class SettingsFragment extends CvpFragment implements DeleteAllConnectionsDialogFragment.OnResetDataListener {
+public class SettingsFragment extends CvpFragment<ConnectionsActivityViewModel> implements DeleteAllConnectionsDialogFragment.OnResetDataListener {
 
   // Request code is obligatory on setTargetFragment() even if is not used for transfer data back
   private static final int DELETE_ALL_CONNECTIONS_REQUEST_CODE = 22;
-  private ViewModelProvider.Factory factory;
-  private ConnectionsActivityViewModel connectionsActivityViewModel;
-  private LiveData<AsyncTaskResult<List<ConnectionInfo>>> liveData;
 
   public static final String SECURITY_SELECTED_TRANSACTION = "securitySelectedTransaction";
 
-  @Inject
-  public SettingsFragment(ViewModelProvider.Factory factory) {
-    this.factory = factory;
-  }
   @Inject
   Navigator navigator;
 
   @BindView(R.id.backend_ip)
   OptionItem backendConfigItem;
+
+  @Inject
+  ViewModelProvider.Factory factory;
 
   @Override
   protected int getViewId() {
@@ -73,8 +61,10 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
   }
 
   @Override
-  public ViewModel getViewModel() {
-    return null;
+  public ConnectionsActivityViewModel getViewModel() {
+    ConnectionsActivityViewModel viewModel = ViewModelProviders.of(this, factory).get(ConnectionsActivityViewModel.class);
+    viewModel.setContext(getContext());
+    return viewModel;
   }
 
   @Override
@@ -84,9 +74,8 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+                           Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
-
     if (!BuildConfig.DEBUG) {
       backendConfigItem.setVisibility(View.GONE);
     }
@@ -97,9 +86,34 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    connectionsActivityViewModel = ViewModelProviders.of(this, factory)
-            .get(ConnectionsActivityViewModel.class);
-    connectionsActivityViewModel.setContext(getContext());
+    initObservers();
+  }
+
+  private void initObservers() {
+    MutableLiveData<AsyncTaskResult<Boolean>> liveData = getViewModel().getRemoveAllDataLiveData();
+
+    liveData.observe(getViewLifecycleOwner(), response -> {
+      try {
+        if (response.getError() != null) {
+          FragmentManager fm = getFragmentManager();
+          SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
+                  .show(fm, "");
+          getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                  R.string.server_error_message));
+          return;
+        }
+
+        if(response.getResult()) {
+          SuccessDialog.newInstance(this, R.string.connections_remove_success, true)
+                  .show(getFragmentManager(), "dialog");
+          getViewModel().getRemoveAllDataLiveData().setValue(new AsyncTaskResult(false));
+        }
+      } catch (Exception ex) {
+        Crashlytics.logException(ex);
+      } finally {
+        hideLoading();
+      }
+    });
   }
 
   @OnClick(R.id.support)
@@ -139,33 +153,7 @@ public class SettingsFragment extends CvpFragment implements DeleteAllConnection
   @Override
   public void resetData() {
     ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.RESET_DATA);
-    Preferences prefs = new Preferences(getContext());
-    liveData = connectionsActivityViewModel.getConnections(prefs.getUserIds());
-    if (liveData.hasActiveObservers()) {
-      return;
-    }
     showLoading();
-    liveData.observe(this, response -> {
-      try {
-        FragmentManager fm = getFragmentManager();
-        if (response.getError() != null) {
-          SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
-                  .show(fm, "");
-          getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                  R.string.server_error_message));
-          return;
-        }
-        List<ConnectionInfo> connections = response.getResult();
-        List<String> connectionIdList = connections.stream().map(ConnectionInfo::getConnectionId).collect(Collectors.toList());
-        new Preferences(getContext()).deleteUserConnections(connectionIdList);
-        ((MainActivity)getActivity()).clearIssueConnections();
-        SuccessDialog.newInstance(this, R.string.connections_remove_success, true)
-                .show(getFragmentManager(), "dialog");
-      } catch (Exception ex) {
-        Crashlytics.logException(ex);
-      } finally {
-        hideLoading();
-      }
-    });
+    getViewModel().removeAllLocalData();
   }
 }

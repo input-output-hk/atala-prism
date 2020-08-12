@@ -23,4 +23,5 @@ public class AsyncTaskResult<A> {
   public AsyncTaskResult(Exception error) {
     this.error = error;
   }
+
 }

@@ -17,4 +17,11 @@ public class CredentialParse {
         return dto;
     }
 
+    public static CredentialDto parse(String credentialType, String credentialDocument) {
+        Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").disableHtmlEscaping().create();
+        CredentialDto dto = gson.fromJson(credentialDocument, CredentialDto.class);
+        dto.setCredentialType(credentialType);
+        return dto;
+    }
+
 }

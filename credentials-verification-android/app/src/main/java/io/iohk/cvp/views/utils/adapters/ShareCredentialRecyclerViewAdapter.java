@@ -20,7 +20,7 @@ import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
-import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
+import io.iohk.cvp.views.interfaces.SelectedVerifiersUpdateable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,13 +31,13 @@ public class ShareCredentialRecyclerViewAdapter extends
         RecyclerView.Adapter<ShareCredentialRecyclerViewAdapter.ViewHolder> {
 
     private final float displayDensity;
-    private final ShareCredentialDialogFragment fragment;
+    private final SelectedVerifiersUpdateable selectedVerifiersUpdateable;
     @Setter
     private List<ConnectionListable> connections = new ArrayList<>();
 
-    public ShareCredentialRecyclerViewAdapter(ShareCredentialDialogFragment fragment) {
-        this.displayDensity = fragment.getContext().getResources().getDisplayMetrics().density;
-        this.fragment = fragment;
+    public ShareCredentialRecyclerViewAdapter(SelectedVerifiersUpdateable selectedVerifiersUpdateable, float displayDensity) {
+        this.displayDensity = displayDensity;
+        this.selectedVerifiersUpdateable = selectedVerifiersUpdateable;
     }
 
     @NonNull
@@ -46,7 +46,7 @@ public class ShareCredentialRecyclerViewAdapter extends
 
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.row_share_with_verifier, parent, false);
-        return new ViewHolder(v, displayDensity, fragment);
+        return new ViewHolder(v, displayDensity, selectedVerifiersUpdateable);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class ShareCredentialRecyclerViewAdapter extends
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final float displayDensity;
-        private final ShareCredentialDialogFragment fragment;
+        private final SelectedVerifiersUpdateable selectedVerifiersUpdateable;
         @BindView(R.id.verifier_name)
         TextView verifierName;
         @BindView(R.id.verifier_logo)
@@ -87,10 +87,10 @@ public class ShareCredentialRecyclerViewAdapter extends
         ConnectionListable connectionInfo;
 
         ViewHolder(final View itemView, final float displayDensity,
-                   ShareCredentialDialogFragment fragment) {
+                   SelectedVerifiersUpdateable selectedVerifiersUpdateable) {
             super(itemView);
             this.displayDensity = displayDensity;
-            this.fragment = fragment;
+            this.selectedVerifiersUpdateable = selectedVerifiersUpdateable;
             ButterKnife.bind(this, itemView);
         }
 
@@ -113,8 +113,8 @@ public class ShareCredentialRecyclerViewAdapter extends
             connectionInfo.setIsSelected(!connectionInfo.getIsSelected());
             setBackground();
             checkShare.setChecked(connectionInfo.getIsSelected());
-            fragment.updateButtonState();
-            fragment.updateSelectedVerifiers(connectionInfo.getConnectionId(),
+            selectedVerifiersUpdateable.updateButtonState();
+            selectedVerifiersUpdateable.updateSelectedVerifiers(connectionInfo,
                     connectionInfo.getIsSelected());
         }
 
@@ -122,8 +122,8 @@ public class ShareCredentialRecyclerViewAdapter extends
         void onCheckShareClick() {
             connectionInfo.setIsSelected(!connectionInfo.getIsSelected());
             setBackground();
-            fragment.updateButtonState();
-            fragment.updateSelectedVerifiers(connectionInfo.getConnectionId(),
+            selectedVerifiersUpdateable.updateButtonState();
+            selectedVerifiersUpdateable.updateSelectedVerifiers(connectionInfo,
                     connectionInfo.getIsSelected());
         }
 

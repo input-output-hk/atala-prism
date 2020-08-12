@@ -3,7 +3,6 @@ package io.iohk.cvp.views.fragments;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,42 +13,38 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import dagger.android.support.AndroidSupportInjection;
 import io.iohk.cvp.R;
-import io.iohk.cvp.core.enums.CredentialType;
-import io.iohk.cvp.core.exception.ErrorCode;
-import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
-import io.iohk.cvp.grpc.AsyncTaskResult;
+import io.iohk.cvp.data.local.db.model.Credential;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.ConnectionsListablesViewModel;
-import io.iohk.cvp.views.Preferences;
+import io.iohk.cvp.viewmodel.dtos.CredentialsToShare;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.utils.components.ShareCredentialRow;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import io.iohk.cvp.views.utils.dialogs.SuccessDialog;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.Credential;
-import io.iohk.prism.protos.ProofRequest;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class ShareProofRequestDialogFragment extends CvpDialogFragment<ConnectionsListablesViewModel> {
+
+    public static final String SHARE_PROOF_REQUEST_DIALOG = "SHARE_PROOF_REQUEST_DIALOG_FRAGMENT";
 
     @BindView(R.id.title)
     TextView titleTextView;
@@ -63,32 +58,23 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
     @BindView(R.id.share_button)
     Button shareButton;
 
-    private ViewModelProvider.Factory factory;
+    @Inject
+    ViewModelProvider.Factory factory;
 
-    private ProofRequest proofRequest;
-
-    private List<Credential> acceptedcredentials;
-
-    private ConnectionInfo connection;
-
-    private LiveData<AsyncTaskResult<Boolean>> liveData;
-
-    public static ShareProofRequestDialogFragment newInstance(ProofRequest proofRequest,
-                                                              List<Credential> acceptedcredentials,
-                                                              ConnectionInfo connection) {
-
-        ShareProofRequestDialogFragment instance = new ShareProofRequestDialogFragment();
-        instance.setCancelable(false);
-        instance.proofRequest = proofRequest;
-        instance.acceptedcredentials = acceptedcredentials;
-        instance.connection = connection;
-
-        return instance;
-    }
+    private CredentialsToShare credentialsToShare;
 
     @Inject
     ShareProofRequestDialogFragment(ViewModelProvider.Factory factory) {
         this.factory = factory;
+    }
+
+    public static CvpDialogFragment newInstance(CredentialsToShare credentialsToShare) {
+
+        ShareProofRequestDialogFragment instance = new ShareProofRequestDialogFragment();
+        instance.setCancelable(false);
+        instance.credentialsToShare = credentialsToShare;
+
+        return instance;
     }
 
     @Override
@@ -99,6 +85,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        AndroidSupportInjection.inject(this);
         View view = super.onCreateView(inflater, container, savedInstanceState);
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -107,16 +94,16 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
 
         try {
             participantLogoImgView.setImageBitmap(
-                    ImageUtils.getBitmapFromByteArray(connection.getParticipantInfo().getIssuer().getLogo().toByteArray()));
+                    ImageUtils.getBitmapFromByteArray(credentialsToShare.getConnection().logo));
         } catch (Exception e) {
             Crashlytics.logException(e);
         }
 
         try {
-            titleTextView.setText(connection.getParticipantInfo().getIssuer().getName());
-            for (Credential acceptedCredential : acceptedcredentials) {
+            titleTextView.setText(credentialsToShare.getConnection().name);
+            for (Credential acceptedCredential : credentialsToShare.getCredentialsToShare()) {
                 TextView text = new TextView(getActivity());
-                text.setText(getCredentialType(acceptedCredential));
+                text.setText(CredentialUtil.getType(acceptedCredential, getContext()));
                 credentailsToShareContent.addView(new ShareCredentialRow(this, acceptedCredential));
             }
         } catch (Exception e) {
@@ -126,6 +113,35 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initObservers();
+    }
+
+    private void initObservers() {
+        getViewModel().getMessageSentLiveData().observe(getViewLifecycleOwner(), asyncTaskResult -> {
+            if(asyncTaskResult.getError() !=  null) {
+                FragmentManager fm = getFragmentManager();
+                SupportErrorDialogFragment.newInstance(new Dialog(getContext())).show(fm, "");
+                getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                        R.string.server_error_message));
+                return;
+            }
+            if(asyncTaskResult.getResult()) {
+                SuccessDialog.newInstance(this, R.string.server_share_successfully)
+                        .show(getFragmentManager(), "dialog");
+                this.dismiss();
+                ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONTACTS, null);
+            }
+        });
+        getViewModel().getContactUpdatedLiveData().observe(getViewLifecycleOwner(), asyncTaskResult -> {
+            if(asyncTaskResult.getResult()) {
+                getActivity().onBackPressed();
+                dismiss();
+            }
+        });
+    }
 
     @Override
     public void onResume() {
@@ -152,10 +168,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
 
     @OnClick(R.id.cancel_button)
     public void onCancelClick() {
-        Preferences pref = new Preferences(getContext());
-        pref.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_CANCEL_KEY);
-        getActivity().onBackPressed();
-        this.dismiss();
+        getViewModel().setLastMessageSeen(credentialsToShare.getConnection().connectionId, credentialsToShare.getMessageId());
     }
 
     public void enableShareButton(){
@@ -171,72 +184,8 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
 
     @OnClick(R.id.share_button)
     public void onConnectClick() {
-        try {
-            Preferences prefs = new Preferences(getContext());
-            String userId = prefs.getUserIdByConnection(connection.getConnectionId()).orElseThrow(() ->
-                    new SharedPrefencesDataNotFoundException(
-                            "Couldn't find user id for connection id " + connection.getConnectionId(),
-                            ErrorCode.USER_ID_NOT_FOUND));
-
-            liveData = viewModel.sendMultipleMessage(userId, connection.getConnectionId(), acceptedcredentials);
-            if (liveData.hasActiveObservers()) {
-                return;
-            }
-            liveData.observe(this, response -> {
-                if (response.getError() == null) {
-                    prefs.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_SHARED_KEY);
-                    SuccessDialog.newInstance(this, R.string.server_share_successfully)
-                            .show(getFragmentManager(), "dialog");
-                    this.dismiss();
-                    ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONTACTS, null);
-                } else {
-                    FragmentManager fm = getFragmentManager();
-                    SupportErrorDialogFragment.newInstance(new Dialog(getContext())).show(fm, "");
-                    getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                            R.string.server_error_message));
-                }
-            });
-
-        } catch (Exception e) {
-            Crashlytics.logException(e);
-        }
-    }
-
-    private String getCredentialType(Credential credential){
-        Optional<CredentialType> credentialTypeOptional = CredentialType.getByValue(credential.getTypeId());
-        if(credentialTypeOptional.isPresent()) {
-            switch (credentialTypeOptional.get().getId()) {
-                case 1:
-                    return getResources().getString(R.string.credential_government_type_title);
-                case 2:
-                    return getResources().getString(R.string.credential_degree_type_title);
-                case 3:
-                    return getResources().getString(R.string.credential_employed_type_title);
-                case 4:
-                    return getResources().getString(R.string.credential_insurance_type_title);
-                default:
-                    return "";
-            }
-        }
-        return "";
-    }
-
-    private Drawable getCredentialLogo(Credential credential){
-        Optional<CredentialType> credentialTypeOptional = CredentialType.getByValue(credential.getTypeId());
-        if(credentialTypeOptional.isPresent()) {
-            switch (credentialTypeOptional.get().getId()) {
-                case 1:
-                    return getResources().getDrawable(R.drawable.ic_id_government);
-                case 2:
-                    return getResources().getDrawable(R.drawable.ic_id_university);
-                case 3:
-                    return getResources().getDrawable(R.drawable.ic_id_proof);
-                case 4:
-                    return getResources().getDrawable(R.drawable.ic_id_insurance);
-                default:
-                    return null;
-            }
-        }
-        return null;
+        getViewModel().sendMultipleMessage(credentialsToShare.getConnection().userId,
+                credentialsToShare.getConnection().connectionId, credentialsToShare.getCredentialsToShare().stream()
+                        .map(credential -> credential.credentialEncoded).collect(Collectors.toList()), credentialsToShare.getMessageId());
     }
 }

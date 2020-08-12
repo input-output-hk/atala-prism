@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.utils.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.crashlytics.android.Crashlytics;
@@ -19,32 +21,25 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.enums.CredentialType;
-import io.iohk.cvp.utils.CredentialParse;
-import io.iohk.cvp.viewmodel.dtos.CredentialDto;
-import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.fragments.HomeFragment;
-import io.iohk.prism.protos.AtalaMessage;
-import io.iohk.prism.protos.Credential;
-import io.iohk.prism.protos.ReceivedMessage;
+import io.iohk.cvp.data.local.db.model.Credential;
 
 public class NewCredentialsRecyclerViewAdapter extends
         RecyclerView.Adapter<NewCredentialsRecyclerViewAdapter.ViewHolder> {
 
     private final int holderLayoutId;
-    private final HomeFragment listener;
+    private final CredentialClickListener listener;
     private final Boolean hasNewCredentials;
-    private final Preferences preferences;
+    private final Context context;
 
-    private List<ReceivedMessage> messages = new ArrayList<>();
+    private List<Credential> credentials = new ArrayList<>();
 
-    public NewCredentialsRecyclerViewAdapter(int holderLayoutId, HomeFragment listener,
-                                             Boolean hasNewCredentials, Preferences prefs) {
+    public NewCredentialsRecyclerViewAdapter(int holderLayoutId, CredentialClickListener listener,
+                                             Boolean hasNewCredentials, Context context) {
         this.holderLayoutId = holderLayoutId;
         this.listener = listener;
         this.hasNewCredentials = hasNewCredentials;
-        this.preferences = prefs;
+        this.context = context;
     }
-
 
     @NonNull
     @Override
@@ -57,58 +52,57 @@ public class NewCredentialsRecyclerViewAdapter extends
     @Override
     public void onBindViewHolder(NewCredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
         try {
-            ReceivedMessage msg = messages.get(position);
-            Credential current = AtalaMessage.parseFrom(msg.getMessage()).getIssuerSentCredential().getCredential();
-            CredentialDto credentialDto = CredentialParse.parse(current);
-
-            holder.credential = current;
-            holder.messageId = msg.getId();
-            holder.connectionId = msg.getConnectionId();
+            Credential credential = credentials.get(position);
+            holder.credential = credential;
             holder.listener = this.listener;
+            holder.isNewCredential = hasNewCredentials;
+            String credentialType = credential.credentialType;
 
-            if (current.getTypeId().equals(CredentialType.REDLAND_CREDENTIAL.getValue())) {
-                holder.credentialType.setText(listener.getResources().getString(R.string.credential_government_name));
-                holder.issuerLogo.setImageDrawable(listener.getResources().getDrawable(R.drawable.ic_id_government));
-            } else if (current.getTypeId().equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
-                holder.credentialType.setText(listener.getResources().getString(R.string.credential_degree_name));
-                holder.issuerLogo.setImageDrawable(listener.getResources().getDrawable(R.drawable.ic_id_university));
-            } else if (current.getTypeId().equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
-                holder.credentialType.setText(listener.getResources().getString(R.string.credential_employment_name));
-                holder.issuerLogo.setImageDrawable(listener.getResources().getDrawable(R.drawable.ic_id_proof));
+            holder.credentialType.setText(credentialType);
+
+            if (credentialType.equals(CredentialType.REDLAND_CREDENTIAL.getValue())) {
+                holder.credentialType.setText(context.getResources().getString(R.string.credential_government_name));
+                holder.issuerLogo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_id_government));
+            } else if (credentialType.equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
+                holder.credentialType.setText(context.getResources().getString(R.string.credential_degree_name));
+                holder.issuerLogo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_id_university));
+            } else if (credentialType.equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
+                holder.credentialType.setText(context.getResources().getString(R.string.credential_employment_name));
+                holder.issuerLogo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_id_proof));
             } else {
                 //Certificate Of Insurance
-                holder.credentialType.setText(listener.getResources().getString(R.string.credential_insurance_name));
-                holder.issuerLogo.setImageDrawable(listener.getResources().getDrawable(R.drawable.ic_id_insurance));
+                holder.credentialType.setText(context.getResources().getString(R.string.credential_insurance_name));
+                holder.issuerLogo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_id_insurance));
             }
-            holder.credentialName.setText(credentialDto.getIssuer().getName());
+            holder.credentialName.setText(credential.issuerName);
 
         } catch (Exception e) {
             Crashlytics.logException(e);
         }
     }
 
-    public void addMesseges(List<ReceivedMessage> newMessages) {
-        if(!this.messages.containsAll(newMessages)){
-            this.messages.addAll(newMessages);
-            this.notifyDataSetChanged();
-        }
+    public void addMesseges(List<Credential> newCredentialsList) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new CredentialDiffCallback(newCredentialsList, credentials));
+        credentials.clear();
+        this.credentials.addAll(newCredentialsList);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     public void clearMessages() {
-        messages = new ArrayList<>();
+        credentials = new ArrayList<>();
         this.notifyDataSetChanged();
     }
 
     @Override
     public int getItemCount() {
-        return messages.size();
+        return credentials.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        String connectionId;
         Credential credential;
-        String messageId;
+
+        Boolean isNewCredential;
 
         @BindView(R.id.credential_type)
         TextView credentialType;
@@ -119,7 +113,7 @@ public class NewCredentialsRecyclerViewAdapter extends
         @BindView(R.id.credential_logo)
         ImageView issuerLogo;
 
-        HomeFragment listener;
+        CredentialClickListener listener;
 
 
         ViewHolder(View itemView) {
@@ -129,8 +123,10 @@ public class NewCredentialsRecyclerViewAdapter extends
 
         @OnClick(R.id.issuer_card_view)
         public void onCredentialClicked() {
-            listener.onCredentialClicked(true, credential, connectionId, messageId);
+            listener.onCredentialClickListener(isNewCredential, credential);
         }
 
     }
+
 }
+

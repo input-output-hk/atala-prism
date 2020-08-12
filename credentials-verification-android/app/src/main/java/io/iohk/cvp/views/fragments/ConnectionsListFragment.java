@@ -1,6 +1,5 @@
 package io.iohk.cvp.views.fragments;
 
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,11 +18,11 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.data.local.db.model.Contact;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
-import io.iohk.cvp.views.utils.adapters.ConnectionsRecyclerViewAdapter;
-import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.cvp.views.utils.adapters.ContactsRecyclerViewAdapter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -34,7 +33,7 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
     @BindView(R.id.universities_list)
     RecyclerView recyclerView;
     private ViewModelProvider.Factory factory;
-    private ConnectionsRecyclerViewAdapter adapter;
+    private ContactsRecyclerViewAdapter adapter;
 
     @Inject
     public ConnectionsListFragment(ViewModelProvider.Factory factory) {
@@ -71,8 +70,8 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
         return viewModel;
     }
 
-    public void addConnections(List<ConnectionInfo> newConnections) {
-        adapter.addConnections(newConnections);
+    public void addConnections(List<Contact> newContacts) {
+        adapter.addConnections(newContacts);
         adapter.notifyDataSetChanged();
     }
 

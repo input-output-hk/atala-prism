@@ -4,16 +4,10 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.crashlytics.android.Crashlytics;
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import java.util.Date;
-
-import io.iohk.prism.protos.AtalaMessage;
-import io.iohk.prism.protos.ReceivedMessage;
+import com.google.protobuf.ByteString;
 
 @Entity(tableName = "credential")
-public class Credential {
+public class Credential{
 
     @PrimaryKey(autoGenerate = true)
     public Long id;
@@ -24,8 +18,8 @@ public class Credential {
     @ColumnInfo(name = "date_received")
     public Long dateReceived;
 
-    @ColumnInfo(name = "credentials_encoded")
-    public byte[] credential_encoded;
+    @ColumnInfo(name = "credential_encoded", typeAffinity = ColumnInfo.BLOB)
+    public ByteString credentialEncoded;
 
     @ColumnInfo(name = "html_view")
     public String htmlView;
@@ -39,6 +33,12 @@ public class Credential {
     @ColumnInfo(name = "credential_type")
     public String credentialType;
 
+    @ColumnInfo(name = "connection_id")
+    public String connectionId;
+
     public Boolean viewed = false;
+
+    @ColumnInfo(name = "credentials_document")
+    public String credentialDocument;
 
 }

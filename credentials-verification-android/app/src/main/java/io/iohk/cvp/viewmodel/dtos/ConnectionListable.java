@@ -1,9 +1,8 @@
 package io.iohk.cvp.viewmodel.dtos;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Optional;
 
+import io.iohk.cvp.data.local.db.model.Contact;
 import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.IssuerInfo;
 import io.iohk.prism.protos.ParticipantInfo;
@@ -16,6 +15,7 @@ public class ConnectionListable {
   private final String connectionId;
   private final String name;
   private final String did;
+  private String userId = null;
   private final byte[] logo;
   private Boolean isSelected = false;
 
@@ -33,6 +33,21 @@ public class ConnectionListable {
       this.did = verifier.getDID();
       this.logo = verifier.getLogo().toByteArray();
     }
+  }
+
+  public ConnectionListable(Contact contact) {
+    this.connectionId = contact.connectionId;
+    this.name = contact.name;
+    this.did = contact.did;
+    this.logo = contact.logo;
+    this.userId = contact.userId;
+  }
+
+  public String getUserIdValue(){
+    return userId;
+  }
+  public String getConnectionIdValue(){
+    return connectionId;
   }
 
   public String getDid() {
