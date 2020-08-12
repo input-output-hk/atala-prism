@@ -31,14 +31,42 @@ class GenericKeyDerivation(ec: GenericEC) extends KeyDerivationTrait {
   }
 
   /**
+    * Returns list of valid mnemonic words
+    */
+  override def getValidMnemonicWords(): Vector[String] = MnemonicCodeEnglish.WordList.toVector
+
+  /**
+    * Checks if the word is one of words used in mnemonics
+    */
+  override def isValidMnemonicWord(word: String): Boolean = {
+    MnemonicCodeEnglish.wordSet.contains(word)
+  }
+
+  /**
     * From the BIP39 spec (https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed):
     * - To create a binary seed from the mnemonic, we use the PBKDF2 function with a mnemonic
     * sentence (in UTF-8 NFKD) used as the password and the string "mnemonic" + passphrase (again in UTF-8 NFKD)
     * used as the salt. The iteration count is set to 2048 and HMAC-SHA512 is used as the pseudo-random
     *   function. The length of the derived key is 512 bits (= 64 bytes).
     */
+  @throws[MnemonicException]
   override def binarySeed(seed: MnemonicCode, passphrase: String): Vector[Byte] = {
-    JMnemonicCode.toSeed(seed.words.asJava, passphrase).toVector
+    val javaWords = seed.words.asJava
+
+    try {
+      javaMnemonic.check(javaWords)
+    } catch {
+      case e: org.bitcoinj.crypto.MnemonicException.MnemonicChecksumException =>
+        throw new MnemonicChecksumException(e.getMessage, e)
+      case e: org.bitcoinj.crypto.MnemonicException.MnemonicWordException =>
+        throw new MnemonicWordException(e.getMessage, e)
+      case e: org.bitcoinj.crypto.MnemonicException.MnemonicLengthException =>
+        throw new MnemonicLengthException(e.getMessage, e)
+      case e: Throwable =>
+        throw new RuntimeException("Unexpected exception returned by MnemonicCode.check", e)
+    }
+
+    JMnemonicCode.toSeed(javaWords, passphrase).toVector
   }
 
   override def derivationRoot(seed: Vector[Byte]): ExtendedKey = {

@@ -1,7 +1,5 @@
 package io.iohk.atala.crypto
 
-import java.util.Base64
-
 import org.scalacheck.Gen
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -36,6 +34,18 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
     }
   }
 
+  "isValidMnemonicWord" should {
+    "return true for mnemonic words" in {
+      for (word <- keyDerivation.getValidMnemonicWords()) {
+        keyDerivation.isValidMnemonicWord(word) mustBe true
+      }
+    }
+
+    "return false for invalid words" in {
+      keyDerivation.isValidMnemonicWord("hocus") mustBe false
+    }
+  }
+
   "binarySeed" should {
     for (v <- BIP39TestVectors.testVectors) {
       s"compute right binary seed for mnemonic code ${v.entropyHex}" in {
@@ -43,6 +53,27 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
         val binarySeed = keyDerivation.binarySeed(mnemonicCode, BIP39TestVectors.password)
 
         ECUtils.bytesToHex(binarySeed.toArray) mustBe v.binarySeedHex
+      }
+    }
+
+    "fail when checksum is not correct" in {
+      val mnemonicCode = MnemonicCode(List.fill(15)("abandon"))
+      intercept[MnemonicChecksumException] {
+        keyDerivation.binarySeed(mnemonicCode, "")
+      }
+    }
+
+    "fail when invalid word is used" in {
+      val mnemonicCode = MnemonicCode(List("hocus", "pocus", "mnemo", "codus") ++ List.fill(11)("abandon"))
+      intercept[MnemonicWordException] {
+        keyDerivation.binarySeed(mnemonicCode, "")
+      }
+    }
+
+    "fail when mnemonic code has wrong length" in {
+      val mnemonicCode = MnemonicCode(List("abandon"))
+      intercept[MnemonicLengthException] {
+        keyDerivation.binarySeed(mnemonicCode, "")
       }
     }
   }

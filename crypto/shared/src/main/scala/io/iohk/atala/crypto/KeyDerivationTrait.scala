@@ -123,6 +123,12 @@ trait KeyDerivationTrait {
     */
   def randomMnemonicCode(): MnemonicCode
 
+  /** Checks if the word is one of words used in mnemonics */
+  def isValidMnemonicWord(word: String): Boolean
+
+  /** Returns list of valid mnemonic words */
+  def getValidMnemonicWords(): Vector[String]
+
   /**
     * From the BIP39 spec (https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed):
     * - To create a binary seed from the mnemonic, we use the PBKDF2 function with a mnemonic

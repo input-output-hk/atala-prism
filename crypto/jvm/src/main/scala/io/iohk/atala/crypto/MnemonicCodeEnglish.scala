@@ -2059,5 +2059,7 @@ object MnemonicCodeEnglish {
       |zone
       |zoo""".stripMargin.trim.split("\n").filter(_.nonEmpty).toArray
 
+  lazy val wordSet = WordList.toSet
+
   require(WordList.length == 2048, "The word list is corrupted")
 }

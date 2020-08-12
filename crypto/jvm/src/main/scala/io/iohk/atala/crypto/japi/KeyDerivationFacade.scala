@@ -1,7 +1,8 @@
 package io.iohk.atala.crypto.japi
 
-import scala.collection.JavaConverters._
 import io.iohk.atala.util.ArrayOps._
+
+import scala.collection.JavaConverters._
 
 class ExtendedKeyFacade(key: io.iohk.atala.crypto.ExtendedKey) extends ExtendedKey {
   override def getPath(): DerivationPath = {
@@ -29,6 +30,10 @@ class KeyDerivationFacade(keyDerivation: io.iohk.atala.crypto.KeyDerivationTrait
   override def randomMnemonicCode(): MnemonicCode = {
     new MnemonicCode(keyDerivation.randomMnemonicCode().words.asJava)
   }
+
+  override def isValidMnemonicWord(word: String): Boolean = keyDerivation.isValidMnemonicWord(word)
+
+  override def getValidMnemonicWords: java.util.List[String] = keyDerivation.getValidMnemonicWords().asJava
 
   override def binarySeed(seed: MnemonicCode, passphrase: String): Array[Byte] = {
     keyDerivation
