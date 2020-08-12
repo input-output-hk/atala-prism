@@ -3,7 +3,8 @@
 **WARNING:** If you don't care about building everything, and you most likely
 don't, follow the [Docker instructions](run-cardano.md) instead.
 
-The following instructions connect to the Cardano Byron Legacy Testnet.
+**WARNING:** These instructions are outdated, as they connect to the Cardano
+Byron Legacy Testnet.
 
 **NOTE:** The instructions in this document were tested on 2020-04-22, and
 assume they will be run on Linux, but MacOS is almost identical.

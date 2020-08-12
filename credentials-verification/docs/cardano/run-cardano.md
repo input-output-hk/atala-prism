@@ -1,6 +1,6 @@
 # Building & Running Cardano
 
-The following instructions connect to the Cardano Byron Legacy Testnet.
+The following instructions connect to the Cardano Shelley Testnet.
 
 If you want to build everything, and you most likely don't, follow these
 [instructions](build-run-cardano.md) instead.
@@ -22,11 +22,11 @@ You can install the latest
 [Cardano Wallet CLI](https://github.com/input-output-hk/cardano-wallet/releases)
 release for Byron, but it's suggested to keep it simple with Docker:
 ```shell script
-alias cardano-wallet="docker run --network host --rm inputoutput/cardano-wallet:2020.4.28-byron"
+alias cardano-wallet="docker run --network host --rm -i inputoutput/cardano-wallet:2020.7.28-shelley"
 ```
 
 However you install it, ensure you got the right version
-`2020.4.28 (git revision: aa46adfd67134bf713bd103d51541f6cb7597aa9)`:
+`2020.7.28 (git revision: ca96c435df4ea4f2aefc98a75ae668d5f709da56)`:
 ```shell script
 cardano-wallet version
 ```
@@ -39,7 +39,7 @@ git clone https://github.com/input-output-hk/cardano-node
 ```
 
 We are only interested on file
-`cardano-node/configuration/node-config/mainnet-ci/testnet-genesis.json`,
+`cardano-node/configuration/mainnet-ci/testnet-genesis.json`,
 which will be referenced relatively from
 [docker-compose.yml](docker/docker-compose.yml).
 
@@ -100,18 +100,20 @@ later, and you can skip these steps as long as you set such variables.
 ```shell script
 PASSPHRASE=mypassphrase
 
-MNEMONIC1=`cardano-wallet mnemonic generate`
+MNEMONIC1=`cardano-wallet recovery-phrase generate`
 echo "$MNEMONIC1
+
 $PASSPHRASE
 $PASSPHRASE
-" | cardano-wallet wallet create from-mnemonic "Wallet #1"
+" | cardano-wallet wallet create from-recovery-phrase "Wallet #1"
 WALLET1=`cardano-wallet wallet list | jq '.[] | select(.name == "Wallet #1") | .id' -r`
 
-MNEMONIC2=`cardano-wallet mnemonic generate`
+MNEMONIC2=`cardano-wallet recovery-phrase generate`
 echo "$MNEMONIC2
+
 $PASSPHRASE
 $PASSPHRASE
-" | cardano-wallet wallet create from-mnemonic "Wallet #2"
+" | cardano-wallet wallet create from-recovery-phrase "Wallet #2"
 WALLET2=`cardano-wallet wallet list | jq '.[] | select(.name == "Wallet #2") | .id' -r`
 ```
 
@@ -121,10 +123,15 @@ automatically generated ones.
 
 ### Fund a wallet
 
+Obtain address:
+
 ```shell script
-ADDRESS1=`cardano-wallet address list $WALLET1 | jq -r ".[0].id"`
-curl -s -XPOST https://faucet2.cardano-testnet.iohkdev.io/send-money/$ADDRESS1
+cardano-wallet address list $WALLET1 | jq -r ".[0].id"
 ```
+
+
+Open https://testnets.cardano.org/en/cardano/tools/faucet/ page, paste the address,
+and request funds.
 
 Note that this is a new faucet, and it only allows one request every 24 hours.
 If your request fails because of the rate limit, you can ask a teammate to
@@ -168,7 +175,7 @@ TXID=`cardano-wallet transaction list $WALLET2 | jq ".[0].id" -r`
 
 If you would like to see the transaction in Cardano Explorer, run:
 ```shell script
-xdg-open https://explorer.cardano-testnet.iohkdev.io/en/transaction/?id=${TXID}
+xdg-open https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=${TXID}
 ```
 
 Log into the PostgreSQL DB maintained by the Cardano DB Sync node:

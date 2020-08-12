@@ -19,7 +19,7 @@ services:
       - "5433:5432"
 
   cardano-node:
-    image: inputoutput/cardano-node:1.12.0
+    image: inputoutput/cardano-node:1.18.0
     environment:
       - NETWORK=${NETWORK:-testnet}
     volumes:
@@ -27,7 +27,7 @@ services:
       - node-ipc:/ipc
 
   cardano-db-sync:
-    image: inputoutput/cardano-db-sync:2.0.0
+    image: inputoutput/cardano-db-sync:3.1.0
     environment:
       - NETWORK=${NETWORK:-testnet}
       - POSTGRES_HOST=postgres
@@ -43,7 +43,7 @@ services:
       - node-ipc:/node-ipc
 
   cardano-wallet:
-    image: inputoutput/cardano-wallet:2020.4.28-byron
+    image: inputoutput/cardano-wallet:2020.7.28-shelley
     depends_on:
       - cardano-node
     command: |
