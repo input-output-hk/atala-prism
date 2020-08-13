@@ -21,7 +21,7 @@ const Header = () => {
     <Row type="flex" align="middle" className={`HeaderContainer ${theme.class()}`}>
       <Col lg={8} className="LogoContainer">
         <a href="/">
-          <img className="HeaderLogo" src="atala-logo.svg" alt="Atala Logo" />
+          <img className="HeaderLogo" src="atala_new_logo.svg" alt="Atala Logo" />
         </a>
         <div className="PortalName">
           <p>{t(theme.title())}</p>

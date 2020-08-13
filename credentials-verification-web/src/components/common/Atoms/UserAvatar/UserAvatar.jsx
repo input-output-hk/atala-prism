@@ -11,7 +11,7 @@ const UserAvatar = () => {
   const organisationName = session?.organisationName;
 
   return (
-    <Col lg={6} className="UserAvatar">
+    <Col lg={4} className="UserAvatar">
       <div className="UserData">
         <Avatar style={{ color: '#FF2D3B', backgroundColor: '#FFFFFF' }}>
           {getInitials(organisationName)}

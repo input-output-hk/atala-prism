@@ -31,12 +31,12 @@
 }
 
 .theme-secondary {
-  background-color: $secondary-color;
-  border-color: $secondary-color;
+  background-color: $black;
+  border-color: $black;
   color: $white;
   &:hover,
   &:focus {
-    background-color: #01101c;
+    background-color: $black;
     color: $white;
   }
 }

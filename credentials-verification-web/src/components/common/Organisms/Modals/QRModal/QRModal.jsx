@@ -17,8 +17,11 @@ const QRModal = ({ tPrefix, visible, onCancel, qrValue }) => {
       destroyOnClose
       onCancel={onCancel}
     >
-      <h2>{t(`${tPrefix}.modal.title`)} </h2>
       <QRCode value={qrValue} />
+      <h2>{t(`${tPrefix}.modal.title`)} </h2>
+      <p>
+        {t(`${tPrefix}.modal.subtitle.0`)} <br /> {t(`${tPrefix}.modal.subtitle.1`)}
+      </p>
       <div className="FooterButtons">
         <CustomButton
           buttonProps={{ onClick: onCancel, className: 'theme-secondary' }}
