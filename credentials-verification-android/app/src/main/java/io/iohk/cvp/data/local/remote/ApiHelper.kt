@@ -1,18 +1,19 @@
 package io.iohk.cvp.data.local.remote
 
 import com.google.protobuf.ByteString
-import io.iohk.cvp.viewmodel.dtos.ConnectionListable
+import io.iohk.atala.crypto.japi.ECKeyPair
+import io.iohk.cvp.viewmodel.dtos.ConnectionDataDto
 import io.iohk.prism.protos.*
 
 interface ApiHelper {
-    suspend fun addConnection(token: String,
-                      publicKey: ConnectorPublicKey, nonce: String): AddConnectionFromTokenResponse
+    suspend fun addConnection(ecKeyPair: ECKeyPair,
+                              token: String, nonce: String): AddConnectionFromTokenResponse
 
-    suspend fun getAllMessages(userId: String, lastMessageId: String?): GetMessagesPaginatedResponse
+    suspend fun getAllMessages(ecKeyPair: ECKeyPair, lastMessageId: String?): GetMessagesPaginatedResponse
 
-    suspend fun sendMultipleMessage(senderUserId: String, connectionId: String,
+    suspend fun sendMultipleMessage(ecKeyPair: ECKeyPair, connectionId: String,
                                     messages: List<ByteString>)
 
     suspend fun getConnectionTokenInfo(token: String): GetConnectionTokenInfoResponse
-    suspend fun sendMessageToMultipleConnections(senderUserList: MutableSet<ConnectionListable>, credential: ByteString)
+    suspend fun sendMessageToMultipleConnections(connectionDataList: List<ConnectionDataDto>, credential: ByteString)
 }

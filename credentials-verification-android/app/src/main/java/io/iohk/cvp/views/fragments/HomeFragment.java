@@ -60,9 +60,6 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
     FrameLayout fragmentLayout;
 
     @Inject
-    CredentialDetailFragment credentialFragment;
-
-    @Inject
     DataManager dataManager;
 
     @Inject
@@ -125,7 +122,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
                 if(messages != null) {
                     credentialsAdapter.addMesseges(messages);
                     if (messages.isEmpty()) {
-                        ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.FIRSTCONNECTION, null);
+                        ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.FIRSTCONNECTION);
                     } else {
                         //SHOW QR BUTTON
                         setHasOptionsMenu(true);
@@ -157,6 +154,8 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
     public void onCredentialClickListener(Boolean isNew, Credential credential) {
 
         ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_VIEW);
+
+        CredentialDetailFragment credentialFragment = new CredentialDetailFragment();
         credentialFragment.setCredential(credential);
         credentialFragment.setCredentialIsNew(isNew);
 

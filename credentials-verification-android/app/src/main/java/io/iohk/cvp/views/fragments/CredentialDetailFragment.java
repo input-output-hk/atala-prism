@@ -36,7 +36,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> {
 
-    private ViewModelProvider.Factory factory;
+    @Inject
+    ViewModelProvider.Factory factory;
 
     @Setter
     private Credential credential;
@@ -108,11 +109,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     @BindView(R.id.layout_university_name)
     ConstraintLayout layoutUniversityName;
-
-    @Inject
-    CredentialDetailFragment(ViewModelProvider.Factory factory) {
-        this.factory = factory;
-    }
 
     @Override
     protected int getViewId() {

@@ -48,6 +48,19 @@ commands:
               curl -O -L https://github.com/grpc/grpc-web/releases/download/<< parameters.grpcweb-version >>/$archive
               chmod +x $archive
               sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
+  install-sbt:
+    description: "Install sbt"
+    parameters:
+      version:
+        type: string
+        default: "1.3.8"
+    steps:
+      - run:
+          name: "Install sbt"
+          command: |
+            apt update && apt install -y curl
+            curl -L -o sbt-<< parameters.version >>.deb https://dl.bintray.com/sbt/debian/sbt-<< parameters.version >>.deb
+            sudo dpkg -i sbt-<< parameters.version >>.deb
 
   install-coursier:
     description: "Install coursier"
@@ -354,7 +367,10 @@ jobs:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
-
+      - install-sbt
+      - run:
+          name: Assembly Crypto
+          command: cd crypto && sbt cryptoJVM/assembly
       - run:
           name: Run Lint Tests
           command: cd credentials-verification-android && ./gradlew lint test

@@ -1,16 +1,18 @@
 package io.iohk.cvp.data.local
 
 import com.google.protobuf.ByteString
+import io.iohk.atala.crypto.japi.ECKeyPair
 import io.iohk.cvp.data.DataManager
 import io.iohk.cvp.data.local.db.DbHelper
 import io.iohk.cvp.data.local.db.model.Contact
 import io.iohk.cvp.data.local.db.model.Credential
+import io.iohk.cvp.data.local.preferences.PreferencesHelper
 import io.iohk.cvp.data.local.remote.ApiHelper
-import io.iohk.cvp.viewmodel.dtos.ConnectionListable
+import io.iohk.cvp.viewmodel.dtos.ConnectionDataDto
 import io.iohk.prism.protos.*
 import javax.inject.Inject
 
-class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelper: ApiHelper) : DataManager {
+class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelper: ApiHelper, private var prefHelper: PreferencesHelper) : DataManager {
 
     private var mDbHelper: DbHelper = dbHelper
 
@@ -26,24 +28,40 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         mDbHelper.saveAllCredentials(credentialsList)
     }
 
-    override suspend fun addConnection(token: String, publicKey: ConnectorPublicKey, nonce: String): AddConnectionFromTokenResponse {
-        return apiHelper.addConnection(token, publicKey, nonce)
+    override suspend fun addConnection(ecKeyPair: ECKeyPair, token: String, nonce: String): AddConnectionFromTokenResponse {
+        return apiHelper.addConnection(ecKeyPair, token, nonce)
     }
 
-    override suspend fun getAllMessages(userId: String, lastMessageId: String?): GetMessagesPaginatedResponse {
-        return apiHelper.getAllMessages(userId, lastMessageId)
+    override suspend fun getAllMessages(ecKeyPair: ECKeyPair, lastMessageId: String?): GetMessagesPaginatedResponse {
+        return apiHelper.getAllMessages(ecKeyPair, lastMessageId)
     }
 
-    override suspend fun sendMultipleMessage(senderUserId: String, connectionId: String, messages: List<ByteString>) {
-        return apiHelper.sendMultipleMessage(senderUserId, connectionId, messages)
+    override suspend fun sendMultipleMessage(ecKeyPair : ECKeyPair, connectionId: String, messages: List<ByteString>) {
+        return apiHelper.sendMultipleMessage(ecKeyPair, connectionId, messages)
     }
 
     override suspend fun getConnectionTokenInfo(token: String): GetConnectionTokenInfoResponse {
         return apiHelper.getConnectionTokenInfo(token)
     }
 
-    override suspend fun sendMessageToMultipleConnections(senderUserList: MutableSet<ConnectionListable>, credential: ByteString) {
-        apiHelper.sendMessageToMultipleConnections(senderUserList, credential)
+    override suspend fun sendMessageToMultipleConnections(connectionDataList: List<ConnectionDataDto>, credential: ByteString) {
+        apiHelper.sendMessageToMultipleConnections(connectionDataList, credential)
+    }
+
+    override fun getCurrentIndex(): Int {
+        return prefHelper.getCurrentIndex()
+    }
+
+    override fun getMnemonicList(): List<String> {
+        return prefHelper.getMnemonicList()
+    }
+
+    override fun increaseIndex() {
+        prefHelper.increaseIndex()
+    }
+
+    override fun getKeyPairFromPath(keyDerivationPath: String): ECKeyPair {
+        return prefHelper.getKeyPairFromPath(keyDerivationPath)
     }
 
     override suspend fun updateContact(contact: Contact) {

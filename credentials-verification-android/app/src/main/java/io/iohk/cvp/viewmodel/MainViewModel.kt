@@ -6,11 +6,9 @@ import androidx.lifecycle.viewModelScope
 import io.iohk.cvp.data.DataManager
 import io.iohk.cvp.data.local.db.mappers.ContactMapper
 import io.iohk.cvp.grpc.AsyncTaskResult
+import io.iohk.cvp.utils.CryptoUtils
 import io.iohk.prism.protos.AddConnectionFromTokenResponse
-import io.iohk.prism.protos.ConnectorPublicKey
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,12 +18,14 @@ class MainViewModel @Inject constructor(private val dataManager: DataManager) : 
     private val _hasConnectionsInitialScreenLiveData = MutableLiveData<AsyncTaskResult<Boolean>>()
     private val _hasConnectionsMoveToContact = MutableLiveData<AsyncTaskResult<Boolean>>()
 
-    fun addConnectionFromToken(token: String, publicKey: ConnectorPublicKey, nonce: String)
+    fun addConnectionFromToken(token: String, nonce: String)
             : LiveData<AsyncTaskResult<AddConnectionFromTokenResponse>>? {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val addConnectionFromTokenResponse = dataManager.addConnection(token, publicKey, nonce)
-                dataManager.saveContact(ContactMapper.mapToContact(addConnectionFromTokenResponse))
+                val currentIndex = dataManager.getCurrentIndex()
+                val addConnectionFromTokenResponse = dataManager.addConnection(dataManager.getKeyPairFromPath(CryptoUtils.getNextPathFromIndex(currentIndex)), token, nonce)
+                dataManager.saveContact(ContactMapper.mapToContact(addConnectionFromTokenResponse, CryptoUtils.getNextPathFromIndex(currentIndex)))
+                dataManager.increaseIndex()
                 _newConnectionInfoLiveData.postValue(AsyncTaskResult(addConnectionFromTokenResponse))
             } catch (ex:Exception) {
                 _newConnectionInfoLiveData.postValue(AsyncTaskResult(ex))

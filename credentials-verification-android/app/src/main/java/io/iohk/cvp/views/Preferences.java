@@ -3,19 +3,19 @@ package io.iohk.cvp.views;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-import io.iohk.cvp.core.exception.ErrorCode;
-import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.atala.crypto.japi.ECKeyPair;
 import io.iohk.cvp.core.exception.WrongPinLengthException;
 import io.iohk.cvp.data.local.preferences.SecurityPin;
-import io.iohk.cvp.utils.KeyStoreUtils;
+import io.iohk.cvp.utils.CryptoUtils;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -29,8 +29,6 @@ public class Preferences {
     public static final String BACKEND_IP = "backend_ip";
     public static final String BACKEND_PORT = "backend_port";
     private static final String MY_PREFS_NAME = "IOHK.ATALA.CREDENTIAL.VERIFICATION";
-    private static final String PK_KEY = "wallet_pk";
-    private static final String USER_ID_LIST_KEY = "user_id";
 
     public static final String SECURITY_PIN = "security_pin";
     public static final String SECURITY_TOUCH_ENABLED = "security_touch_enabled";
@@ -38,38 +36,20 @@ public class Preferences {
     // This key get used always that app start, this help to detect when app is starting and avoid to call UnlockActivity before the first activity is launched.
     public static final String FIRST_LAUNCH = "first_launch";
 
+    private static final String CURRENT_VALUE_INDEX = "current_value_index";
+    private static final String MNEMONIC_LIST = "mnemonic_list";
+
     final private Context context;
+    private String DELIMETED_CHARACTER = ",";
+
 
     public Preferences(Context context){
         this.context = context;
     }
 
-    public void savePrivateKey(byte[] pk) {
-        KeyStoreUtils keyStoreUtils = new KeyStoreUtils();
-        keyStoreUtils.generateKey();
-        String encPk = keyStoreUtils.encryptData(pk);
-
-        Editor editor = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE)
-                .edit();
-        editor.putString(PK_KEY, encPk);
-        editor.apply();
-    }
-
-    public byte[] getPrivateKey() throws SharedPrefencesDataNotFoundException {
-        KeyStoreUtils keyStoreUtils = new KeyStoreUtils();
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        Optional<String> pk = Optional.ofNullable(sharedPreferences.getString(PK_KEY, null));
-        return keyStoreUtils.decryptData(Base64
-                .decode(pk.orElseThrow(
-                        () -> new SharedPrefencesDataNotFoundException(
-                                "PrivateKey not found on shared preferences",
-                                ErrorCode.PRIVATE_KEY_NOT_FOUND)),
-                        Base64.DEFAULT));
-    }
-
     public boolean isPrivateKeyStored() {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        Optional<String> pk = Optional.ofNullable(sharedPreferences.getString(PK_KEY, null));
+        Optional<String> pk = Optional.ofNullable(sharedPreferences.getString(MNEMONIC_LIST, null));
         return pk.isPresent();
     }
 
@@ -147,5 +127,48 @@ public class Preferences {
     public Boolean isFirstLaunch() {
         SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         return prefs.getBoolean(FIRST_LAUNCH, true);
+    }
+
+    public int getCurrentIndex() {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        return prefs.getInt(CURRENT_VALUE_INDEX, -1);
+    }
+
+    @NotNull
+    public List<String> getMnemonicList() {
+        return getOrderedCollection(MNEMONIC_LIST);
+    }
+
+    public void saveMnemonicList(List<String> mnemonicList) {
+        saveOrderedArray(mnemonicList, MNEMONIC_LIST);
+    }
+
+    private void saveOrderedArray(List<String> list, String key) {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        String listAsString = list.stream()
+                .collect(Collectors.joining(DELIMETED_CHARACTER));
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(key, listAsString);
+        editor.apply();
+    }
+
+    public List<String> getOrderedCollection(String key){
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        String listAsString = prefs.getString(key, "");
+        String[] myNewList = listAsString.split(DELIMETED_CHARACTER);
+
+        return Arrays.asList(myNewList);
+    }
+
+    public void increaseIndex() {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        int currentIndex = prefs.getInt(CURRENT_VALUE_INDEX, -1);
+        Editor editor = prefs.edit();
+        editor.putInt(CURRENT_VALUE_INDEX, ++currentIndex);
+        editor.apply();
+    }
+
+    public ECKeyPair getKeyPairFromPath(String keyDerivationPath) {
+        return CryptoUtils.Companion.getKeyPairFromPath(keyDerivationPath, getMnemonicList());
     }
 }

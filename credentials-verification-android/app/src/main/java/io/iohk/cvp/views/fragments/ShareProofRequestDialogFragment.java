@@ -132,7 +132,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
                 SuccessDialog.newInstance(this, R.string.server_share_successfully)
                         .show(getFragmentManager(), "dialog");
                 this.dismiss();
-                ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONTACTS, null);
+                ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONTACTS);
             }
         });
         getViewModel().getContactUpdatedLiveData().observe(getViewLifecycleOwner(), asyncTaskResult -> {
@@ -184,8 +184,8 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
 
     @OnClick(R.id.share_button)
     public void onConnectClick() {
-        getViewModel().sendMultipleMessage(credentialsToShare.getConnection().userId,
+        getViewModel().sendMultipleMessage(credentialsToShare.getConnection().keyDerivationPath,
                 credentialsToShare.getConnection().connectionId, credentialsToShare.getCredentialsToShare().stream()
-                        .map(credential -> credential.credentialEncoded).collect(Collectors.toList()), credentialsToShare.getMessageId());
+                        .map(credential -> credential.credentialEncoded).collect(Collectors.toList()));
     }
 }

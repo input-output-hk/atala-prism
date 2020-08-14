@@ -32,13 +32,13 @@ class ConnectionsActivityViewModel @Inject constructor(val dataManager: DataMana
     fun getAllMessages(): MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>>? {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val connectionList: List<Contact?> = dataManager.getAllContacts()
+                val connectionList: List<Contact> = dataManager.getAllContacts()
                 _connectionsList.postValue(AsyncTaskResult(connectionList))
                 /* TODO - When connection is created server take a few milliseconds to create all messages,
                     added a delay to avoid getting empty messages. This should be changed when server implement stream connections */
                 delay(TimeUnit.SECONDS.toMillis(1))
                 val messagesPaginatedResponseList =  connectionList.asFlow().map { connection ->
-                    val messagesList = dataManager.getAllMessages(connection!!.userId, connection.lastMessageId).messagesList
+                    val messagesList = dataManager.getAllMessages(dataManager.getKeyPairFromPath(connection.keyDerivationPath), connection.lastMessageId).messagesList
                     val credentialList = messagesList.asFlow()
                             .filter {
                                 val newMessage: AtalaMessage = AtalaMessage.parseFrom(it.message)

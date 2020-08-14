@@ -8,7 +8,7 @@ import io.iohk.prism.protos.IssuerInfo;
 
 public class ContactMapper {
 
-     static public Contact mapToContact(AddConnectionFromTokenResponse addConnectionFromTokenResponse) {
+     static public Contact mapToContact(AddConnectionFromTokenResponse addConnectionFromTokenResponse, String keyDerivationPath) {
 
         Contact contact = new Contact();
         ConnectionInfo connectionInfo = addConnectionFromTokenResponse.getConnection();
@@ -20,7 +20,7 @@ public class ContactMapper {
         contact.did = issuerInfo.getDID() != null ? issuerInfo.getDID() : holderInfo.getDID();
         contact.name = issuerInfo.getName() != null ? issuerInfo.getName() : holderInfo.getName();
         contact.token = connectionInfo.getToken();
-        contact.userId = addConnectionFromTokenResponse.getUserId();
+        contact.keyDerivationPath = keyDerivationPath;
         contact.logo = issuerInfo.getLogo().toByteArray();
         return contact;
     }

@@ -29,8 +29,8 @@ public class Contact {
     @ColumnInfo(name = "token")
     public String token;
 
-    @ColumnInfo(name = "user_id")
-    public String userId;
+    @ColumnInfo(name = "key_derivation_path")
+    public String keyDerivationPath;
 
     public byte[] logo;
 }

@@ -24,7 +24,6 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -32,13 +31,11 @@ import javax.inject.Inject;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.iohk.atala.crypto.DerivationPath;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
-import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.ErrorCode;
-import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.grpc.AsyncTaskResult;
-import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
@@ -127,7 +124,6 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         Preferences prefs = new Preferences(this);
         if(prefs.isPinConfigured())
             navigator.showUnlockScreen(this);
-
     }
 
     private void init() {
@@ -203,7 +199,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     @Override
-    public void onNavigation(BottomAppBarOption option, String userId) {
+    public void onNavigation(BottomAppBarOption option) {
         if (BottomAppBarOption.HOME.equals(option) || BottomAppBarOption.FIRSTCONNECTION.equals(option)) {
             fab.setBackgroundTintList(colorRed);
         } else {
@@ -303,53 +299,41 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     @OnClick(R.id.fab)
     public void onFabClick() {
-        onNavigation(BottomAppBarOption.HOME, null);
+        onNavigation(BottomAppBarOption.HOME);
     }
 
     private void sendPayments(BigDecimal amount, String nonce, String connectionToken,
                               Preferences prefs) {
-        try {
-            viewModel
-                    .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), "")
-                    .observe(this, response -> {
-                        if (response.getError() != null) {
-                            getNavigator().showPopUp(getSupportFragmentManager(), getResources().getString(
-                                    R.string.server_error_message));
-                            return;
-                        }
-                        AddConnectionFromTokenResponse info = response.getResult();
-                        onNavigation(CONTACTS, info.getUserId());
-                        bottomAppBar.setItemColors(CONTACTS);
-                    });
-        } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
-            Crashlytics.logException(e);
-            // TODO show error message
-        }
+        viewModel
+                .addConnectionFromToken(connectionToken, "")
+                .observe(this, response -> {
+                    if (response.getError() != null) {
+                        getNavigator().showPopUp(getSupportFragmentManager(), getResources().getString(
+                                R.string.server_error_message));
+                        return;
+                    }
+                    AddConnectionFromTokenResponse info = response.getResult();
+                    onNavigation(CONTACTS);
+                    bottomAppBar.setItemColors(CONTACTS);
+                });
     }
 
-    public void acceptConnection(String connectionToken, Preferences prefs) {
-        try {
-            LiveData<AsyncTaskResult<AddConnectionFromTokenResponse>> asyncTaskResultLiveData = viewModel
-                    .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), "");
-
-            if(asyncTaskResultLiveData.hasActiveObservers()) {
+    public void acceptConnection(String connectionToken) {
+        LiveData<AsyncTaskResult<AddConnectionFromTokenResponse>> asyncTaskResultLiveData = viewModel
+                .addConnectionFromToken(connectionToken, "");
+        if(asyncTaskResultLiveData.hasActiveObservers()) {
+            return;
+        }
+        asyncTaskResultLiveData.observe(this, response -> {
+            if (response.getError() != null) {
+                getNavigator().showPopUp(getSupportFragmentManager(), getResources().getString(
+                        R.string.server_error_message));
                 return;
             }
-            asyncTaskResultLiveData.observe(this, response -> {
-                if (response.getError() != null) {
-                    getNavigator().showPopUp(getSupportFragmentManager(), getResources().getString(
-                            R.string.server_error_message));
-                    return;
-                }
-                AddConnectionFromTokenResponse info = response.getResult();
-                onNavigation(CONTACTS, info.getUserId());
-                bottomAppBar.setItemColors(CONTACTS);
-            });
+            onNavigation(CONTACTS);
+            bottomAppBar.setItemColors(CONTACTS);
+        });
 
-        } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
-            Crashlytics.logException(e);
-            // TODO show error message
-        }
     }
 
     public void sentFirebaseAnalyticsEvent(String eventName) {

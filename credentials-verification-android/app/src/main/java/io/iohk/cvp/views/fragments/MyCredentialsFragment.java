@@ -53,8 +53,6 @@ public class MyCredentialsFragment extends CvpFragment<CredentialsViewModel>  im
     RelativeLayout loading;
 
     @Inject
-    CredentialDetailFragment credentialFragment;
-    @Inject
     ViewModelProvider.Factory factory;
     private MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> liveData;
     private NewCredentialsRecyclerViewAdapter credentialsAdapter;
@@ -131,6 +129,7 @@ public class MyCredentialsFragment extends CvpFragment<CredentialsViewModel>  im
 
     @Override
     public void onCredentialClickListener(Boolean isNew, Credential credential) {
+        CredentialDetailFragment credentialFragment = new CredentialDetailFragment();
         credentialFragment.setCredential(credential);
         credentialFragment.setCredentialIsNew(isNew);
 

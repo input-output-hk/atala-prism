@@ -15,36 +15,21 @@ public class ConnectionListable {
   private final String connectionId;
   private final String name;
   private final String did;
-  private String userId = null;
+  private final String keyderivationPath;
   private final byte[] logo;
   private Boolean isSelected = false;
 
-  public ConnectionListable(ConnectionInfo connectionInfo) {
-    this.connectionId = connectionInfo.getConnectionId();
-
-    if (Optional.ofNullable(connectionInfo.getParticipantInfo()).map(ParticipantInfo::getIssuer).map(IssuerInfo::getName).isPresent()) {
-      IssuerInfo issuer = connectionInfo.getParticipantInfo().getIssuer();
-      this.name = issuer.getName();
-      this.did = issuer.getDID();
-      this.logo = issuer.getLogo().toByteArray();
-    } else {
-      VerifierInfo verifier = connectionInfo.getParticipantInfo().getVerifier();
-      this.name = verifier.getName();
-      this.did = verifier.getDID();
-      this.logo = verifier.getLogo().toByteArray();
-    }
-  }
 
   public ConnectionListable(Contact contact) {
     this.connectionId = contact.connectionId;
     this.name = contact.name;
     this.did = contact.did;
     this.logo = contact.logo;
-    this.userId = contact.userId;
+    this.keyderivationPath = contact.keyDerivationPath;
   }
 
-  public String getUserIdValue(){
-    return userId;
+  public String getKeyDerivationPath(){
+    return keyderivationPath;
   }
   public String getConnectionIdValue(){
     return connectionId;

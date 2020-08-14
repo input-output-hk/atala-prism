@@ -94,6 +94,7 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
     private void initObservers() {
         viewModel.getMessageSentLiveData().observe(getViewLifecycleOwner(), response -> {
+            hideLoading();
             FragmentManager fm = getFragmentManager();
             if (response.getError() != null) {
                 SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
@@ -111,6 +112,7 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
         });
 
         viewModel.allConnectionsLiveData().observe(getViewLifecycleOwner(), response -> {
+            hideLoading();
             if (response.getError() != null) {
                 getNavigator().showPopUp(getFragmentManager(), getResources().getString(
                         R.string.server_error_message));
@@ -158,6 +160,7 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
     @OnClick(R.id.share_button)
     public void onShareClick() {
+        showLoading();
         viewModel.sendMessageToMultipleConnections(selectedVerifiers, ByteString.copyFrom(getArguments().getByteArray(CREDENTIAL_ENCODED_KEY)));
     }
 

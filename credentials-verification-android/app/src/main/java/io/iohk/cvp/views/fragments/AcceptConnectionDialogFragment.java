@@ -154,6 +154,6 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
         firebaseEventLogger.sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_CONFIRM);
         this.dismiss();
         Preferences pref = new Preferences(getContext());
-        connectionManageableListener.acceptConnection(getArguments().getString(TOKEN_KEY), pref);
+        connectionManageableListener.acceptConnection(getArguments().getString(TOKEN_KEY));
     }
 }

@@ -8,6 +8,8 @@ import io.iohk.cvp.data.DataManager
 import io.iohk.cvp.data.local.db.mappers.CredentialMapper
 import io.iohk.cvp.data.local.db.model.Contact
 import io.iohk.cvp.grpc.AsyncTaskResult
+import io.iohk.cvp.utils.CryptoUtils
+import io.iohk.cvp.viewmodel.dtos.ConnectionDataDto
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable
 import io.iohk.prism.protos.AtalaMessage
 import io.iohk.prism.protos.ReceivedMessage
@@ -18,7 +20,7 @@ import javax.inject.Inject
 class ConnectionsListablesViewModel() : CvpViewModel() {
 
     private val _connectionsLiveData = MutableLiveData<AsyncTaskResult<List<Contact?>>>()
-    private val _messageSentLiveData = MutableLiveData<AsyncTaskResult<Boolean>>()
+    private val _messageSentLiveData = MutableLiveData<AsyncTaskResult<Boolean>>(AsyncTaskResult(false))
     private val _connectionIdUpdatedLiveData = MutableLiveData<AsyncTaskResult<Boolean>>()
 
     private lateinit var dataManager : DataManager
@@ -36,11 +38,11 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
         return _connectionIdUpdatedLiveData
     }
 
-    fun sendMultipleMessage(senderUserId: String, connectionId: String,
-                            messages: List<ByteString>, lastMessageId: String) {
+    fun sendMultipleMessage(path: String, connectionId: String,
+                            messages: List<ByteString>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                dataManager.sendMultipleMessage(senderUserId, connectionId, messages)
+                dataManager.sendMultipleMessage(dataManager.getKeyPairFromPath(path), connectionId, messages)
                 /* TODO - When connection is created server take a few milliseconds to create all messages,
                     added a delay to avoid getting empty messages. This should be changed when server implement stream connections */
                 delay(TimeUnit.SECONDS.toMillis(1))
@@ -54,7 +56,7 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
 
     private suspend fun updateStoredMessages(connectionId: String) {
         val contact = dataManager.getContactByConnectionId(connectionId)!!
-        val messagesList = dataManager.getAllMessages(contact.userId, contact.lastMessageId).messagesList
+        val messagesList = dataManager.getAllMessages(CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, dataManager.getMnemonicList()), contact.lastMessageId).messagesList
         val credentialList = messagesList.filter {
             val newMessage: AtalaMessage = AtalaMessage.parseFrom(it.message)
             newMessage.proofRequest.typeIdsList.isEmpty()
@@ -100,12 +102,15 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
     fun sendMessageToMultipleConnections(selectedVerifiers: MutableSet<ConnectionListable>, byteString: ByteString) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                dataManager.sendMessageToMultipleConnections(selectedVerifiers, byteString)
+                val connectionDataList = selectedVerifiers.map { connectionListable ->
+                    ConnectionDataDto(connectionListable.connectionIdValue, dataManager.getKeyPairFromPath(connectionListable.keyDerivationPath))
+                }
+                dataManager.sendMessageToMultipleConnections(connectionDataList, byteString)
                 /* TODO - When connection is created server take a few milliseconds to create all messages,
                     added a delay to avoid getting empty messages. This should be changed when server implement stream connections */
                 delay(TimeUnit.SECONDS.toMillis(1))
-                selectedVerifiers.forEach { connectionListable: ConnectionListable ->
-                    updateStoredMessages(connectionListable.connectionIdValue)
+                connectionDataList.forEach { connectionDataDto: ConnectionDataDto ->
+                    updateStoredMessages(connectionDataDto.connectionId)
                 }
                 _messageSentLiveData.postValue(AsyncTaskResult(true))
             } catch (ex:Exception) {

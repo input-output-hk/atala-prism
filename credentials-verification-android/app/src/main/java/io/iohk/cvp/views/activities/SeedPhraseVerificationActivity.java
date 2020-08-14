@@ -23,6 +23,8 @@ import io.iohk.cvp.views.utils.SimpleTextWatcher;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -132,15 +134,8 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
 
   @OnClick(R.id.verify_button)
   public void onContinueClick() {
-    try {
-      ECKeys crypto = new ECKeys();
-      KeyPair keyPair = crypto.getKeyPair(seedPhrase);
-      new Preferences(this).savePrivateKey(keyPair.getPrivateKey().toByteArray());
-      navigator.showAccountCreated(this);
-    } catch (CryptoException | InvalidKeySpecException e) {
-      Crashlytics.logException(e);
-      // TODO show error message
-    }
+    new Preferences(this).saveMnemonicList(seedPhrase);
+    navigator.showAccountCreated(this);
   }
 
   private boolean validateSeed(CharSequence toCompare, int seedNumber) {

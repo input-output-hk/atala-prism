@@ -11,6 +11,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
@@ -71,17 +72,8 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
     adapter = new SeedPhraseAdapter();
     gridView.setAdapter(adapter);
 
-    InputStream inputStream = getResources().openRawResource(R.raw.word_list);
-    try {
-      byte[] entropy = new byte[128 / 8];
-      MnemonicCode mnemonic = new MnemonicCode(inputStream,
-          "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db");
-      new SecureRandom().nextBytes(entropy);
-      adapter.setSeedPhrase(mnemonic.toMnemonic(entropy));
-      adapter.notifyDataSetChanged();
-    } catch (IOException | MnemonicLengthException e) {
-      e.printStackTrace();
-    }
+    adapter.setSeedPhrase(CryptoUtils.Companion.generateMnemonicList());
+    adapter.notifyDataSetChanged();
 
     List<Integer> indexesList = new LinkedList<>(Arrays.asList(seedPhraseIndexes));
     Random rand = new Random();

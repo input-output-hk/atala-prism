@@ -66,7 +66,7 @@ public class BottomAppBar extends CoordinatorLayout {
 
   public void onItemSelected(BottomAppBarOption option) {
     setItemColors(option);
-    listener.onNavigation(option, null);
+    listener.onNavigation(option);
   }
 
   public void setItemColors(BottomAppBarOption optionSelected) {
