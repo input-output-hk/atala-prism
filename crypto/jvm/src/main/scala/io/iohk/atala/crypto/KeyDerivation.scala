@@ -39,7 +39,7 @@ class GenericKeyDerivation(ec: GenericEC) extends KeyDerivationTrait {
     * Checks if the word is one of words used in mnemonics
     */
   override def isValidMnemonicWord(word: String): Boolean = {
-    MnemonicCodeEnglish.wordSet.contains(word)
+    MnemonicCodeEnglish.contains(word)
   }
 
   /**

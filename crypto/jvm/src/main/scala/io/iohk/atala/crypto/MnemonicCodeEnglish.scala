@@ -9,8 +9,7 @@ object MnemonicCodeEnglish {
     * to keep this as Array.
     */
   val WordList: Array[String] =
-    """
-      |abandon
+    """abandon
       |ability
       |able
       |about
@@ -2057,9 +2056,23 @@ object MnemonicCodeEnglish {
       |zebra
       |zero
       |zone
-      |zoo""".stripMargin.trim.split("\n").filter(_.nonEmpty).toArray
-
-  lazy val wordSet = WordList.toSet
+      |zoo""".stripMargin.trim.split("\n")
 
   require(WordList.length == 2048, "The word list is corrupted")
+
+  /**
+    * Checks whether a word is in the dictionary
+    *
+    * NOTE: Involving any Scala collection method would get the Android app to crash
+    *  hence, only Java methods are used, the performance shouldn't be a problem given
+    *  that the array has only 2k items, and it's called once per word (12 words), also,
+    *  this should be invoked only when deriving the initial seed, or when recovering an
+    *  account, which are invoked rarely.
+    *
+    *  If the performance ever becomes a problem, `java.util.Arrays.binarySearch` or using a
+    *  Java Set should be good enough.
+    */
+  def contains(word: String): Boolean = {
+    WordList.indexOf(word) >= 0
+  }
 }
