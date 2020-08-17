@@ -12,7 +12,8 @@ import mill._
 import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scalapblib._
 import mill.contrib.scoverage.ScoverageModule
-import mill.define.{Sources, Target}
+import mill.define.{Input, Sources, Target, Task}
+import mill.eval.PathRef
 import mill.modules.Assembly.Rule
 import mill.scalalib._
 import mill.twirllib._
@@ -143,10 +144,45 @@ object versions {
   val twirl = "1.5.0"
 }
 
+/**
+  * Crypto library wrapped in a Mill module, ensuring it's locally available for other modules.
+  *
+  * <p>This module gets the version of the Crypto library to ensure the right one exists and is used, even if a newer
+  * version has been previously built locally. It runs once and only once per `mill` run, guaranteeing the Crypto
+  * library used is always up-to-date.
+  */
+object Crypto extends ScalaModule {
+  def scalaVersion = versions.scala
+
+  override def ivyDeps = Agg(ivy"io.iohk::crypto:${currentVersion()}")
+
+  override def resolveDeps(deps: Task[Agg[Dep]], sources: Boolean): Task[Agg[PathRef]] =
+    T.task {
+      publishLocalCrypto()
+      super.resolveDeps(deps, sources)()
+    }
+
+  def currentVersion: Input[String] =
+    T.input {
+      val versionResult = os.proc("sbt", "cryptoJVM/version").call(cwd = os.pwd / up / 'crypto)
+      // The version is the last word in the output
+      val version = versionResult.out.text().split("\\s").filterNot(_.isEmpty).last
+      T.ctx().log.info(s"Crypto version: $version")
+      version
+    }
+
+  private def publishLocalCrypto =
+    T.input {
+      T.ctx().log.info(s"Publishing Crypto library version ${currentVersion()}")
+      os.proc("sbt", "cryptoJVM/publishLocal").call(cwd = os.pwd / up / 'crypto, stdout = os.Inherit)
+    }
+}
+
 object common extends PrismScalaModule {
+  override def moduleDeps = Seq(Crypto) ++ super.moduleDeps
+
   override def ivyDeps =
     Agg(
-      ivy"io.iohk::crypto:latest.integration",
       ivy"org.flywaydb:flyway-core:6.0.2",
       ivy"org.postgresql:postgresql:42.2.6",
       ivy"com.typesafe:config:1.3.4",
@@ -160,18 +196,6 @@ object common extends PrismScalaModule {
       ivy"com.lihaoyi::os-lib:0.2.7",
       ivy"net.jtownson::odyssey:0.1.5"
     )
-
-  override def compile =
-    T {
-      publishLocalDeps()
-      super.compile()
-    }
-
-  def publishLocalDeps =
-    T {
-      println("Publishing local dependencies")
-      os.proc("sbt", "cryptoJVM/publishLocal").call(cwd = os.pwd / up / 'crypto, stdout = os.Inherit)
-    }
 
   object `test-util` extends PrismScalaModule {
     override def moduleDeps = Seq(common) ++ super.moduleDeps
