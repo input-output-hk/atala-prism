@@ -354,7 +354,7 @@ jobs:
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "credentials-verification-android"
+          directories: "credentials-verification-android crypto"
       - run: yes | sdkmanager --licenses || exit 0
       - run: yes | sdkmanager --update || exit 0
 
