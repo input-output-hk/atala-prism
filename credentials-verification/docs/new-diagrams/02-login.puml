@@ -1,0 +1,17 @@
+@startuml
+title Issuer Login
+
+actor Issuer
+participant "Management Console" as ManagementConsole
+participant "Prism Browser Wallet" as BrowserWallet
+
+group Login
+    Issuer -> ManagementConsole : Login
+    ManagementConsole -> BrowserWallet : Login
+    BrowserWallet -> Issuer : Asks to confirm logging\n in to the Management Console
+    Issuer -> BrowserWallet : Approve login
+    BrowserWallet -> ManagementConsole : Login successful
+    ManagementConsole -> Issuer : Login successful
+    note right of Issuer : Now every operation done in the\nManagement Console uses the DID as\n the authentication mechanism
+end
+@enduml
