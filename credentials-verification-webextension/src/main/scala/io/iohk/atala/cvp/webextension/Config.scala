@@ -17,7 +17,7 @@ object Config {
   def default(activeTabContextScripts: Seq[String], overrideConnectorUrl: Option[String] = None): Config = {
     Config(
       ActiveTabConfig(contextScripts = activeTabContextScripts),
-      backendUrl = overrideConnectorUrl.getOrElse("http://console-develop.atalaprism.io")
+      backendUrl = overrideConnectorUrl.getOrElse("https://console-develop.atalaprism.io:4433")
     )
   }
 
