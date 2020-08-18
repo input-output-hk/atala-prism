@@ -164,7 +164,8 @@ object Crypto extends ScalaModule {
 
   def currentVersion: Input[String] =
     T.input {
-      val versionResult = os.proc("sbt", "cryptoJVM/version").call(cwd = os.pwd / up / 'crypto)
+      val versionResult =
+        os.proc("sbt", "cryptoJVM/version").call(cwd = os.pwd / up / 'crypto, env = Map("SBT_OPTS" -> "-Xmx2G"))
       // The version is the last word in the output
       val version = versionResult.out.text().split("\\s").filterNot(_.isEmpty).last
       T.ctx().log.info(s"Crypto version: $version")
