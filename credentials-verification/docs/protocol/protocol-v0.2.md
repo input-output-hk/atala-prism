@@ -103,7 +103,7 @@ type CredentialData = {
   credRevocationEvent: Option[Date]  // extracted from the blockchain
 }
 
-// Node atate
+// Node state
 state = {
   dids       : Map[didSuffix: Hash, data: DIDDocument],
   credentials: Map[credentialId: Hash, data: CredentialData]
