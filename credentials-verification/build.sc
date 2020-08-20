@@ -162,10 +162,13 @@ object Crypto extends ScalaModule {
       super.resolveDeps(deps, sources)()
     }
 
+  private val cryptoDir = os.pwd / up / 'crypto
+  private val sbtEnv = Map("SBT_OPTS" -> "-Xmx1G")
+
   def currentVersion: Input[String] =
     T.input {
       val versionResult =
-        os.proc("sbt", "cryptoJVM/version").call(cwd = os.pwd / up / 'crypto, env = Map("SBT_OPTS" -> "-Xmx2G"))
+        os.proc("sbt", "cryptoJVM/version").call(cwd = cryptoDir, env = sbtEnv)
       // The version is the last word in the output
       val version = versionResult.out.text().split("\\s").filterNot(_.isEmpty).last
       T.ctx().log.info(s"Crypto version: $version")
@@ -175,7 +178,7 @@ object Crypto extends ScalaModule {
   private def publishLocalCrypto =
     T.input {
       T.ctx().log.info(s"Publishing Crypto library version ${currentVersion()}")
-      os.proc("sbt", "cryptoJVM/publishLocal").call(cwd = os.pwd / up / 'crypto, stdout = os.Inherit)
+      os.proc("sbt", "cryptoJVM/publishLocal").call(cwd = cryptoDir, env = sbtEnv, stdout = os.Inherit)
     }
 }
 
