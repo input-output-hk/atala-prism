@@ -337,7 +337,7 @@ trait ServerPBCommon extends ServerCommon with PBCommon
 
 object node extends ServerPBCommon with CVPDockerModule {
 
-  override def mainClass = Some("io.iohk.node.NodeApp")
+  override def mainClass = Some("io.iohk.atala.prism.node.NodeApp")
 
   override def cvpDockerConfig = CVPDockerConfig(name = "node")
 
