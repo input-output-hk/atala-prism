@@ -79,7 +79,7 @@ class ConnectionsActivityViewModel @Inject constructor(val dataManager: DataMana
                     } else {
                         return@map null
                     }
-                }.toList()
+                }.filterNotNull().toList()
 
                 _credentialsToShare.postValue(AsyncTaskResult(proofRequests))
             } catch (ex:Exception) {

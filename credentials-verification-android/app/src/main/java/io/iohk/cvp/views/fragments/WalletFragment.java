@@ -1,7 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -9,12 +8,11 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
-import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import java.util.Objects;
 import javax.inject.Inject;
-import lombok.NoArgsConstructor;
+
 import lombok.Setter;
 
 @Setter
@@ -49,7 +47,7 @@ public class WalletFragment extends CvpFragment {
   @Override
   public void onPrepareOptionsMenu(Menu menu) {
     MenuItem paymentHistoryMenuItem;
-    paymentHistoryMenuItem = menu.findItem(R.id.action_payment_history);
+    paymentHistoryMenuItem = menu.findItem(R.id.action_history);
     paymentHistoryMenuItem.setVisible(true);
   }
 
@@ -60,7 +58,7 @@ public class WalletFragment extends CvpFragment {
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    if (item.getItemId() == R.id.action_payment_history) {
+    if (item.getItemId() == R.id.action_history) {
       navigator.showFragmentOnTop(
           Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
           paymentHistoryFragment);

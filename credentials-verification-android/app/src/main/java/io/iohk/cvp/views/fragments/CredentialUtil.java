@@ -1,6 +1,7 @@
 package io.iohk.cvp.views.fragments;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 
 import java.util.Optional;
 
@@ -45,6 +46,21 @@ public class CredentialUtil {
             }
         }
         return "";
+    }
+
+    public static Drawable getLogo(String credentialType, Context context){
+            switch (CredentialType.getByValue(credentialType).get()) {
+                case REDLAND_CREDENTIAL:
+                    return context.getResources().getDrawable(R.drawable.ic_id_government, null);
+                case DEGREE_CREDENTIAL:
+                    return context.getResources().getDrawable(R.drawable.ic_id_university, null);
+                case EMPLOYMENT_CREDENTIAL:
+                    return context.getResources().getDrawable(R.drawable.ic_id_proof, null);
+                case INSURANCE_CREDENTIAL:
+                    return context.getResources().getDrawable(R.drawable.ic_id_insurance, null);
+                default:
+                    return null;
+            }
     }
 
 }

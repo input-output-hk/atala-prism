@@ -34,10 +34,12 @@ import lombok.Setter;
 
 @Setter
 @NoArgsConstructor
-public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> {
+public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> implements DeleteCredentialDialogFragment.OnDeleteCredential {
 
     @Inject
     ViewModelProvider.Factory factory;
+
+    private static final int DELETE_ALL_CONNECTIONS_REQUEST_CODE = 22;
 
     @Setter
     private Credential credential;
@@ -132,19 +134,27 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
             shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
             shareCredentialMenuItem.setVisible(true);
         }
+        MenuItem deleteCredentialMenuItem = menu.findItem(R.id.action_delete_credential);
+        deleteCredentialMenuItem.setVisible(true);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_share_credential) {
-            navigator.showFragmentOnTopOfMenu(
-                    Objects.requireNonNull(getActivity()).getSupportFragmentManager(), getShareFragment());
-            return true;
+
+        switch (item.getItemId()){
+            case R.id.action_share_credential:
+                navigator.showFragmentOnTopOfMenu(
+                        requireActivity().getSupportFragmentManager(), getShareFragment());
+                return true;
+            case android.R.id.home:
+                requireActivity().onBackPressed();
+                return true;
+            case R.id.action_delete_credential:
+                navigator.showDialogFragment(
+                        requireActivity().getSupportFragmentManager(), getDeleteCredentialFragment(), null);
+                return true;
         }
-        if (item.getItemId() == android.R.id.home) {
-            Objects.requireNonNull(getActivity()).onBackPressed();
-            return true;
-        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -154,6 +164,18 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
         args.putString(IntentDataConstants.CREDENTIAL_DATA_KEY, credential.credentialDocument);
         args.putString(IntentDataConstants.CREDENTIAL_TYPE_KEY, credential.credentialType);
         args.putByteArray(IntentDataConstants.CREDENTIAL_ENCODED_KEY, credential.credentialEncoded.toByteArray());
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
+    private DeleteCredentialDialogFragment getDeleteCredentialFragment() {
+        DeleteCredentialDialogFragment fragment = new DeleteCredentialDialogFragment();
+        fragment.setTargetFragment(this, DELETE_ALL_CONNECTIONS_REQUEST_CODE);
+        Bundle args = new Bundle();
+        args.putString(IntentDataConstants.CREDENTIAL_TYPE_KEY, credential.credentialType);
+        args.putString(IntentDataConstants.CREDENTIAL_ID_KEY, credential.credentialId);
+        args.putString(IntentDataConstants.CREDENTIAL_DATA_KEY, credential.credentialDocument);
         fragment.setArguments(args);
 
         return fragment;
@@ -279,7 +301,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
                 textViewGraduationDate.setTextColor(getResources().getColor(R.color.black));
 
             }
-
         }
     }
 
@@ -287,7 +308,11 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     public CredentialsViewModel getViewModel() {
         CredentialsViewModel viewModel = ViewModelProviders.of(this, factory)
                 .get(CredentialsViewModel.class);
-        viewModel.setContext(getContext());
         return viewModel;
+    }
+
+    @Override
+    public void credentialDeleted() {
+        getFragmentManager().popBackStack();
     }
 }

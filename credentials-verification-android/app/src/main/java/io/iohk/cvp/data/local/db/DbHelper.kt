@@ -13,5 +13,6 @@ interface DbHelper {
     suspend fun removeAllLocalData()
     suspend fun getAllNewCredentials(): List<Credential>
     suspend fun updateCredential(credential: Credential)
-    suspend fun getCredentialByCredentialId(credentialId : String): Credential?
+    suspend fun getCredentialByCredentialId(credentialId : String): Credential
+    suspend fun deleteCredential(credential: Credential)
 }

@@ -36,11 +36,6 @@ public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatAc
   }
 
   @Override
-  public Context getApplicationContext() {
-    return this;
-  }
-
-  @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.menu, menu);
     return super.onCreateOptionsMenu(menu);

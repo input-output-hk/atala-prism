@@ -226,5 +226,8 @@
   <string name="add_new"><u>Add new</u></string>
   <string name="enter_connection_code">Enter connection code</string>
   <string name="cancel">Cancel</string>
+  <string name="are_you_sure">Are your sure?</string>
+  <string name="you_are_about_to_delete">You are about to delete:</string>
+  <string name="delete">Delete</string>
 
 </resources>

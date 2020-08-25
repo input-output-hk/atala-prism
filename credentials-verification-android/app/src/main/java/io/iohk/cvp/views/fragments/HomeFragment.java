@@ -12,6 +12,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -110,7 +111,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
 
     private void initObservers() {
 
-        MutableLiveData<AsyncTaskResult<List<Credential>>> live = viewModel.getCredentialLiveData();
+        LiveData<AsyncTaskResult<List<Credential>>> live = viewModel.getCredentialLiveData();
         live.observe(getViewLifecycleOwner(), result -> {
             try {
                 if (result.getError() != null) {

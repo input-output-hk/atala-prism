@@ -1,7 +1,6 @@
 package io.iohk.cvp.data.local.db.dao
 
 import androidx.room.*
-import io.iohk.cvp.data.local.db.model.Contact
 import io.iohk.cvp.data.local.db.model.Credential
 
 @Dao
@@ -25,5 +24,9 @@ interface CredentialDao {
     suspend fun updateCredential(credential: Credential)
 
     @Query("SELECT * FROM credential where credential_id = :credentialId order by id asc")
-    suspend fun getCredentialByCredentialId(credentialId : String): Credential?
+    suspend fun getCredentialByCredentialId(credentialId : String): Credential
+
+    @Delete
+    suspend fun delete(credential: Credential)
+
 }

@@ -269,7 +269,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        paymentHistoryMenuItem = menu.findItem(R.id.action_payment_history);
+        paymentHistoryMenuItem = menu.findItem(R.id.action_history);
         return true;
     }
 

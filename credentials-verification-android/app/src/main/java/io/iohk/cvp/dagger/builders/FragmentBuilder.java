@@ -22,6 +22,7 @@ import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.CredentialDetailFragment;
 import io.iohk.cvp.views.fragments.DeleteAllConnectionsDialogFragment;
+import io.iohk.cvp.views.fragments.DeleteCredentialDialogFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
@@ -123,4 +124,8 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector
   abstract AddQrCodeDialogFragment addQrCodeDialogFragment();
+
+  @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
+  abstract DeleteCredentialDialogFragment deleteCredentialDialogFragment();
+
 }

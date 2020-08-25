@@ -44,7 +44,11 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
         mAppDatabase.credentialDao().updateCredential(credential)
     }
 
-    override suspend fun getCredentialByCredentialId(credentialId: String): Credential? {
+    override suspend fun getCredentialByCredentialId(credentialId: String): Credential {
         return mAppDatabase.credentialDao().getCredentialByCredentialId(credentialId)
+    }
+
+    override suspend fun deleteCredential(credential: Credential) {
+        mAppDatabase.credentialDao().delete(credential)
     }
 }

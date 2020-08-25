@@ -9,6 +9,8 @@ public final class IntentDataConstants {
   public static final String CREDENTIAL_DATA_KEY = "CREDENTIAL_DATA";
   public static final String CREDENTIAL_TYPE_KEY = "CREDENTIAL_TYPE";
   public static final String CREDENTIAL_ENCODED_KEY = "CREDENTIAL_ENCODED";
+  public static final String CREDENTIAL_ID_KEY = "CREDENTIAL_ID";
+  public static final String CREDENTIAL_NAME_KEY = "CREDENTIAL_NAME";
 
   public static final String TOKENIZATION_KEY = "TOKENIZATION_KEY";
   public static final String CONNECTION_TOKEN_KEY = "CONNECTION_TOKEN_KEY";
