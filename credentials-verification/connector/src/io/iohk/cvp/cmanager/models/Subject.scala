@@ -10,6 +10,7 @@ import io.scalaland.chimney.dsl._
 
 case class Subject(
     id: Subject.Id,
+    externalId: Subject.ExternalId,
     data: Json,
     createdOn: Instant,
     connectionStatus: Student.ConnectionStatus,
@@ -20,7 +21,11 @@ case class Subject(
 
 object Subject {
   case class Id(value: UUID) extends AnyVal
+  case class ExternalId(value: String) extends AnyVal
 
+  object ExternalId {
+    def random(): ExternalId = ExternalId(UUID.randomUUID().toString)
+  }
   def create(data: CreateSubject, id: Id, createdOn: Instant, connectionStatus: Student.ConnectionStatus): Subject = {
     data
       .into[Subject]

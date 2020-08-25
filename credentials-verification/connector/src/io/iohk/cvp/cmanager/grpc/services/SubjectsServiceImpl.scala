@@ -5,6 +5,7 @@ import java.util.UUID
 import io.iohk.connector.Authenticator
 import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
+import io.iohk.cvp.cmanager.models.Subject.ExternalId
 import io.iohk.cvp.cmanager.models.requests.CreateSubject
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Subject}
 import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
@@ -29,11 +30,15 @@ class SubjectsServiceImpl(
 
   override def createSubject(request: cmanager_api.CreateSubjectRequest): Future[cmanager_api.CreateSubjectResponse] = {
     def f(issuerId: Issuer.Id) = {
+
+      // TODO: Remove when the front end provides the external id
+      val externalId = if (request.externalId.isEmpty) ExternalId.random() else ExternalId(request.externalId)
       lazy val json = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
       val model = request
         .into[CreateSubject]
         .withFieldConst(_.issuerId, issuerId)
         .withFieldConst(_.data, json)
+        .withFieldConst(_.externalId, externalId)
         .enableUnsafeOption
         .transform
 

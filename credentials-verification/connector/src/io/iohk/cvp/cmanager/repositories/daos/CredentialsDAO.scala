@@ -113,7 +113,7 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT inserted.*, PTS.name AS issuer_name, issuer_subjects.subject_data, pc.*
+         |SELECT inserted.*, issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data, pc.*
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN issuer_subjects USING (subject_id)
@@ -139,7 +139,8 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data,
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
+             |       issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data,
              |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
@@ -157,7 +158,8 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data,
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
+             |       issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data,
              |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
@@ -178,7 +180,8 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data,
+         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
+         |       issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data,
          |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)

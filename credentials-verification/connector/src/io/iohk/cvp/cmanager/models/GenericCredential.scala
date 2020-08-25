@@ -13,6 +13,7 @@ case class GenericCredential(
     credentialData: Json,
     groupName: String,
     createdOn: Instant,
+    externalId: Subject.ExternalId,
     issuerName: String,
     subjectData: Json,
     publicationData: Option[PublicationData]

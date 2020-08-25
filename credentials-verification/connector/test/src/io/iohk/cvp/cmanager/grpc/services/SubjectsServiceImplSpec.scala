@@ -54,6 +54,45 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     "create a subject" in {
       val issuerId = createIssuer("issuer name").id
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
+      val externalId = Subject.ExternalId.random()
+
+      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+        val json = Json
+          .obj(
+            "universityAssignedId" -> Json.fromString("noneyet"),
+            "fullName" -> Json.fromString("Alice Beakman"),
+            "email" -> Json.fromString("alice@bkm.me"),
+            "admissionDate" -> Json.fromString(LocalDate.now().toString)
+          )
+
+        val request = cmanager_api
+          .CreateSubjectRequest(
+            groupName = group.name.value,
+            jsonData = json.noSpaces,
+            externalId = externalId.value
+          )
+
+        val response = serviceStub.createSubject(request).subject.value
+        val subjectId = Subject.Id(UUID.fromString(response.id))
+        response.groupName must be(request.groupName)
+        response.jsonData must be(json.noSpaces)
+        response.externalId must be(request.externalId)
+
+        // the new subject needs to exist
+        val result = subjectsRepository.find(issuerId, subjectId).value.futureValue.right.value
+        result mustNot be(empty)
+        val storedSubject = result.value
+        storedSubject.groupName.value must be(request.groupName)
+        storedSubject.data must be(json)
+        storedSubject.id must be(subjectId)
+        storedSubject.externalId must be(externalId)
+      }
+    }
+
+    // TODO: Remove ignore when the front end provides the external id
+    "fail on attempt to create a subject with empty external id" ignore {
+      val issuerId = createIssuer("issuer name").id
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val json = Json
@@ -70,18 +109,61 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
             jsonData = json.noSpaces
           )
 
-        val response = serviceStub.createSubject(request).subject.value
-        val subjectId = Subject.Id(UUID.fromString(response.id))
-        response.groupName must be(request.groupName)
-        response.jsonData must be(json.noSpaces)
+        intercept[Exception](
+          serviceStub.createSubject(request).subject.value
+        )
 
-        // the new subject needs to exist
-        val result = subjectsRepository.find(issuerId, subjectId).value.futureValue.right.value
-        result mustNot be(empty)
-        val storedSubject = result.value
+        // the new subject should not exist
+        val result = subjectsRepository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+        result must be(empty)
+      }
+    }
+
+    "fail on attempt to duplicate an external id" in {
+      val issuerId = createIssuer("issuer name").id
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
+      val externalId = Subject.ExternalId.random()
+
+      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+        val json = Json
+          .obj(
+            "universityAssignedId" -> Json.fromString("noneyet"),
+            "fullName" -> Json.fromString("Alice Beakman"),
+            "email" -> Json.fromString("alice@bkm.me"),
+            "admissionDate" -> Json.fromString(LocalDate.now().toString)
+          )
+
+        val request = cmanager_api
+          .CreateSubjectRequest(
+            groupName = group.name.value,
+            jsonData = json.noSpaces,
+            externalId = externalId.value
+          )
+
+        val initialResponse = serviceStub.createSubject(request).subject.value
+
+        // We attempt to insert another subject with the same external id
+        val secondJson = Json
+          .obj(
+            "universityAssignedId" -> Json.fromString("noneyet"),
+            "fullName" -> Json.fromString("Second Subject"),
+            "email" -> Json.fromString("second@test.me"),
+            "admissionDate" -> Json.fromString(LocalDate.now().toString)
+          )
+
+        intercept[Exception](
+          serviceStub.createSubject(request.withJsonData(secondJson.noSpaces)).subject.value
+        )
+
+        // the subject needs to exist as originally inserted
+        val result = subjectsRepository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+        result.size must be(1)
+
+        val storedSubject = result.head
         storedSubject.groupName.value must be(request.groupName)
         storedSubject.data must be(json)
-        storedSubject.id must be(subjectId)
+        storedSubject.id.value.toString must be(initialResponse.id)
+        storedSubject.externalId must be(externalId)
       }
     }
   }

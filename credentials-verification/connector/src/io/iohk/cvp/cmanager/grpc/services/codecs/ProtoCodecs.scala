@@ -59,6 +59,7 @@ object ProtoCodecs {
     cmanager_models
       .IssuerSubject()
       .withId(subject.id.value.toString)
+      .withExternalId(subject.externalId.value)
       .withConnectionStatus(studentConnectionStatus2Proto.transform(subject.connectionStatus))
       .withConnectionToken(subject.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(subject.connectionId.map(_.toString).getOrElse(""))
@@ -76,6 +77,7 @@ object ProtoCodecs {
       .withIssuerName(credential.issuerName)
       .withGroupName(credential.groupName)
       .withSubjectData(credential.subjectData.noSpaces)
+      .withExternalId(credential.externalId.value)
 
     credential.publicationData.fold(model) { data =>
       model

@@ -966,7 +966,8 @@ proto.io.iohk.prism.protos.IssuerSubject.toObject = function(includeInstance, ms
     groupname: jspb.Message.getFieldWithDefault(msg, 3, ""),
     connectionstatus: jspb.Message.getFieldWithDefault(msg, 4, 0),
     connectiontoken: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    connectionid: jspb.Message.getFieldWithDefault(msg, 6, "")
+    connectionid: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    externalid: jspb.Message.getFieldWithDefault(msg, 7, "")
   };
 
   if (includeInstance) {
@@ -1026,6 +1027,10 @@ proto.io.iohk.prism.protos.IssuerSubject.deserializeBinaryFromReader = function(
     case 6:
       var value = /** @type {string} */ (reader.readString());
       msg.setConnectionid(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExternalid(value);
       break;
     default:
       reader.skipField();
@@ -1095,6 +1100,13 @@ proto.io.iohk.prism.protos.IssuerSubject.serializeBinaryToWriter = function(mess
   if (f.length > 0) {
     writer.writeString(
       6,
+      f
+    );
+  }
+  f = message.getExternalid();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
       f
     );
   }
@@ -1206,6 +1218,24 @@ proto.io.iohk.prism.protos.IssuerSubject.prototype.getConnectionid = function() 
  */
 proto.io.iohk.prism.protos.IssuerSubject.prototype.setConnectionid = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
+};
+
+
+/**
+ * optional string externalId = 7;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.IssuerSubject.prototype.getExternalid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.IssuerSubject} returns this
+ */
+proto.io.iohk.prism.protos.IssuerSubject.prototype.setExternalid = function(value) {
+  return jspb.Message.setProto3StringField(this, 7, value);
 };
 
 
@@ -1381,7 +1411,8 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.toObject = function(include
     nodecredentialid: jspb.Message.getFieldWithDefault(msg, 8, ""),
     issuanceoperationhash: msg.getIssuanceoperationhash_asB64(),
     encodedsignedcredential: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    publicationstoredat: jspb.Message.getFieldWithDefault(msg, 11, 0)
+    publicationstoredat: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    externalid: jspb.Message.getFieldWithDefault(msg, 12, "")
   };
 
   if (includeInstance) {
@@ -1461,6 +1492,10 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.deserializeBinaryFromReader
     case 11:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setPublicationstoredat(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExternalid(value);
       break;
     default:
       reader.skipField();
@@ -1565,6 +1600,13 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.serializeBinaryToWriter = f
   if (f !== 0) {
     writer.writeUint64(
       11,
+      f
+    );
+  }
+  f = message.getExternalid();
+  if (f.length > 0) {
+    writer.writeString(
+      12,
       f
     );
   }
@@ -1790,6 +1832,24 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getPublicationsto
  */
 proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setPublicationstoredat = function(value) {
   return jspb.Message.setProto3IntField(this, 11, value);
+};
+
+
+/**
+ * optional string externalId = 12;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getExternalid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setExternalid = function(value) {
+  return jspb.Message.setProto3StringField(this, 12, value);
 };
 
 

@@ -3,6 +3,7 @@ package io.iohk.cvp.cmanager.repositories
 import java.time.LocalDate
 
 import io.circe.Json
+import io.iohk.cvp.cmanager.models.Subject.ExternalId
 import io.iohk.cvp.cmanager.models.{IssuerGroup, Student}
 import io.iohk.cvp.cmanager.models.requests.CreateSubject
 import io.iohk.cvp.cmanager.repositories.common.CManagerRepositorySpec
@@ -17,18 +18,80 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     "create a new subject" in {
       val issuer = createIssuer("Issuer-1").id
       val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
+      val externalId = ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
         "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, group.name, json)
+      val request = CreateSubject(issuer, externalId, group.name, json)
 
       val result = repository.create(request).value.futureValue
       val subject = result.right.value
       subject.groupName must be(group.name)
       subject.data must be(json)
+      subject.externalId must be(externalId)
+    }
+
+    "fail to create a new subject with empty external id" in {
+      val issuer = createIssuer("Issuer-1").id
+      val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
+      val externalId = ExternalId("")
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "name" -> Json.fromString("Dusty Here"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateSubject(issuer, externalId, group.name, json)
+
+      intercept[Exception](
+        repository.create(request).value.futureValue
+      )
+      // no subject should be created
+      val createdSubjects = repository.getBy(issuer, 10, None, None).value.futureValue.right.value
+      createdSubjects must be(empty)
+    }
+
+    "fail to create a new subject with an external id already used" in {
+      val issuer = createIssuer("Issuer-1").id
+      val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
+      val externalId = ExternalId.random()
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "name" -> Json.fromString("Dusty Here"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateSubject(issuer, externalId, group.name, json)
+
+      val initialResponse = repository.create(request).value.futureValue.right.value
+
+      val secondJson = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "name" -> Json.fromString("Dusty Here"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+
+      val secondRequest = CreateSubject(issuer, externalId, group.name, secondJson)
+
+      intercept[Exception](
+        repository.create(secondRequest).value.futureValue
+      )
+
+      val subjectsStored = repository.getBy(issuer, 10, None, None).value.futureValue.right.value
+
+      // only one subject must be inserted correctly
+      subjectsStored.size must be(1)
+
+      val subject = subjectsStored.head
+      subject.groupName must be(group.name)
+      // the subject must have the original data
+      subject.data must be(json)
+      subject.id must be(initialResponse.id)
+      subject.externalId must be(externalId)
     }
   }
 

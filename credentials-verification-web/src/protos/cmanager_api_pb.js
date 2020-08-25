@@ -3166,7 +3166,8 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.toObject = function(op
 proto.io.iohk.prism.protos.CreateSubjectRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     groupname: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    jsondata: jspb.Message.getFieldWithDefault(msg, 2, "")
+    jsondata: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    externalid: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -3211,6 +3212,10 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.deserializeBinaryFromReader = fu
       var value = /** @type {string} */ (reader.readString());
       msg.setJsondata(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExternalid(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3254,6 +3259,13 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.serializeBinaryToWriter = functi
       f
     );
   }
+  f = message.getExternalid();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -3290,6 +3302,24 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.getJsondata = function
  */
 proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.setJsondata = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string externalId = 3;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.getExternalid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CreateSubjectRequest} returns this
+ */
+proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.setExternalid = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 

@@ -82,6 +82,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         response.issuanceOperationHash must be(empty)
         response.encodedSignedCredential must be(empty)
         response.publicationStoredAt must be(0)
+        response.externalId must be(subject.externalId.value)
       }
     }
   }

@@ -111,6 +111,7 @@ object DataPreparation {
         "email" -> "donthaveone@here.com".asJson,
         "admissionDate" -> LocalDate.now().asJson
       ),
+      externalId = Subject.ExternalId.random(),
       groupName = group.name
     )
 

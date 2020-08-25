@@ -48,6 +48,7 @@ message IssuerSubject {
     StudentConnectionStatus connectionStatus = 4;
     string connectionToken = 5; // present when the status is ConnectionMissing
     string connectionId = 6; // present when the status is ConnectionAccepted
+    string externalId = 7; // the id provided by the issuer at subject creation time
 }
 
 message Group {
@@ -68,4 +69,5 @@ message CManagerGenericCredential {
     bytes issuanceOperationHash = 9; // the hash of the associated issuance operation
     string encodedSignedCredential = 10; // the actual published credential
     uint64 publicationStoredAt = 11; // the time when the publication data was stored in the database
+    string externalId = 12; // the id provided by the issuer at subject creation time
 }

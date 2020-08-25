@@ -18,16 +18,17 @@ object IssuerSubjectsDAO {
 
   def create(data: CreateStudent, groupId: IssuerGroup.Id): doobie.ConnectionIO[Student] = {
     val id = Student.Id(UUID.randomUUID())
+    val externalId = Subject.ExternalId.random()
     val createdAt = Instant.now()
     val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
 
     sql"""
          |INSERT INTO issuer_subjects
-         |  (subject_id, subject_data, created_at, connection_status, group_id)
+         |  (subject_id, subject_data, created_at, connection_status, group_id, external_id)
          |VALUES
          |  ($id, jsonb_build_object('university_assigned_id', ${data.universityAssignedId},
          |   'full_name', ${data.fullName}, 'email', ${data.email}, 'admission_date', ${data.admissionDate}::DATE),
-         |   $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId)
+         |   $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId, $externalId)
          |""".stripMargin.update.run
       .map(_ => Student.create(data, id, createdAt, connectionStatus))
   }
@@ -38,9 +39,10 @@ object IssuerSubjectsDAO {
     val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
     sql"""
          |INSERT INTO issuer_subjects
-         |  (subject_id, subject_data, created_at, connection_status, group_id)
+         |  (subject_id, subject_data, created_at, connection_status, group_id, external_id)
          |VALUES
-         |  ($id, ${data.data}, $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId)
+         |  ($id, ${data.data}, $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE,
+         |   $groupId, ${data.externalId})
          |""".stripMargin.update.run
       .map(_ => Subject.create(data, id, createdAt, connectionStatus))
   }
@@ -115,7 +117,7 @@ object IssuerSubjectsDAO {
 
   def findSubject(issuerId: Issuer.Id, subjectId: Subject.Id): doobie.ConnectionIO[Option[Subject]] = {
     sql"""
-         |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+         |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
          |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
          |WHERE subject_id = $subjectId AND
          |      issuer_id = $issuerId
@@ -167,7 +169,7 @@ object IssuerSubjectsDAO {
              |  FROM issuer_subjects
              |  WHERE subject_id = $lastSeen
              |)
-             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
              |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuerId AND
              |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen)) AND
@@ -182,7 +184,7 @@ object IssuerSubjectsDAO {
              |  FROM issuer_subjects
              |  WHERE subject_id = $lastSeen
              |)
-             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
              |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuerId AND
              |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen))
@@ -191,7 +193,7 @@ object IssuerSubjectsDAO {
              |""".stripMargin
       case (None, Some(group)) =>
         sql"""
-             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
              |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuerId AND
              |      g.name = $group
@@ -200,7 +202,7 @@ object IssuerSubjectsDAO {
              |""".stripMargin
       case (None, None) =>
         sql"""
-             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
              |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuerId
              |ORDER BY created_at ASC, subject_id

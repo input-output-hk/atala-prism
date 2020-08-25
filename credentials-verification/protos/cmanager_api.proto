@@ -109,6 +109,9 @@ message GenerateConnectionTokenForStudentResponse {
 message CreateSubjectRequest {
     string groupName = 1;
     string jsonData = 2;
+    string externalId = 3; // The id provided by the issuer at subject creation time
+                           // An issuer cannot have two subjects with the same external id
+                           // The id could be repeated in different issuers
 }
 message CreateSubjectResponse {
     IssuerSubject subject = 1;
