@@ -301,7 +301,7 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
 
-    // Example usage: mill -i connector.test.single io.iohk.cvp.intdemo.IDServiceImplSpec
+    // Example usage: mill -i connector.test.single io.iohk.atala.prism.intdemo.IDServiceImplSpec
     def single(args: String*) =
       T.command {
         super.runMain("org.scalatest.run", args: _*)

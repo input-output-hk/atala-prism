@@ -1,12 +1,12 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.intdemo.IntDemoRepository.valueOf
 import io.iohk.connector.model.TokenString
-import io.iohk.cvp.intdemo.IntDemoRepository.valueOf
 import io.iohk.prism.intdemo.protos.intdemo_models
 
 import scala.concurrent.Future

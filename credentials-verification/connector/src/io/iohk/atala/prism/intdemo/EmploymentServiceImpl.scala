@@ -1,18 +1,19 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 
 import io.circe.Json
 import io.circe.Json.{arr, fromString, obj}
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.{Connection, TokenString}
-import io.iohk.cvp.intdemo.EmploymentServiceImpl.{
+import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.{
   RequiredEmploymentData,
   getRequiredEmploymentData,
   issuerId,
   requestIdAndDegreeCredentials
 }
-import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, jsonPrinter}
+import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, jsonPrinter}
+import io.iohk.connector.model.{Connection, TokenString}
+import io.iohk.atala.prism.intdemo.html.ProofOfEmployment
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.intdemo.protos.intdemo_api
 import io.iohk.prism.protos.credential_models
@@ -149,6 +150,6 @@ object EmploymentServiceImpl {
   }
 
   private def employmentCredentialHtmlTemplate(credentialJson: Json): String = {
-    io.iohk.cvp.intdemo.html.ProofOfEmployment(credential = credentialJson).body
+    ProofOfEmployment(credential = credentialJson).body
   }
 }

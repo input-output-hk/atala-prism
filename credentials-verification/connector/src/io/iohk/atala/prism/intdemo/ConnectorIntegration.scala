@@ -1,4 +1,4 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport}
 import io.iohk.connector.model._

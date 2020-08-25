@@ -24,8 +24,14 @@ import io.iohk.cvp.cstore.repositories.VerifierHoldersRepository
 import io.iohk.cvp.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
 import io.iohk.cvp.cviews.CredentialViewsService
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
-import io.iohk.cvp.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
-import io.iohk.cvp.intdemo._
+import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
+import io.iohk.atala.prism.intdemo.{
+  DegreeServiceImpl,
+  EmploymentServiceImpl,
+  IdServiceImpl,
+  InsuranceServiceImpl,
+  IntDemoRepository
+}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,

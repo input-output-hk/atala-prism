@@ -1,8 +1,8 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 
-import io.iohk.cvp.intdemo.EmploymentServiceImpl.RequiredEmploymentData
+import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 

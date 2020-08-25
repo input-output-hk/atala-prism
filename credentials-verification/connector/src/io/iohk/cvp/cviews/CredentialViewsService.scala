@@ -3,7 +3,7 @@ package io.iohk.cvp.cviews
 import io.circe.Json
 import io.iohk.connector.Authenticator
 import io.iohk.cvp.cmanager.models.Issuer
-import io.iohk.cvp.intdemo.html.{HealthCredential, IdCredential, ProofOfEmployment, UniversityDegree}
+import io.iohk.atala.prism.intdemo.html.{HealthCredential, IdCredential, ProofOfEmployment, UniversityDegree}
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 import io.iohk.cvp.utils.syntax._

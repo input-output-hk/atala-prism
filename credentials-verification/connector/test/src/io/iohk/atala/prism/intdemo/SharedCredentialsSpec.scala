@@ -1,10 +1,10 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.Instant
 import java.util.UUID
 
 import io.iohk.connector.model.{ConnectionId, Message, MessageId}
-import io.iohk.cvp.intdemo.SharedCredentials.credentialsOfType
+import io.iohk.atala.prism.intdemo.SharedCredentials.credentialsOfType
 import io.iohk.prism.protos.credential_models
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

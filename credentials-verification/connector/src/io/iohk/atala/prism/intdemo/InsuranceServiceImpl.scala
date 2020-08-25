@@ -1,18 +1,19 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 
 import io.circe.Json
 import io.circe.Json.{arr, fromString, obj}
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.{Connection, TokenString}
-import io.iohk.cvp.intdemo.InsuranceServiceImpl.{
+import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.{
   RequiredInsuranceData,
   getInsuranceCredential,
   getRequiredInsuranceData,
   requestIdAndEmploymentCredentials
 }
-import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, jsonPrinter}
+import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, jsonPrinter}
+import io.iohk.connector.model.{Connection, TokenString}
+import io.iohk.atala.prism.intdemo.html.HealthCredential
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.intdemo.protos.intdemo_api
 import io.iohk.prism.protos.credential_models
@@ -162,6 +163,6 @@ object InsuranceServiceImpl {
   }
 
   private def insuranceCredentialHtmlTemplate(credentialJson: Json): String = {
-    io.iohk.cvp.intdemo.html.HealthCredential(credential = credentialJson).body
+    HealthCredential(credential = credentialJson).body
   }
 }

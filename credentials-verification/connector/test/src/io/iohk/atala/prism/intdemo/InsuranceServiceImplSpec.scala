@@ -1,15 +1,14 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import org.scalatest.FlatSpec
-import Testing._
 import io.circe.parser.parse
-import io.iohk.cvp.intdemo.EmploymentServiceImpl.RequiredEmploymentData
-import io.iohk.cvp.intdemo.InsuranceServiceImpl.RequiredInsuranceData
+import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
+import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.RequiredInsuranceData
 import org.scalatest.Matchers._
-import io.iohk.cvp.intdemo.Testing._
+import Testing._
 import org.scalatest.EitherValues._
 
 class InsuranceServiceImplSpec extends FlatSpec {

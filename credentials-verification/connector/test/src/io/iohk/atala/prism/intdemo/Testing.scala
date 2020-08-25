@@ -1,4 +1,4 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import io.circe.{ACursor, Decoder, HCursor}
 import org.mockito.Mockito

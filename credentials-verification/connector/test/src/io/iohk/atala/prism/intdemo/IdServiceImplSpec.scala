@@ -1,4 +1,4 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -6,8 +6,8 @@ import java.time.format.DateTimeFormatter
 import io.circe.parser.parse
 import io.grpc.{Status, StatusException}
 import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
-import io.iohk.cvp.intdemo.IdServiceImplSpec._
-import io.iohk.cvp.intdemo.Testing._
+import IdServiceImplSpec._
+import Testing._
 import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{mock, verify, when}

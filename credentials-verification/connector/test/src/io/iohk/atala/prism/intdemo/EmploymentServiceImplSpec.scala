@@ -1,11 +1,11 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import io.circe.parser.parse
-import io.iohk.cvp.intdemo.EmploymentServiceImpl.RequiredEmploymentData
-import io.iohk.cvp.intdemo.Testing._
+import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
+import Testing._
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

@@ -1,13 +1,19 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 
 import io.circe.Json.fromString
 import io.circe._
 import io.grpc.stub.StreamObserver
+import io.iohk.atala.prism.intdemo.DegreeServiceImpl.{
+  getDegreeCredential,
+  getSharedIdCredential,
+  issuerId,
+  requestIdCredential
+}
+import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, getSharedCredentials, jsonPrinter}
 import io.iohk.connector.model.{Connection, TokenString}
-import io.iohk.cvp.intdemo.DegreeServiceImpl.{getDegreeCredential, getSharedIdCredential, issuerId, requestIdCredential}
-import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, getSharedCredentials, jsonPrinter}
+import io.iohk.atala.prism.intdemo.html.UniversityDegree
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.intdemo.protos.intdemo_api
 import io.iohk.prism.protos.credential_models
@@ -137,6 +143,6 @@ object DegreeServiceImpl {
   }
 
   private def degreeCredentialHtmlTemplate(credentialJson: Json): String = {
-    io.iohk.cvp.intdemo.html.UniversityDegree(credential = credentialJson).body
+    UniversityDegree(credential = credentialJson).body
   }
 }

@@ -1,4 +1,4 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import io.circe.parser.parse
 import io.iohk.prism.protos.credential_models

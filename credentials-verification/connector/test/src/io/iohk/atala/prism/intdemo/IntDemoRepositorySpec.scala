@@ -1,4 +1,4 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 import java.util.concurrent.ThreadLocalRandom
@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom
 import doobie.implicits._
 import io.iohk.connector.model.TokenString
 import io.iohk.connector.repositories.ConnectorRepositorySpecBase
-import io.iohk.cvp.intdemo.IntDemoRepositorySpec._
+import IntDemoRepositorySpec._
 import io.iohk.prism.intdemo.protos.intdemo_models
 import org.scalatest.Matchers._
 

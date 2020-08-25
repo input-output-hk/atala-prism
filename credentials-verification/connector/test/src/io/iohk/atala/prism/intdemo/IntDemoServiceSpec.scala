@@ -1,9 +1,9 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
-import io.iohk.cvp.intdemo.IntDemoServiceSpec._
-import io.iohk.cvp.intdemo.Testing.{eventually, neverEver}
+import IntDemoServiceSpec._
+import Testing.{eventually, neverEver}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import io.iohk.prism.protos.credential_models

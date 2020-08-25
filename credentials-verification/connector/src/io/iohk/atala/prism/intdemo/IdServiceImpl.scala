@@ -1,4 +1,4 @@
-package io.iohk.cvp.intdemo
+package io.iohk.atala.prism.intdemo
 
 import java.security.MessageDigest
 import java.time.LocalDate
@@ -9,8 +9,9 @@ import io.circe.Json.fromString
 import io.circe._
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
+import io.iohk.atala.prism.intdemo.IdServiceImpl._
 import io.iohk.connector.model.{Connection, TokenString}
-import io.iohk.cvp.intdemo.IdServiceImpl._
+import io.iohk.atala.prism.intdemo.html.IdCredential
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.intdemo.protos.intdemo_api
 import io.iohk.prism.protos.credential_models
@@ -109,7 +110,7 @@ object IdServiceImpl {
   }
 
   private def idCredentialHtmlTemplate(credentialJson: Json): String = {
-    io.iohk.cvp.intdemo.html.IdCredential(credential = credentialJson).body
+    IdCredential(credential = credentialJson).body
   }
 
   private def getPersonalData(
