@@ -24,7 +24,7 @@ class MainViewModel @Inject constructor(private val dataManager: DataManager) : 
             try {
                 val currentIndex = dataManager.getCurrentIndex()
                 val addConnectionFromTokenResponse = dataManager.addConnection(dataManager.getKeyPairFromPath(CryptoUtils.getNextPathFromIndex(currentIndex)), token, nonce)
-                dataManager.saveContact(ContactMapper.mapToContact(addConnectionFromTokenResponse, CryptoUtils.getNextPathFromIndex(currentIndex)))
+                dataManager.saveContact(ContactMapper.mapToContact(addConnectionFromTokenResponse.connection, CryptoUtils.getNextPathFromIndex(currentIndex)))
                 dataManager.increaseIndex()
                 _newConnectionInfoLiveData.postValue(AsyncTaskResult(addConnectionFromTokenResponse))
             } catch (ex:Exception) {

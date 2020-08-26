@@ -28,6 +28,10 @@
   <color name="purple">#66268D</color>
 
   <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#E5E5E5</color>
-    <color name="black_effective">#2a2a2a</color>
+  <color name="black_effective">#2a2a2a</color>
+  <color name="atala_red_text_color">#FF2D3B</color>
+  <color name="chip_bg_color">#1AFF2D3B</color>
+  <color name="phrases_cointaner_border_color">#A0AABB</color>
+  <color name="atala_black_text_color">#000000</color>
 
 </resources>

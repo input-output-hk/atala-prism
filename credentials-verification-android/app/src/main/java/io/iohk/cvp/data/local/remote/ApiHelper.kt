@@ -16,4 +16,5 @@ interface ApiHelper {
 
     suspend fun getConnectionTokenInfo(token: String): GetConnectionTokenInfoResponse
     suspend fun sendMessageToMultipleConnections(connectionDataList: List<ConnectionDataDto>, credential: ByteString)
+    suspend fun getConnection(ecKeyPair: ECKeyPair): GetConnectionsPaginatedResponse
 }

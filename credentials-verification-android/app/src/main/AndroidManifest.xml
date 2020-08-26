@@ -3,8 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="io.iohk.cvp">
 
+    <uses-permission
+        android:name="android.permission.CAMERA"
+        tools:ignore="ManifestOrder" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
     <application
-        android:name="io.iohk.cvp.core.CvpApplication"
+        android:name=".core.CvpApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_new"
         android:label="@string/app_name"
@@ -15,49 +21,54 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="io.iohk.cvp.views.activities.LaunchActivity"
+            android:name=".views.activities.RestoreAccountSuccessActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".views.activities.LaunchActivity"
             android:noHistory="true"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name="io.iohk.cvp.views.activities.MainActivity"
+            android:name=".views.activities.MainActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
-
         <activity
-            android:name="io.iohk.cvp.views.activities.UnlockActivity"
-            android:screenOrientation="portrait"
+            android:name=".views.activities.RestoreAccountActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".views.activities.UnlockActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name="io.iohk.cvp.views.activities.WelcomeActivity"
+            android:name=".views.activities.WelcomeActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity"
+            android:name=".views.activities.TermsAndConditionsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.cvp.views.activities.WebTermsAndConditionsActivity"
-            android:theme="@style/mytransparent.windowNoTitle"/>
-        <activity android:name="io.iohk.cvp.views.activities.WalletSetupActivity"
+            android:name=".views.activities.WebTermsAndConditionsActivity"
+            android:theme="@style/mytransparent.windowNoTitle" />
+        <activity
+            android:name=".views.activities.WalletSetupActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity"
+            android:name=".views.activities.SeedPhraseVerificationActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.cvp.views.activities.AccountCreatedActivity"
+            android:name=".views.activities.AccountCreatedActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.cvp.views.activities.QrCodeScanner"
+            android:name=".views.activities.QrCodeScanner"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.cvp.views.activities.WebViewActivity"
+            android:name=".views.activities.WebViewActivity"
             android:screenOrientation="portrait" />
-
         <activity
             android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"
             android:launchMode="singleTask">
@@ -70,14 +81,6 @@
                 <data android:scheme="${applicationId}.braintree" />
             </intent-filter>
         </activity>
-
     </application>
-
-    <uses-permission
-        android:name="android.permission.CAMERA"
-        tools:ignore="ManifestOrder" />
-
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
 </manifest>

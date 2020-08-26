@@ -68,7 +68,7 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            Objects.requireNonNull(getActivity()).onBackPressed();
+            requireActivity().onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -89,7 +89,7 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
 //        liveData = viewModel.getPayments(new Preferences(getContext()).getUserIds());
 
         if (!liveData.hasActiveObservers()) {
-            liveData.observe(this, response -> {
+            liveData.observe(getViewLifecycleOwner(), response -> {
                 if (response.getError() != null) {
                     getNavigator().showPopUp(getFragmentManager(), getResources().getString(
                             R.string.server_error_message));

@@ -43,7 +43,7 @@ public class SuccessDialog extends DialogFragment {
     boolean hideTitle = getArguments().getBoolean("removeTitle", false);
 
     // Use the Builder class for convenient dialog construction
-    AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
+    AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
     LayoutInflater inflater = context.getLayoutInflater();
     View dialogView = inflater.inflate(R.layout.success_popup, null);

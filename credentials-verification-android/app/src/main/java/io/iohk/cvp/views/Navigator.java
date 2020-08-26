@@ -7,11 +7,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.braintreepayments.api.dropin.DropInRequest;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +25,9 @@ import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.views.activities.AccountCreatedActivity;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.cvp.views.activities.RestoreAccountActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
+import io.iohk.cvp.views.activities.RestoreAccountSuccessActivity;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
 import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.UnlockActivity;
@@ -33,7 +37,6 @@ import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
-import io.iohk.cvp.views.fragments.SecuritySettingsStep1Fragment;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
@@ -85,7 +88,7 @@ public class Navigator {
     }
 
     public void showQrScanner(CvpFragment from) {
-        Intent intent = new Intent(Objects.requireNonNull(from.getActivity()).getApplicationContext(),
+        Intent intent = new Intent(from.requireContext(),
                 QrCodeScanner.class);
         intent.putExtra(IntentDataConstants.QR_SCANNER_MODE_KEY,
                 IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
@@ -187,4 +190,12 @@ public class Navigator {
         ctx.startActivity(myIntent);
     }
 
+    public void showRestoreAccountScreen(Activity activity) {
+        startNewActivity(activity, RestoreAccountActivity.class, null);
+    }
+
+    public void showRecoveryAccountSuccess(@Nullable FragmentActivity activity) {
+        ArrayList<Integer> flags= new ArrayList<>(Arrays.asList(Intent.FLAG_ACTIVITY_CLEAR_TASK, Intent.FLAG_ACTIVITY_NEW_TASK));
+        startNewActivity(activity, RestoreAccountSuccessActivity.class, flags);
+    }
 }

@@ -60,7 +60,7 @@ public class WalletFragment extends CvpFragment {
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.action_history) {
       navigator.showFragmentOnTop(
-          Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
+          requireActivity().getSupportFragmentManager(),
           paymentHistoryFragment);
       return true;
     }

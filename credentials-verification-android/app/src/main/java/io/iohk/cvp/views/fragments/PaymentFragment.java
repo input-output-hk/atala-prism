@@ -79,7 +79,7 @@ public class PaymentFragment extends CvpFragment implements SimpleFormListener {
   @Override
   public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     if (item.getItemId() == android.R.id.home) {
-      Objects.requireNonNull(getActivity()).onBackPressed();
+      requireActivity().onBackPressed();
       return true;
     }
     return super.onOptionsItemSelected(item);
@@ -88,7 +88,7 @@ public class PaymentFragment extends CvpFragment implements SimpleFormListener {
   @OnClick(R.id.continue_button)
   public void onContinueClick() {
     navigator.showFragmentOnTop(
-        Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
+        requireActivity().getSupportFragmentManager(),
         new PaymentCongratsFragment());
 
   }

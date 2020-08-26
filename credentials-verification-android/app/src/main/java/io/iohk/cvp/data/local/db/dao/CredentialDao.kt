@@ -11,7 +11,7 @@ interface CredentialDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllCredentials(credentials: List<Credential?>)
 
-    @Query("SELECT * FROM credential order by id desc")
+    @Query("SELECT * FROM credential")
     fun getAllCredentials(): List<Credential>
 
     @Query("DELETE FROM credential")

@@ -19,6 +19,8 @@ import io.iohk.prism.protos.AddConnectionFromTokenRequest;
 import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 import io.iohk.prism.protos.ConnectorServiceGrpc;
 import io.iohk.prism.protos.EncodedPublicKey;
+import io.iohk.prism.protos.GetConnectionsPaginatedRequest;
+import io.iohk.prism.protos.GetConnectionsPaginatedResponse;
 import io.iohk.prism.protos.GetMessagesPaginatedRequest;
 import io.iohk.prism.protos.GetMessagesPaginatedResponse;
 
@@ -29,7 +31,7 @@ public class GrpcCallsTest {
   private ManagedChannel origChannel;
   final private List<String> phrases =  Arrays.asList("already", "ankle", "announce", "annual", "another",
           "answer", "antenna", "antique", "anxiety", "any", "apart", "apology");
-  final private int index = 2;
+  private int index = -1;
 
   @Before
   public void init() {
@@ -67,6 +69,16 @@ public class GrpcCallsTest {
     Metadata metadata = CryptoUtils.Companion.getMetadata(ecKeyPair, request.toByteArray());
     GetMessagesPaginatedResponse getMessagesPaginatedResponse = getChannel(metadata).getMessagesPaginated(request);
     getMessagesPaginatedResponse.getMessagesList().forEach(receivedMessage -> System.out.println(receivedMessage.getConnectionId()));
+  }
+
+  @Test
+  public void getConnection() throws  Exception {
+    GetConnectionsPaginatedRequest request = GetConnectionsPaginatedRequest.newBuilder()
+            .setLimit(200).build();
+
+    ECKeyPair ecKeyPair = CryptoUtils.Companion.getKeyPairFromPath("m/" + ++index + "'/0'/0'", phrases);
+    Metadata metadata = CryptoUtils.Companion.getMetadata(ecKeyPair, request.toByteArray());
+    getChannel(metadata).getConnectionsPaginated(request);
   }
 
   @Test

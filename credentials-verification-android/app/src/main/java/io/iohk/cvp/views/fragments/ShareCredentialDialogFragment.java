@@ -133,7 +133,7 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
     @OnClick(R.id.background)
     void onBackgroundClick() {
-        Objects.requireNonNull(getActivity()).onBackPressed();
+        requireActivity().onBackPressed();
     }
 
     @Override

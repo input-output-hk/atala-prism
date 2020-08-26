@@ -134,6 +134,6 @@ public class MyCredentialsFragment extends CvpFragment<CredentialsViewModel>  im
         credentialFragment.setCredentialIsNew(isNew);
 
         navigator.showFragmentOnTop(
-                Objects.requireNonNull(getActivity()).getSupportFragmentManager(), credentialFragment);
+                requireActivity().getSupportFragmentManager(), credentialFragment);
     }
 }

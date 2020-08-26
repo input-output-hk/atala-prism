@@ -4,26 +4,26 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.lifecycle.ViewModel;
 import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.analytics.FirebaseAnalytics;
+
+import java.util.Objects;
+
+import javax.inject.Inject;
 
 import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
-import com.google.firebase.analytics.FirebaseAnalytics;
-
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.utils.adapters.TutorialScrolleableAdapter;
-
-import java.util.Objects;
-import javax.inject.Inject;
 
 public class WelcomeActivity extends CvpActivity {
 
@@ -35,24 +35,6 @@ public class WelcomeActivity extends CvpActivity {
 
   @BindView(R.id.vp_pager)
   ViewPager2 vpPager;
-
-  @BindView(R.id.steps_counter)
-  View stepsCounter;
-
-  @BindView(R.id.step1_text)
-  TextView step1Text;
-
-  @BindView(R.id.step1_dot)
-  View step1Dot;
-
-  @BindView(R.id.step2_text)
-  TextView step2Text;
-
-  @BindView(R.id.step2_dot)
-  View step2Dot;
-
-  @BindView(R.id.step3_dot)
-  View step3Dot;
 
   @BindView(R.id.view_pager_button)
   Button viewPagerButton;
@@ -93,11 +75,9 @@ public class WelcomeActivity extends CvpActivity {
     vpAdapter = new TutorialScrolleableAdapter(this);
     vpPager.setAdapter(vpAdapter);
 
-
     new TabLayoutMediator(tabLayout, vpPager, (tab, position) -> {
       vpPager.setCurrentItem(tab.getPosition(), true);
     }).attach();
-
 
     vpPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
       @Override
@@ -108,6 +88,11 @@ public class WelcomeActivity extends CvpActivity {
       @Override
       public void onPageSelected(int position) {
         super.onPageSelected(position);
+        if(position == vpAdapter.getItemCount() - 1) {
+          restoreAccountBtn.setVisibility(View.VISIBLE);
+        } else {
+          restoreAccountBtn.setVisibility(View.GONE);
+        }
       }
 
       @Override
@@ -141,6 +126,11 @@ public class WelcomeActivity extends CvpActivity {
     } else {
       vpPager.setCurrentItem(vpPager.getCurrentItem() + 1);
     }
+  }
+
+  @OnClick(R.id.restore_account_btn)
+  public void onClickRestoreAccountBtn() {
+    navigator.showRestoreAccountScreen(this);
   }
 
   @OnClick(R.id.get_started_button)

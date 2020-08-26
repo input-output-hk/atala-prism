@@ -11,6 +11,7 @@ import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.CredentialsViewModelModule;
 import io.iohk.cvp.dagger.modules.HomeFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
+import io.iohk.cvp.dagger.modules.RestoreAccountFragmentModule;
 import io.iohk.cvp.dagger.modules.SettingsFragmentModule;
 import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.fragments.AboutFragment;
@@ -31,6 +32,7 @@ import io.iohk.cvp.views.fragments.PaymentCongratsFragment;
 import io.iohk.cvp.views.fragments.PaymentFragment;
 import io.iohk.cvp.views.fragments.PaymentHistoryFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
+import io.iohk.cvp.views.fragments.RestoreAccountFragment;
 import io.iohk.cvp.views.fragments.SecurityChangePinFragment;
 import io.iohk.cvp.views.fragments.SecurityFragment;
 import io.iohk.cvp.views.fragments.SecuritySettingsStep1Fragment;
@@ -124,6 +126,9 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector
   abstract AddQrCodeDialogFragment addQrCodeDialogFragment();
+
+  @ContributesAndroidInjector(modules = RestoreAccountFragmentModule.class)
+  abstract RestoreAccountFragment restoreAccountFragment();
 
   @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
   abstract DeleteCredentialDialogFragment deleteCredentialDialogFragment();

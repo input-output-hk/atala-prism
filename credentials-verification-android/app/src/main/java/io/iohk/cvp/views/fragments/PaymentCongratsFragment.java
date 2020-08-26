@@ -59,7 +59,7 @@ public class PaymentCongratsFragment extends CvpFragment {
 
   @OnClick(R.id.button)
   public void onContinueClick() {
-    ((MainActivity) Objects.requireNonNull(getActivity()))
+    ((MainActivity) requireActivity())
         .onNavigation(BottomAppBarOption.HOME);
   }
 }

@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments.utils;
 
+import android.Manifest;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -13,6 +14,7 @@ import java.util.Objects;
 import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
+import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.AddQrCodeDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
@@ -47,13 +49,21 @@ public class ActionBarUtils {
 
   public static boolean menuItemClicked(Navigator navigator, MenuItem item, CvpFragment fragment) {
     if (item.getItemId() == R.id.action_new_connection) {
-      navigator.showQrScanner(fragment);
+      if (!PermissionUtils
+              .checkIfAlreadyHavePermission(fragment.getActivity().getApplicationContext(),
+                      Manifest.permission.CAMERA)) {
+        PermissionUtils.requestForSpecificPermission(fragment, ActivitiesRequestCodes
+                .QR_SCANNER_REQUEST_PERMISSION, Manifest.permission.CAMERA);
+      } else {
+        navigator.showQrScanner(fragment);
+      }
+
       return true;
     }
     if (item.getItemId() == R.id.addNewBtn) {
       AddQrCodeDialogFragment addQrCodeDialogFragment = AddQrCodeDialogFragment.newInstance();
       addQrCodeDialogFragment.setTargetFragment(fragment, ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY);
-      navigator.showDialogFragment(Objects.requireNonNull(fragment.getFragmentManager()),
+      navigator.showDialogFragment(fragment.requireActivity().getSupportFragmentManager(),
               addQrCodeDialogFragment, ADD_QR_CODE_DIALOG_FRAGMENT);
       return true;
     }

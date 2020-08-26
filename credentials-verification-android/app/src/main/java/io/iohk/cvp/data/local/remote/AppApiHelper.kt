@@ -88,4 +88,9 @@ class AppApiHelper @Inject constructor(private val prefs: Preferences) : ApiHelp
         }
     }
 
+    override suspend fun getConnection(ecKeyPair: ECKeyPair): GetConnectionsPaginatedResponse {
+        val request = GetConnectionsPaginatedRequest.newBuilder().setLimit(QUERY_LENGTH).build()
+        return getChannel(ecKeyPair, request.toByteArray()).getConnectionsPaginated(request)
+    }
+
 }

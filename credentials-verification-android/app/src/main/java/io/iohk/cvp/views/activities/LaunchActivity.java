@@ -24,7 +24,6 @@ public class LaunchActivity extends CvpActivity {
     Preferences prefs = new Preferences(this);
     prefs.setIsFirstLaunch(true);
     Objects.requireNonNull(getSupportActionBar()).hide();
-
     new Handler().postDelayed(
         () -> {
           if(prefs.isPrivateKeyStored()) {

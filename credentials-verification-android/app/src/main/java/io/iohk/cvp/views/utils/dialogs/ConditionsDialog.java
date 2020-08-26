@@ -15,7 +15,7 @@ public class ConditionsDialog extends DialogFragment {
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     // Use the Builder class for convenient dialog construction
-    AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
+    AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
     builder.setView(R.layout.component_large_content_dialog);
     return builder.create();
   }

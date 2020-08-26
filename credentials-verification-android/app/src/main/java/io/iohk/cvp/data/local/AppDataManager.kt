@@ -48,6 +48,10 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         apiHelper.sendMessageToMultipleConnections(connectionDataList, credential)
     }
 
+    override suspend fun getConnection(ecKeyPair: ECKeyPair): GetConnectionsPaginatedResponse {
+        return apiHelper.getConnection(ecKeyPair)
+    }
+
     override fun getCurrentIndex(): Int {
         return prefHelper.getCurrentIndex()
     }
@@ -62,6 +66,14 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
 
     override fun getKeyPairFromPath(keyDerivationPath: String): ECKeyPair {
         return prefHelper.getKeyPairFromPath(keyDerivationPath)
+    }
+
+    override fun saveMnemonics(phrasesList: MutableList<String>) {
+        prefHelper.saveMnemonics(phrasesList)
+    }
+
+    override fun saveIndex(lastIndex: Int) {
+        prefHelper.saveIndex(lastIndex)
     }
 
     override suspend fun updateContact(contact: Contact) {

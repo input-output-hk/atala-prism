@@ -95,17 +95,17 @@ public class SettingsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     liveData.observe(getViewLifecycleOwner(), response -> {
       try {
         if (response.getError() != null) {
-          FragmentManager fm = getFragmentManager();
+          FragmentManager fm = requireActivity().getSupportFragmentManager();
           SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
                   .show(fm, "");
-          getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+          getNavigator().showPopUp(requireActivity().getSupportFragmentManager(), getResources().getString(
                   R.string.server_error_message));
           return;
         }
 
         if(response.getResult()) {
           SuccessDialog.newInstance(this, R.string.connections_remove_success, true)
-                  .show(getFragmentManager(), "dialog");
+                  .show(requireActivity().getSupportFragmentManager(), "dialog");
           getViewModel().getRemoveAllDataLiveData().setValue(new AsyncTaskResult(false));
         }
       } catch (Exception ex) {
@@ -118,27 +118,27 @@ public class SettingsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
   @OnClick(R.id.support)
   void onSupportClick() {
-    navigator.showWebView(Objects.requireNonNull(this.getActivity()));
+    navigator.showWebView(requireActivity());
   }
 
   @OnClick(R.id.backend_ip)
   void onBackendIpClick() {
-    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new BackendIpFragment());
+    navigator.showFragmentOnTopOfMenu(requireActivity().getSupportFragmentManager(), new BackendIpFragment());
   }
 
   @OnClick(R.id.security)
   void onSecurityClick() {
     if(!new Preferences(getContext()).isPinConfigured()){
-      navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecuritySettingsStep1Fragment());
+      navigator.showFragmentOnTopOfMenu(requireActivity().getSupportFragmentManager(), new SecuritySettingsStep1Fragment());
     }else{
-      navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecurityFragment());
+      navigator.showFragmentOnTopOfMenu(requireActivity().getSupportFragmentManager(), new SecurityFragment());
     }
   }
 
   @OnClick(R.id.about)
   void onAboutClick() {
     ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.SUPPORT);
-    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new AboutFragment());
+    navigator.showFragmentOnTopOfMenu(requireActivity().getSupportFragmentManager(), new AboutFragment());
   }
 
 
@@ -146,7 +146,7 @@ public class SettingsFragment extends CvpFragment<ConnectionsActivityViewModel> 
   void onDeleteCredentialsClicked() {
     DeleteAllConnectionsDialogFragment deleteAllConnectionsDialogFragment = DeleteAllConnectionsDialogFragment.newInstance();
     deleteAllConnectionsDialogFragment.setTargetFragment(this, DELETE_ALL_CONNECTIONS_REQUEST_CODE);
-    getNavigator().showDialogFragment(getFragmentManager(),
+    getNavigator().showDialogFragment(requireActivity().getSupportFragmentManager(),
             deleteAllConnectionsDialogFragment, "DELETE_CONNECTIONS_DIALOG_FRAGMENT");
   }
 

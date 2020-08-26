@@ -4,10 +4,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.List;
 
 import io.iohk.atala.crypto.EC;
 import io.iohk.atala.crypto.ECKeyPair;
 import io.iohk.atala.crypto.ECSignature;
+import io.iohk.atala.crypto.MnemonicChecksumException;
+import io.iohk.atala.crypto.MnemonicLengthException;
+import io.iohk.atala.crypto.MnemonicWordException;
+import io.iohk.cvp.utils.CryptoUtils;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -78,4 +84,41 @@ public class CryptoTest {
     boolean result = EC.verify(randomBytes2, keyPair.publicKey(), signedEC);
     assertFalse(result);
   }
+
+  @Test
+  public void isValidMnemonic() throws Exception {
+    List<String> phrases =  CryptoUtils.Companion.generateMnemonicList();
+
+    assertTrue(CryptoUtils.Companion.isValidMnemonicList(phrases));
+  }
+
+  @Test(expected = MnemonicWordException.class)
+  public void isInvalidWordMnemonic() throws Exception {
+    List<String> phrases =  Arrays.asList("already", "ankle", "announce", "annual", "another",
+            "answer", "antenna", "antique", "anxiety", "any", "apart", "badword");
+
+    CryptoUtils.Companion.isValidMnemonicList(phrases);
+  }
+
+  @Test(expected = MnemonicLengthException.class)
+  public void isInvalidLength() throws Exception {
+    List<String> phrases =  Arrays.asList("abandon", "announce");
+    CryptoUtils.Companion.isValidMnemonicList(phrases);
+  }
+
+  @Test(expected = MnemonicWordException.class)
+  public void hasInvalidWord() throws Exception {
+
+    List<String> phrases =  Arrays.asList("hocus", "pocus", "mnemo", "codus", "annual", "another",
+            "answer", "antenna", "antique", "anxiety", "any", "apart");
+    CryptoUtils.Companion.isValidMnemonicList(phrases);
+  }
+
+  @Test(expected = MnemonicChecksumException.class)
+  public void isInvalidChecksum() throws Exception {
+    List<String> phrases =  Arrays.asList("already", "ankle", "announce", "annual", "another",
+            "answer", "antenna", "antique", "anxiety", "any", "apart", "apology");
+    CryptoUtils.Companion.isValidMnemonicList(phrases);
+  }
+
 }

@@ -171,4 +171,11 @@ public class Preferences {
     public ECKeyPair getKeyPairFromPath(String keyDerivationPath) {
         return CryptoUtils.Companion.getKeyPairFromPath(keyDerivationPath, getMnemonicList());
     }
+
+    public void saveIndex(int lastIndex) {
+        SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        Editor editor = prefs.edit();
+        editor.putInt(CURRENT_VALUE_INDEX, lastIndex);
+        editor.apply();
+    }
 }

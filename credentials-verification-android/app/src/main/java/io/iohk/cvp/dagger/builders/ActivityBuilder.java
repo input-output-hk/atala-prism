@@ -7,6 +7,7 @@ import io.iohk.cvp.dagger.modules.WalletSetupModule;
 import io.iohk.cvp.views.activities.AccountCreatedActivity;
 import io.iohk.cvp.views.activities.LaunchActivity;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.cvp.views.activities.RestoreAccountSuccessActivity;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
 import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.WalletSetupActivity;
@@ -35,5 +36,8 @@ public abstract class ActivityBuilder {
 
   @ContributesAndroidInjector
   abstract AccountCreatedActivity accountCreatedActivity();
+
+  @ContributesAndroidInjector
+  abstract RestoreAccountSuccessActivity restoreAccountSuccessActivity();
 
 }

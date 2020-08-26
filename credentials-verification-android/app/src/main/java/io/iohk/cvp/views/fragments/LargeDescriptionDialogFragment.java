@@ -73,7 +73,7 @@ public class LargeDescriptionDialogFragment extends CvpFragment {
 
   @OnClick(R.id.fab)
   void onClose() {
-    Objects.requireNonNull(getActivity()).onBackPressed();
+    requireActivity().onBackPressed();
   }
 
 

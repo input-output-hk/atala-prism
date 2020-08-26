@@ -161,7 +161,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
         credentialFragment.setCredentialIsNew(isNew);
 
         navigator.showFragmentOnTop(
-                Objects.requireNonNull(getActivity()).getSupportFragmentManager(), credentialFragment);
+                requireActivity().getSupportFragmentManager(), credentialFragment);
     }
 
     @Override

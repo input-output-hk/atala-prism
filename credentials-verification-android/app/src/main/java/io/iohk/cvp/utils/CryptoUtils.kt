@@ -2,6 +2,9 @@ package io.iohk.cvp.utils
 
 import android.util.Base64
 import io.grpc.Metadata
+import io.iohk.atala.crypto.MnemonicChecksumException
+import io.iohk.atala.crypto.MnemonicLengthException
+import io.iohk.atala.crypto.MnemonicWordException
 import io.iohk.atala.crypto.japi.*
 import java.util.*
 
@@ -9,7 +12,7 @@ class CryptoUtils {
 
     companion object {
 
-        fun getMetadata(ecKeyPair: ECKeyPair, data: ByteArray): Metadata {
+        fun getMetadata(ecKeyPair: ECKeyPair, data: ByteArray) : Metadata {
             val nonce = BytesConverterUtil.getBytesFromUUID(UUID.randomUUID())
 
             val instance = EC.getInstance(CryptoProvider.Android)
@@ -24,11 +27,14 @@ class CryptoUtils {
             return metadata
         }
 
-        fun getNextPathFromIndex(index: Int): String {
+        fun getNextPathFromIndex(index: Int) : String {
             return "m/${index + 1}'/0'/0'"
         }
 
-        fun getKeyPairFromPath(keyDerivationPath: String, phrases: List<String>): ECKeyPair {
+        fun getPathFromIndex(index: Int) : String {
+            return "m/${index}'/0'/0'"
+        }
+        fun getKeyPairFromPath(keyDerivationPath: String, phrases: List<String>) : ECKeyPair {
             val derivationPath = DerivationPath.parse(keyDerivationPath)
             val mnemonicCode = MnemonicCode(phrases)
             val keyDerivation = KeyDerivation.getInstance(CryptoProvider.Android)
@@ -36,7 +42,14 @@ class CryptoUtils {
             return keyDerivation.deriveKey(seed, derivationPath).keyPair
         }
 
-        fun generateMnemonicList(): MutableList<String> {
+        fun isValidMnemonicList(phrases: List<String>) : Boolean {
+            val ec = KeyDerivation.getInstance(CryptoProvider.Android)
+            val mnemonicCode = MnemonicCode(phrases)
+            ec.binarySeed(mnemonicCode, "")
+            return phrases.all { word: String ->  ec.isValidMnemonicWord(word)}
+        }
+
+        fun generateMnemonicList() : MutableList<String> {
             val key = KeyDerivation.getInstance(CryptoProvider.Android)
             return key.randomMnemonicCode().words
         }

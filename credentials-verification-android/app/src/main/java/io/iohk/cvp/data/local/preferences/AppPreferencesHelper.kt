@@ -22,4 +22,12 @@ class AppPreferencesHelper @Inject constructor(private val preferences: Preferen
     override fun getKeyPairFromPath(keyDerivationPath: String): ECKeyPair {
         return preferences.getKeyPairFromPath(keyDerivationPath)
     }
+
+    override fun saveMnemonics(phrasesList: MutableList<String>) {
+        preferences.saveMnemonicList(phrasesList)
+    }
+
+    override fun saveIndex(lastIndex: Int) {
+        preferences.saveIndex(lastIndex)
+    }
 }

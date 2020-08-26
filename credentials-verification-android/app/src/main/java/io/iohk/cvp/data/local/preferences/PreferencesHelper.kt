@@ -8,5 +8,7 @@ interface PreferencesHelper {
     fun getCurrentIndex(): Int
     fun getMnemonicList(): List<String>
     fun increaseIndex()
+    fun saveMnemonics(phrasesList: MutableList<String>)
+    fun saveIndex(lastIndex: Int)
     fun getKeyPairFromPath(keyDerivationPath: String): ECKeyPair
 }

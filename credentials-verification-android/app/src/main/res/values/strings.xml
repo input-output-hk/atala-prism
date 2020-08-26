@@ -100,7 +100,7 @@
     <string name="verify">Verify</string>
     <string name="continue_string">Continue</string>
     <string name="create_account">Create account</string>
-    <string name="restore_account">Restore account</string>
+    <string name="restore_account">Restore Account</string>
     <string name="more_info">More info</string>
     <string name="universities">Universities</string>
     <string name="employers">Employers</string>
@@ -228,6 +228,15 @@
     <string name="add_new"><u>Add new</u></string>
     <string name="enter_connection_code">Enter connection code</string>
     <string name="cancel">Cancel</string>
+    <string name="recover_account_subtitle">In order to recover your account, you need to type your 12 security words which gives you access to your account.</string>
+    <string name="recovery_phrase">Recovery phrase</string>
+    <string name="word_not_empty">Word cannot be empty</string>
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="account_successfully_recovered">Your account has been\nrecovered successfully.</string>
+    <string name="btn_next">Next</string>
+    <string name="incorrect_recovery_phrase">Your recovery phrase is incorrect</string>
+    <string name="recovery_must_have_twelve_words">Your recovery phrase must have 12 words</string>
+    <string name="recovery_phrase_hint">Add a word and press enter to confirm.</string>
     <string name="are_you_sure">Are your sure?</string>
     <string name="you_are_about_to_delete">You are about to delete:</string>
     <string name="delete">Delete</string>
