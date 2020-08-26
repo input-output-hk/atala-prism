@@ -12,7 +12,7 @@ import mill._
 import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scalapblib._
 import mill.contrib.scoverage.ScoverageModule
-import mill.define.{Input, Sources, Target, Task}
+import mill.define.{Command, Input, Sources, Target, Task}
 import mill.eval.PathRef
 import mill.modules.Assembly.Rule
 import mill.scalalib._
@@ -63,9 +63,74 @@ object GitSupport {
   }
 }
 
-trait PrismScalaModule extends TpolecatModule with ScoverageModule {
+trait CodeCoverageModule { outer: ScalaModule =>
+
+  /** Gets the module used for testing, which will be wrapped by Scoverage. */
+  def testModule: Tests
+
+  private def asScoverage = new InternalScoverageModule()
+
+  def testWithScoverage(args: String*): Command[(String, Seq[TestRunner.Result])] =
+    T.command {
+      println("Testing with Scoverage turned on")
+      asScoverage.test.test(args: _*)
+    }
+
+  def scoverageHtmlReport() = asScoverage.scoverage.htmlReport()
+
+  trait TestCodeCoverageModule extends Tests {
+    override def test(args: String*): Command[(String, Seq[TestRunner.Result])] =
+      T.command {
+        // Enable code coverage when running on CI
+        if (sys.env.getOrElse("CI", "false") == "true") {
+          CodeCoverageModule.this.testWithScoverage(args: _*)
+        } else {
+          super.test(args: _*)
+        }
+      }
+  }
+
+  /** Internal module to hide the Scoverage dependencies from IntelliJ. */
+  private class InternalScoverageModule extends ScoverageModule {
+    def scoverageVersion = versions.scoverage
+
+    override def millSourcePath = outer.millSourcePath
+    override def generatedSources = outer.generatedSources()
+    override def allSources = outer.allSources()
+    override def moduleDeps = outer.moduleDeps
+    override def sources = outer.sources
+    override def resources = outer.resources
+    override def scalaVersion = outer.scalaVersion()
+    override def repositories = outer.repositories
+    override def compileIvyDeps = outer.compileIvyDeps()
+    override def ivyDeps = outer.ivyDeps()
+    override def unmanagedClasspath = outer.unmanagedClasspath()
+    override def scalacPluginIvyDeps = outer.scalacPluginIvyDeps()
+    override def scalacOptions = outer.scalacOptions()
+
+    object test extends ScoverageTests {
+      // Pass values from the Test module directly
+      override def millSourcePath = outer.testModule.millSourcePath
+      override def testFrameworks = outer.testModule.testFrameworks
+      // Append values from the Test module to this module
+      override def upstreamAssemblyClasspath =
+        T {
+          super.upstreamAssemblyClasspath() ++ outer.testModule.upstreamAssemblyClasspath()
+        }
+      override def compileClasspath =
+        T {
+          super.compileClasspath() ++ outer.testModule.compileClasspath()
+        }
+      override def runClasspath =
+        T {
+          super.runClasspath() ++ outer.testModule.runClasspath()
+        }
+    }
+  }
+}
+
+trait PrismScalaModule extends TpolecatModule {
   def scalaVersion = versions.scala
-  def scoverageVersion = versions.scoverage
 
   override def compileIvyDeps =
     super.compileIvyDeps.map {
@@ -90,7 +155,7 @@ trait PrismScalaModule extends TpolecatModule with ScoverageModule {
         ) ++ Seq("-P:silencer:checkUnused")
     }
 
-  trait PrismTestsModule extends ScoverageTests {
+  trait PrismTestsModule extends Tests {
     // Override with T.input to avoid caching
     // Ref: https://www.lihaoyi.com/mill/page/tasks.html#millapictxenv
     override def forkEnv: Target[Map[String, String]] =
@@ -182,7 +247,7 @@ object Crypto extends ScalaModule {
     }
 }
 
-object common extends PrismScalaModule {
+object common extends PrismScalaModule with CodeCoverageModule {
   override def moduleDeps = Seq(Crypto) ++ super.moduleDeps
 
   override def ivyDeps =
@@ -215,7 +280,7 @@ object common extends PrismScalaModule {
       )
   }
 
-  object test extends PrismTestsModule {
+  object test extends TestCodeCoverageModule {
     override def moduleDeps = Seq(`test-util`) ++ super.moduleDeps
     override def ivyDeps =
       Agg(
@@ -226,6 +291,8 @@ object common extends PrismScalaModule {
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
+
+  override def testModule: Tests = test
 }
 
 /**
@@ -335,7 +402,7 @@ trait PBCommon extends ScalaPBModule {
 
 trait ServerPBCommon extends ServerCommon with PBCommon
 
-object node extends ServerPBCommon with CVPDockerModule {
+object node extends ServerPBCommon with CVPDockerModule with CodeCoverageModule {
 
   override def mainClass = Some("io.iohk.atala.prism.node.NodeApp")
 
@@ -346,12 +413,14 @@ object node extends ServerPBCommon with CVPDockerModule {
       deps ++ awsS3Deps
     }
 
-  object test extends `tests-common` {
+  object test extends `tests-common` with TestCodeCoverageModule {
     override def ivyDeps =
       super.ivyDeps.map { deps =>
         deps ++ mockitoDeps
       }
   }
+
+  override def testModule: Tests = test
 
   object client extends PrismScalaModule {
     override def scalaVersion = node.scalaVersion
@@ -370,7 +439,7 @@ object node extends ServerPBCommon with CVPDockerModule {
   }
 }
 
-object connector extends ServerPBCommon with CVPDockerModule with TwirlModule {
+object connector extends ServerPBCommon with CVPDockerModule with TwirlModule with CodeCoverageModule {
 
   // for some reason, the credential.proto is breaking the integration with mill and ScalaPB
   // and the reason seems to be while generating lenses, the same protobuf file compiles just
@@ -398,12 +467,14 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule {
 
   override def cvpDockerConfig = CVPDockerConfig(name = "connector")
 
-  object test extends `tests-common` {
+  object test extends `tests-common` with TestCodeCoverageModule {
     override def ivyDeps =
       super.ivyDeps.map { deps =>
         deps ++ mockitoDeps
       }
   }
+
+  override def testModule: Tests = test
 
   def utilDir = T.sources { os.pwd / 'util }
 

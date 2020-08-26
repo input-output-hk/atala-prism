@@ -261,17 +261,9 @@ jobs:
             echo "export ENV=$branchPrefix" >> $BASH_ENV;
             . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
-      # Compile each component separately to avoid hitting out-of-memory errors
       - run:
           name: Compile credentials-verification components
-          command: |
-            cd credentials-verification
-            # All compilation is retried once to avoid flakiness with CircleCI capacity
-            mill common.__.compile || mill common.__.compile
-            mill connector.__.compile || mill connector.__.compile
-            mill node.__.compile || mill node.__.compile
-            # Ensure everything gets compiled
-            mill __.compile || mill __.compile
+          command: cd credentials-verification && mill __.compile
 
       - run:
           name: Test credentials-verification components
@@ -285,18 +277,18 @@ jobs:
 
       - run:
           name: Generate code coverage reports
-          command: cd credentials-verification && mill _.scoverage.htmlReport
+          command: cd credentials-verification && mill __.scoverageHtmlReport
 
       - store_test_results:
           path: credentials-verification/out/test-results
 
       # Store code coverage reports
       - store_artifacts:
-          path: credentials-verification/out/common/scoverage/htmlReport/dest
+          path: credentials-verification/out/common/InternalScoverageModule/scoverage/htmlReport/dest
       - store_artifacts:
-          path: credentials-verification/out/connector/scoverage/htmlReport/dest
+          path: credentials-verification/out/connector/InternalScoverageModule/scoverage/htmlReport/dest
       - store_artifacts:
-          path: credentials-verification/out/node/scoverage/htmlReport/dest
+          path: credentials-verification/out/node/InternalScoverageModule/scoverage/htmlReport/dest
 
   build-credentials-verification-landing:
     working_directory: ~/repo
