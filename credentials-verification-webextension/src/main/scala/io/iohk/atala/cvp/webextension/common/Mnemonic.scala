@@ -22,7 +22,9 @@ object Mnemonic {
   def apply(): Mnemonic = new Mnemonic(bip39.generateMnemonic())
 
   def apply(seed: String): Mnemonic = {
-    require(bip39.validateMnemonic(seed))
+    require(isValid(seed))
     new Mnemonic(seed)
   }
+
+  def isValid(seed: String) = { bip39.validateMnemonic(seed) }
 }

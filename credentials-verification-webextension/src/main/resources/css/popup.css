@@ -369,7 +369,9 @@ input:focus {
 }
 
 .img-no-pending {
-  margin-top: 150px;
+  text-align: center;
+  margin-top: 100px;
+  margin-bottom : 23px
 }
 
 .welcome_img{
@@ -392,15 +394,14 @@ input:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 50px;
-  margin-bottom: 50px;
+  margin: 50px auto 0 auto;
 }
 .lock_button:hover {
   background: rgba(255, 45, 59, 0.1)
 }
 
 .no-pending-container {
-  display: flex;
+  display: block;
   flex-wrap: wrap;
   justify-content: center;
 }

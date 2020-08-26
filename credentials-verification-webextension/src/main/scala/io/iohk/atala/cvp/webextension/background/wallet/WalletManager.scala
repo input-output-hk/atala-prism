@@ -13,6 +13,7 @@ import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorCli
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
+import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.services.BrowserTabService
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
@@ -47,14 +48,7 @@ object WalletStatus {
 
 }
 
-sealed trait Role
-
 object Role {
-
-  final case object Issuer extends Role
-
-  final case object Verifier extends Role
-
   def toConnectorApiRole(role: Role): RegisterDIDRequest.Role = {
     role match {
       case Issuer => RegisterDIDRequest.Role.issuer
@@ -66,13 +60,6 @@ object Role {
     role match {
       case GetCurrentUserResponse.Role.issuer => Issuer
       case GetCurrentUserResponse.Role.verifier => Verifier
-    }
-  }
-
-  def toRole(value: String): Role = {
-    value match {
-      case "Issuer" => Issuer
-      case "Verifier" => Verifier
     }
   }
 }
@@ -449,9 +436,11 @@ private[background] class WalletManager(
       .getOrElse(throw new RuntimeException("Wallet could not be loaded from JSON"))
   }
 
-  def lock(): Unit = {
-    this.storageKey = None
-    this.walletData = None
+  def lock(): Future[Unit] = {
+    Future {
+      this.storageKey = None
+      this.walletData = None
+    }
   }
 
   private def registerDid(

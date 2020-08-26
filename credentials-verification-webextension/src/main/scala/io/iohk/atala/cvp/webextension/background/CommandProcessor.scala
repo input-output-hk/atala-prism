@@ -65,7 +65,6 @@ private[background] class CommandProcessor(
           _ <- browserActionService.setPopup("popup.html")
         } yield CommandResponse(())
       case Command.LockWallet() =>
-        walletManager.lock()
-        browserActionService.setPopup("popup-closed.html").map(CommandResponse(_))
+        walletManager.lock().map(CommandResponse(_))
     }
 }

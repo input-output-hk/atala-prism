@@ -2,9 +2,9 @@ package io.iohk.atala.cvp.webextension.background.models
 
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
+import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, SignedMessage, UserDetails}
+import io.iohk.atala.cvp.webextension.common.models._
 
 import scala.util.Try
 

@@ -116,8 +116,13 @@ libraryDependencies += "io.circe" %%% "circe-generic" % circe
 libraryDependencies += "io.circe" %%% "circe-parser" % circe
 
 libraryDependencies += "com.lihaoyi" %%% "scalatags" % scalatagsVersion
+libraryDependencies += "com.beachape" %%% "enumeratum-circe" % "1.6.1"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "1.0.0"
+// React
+libraryDependencies += "me.shadaj" %%% "slinky-core" % "0.6.5" // core React functionality, no React DOM
+libraryDependencies += "me.shadaj" %%% "slinky-web" % "0.6.5" // React DOM, HTML and SVG tags
+libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % "0.6.5+15-fa93d141" // Intellij plugin for slinky
 
 // js
 npmDependencies in Compile ++= Seq(
@@ -126,7 +131,9 @@ npmDependencies in Compile ++= Seq(
   "bip32" -> "2.0.5",
   "grpc-web" -> "1.0.7",
   "bitcoinjs-lib" -> "5.1.8",
-  "@types/node" -> "14.0.0"
+  "@types/node" -> "14.0.0",
+  "react" -> "16.12.0",
+  "react-dom" -> "16.12.0"
 )
 
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"

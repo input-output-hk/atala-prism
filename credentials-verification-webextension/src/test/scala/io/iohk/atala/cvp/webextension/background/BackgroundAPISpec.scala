@@ -1,8 +1,9 @@
 package io.iohk.atala.cvp.webextension.background
 
-import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
+import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
+import io.iohk.atala.cvp.webextension.common.models.Role.Verifier
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
@@ -21,7 +22,7 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
 
   def setUpWallet(api: BackgroundAPI, keys: Seq[String] = List()): Future[Unit] = {
     for {
-      _ <- api.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
+      _ <- api.createWallet(PASSWORD, Mnemonic(), Verifier, ORGANISATION_NAME, Array())
       _ <- Future.sequence(keys.map(api.createKey))
     } yield ()
   }
@@ -170,7 +171,7 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
       val api = new BackgroundAPI()
 
       for {
-        _ <- api.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
+        _ <- api.createWallet(PASSWORD, Mnemonic(), Verifier, ORGANISATION_NAME, Array())
         status <- api.getWalletStatus()
       } yield {
         status.status mustBe WalletStatus.Unlocked
@@ -181,9 +182,9 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
       val api = new BackgroundAPI()
 
       for {
-        _ <- api.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
+        _ <- api.createWallet(PASSWORD, Mnemonic(), Verifier, ORGANISATION_NAME, Array())
 
-        _ <- api.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
+        _ <- api.createWallet(PASSWORD, Mnemonic(), Verifier, ORGANISATION_NAME, Array())
         status <- api.getWalletStatus()
       } yield {
         status.status mustBe WalletStatus.Unlocked

@@ -2,11 +2,9 @@ package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-import io.iohk.atala.cvp.webextension.background.wallet.WalletStatus.Unlocked
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 import org.scalajs.dom
-import org.scalajs.dom.experimental.URLSearchParams
-import org.scalajs.dom.window
+import slinky.web.ReactDOM
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -38,29 +36,8 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   }
 
   def run(): Unit = {
-    val view = Option(new URLSearchParams(window.location.search).get("view"))
     dom.window.onload = _ => {
-
-      backgroundAPI.getWalletStatus().onComplete {
-        case Success(walletStatus) =>
-          log(s"Got wallet status: ${walletStatus.status}")
-          walletStatus.status match {
-            case Unlocked => dom.document.body = MainWalletView(backgroundAPI).htmlBody
-            case _ => {
-              view
-                .filter(_ == "register")
-                .map { _ =>
-                  dom.document.body = RegistrationView(backgroundAPI).htmlBody
-                }
-                .getOrElse {
-                  dom.document.body = InitialWalletView(backgroundAPI).htmlBody
-                }
-            }
-          }
-        case Failure(ex) =>
-          log(s"Failed obtaining wallet status: ${ex.getMessage}")
-          throw ex
-      }
+      ReactDOM.render(WalletView(backgroundAPI), dom.document.getElementById("root"))
     }
   }
 

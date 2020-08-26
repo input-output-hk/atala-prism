@@ -11,9 +11,8 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
-import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, UserDetails}
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, Role, UserDetails}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js

@@ -12,4 +12,5 @@ private[popup] object ValidationUtils {
       None
     }
   }
+
 }
