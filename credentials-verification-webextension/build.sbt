@@ -148,7 +148,16 @@ dependsOn(cryptoLib)
 // Enable DOM testing with Chrome under Selenium
 requireJsDomEnv in Test := true
 
-npmDependencies in Test += "chromedriver" -> "83.0.0"
+lazy val chromeVersion: String = {
+  // Try getting the Chrome version provided by CircleCI
+  val vendorVersion = sys.env.getOrElse("CHROME_VERSION", "Google Chrome 83.0.0").trim
+  // Keep only the last word, removing the vendor prefix
+  val version = vendorVersion.substring(vendorVersion.lastIndexOf(' ') + 1)
+  // Set minor versions to 0, only keeping the major version, to guarantee the driver exists
+  val majorVersion = version.substring(0, version.indexOf('.'))
+  s"$majorVersion.0.0"
+}
+npmDependencies in Test += "chromedriver" -> chromeVersion
 
 jsEnv in Test := {
   // Set the path to the Chrome driver, based on the OS

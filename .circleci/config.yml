@@ -389,6 +389,10 @@ jobs:
       - halt-step-if-not-changed:
           directories: "credentials-verification credentials-verification-webextension crypto"
 
+      - run:
+          name: Set environment variables
+          command: echo export CHROME_VERSION=\"$(google-chrome --version)\" >> $BASH_ENV
+
       # Download and cache dependencies
       - restore_cache:
           keys:
