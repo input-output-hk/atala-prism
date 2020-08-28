@@ -37,31 +37,35 @@ class IntDemoService[D](
     }
   }
 
+  private def getStateMachine(connectionToken: TokenString): IntDemoStateMachine[D] = {
+    new IntDemoStateMachine(
+      requiredDataLoader = requiredDataLoader,
+      getCredential = getCredential,
+      proofRequestIssuer = proofRequestIssuer,
+      connectorIntegration = connectorIntegration,
+      intDemoRepository = intDemoRepository,
+      connectionToken = connectionToken,
+      issuerId = issuerId
+    )
+  }
+
+  def getSubjectStatus(
+      request: intdemo_api.GetSubjectStatusRequest
+  ): Future[intdemo_api.GetSubjectStatusResponse] = {
+    log.debug(s"Serving getSubjectStatus for request $request.")
+
+    val stateMachine = getStateMachine(new TokenString(request.connectionToken))
+    stateMachine.getCurrentStatus().map(status => intdemo_api.GetSubjectStatusResponse(status))
+  }
+
   def getSubjectStatusStream(
       request: intdemo_api.GetSubjectStatusRequest,
       responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse]
   ): Unit = {
+    log.debug(s"Serving getSubjectStatusStream for request $request.")
 
-    log.debug(
-      s"Serving getSubjectStatusStream for request $request."
-    )
-
-    val stateMachine =
-      new IntDemoStateMachine(
-        requiredDataLoader = requiredDataLoader,
-        getCredential = getCredential,
-        proofRequestIssuer = proofRequestIssuer,
-        connectorIntegration = connectorIntegration,
-        intDemoRepository = intDemoRepository,
-        connectionToken = new TokenString(request.connectionToken),
-        issuerId = issuerId,
-        responseObserver = responseObserver,
-        scheduler = scheduler,
-        schedulerPeriod = schedulerPeriod
-      )
-
-    scheduler.scheduleOnce(schedulerPeriod)(stateMachine.tick())
-    ()
+    val stateMachine = getStateMachine(new TokenString(request.connectionToken))
+    stateMachine.streamCurrentStatus(responseObserver, scheduler, schedulerPeriod)
   }
 }
 

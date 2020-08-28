@@ -20,42 +20,54 @@ class IntDemoStateMachine[D](
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     connectionToken: TokenString,
-    issuerId: ParticipantId,
-    responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse],
-    scheduler: Scheduler,
-    schedulerPeriod: FiniteDuration
+    issuerId: ParticipantId
 )(implicit ec: ExecutionContext) {
 
-  def tick(): Unit = {
-    val f = for {
-      currentStatus <- getCurrentStatus()
+  def getCurrentStatus(): Future[intdemo_models.SubjectStatus] = {
+    // Detect if any changes to the "old" status need to be applied, and apply them before returning the current status
+    for {
+      oldStatus <- getOldStatus()
       requiredData <- requiredDataLoader(connectionToken)
       connection <- getWalletConnection()
-      nextStatus <- State.stateMap(currentStatus)(currentStatus, requiredData, connection)
-      _ <- setNextState(currentStatus, nextStatus)
+      nextStatus <- State.stateMap(oldStatus)(oldStatus, requiredData, connection)
+      _ <- setNextState(oldStatus, nextStatus)
     } yield nextStatus
+  }
 
-    f.onComplete {
+  def streamCurrentStatus(
+      responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse],
+      scheduler: Scheduler,
+      schedulerPeriod: FiniteDuration
+  ): Unit = {
+    getCurrentStatus().onComplete {
       case Success(status) =>
         if (status == intdemo_models.SubjectStatus.CREDENTIAL_SENT) {
           complete(intdemo_api.GetSubjectStatusResponse(status), responseObserver)
         } else {
-          next(intdemo_api.GetSubjectStatusResponse(status), responseObserver)
+          next(intdemo_api.GetSubjectStatusResponse(status), responseObserver, scheduler, schedulerPeriod)
         }
       case Failure(exception) =>
         error(exception, responseObserver)
     }
   }
 
-  private def next[T](response: T, responseObserver: StreamObserver[T]): Unit = {
+  private def next(
+      response: intdemo_api.GetSubjectStatusResponse,
+      responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse],
+      scheduler: Scheduler,
+      schedulerPeriod: FiniteDuration
+  ): Unit = {
     try {
       responseObserver.onNext(response)
-      scheduler.scheduleOnce(schedulerPeriod)(tick())
+      scheduler.scheduleOnce(schedulerPeriod)(streamCurrentStatus(responseObserver, scheduler, schedulerPeriod))
       ()
     } catch (withLoggingHandler)
   }
 
-  private def complete[T](response: T, responseObserver: StreamObserver[T]): Unit = {
+  private def complete(
+      response: intdemo_api.GetSubjectStatusResponse,
+      responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse]
+  ): Unit = {
     try {
       responseObserver.onNext(response)
       responseObserver.onCompleted()
@@ -72,7 +84,7 @@ class IntDemoStateMachine[D](
       log.info(s"Failed client callback invocation for connection token ${connectionToken.token}. Got exception $t.")
   }
 
-  private def getCurrentStatus(): Future[intdemo_models.SubjectStatus] = {
+  private def getOldStatus(): Future[intdemo_models.SubjectStatus] = {
     intDemoRepository.findSubjectStatus(connectionToken).map(_.get)
   }
 

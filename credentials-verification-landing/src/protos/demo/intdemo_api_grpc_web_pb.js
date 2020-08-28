@@ -159,6 +159,86 @@ proto.io.iohk.prism.intdemo.protos.IDServicePromiseClient.prototype.getConnectio
  *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
  *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
+const methodDescriptor_IDService_GetSubjectStatus = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatus',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
+const methodInfo_IDService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.intdemo.protos.IDServiceClient.prototype.getSubjectStatus =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_IDService_GetSubjectStatus,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.intdemo.protos.IDServicePromiseClient.prototype.getSubjectStatus =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_IDService_GetSubjectStatus);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
 const methodDescriptor_IDService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
   '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
@@ -446,6 +526,86 @@ proto.io.iohk.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getConne
  *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
  *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
+const methodDescriptor_DegreeService_GetSubjectStatus = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatus',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
+const methodInfo_DegreeService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.intdemo.protos.DegreeServiceClient.prototype.getSubjectStatus =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_DegreeService_GetSubjectStatus,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getSubjectStatus =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_DegreeService_GetSubjectStatus);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
 const methodDescriptor_DegreeService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
   '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
@@ -653,6 +813,86 @@ proto.io.iohk.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getC
  *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
  *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
+const methodDescriptor_EmploymentService_GetSubjectStatus = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
+const methodInfo_EmploymentService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.intdemo.protos.EmploymentServiceClient.prototype.getSubjectStatus =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_EmploymentService_GetSubjectStatus,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getSubjectStatus =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_EmploymentService_GetSubjectStatus);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
 const methodDescriptor_EmploymentService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
   '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
@@ -851,6 +1091,86 @@ proto.io.iohk.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getCo
       request,
       metadata || {},
       methodDescriptor_InsuranceService_GetConnectionToken);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
+const methodDescriptor_InsuranceService_GetSubjectStatus = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ */
+const methodInfo_InsuranceService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.intdemo.protos.InsuranceServiceClient.prototype.getSubjectStatus =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_InsuranceService_GetSubjectStatus,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getSubjectStatus =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
+      request,
+      metadata || {},
+      methodDescriptor_InsuranceService_GetSubjectStatus);
 };
 
 

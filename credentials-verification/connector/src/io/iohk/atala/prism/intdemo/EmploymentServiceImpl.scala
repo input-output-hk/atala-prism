@@ -46,6 +46,12 @@ class EmploymentServiceImpl(
   ): Future[intdemo_api.GetConnectionTokenResponse] =
     service.getConnectionToken(request)
 
+  override def getSubjectStatus(
+      request: intdemo_api.GetSubjectStatusRequest
+  ): Future[intdemo_api.GetSubjectStatusResponse] = {
+    service.getSubjectStatus(request)
+  }
+
   override def getSubjectStatusStream(
       request: intdemo_api.GetSubjectStatusRequest,
       responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse]
