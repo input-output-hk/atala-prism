@@ -39,6 +39,9 @@
 		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
 		B38D944A24AE53440053CE36 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D944924AE53430053CE36 /* Reachability.swift */; };
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
+		B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */; };
+		B3A3E32824D0971200DEA1EE /* RestoreAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A3E32724D0971200DEA1EE /* RestoreAccountViewController.swift */; };
+		B3A3E32A24D0972500DEA1EE /* RestoreAccountPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A3E32924D0972500DEA1EE /* RestoreAccountPresenter.swift */; };
 		B3C760182489777C00AC46DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C760172489777C00AC46DC /* Env.swift */; };
 		B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */; };
 		B3EA097F24A519E50082B71B /* ConnectionAddManual.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3EA097E24A519E50082B71B /* ConnectionAddManual.storyboard */; };
@@ -284,6 +287,9 @@
 		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
 		B38D944924AE53430053CE36 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
+		B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RestoreAccount.storyboard; sourceTree = "<group>"; };
+		B3A3E32724D0971200DEA1EE /* RestoreAccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreAccountViewController.swift; sourceTree = "<group>"; };
+		B3A3E32924D0972500DEA1EE /* RestoreAccountPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreAccountPresenter.swift; sourceTree = "<group>"; };
 		B3C7601524896B9600AC46DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B3C760172489777C00AC46DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
 		B3E8ADD523EE025B00D63D0A /* credentials-verification-iOSTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "credentials-verification-iOSTests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -691,6 +697,8 @@
 				EE48AC0A2377541000C0A441 /* TutorialViewController.swift */,
 				EE71854D237DBF4700C58F62 /* WelcomePresenter.swift */,
 				EE71854F237DBF5400C58F62 /* WelcomeViewController.swift */,
+				B3A3E32724D0971200DEA1EE /* RestoreAccountViewController.swift */,
+				B3A3E32924D0972500DEA1EE /* RestoreAccountPresenter.swift */,
 			);
 			path = login;
 			sourceTree = "<group>";
@@ -1099,6 +1107,7 @@
 				EE48AC012377537200C0A441 /* Tutorial.storyboard */,
 				EE48AC22237764E800C0A441 /* TutorialPageView.xib */,
 				EE718551237DCDB100C58F62 /* Welcome.storyboard */,
+				B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */,
 			);
 			path = login;
 			sourceTree = "<group>";
@@ -1470,6 +1479,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */,
 				EE7D4CC02366B9C5007C31A8 /* Main.storyboard in Resources */,
 				EE904F182373B9EC00EE6344 /* DetailHeaderViewCell.xib in Resources */,
 				EE48AC2123775E3200C0A441 /* Success.storyboard in Resources */,
@@ -1738,6 +1748,7 @@
 				B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */,
 				B3F94E8F247455990087EBFD /* LockViewController.swift in Sources */,
 				EE7D4CEA23673C39007C31A8 /* UIView+Extensions.swift in Sources */,
+				B3A3E32824D0971200DEA1EE /* RestoreAccountViewController.swift in Sources */,
 				EE7D4D2B236F8DE9007C31A8 /* ListingBasePresenter.swift in Sources */,
 				EE7D4C712366B9C4007C31A8 /* ApiService.swift in Sources */,
 				EE7D4CFE236759B4007C31A8 /* DashboardPresenter.swift in Sources */,
@@ -1814,6 +1825,7 @@
 				EE7D4BFD2366B9C4007C31A8 /* BaseViewController.swift in Sources */,
 				B3EA098124A51C260082B71B /* ConnectionAddManualViewController.swift in Sources */,
 				EE7D4CF923673C39007C31A8 /* Date+Extension.swift in Sources */,
+				B3A3E32A24D0972500DEA1EE /* RestoreAccountPresenter.swift in Sources */,
 				EE7D4D29236F8DE9007C31A8 /* ListingEmptyViewCell.swift in Sources */,
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
 				EE7D4CE423673C39007C31A8 /* Locale+Extensions.swift in Sources */,
@@ -2044,7 +2056,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 52;
+				CURRENT_PROJECT_VERSION = 55;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2070,7 +2082,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 52;
+				CURRENT_PROJECT_VERSION = 55;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

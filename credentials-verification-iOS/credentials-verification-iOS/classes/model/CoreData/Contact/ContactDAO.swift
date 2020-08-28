@@ -62,6 +62,18 @@ class ContactDAO: NSObject {
         return nil
     }
 
+    func updateContact() -> Bool? {
+        guard let managedContext = getManagedContext() else { return nil }
+        do {
+            try managedContext.save()
+            return true
+
+        } catch let error as NSError {
+            print(error.debugDescription)
+            return false
+        }
+    }
+
     @discardableResult
     func createContact(connectionInfo: Io_Iohk_Prism_Protos_ConnectionInfo, keyPath: String) -> Contact? {
         if connectionInfo.hasParticipantInfo {

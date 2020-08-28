@@ -11,7 +11,7 @@ class TutorialPresenter: BasePresenter {
         viewImpl?.changeScreenToRegister()
     }
 
-    func tappedLoginButton() {
-        viewImpl?.changeScreenToLogin()
+    func tappedRestoreAccountButton() {
+        viewImpl?.changeScreenToRestoreAccount()
     }
 }

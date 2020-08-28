@@ -10,6 +10,7 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
     @IBOutlet weak var viewIndicator3: UIView!
     @IBOutlet weak var viewIndicatorContainer3: UIView!
     @IBOutlet weak var buttonContinue: UIButton!
+    @IBOutlet weak var buttonRestore: UIButton!
 
     var presenterImpl = TutorialPresenter()
     override var presenter: BasePresenter { return presenterImpl }
@@ -62,7 +63,9 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
 
     func setupButtons() {
 
-        buttonContinue.layer.cornerRadius = AppConfigs.CORNER_RADIUS_BUTTON
+        buttonContinue.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
+        buttonRestore.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON,
+                                      borderWidth: 3, borderColor: UIColor.appRed.cgColor)
     }
 
     func setupTutorialPages() {
@@ -94,6 +97,10 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
     @IBAction func tappedButtonContinue(_ sender: Any) {
         presenterImpl.tappedRegisterButton()
     }
+    
+    @IBAction func tappedButtonRestoreAccount(_ sender: Any) {
+        presenterImpl.tappedRestoreAccountButton()
+    }
 
     func tappedButtonAction(for view: TutorialPageView, buttonIndex: Int) {
 
@@ -102,7 +109,7 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
         } else if buttonIndex == 0 {
             presenterImpl.tappedRegisterButton()
         } else if buttonIndex == 1 {
-            presenterImpl.tappedLoginButton()
+            presenterImpl.tappedRestoreAccountButton()
         }
     }
 
@@ -147,7 +154,7 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
         _ = app_mayPerformSegue(withIdentifier: "RegisterSegue", sender: self)
     }
 
-    func changeScreenToLogin() {
-        _ = app_mayPerformSegue(withIdentifier: "LoginSegue", sender: self)
+    func changeScreenToRestoreAccount() {
+        _ = app_mayPerformSegue(withIdentifier: "RestoreAccountSegue", sender: self)
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -10,13 +10,13 @@
         <!--Tutorial View Controller-->
         <scene sceneID="aG5-eT-uvk">
             <objects>
-                <viewController storyboardIdentifier="Tutorial" useStoryboardIdentifierAsRestorationIdentifier="YES" id="p9s-5k-8iE" customClass="TutorialViewController" customModule="Atala_Prism" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Tutorial" useStoryboardIdentifierAsRestorationIdentifier="YES" id="p9s-5k-8iE" customClass="TutorialViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="vqc-Mx-OBh">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fxh-Bi-3n7">
-                                <rect key="frame" x="31" y="787" width="352" height="44"/>
+                                <rect key="frame" x="31" y="725" width="352" height="44"/>
                                 <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
                                 <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
@@ -35,16 +35,36 @@
                                     <action selector="tappedButtonContinue:" destination="p9s-5k-8iE" eventType="touchUpInside" id="ZxD-aS-j69"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pbz-0C-RCw">
+                                <rect key="frame" x="31" y="787" width="352" height="44"/>
+                                <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
+                                <state key="normal" title="Button">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <state key="disabled">
+                                    <color key="titleColor" red="0.62745098040000002" green="0.66666666669999997" blue="0.73333333329999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="tutorial_3_button_restore"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="tappedButtonRestoreAccount:" destination="p9s-5k-8iE" eventType="touchUpInside" id="uWZ-SV-aty"/>
+                                </connections>
+                            </button>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7jO-E0-suf">
-                                <rect key="frame" x="0.0" y="114" width="414" height="573"/>
+                                <rect key="frame" x="0.0" y="114" width="414" height="534"/>
                             </scrollView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="eJ3-gB-9P4">
-                                <rect key="frame" x="157" y="697" width="100" height="40"/>
+                                <rect key="frame" x="157" y="658" width="100" height="40"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="b8k-ma-0cJ">
                                         <rect key="frame" x="0.0" y="0.0" width="33.5" height="40"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZFw-fo-heR" customClass="Dot" customModule="Atala_Prism" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZFw-fo-heR" customClass="Dot" customModule="Atala_PRISM" customModuleProvider="target">
                                                 <rect key="frame" x="11.5" y="15" width="10" height="10"/>
                                                 <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -62,7 +82,7 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="t6M-Wx-x9h">
                                         <rect key="frame" x="33.5" y="0.0" width="33" height="40"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="anZ-Qc-USg" customClass="Dot" customModule="Atala_Prism" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="anZ-Qc-USg" customClass="Dot" customModule="Atala_PRISM" customModuleProvider="target">
                                                 <rect key="frame" x="11.5" y="15" width="10" height="10"/>
                                                 <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -83,7 +103,7 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KHk-W5-hJT">
                                         <rect key="frame" x="66.5" y="0.0" width="33.5" height="40"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CbK-Gm-cQA" customClass="Dot" customModule="Atala_Prism" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CbK-Gm-cQA" customClass="Dot" customModule="Atala_PRISM" customModuleProvider="target">
                                                 <rect key="frame" x="12" y="15" width="10" height="10"/>
                                                 <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -110,20 +130,24 @@
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
+                            <constraint firstItem="OJM-se-7av" firstAttribute="trailing" secondItem="Pbz-0C-RCw" secondAttribute="trailing" constant="31" id="1Cm-gR-njB"/>
                             <constraint firstItem="7jO-E0-suf" firstAttribute="top" secondItem="OJM-se-7av" secondAttribute="top" constant="70" id="AIc-mN-rjC"/>
+                            <constraint firstItem="Pbz-0C-RCw" firstAttribute="top" secondItem="Fxh-Bi-3n7" secondAttribute="bottom" constant="18" id="EKe-rW-CMa"/>
                             <constraint firstItem="Fxh-Bi-3n7" firstAttribute="leading" secondItem="OJM-se-7av" secondAttribute="leading" constant="31" id="OKl-oE-XQD"/>
+                            <constraint firstItem="Pbz-0C-RCw" firstAttribute="leading" secondItem="OJM-se-7av" secondAttribute="leading" constant="31" id="QzH-rY-bQk"/>
                             <constraint firstItem="7jO-E0-suf" firstAttribute="leading" secondItem="OJM-se-7av" secondAttribute="leading" id="VDY-g6-IhB"/>
                             <constraint firstItem="7jO-E0-suf" firstAttribute="trailing" secondItem="OJM-se-7av" secondAttribute="trailing" id="g65-qb-CFh"/>
                             <constraint firstItem="eJ3-gB-9P4" firstAttribute="centerX" secondItem="OJM-se-7av" secondAttribute="centerX" id="heE-mL-2or"/>
-                            <constraint firstItem="OJM-se-7av" firstAttribute="bottom" secondItem="Fxh-Bi-3n7" secondAttribute="bottom" constant="31" id="ihv-Ir-vXt"/>
-                            <constraint firstItem="Fxh-Bi-3n7" firstAttribute="top" secondItem="eJ3-gB-9P4" secondAttribute="bottom" constant="50" id="jpk-lu-Yaw"/>
+                            <constraint firstItem="Fxh-Bi-3n7" firstAttribute="top" secondItem="eJ3-gB-9P4" secondAttribute="bottom" constant="27" id="jpk-lu-Yaw"/>
                             <constraint firstItem="eJ3-gB-9P4" firstAttribute="top" secondItem="7jO-E0-suf" secondAttribute="bottom" constant="10" id="pGF-i1-p6L"/>
                             <constraint firstItem="OJM-se-7av" firstAttribute="trailing" secondItem="Fxh-Bi-3n7" secondAttribute="trailing" constant="31" id="qEZ-r2-09Z"/>
+                            <constraint firstItem="OJM-se-7av" firstAttribute="bottom" secondItem="Pbz-0C-RCw" secondAttribute="bottom" constant="31" id="zBY-Of-ze3"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="OJM-se-7av"/>
                     </view>
                     <connections>
                         <outlet property="buttonContinue" destination="Fxh-Bi-3n7" id="Mzd-VR-P3j"/>
+                        <outlet property="buttonRestore" destination="Pbz-0C-RCw" id="tvk-Xz-ZAX"/>
                         <outlet property="scrollView" destination="7jO-E0-suf" id="Oaa-wJ-zrr"/>
                         <outlet property="viewIndicator1" destination="ZFw-fo-heR" id="7jK-6O-viR"/>
                         <outlet property="viewIndicator2" destination="anZ-Qc-USg" id="OdI-4O-5Uw"/>
@@ -132,11 +156,12 @@
                         <outlet property="viewIndicatorContainer2" destination="t6M-Wx-x9h" id="dcf-Pg-ea3"/>
                         <outlet property="viewIndicatorContainer3" destination="KHk-W5-hJT" id="Nmv-N5-Z6X"/>
                         <segue destination="WeP-zF-FHg" kind="show" identifier="RegisterSegue" id="4Z8-Xd-TGE"/>
+                        <segue destination="pG1-Jf-ssm" kind="show" identifier="RestoreAccountSegue" id="E7d-uy-z95"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gwl-NN-rZt" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="34.782608695652179" y="99.776785714285708"/>
+            <point key="canvasLocation" x="-138" y="105"/>
         </scene>
         <!--Terms-->
         <scene sceneID="ThS-hI-xOH">
@@ -147,6 +172,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qxu-Ik-Tpe" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="683" y="100"/>
+        </scene>
+        <!--RestoreAccount-->
+        <scene sceneID="1oR-p6-nsQ">
+            <objects>
+                <viewControllerPlaceholder storyboardName="RestoreAccount" referencedIdentifier="RestoreAccount" id="pG1-Jf-ssm" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="5DR-Ja-lUs"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="N54-QB-78L" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="718" y="193"/>
         </scene>
     </scenes>
 </document>

@@ -155,7 +155,7 @@
 "tutorial_3_title" = "Get instant access to services";
 "tutorial_3_subtitle" = "Prove your identity in one click and instantly access services everywhere Atala PRISM is supported.";
 "tutorial_3_button_register" = "Create Account";
-"tutorial_3_button_login" = "Restore Account";
+"tutorial_3_button_restore" = "Restore Account";
 
 // <!-- Login: Terms -->
 "terms_lead" = "Account Creation";
@@ -178,6 +178,15 @@
 "login_input_title_empty" = "Word";
 "login_phrase_invalid_error" = "Words were invalid. Please try again.";
 
+// <!-- Login: Restore -->
+"restore_title" = "Restore Account";
+"restore_description" = "In order to restore your account, you need to type in the 12 words from the seed phrase that you will have kept safe.";
+"restore_subtitle" = "Recovery phrase";
+"restore_helper" = "Add a word and press enter to confirm.";
+"restore_hint" = "Enter your 12-word recovery phrase";
+"restore_verify" = "Verify";
+"restore_phrase_invalid_error" = "Warning Message lorem ipsum text";
+
 // <!-- Success -->
 "success_register_title" = "Congrats!\nYour account has been created";
 "success_register_subtitle" = "Continue to start the \nconnection process";
@@ -188,6 +197,9 @@
 "success_payment_title" = "Congrats!";
 "success_payment_subtitle" = "Your credential payment has been made successfully";
 "success_payment_button" = "Continue";
+"success_restore_title" = "Welcome Back!";
+"success_restore_subtitle" = "Your account has been\nsuccessfully restored";
+"success_restore_button" = "Next";
 
 // <!-- Wallet -->
 "wallet_initial_nav_title" = "Payments";

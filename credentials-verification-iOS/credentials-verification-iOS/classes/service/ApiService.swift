@@ -73,19 +73,17 @@ class ApiService: NSObject {
         return try service.addConnectionFromToken(request, metadata: metadata)
     }
 
-    func getConnections(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
-        throws -> [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse] {
+    func getConnection(keyPath: String, limit: Int32 = DEFAULT_REQUEST_LIMIT)
+        throws -> Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse {
 
-        var responseList: [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse] = []
-        for userId in userIds ?? [] {
-            let response = try service.getConnectionsPaginated(
-                Io_Iohk_Prism_Protos_GetConnectionsPaginatedRequest.with {
-                // $0.lastSeenConnectionID = token
-                $0.limit = limit
-            }, metadata: makeMeta(userId))
-            responseList.append(response)
+        let request = Io_Iohk_Prism_Protos_GetConnectionsPaginatedRequest.with {
+            // $0.lastSeenConnectionID = token
+            $0.limit = limit
         }
-        return responseList
+        let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: keyPath)
+        let response = try service.getConnectionsPaginated(request, metadata: metadata)
+
+        return response
     }
 
     // MARK: Credentials

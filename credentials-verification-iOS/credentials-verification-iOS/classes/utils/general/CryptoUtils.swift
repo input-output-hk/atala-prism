@@ -34,7 +34,11 @@ class CryptoUtils: NSObject {
 
      func generateSeed() {
         let passphrase = ""
-        seed = try? Mnemonic.seed(mnemonic: usedMnemonics!, passphrase: passphrase)
+        do {
+            seed = try Mnemonic.seed(mnemonic: usedMnemonics!, passphrase: passphrase)
+        } catch {
+            Logger.e(error.localizedDescription)
+        }
     }
 
     func getNextPublicKeyPath() -> String {

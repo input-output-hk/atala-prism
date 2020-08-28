@@ -21,6 +21,7 @@ target 'credentials-verification-iOS' do
   pod 'MBProgressHUD', '~> 1.0.0'
   pod 'Presentr', '~> 1.9.0' 
   pod 'Toast-Swift', '~> 5.0.0'
+  pod 'MaterialComponents/Chips'
   # Firebase
   pod 'Firebase/Crashlytics'
   pod 'Firebase/Analytics'
