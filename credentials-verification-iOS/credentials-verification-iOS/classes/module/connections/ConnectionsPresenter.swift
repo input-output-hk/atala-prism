@@ -242,8 +242,11 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     }
 
-    func tappedAction(for cell: ConnectionMainViewCell) {
-        // Do nothing
+    func tappedDelete(for cell: ConnectionMainViewCell) {
+        let contact = contacts[cell.indexPath!.row]
+        let credentialsDao = CredentialDAO()
+        let credentials = credentialsDao.listCredentialsForContact(did: contact.did)
+        viewImpl?.showDeleteContactConfirmation(contact: contact, credentials: credentials)
     }
 
     func hasPullToRefresh() -> Bool {
@@ -316,4 +319,19 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func conectionAccepted() {
         self.actionPullToRefresh()
     }
+
+    // MARK: Delete
+
+    func deleteContact(contact: Contact, credentials: [Credential]?) {
+        let credentialDAO = CredentialDAO()
+        if credentialDAO.deleteCredentials(credentials: credentials ?? []) {
+            let contactDao = ContactDAO()
+            if contactDao.deleteContact(contact: contact) {
+                self.actionPullToRefresh()
+                return
+            }
+        }
+        self.viewImpl?.showErrorMessage(doShow: true, message: "credentials_delete_error".localize())
+    }
+
 }

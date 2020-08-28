@@ -15,9 +15,10 @@ class ContactDAO: NSObject {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
         return appDelegate.persistentContainer.viewContext
     }
-    
+
     func getSortDescriptors() -> [NSSortDescriptor] {
-        return [NSSortDescriptor(key: "name", ascending: true), NSSortDescriptor(key: "connectionId", ascending: true)]
+        return [NSSortDescriptor(key: "name", ascending: true),
+                NSSortDescriptor(key: "connectionId", ascending: true)]
     }
 
     func getDidSuffix(did: String) -> String {

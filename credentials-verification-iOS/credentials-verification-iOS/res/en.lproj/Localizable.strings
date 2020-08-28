@@ -49,7 +49,7 @@
 "tab_credentials" = "Credentials";
 "tab_contacts" = "Contacts";
 
-// <!-- Connections -->
+// <!-- Contacts -->
 "connections_nav_title" = "Contacts";
 "connections_empty_title" = "Connect to an organization to receive your first credential";
 "connections_empty_subtitle" = "Receive, store and share your digital credentials";
@@ -67,6 +67,14 @@
 "connections_more_info" = "More Info";
 "connections_add_new" = "Add new";
 "connections_enter_code" = "Enter connection code";
+"contacts_delete_confrimation_title" = "Are you sure?";
+"contacts_delete_confrimation_message" = "You are about to delete:";
+"contacts_delete_description" = "If you do this, the credentials below that were issued by the contact will also be deleted:";
+"contacts_delete_error" = "The contact couldn't be deleted";
+"contacts_id_credential"= "ID Credential ";
+"contacts_university_credential"= "University Credential ";
+"contacts_employment_credential"= "Employment Credential ";
+"contacts_insurance_credential"= "Insurance Credential ";
 
 // <!-- Credentials -->
 "credentials_nav_title" = "Credentials";

@@ -177,4 +177,15 @@ class ConnectionsViewController: ListingBaseViewController {
                                    requiered: requiered, logoData: logoData,
                                    placeholderNamed: "ico_placeholder_university")
     }
+
+    // MARK: Delete
+
+    func showDeleteContactConfirmation(contact: Contact, credentials: [Credential]?) {
+        let confirmation = DeleteContactViewController.makeThisView()
+        confirmation.config(contact: contact, credentials: credentials) {
+            self.presenterImpl.deleteContact(contact: contact, credentials: credentials)
+        }
+        customPresentViewController(confirmation.presentr, viewController: confirmation, animated: true)
+
+    }
 }

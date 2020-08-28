@@ -3,7 +3,7 @@
 protocol ConnectionMainViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
 
     func setup(for cell: ConnectionMainViewCell)
-    func tappedAction(for cell: ConnectionMainViewCell)
+    func tappedDelete(for cell: ConnectionMainViewCell)
 }
 
 class ConnectionMainViewCell: BaseTableViewCell {
@@ -31,8 +31,8 @@ class ConnectionMainViewCell: BaseTableViewCell {
 
     // MARK: Component delegates
 
-    @IBAction func actionMainButtonTapped(_ sender: Any) {
-        self.delegateImpl?.tappedAction(for: self)
+    @IBAction func actionDeleteTapped(_ sender: Any) {
+        self.delegateImpl?.tappedDelete(for: self)
     }
 
     // MARK: Config

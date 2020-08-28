@@ -33,6 +33,8 @@
 		B35181B324196689007CA8F1 /* common_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181B224196689007CA8F1 /* common_models.proto */; };
 		B35181BA24196898007CA8F1 /* connector_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B624196898007CA8F1 /* connector_api.pb.swift */; };
 		B35181BB24196898007CA8F1 /* connector_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B724196898007CA8F1 /* connector_api.grpc.swift */; };
+		B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B35470F924E4252D009F4844 /* DeleteContact.storyboard */; };
+		B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35470FB24E42546009F4844 /* DeleteContactViewController.swift */; };
 		B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */; };
 		B36F27BD2406E2C400FF751B /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F27BC2406E2C400FF751B /* About.storyboard */; };
 		B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27BE2406F37600FF751B /* AboutViewController.swift */; };
@@ -281,6 +283,8 @@
 		B35181B224196689007CA8F1 /* common_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = common_models.proto; sourceTree = "<group>"; };
 		B35181B624196898007CA8F1 /* connector_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.pb.swift; sourceTree = "<group>"; };
 		B35181B724196898007CA8F1 /* connector_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.grpc.swift; sourceTree = "<group>"; };
+		B35470F924E4252D009F4844 /* DeleteContact.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DeleteContact.storyboard; sourceTree = "<group>"; };
+		B35470FB24E42546009F4844 /* DeleteContactViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteContactViewController.swift; sourceTree = "<group>"; };
 		B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestCell.swift; sourceTree = "<group>"; };
 		B36F27BC2406E2C400FF751B /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
 		B36F27BE2406F37600FF751B /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
@@ -1167,6 +1171,7 @@
 				B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */,
 				B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */,
 				B3EA098024A51C260082B71B /* ConnectionAddManualViewController.swift */,
+				B35470FB24E42546009F4844 /* DeleteContactViewController.swift */,
 			);
 			path = connections;
 			sourceTree = "<group>";
@@ -1174,6 +1179,7 @@
 		EE7D4D10236939DC007C31A8 /* connections */ = {
 			isa = PBXGroup;
 			children = (
+				B35470F924E4252D009F4844 /* DeleteContact.storyboard */,
 				EE7D4D1423693A13007C31A8 /* Connections.storyboard */,
 				EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */,
 				B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */,
@@ -1502,6 +1508,7 @@
 				EE7D4C832366B9C4007C31A8 /* LaunchScreen.storyboard in Resources */,
 				EE71855E23835EB000C58F62 /* ShareItemViewCell.xib in Resources */,
 				EE7185752384D5EE00C58F62 /* TabsViewCell.xib in Resources */,
+				B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */,
 				EE7D4CC52366B9C5007C31A8 /* SteradianRegular.otf in Resources */,
 				B36F27BD2406E2C400FF751B /* About.storyboard in Resources */,
 				EE7185662384B96400C58F62 /* Browser.storyboard in Resources */,
@@ -1774,6 +1781,7 @@
 				B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
 				B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */,
+				B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */,
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
@@ -2056,7 +2064,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 55;
+				CURRENT_PROJECT_VERSION = 56;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2082,7 +2090,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 55;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

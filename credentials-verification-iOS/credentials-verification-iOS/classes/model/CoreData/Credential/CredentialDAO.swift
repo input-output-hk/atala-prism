@@ -16,9 +16,14 @@ class CredentialDAO: NSObject {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
         return appDelegate.persistentContainer.viewContext
     }
-    
+
     func getSortDescriptors() -> [NSSortDescriptor] {
-        return [NSSortDescriptor(key: "issuerName", ascending: true), NSSortDescriptor(key: "credentialId", ascending: true)]
+        return [NSSortDescriptor(key: "issuerName", ascending: true),
+                NSSortDescriptor(key: "credentialId", ascending: true)]
+    }
+
+    func getDidSuffix(did: String) -> String {
+        String(did.split(separator: ":").last!)
     }
 
     func listCredentials() -> [Credential]? {
@@ -32,6 +37,15 @@ class CredentialDAO: NSObject {
         let fetchRequest = Credential.createFetchRequest()
         fetchRequest.predicate = NSPredicate(format: "viewed == false")
         fetchRequest.sortDescriptors = getSortDescriptors()
+        let result = try? getManagedContext()?.fetch(fetchRequest)
+        return result
+    }
+
+    func listCredentialsForContact(did: String) -> [Credential]? {
+        let fetchRequest = Credential.createFetchRequest()
+        fetchRequest.sortDescriptors = getSortDescriptors()
+        let didSufix = getDidSuffix(did: did)
+        fetchRequest.predicate = NSPredicate(format: "issuerId ENDSWITH %@", didSufix)
         let result = try? getManagedContext()?.fetch(fetchRequest)
         return result
     }
@@ -102,6 +116,20 @@ class CredentialDAO: NSObject {
     func deleteCredential(credential: Credential) -> Bool {
         guard let managedContext = getManagedContext() else { return false }
         managedContext.delete(credential)
+        do {
+            try managedContext.save()
+            return true
+        } catch let error as NSError {
+            print(error.debugDescription)
+            return false
+        }
+    }
+
+    func deleteCredentials(credentials: [Credential]) -> Bool {
+        guard let managedContext = getManagedContext() else { return false }
+        for credential in credentials {
+            managedContext.delete(credential)
+        }
         do {
             try managedContext.save()
             return true
