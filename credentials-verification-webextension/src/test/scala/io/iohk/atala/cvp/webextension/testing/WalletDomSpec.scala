@@ -6,7 +6,6 @@ import io.iohk.atala.cvp.webextension.background.Runner
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import org.scalajs.dom.html
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
-import scalatags.JsDom.all.div
 import typings.std.{HTMLInputElement, document}
 
 import scala.concurrent.ExecutionContextExecutor
@@ -50,7 +49,7 @@ trait WalletDomSpec extends Suite with BeforeAndAfterAll with BeforeAndAfterEach
     * Creates the HTML to be tested.
     */
   protected def createHtmlUnderTest(): html.Element = {
-    div().render
+    document.createElement("div")
   }
 
   protected def setInputValue(inputSelector: String, value: String): Unit = {

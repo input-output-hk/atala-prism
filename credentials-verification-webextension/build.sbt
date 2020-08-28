@@ -106,23 +106,33 @@ val circe = "0.13.0"
 val grpcWebVersion = "0.3.0"
 val scalatest = "3.1.1"
 val scalatagsVersion = "0.9.1"
+val scalaDomVersion = "1.0.0"
+val scalaJsChromeVersion = "0.7.0"
+val enumeratumVersion = "1.6.1"
+val slinkyVersion = "0.6.5"
+val slinkyIjextVerion = "0.6.5+15-fa93d141"
+val scalaJsJavaTimeVersion = "1.0.0"
 
-libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0"
-
-libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % "0.7.0"
+libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaDomVersion
+libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % scalaJsChromeVersion
 
 libraryDependencies += "io.circe" %%% "circe-core" % circe
 libraryDependencies += "io.circe" %%% "circe-generic" % circe
 libraryDependencies += "io.circe" %%% "circe-parser" % circe
+libraryDependencies += "com.beachape" %%% "enumeratum-circe" % enumeratumVersion
 
-libraryDependencies += "com.lihaoyi" %%% "scalatags" % scalatagsVersion
-libraryDependencies += "com.beachape" %%% "enumeratum-circe" % "1.6.1"
+libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % scalaJsJavaTimeVersion
 
-libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "1.0.0"
 // React
-libraryDependencies += "me.shadaj" %%% "slinky-core" % "0.6.5" // core React functionality, no React DOM
-libraryDependencies += "me.shadaj" %%% "slinky-web" % "0.6.5" // React DOM, HTML and SVG tags
-libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % "0.6.5+15-fa93d141" // Intellij plugin for slinky
+libraryDependencies += "me.shadaj" %%% "slinky-core" % slinkyVersion // core React functionality, no React DOM
+libraryDependencies += "me.shadaj" %%% "slinky-web" % slinkyVersion // React DOM, HTML and SVG tags
+libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % slinkyIjextVerion // Intellij plugin for slinky
+
+// grpc libraries
+libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % grpcWebVersion
+
+// Test
+libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 
 // js
 npmDependencies in Compile ++= Seq(
@@ -135,11 +145,6 @@ npmDependencies in Compile ++= Seq(
   "react" -> "16.12.0",
   "react-dom" -> "16.12.0"
 )
-
-libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
-
-// grpc libraries
-libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % grpcWebVersion
 
 // Internal libraries
 lazy val cryptoLib = ProjectRef(file("../crypto"), "cryptoJS")
