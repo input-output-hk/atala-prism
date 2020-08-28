@@ -1,4 +1,4 @@
-package io.iohk.cvp.admin
+package io.iohk.atala.prism.admin
 
 object Splitter {
 

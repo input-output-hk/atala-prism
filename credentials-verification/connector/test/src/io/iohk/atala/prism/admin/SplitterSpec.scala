@@ -1,4 +1,4 @@
-package io.iohk.cvp.admin
+package io.iohk.atala.prism.admin
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

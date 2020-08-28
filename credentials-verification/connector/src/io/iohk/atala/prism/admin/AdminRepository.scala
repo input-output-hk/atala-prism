@@ -1,13 +1,13 @@
-package io.iohk.cvp.admin
+package io.iohk.atala.prism.admin
 
 import cats.effect.IO
 import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.update.Update0
-import io.iohk.cvp.admin.AdminRepository.{log, _}
-import io.iohk.cvp.admin.Errors.AdminError.DatabaseError
-import io.iohk.cvp.admin.Splitter.sqlSplit
+import io.iohk.atala.prism.admin.AdminRepository.{log, _}
+import io.iohk.atala.prism.admin.Errors.AdminError.DatabaseError
+import io.iohk.atala.prism.admin.Splitter.sqlSplit
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import io.iohk.cvp.utils.Using.using

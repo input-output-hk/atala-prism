@@ -2,11 +2,12 @@ package io.iohk.connector
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
+import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories._
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
-import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
+import io.iohk.atala.prism.admin.AdminServiceImpl
 import io.iohk.cvp.cmanager.grpc.services.{
   CredentialsServiceImpl,
   GroupsServiceImpl,
