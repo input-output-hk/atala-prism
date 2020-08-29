@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.cardano.dbsync.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureOptionOps
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.daos.{BlockDAO, TransactionDAO}
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
 

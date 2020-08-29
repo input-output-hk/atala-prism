@@ -4,7 +4,7 @@ import java.security.{PublicKey => JPublicKey}
 import java.util.Base64
 
 import enumeratum._
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.atala.prism.crypto.ECKeys
 import io.iohk.dids.security.DIDPublicKeyType
 import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPublicKey}
 import org.bouncycastle.jce.ECNamedCurveTable

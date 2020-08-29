@@ -4,8 +4,8 @@ import java.security.MessageDigest
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.prism.protos.node_models

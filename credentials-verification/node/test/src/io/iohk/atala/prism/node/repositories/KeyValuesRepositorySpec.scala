@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.repositories
 
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import org.scalatest.EitherValues._
 

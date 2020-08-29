@@ -4,7 +4,7 @@ import doobie.implicits._
 import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong

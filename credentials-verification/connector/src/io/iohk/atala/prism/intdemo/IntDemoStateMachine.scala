@@ -3,7 +3,7 @@ package io.iohk.atala.prism.intdemo
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.intdemo.IntDemoStateMachine.log
 import io.iohk.connector.model.{Connection, ConnectionId, TokenString}
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import io.iohk.prism.protos.credential_models
 import monix.execution.Scheduler

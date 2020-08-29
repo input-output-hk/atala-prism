@@ -8,7 +8,7 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.models.AtalaObject
 import io.iohk.atala.prism.node.objects.ObjectStorageService

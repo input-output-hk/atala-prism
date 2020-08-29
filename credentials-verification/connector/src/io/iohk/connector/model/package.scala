@@ -7,7 +7,7 @@ import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
 import io.iohk.atala.crypto.ECPublicKey
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.connector_models
 
 import scala.util.Random

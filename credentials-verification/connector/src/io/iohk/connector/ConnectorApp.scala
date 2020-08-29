@@ -2,38 +2,31 @@ package io.iohk.connector
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
+import io.iohk.atala.prism.ParticipantPropagatorService
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
-import io.iohk.connector.payments.BraintreePayments
-import io.iohk.connector.repositories._
-import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.cvp.ParticipantPropagatorService
-import io.iohk.atala.prism.admin.AdminServiceImpl
-import io.iohk.cvp.cmanager.grpc.services.{
+import io.iohk.atala.prism.cmanager.grpc.services.{
   CredentialsServiceImpl,
   GroupsServiceImpl,
   StudentsServiceImpl,
   SubjectsServiceImpl
 }
-import io.iohk.cvp.cmanager.repositories.{
+import io.iohk.atala.prism.cmanager.repositories.{
   CredentialsRepository,
   IssuerGroupsRepository,
   IssuerSubjectsRepository,
   StudentsRepository
 }
-import io.iohk.cvp.cstore.CredentialsStoreService
-import io.iohk.cvp.cstore.repositories.VerifierHoldersRepository
-import io.iohk.cvp.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
-import io.iohk.cvp.cviews.CredentialViewsService
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
+import io.iohk.atala.prism.cstore.CredentialsStoreService
+import io.iohk.atala.prism.cstore.repositories.VerifierHoldersRepository
+import io.iohk.atala.prism.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
+import io.iohk.atala.prism.cviews.CredentialViewsService
+import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
-import io.iohk.atala.prism.intdemo.{
-  DegreeServiceImpl,
-  EmploymentServiceImpl,
-  IdServiceImpl,
-  InsuranceServiceImpl,
-  IntDemoRepository
-}
-import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.atala.prism.intdemo._
+import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.connector.payments.BraintreePayments
+import io.iohk.connector.repositories._
+import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,
   EmploymentServiceGrpc,

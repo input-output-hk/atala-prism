@@ -2,9 +2,9 @@ package io.iohk.atala.prism.node.services
 
 import java.time.Instant
 
-import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}

@@ -1,8 +1,8 @@
 package io.iohk.connector.repositories.daos
 
 import doobie.implicits._
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.connector.model.{ConnectionId, Message, MessageId}
-import io.iohk.cvp.models.ParticipantId
 
 object MessagesDAO {
   def insert(

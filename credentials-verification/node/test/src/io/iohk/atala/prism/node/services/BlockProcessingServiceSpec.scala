@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.services
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.crypto.{EC, ECPrivateKey}
-import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}

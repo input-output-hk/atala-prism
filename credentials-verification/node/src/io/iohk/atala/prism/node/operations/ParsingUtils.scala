@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath

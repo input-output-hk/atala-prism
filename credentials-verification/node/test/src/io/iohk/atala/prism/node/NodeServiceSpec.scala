@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
-import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.cvp.utils.FutureEither
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs

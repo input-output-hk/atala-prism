@@ -3,12 +3,12 @@ package io.iohk.connector.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, InvalidArgumentError, LoggingContext}
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext

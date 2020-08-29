@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 

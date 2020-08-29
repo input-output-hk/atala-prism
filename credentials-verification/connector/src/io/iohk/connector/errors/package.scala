@@ -1,8 +1,8 @@
 package io.iohk.connector
 
 import io.grpc.Status
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.Logger
 
 import scala.concurrent.{ExecutionContext, Future}

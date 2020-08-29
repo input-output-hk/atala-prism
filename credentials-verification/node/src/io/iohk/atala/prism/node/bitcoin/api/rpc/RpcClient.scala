@@ -7,7 +7,7 @@ import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.node.bitcoin.models._
-import io.iohk.cvp.utils.FutureEither._
+import io.iohk.atala.prism.utils.FutureEither._
 
 import scala.concurrent.{ExecutionContext, Future}
 import JsonCodecs._

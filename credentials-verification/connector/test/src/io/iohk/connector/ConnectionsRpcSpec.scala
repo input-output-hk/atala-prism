@@ -10,8 +10,8 @@ import io.iohk.atala.crypto.{EC, ECConfig}
 import io.iohk.connector.model.ParticipantType.Holder
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
-import io.iohk.cvp.grpc.SignedRequestsHelper
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.{connector_api, connector_models, node_api, node_models}
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar

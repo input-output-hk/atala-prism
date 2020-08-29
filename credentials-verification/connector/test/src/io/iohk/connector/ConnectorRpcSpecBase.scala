@@ -12,15 +12,15 @@ import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.cvp.ParticipantPropagatorService
-import io.iohk.cvp.grpc.{
+import io.iohk.atala.prism.ParticipantPropagatorService
+import io.iohk.atala.prism.grpc.{
   GrpcAuthenticationHeader,
   GrpcAuthenticationHeaderParser,
   GrpcAuthenticatorInterceptor,
   SignedRequestsHelper
 }
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.prism.protos.connector_api
 import org.mockito.MockitoSugar._
 import org.scalatest.BeforeAndAfterEach

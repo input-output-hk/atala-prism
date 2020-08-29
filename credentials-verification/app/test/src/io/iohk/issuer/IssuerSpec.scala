@@ -7,7 +7,7 @@ import java.util.Base64
 import io.iohk.claims.json._
 import io.iohk.claims.{Certificate, SubjectClaims}
 import io.iohk.crypto.{SignableEncoding, TwoLineJsonEncoding}
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.atala.prism.crypto.ECKeys
 import io.iohk.dids.DIDLoader
 import org.scalatest.OptionValues._
 import org.scalatest.matchers.should.Matchers

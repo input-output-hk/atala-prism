@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.operations
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository

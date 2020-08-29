@@ -2,13 +2,13 @@ package io.iohk.connector
 
 import io.grpc.Context
 import io.iohk.atala.crypto.{EC, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.model.RequestNonce
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither._
 import io.iohk.prism.protos.node_api
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage

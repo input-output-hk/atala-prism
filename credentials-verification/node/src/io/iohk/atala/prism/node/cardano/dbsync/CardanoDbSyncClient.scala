@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.dbsync
 
-import io.iohk.cvp.repositories.TransactorFactory
-import io.iohk.cvp.utils.FutureEither
+import io.iohk.atala.prism.repositories.TransactorFactory
+import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient.Result
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}

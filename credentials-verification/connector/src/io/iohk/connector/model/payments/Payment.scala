@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.UUID
 
 import enumeratum._
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.models.ParticipantId
 
 case class Payment(
     id: Payment.Id,

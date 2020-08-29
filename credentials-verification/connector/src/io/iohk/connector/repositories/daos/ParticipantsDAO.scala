@@ -3,8 +3,8 @@ package io.iohk.connector.repositories.daos
 import cats.data.OptionT
 import doobie.implicits._
 import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.connector.model.{ParticipantInfo, TokenString}
-import io.iohk.cvp.models.ParticipantId
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {

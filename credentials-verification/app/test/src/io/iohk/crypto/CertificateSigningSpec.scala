@@ -6,7 +6,7 @@ import java.util.Base64
 
 import io.iohk.claims.json._
 import io.iohk.claims.{Certificate, SubjectClaims}
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.atala.prism.crypto.ECKeys
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

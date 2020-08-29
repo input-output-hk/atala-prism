@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import java.time.Instant
 
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.modeling._
 import shapeless.tag.@@
 

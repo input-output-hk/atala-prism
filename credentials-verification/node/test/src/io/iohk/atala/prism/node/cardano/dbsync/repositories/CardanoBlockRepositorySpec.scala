@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories
 
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models._
 import org.scalatest.EitherValues._

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.intdemo
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport}
 import io.iohk.connector.model._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.credential_models
 import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
 import org.slf4j.{Logger, LoggerFactory}
@@ -41,7 +41,7 @@ object ConnectorIntegration {
       with ErrorSupport {
 
     import io.iohk.connector.model.{ConnectionId, TokenString}
-    import io.iohk.cvp.models.ParticipantId
+    import io.iohk.atala.prism.models.ParticipantId
 
     val logger: Logger = LoggerFactory.getLogger(classOf[ConnectorIntegrationImpl])
 

@@ -4,7 +4,7 @@ import java.time.Instant
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.AtalaObject
 
 object AtalaObjectsDAO {

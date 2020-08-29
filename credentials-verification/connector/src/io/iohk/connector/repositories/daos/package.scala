@@ -4,9 +4,9 @@ import doobie.postgres.implicits._
 import doobie.util.Meta
 import doobie.util.invariant.InvalidEnum
 import io.iohk.atala.crypto.{EC, ECPublicKey}
+import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.{MessageId, ParticipantLogo, ParticipantType}
-import io.iohk.cvp.daos.BaseDAO
 
 package object daos extends BaseDAO {
 

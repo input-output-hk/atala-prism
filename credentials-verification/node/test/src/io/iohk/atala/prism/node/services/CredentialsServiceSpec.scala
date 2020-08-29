@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
-import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.cvp.utils.FutureEither
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix}

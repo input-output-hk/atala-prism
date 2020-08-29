@@ -8,9 +8,9 @@ import doobie.util.update.Update0
 import io.iohk.atala.prism.admin.AdminRepository.{log, _}
 import io.iohk.atala.prism.admin.Errors.AdminError.DatabaseError
 import io.iohk.atala.prism.admin.Splitter.sqlSplit
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither._
-import io.iohk.cvp.utils.Using.using
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
+import io.iohk.atala.prism.utils.Using.using
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext

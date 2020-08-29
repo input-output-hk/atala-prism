@@ -10,7 +10,7 @@ import fr.acinq.bitcoin.MnemonicCode._
 import io.circe.syntax._
 import io.circe.{Json, Printer}
 import io.iohk.atala.crypto.ECConfig
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.prism.protos.node_models
 import org.spongycastle.math.ec.ECFieldElement
 import scodec.bits._

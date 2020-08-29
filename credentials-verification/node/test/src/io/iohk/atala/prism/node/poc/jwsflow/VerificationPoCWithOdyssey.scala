@@ -6,8 +6,8 @@ import java.util.concurrent.TimeUnit
 
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
-import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}

@@ -2,7 +2,7 @@ package db.migration
 
 import java.util.{Base64, UUID}
 
-import io.iohk.cvp.utils.Using.using
+import io.iohk.atala.prism.utils.Using.using
 import org.flywaydb.core.api.migration.{BaseJavaMigration, Context}
 
 class V11__IssuerIcons extends BaseJavaMigration {

@@ -1,10 +1,10 @@
 package io.iohk.connector.services
 
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.connector.repositories.ParticipantsRepository
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.prism.protos.{node_api, node_models}
 

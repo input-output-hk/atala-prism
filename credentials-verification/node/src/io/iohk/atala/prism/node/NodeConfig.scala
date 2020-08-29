@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node
 
 import com.typesafe.config.Config
-import io.iohk.cvp.repositories.TransactorFactory
+import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient

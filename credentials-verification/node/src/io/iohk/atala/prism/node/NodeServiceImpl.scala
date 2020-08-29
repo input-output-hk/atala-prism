@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node
 
 import io.grpc.Status
 import io.iohk.cvp.BuildInfo
-import io.iohk.cvp.utils.syntax._
+import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.CredentialId

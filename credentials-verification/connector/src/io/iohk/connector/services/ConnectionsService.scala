@@ -1,15 +1,15 @@
 package io.iohk.connector.services
 
 import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, PaymentsRepository}
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 import io.iohk.prism.protos.node_api
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory

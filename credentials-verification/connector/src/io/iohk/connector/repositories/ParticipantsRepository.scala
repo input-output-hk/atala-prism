@@ -6,12 +6,12 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.connector.errors.{ConnectorError, LoggingContext, UnknownValueError, _}
 import io.iohk.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.connector.repositories.daos.ParticipantsDAO
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext

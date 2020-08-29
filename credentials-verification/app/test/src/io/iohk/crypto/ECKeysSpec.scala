@@ -3,7 +3,7 @@ package io.iohk.crypto
 import java.security.{PrivateKey, PublicKey}
 import java.util.Base64
 
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.atala.prism.crypto.ECKeys
 import javax.xml.bind.DatatypeConverter
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec

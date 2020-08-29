@@ -4,7 +4,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.util.Base64
 
 import io.iohk.atala.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey}
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.prism.protos.node_models
 
 import scala.io.Source

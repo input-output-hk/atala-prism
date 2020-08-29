@@ -1,10 +1,10 @@
 package io.iohk.connector.payments
 
 import com.braintreegateway.{BraintreeGateway, Environment, Transaction, TransactionRequest}
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.connector.model.payments.ClientNonce
 import io.iohk.connector.payments.BraintreePayments._
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 

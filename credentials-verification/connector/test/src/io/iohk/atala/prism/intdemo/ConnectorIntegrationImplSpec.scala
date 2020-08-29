@@ -4,8 +4,8 @@ import io.iohk.connector.model.{ConnectionId, MessageId}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither._
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.prism.protos.credential_models
 import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}

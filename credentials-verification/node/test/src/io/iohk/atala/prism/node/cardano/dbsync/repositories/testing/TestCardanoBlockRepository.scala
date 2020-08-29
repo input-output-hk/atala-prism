@@ -5,7 +5,7 @@ import java.time.Instant
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.utils.DoobieImplicits._
+import io.iohk.atala.prism.utils.DoobieImplicits._
 import io.iohk.atala.prism.node.cardano.models._
 
 import scala.util.Random

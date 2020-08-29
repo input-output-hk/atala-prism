@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.repositories.daos
 import java.time.Instant
 
 import doobie.implicits._
-import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._

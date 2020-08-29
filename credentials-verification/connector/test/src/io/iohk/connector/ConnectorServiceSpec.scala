@@ -6,7 +6,7 @@ import java.util.UUID
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.crypto.EC
 import io.iohk.connector.model.RequestNonce
-import io.iohk.cvp.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.grpc.SignedRequestsHelper
 import io.iohk.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._

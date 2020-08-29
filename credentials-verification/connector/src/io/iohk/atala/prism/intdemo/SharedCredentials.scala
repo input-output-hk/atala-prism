@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 
 import io.circe.Printer
 import io.iohk.connector.model.{Connection, Message, TokenString}
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.credential_models
 
 import scala.concurrent.{ExecutionContext, Future}

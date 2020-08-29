@@ -1,8 +1,8 @@
 package io.iohk.connector.repositories.daos
 
 import doobie.implicits._
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.connector.model._
-import io.iohk.cvp.models.ParticipantId
 
 object ConnectionTokensDAO {
   def exists(tokenString: TokenString): doobie.ConnectionIO[Boolean] = {

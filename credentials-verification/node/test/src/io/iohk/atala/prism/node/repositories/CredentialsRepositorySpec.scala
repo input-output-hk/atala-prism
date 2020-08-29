@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.repositories
 
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.DIDData
 import io.iohk.atala.prism.node.operations.TimestampInfo

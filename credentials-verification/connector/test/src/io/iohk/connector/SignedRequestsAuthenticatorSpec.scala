@@ -9,9 +9,9 @@ import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.prism.protos.node_api._
 import io.iohk.prism.protos.{connector_api, node_api, node_models}
 import org.mockito.ArgumentMatchersSugar._

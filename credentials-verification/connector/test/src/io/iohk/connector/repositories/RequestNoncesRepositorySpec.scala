@@ -3,7 +3,7 @@ package io.iohk.connector.repositories
 import doobie.implicits._
 import io.iohk.connector.model.{ParticipantType, RequestNonce}
 import io.iohk.connector.repositories.daos.RequestNoncesDAO
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.EitherValues._
 
 class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {

@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.security.{PrivateKey, PublicKey}
 
 import com.google.protobuf.ByteString
-import io.iohk.cvp.crypto.{ECKeys, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.crypto.{ECKeys, ECSignature, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.poc.NodeSDK

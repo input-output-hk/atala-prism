@@ -3,11 +3,11 @@ package io.iohk.connector.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.connector.model.RequestNonce
 import io.iohk.connector.repositories.daos.RequestNoncesDAO
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.ExecutionContext
 

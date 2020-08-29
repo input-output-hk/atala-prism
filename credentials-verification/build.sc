@@ -509,7 +509,7 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule wi
 
 object wallet extends ServerPBCommon {
 
-  override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
+  override def mainClass = Some("io.iohk.atala.prism.wallet.WalletApp")
 
   object test extends `tests-common` {}
 }

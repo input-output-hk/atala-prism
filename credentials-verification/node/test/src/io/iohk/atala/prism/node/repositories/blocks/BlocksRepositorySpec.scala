@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.repositories.blocks
 
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._

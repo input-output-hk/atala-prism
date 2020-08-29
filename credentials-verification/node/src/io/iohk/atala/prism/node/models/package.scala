@@ -5,7 +5,7 @@ import java.time.Instant
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.crypto.ECPublicKey
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object models {

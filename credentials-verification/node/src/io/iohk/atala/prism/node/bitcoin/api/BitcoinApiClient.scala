@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.bitcoin.api
 
 import io.iohk.atala.prism.node.bitcoin.models._
-import io.iohk.cvp.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither
 import scala.concurrent.ExecutionContext
 import ApiModel._
 

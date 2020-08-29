@@ -4,9 +4,9 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.{Get, Read}
-import io.iohk.cvp.utils.DoobieImplicits._
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
+import io.iohk.atala.prism.utils.DoobieImplicits._
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
 import io.iohk.atala.prism.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
 
 import scala.concurrent.ExecutionContext

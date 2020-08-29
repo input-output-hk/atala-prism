@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.poc.jwsflow
 import java.net.URI
 import java.security.PublicKey
 
-import io.iohk.cvp.utils.syntax._
+import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.prism.protos.node_api
 import io.iohk.prism.protos.node_api.GetDidDocumentRequest

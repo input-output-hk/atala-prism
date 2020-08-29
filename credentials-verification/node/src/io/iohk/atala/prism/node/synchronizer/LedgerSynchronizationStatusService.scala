@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.synchronizer
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{BlockError, BlockHeader}
 import io.iohk.atala.prism.node.repositories.blocks.BlocksRepository
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.{EitherOps, FutureEitherOps}
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.{EitherOps, FutureEitherOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 

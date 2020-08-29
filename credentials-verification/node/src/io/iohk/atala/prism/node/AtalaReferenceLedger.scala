@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node
 
 import java.time.Instant
 
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 
 import scala.concurrent.Future

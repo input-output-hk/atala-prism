@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.operations
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.crypto.EC
-import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.randomProtoECKey
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}

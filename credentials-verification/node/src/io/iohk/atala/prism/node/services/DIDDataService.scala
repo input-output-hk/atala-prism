@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither._
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.DIDSuffix

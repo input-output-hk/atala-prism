@@ -5,15 +5,15 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.cmanager.models
+import io.iohk.atala.prism.cmanager.repositories.daos.IssuerSubjectsDAO
+import io.iohk.atala.prism.cstore.repositories.daos.VerifierHoldersDAO
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
-import io.iohk.cvp.cmanager.models
-import io.iohk.cvp.cmanager.repositories.daos.IssuerSubjectsDAO
-import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO
-import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext

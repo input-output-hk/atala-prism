@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.operations
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix}
 import io.iohk.atala.prism.node.operations.path._
