@@ -5,9 +5,9 @@ import java.util.UUID
 
 import io.circe
 import io.circe.Json
-import io.iohk.connector.model.TokenString
-import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs.{subjectToProto, genericCredentialToProto}
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student, Subject}
 import io.iohk.atala.prism.cmanager.repositories._

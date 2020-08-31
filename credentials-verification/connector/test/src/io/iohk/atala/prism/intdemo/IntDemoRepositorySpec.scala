@@ -4,8 +4,8 @@ import java.time.LocalDate
 import java.util.concurrent.ThreadLocalRandom
 
 import doobie.implicits._
-import io.iohk.connector.model.TokenString
-import io.iohk.connector.repositories.ConnectorRepositorySpecBase
+import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.connector.repositories.ConnectorRepositorySpecBase
 import IntDemoRepositorySpec._
 import io.iohk.prism.intdemo.protos.intdemo_models
 import org.scalatest.Matchers._

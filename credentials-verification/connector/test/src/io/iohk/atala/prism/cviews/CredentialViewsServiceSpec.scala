@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.cviews
 
 import io.grpc.ServerServiceDefinition
-import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId

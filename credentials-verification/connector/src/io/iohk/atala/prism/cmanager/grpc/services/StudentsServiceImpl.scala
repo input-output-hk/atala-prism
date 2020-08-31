@@ -2,7 +2,7 @@ package io.iohk.atala.prism.cmanager.grpc.services
 
 import java.util.UUID
 
-import io.iohk.connector.Authenticator
+import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student}

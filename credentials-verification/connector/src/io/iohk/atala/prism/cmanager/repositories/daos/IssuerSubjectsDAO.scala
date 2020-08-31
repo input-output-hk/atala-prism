@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.UUID
 
 import doobie.implicits._
-import io.iohk.connector.model.{ConnectionId, TokenString}
+import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
 import io.iohk.atala.prism.cmanager.models.requests.{CreateStudent, CreateSubject}
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student, Subject}
 

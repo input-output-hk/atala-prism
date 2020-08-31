@@ -1,6 +1,6 @@
-package io.iohk.connector.client.commands
+package io.iohk.atala.prism.connector.client.commands
 
-import io.iohk.connector.client.Config
+import io.iohk.atala.prism.connector.client.Config
 import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
 
 case object UnitCommand extends Command {

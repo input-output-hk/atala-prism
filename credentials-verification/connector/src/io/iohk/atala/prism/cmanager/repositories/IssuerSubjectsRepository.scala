@@ -3,8 +3,8 @@ package io.iohk.atala.prism.cmanager.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.connector.model.TokenString
-import io.iohk.connector.repositories.daos.ConnectionTokensDAO
+import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.atala.prism.cmanager.models.requests.CreateSubject
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Subject}
 import io.iohk.atala.prism.cmanager.repositories.daos.{IssuerGroupsDAO, IssuerSubjectsDAO}

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import doobie.util.{Get, Meta, Put}
 import io.circe.Json
-import io.iohk.connector.model.ConnectionId
+import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.cmanager.models
 import io.iohk.atala.prism.cmanager.models._
 import io.iohk.atala.prism.crypto.SHA256Digest

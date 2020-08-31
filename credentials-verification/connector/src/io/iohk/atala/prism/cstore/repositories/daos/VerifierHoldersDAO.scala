@@ -5,7 +5,7 @@ import java.util.UUID
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.circe.Json
-import io.iohk.connector.model.{ConnectionId, TokenString}
+import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
 import io.iohk.atala.prism.cstore.models.{IndividualConnectionStatus, StoreIndividual, Verifier, VerifierHolder}
 import io.iohk.atala.prism.models.ParticipantId
 

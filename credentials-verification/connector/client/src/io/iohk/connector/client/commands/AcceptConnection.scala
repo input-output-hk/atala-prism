@@ -1,8 +1,8 @@
-package io.iohk.connector.client.commands
+package io.iohk.atala.prism.connector.client.commands
 
 import io.circe.syntax._
 import io.circe.{Json, Printer}
-import io.iohk.connector.client.Config
+import io.iohk.atala.prism.connector.client.Config
 import io.iohk.prism.protos.connector_api.{AddConnectionFromTokenRequest, ConnectorServiceGrpc}
 import io.iohk.prism.protos.connector_models.ConnectorPublicKey
 

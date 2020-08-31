@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.cviews
 
 import io.circe.Json
-import io.iohk.connector.Authenticator
+import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.cmanager.models.Issuer
 import io.iohk.atala.prism.intdemo.html.{HealthCredential, IdCredential, ProofOfEmployment, UniversityDegree}
 import io.iohk.atala.prism.utils.FutureEither

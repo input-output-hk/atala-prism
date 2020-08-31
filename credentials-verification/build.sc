@@ -448,7 +448,7 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule wi
 
   def twirlVersion = versions.twirl
 
-  override def mainClass = Some("io.iohk.connector.ConnectorApp")
+  override def mainClass = Some("io.iohk.atala.prism.connector.ConnectorApp")
 
   // Disable unused import warnings in Twirl generated classes
   override def scalacOptions =

@@ -4,10 +4,10 @@ import java.util.UUID
 
 import doobie.implicits._
 import io.circe.Json
-import io.iohk.connector.model.{ConnectionId, ParticipantLogo, ParticipantType, TokenString}
-import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
-import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.model.{ConnectionId, ParticipantLogo, ParticipantType, TokenString}
+import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cstore.models.{IndividualConnectionStatus, Verifier}
 import io.iohk.atala.prism.cstore.repositories.VerifiersRepository.VerifierCreationData
 import io.iohk.atala.prism.cstore.repositories.daos.{StoredCredentialsDAO, VerifierHoldersDAO}

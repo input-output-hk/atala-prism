@@ -38,7 +38,7 @@ We are going to run simple flow, creating connection between them and sending a 
 grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -plaintext localhost:50051 \
- io.iohk.connector.ConnectorService/GenerateConnectionToken
+ io.iohk.atala.prism.connector.ConnectorService/GenerateConnectionToken
 ```
 
 ```
@@ -53,7 +53,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"token": "0Am0JpyQi8GqUKL0dZeubw=="}' \
  -plaintext localhost:50051 \
- io.iohk.connector.ConnectorService/GetConnectionTokenInfo
+ io.iohk.atala.prism.connector.ConnectorService/GetConnectionTokenInfo
 ```
 
 ```
@@ -73,7 +73,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"token": "0Am0JpyQi8GqUKL0dZeubw=="}' \
  -plaintext  localhost:50051 \
- io.iohk.connector.ConnectorService/AddConnectionFromToken
+ io.iohk.atala.prism.connector.ConnectorService/AddConnectionFromToken
 ```
 
 ```
@@ -98,7 +98,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -d '{"limit": 10}' \
  -plaintext localhost:50051 \
- io.iohk.connector.ConnectorService/GetConnectionsPaginated
+ io.iohk.atala.prism.connector.ConnectorService/GetConnectionsPaginated
 ```
 
 ```
@@ -124,7 +124,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -d '{"limit": 10, "lastSeenConnectionId": "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a"}' \
  -plaintext localhost:50051 \
- io.iohk.connector.ConnectorService/GetConnectionsPaginated
+ io.iohk.atala.prism.connector.ConnectorService/GetConnectionsPaginated
 ```
 
 5. As the issuer send message to the student (insert `connectionId` from step 4):
@@ -133,7 +133,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -d '{"connectionId": "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a", "message": "SGVsbG8sIHN0dWRlbnQhCg=="}' \
  -plaintext  localhost:50051 \
- io.iohk.connector.ConnectorService/SendMessage
+ io.iohk.atala.prism.connector.ConnectorService/SendMessage
 ```
 
 ```
@@ -148,7 +148,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"limit": 10}' \
  -plaintext \
- localhost:50051 io.iohk.connector.ConnectorService/GetMessagesPaginated
+ localhost:50051 io.iohk.atala.prism.connector.ConnectorService/GetMessagesPaginated
 ```
 
 ```
@@ -170,5 +170,5 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"limit": 10, "lastSeenMessageId": "d56728c0-6005-4d80-86fc-0d4b2fa2934a"}' \
  -plaintext \
- localhost:50051 io.iohk.connector.ConnectorService/GetMessagesPaginated
+ localhost:50051 io.iohk.atala.prism.connector.ConnectorService/GetMessagesPaginated
 ```

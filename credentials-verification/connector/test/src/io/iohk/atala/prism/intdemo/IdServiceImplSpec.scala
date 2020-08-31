@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 
 import io.circe.parser.parse
 import io.grpc.{Status, StatusException}
-import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
+import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import IdServiceImplSpec._
 import Testing._
 import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}

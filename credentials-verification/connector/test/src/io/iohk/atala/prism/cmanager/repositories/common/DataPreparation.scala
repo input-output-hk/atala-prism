@@ -8,8 +8,8 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.connector.model.{ParticipantInfo, ParticipantType}
-import io.iohk.connector.repositories.{daos => connectorDaos}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType}
+import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
 import io.iohk.atala.prism.cmanager.models.requests.{
   CreateGenericCredential,
   CreateStudent,

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.intdemo
 
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
+import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import IntDemoServiceSpec._
 import Testing.{eventually, neverEver}
 import io.iohk.atala.prism.models.ParticipantId

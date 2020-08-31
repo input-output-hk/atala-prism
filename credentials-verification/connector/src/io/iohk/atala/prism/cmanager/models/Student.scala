@@ -5,7 +5,7 @@ import java.util.UUID
 
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
-import io.iohk.connector.model.TokenString
+import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
 import io.scalaland.chimney.dsl._
 

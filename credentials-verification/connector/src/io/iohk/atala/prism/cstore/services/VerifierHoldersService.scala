@@ -3,9 +3,9 @@ package io.iohk.atala.prism.cstore.services
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.connector.errors.ConnectorError
-import io.iohk.connector.model.TokenString
-import io.iohk.connector.repositories.daos.ConnectionTokensDAO
+import io.iohk.atala.prism.connector.errors.ConnectorError
+import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.atala.prism.cstore.models.StoreIndividual
 import io.iohk.atala.prism.cstore.repositories.daos.VerifierHoldersDAO
 import io.iohk.atala.prism.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData

@@ -1,10 +1,10 @@
-package io.iohk.connector.client.commands
+package io.iohk.atala.prism.connector.client.commands
 
 import io.circe.Printer
 import io.circe.generic.auto._
 import io.circe.syntax._
-import io.iohk.connector.client.Config
-import io.iohk.connector.model.{Connection, ConnectionId, TokenString}
+import io.iohk.atala.prism.connector.client.Config
+import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, TokenString}
 import io.iohk.prism.protos.connector_api.{ConnectorServiceGrpc, GetConnectionByTokenRequest}
 
 case object GetConnection extends Command {

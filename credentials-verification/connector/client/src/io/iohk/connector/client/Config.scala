@@ -1,6 +1,6 @@
-package io.iohk.connector.client
+package io.iohk.atala.prism.connector.client
 
-import io.iohk.connector.client.commands.{Command, UnitCommand}
+import io.iohk.atala.prism.connector.client.commands.{Command, UnitCommand}
 import monocle.POptional
 import scopt.OParser
 

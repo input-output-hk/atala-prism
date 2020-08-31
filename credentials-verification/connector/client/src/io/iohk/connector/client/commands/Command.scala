@@ -1,8 +1,8 @@
-package io.iohk.connector.client.commands
+package io.iohk.atala.prism.connector.client.commands
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.{EC, ECPrivateKey}
-import io.iohk.connector.client.Config
+import io.iohk.atala.prism.connector.client.Config
 import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.prism.protos.node_models
 

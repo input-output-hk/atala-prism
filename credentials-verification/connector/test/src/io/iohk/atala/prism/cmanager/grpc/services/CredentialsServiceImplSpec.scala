@@ -6,8 +6,8 @@ import com.google.protobuf.ByteString
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
-import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs
 import io.iohk.atala.prism.cmanager.models.{GenericCredential, IssuerGroup}
 import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository

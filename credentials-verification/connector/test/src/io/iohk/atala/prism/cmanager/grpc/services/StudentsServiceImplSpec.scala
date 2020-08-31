@@ -2,10 +2,10 @@ package io.iohk.atala.prism.cmanager.grpc.services
 
 import java.util.UUID
 
-import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
-import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
-import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
+import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student}
 import io.iohk.atala.prism.cmanager.repositories.{
   CredentialsRepository,

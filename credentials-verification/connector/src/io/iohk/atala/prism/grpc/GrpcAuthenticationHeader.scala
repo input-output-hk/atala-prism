@@ -4,7 +4,7 @@ import java.util.Base64
 
 import io.grpc.Metadata
 import io.iohk.atala.crypto.{ECPublicKey, ECSignature}
-import io.iohk.connector.model.RequestNonce
+import io.iohk.atala.prism.connector.model.RequestNonce
 import io.iohk.atala.prism.models.ParticipantId
 
 sealed trait GrpcAuthenticationHeader {

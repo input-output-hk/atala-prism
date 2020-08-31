@@ -5,7 +5,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.iohk.atala.prism.cstore.repositories.daos.VerifierHoldersDAO
-import io.iohk.connector.errors.ConnectorError
+import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.cstore.models.{Verifier, VerifierHolder}
 import io.iohk.atala.prism.cstore.repositories.daos.VerifierHoldersDAO
 import io.iohk.atala.prism.utils.FutureEither

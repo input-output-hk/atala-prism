@@ -1,9 +1,9 @@
-package io.iohk.connector.client.commands
+package io.iohk.atala.prism.connector.client.commands
 
 import java.util.Base64
 
 import com.google.protobuf.ByteString
-import io.iohk.connector.client.Config
+import io.iohk.atala.prism.connector.client.Config
 import io.iohk.prism.protos.connector_api.{ConnectorServiceGrpc, GetConnectionByTokenRequest, SendMessageRequest}
 
 case object SendMessage extends Command {

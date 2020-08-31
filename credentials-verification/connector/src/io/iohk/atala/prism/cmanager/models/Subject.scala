@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.UUID
 
 import io.circe.Json
-import io.iohk.connector.model.TokenString
+import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.cmanager.models.requests.CreateSubject
 import io.scalaland.chimney.dsl._
 

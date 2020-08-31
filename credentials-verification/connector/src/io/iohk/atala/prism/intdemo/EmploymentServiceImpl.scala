@@ -12,7 +12,7 @@ import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.{
   requestIdAndDegreeCredentials
 }
 import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, jsonPrinter}
-import io.iohk.connector.model.{Connection, TokenString}
+import io.iohk.atala.prism.connector.model.{Connection, TokenString}
 import io.iohk.atala.prism.intdemo.html.ProofOfEmployment
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.intdemo.protos.intdemo_api

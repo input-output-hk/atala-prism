@@ -1,4 +1,4 @@
-package io.iohk.connector.client.commands
+package io.iohk.atala.prism.connector.client.commands
 
 import java.time.Instant
 import java.util.Base64
@@ -6,7 +6,7 @@ import java.util.Base64
 import io.circe.Printer
 import io.circe.generic.auto._
 import io.circe.syntax._
-import io.iohk.connector.client.Config
+import io.iohk.atala.prism.connector.client.Config
 import io.iohk.prism.protos.connector_api.{
   ConnectorServiceGrpc,
   GetConnectionByTokenRequest,

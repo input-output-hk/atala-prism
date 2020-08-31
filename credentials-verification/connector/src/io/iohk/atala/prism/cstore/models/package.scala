@@ -6,7 +6,7 @@ import java.util.UUID
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.{EnumEntry, _}
 import io.circe.Json
-import io.iohk.connector.model.ConnectionId
+import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.models.ParticipantId
 
 package object models {

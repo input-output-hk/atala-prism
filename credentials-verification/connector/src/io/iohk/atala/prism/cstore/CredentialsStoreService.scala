@@ -2,9 +2,9 @@ package io.iohk.atala.prism.cstore
 
 import java.util.UUID
 
-import io.iohk.connector.Authenticator
-import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
-import io.iohk.connector.model.ConnectionId
+import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
+import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.cstore.grpc.ProtoCodecs._
 import io.iohk.atala.prism.cstore.models.Verifier
 import io.iohk.atala.prism.cstore.repositories.VerifierHoldersRepository

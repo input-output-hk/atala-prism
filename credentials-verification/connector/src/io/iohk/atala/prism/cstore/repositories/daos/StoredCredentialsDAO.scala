@@ -4,7 +4,7 @@ import java.util.UUID
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.connector.model.ConnectionId
+import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.cstore.models.StoredSignedCredential
 import io.iohk.atala.prism.models.ParticipantId
 

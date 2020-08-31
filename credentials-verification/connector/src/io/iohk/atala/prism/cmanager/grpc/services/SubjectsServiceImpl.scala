@@ -2,8 +2,8 @@ package io.iohk.atala.prism.cmanager.grpc.services
 
 import java.util.UUID
 
-import io.iohk.connector.Authenticator
-import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
+import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.atala.prism.cmanager.models.Subject.ExternalId
 import io.iohk.atala.prism.cmanager.models.requests.CreateSubject

@@ -2,7 +2,7 @@ package io.iohk.atala.prism
 
 import _root_.doobie.util.transactor.Transactor
 import cats.effect.IO
-import io.iohk.connector.model.ParticipantType
+import io.iohk.atala.prism.connector.model.ParticipantType
 import io.iohk.atala.prism.cmanager.models.Issuer
 import io.iohk.atala.prism.cmanager.repositories.IssuersRepository
 import io.iohk.atala.prism.cmanager.repositories.IssuersRepository.IssuerCreationData

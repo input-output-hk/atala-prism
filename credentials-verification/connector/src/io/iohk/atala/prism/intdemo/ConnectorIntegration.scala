@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.intdemo
 
-import io.iohk.connector.errors.{ConnectorError, ErrorSupport}
-import io.iohk.connector.model._
-import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ErrorSupport}
+import io.iohk.atala.prism.connector.model._
+import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.credential_models
 import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
@@ -40,7 +40,7 @@ object ConnectorIntegration {
   ) extends ConnectorIntegration
       with ErrorSupport {
 
-    import io.iohk.connector.model.{ConnectionId, TokenString}
+    import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
     import io.iohk.atala.prism.models.ParticipantId
 
     val logger: Logger = LoggerFactory.getLogger(classOf[ConnectorIntegrationImpl])
