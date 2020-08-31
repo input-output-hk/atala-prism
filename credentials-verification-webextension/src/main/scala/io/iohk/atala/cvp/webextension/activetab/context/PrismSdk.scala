@@ -1,8 +1,11 @@
 package io.iohk.atala.cvp.webextension.activetab.context
 
+import cats.data.ValidatedNel
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
+import io.iohk.atala.credentials.VerificationError
+import io.iohk.atala.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
 import io.iohk.atala.cvp.webextension.activetab.models.{JsSignedMessage, JsUserDetails}
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
@@ -85,11 +88,33 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     }
   }
 
-  def verifySignedCredential(sessionId: String, signedCredentialStringRepresentation: String): js.Promise[Boolean] = {
+  def verifySignedCredential(
+      sessionId: String,
+      signedCredentialStringRepresentation: String
+  ): js.Promise[js.Array[String]] = {
     extensionAPI
       .verifySignedCredential(sessionId, signedCredentialStringRepresentation)
-      .map(_.result)
+      .map(event => toJsErrorList(event.result))
       .toJSPromise
+  }
+
+  private def toJsErrorList(validations: ValidatedNel[VerificationError, Unit]): js.Array[String] = {
+    def toErrorCode(err: VerificationError): String =
+      err match {
+        case Revoked(revokedOn) =>
+          s"The credential was revoked on $revokedOn"
+        case KeyWasNotValid(keyAddedOn, credentialIssuedOn) =>
+          s"The signing key was added after the credential was issued.\nKey added on: $keyAddedOn\nCredential issued on: $credentialIssuedOn"
+        case KeyWasRevoked(credentialIssuedOn, keyRevokedOn) =>
+          s"The signing key was revoked before the credential was issued.\nCredential issued on: $credentialIssuedOn\nKey revoked on: $keyRevokedOn"
+        case InvalidSignature =>
+          "The credential signature was invalid"
+      }
+
+    validations.fold(
+      errors => js.Array[String]((errors.toList map toErrorCode): _*),
+      _ => js.Array[String]()
+    )
   }
 
   private def readJsonAs[T](jsonAsString: String)(implicit decoder: io.circe.Decoder[T]): T = {

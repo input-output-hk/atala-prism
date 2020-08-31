@@ -2,11 +2,13 @@ package io.iohk.atala.cvp.webextension.background.wallet
 
 import java.util.{Base64, UUID}
 
+import cats.data.ValidatedNel
 import com.google.protobuf.ByteString
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
+import io.iohk.atala.credentials.VerificationError
 import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
@@ -287,7 +289,7 @@ private[background] class WalletManager(
       origin: Origin,
       sessionID: String,
       signedCredentialStringRepresentation: String
-  ): Future[Boolean] = {
+  ): Future[ValidatedNel[VerificationError, Unit]] = {
     val validSessionF = Future.fromTry {
       Try {
         session

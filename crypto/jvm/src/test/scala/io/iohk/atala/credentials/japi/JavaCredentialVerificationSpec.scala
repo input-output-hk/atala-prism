@@ -5,6 +5,7 @@ import java.util.Optional
 
 import io.circe.Json
 import io.iohk.atala.credentials.japi.CredentialVerification.Provider
+import io.iohk.atala.credentials.japi.verification.error.VerificationError.ErrorCode
 import io.iohk.atala.credentials.{
   CredentialsCryptoSDKImpl,
   JsonBasedUnsignedCredential,
@@ -48,7 +49,9 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
       val signedCredential =
         CredentialsCryptoSDKImpl.signCredential(unsignedCredential, toECPrivateKey(keys.getPrivate))
 
-      credentialVerification.verifyCredential(keyData, credentialData, toSignedCredential(signedCredential)) mustBe true
+      credentialVerification
+        .verifyCredential(keyData, credentialData, toSignedCredential(signedCredential))
+        .isValid mustBe true
     }
 
     "return false when credential is revoked" in {
@@ -58,11 +61,15 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
       val signedCredential =
         CredentialsCryptoSDKImpl.signCredential(unsignedCredential, toECPrivateKey(keys.getPrivate))
 
-      credentialVerification.verifyCredential(
+      val verificationResult = credentialVerification.verifyCredential(
         keyData,
         credentialData,
         toSignedCredential(signedCredential)
-      ) mustBe false
+      )
+
+      verificationResult.isValid mustBe false
+      verificationResult.getErrors.size() mustBe 1
+      verificationResult.getErrors.get(0).getCode mustBe ErrorCode.Revoked
     }
 
     "return false when credential added before key" in {
@@ -72,11 +79,15 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
       val signedCredential =
         CredentialsCryptoSDKImpl.signCredential(unsignedCredential, toECPrivateKey(keys.getPrivate))
 
-      credentialVerification.verifyCredential(
+      val verificationResult = credentialVerification.verifyCredential(
         keyData,
         credentialData,
         toSignedCredential(signedCredential)
-      ) mustBe false
+      )
+
+      verificationResult.isValid mustBe false
+      verificationResult.getErrors.size() mustBe 1
+      verificationResult.getErrors.get(0).getCode mustBe ErrorCode.KeyWasNotValid
     }
 
     "return false when key is revoked before credential is added" in {
@@ -86,11 +97,15 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
       val signedCredential =
         CredentialsCryptoSDKImpl.signCredential(unsignedCredential, toECPrivateKey(keys.getPrivate))
 
-      credentialVerification.verifyCredential(
+      val verificationResult = credentialVerification.verifyCredential(
         keyData,
         credentialData,
         toSignedCredential(signedCredential)
-      ) mustBe false
+      )
+
+      verificationResult.isValid mustBe false
+      verificationResult.getErrors.size() mustBe 1
+      verificationResult.getErrors.get(0).getCode mustBe ErrorCode.KeyWasRevoked
     }
 
     "return false when signature is invalid" in {
@@ -101,11 +116,15 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
       val signedCredential =
         CredentialsCryptoSDKImpl.signCredential(unsignedCredential, toECPrivateKey(ec.generateKeyPair().getPrivate))
 
-      credentialVerification.verifyCredential(
+      val verificationResult = credentialVerification.verifyCredential(
         keyData,
         credentialData,
         toSignedCredential(signedCredential)
-      ) mustBe false
+      )
+
+      verificationResult.isValid mustBe false
+      verificationResult.getErrors.size() mustBe 1
+      verificationResult.getErrors.get(0).getCode mustBe ErrorCode.InvalidSignature
     }
 
     def toECPrivateKey(privateKey: ECPrivateKey): JvmECPrivateKey = {

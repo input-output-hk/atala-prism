@@ -175,8 +175,8 @@ and we will not need to remember any other data apart from the organization name
    def queries(uuid: String): String = 
     s"""
        |INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('$uuid','$uuid', 'Test');
-       |INSERT INTO issuer_subjects (subject_id , created_at , connection_status , group_id , subject_data)
-       |VALUES ('$uuid', now(), 'CONNECTION_MISSING','$uuid','{}');
+       |INSERT INTO issuer_subjects (subject_id , external_id , created_at , connection_status , group_id , subject_data)
+       |VALUES ('$uuid', '$uuid', now(), 'CONNECTION_MISSING','$uuid','{}');
        |INSERT INTO credentials
        |(credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
        |VALUES ('$uuid','$uuid','$uuid','Test',now(),'{}');
@@ -190,8 +190,8 @@ and we will not need to remember any other data apart from the organization name
    scala> def queries(uuid: String): String = 
            s"""
               |INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('$uuid','$uuid', 'Test');
-              |INSERT INTO issuer_subjects (subject_id , created_at , connection_status , group_id , subject_data)
-              |VALUES ('$uuid', now(), 'CONNECTION_MISSING','$uuid','{}');
+              |INSERT INTO issuer_subjects (subject_id , external_id , created_at , connection_status , group_id , subject_data)
+              |VALUES ('$uuid', '$uuid', now(), 'CONNECTION_MISSING','$uuid','{}');
               |INSERT INTO credentials
               |(credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
               |VALUES ('$uuid','$uuid','$uuid','Test',now(),'{}');
@@ -202,8 +202,8 @@ and we will not need to remember any other data apart from the organization name
    res0: String =
    "
    INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'Test');
-   INSERT INTO issuer_subjects (subject_id , created_at , connection_status , group_id , subject_data)
-   VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', now(), 'CONNECTION_MISSING','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','{}');
+   INSERT INTO issuer_subjects (subject_id , external_id , created_at , connection_status , group_id , subject_data)
+   VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', now(), 'CONNECTION_MISSING','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','{}');
    INSERT INTO credentials
    (credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
    VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','Test',now(),'{}');

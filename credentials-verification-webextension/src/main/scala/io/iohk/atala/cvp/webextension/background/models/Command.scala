@@ -1,7 +1,9 @@
 package io.iohk.atala.cvp.webextension.background.models
 
+import cats.data.ValidatedNel
 import io.circe.generic.auto._
 import io.circe.parser.parse
+import io.iohk.atala.credentials.VerificationError
 import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models._
@@ -26,7 +28,7 @@ private[background] object Command {
 
   final case class VerifySignedCredential(sessionId: String, signedCredentialStringRepresentation: String)
       extends CommandWithResponse[VerifySignedCredentialResponse]
-  final case class VerifySignedCredentialResponse(result: Boolean)
+  final case class VerifySignedCredentialResponse(result: ValidatedNel[VerificationError, Unit])
 
   final case class SignatureResult(signature: String)
 

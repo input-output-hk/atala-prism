@@ -1,5 +1,7 @@
 package io.iohk.atala.cvp.webextension.background.services.node
 
+import cats.data.ValidatedNel
+import io.iohk.atala.credentials.VerificationError
 import io.iohk.atala.credentials.{
   CredentialData,
   CredentialVerification,
@@ -23,7 +25,7 @@ class NodeClientService(url: String) {
 
   def verifyCredential(
       signedCredentialStringRepresentation: String
-  )(implicit executionContext: ExecutionContext): Future[Boolean] = {
+  )(implicit executionContext: ExecutionContext): Future[ValidatedNel[VerificationError, Unit]] = {
 
     for {
       signedCredential <- Future.fromTry(SignedCredential.from(signedCredentialStringRepresentation))

@@ -1,5 +1,6 @@
 package io.iohk.atala.credentials.japi;
 
+import io.iohk.atala.credentials.japi.verification.VerificationResult;
 import io.iohk.atala.crypto.AndroidEC$;
 import io.iohk.atala.crypto.EC$;
 
@@ -24,5 +25,5 @@ public interface CredentialVerification {
     }
   }
 
-  boolean verifyCredential(KeyData keyData, CredentialData credentialData, SignedCredential signedCredential);
+  VerificationResult verifyCredential(KeyData keyData, CredentialData credentialData, SignedCredential signedCredential);
 }
