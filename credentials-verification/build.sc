@@ -70,6 +70,8 @@ trait CodeCoverageModule { outer: ScalaModule =>
 
   private def asScoverage = new InternalScoverageModule()
 
+  def compileWithScoverage = asScoverage.scoverage.compile
+
   def testWithScoverage(args: String*): Command[(String, Seq[TestRunner.Result])] =
     T.command {
       println("Testing with Scoverage turned on")
@@ -94,6 +96,7 @@ trait CodeCoverageModule { outer: ScalaModule =>
   private class InternalScoverageModule extends ScoverageModule {
     def scoverageVersion = versions.scoverage
 
+    // Mimic the outer module
     override def millSourcePath = outer.millSourcePath
     override def generatedSources = outer.generatedSources()
     override def allSources = outer.allSources()
@@ -108,23 +111,19 @@ trait CodeCoverageModule { outer: ScalaModule =>
     override def scalacPluginIvyDeps = outer.scalacPluginIvyDeps()
     override def scalacOptions = outer.scalacOptions()
 
+    // Mimic the outer test module (avoiding double compilation)
     object test extends ScoverageTests {
       // Pass values from the Test module directly
       override def millSourcePath = outer.testModule.millSourcePath
       override def testFrameworks = outer.testModule.testFrameworks
-      // Append values from the Test module to this module
-      override def upstreamAssemblyClasspath =
-        T {
-          super.upstreamAssemblyClasspath() ++ outer.testModule.upstreamAssemblyClasspath()
-        }
-      override def compileClasspath =
-        T {
-          super.compileClasspath() ++ outer.testModule.compileClasspath()
-        }
-      override def runClasspath =
-        T {
-          super.runClasspath() ++ outer.testModule.runClasspath()
-        }
+      override def compileIvyDeps = outer.testModule.compileIvyDeps
+      override def ivyDeps = outer.testModule.ivyDeps
+
+      // Avoid including the outer module as a dependency
+      override def moduleDeps = outer.testModule.moduleDeps.filter(_ != outer) ++ super.moduleDeps
+      override def recursiveModuleDeps: Seq[JavaModule] = {
+        super.recursiveModuleDeps.filter(_ != outer)
+      }
     }
   }
 }

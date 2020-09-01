@@ -263,11 +263,24 @@ jobs:
 
       - run:
           name: Compile credentials-verification components
-          command: cd credentials-verification && mill __.compile
+          command: |
+            cd credentials-verification
+            # Compile the major components with code coverage, with one retry to decrease flakiness
+            mill common.compileWithScoverage || mill common.compileWithScoverage
+            mill node.compileWithScoverage || mill node.compileWithScoverage
+            mill connector.compileWithScoverage || mill connector.compileWithScoverage
 
       - run:
           name: Test credentials-verification components
-          command: cd credentials-verification && mill -i __.test -u out/test-results
+          command: |
+            cd credentials-verification
+            # Test major components with code coverage
+            mill -i common.testWithScoverage -u out/test-results
+            mill -i node.testWithScoverage -u out/test-results
+            mill -i connector.testWithScoverage -u out/test-results
+            # Test other components
+            mill -i app.test -u out/test-results
+            mill -i wallet.test -u out/test-results
 
       - save_cache:
           key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
