@@ -1,6 +1,8 @@
 package io.iohk.cvp.views.utils;
 
 import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
@@ -17,6 +19,12 @@ public class ForegroundBackgroundListener implements LifecycleObserver {
 
     Navigator navigator;
 
+    /*
+     * TODO: Refactor "isFirstLaunch" for now this property is used to handle the
+     *  security pin view, we need to find a better way to handle that
+     * */
+    public static Boolean isFirstLaunch = false;
+
 
     public ForegroundBackgroundListener(Context ctx) {
         this.ctx = ctx;
@@ -25,13 +33,12 @@ public class ForegroundBackgroundListener implements LifecycleObserver {
     }
 
 
-
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     void onStart() {
-        if(!prefs.isFirstLaunch() && prefs.isPinConfigured() ){
+        if (!ForegroundBackgroundListener.isFirstLaunch && prefs.isPinConfigured()) {
             navigator.showUnlockScreen(ctx);
         } else {
-           prefs.setIsFirstLaunch(false);
+            ForegroundBackgroundListener.isFirstLaunch = false;
         }
     }
 }

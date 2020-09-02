@@ -74,6 +74,16 @@
     <item name="android:windowAnimationStyle">@android:style/Animation</item>
   </style>
 
+  <style name="AppTheme.NoActionBar" parent="AppTheme">
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+  </style>
+
+  <style name="AppTheme.NoActionBar.FullScreen" parent="AppTheme.NoActionBar">
+    <item name="android:windowFullscreen">true</item>
+    <item name="android:fitsSystemWindows">true</item>
+  </style>
+
   <style name="chip_text_style">
     <item name="android:textSize">14sp</item>
     <item name="android:textColor">@color/atala_red_text_color</item>

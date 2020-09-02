@@ -24,7 +24,8 @@
             android:name=".views.activities.RestoreAccountSuccessActivity"
             android:screenOrientation="portrait"/>
         <activity
-            android:name=".views.activities.LaunchActivity"
+            android:theme="@style/AppTheme.NoActionBar.FullScreen"
+            android:name=".neo.ui.launch.LaunchActivity"
             android:noHistory="true"
             android:screenOrientation="portrait">
             <intent-filter>
