@@ -7,6 +7,8 @@ class CredentialsViewController: ListingBaseViewController {
 
     @IBOutlet weak var viewEmpty: InformationView!
     @IBOutlet weak var viewTable: UIView!
+    @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var tableTopMarginCtrt: NSLayoutConstraint!
 
     var navBar: NavBarCustomStyle = NavBarCustomStyle(hasNavBar: true)
     override func navBarCustomStyle() -> NavBarCustomStyle {
@@ -23,6 +25,9 @@ class CredentialsViewController: ListingBaseViewController {
         // Setup
         setupButtons()
         setupEmptyView()
+        setupSearchBar()
+
+        ViewControllerUtils.addTapToDismissKeyboard(view: self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -40,6 +45,16 @@ class CredentialsViewController: ListingBaseViewController {
 
     // MARK: Config
 
+    func setupSearchBar() {
+
+        searchBar.backgroundColor = .appWhite
+        searchBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+        searchBar.isTranslucent = true
+        searchBar.searchTextField.addRoundCorners(radius: 6, borderWidth: 1, borderColor: UIColor.appGreyMid.cgColor)
+        searchBar.searchTextField.backgroundColor = .appWhite
+        searchBar.delegate = presenterImpl
+    }
+
     func setupEmptyView() {
 
         viewEmpty.config(imageNamed: "img_notifications_tray", title: "connections_empty_title".localize(),
@@ -55,6 +70,10 @@ class CredentialsViewController: ListingBaseViewController {
         viewEmpty.isHidden = !isEmpty
         viewTable.isHidden = isEmpty
 
+        // Search Bar
+        searchBar.isHidden = credentialsMode == .detail
+        tableTopMarginCtrt.constant = credentialsMode == .detail ? -56 : 0
+
         // Change the nav bar
         var navTitle = credentialsMode == .degrees
             ? "credentials_nav_title".localize()
@@ -63,25 +82,20 @@ class CredentialsViewController: ListingBaseViewController {
         var navActionIcon: String?
         if credentialsMode == .detail {
             let detailDegree = presenterImpl.detailDegree
-            if detailDegree?.isNew ?? false {
-                navTitle = "credentials_detail_title_new".localize()
-            } else {
-                navActionIcon = "ico_share"
-                navAction = actionShare
-                switch detailDegree!.type {
-                case .univerityDegree:
-                    navTitle = "credentials_detail_title_type_university".localize()
-                case .governmentIssuedId:
-                    navTitle = "credentials_detail_title_type_government_id".localize()
-                case .certificatOfInsurance:
-                    navTitle = "credentials_detail_title_type_insurance".localize()
-                case .proofOfEmployment:
-                    navTitle = "credentials_detail_title_type_employment".localize()
-                default:
-                    print("Unrecognized type")
-                }
+            navActionIcon = "ico_share"
+            navAction = actionShare
+            switch detailDegree!.type {
+            case .univerityDegree:
+                navTitle = "credentials_detail_title_type_university".localize()
+            case .governmentIssuedId:
+                navTitle = "credentials_detail_title_type_government_id".localize()
+            case .certificatOfInsurance:
+                navTitle = "credentials_detail_title_type_insurance".localize()
+            case .proofOfEmployment:
+                navTitle = "credentials_detail_title_type_employment".localize()
+            default:
+                print("Unrecognized type")
             }
-
         }
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
                                    hasBackButton: credentialsMode != .degrees, rightIconName: navActionIcon,
@@ -113,6 +127,8 @@ class CredentialsViewController: ListingBaseViewController {
             return "newDegreeHeader"
         case .newDegree:
             return "newDegree"
+        case .noResults:
+            return "noResults"
         case .document:
             return "document"
         case .detailHeader:
@@ -135,6 +151,8 @@ class CredentialsViewController: ListingBaseViewController {
             return NewDegreeHeaderViewCell.default_NibName()
         case .newDegree:
             return NewDegreeViewCell.default_NibName()
+        case .noResults:
+            return NoResultsViewCell.default_NibName()
         case .document:
             return DocumentViewCell.default_NibName()
         case .detailHeader:

@@ -88,6 +88,7 @@
                 <outlet property="imageLogo" destination="EiT-yb-vSg" id="P1j-fI-kO5"/>
                 <outlet property="labelSubtitle" destination="dqE-iq-AhF" id="ATY-8e-6Uw"/>
                 <outlet property="labelTitle" destination="0lP-zp-8DK" id="6kD-px-jUY"/>
+                <outlet property="viewMainBody" destination="CrO-ui-LO7" id="RmK-fb-VzS"/>
             </connections>
             <point key="canvasLocation" x="-54.347826086956523" y="131.58482142857142"/>
         </tableViewCell>

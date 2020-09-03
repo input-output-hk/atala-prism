@@ -329,27 +329,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                 isLast = true
             }
         }
-        var title = ""
-        var placeholder = ""
-        switch CredentialType(rawValue: credential.type) {
-        case .univerityDegree:
-            title = "credentials_university_degree".localize()
-            placeholder = "icon_university"
-        case .governmentIssuedId:
-            title = "credentials_government_id".localize()
-            placeholder = "icon_id"
-        case .proofOfEmployment:
-            title = "credentials_proof_employment".localize()
-            placeholder = "icon_proof_employment"
-        case .certificatOfInsurance:
-            title = "credentials_certificate_insurance".localize()
-            placeholder = "icon_insurance"
-        default:
-            print("Unrecognized type")
-        }
-
-        cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
-                    logoPlaceholderNamed: placeholder, isLast: isLast)
+        cell.config(title: credential.credentialName, subtitle: credential.issuerName, logoData: nil,
+                    logoPlaceholderNamed: credential.logoPlaceholder, isLast: isLast)
     }
 
     func tappedAction(for cell: NewDegreeViewCell) {
@@ -362,7 +343,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
 
             degree.intCredential = credential.encoded
-            degree.type = CredentialType(rawValue: credential.type)
+            degree.type = credential.credentialType
             degree.isNew = credential.viewed
             degree.messageId = credential.credentialId
             startShowingDetails(degree: degree)
@@ -379,7 +360,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
 
                 degree.intCredential = credential.encoded
-                degree.type = CredentialType(rawValue: credential.type)
+                degree.type = credential.credentialType
                 degree.isNew = credential.viewed
                 degree.messageId = credential.credentialId
                 startShowingDetails(degree: degree)

@@ -14,6 +14,8 @@ class CryptoUtils: NSObject {
     var usedMnemonics: [String]?
     var seed: Data?
     var lastUsedKeyIndex: Int?
+    
+    let signSemaphore = DispatchSemaphore(value: 1)
 
     override init() {
         super.init()
@@ -80,6 +82,7 @@ class CryptoUtils: NSObject {
 
     /// Returns a tuple (Signature, PublicKey, Nonce) all three fields as URL safe base 64 encoded strings
     func signData(data: Data, keyPath: String) -> (String, String, String)? {
+        signSemaphore.wait()
         let nonce = UUID()
         var nonceData = withUnsafePointer(to: nonce.uuid) {
             Data(bytes: $0, count: MemoryLayout.size(ofValue: nonce.uuid))
@@ -92,8 +95,10 @@ class CryptoUtils: NSObject {
         if let privateKey = derived?.privateKey() {
             let signedData = privateKey.sign(nonceSHA256)
             let publicKey = getUncompressedKey(publicKey: privateKey.publicKey())
+            signSemaphore.signal()
             return (signedData.base64urlEncodedString(), publicKey.base64urlEncodedString(), nonceBase64)
         }
+        signSemaphore.signal()
         return nil
     }
 

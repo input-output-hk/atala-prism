@@ -10,6 +10,7 @@ class ConnectionsViewController: ListingBaseViewController {
     @IBOutlet weak var viewEmpty: InformationView!
     @IBOutlet weak var viewScanQr: UIView!
     @IBOutlet weak var viewTable: UIView!
+    @IBOutlet weak var searchBar: UISearchBar!
     // Scan QR
     @IBOutlet weak var viewQrScannerContainer: UIView!
     let scanner = QRCode()
@@ -24,6 +25,9 @@ class ConnectionsViewController: ListingBaseViewController {
 
         // Setup
         setupEmptyView()
+        setupSearchBar()
+
+        ViewControllerUtils.addTapToDismissKeyboard(view: self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -53,6 +57,17 @@ class ConnectionsViewController: ListingBaseViewController {
         viewEmpty.config(imageNamed: "img_qr_red", title: "connections_empty_title".localize(),
                          subtitle: "connections_empty_subtitle".localize(),
                          buttonText: "connections_empty_button".localize(), buttonAction: actionScan)
+    }
+
+    func setupSearchBar() {
+
+        searchBar.backgroundColor = .appWhite
+        searchBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+        searchBar.isTranslucent = true
+        searchBar.searchTextField.addRoundCorners(radius: 6, borderWidth: 1, borderColor: UIColor.appGreyMid.cgColor)
+        searchBar.searchTextField.backgroundColor = .appWhite
+        searchBar.placeholder = "connections_search_contacts".localize()
+        searchBar.delegate = presenterImpl
     }
 
     override func config(mode: ListingBasePresenter.ListingBaseState) {
@@ -101,6 +116,8 @@ class ConnectionsViewController: ListingBaseViewController {
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .main:
             return "main"
+        case .noResults:
+            return "noResults"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
@@ -111,6 +128,8 @@ class ConnectionsViewController: ListingBaseViewController {
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .main:
             return ConnectionMainViewCell.default_NibName()
+        case .noResults:
+            return NoResultsViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }

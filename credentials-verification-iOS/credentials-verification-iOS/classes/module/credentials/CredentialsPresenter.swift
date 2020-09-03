@@ -7,7 +7,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                             NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
                             NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate,
                             DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate,
-                            DetailPropertyViewCellPresenterDelegate, ShareDialogPresenterDelegate {
+                            DetailPropertyViewCellPresenterDelegate, ShareDialogPresenterDelegate,
+                            UISearchBarDelegate {
 
     var viewImpl: CredentialsViewController? {
         return view as? CredentialsViewController
@@ -24,6 +25,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         case degree // degrees mode
         case newDegreeHeader // degrees mode
         case newDegree // degree mode
+        case noResults // degree mode
         case document // document mode
         case detailHeader // detail mode
         case detailProperty // detail mode
@@ -45,7 +47,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var shareEmployers: [Contact]?
     var shareSelectedEmployers: [Contact]?
 
-//    var isFetching = false
+    var credentials: [Credential] = []
+    var filteredCredentials: [Credential] = []
 
     // MARK: Modes
 
@@ -137,6 +140,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         detailDegree = nil
         degreeRows = []
         detailRows = []
+        credentials = []
+        filteredCredentials = []
     }
 
     func fetchData() {
@@ -150,9 +155,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func hasData() -> Bool {
         switch mode {
         case .degrees:
-            return (degreeRows?.size() ?? 0) > 0
+            return credentials.count > 0
         case .detail:
-            return (detailRows?.size() ?? 0) > 0
+            return (detailRows?.count ?? 0) > 0
         case .document:
             return true
         }
@@ -165,11 +170,11 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         switch mode {
         case .degrees:
-            return (degreeRows?.size() ?? 0)
+            return (degreeRows?.count ?? 0)
         case .document:
             return 1
         case .detail:
-            return (detailRows?.size() ?? 0)
+            return (detailRows?.count ?? 0)
         }
     }
 
@@ -196,8 +201,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func fetchElements() {
 
-//        if isFetching { return }
-//        isFetching = true
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContacts()
 
@@ -223,32 +226,32 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                         }
                     }
                 }
-                let credentials = credentialsDao.listCredentials() ?? []
-                self.makeDegreeRows(credentials: credentials)
+                self.credentials = credentialsDao.listCredentials() ?? []
+                self.filteredCredentials.append(self.credentials)
+                self.makeDegreeRows()
 
             } catch {
                 return error
             }
             return nil
         }, success: {
-//            self.isFetching = false
             self.startListing()
         }, error: { error in
             print(error.localizedDescription)
-//            self.isFetching = false
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
 
-    private func makeDegreeRows(credentials: [Credential]) {
+    private func makeDegreeRows() {
 
         // Transform data into rows
-        credentials.forEach { credential in
-            self.degreeRows?.append(CellRow(type: .degree, value: credential))
-        }
-        // NOTE: Won't add the National Id for now
-        if getLoggedUser()?.identityNumber != nil {
-            // self.degreeRows?.append(CellRow(type: .degree, value: getLoggedUser()))
+        self.degreeRows?.removeAll()
+        if filteredCredentials.count > 0 {
+            filteredCredentials.forEach { credential in
+                self.degreeRows?.append(CellRow(type: .degree, value: credential))
+            }
+        } else {
+            self.degreeRows?.append(CellRow(type: .noResults, value: nil))
         }
     }
 
@@ -327,28 +330,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 isLast = true
             }
         }
-        var title = ""
-        var placeholder = ""
-        let type = CredentialType.init(rawValue: credential.type)
-        switch type {
-        case .univerityDegree:
-            title = "credentials_university_degree".localize()
-            placeholder = "icon_university"
-        case .governmentIssuedId:
-            title = "credentials_government_id".localize()
-            placeholder = "icon_id"
-        case .proofOfEmployment:
-            title = "credentials_proof_employment".localize()
-            placeholder = "icon_proof_employment"
-        case .certificatOfInsurance:
-            title = "credentials_certificate_insurance".localize()
-            placeholder = "icon_insurance"
-        default:
-            print("Unrecognized type")
-        }
 
-        cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
-                    logoPlaceholderNamed: placeholder, isLast: isLast)
+        cell.config(title: credential.credentialName, subtitle: credential.issuerName, logoData: nil,
+                    logoPlaceholderNamed: credential.logoPlaceholder, isLast: isLast)
     }
 
     func tappedAction(for cell: NewDegreeViewCell) {
@@ -361,7 +345,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
 
             degree.intCredential = credential.encoded
-            degree.type = CredentialType(rawValue: credential.type)
+            degree.type = credential.credentialType
             startShowingDetails(degree: degree)
         }
     }
@@ -376,7 +360,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
 
                 degree.intCredential = credential.encoded
-                degree.type = CredentialType(rawValue: credential.type)
+                degree.type = credential.credentialType
 
                 startShowingDetails(degree: degree)
             }
@@ -388,26 +372,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         let cellRow = degreeRows?[cell.indexPath!.row]
         // Config for a Degree
         if let credential = cellRow?.value as? Credential {
-            var title = ""
-            var placeholder = ""
-            switch CredentialType(rawValue: credential.type) {
-            case .univerityDegree:
-                title = "credentials_university_degree".localize()
-                placeholder = "icon_university"
-            case .governmentIssuedId:
-                title = "credentials_government_id".localize()
-                placeholder = "icon_id"
-            case .proofOfEmployment:
-                title = "credentials_proof_employment".localize()
-                placeholder = "icon_proof_employment"
-            case .certificatOfInsurance:
-                title = "credentials_certificate_insurance".localize()
-                placeholder = "icon_insurance"
-            default:
-                print("Unrecognized type")
-            }
-            cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
-                        logoPlaceholderNamed: placeholder)
+            cell.config(title: credential.credentialName, subtitle: credential.issuerName, logoData: nil,
+                        logoPlaceholderNamed: credential.logoPlaceholder)
         }
     }
 
@@ -527,5 +493,21 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         cell?.config(name: employer.name,
                      logoData: employer.logo,
                      placeholderNamed: "ico_placeholder_employer", isSelected: isSelected)
+    }
+
+    // MARK: Search
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+
+        if searchText.isEmpty {
+            filteredCredentials = credentials
+        } else {
+            filteredCredentials = credentials.filter {
+                $0.credentialName.lowercased().contains(searchText.lowercased())
+                    || $0.issuerName.lowercased().contains(searchText.lowercased())
+            }
+        }
+        makeDegreeRows()
+        updateViewToState()
     }
 }

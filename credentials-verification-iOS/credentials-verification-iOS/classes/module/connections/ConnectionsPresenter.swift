@@ -2,7 +2,8 @@
 
 class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
                             ConnectionMainViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate,
-                            ConnectionProofRequestPresenterDelegate, ConnectionsWorkerDelegate {
+                            ConnectionProofRequestPresenterDelegate, ConnectionsWorkerDelegate,
+                            UISearchBarDelegate {
 
     var viewImpl: ConnectionsViewController? {
         return view as? ConnectionsViewController
@@ -16,11 +17,13 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     enum ConnectionsCellType {
         case base(value: ListingBaseCellType)
         case main
+        case noResults
     }
 
     var stateSpecial: ConnectionsSpecialState = .none
 
     var contacts: [Contact] = []
+    var filteredContacts: [Contact] = []
 
     var detailProofRequestMessageId: String?
 
@@ -79,6 +82,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func cleanData() {
         contacts = []
+        filteredContacts = []
     }
 
     func fetchData() {
@@ -97,7 +101,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         if let baseValue = super.getBaseElementCount() {
             return baseValue
         }
-        return contacts.size()
+        return filteredContacts.count == 0 ? 1 : filteredContacts.count
     }
 
     func getElementType(indexPath: IndexPath) -> ConnectionsCellType {
@@ -105,7 +109,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return .base(value: baseValue)
         }
 
-        return .main
+        return filteredContacts.count == 0 ? .noResults : .main
     }
 
     // MARK: Fetch
@@ -141,7 +145,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                             } else if !atalaMssg.proofRequest.connectionToken.isEmpty {
                                 proofRequest = atalaMssg.proofRequest
                                 self.detailProofRequestMessageId = message.id
-                            }       
+                            }
                         }
                     }
                 }
@@ -237,7 +241,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func setup(for cell: ConnectionMainViewCell) {
 
-        let contact = contacts[cell.indexPath!.row]
+        let contact = filteredContacts[cell.indexPath!.row]
         cell.config(title: contact.name, logoData: contact.logo)
 
     }
@@ -297,6 +301,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         let sortedContacts = contacts.sorted { $0.name < $1.name}
         self.cleanData()
         self.contacts.append(sortedContacts)
+        self.filteredContacts.append(sortedContacts)
         self.startListing()
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.fetchCredentials()
@@ -318,6 +323,20 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func conectionAccepted() {
         self.actionPullToRefresh()
+    }
+
+    // MARK: Search
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+
+        if searchText.isEmpty {
+            filteredContacts = contacts
+        } else {
+            filteredContacts = contacts.filter {
+                $0.name.lowercased().contains(searchText.lowercased())
+            }
+        }
+        updateViewToState()
     }
 
     // MARK: Delete

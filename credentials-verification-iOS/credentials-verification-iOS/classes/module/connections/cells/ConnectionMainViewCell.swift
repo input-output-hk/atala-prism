@@ -7,7 +7,8 @@ protocol ConnectionMainViewCellPresenterDelegate: BaseTableViewCellPresenterDele
 }
 
 class ConnectionMainViewCell: BaseTableViewCell {
-
+    
+    @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var labelSubtitle: UILabel!
     @IBOutlet weak var imageLogo: UIImageView!
@@ -26,7 +27,8 @@ class ConnectionMainViewCell: BaseTableViewCell {
 
         // Setup
         delegateImpl?.setup(for: self)
-        imageLogo.layer.cornerRadius = AppConfigs.CORNER_RADIUS_REGULAR
+        imageLogo.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
+        viewMainBody.addDropShadow(opacity: 0.1)
     }
 
     // MARK: Component delegates
