@@ -506,13 +506,6 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule wi
   }
 }
 
-object wallet extends ServerPBCommon {
-
-  override def mainClass = Some("io.iohk.atala.prism.wallet.WalletApp")
-
-  object test extends `tests-common` {}
-}
-
 object util extends mill.Module {
   object keyderivation extends PrismScalaModule with PBCommon {
     override def moduleDeps = Seq(common) ++ super.moduleDeps

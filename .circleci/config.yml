@@ -280,7 +280,6 @@ jobs:
             mill -i connector.testWithScoverage -u out/test-results
             # Test other components
             mill -i app.test -u out/test-results
-            mill -i wallet.test -u out/test-results
 
       - save_cache:
           key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}

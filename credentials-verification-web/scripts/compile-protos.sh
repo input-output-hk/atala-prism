@@ -18,8 +18,6 @@ protoc -I=$OUT_DIR \
     node_models.proto \
     connector_models.proto \
     connector_api.proto \
-    wallet_models.proto \
-    wallet_api.proto \
     cstore_models.proto \
     cstore_api.proto \
     cmanager_models.proto \
