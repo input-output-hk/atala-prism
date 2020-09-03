@@ -15,8 +15,7 @@ case class Subject(
     createdOn: Instant,
     connectionStatus: Student.ConnectionStatus,
     connectionToken: Option[TokenString],
-    connectionId: Option[UUID],
-    groupName: IssuerGroup.Name
+    connectionId: Option[UUID]
 )
 
 object Subject {

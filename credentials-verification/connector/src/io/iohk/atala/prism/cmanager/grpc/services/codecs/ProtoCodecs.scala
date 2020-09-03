@@ -5,6 +5,7 @@ import java.time.LocalDate
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.cmanager.models.Student.ConnectionStatus
 import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student, Subject, UniversityCredential}
+import io.iohk.prism.protos.common_models.Date
 import io.iohk.prism.protos.{cmanager_models, common_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
@@ -41,6 +42,9 @@ object ProtoCodecs {
       .withGraduationDate(graduationDate)
   }
 
+  def toLocalDate(date: Date): LocalDate =
+    LocalDate.of(date.year, date.month, date.day)
+
   def studentToProto(student: Student): cmanager_models.Student = {
     cmanager_models
       .Student()
@@ -52,7 +56,9 @@ object ProtoCodecs {
       .withConnectionStatus(studentConnectionStatus2Proto.transform(student.connectionStatus))
       .withConnectionToken(student.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(student.connectionId.map(_.toString).getOrElse(""))
-      .withGroupName(student.groupName.value)
+      // As part of ATA-2989, we decided to return an empty string to simplify the changes. This was agreed with the
+      // front end team
+      .withGroupName("")
   }
 
   def subjectToProto(subject: Subject): cmanager_models.IssuerSubject = {
@@ -63,7 +69,9 @@ object ProtoCodecs {
       .withConnectionStatus(studentConnectionStatus2Proto.transform(subject.connectionStatus))
       .withConnectionToken(subject.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(subject.connectionId.map(_.toString).getOrElse(""))
-      .withGroupName(subject.groupName.value)
+      // As part of ATA-2989, we decided to return an empty string to simplify the changes. This was agreed with the
+      // front end team
+      .withGroupName("")
       .withJsonData(subject.data.noSpaces)
   }
 

@@ -18,8 +18,7 @@ case class Student(
     createdOn: Instant,
     connectionStatus: Student.ConnectionStatus,
     connectionToken: Option[TokenString],
-    connectionId: Option[UUID],
-    groupName: IssuerGroup.Name
+    connectionId: Option[UUID]
 )
 
 object Student {
