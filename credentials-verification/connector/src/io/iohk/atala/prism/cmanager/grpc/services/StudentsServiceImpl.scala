@@ -24,9 +24,6 @@ class StudentsServiceImpl(
   override def createStudent(request: cmanager_api.CreateStudentRequest): Future[cmanager_api.CreateStudentResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
-        val maybeGroupName =
-          if (request.groupName.trim.isEmpty) None else Some(IssuerGroup.Name(request.groupName.trim))
-
         val model = request
           .into[CreateStudent]
           .withFieldConst(_.issuer, issuerId)
@@ -34,7 +31,7 @@ class StudentsServiceImpl(
           .transform
 
         studentsRepository
-          .createStudent(model, maybeGroupName)
+          .create(model)
           .map(studentToProto)
           .map(cmanager_api.CreateStudentResponse().withStudent)
           .value

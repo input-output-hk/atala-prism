@@ -4,7 +4,7 @@ import java.util.UUID
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Subject}
+import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup}
 
 object IssuerGroupsDAO {
 
@@ -32,11 +32,5 @@ object IssuerGroupsDAO {
          |WHERE issuer_id = $issuer AND
          |      name = $name
        """.stripMargin.query[IssuerGroup].option
-  }
-
-  def addSubject(groupId: IssuerGroup.Id, subjectId: Subject.Id): ConnectionIO[Unit] = {
-    sql"""INSERT INTO contacts_per_group (group_id, subject_id, added_at)
-         |VALUES ($groupId, $subjectId, now())
-         |""".stripMargin.update.run.map(_ => ())
   }
 }

@@ -13,53 +13,17 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
   lazy val repository = new StudentsRepository(database)
 
   "create" should {
-    "create a new student and assign it to a group" in {
+    "create a new student" in {
       val issuer = createIssuer("Issuer-1").id
       val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
-      val request = CreateStudent(issuer, "uid", "Dusty Here", "d.here@iohk.io", LocalDate.now())
-      val result = repository.createStudent(request, Some(group.name)).value.futureValue
+      val request = CreateStudent(issuer, "uid", "Dusty Here", "d.here@iohk.io", LocalDate.now(), group.name)
+      val result = repository.create(request).value.futureValue
       val student = result.right.value
+      student.groupName must be(group.name)
       student.fullName must be(request.fullName)
       student.universityAssignedId must be(request.universityAssignedId)
       student.email must be(request.email)
       student.admissionDate must be(request.admissionDate)
-      student.connectionId must be(empty)
-      student.connectionToken must be(empty)
-
-      // we check that the subject was added to the intended group
-      val studentsInGroupList = repository.getBy(issuer, 10, None, Some(group.name)).value.futureValue.right.value
-      studentsInGroupList.size must be(1)
-      studentsInGroupList.headOption.value must be(student)
-    }
-
-    "create a new student and assign it to no group" in {
-      val issuer = createIssuer("Issuer-1").id
-      val request = CreateStudent(issuer, "uid", "Dusty Here", "d.here@iohk.io", LocalDate.now())
-      val result = repository.createStudent(request, None).value.futureValue
-      val student = result.right.value
-      student.fullName must be(request.fullName)
-      student.universityAssignedId must be(request.universityAssignedId)
-      student.email must be(request.email)
-      student.admissionDate must be(request.admissionDate)
-      student.connectionId must be(empty)
-      student.connectionToken must be(empty)
-
-      // we check that the subject was added
-      val maybeStudent = repository.find(issuer, student.id).value.futureValue.right.value.value
-      maybeStudent must be(student)
-    }
-
-    "fail to create a new student when assigned to a group that does not exist" in {
-      val issuer = createIssuer("Issuer-1").id
-      val request = CreateStudent(issuer, "uid", "Dusty Here", "d.here@iohk.io", LocalDate.now())
-
-      intercept[Exception](
-        repository.createStudent(request, Some(IssuerGroup.Name("unknown group"))).value.futureValue
-      )
-
-      // we check that the subject was not added
-      val studentsList = repository.getBy(issuer, 1, None, None).value.futureValue.right.value
-      studentsList must be(empty)
     }
   }
 
@@ -142,10 +106,11 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
       universityAssignedId = s"uid $tag",
       fullName = s"Atala Prism $tag".trim,
       email = "test@iohk.io",
-      admissionDate = LocalDate.now()
+      admissionDate = LocalDate.now(),
+      groupName = group.name
     )
 
-    val result = repository.createStudent(request, Some(group.name)).value.futureValue
+    val result = repository.create(request).value.futureValue
     result.right.value
   }
 }

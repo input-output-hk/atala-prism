@@ -16,35 +16,35 @@ object IssuerSubjectsDAO {
     final case class ConnectionAccepted(token: TokenString, connectionId: ConnectionId) extends UpdateSubjectRequest
   }
 
-  def createStudent(data: CreateStudent): doobie.ConnectionIO[Student] = {
-    val studentId = Student.Id(UUID.randomUUID())
+  def create(data: CreateStudent, groupId: IssuerGroup.Id): doobie.ConnectionIO[Student] = {
+    val id = Student.Id(UUID.randomUUID())
     val externalId = Subject.ExternalId.random()
     val createdAt = Instant.now()
     val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
 
     sql"""
          |INSERT INTO issuer_subjects
-         |  (subject_id, subject_data, created_at, connection_status, issuer_id, external_id)
+         |  (subject_id, subject_data, created_at, connection_status, group_id, external_id)
          |VALUES
-         |  ($studentId, jsonb_build_object('university_assigned_id', ${data.universityAssignedId},
+         |  ($id, jsonb_build_object('university_assigned_id', ${data.universityAssignedId},
          |   'full_name', ${data.fullName}, 'email', ${data.email}, 'admission_date', ${data.admissionDate}::DATE),
-         |   $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, ${data.issuer}, $externalId)
+         |   $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId, $externalId)
          |""".stripMargin.update.run
-      .map(_ => Student.create(data, studentId, createdAt, connectionStatus))
+      .map(_ => Student.create(data, id, createdAt, connectionStatus))
   }
 
-  def create(data: CreateSubject): doobie.ConnectionIO[Subject] = {
-    val subjectId = Subject.Id(UUID.randomUUID())
+  def create(data: CreateSubject, groupId: IssuerGroup.Id): doobie.ConnectionIO[Subject] = {
+    val id = Subject.Id(UUID.randomUUID())
     val createdAt = Instant.now()
     val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
     sql"""
          |INSERT INTO issuer_subjects
-         |  (subject_id, subject_data, created_at, connection_status, issuer_id, external_id)
+         |  (subject_id, subject_data, created_at, connection_status, group_id, external_id)
          |VALUES
-         |  ($subjectId, ${data.data}, $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE,
-         |   ${data.issuerId}, ${data.externalId})
+         |  ($id, ${data.data}, $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE,
+         |   $groupId, ${data.externalId})
          |""".stripMargin.update.run
-      .map(_ => Subject.create(data, subjectId, createdAt, connectionStatus))
+      .map(_ => Subject.create(data, id, createdAt, connectionStatus))
   }
 
   def getStudentsBy(
@@ -63,11 +63,9 @@ object IssuerSubjectsDAO {
              |  FROM issuer_subjects
              |  WHERE subject_id = $lastSeen
              |)
-             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', (subject_data ->> 'admission_date')::DATE, created_at, connection_status, connection_token, connection_id
-             |FROM CTE CROSS JOIN issuer_subjects
-             |     JOIN contacts_per_group USING (subject_id)
-             |     JOIN issuer_groups g USING (group_id)
-             |WHERE issuer_subjects.issuer_id = $issuer AND
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', (subject_data ->> 'admission_date')::DATE, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuer AND
              |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen)) AND
              |      g.name = $group
              |ORDER BY created_at ASC, subject_id
@@ -80,28 +78,26 @@ object IssuerSubjectsDAO {
              |  FROM issuer_subjects
              |  WHERE subject_id = $lastSeen
              |)
-             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id
-             |FROM CTE CROSS JOIN issuer_subjects
-             |WHERE issuer_subjects.issuer_id = $issuer AND
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuer AND
              |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen))
              |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
       case (None, Some(group)) =>
         sql"""
-             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id
-             |FROM issuer_subjects
-             |     JOIN contacts_per_group USING (subject_id)
-             |     JOIN issuer_groups g USING (group_id)
-             |WHERE issuer_subjects.issuer_id = $issuer AND
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuer AND
              |      g.name = $group
              |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
       case (None, None) =>
         sql"""
-             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id
-             |FROM issuer_subjects
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer
              |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
@@ -112,8 +108,8 @@ object IssuerSubjectsDAO {
 
   def findStudent(issuerId: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[Option[Student]] = {
     sql"""
-         |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id
-         |FROM issuer_subjects
+         |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
+         |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
          |WHERE subject_id = $studentId AND
          |      issuer_id = $issuerId
          |""".stripMargin.query[Student].option
@@ -121,8 +117,8 @@ object IssuerSubjectsDAO {
 
   def findSubject(issuerId: Issuer.Id, subjectId: Subject.Id): doobie.ConnectionIO[Option[Subject]] = {
     sql"""
-         |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id
-         |FROM issuer_subjects
+         |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+         |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
          |WHERE subject_id = $subjectId AND
          |      issuer_id = $issuerId
          |""".stripMargin.query[Subject].option
@@ -136,8 +132,10 @@ object IssuerSubjectsDAO {
              |UPDATE issuer_subjects
              |SET connection_token = $token,
              |    connection_status = $status::STUDENT_CONNECTION_STATUS_TYPE
+             |FROM issuer_groups
              |WHERE subject_id = $subjectId AND
-             |      issuer_id = $issuerId
+             |      issuer_id = $issuerId AND
+             |      issuer_subjects.group_id = issuer_groups.group_id
               """.stripMargin.update.run.map(_ => ())
       case UpdateSubjectRequest.ConnectionAccepted(token, connectionId) =>
         val status: Student.ConnectionStatus = Student.ConnectionStatus.ConnectionAccepted
@@ -147,8 +145,10 @@ object IssuerSubjectsDAO {
              |UPDATE issuer_subjects
              |SET connection_id = $connectionId,
              |    connection_status = $status::STUDENT_CONNECTION_STATUS_TYPE
+             |FROM issuer_groups
              |WHERE connection_token = $token AND
-             |      issuer_id = $issuerId
+             |      issuer_id = $issuerId AND
+             |      issuer_subjects.group_id = issuer_groups.group_id
               """.stripMargin.update.run.map(_ => ())
     }
   }
@@ -169,11 +169,9 @@ object IssuerSubjectsDAO {
              |  FROM issuer_subjects
              |  WHERE subject_id = $lastSeen
              |)
-             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id
-             |FROM CTE CROSS JOIN issuer_subjects
-             |     JOIN contacts_per_group USING (subject_id)
-             |     JOIN issuer_groups g USING (group_id)
-             |WHERE issuer_subjects.issuer_id = $issuerId AND
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuerId AND
              |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen)) AND
              |      g.name = $group
              |ORDER BY created_at ASC, subject_id
@@ -186,28 +184,26 @@ object IssuerSubjectsDAO {
              |  FROM issuer_subjects
              |  WHERE subject_id = $lastSeen
              |)
-             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id
-             |FROM CTE CROSS JOIN issuer_subjects
-             |WHERE issuer_subjects.issuer_id = $issuerId AND
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuerId AND
              |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen))
              |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
       case (None, Some(group)) =>
         sql"""
-             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id
-             |FROM issuer_subjects
-             |     JOIN contacts_per_group USING (subject_id)
-             |     JOIN issuer_groups g USING (group_id)
-             |WHERE issuer_subjects.issuer_id = $issuerId AND
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuerId AND
              |      g.name = $group
              |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
       case (None, None) =>
         sql"""
-             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id
-             |FROM issuer_subjects
+             |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuerId
              |ORDER BY created_at ASC, subject_id
              |LIMIT $limit

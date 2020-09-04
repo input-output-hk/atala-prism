@@ -32,9 +32,8 @@ class SubjectsServiceImpl(
     def f(issuerId: Issuer.Id) = {
 
       // TODO: Remove when the front end provides the external id
-      val externalId = if (request.externalId.trim.isEmpty) ExternalId.random() else ExternalId(request.externalId.trim)
+      val externalId = if (request.externalId.isEmpty) ExternalId.random() else ExternalId(request.externalId)
       lazy val json = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
-      val maybeGroupdName = if (request.groupName.trim.isEmpty) None else Some(IssuerGroup.Name(request.groupName.trim))
       val model = request
         .into[CreateSubject]
         .withFieldConst(_.issuerId, issuerId)
@@ -47,7 +46,7 @@ class SubjectsServiceImpl(
         LoggingContext("request" -> request, "json" -> json, "model" -> model)
 
       subjectsRepository
-        .create(model, maybeGroupdName)
+        .create(model)
         .map(subjectToProto)
         .map(cmanager_api.CreateSubjectResponse().withSubject)
         .wrapExceptions

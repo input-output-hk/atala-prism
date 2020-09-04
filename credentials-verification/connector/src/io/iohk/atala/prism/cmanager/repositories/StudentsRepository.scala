@@ -15,18 +15,12 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import scala.concurrent.ExecutionContext
 
 class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
-  def createStudent(data: CreateStudent, maybeGroupName: Option[IssuerGroup.Name]): FutureEither[Nothing, Student] = {
-    val query = maybeGroupName match {
-      case None => // if we do not request the subject to be added to a group
-        IssuerSubjectsDAO.createStudent(data)
-      case Some(groupName) => // if we are requesting to add a subject to a group
-        for {
-          student <- IssuerSubjectsDAO.createStudent(data)
-          groupMaybe <- IssuerGroupsDAO.find(data.issuer, groupName)
-          group = groupMaybe.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
-          _ <- IssuerGroupsDAO.addSubject(group.id, Subject.Id(student.id.value))
-        } yield student
-    }
+  def create(data: CreateStudent): FutureEither[Nothing, Student] = {
+    val query = for {
+      groupMaybe <- IssuerGroupsDAO.find(data.issuer, data.groupName)
+      group = groupMaybe.getOrElse(throw new RuntimeException("Group not found"))
+      student <- IssuerSubjectsDAO.create(data, group.id)
+    } yield student
 
     query
       .transact(xa)
