@@ -6,9 +6,9 @@ import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Put, Read, Write}
 import io.iohk.atala.crypto.{EC, ECConfig}
-import io.iohk.atala.prism.node.bitcoin.models.{Blockhash, TransactionId}
+import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix, KeyUsage}
+import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix, KeyUsage, TransactionId}
 import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object daos {

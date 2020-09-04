@@ -10,7 +10,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.AtalaReferenceLedger
-import io.iohk.atala.prism.node.models.AtalaObject
+import io.iohk.atala.prism.node.models.{AtalaObject, TransactionId}
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
@@ -28,7 +28,7 @@ object ObjectManagementService {
 
 class ObjectManagementService(
     storage: ObjectStorageService,
-    synchronizer: AtalaReferenceLedger,
+    atalaReferenceLedger: AtalaReferenceLedger,
     blockProcessing: BlockProcessingService
 )(implicit
     xa: Transactor[IO],
@@ -93,7 +93,7 @@ class ObjectManagementService(
       }
   }
 
-  def publishAtalaOperation(op: node_models.SignedAtalaOperation): Future[Unit] = {
+  def publishAtalaOperation(op: node_models.SignedAtalaOperation): Future[TransactionId] = {
     val block = node_internal.AtalaBlock("1.0", List(op))
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)
@@ -105,7 +105,7 @@ class ObjectManagementService(
     storage.put(blockHash.hexValue, blockBytes)
     storage.put(objHash.hexValue, objBytes)
 
-    synchronizer.publishReference(objHash)
+    atalaReferenceLedger.publishReference(objHash)
   }
 
   protected def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {

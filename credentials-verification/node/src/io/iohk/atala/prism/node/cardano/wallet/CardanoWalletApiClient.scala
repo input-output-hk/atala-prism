@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionId, WalletId}
+import io.iohk.atala.prism.node.cardano.models.{Payment, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
+import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.utils.FutureEither
 
 import scala.concurrent.ExecutionContext
 

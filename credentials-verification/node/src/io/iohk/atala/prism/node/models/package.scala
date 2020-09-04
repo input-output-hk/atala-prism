@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node
 
 import java.time.Instant
 
+import doobie.util.Get
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.crypto.ECPublicKey
@@ -9,6 +10,11 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object models {
+  implicit val transactionIdGet: Get[TransactionId] = Get[Array[Byte]].tmap { bytes =>
+    TransactionId
+      .from(bytes)
+      .getOrElse(throw new RuntimeException("Corrupted transaction ID"))
+  }
 
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
     // TODO: ATA-2854: revert this to

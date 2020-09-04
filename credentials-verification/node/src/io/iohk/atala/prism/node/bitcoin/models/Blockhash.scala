@@ -10,5 +10,5 @@ class Blockhash private (val value: ArraySeq[Byte]) extends AnyVal with HashValu
 object Blockhash extends HashValueFrom[Blockhash] {
   override val config: HashValueConfig = HashValueConfig(ConfigMemorySize.ofBytes(32))
 
-  override def constructor(value: ArraySeq[Byte]): Blockhash = new Blockhash(value)
+  override protected def constructor(value: ArraySeq[Byte]): Blockhash = new Blockhash(value)
 }

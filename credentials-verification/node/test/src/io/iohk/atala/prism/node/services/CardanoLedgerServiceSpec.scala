@@ -67,7 +67,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
         cardanoLedgerService.publishReference(reference).futureValue
       }
 
-      error.getCause.getMessage must be("Could not publish reference")
+      error.getCause.getMessage must be("FATAL: Error while publishing reference: InvalidTransaction")
     }
   }
 

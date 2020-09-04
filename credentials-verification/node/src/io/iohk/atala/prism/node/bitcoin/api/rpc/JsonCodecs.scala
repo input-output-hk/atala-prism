@@ -6,11 +6,13 @@ import io.circe._
 import io.iohk.atala.prism.node.bitcoin.models._
 import shapeless.tag.@@
 import shapeless.tag
+
 import scala.util.{Failure, Success, Try}
 import io.circe.generic.semiauto._
 import ApiModel._
 import BitcoinApiClient.BitcoinError
 import BitcoinApiClient.ErrorResponse
+import io.iohk.atala.prism.node.models.TransactionId
 
 object JsonCodecs {
 

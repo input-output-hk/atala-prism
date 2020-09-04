@@ -8,6 +8,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
+import io.iohk.atala.prism.node.models.TransactionId
 import io.iohk.atala.prism.node.services.AtalaService.Result
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import org.slf4j.LoggerFactory
@@ -32,20 +33,19 @@ class AtalaServiceImpl(
 
   override def supportsOnChainData: Boolean = false
 
-  override def publishReference(ref: SHA256Digest): Future[Unit] = {
+  override def publishReference(ref: SHA256Digest): Future[TransactionId] = {
     val opDataBytes: Array[Byte] = ATALA_HEADER ++ ref.value
 
     OpData(opDataBytes) match {
       case Some(opData) =>
         bitcoinClient
           .sendDataTx(opData)
-          .map(_ => ())
           .value
           .map {
-            case Right(()) => ()
+            case Right(transactionId) => transactionId
             case Left(error) =>
-              logger.error(s"FATAL: Error during publishing reference: ${error}")
-              throw new RuntimeException(s"FATAL: Error during publishing reference: ${error}")
+              logger.error(s"FATAL: Error while publishing reference: ${error}")
+              throw new RuntimeException(s"FATAL: Error while publishing reference: ${error}")
           }
       case None =>
         logger.error(s"FATAL: Atala identifier is too long to store in bitcoin (${opDataBytes.length}")
@@ -55,7 +55,7 @@ class AtalaServiceImpl(
     }
   }
 
-  override def publishObject(bytes: Array[Byte]): Future[Unit] = {
+  override def publishObject(bytes: Array[Byte]): Future[TransactionId] = {
     throw new NotImplementedError("Publishing whole objects not implemented for Bitcoin ledger")
   }
 

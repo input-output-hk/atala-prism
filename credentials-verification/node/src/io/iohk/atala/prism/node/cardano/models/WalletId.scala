@@ -10,5 +10,5 @@ class WalletId private (val value: ArraySeq[Byte]) extends AnyVal with HashValue
 object WalletId extends HashValueFrom[WalletId] {
   override val config: HashValueConfig = HashValueConfig(ConfigMemorySize.ofBytes(20))
 
-  override def constructor(value: ArraySeq[Byte]): WalletId = new WalletId(value)
+  override protected def constructor(value: ArraySeq[Byte]): WalletId = new WalletId(value)
 }

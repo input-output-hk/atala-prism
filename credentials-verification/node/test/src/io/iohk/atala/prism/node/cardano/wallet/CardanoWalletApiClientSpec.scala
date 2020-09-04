@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.cardano.wallet
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
+import io.iohk.atala.prism.node.models.TransactionId
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
 import org.scalatest.OptionValues._

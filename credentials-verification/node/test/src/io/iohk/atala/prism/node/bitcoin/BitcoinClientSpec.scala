@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.node.bitcoin
 
 import scala.language.higherKinds
-
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import com.softwaremill.sttp.testing.SttpBackendStub
 import io.iohk.atala.prism.node.bitcoin
 import io.iohk.atala.prism.node.bitcoin.models._
+import io.iohk.atala.prism.node.models.TransactionId
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
 import org.scalatest.OptionValues._

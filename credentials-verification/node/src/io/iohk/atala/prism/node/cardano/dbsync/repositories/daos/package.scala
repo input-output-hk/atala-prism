@@ -3,7 +3,8 @@ package io.iohk.atala.prism.node.cardano.dbsync.repositories
 import java.time.Instant
 
 import doobie.util.{Get, Read}
-import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction, TransactionId}
+import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction}
+import io.iohk.atala.prism.node.models.TransactionId
 
 package object daos {
   private[daos] implicit val blockHashGet: Get[BlockHash] = Get[Array[Byte]].tmap { bytes =>
@@ -15,12 +16,6 @@ package object daos {
   private[daos] implicit val blockHeaderRead: Read[BlockHeader] = {
     Read[(BlockHash, Int, Instant, Option[BlockHash])]
       .map((BlockHeader.apply _).tupled)
-  }
-
-  private[daos] implicit val transactionIdGet: Get[TransactionId] = Get[Array[Byte]].tmap { bytes =>
-    TransactionId
-      .from(bytes)
-      .getOrElse(throw new RuntimeException("Corrupted transaction ID"))
   }
 
   private[daos] implicit val transactionRead: Read[Transaction] = {

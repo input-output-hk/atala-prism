@@ -8,6 +8,7 @@ import api.BitcoinApiClient
 import api.ApiModel._
 import BitcoinClient.Result
 import BitcoinClient.ApiResultExtensions
+import io.iohk.atala.prism.node.models.TransactionId
 
 /**
   * Implementation of the operations we need to perform against the Bitcoin network

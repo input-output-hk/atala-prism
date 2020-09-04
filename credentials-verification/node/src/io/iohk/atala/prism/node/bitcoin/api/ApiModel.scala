@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.bitcoin
 package api
 
 import io.iohk.atala.prism.node.bitcoin.models._
+import io.iohk.atala.prism.node.models.TransactionId
 
 object ApiModel {
 

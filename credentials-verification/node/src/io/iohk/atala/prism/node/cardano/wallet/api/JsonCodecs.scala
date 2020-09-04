@@ -5,6 +5,7 @@ import io.circe.generic.semiauto._
 import io.iohk.atala.prism.node.cardano.models.{Address, Lovelace, _}
 import io.iohk.atala.prism.node.cardano.modeltags
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.CardanoWalletError
+import io.iohk.atala.prism.node.models.TransactionId
 import shapeless.tag
 import shapeless.tag.@@
 
