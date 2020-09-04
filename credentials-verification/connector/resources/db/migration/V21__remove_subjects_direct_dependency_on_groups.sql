@@ -14,7 +14,7 @@
 CREATE TABLE contacts_per_group (
   group_id UUID NOT NULL,
   subject_id UUID NOT NULL,
-  added_at TIMESTAMPTZ NOT NULL,
+  added_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT contacts_per_group_pk PRIMARY KEY (group_id, subject_id),
   CONSTRAINT contacts_per_group_group_id_fk FOREIGN KEY (group_id) REFERENCES issuer_groups (group_id),
   CONSTRAINT contacts_per_group_subject_id_fk FOREIGN KEY (subject_id) REFERENCES issuer_subjects (subject_id)
@@ -25,7 +25,7 @@ CREATE INDEX contacts_per_group_subject_id_index ON contacts_per_group USING BTR
 
 -- We need to add all the current pairs to the contacts_per_group table
 INSERT INTO contacts_per_group
-SELECT issuer_groups.group_id, subject_id
+SELECT issuer_groups.group_id, subject_id, now()
 FROM issuer_groups JOIN issuer_subjects USING (group_id);
 
 -- We now go to the updates in the issuer_subjects table
