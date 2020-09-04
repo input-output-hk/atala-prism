@@ -9,8 +9,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoActivityLaunchBinding
+import io.iohk.cvp.neo.ui.onBoarding.OnBoardingNavActivity
 import io.iohk.cvp.views.activities.MainActivity
-import io.iohk.cvp.views.activities.WelcomeActivity
 import io.iohk.cvp.views.utils.ForegroundBackgroundListener
 
 class LaunchActivity : AppCompatActivity() {
@@ -23,12 +23,14 @@ class LaunchActivity : AppCompatActivity() {
      * [Handler] for delayed navigation
      * */
     private var handler: Handler? = null
+
     private val navigationDelayInMilliseconds = 1500L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.neo_activity_launch)
         binding.lifecycleOwner = this
+        configureObservers()
 
         // TODO: Refactor "isFirstLaunch" for now this prop its for handle a Security PIN Layout
         ForegroundBackgroundListener.isFirstLaunch = true
@@ -36,7 +38,6 @@ class LaunchActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        configureObservers()
         viewModel.checkSession()
     }
 
@@ -52,7 +53,6 @@ class LaunchActivity : AppCompatActivity() {
                 }
             }, navigationDelayInMilliseconds)
         })
-
     }
 
     private fun navigateToMainActivity() {
@@ -62,7 +62,7 @@ class LaunchActivity : AppCompatActivity() {
     }
 
     private fun navigateToOnBoard() {
-        val intent = Intent(this, WelcomeActivity::class.java)
+        val intent = Intent(this, OnBoardingNavActivity::class.java)
         startActivity(intent)
         finish()
     }

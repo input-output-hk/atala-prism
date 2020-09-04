@@ -21,5 +21,4 @@ class SessionRepository(private val localDataSource: SessionLocalDataSourceInter
             _sessionDataHasStored.postValue(localDataSource.hasData())
         }
     }
-
 }

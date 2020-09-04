@@ -1,9 +1,7 @@
-package io.iohk.cvp.views.fragments;
+package io.iohk.cvp.neo.ui.onBoarding.welcomeTutorial;
 
 import android.os.Bundle;
-
 import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +14,7 @@ import io.iohk.cvp.R;
 public class TutorialStepTwoFragment extends Fragment {
 
     public static TutorialStepTwoFragment newInstance() {
-        TutorialStepTwoFragment tutorialStepTwoFragment = new TutorialStepTwoFragment();
-        return tutorialStepTwoFragment;
+        return new TutorialStepTwoFragment();
     }
 
 

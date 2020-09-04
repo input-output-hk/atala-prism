@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 
+
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -33,11 +34,9 @@ import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.activities.WalletSetupActivity;
 import io.iohk.cvp.views.activities.WebViewActivity;
-import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
-
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
 import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.FIRST_WORD_INDEX_KEY;
@@ -46,10 +45,6 @@ import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SEED_P
 
 public class Navigator {
 
-    //Activities
-    public void showWelcomeActivity(Activity from) {
-        startNewActivity(from, WelcomeActivity.class, null);
-    }
 
     public void showConnections(Activity from, List<Integer> flags) {
         startNewActivity(from, MainActivity.class, flags);
@@ -188,10 +183,6 @@ public class Navigator {
         Intent myIntent = new Intent(ctx, UnlockActivity.class);
         myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         ctx.startActivity(myIntent);
-    }
-
-    public void showRestoreAccountScreen(Activity activity) {
-        startNewActivity(activity, RestoreAccountActivity.class, null);
     }
 
     public void showRecoveryAccountSuccess(@Nullable FragmentActivity activity) {

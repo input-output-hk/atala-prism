@@ -10,5 +10,4 @@ open class BaseLocalDataSource(private val context: Context) {
     }
 
     protected val preferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
 }

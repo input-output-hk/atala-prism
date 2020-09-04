@@ -1,7 +1,6 @@
 package io.iohk.cvp.core;
 
 import androidx.lifecycle.ProcessLifecycleOwner;
-
 import dagger.android.AndroidInjector;
 import dagger.android.support.DaggerApplication;
 import io.iohk.cvp.dagger.components.DaggerCvpComponent;

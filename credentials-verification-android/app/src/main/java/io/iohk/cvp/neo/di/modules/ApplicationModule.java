@@ -23,17 +23,16 @@ public class ApplicationModule {
     }
 
     /*
-    *  SessionRepository providers
-    * */
+     *  SessionRepository providers
+     * */
 
     @Provides
-    public SessionLocalDataSourceInterface provideSessionLocalDataSource(){
+    public SessionLocalDataSourceInterface provideSessionLocalDataSource() {
         return new SessionLocalDataSource(context);
     }
 
     @Provides
-    public SessionRepository provideSessionRepository(SessionLocalDataSourceInterface sessionLocalDataSource){
+    public SessionRepository provideSessionRepository(SessionLocalDataSourceInterface sessionLocalDataSource) {
         return new SessionRepository(sessionLocalDataSource);
     }
-
 }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/on_board"
+    app:startDestination="@id/welcomeFragment">
+
+    <fragment
+        android:id="@+id/welcomeFragment"
+        android:name="io.iohk.cvp.neo.ui.onBoarding.welcome.WelcomeFragment"
+        tools:layout="@layout/neo_fragment_welcome"
+        android:label="WelcomeFragment" >
+        <action
+            android:id="@+id/action_welcomeFragment_to_welcomeTutorialFragment"
+            app:destination="@id/welcomeTutorialFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/welcomeTutorialFragment"
+        tools:layout="@layout/neo_fragment_welcome_tutorial"
+        android:name="io.iohk.cvp.neo.ui.onBoarding.welcomeTutorial.WelcomeTutorialFragment"
+        android:label="WelcomeTutorialFragment" >
+        <action
+            android:id="@+id/action_welcomeTutorialFragment_to_termsAndConditionsActivity"
+            app:destination="@id/termsAndConditionsActivity" />
+        <action
+            android:id="@+id/action_welcomeTutorialFragment_to_restoreAccountActivity"
+            app:destination="@id/restoreAccountActivity" />
+    </fragment>
+    <activity
+        android:id="@+id/termsAndConditionsActivity"
+        android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity"
+        android:label="terms_and_conditions_activity"
+        tools:layout="@layout/terms_and_conditions_activity" />
+    <activity
+        android:id="@+id/restoreAccountActivity"
+        android:name="io.iohk.cvp.views.activities.RestoreAccountActivity"
+        android:label="restore_account_activity"
+        tools:layout="@layout/restore_account_activity"
+        />
+</navigation>

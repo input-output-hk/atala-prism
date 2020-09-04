@@ -171,16 +171,16 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
     //Room Database
-    def room_version = "2.2.5"
+    def roomVersion = "2.2.5"
 
-    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-runtime:$roomVersion"
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-    annotationProcessor "androidx.room:room-compiler:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$roomVersion"
     // For Kotlin use kapt instead of annotationProcessor
-    implementation "androidx.room:room-rxjava2:$room_version"
+    implementation "androidx.room:room-rxjava2:$roomVersion"
 
-    implementation "androidx.room:room-ktx:$room_version"
-    testImplementation "androidx.room:room-testing:$room_version"
+    implementation "androidx.room:room-ktx:$roomVersion"
+    testImplementation "androidx.room:room-testing:$roomVersion"
 
     //DB Inspector
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'

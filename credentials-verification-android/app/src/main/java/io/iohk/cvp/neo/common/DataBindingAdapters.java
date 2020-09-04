@@ -1,0 +1,48 @@
+package io.iohk.cvp.neo.common;
+
+import android.view.View;
+
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.InverseBindingAdapter;
+import androidx.databinding.InverseBindingListener;
+import androidx.viewpager2.widget.ViewPager2;
+
+public class DataBindingAdapters {
+
+    /**
+     * [View] Bindings Adapters
+     */
+
+    @BindingAdapter("iohk:visible")
+    public static void visible(View view, Boolean show) {
+        if (show) {
+            view.setVisibility(View.VISIBLE);
+        } else {
+            view.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * [ViewPager2] Bindings Adapters
+     */
+
+    @BindingAdapter("iohk:currentItem")
+    public static void setItem(ViewPager2 pager, int item) {
+        pager.setCurrentItem(item);
+    }
+
+    @InverseBindingAdapter(attribute = "iohk:currentItem")
+    public static int getItem(ViewPager2 pager) {
+        return pager.getCurrentItem();
+    }
+
+    @BindingAdapter("iohk:currentItemAttrChanged")
+    public static void setListeners(ViewPager2 pager, InverseBindingListener attrChange) {
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                attrChange.onChange();
+            }
+        });
+    }
+}
