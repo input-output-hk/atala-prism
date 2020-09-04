@@ -102,7 +102,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
           name: Set tag convention
@@ -198,7 +198,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
           name: Set tag convention
@@ -237,8 +237,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
-            - cv-cache-v3-
+            - cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
+            - cv-cache-v4-
 
       - install-coursier
 
@@ -282,10 +282,10 @@ jobs:
             mill -i app.test -u out/test-results
 
       - save_cache:
-          key: cv-cache-v3-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
           paths:
             - ~/.cache/coursier
-            - ~/.ivy2/cache
+            - ~/.ivy2
 
       - run:
           name: Generate code coverage reports
@@ -408,9 +408,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - webextension-cache-v1-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
+            - webextension-cache-v2-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
             # fallback to using the latest cache if no exact match is found
-            - webextension-cache-v1-
+            - webextension-cache-v2-
 
       - install-coursier
 
@@ -429,11 +429,11 @@ jobs:
       - save_cache:
           paths:
             - ~/.cache/coursier
-            - ~/.ivy2/cache
+            - ~/.ivy2
             - ~/.m2
             - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/main/node_modules
             - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/test/node_modules
-          key: webextension-cache-v1-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
+          key: webextension-cache-v2-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
 
       - run:
           name: Install test dependencies
@@ -461,9 +461,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - crypto-cache-v1-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
+            - crypto-cache-v2-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
             # fallback to using the latest cache if no exact match is found
-            - crypto-cache-v1-
+            - crypto-cache-v2-
 
       - install-coursier
 
@@ -481,9 +481,9 @@ jobs:
       - save_cache:
           paths:
             - ~/.cache/coursier
-            - ~/.ivy2/cache
+            - ~/.ivy2
             - ~/.m2
-          key: crypto-cache-v1-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
+          key: crypto-cache-v2-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
 
       - run:
           name: Run unit tests
