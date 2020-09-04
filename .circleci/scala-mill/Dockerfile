@@ -23,7 +23,8 @@ RUN \
 # Install sbt
 RUN \
   curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb && \
-  dpkg -i sbt-$SBT_VERSION.deb
+  dpkg -i sbt-$SBT_VERSION.deb && \
+  sbt --sbt-version $SBT_VERSION clean
 
 # Install mill
 RUN \
