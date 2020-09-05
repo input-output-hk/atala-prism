@@ -54,7 +54,7 @@ class WelcomeTutorialFragment : Fragment() {
     private fun setObservers() {
         viewModel.shouldGoToCreateAccount.observe(viewLifecycleOwner, EventWrapperObserver {
             firebaseAnalytics.logEvent(FirebaseAnalyticsEvents.CREATE_ACCOUNT, null)
-            findNavController().navigate(R.id.action_welcomeTutorialFragment_to_termsAndConditionsActivity)
+            findNavController().navigate(R.id.action_welcomeTutorialFragment_to_termsAndConditionsFragment)
         })
         viewModel.shouldReturn.observe(viewLifecycleOwner, EventWrapperObserver {
             findNavController().popBackStack()

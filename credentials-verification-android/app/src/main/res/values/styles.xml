@@ -32,6 +32,8 @@
     <item name="android:textAllCaps">false</item>
 
     <item name="android:homeAsUpIndicator">@drawable/ic_back_arrow_toolbar</item>
+
+    <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
   </style>
 
   <!-- Action bar theme. -->
@@ -88,6 +90,16 @@
     <item name="android:textSize">14sp</item>
     <item name="android:textColor">@color/atala_red_text_color</item>
     <item name="android:textStyle">bold</item>
+  </style>
+
+  <style name="AppBottomSheetDialogTheme"
+      parent="Theme.Design.Light.BottomSheetDialog">
+    <item name="bottomSheetStyle">@style/AppModalStyle</item>
+  </style>
+
+  <style name="AppModalStyle"
+      parent="Widget.Design.BottomSheet.Modal">
+    <item name="android:background">@drawable/rounded_top_corners_white</item>
   </style>
 
 </resources>

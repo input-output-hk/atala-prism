@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="io.iohk.cvp.neo.ui.onBoarding.termsAndConditions.TermsAndConditionsViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp">
+
+        <TextView
+            android:id="@+id/titleLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:text="@string/terms_and_conditions_activity_title"
+            android:textAlignment="textStart"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_view_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/terms_and_conditions_description"
+            android:textAlignment="textStart"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/titleLabel" />
+
+
+        <include
+            android:id="@+id/terms_and_conditions_checkbox_layout"
+            checked="@={viewModel.termsAndConditionsAccepted}"
+            layout="@layout/neo_include_checkbox_with_description"
+            linkOnClick="@{(v)-> viewModel.termsAndConditionsButtonTaped()}"
+            linkText="@{@string/terms_and_conditions_activity_title}"
+            text="@{@string/accept}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_view_3" />
+
+        <include
+            android:id="@+id/privacy_policy_checkbox_layout"
+            checked="@={viewModel.privacyPolicyAccepted}"
+            layout="@layout/neo_include_checkbox_with_description"
+            linkOnClick="@{(v)-> viewModel.privacyPolicyButtonTaped()}"
+            linkText="@{@string/privacy_policies_agreement}"
+            text="@{@string/accept}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/terms_and_conditions_checkbox_layout" />
+
+
+        <Button
+            android:id="@+id/continue_button"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_marginBottom="32dp"
+            android:enabled="@{viewModel.acceptButtonEnable}"
+            android:onClick="@{(view)-> viewModel.acceptButtonTaped()}"
+            android:text="@string/accept"
+            app:cornerRadius="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

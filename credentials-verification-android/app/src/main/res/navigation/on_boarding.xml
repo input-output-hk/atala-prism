@@ -9,7 +9,7 @@
         android:id="@+id/welcomeFragment"
         android:name="io.iohk.cvp.neo.ui.onBoarding.welcome.WelcomeFragment"
         tools:layout="@layout/neo_fragment_welcome"
-        android:label="WelcomeFragment" >
+        android:label="WelcomeFragment">
         <action
             android:id="@+id/action_welcomeFragment_to_welcomeTutorialFragment"
             app:destination="@id/welcomeTutorialFragment" />
@@ -18,13 +18,20 @@
         android:id="@+id/welcomeTutorialFragment"
         tools:layout="@layout/neo_fragment_welcome_tutorial"
         android:name="io.iohk.cvp.neo.ui.onBoarding.welcomeTutorial.WelcomeTutorialFragment"
-        android:label="WelcomeTutorialFragment" >
+        android:label="WelcomeTutorialFragment">
         <action
             android:id="@+id/action_welcomeTutorialFragment_to_termsAndConditionsActivity"
             app:destination="@id/termsAndConditionsActivity" />
         <action
             android:id="@+id/action_welcomeTutorialFragment_to_restoreAccountActivity"
             app:destination="@id/restoreAccountActivity" />
+        <action
+            android:id="@+id/action_welcomeTutorialFragment_to_termsAndConditionsFragment"
+            app:destination="@id/termsAndConditionsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <activity
         android:id="@+id/termsAndConditionsActivity"
@@ -35,6 +42,30 @@
         android:id="@+id/restoreAccountActivity"
         android:name="io.iohk.cvp.views.activities.RestoreAccountActivity"
         android:label="restore_account_activity"
-        tools:layout="@layout/restore_account_activity"
-        />
+        tools:layout="@layout/restore_account_activity" />
+    <fragment
+        android:id="@+id/termsAndConditionsFragment"
+        android:name="io.iohk.cvp.neo.ui.onBoarding.termsAndConditions.TermsAndConditionsFragment"
+        android:label="TermsAndConditionsFragment"
+        tools:layout="@layout/neo_fragment_terms_and_condition">
+        <action
+            android:id="@+id/action_termsAndConditionsFragment_to_webViewDialogFragment"
+            app:destination="@id/webViewDialogFragment"></action>
+        <action
+            android:id="@+id/action_termsAndConditionsFragment_to_walletSetupActivity"
+            app:destination="@id/walletSetupActivity" />
+    </fragment>
+    <dialog
+        android:id="@+id/webViewDialogFragment"
+        tools:layout="@layout/neo_dialog_fragment_web_view"
+        android:name="io.iohk.cvp.neo.ui.commonDialogs.WebViewDialogFragment"
+        android:label="WebViewDialogFragment">
+        <argument
+            android:name="url"
+            app:argType="string" />
+    </dialog>
+    <activity
+        android:id="@+id/walletSetupActivity"
+        android:name="io.iohk.cvp.views.activities.WalletSetupActivity"
+        android:label="WalletSetupActivity" />
 </navigation>
