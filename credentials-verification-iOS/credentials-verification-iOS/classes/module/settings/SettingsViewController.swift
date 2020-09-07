@@ -110,6 +110,11 @@ class SettingsViewController: ListingBaseViewController {
 
     }
 
+    func changeScreenToDate() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "DateSegue", params: nil)
+
+    }
+
     func resetData() {
 
         let confirmation = ResetDataViewController.makeThisView()

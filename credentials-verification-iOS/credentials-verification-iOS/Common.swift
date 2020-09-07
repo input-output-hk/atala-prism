@@ -13,6 +13,7 @@ struct Common {
 
     // General values
     public static let KEY_PREF = "iohk.credentials-verification-iOS."
+    public static let DAFAULT_DATE_FORMAT = "dd/MM/yyyy"
 
     // Api
     static var URL_API = Env.isProduction() ? "www.atalaprism.io:50051": "develop.atalaprism.io:50051"

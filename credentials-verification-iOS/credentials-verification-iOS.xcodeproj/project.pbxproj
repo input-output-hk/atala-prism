@@ -33,6 +33,11 @@
 		B35181B324196689007CA8F1 /* common_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181B224196689007CA8F1 /* common_models.proto */; };
 		B35181BA24196898007CA8F1 /* connector_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B624196898007CA8F1 /* connector_api.pb.swift */; };
 		B35181BB24196898007CA8F1 /* connector_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B724196898007CA8F1 /* connector_api.grpc.swift */; };
+		B352433F24FFD59F0053A804 /* DateFormat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B352433E24FFD59F0053A804 /* DateFormat.storyboard */; };
+		B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B352434124FFDA080053A804 /* DateFormatTableViewCell.swift */; };
+		B352434424FFDA080053A804 /* DateFormatViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B352434224FFDA080053A804 /* DateFormatViewCell.xib */; };
+		B352434624FFDA270053A804 /* DateFormatPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B352434524FFDA270053A804 /* DateFormatPresenter.swift */; };
+		B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B352434724FFDA3C0053A804 /* DateFormatViewController.swift */; };
 		B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B35470F924E4252D009F4844 /* DeleteContact.storyboard */; };
 		B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35470FB24E42546009F4844 /* DeleteContactViewController.swift */; };
 		B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */; };
@@ -288,6 +293,11 @@
 		B35181B224196689007CA8F1 /* common_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = common_models.proto; sourceTree = "<group>"; };
 		B35181B624196898007CA8F1 /* connector_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.pb.swift; sourceTree = "<group>"; };
 		B35181B724196898007CA8F1 /* connector_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.grpc.swift; sourceTree = "<group>"; };
+		B352433E24FFD59F0053A804 /* DateFormat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DateFormat.storyboard; sourceTree = "<group>"; };
+		B352434124FFDA080053A804 /* DateFormatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatTableViewCell.swift; sourceTree = "<group>"; };
+		B352434224FFDA080053A804 /* DateFormatViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DateFormatViewCell.xib; sourceTree = "<group>"; };
+		B352434524FFDA270053A804 /* DateFormatPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatPresenter.swift; sourceTree = "<group>"; };
+		B352434724FFDA3C0053A804 /* DateFormatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatViewController.swift; sourceTree = "<group>"; };
 		B35470F924E4252D009F4844 /* DeleteContact.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DeleteContact.storyboard; sourceTree = "<group>"; };
 		B35470FB24E42546009F4844 /* DeleteContactViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteContactViewController.swift; sourceTree = "<group>"; };
 		B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestCell.swift; sourceTree = "<group>"; };
@@ -617,6 +627,41 @@
 			path = CredentialHistory;
 			sourceTree = "<group>";
 		};
+		B352433D24FFD5730053A804 /* dateFormat */ = {
+			isa = PBXGroup;
+			children = (
+				B352434924FFDA5C0053A804 /* cell */,
+				B352433E24FFD59F0053A804 /* DateFormat.storyboard */,
+			);
+			path = dateFormat;
+			sourceTree = "<group>";
+		};
+		B352434024FFD9D90053A804 /* dateFormat */ = {
+			isa = PBXGroup;
+			children = (
+				B352434A24FFDA6C0053A804 /* cell */,
+				B352434524FFDA270053A804 /* DateFormatPresenter.swift */,
+				B352434724FFDA3C0053A804 /* DateFormatViewController.swift */,
+			);
+			path = dateFormat;
+			sourceTree = "<group>";
+		};
+		B352434924FFDA5C0053A804 /* cell */ = {
+			isa = PBXGroup;
+			children = (
+				B352434224FFDA080053A804 /* DateFormatViewCell.xib */,
+			);
+			path = cell;
+			sourceTree = "<group>";
+		};
+		B352434A24FFDA6C0053A804 /* cell */ = {
+			isa = PBXGroup;
+			children = (
+				B352434124FFDA080053A804 /* DateFormatTableViewCell.swift */,
+			);
+			path = cell;
+			sourceTree = "<group>";
+		};
 		B3C7601124896B4700AC46DC /* firebase */ = {
 			isa = PBXGroup;
 			children = (
@@ -832,6 +877,7 @@
 		EE7D49D52366B9C2007C31A8 /* module */ = {
 			isa = PBXGroup;
 			children = (
+				B352434024FFD9D90053A804 /* dateFormat */,
 				B3F94E91247455A60087EBFD /* security */,
 				B3F94E8C247455990087EBFD /* lock */,
 				B30254FF2449E27600C8E9C0 /* notifications */,
@@ -1056,6 +1102,7 @@
 		EE7D4B182366B9C3007C31A8 /* layouts */ = {
 			isa = PBXGroup;
 			children = (
+				B352433D24FFD5730053A804 /* dateFormat */,
 				B3F94E87247455720087EBFD /* security */,
 				B3F94E84247455650087EBFD /* lock */,
 				B30255042449E60100C8E9C0 /* notifications */,
@@ -1516,6 +1563,7 @@
 				B3F94E8A247455720087EBFD /* Security.storyboard in Resources */,
 				EE7D4D1523693A13007C31A8 /* Connections.storyboard in Resources */,
 				EE904F1E2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib in Resources */,
+				B352433F24FFD59F0053A804 /* DateFormat.storyboard in Resources */,
 				B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */,
 				EE7D4C792366B9C4007C31A8 /* Localizable.strings in Resources */,
 				EE7185862384FBC200C58F62 /* CredentialPay.storyboard in Resources */,
@@ -1523,6 +1571,7 @@
 				EE7D4C832366B9C4007C31A8 /* LaunchScreen.storyboard in Resources */,
 				EE71855E23835EB000C58F62 /* ShareItemViewCell.xib in Resources */,
 				EE7185752384D5EE00C58F62 /* TabsViewCell.xib in Resources */,
+				B352434424FFDA080053A804 /* DateFormatViewCell.xib in Resources */,
 				B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */,
 				EE7D4CC52366B9C5007C31A8 /* SteradianRegular.otf in Resources */,
 				B36F27BD2406E2C400FF751B /* About.storyboard in Resources */,
@@ -1802,6 +1851,7 @@
 				B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */,
 				B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */,
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
+				B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
 				EE7D4D012367621C007C31A8 /* CredentialsViewController.swift in Sources */,
@@ -1874,7 +1924,9 @@
 				B35181B324196689007CA8F1 /* common_models.proto in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
 				B309C16724BF5CD600AF70DF /* CredentialHistory+CoreDataClass.swift in Sources */,
+				B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */,
 				EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */,
+				B352434624FFDA270053A804 /* DateFormatPresenter.swift in Sources */,
 				EE7D4C6F2366B9C4007C31A8 /* SharedMemoryHelper.swift in Sources */,
 				B30255012449E33D00C8E9C0 /* NotificationsViewController.swift in Sources */,
 				EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */,
@@ -2084,7 +2136,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 60;
+				CURRENT_PROJECT_VERSION = 62;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2110,7 +2162,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 60;
+				CURRENT_PROJECT_VERSION = 62;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

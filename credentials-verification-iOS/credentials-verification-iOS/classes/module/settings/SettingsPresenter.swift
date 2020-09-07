@@ -47,7 +47,9 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         InitialCellValue(icon: "logo_support", title: "settings_support_title",
                          subtitle: "settings_support_subtitle", action: actionRowSupport),
         InitialCellValue(icon: "logo_about", title: "settings_about_title",
-                         subtitle: "settings_about_subtitle", action: actionRowTerms)
+                         subtitle: "settings_about_subtitle", action: actionRowTerms),
+        InitialCellValue(icon: "logo_date", title: "settings_date_title",
+                         subtitle: "settings_date_subtitle", action: actionRowDate)
     ]
 
     func startShowingInitial() {
@@ -85,6 +87,10 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
 
     lazy var actionRowSecurity = SelectorAction(action: { [weak self] in
         self?.viewImpl?.changeScreenToSecurity()
+    })
+
+    lazy var actionRowDate = SelectorAction(action: { [weak self] in
+        self?.viewImpl?.changeScreenToDate()
     })
 
     func clearAppData() {

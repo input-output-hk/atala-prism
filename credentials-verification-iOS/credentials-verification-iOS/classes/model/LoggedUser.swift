@@ -27,6 +27,8 @@ class LoggedUser: Mappable {
 
     var appPin: String?
     var appBiometrics: Bool?
+    
+    var dateFormat: String?
 
     init() {}
 
@@ -59,5 +61,7 @@ class LoggedUser: Mappable {
 
         appPin <- map["appPin"]
         appBiometrics <- map["appBiometrics"]
+
+        dateFormat <- map["dateFormat"]
     }
 }

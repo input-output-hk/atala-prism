@@ -153,6 +153,8 @@
 "settings_reset_confrimation_subtitle" = "Your contacts and credentials will be deleted";
 "settings_reset" = "Reset";
 "settings_reset_success" = "Contacts and credentials successfully removed!";
+"settings_date_title" = "Date";
+"settings_date_subtitle" = "Custom date format";
 
 // <!-- Login: Welcome -->
 "welcome_title" = "Welcome";
@@ -311,3 +313,10 @@
 "unlock_touch_id_cancel" = "Touch ID has been cancelled. Please enter your PIN code instead";
 "unlock_touch_id_error" = "Fingerprint recognition failed";
 "unlock_face_id_error" = "Face recognition failed";
+
+// <!-- Date Format -->
+"dateformat_nav_bar" = "Date Format";
+"dateformat_title" = "Custom date format";
+"dateformat_format_dd_mm_yyyy" = "DD / MM / YYYY (Default)";
+"dateformat_format_mm_dd_yyyy" = "MM / DD / YYYY";
+"dateformat_format_yyyy_mm_dd" = "YYYY / MM / DD";
