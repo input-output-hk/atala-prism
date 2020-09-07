@@ -20,7 +20,7 @@
     border-radius: 20px 20px 0 0;
     overflow: hidden;
     .MainContainer {
-      width: 97vw;
+      width: 100vw;
       background: $white;
       @include breakpoint(sm) {
         width: 100vw;

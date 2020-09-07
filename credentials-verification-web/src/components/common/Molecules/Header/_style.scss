@@ -1,7 +1,6 @@
 @import '../../../../css/general_styling';
 
 .HeaderContainer {
-  height: 9%;
   padding: 1em;
 
   &.IssuerUser {
@@ -52,5 +51,14 @@
     width: 32px;
     border-radius: 4px;
     margin-right: 1em;
+  }
+}
+
+
+
+@media only screen and (max-width: 996px) {
+  .HeaderContainer.IssuerUser {
+    display: flex;
+    justify-content: space-between;
   }
 }
