@@ -10,7 +10,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.AtalaReferenceLedger
-import io.iohk.atala.prism.node.models.{AtalaObject, TransactionId}
+import io.iohk.atala.prism.node.models.{AtalaObject, TransactionInfo}
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
@@ -93,7 +93,7 @@ class ObjectManagementService(
       }
   }
 
-  def publishAtalaOperation(op: node_models.SignedAtalaOperation): Future[TransactionId] = {
+  def publishAtalaOperation(op: node_models.SignedAtalaOperation): Future[TransactionInfo] = {
     val block = node_internal.AtalaBlock("1.0", List(op))
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)

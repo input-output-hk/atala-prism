@@ -4,12 +4,13 @@ import java.time.Instant
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository, KeyValuesRepository}
+import io.iohk.atala.prism.node.services.AtalaService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
+import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.prism.protos.node_api._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
@@ -115,9 +116,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler): AtalaService = {
     logger.info("Creating bitcoin client")
+
+    val bitcoinNetwork = BitcoinNetwork.withNameInsensitive(config.getString("network"))
     val bitcoinClient = BitcoinClient(NodeConfig.bitcoinConfig(config))
 
-    val atalaService = AtalaService(bitcoinClient, onAtalaReference)
+    val atalaService = AtalaService(bitcoinNetwork, bitcoinClient, onAtalaReference)
 
     // TODO: Re-enable Bitcoin syncer
     /*

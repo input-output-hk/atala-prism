@@ -1,12 +1,14 @@
 package io.iohk.atala.prism.node.services
 
+import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.node.models.{Ledger, TransactionInfo}
+import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
+import io.iohk.atala.prism.utils.FutureEither
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
@@ -14,6 +16,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
 class CardanoLedgerService private[services] (
+    network: CardanoNetwork,
     walletId: WalletId,
     walletPassphrase: String,
     paymentAddress: Address,
@@ -33,25 +36,33 @@ class CardanoLedgerService private[services] (
   // https://github.com/input-output-hk/cardano-node/blob/1f0171d96443eaf7a77072397e790b514b670414/configuration/cardano/shelley-genesis.json#L18
   private val minUtxoDeposit = Lovelace(1000000)
 
+  private val ledger: Ledger = {
+    if (network == CardanoNetwork.Testnet) {
+      Ledger.CardanoTestnet
+    } else {
+      Ledger.CardanoMainnet
+    }
+  }
+
   // Schedule the initial sync
   scheduleSync(30.seconds)
 
   override def supportsOnChainData: Boolean = false
 
-  override def publishReference(ref: SHA256Digest): Future[TransactionId] = {
+  override def publishReference(ref: SHA256Digest): Future[TransactionInfo] = {
     // TODO: Send `ref` as metadata
     cardanoClient
       .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), walletPassphrase)
       .value
       .map {
-        case Right(transactionId) => transactionId
+        case Right(transactionId) => TransactionInfo(transactionId, ledger)
         case Left(error) =>
           logger.error(s"FATAL: Error while publishing reference: $error")
           throw new RuntimeException(s"FATAL: Error while publishing reference: $error")
       }
   }
 
-  override def publishObject(bytes: Array[Byte]): Future[TransactionId] = {
+  override def publishObject(bytes: Array[Byte]): Future[TransactionInfo] = {
     throw new NotImplementedError("Publishing whole objects not implemented for Cardano ledger")
   }
 
@@ -122,7 +133,16 @@ object CardanoLedgerService {
 
   type Result[E, A] = FutureEither[E, A]
 
+  sealed trait CardanoNetwork extends EnumEntry
+  object CardanoNetwork extends Enum[CardanoNetwork] {
+    val values = findValues
+
+    case object Testnet extends CardanoNetwork
+    case object Mainnet extends CardanoNetwork
+  }
+
   case class Config(
+      network: CardanoNetwork,
       walletId: String,
       walletPassphrase: String,
       paymentAddress: String,
@@ -141,6 +161,7 @@ object CardanoLedgerService {
     val cardanoClient = CardanoClient(config.cardanoClientConfig)
 
     new CardanoLedgerService(
+      config.network,
       walletId,
       walletPassphrase,
       paymentAddress,

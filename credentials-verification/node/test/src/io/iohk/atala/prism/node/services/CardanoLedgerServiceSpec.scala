@@ -10,6 +10,7 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
+import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.ObjectHandler
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
@@ -94,6 +95,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
   ): CardanoLedgerService = {
     val cardanoClient = createCardanoClient(cardanoWalletApiClient)
     new CardanoLedgerService(
+      CardanoNetwork.Testnet,
       walletId,
       walletPassphrase,
       paymentAddress,

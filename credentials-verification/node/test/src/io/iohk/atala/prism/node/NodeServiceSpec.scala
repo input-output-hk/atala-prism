@@ -13,7 +13,15 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
-import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage, TransactionId}
+import io.iohk.atala.prism.node.models.{
+  CredentialId,
+  DIDPublicKey,
+  DIDSuffix,
+  KeyUsage,
+  Ledger,
+  TransactionId,
+  TransactionInfo
+}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
@@ -52,7 +60,8 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   val objectManagementService = mock[ObjectManagementService]
   val credentialsService = mock[CredentialsService]
 
-  private val testTransactionId = TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value
+  private val testTransactionInfo =
+    TransactionInfo(TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value, Ledger.InMemory)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -119,7 +128,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         CreateDIDOperationSpec.masterKeys.privateKey
       )
 
-      doReturn(Future.successful(testTransactionId)).when(objectManagementService).publishAtalaOperation(*)
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
       service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
@@ -149,7 +158,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         CreateDIDOperationSpec.masterKeys.privateKey
       )
 
-      doReturn(Future.successful(testTransactionId)).when(objectManagementService).publishAtalaOperation(*)
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
       service.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(operation))
 
@@ -179,7 +188,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         CreateDIDOperationSpec.masterKeys.privateKey
       )
 
-      doReturn(Future.successful(testTransactionId)).when(objectManagementService).publishAtalaOperation(*)
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
       service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
 

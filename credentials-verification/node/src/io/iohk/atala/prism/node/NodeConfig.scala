@@ -1,12 +1,13 @@
 package io.iohk.atala.prism.node
 
 import com.typesafe.config.Config
-import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.services.CardanoLedgerService
+import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
+import io.iohk.atala.prism.repositories.TransactorFactory
 
 object NodeConfig {
 
@@ -19,6 +20,7 @@ object NodeConfig {
   }
 
   def cardanoConfig(config: Config): CardanoLedgerService.Config = {
+    val network = CardanoNetwork.withNameInsensitive(config.getString("network"))
     val walletId = config.getString("walletId")
     val walletPassphrase = config.getString("walletPassphrase")
     val paymentAddress = config.getString("paymentAddress")
@@ -26,6 +28,7 @@ object NodeConfig {
     val dbSyncConfig = cardanoDbSyncConfig(config.getConfig("dbSync"))
     val walletConfig = cardanoWalletConfig(config.getConfig("wallet"))
     CardanoLedgerService.Config(
+      network,
       walletId,
       walletPassphrase,
       paymentAddress,

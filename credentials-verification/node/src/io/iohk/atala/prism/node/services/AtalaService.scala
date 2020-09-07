@@ -2,15 +2,16 @@ package io.iohk.atala.prism.node.services
 
 import java.time.Instant
 
+import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
-import io.iohk.atala.prism.node.models.TransactionId
-import io.iohk.atala.prism.node.services.AtalaService.Result
+import io.iohk.atala.prism.node.models.{Ledger, TransactionInfo}
+import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,6 +21,7 @@ trait AtalaService extends AtalaReferenceLedger {
 }
 
 class AtalaServiceImpl(
+    network: BitcoinNetwork,
     bitcoinClient: BitcoinClient,
     binaryOps: BinaryOps,
     onNewReference: ObjectHandler
@@ -31,9 +33,17 @@ class AtalaServiceImpl(
 
   private val ATALA_HEADER = "ATALA://".getBytes("UTF-8")
 
+  private val ledger: Ledger = {
+    if (network == BitcoinNetwork.Testnet) {
+      Ledger.BitcoinTestnet
+    } else {
+      Ledger.BitcoinMainnet
+    }
+  }
+
   override def supportsOnChainData: Boolean = false
 
-  override def publishReference(ref: SHA256Digest): Future[TransactionId] = {
+  override def publishReference(ref: SHA256Digest): Future[TransactionInfo] = {
     val opDataBytes: Array[Byte] = ATALA_HEADER ++ ref.value
 
     OpData(opDataBytes) match {
@@ -42,7 +52,7 @@ class AtalaServiceImpl(
           .sendDataTx(opData)
           .value
           .map {
-            case Right(transactionId) => transactionId
+            case Right(transactionId) => TransactionInfo(transactionId, ledger)
             case Left(error) =>
               logger.error(s"FATAL: Error while publishing reference: ${error}")
               throw new RuntimeException(s"FATAL: Error while publishing reference: ${error}")
@@ -55,7 +65,7 @@ class AtalaServiceImpl(
     }
   }
 
-  override def publishObject(bytes: Array[Byte]): Future[TransactionId] = {
+  override def publishObject(bytes: Array[Byte]): Future[TransactionInfo] = {
     throw new NotImplementedError("Publishing whole objects not implemented for Bitcoin ledger")
   }
 
@@ -106,13 +116,22 @@ object AtalaService {
   // we can safely equal `PublishError` to `SendDataTxError`
   type PublishError = SendDataTxError
 
+  sealed trait BitcoinNetwork extends EnumEntry
+  object BitcoinNetwork extends Enum[BitcoinNetwork] {
+    val values = findValues
+
+    case object Testnet extends BitcoinNetwork
+    case object Mainnet extends BitcoinNetwork
+  }
+
   def apply(
+      network: BitcoinNetwork,
       bitcoinClient: BitcoinClient,
       onNewReference: ObjectHandler
   )(implicit
       ec: ExecutionContext
   ): AtalaService = {
     val binaryOps = BinaryOps()
-    new AtalaServiceImpl(bitcoinClient, binaryOps, onNewReference)
+    new AtalaServiceImpl(network, bitcoinClient, binaryOps, onNewReference)
   }
 }
