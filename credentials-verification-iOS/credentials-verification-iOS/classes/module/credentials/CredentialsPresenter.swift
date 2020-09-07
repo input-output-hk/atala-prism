@@ -43,6 +43,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var detailRows: [CellRow]?
 
     var detailDegree: Degree?
+    var detailCredential: Credential?
 
     var shareEmployers: [Contact]?
     var shareSelectedEmployers: [Contact]?
@@ -138,6 +139,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func cleanData() {
         detailDegree = nil
+        detailCredential = nil
         degreeRows = []
         detailRows = []
         credentials = []
@@ -345,7 +347,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
 
             degree.intCredential = credential.encoded
-            degree.type = credential.credentialType
+            degree.type = CredentialType(rawValue: credential.type)
+            detailCredential = credential
+
             startShowingDetails(degree: degree)
         }
     }
@@ -360,8 +364,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
 
                 degree.intCredential = credential.encoded
-                degree.type = credential.credentialType
 
+                degree.type = CredentialType(rawValue: credential.type)
+                detailCredential = credential
                 startShowingDetails(degree: degree)
             }
         }
@@ -509,5 +514,21 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         }
         makeDegreeRows()
         updateViewToState()
+    }
+
+    // MARK: Delete
+
+    func tappedDeleteButton() {
+        viewImpl?.showDeleteCredentialConfirmation()
+    }
+
+    func deleteCredential() {
+        let dao = CredentialDAO()
+        if dao.deleteCredential(credential: self.detailCredential!) {
+            self.tappedBackButton()
+            self.actionPullToRefresh()
+        } else {
+            self.viewImpl?.showErrorMessage(doShow: true, message: "credentials_delete_error".localize())
+        }
     }
 }

@@ -121,6 +121,9 @@
 "credentials_government_id" = "Government ID";
 "credentials_proof_employment" = "Proof of Employment";
 "credentials_certificate_insurance" = "Health Insurance";
+"credentials_delete_confrimation_title" = "Are you sure?";
+"credentials_delete_confrimation_message" = "You are about to delete:";
+"credentials_delete_error" = "The credential couldn't be deleted";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";

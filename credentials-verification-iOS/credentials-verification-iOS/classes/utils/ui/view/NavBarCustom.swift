@@ -9,11 +9,17 @@ class NavBarCustomStyle: NSObject {
     var hasBackButton: Bool
     var rightIconName: String?
     var rightIconAction: SelectorAction?
+    var centerIconName: String?
+    var centerIconAction: SelectorAction?
+    var leftIconName: String?
+    var leftIconAction: SelectorAction?
     var textButtonTitle: NSAttributedString?
     var textButtonAction: SelectorAction?
 
     init(hasNavBar: Bool, isWhite: Bool = false, title: String? = nil, hasBackButton: Bool = false,
          rightIconName: String? = nil, rightIconAction: SelectorAction? = nil,
+         centerIconName: String? = nil, centerIconAction: SelectorAction? = nil,
+         leftIconName: String? = nil, leftIconAction: SelectorAction? = nil,
          textButtonTitle: NSAttributedString? = nil, textButtonAction: SelectorAction? = nil) {
         self.hasNavBar = hasNavBar
         self.isWhite = isWhite
@@ -21,6 +27,10 @@ class NavBarCustomStyle: NSObject {
         self.hasBackButton = hasBackButton
         self.rightIconName = rightIconName
         self.rightIconAction = rightIconAction
+        self.centerIconName = centerIconName
+        self.centerIconAction = centerIconAction
+        self.leftIconName = leftIconName
+        self.leftIconAction = leftIconAction
         self.textButtonTitle = textButtonTitle
         self.textButtonAction = textButtonAction
         super.init()
@@ -37,6 +47,8 @@ class NavBarCustom: BaseNibLoadingView {
     @IBOutlet weak var constraintLabelTitleShort: NSLayoutConstraint!
     @IBOutlet weak var constraintLabelTitleLong: NSLayoutConstraint!
     @IBOutlet weak var buttonRight: UIButton!
+    @IBOutlet weak var buttonCenter: UIButton!
+    @IBOutlet weak var buttonLeft: UIButton!
     @IBOutlet weak var buttonText: UIButton!
 
     private static func findNavBarIn(view: UIView) -> NavBarCustom? {
@@ -99,6 +111,16 @@ class NavBarCustom: BaseNibLoadingView {
             let rightImg = UIImage(named: style.rightIconName!)
             navBar?.buttonRight.setImage(rightImg, for: .normal)
         }
+        navBar?.buttonCenter.isHidden = style.centerIconName == nil
+        if style.centerIconName != nil {
+            let centerImg = UIImage(named: style.centerIconName!)
+            navBar?.buttonCenter.setImage(centerImg, for: .normal)
+        }
+        navBar?.buttonLeft.isHidden = style.leftIconName == nil
+        if style.leftIconName != nil {
+            let leftImg = UIImage(named: style.leftIconName!)
+            navBar?.buttonLeft.setImage(leftImg, for: .normal)
+        }
         navBar?.buttonText.isHidden = style.textButtonTitle == nil
         navBar?.buttonText.setAttributedTitle(style.textButtonTitle, for: .normal)
         view.layoutIfNeeded()
@@ -110,6 +132,14 @@ class NavBarCustom: BaseNibLoadingView {
 
     @IBAction func actionRightButton(_ sender: Any) {
         containerViewController?.navBarCustomStyle().rightIconAction?.action()
+    }
+
+    @IBAction func actionCenterButton(_ sender: Any) {
+        containerViewController?.navBarCustomStyle().centerIconAction?.action()
+    }
+
+    @IBAction func actionLeftButton(_ sender: Any) {
+        containerViewController?.navBarCustomStyle().leftIconAction?.action()
     }
 
     @IBAction func actionTextButton(_ sender: Any) {

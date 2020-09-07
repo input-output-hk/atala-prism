@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -10,6 +10,8 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="NavBarCustom" customModule="Atala_PRISM" customModuleProvider="target">
             <connections>
                 <outlet property="buttonBack" destination="Uik-6c-9p7" id="zjX-7D-61I"/>
+                <outlet property="buttonCenter" destination="AYP-bs-CGR" id="KX6-3T-ErZ"/>
+                <outlet property="buttonLeft" destination="kaL-AS-rAt" id="lhu-oa-sIc"/>
                 <outlet property="buttonRight" destination="mHv-AR-dfz" id="naT-41-PwH"/>
                 <outlet property="buttonText" destination="3aD-eU-bJj" id="LtQ-EV-TOq"/>
                 <outlet property="constraintLabelTitleLong" destination="30B-P0-6ls" id="r0b-sC-iYf"/>
@@ -46,6 +48,26 @@
                             </userDefinedRuntimeAttributes>
                             <connections>
                                 <action selector="actionTextButton:" destination="-1" eventType="touchUpInside" id="Rmx-pU-B0w"/>
+                            </connections>
+                        </button>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kaL-AS-rAt">
+                            <rect key="frame" x="0.0" y="0.0" width="26" height="26"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="26" id="9DE-rg-O4o"/>
+                                <constraint firstAttribute="height" constant="26" id="hUm-a2-d8Q"/>
+                            </constraints>
+                            <connections>
+                                <action selector="actionLeftButton:" destination="-1" eventType="touchUpInside" id="dWE-C5-HPi"/>
+                            </connections>
+                        </button>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AYP-bs-CGR">
+                            <rect key="frame" x="0.0" y="0.0" width="26" height="26"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="26" id="HN6-yp-HJ3"/>
+                                <constraint firstAttribute="width" constant="26" id="YhX-OF-UD8"/>
+                            </constraints>
+                            <connections>
+                                <action selector="actionCenterButton:" destination="-1" eventType="touchUpInside" id="tRE-w6-gQ1"/>
                             </connections>
                         </button>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mHv-AR-dfz">

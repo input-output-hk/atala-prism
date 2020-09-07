@@ -80,26 +80,35 @@ class CredentialsViewController: ListingBaseViewController {
             : "credentials_document_title".localize()
         var navAction: SelectorAction?
         var navActionIcon: String?
+        var deleteAction: SelectorAction?
+        var deleteActionIcon: String?
         if credentialsMode == .detail {
             let detailDegree = presenterImpl.detailDegree
-            navActionIcon = "ico_share"
-            navAction = actionShare
-            switch detailDegree!.type {
-            case .univerityDegree:
-                navTitle = "credentials_detail_title_type_university".localize()
-            case .governmentIssuedId:
-                navTitle = "credentials_detail_title_type_government_id".localize()
-            case .certificatOfInsurance:
-                navTitle = "credentials_detail_title_type_insurance".localize()
-            case .proofOfEmployment:
-                navTitle = "credentials_detail_title_type_employment".localize()
-            default:
-                print("Unrecognized type")
+
+            deleteActionIcon = "ico_delete"
+            deleteAction = actionDelete
+            if detailDegree?.isNew ?? false {
+                navTitle = "credentials_detail_title_new".localize()
+            } else {
+                navActionIcon = "ico_share"
+                navAction = actionShare
+                switch detailDegree!.type {
+                case .univerityDegree:
+                    navTitle = "credentials_detail_title_type_university".localize()
+                case .governmentIssuedId:
+                    navTitle = "credentials_detail_title_type_government_id".localize()
+                case .certificatOfInsurance:
+                    navTitle = "credentials_detail_title_type_insurance".localize()
+                case .proofOfEmployment:
+                    navTitle = "credentials_detail_title_type_employment".localize()
+                default:
+                    print("Unrecognized type")
+                }
             }
         }
-        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
-                                   hasBackButton: credentialsMode != .degrees, rightIconName: navActionIcon,
-                                   rightIconAction: navAction)
+        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: credentialsMode != .degrees,
+                                   rightIconName: navActionIcon, rightIconAction: navAction,
+                                   centerIconName: deleteActionIcon, centerIconAction: deleteAction)
         NavBarCustom.config(view: self)
     }
 
@@ -174,6 +183,10 @@ class CredentialsViewController: ListingBaseViewController {
         self?.presenterImpl.tappedShareButton()
     })
 
+    lazy var actionDelete = SelectorAction(action: { [weak self] in
+        self?.presenterImpl.tappedDeleteButton()
+    })
+
     // MARK: Share
 
     func showShareDialog() {
@@ -194,5 +207,16 @@ class CredentialsViewController: ListingBaseViewController {
 
         let params = CredentialPayViewController.makeSeguedParams(degree: degree)
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "CredentialPaySegue", params: params)
+    }
+
+    // MARK: Delete
+
+    func showDeleteCredentialConfirmation() {
+        let confirmation = DeleteCredentialViewController.makeThisView()
+        confirmation.config(credential: presenterImpl.detailCredential) {
+            self.presenterImpl.deleteCredential()
+        }
+        customPresentViewController(confirmation.presentr, viewController: confirmation, animated: true)
+
     }
 }

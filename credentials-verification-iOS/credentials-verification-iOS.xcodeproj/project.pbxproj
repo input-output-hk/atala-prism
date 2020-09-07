@@ -42,6 +42,8 @@
 		B36F27BD2406E2C400FF751B /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F27BC2406E2C400FF751B /* About.storyboard */; };
 		B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27BE2406F37600FF751B /* AboutViewController.swift */; };
 		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
+		B36F2FC224DDAC620012FDCC /* DeleteCredential.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F2FC124DDAC620012FDCC /* DeleteCredential.storyboard */; };
+		B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F2FC324DDAFBE0012FDCC /* DeleteCredentialViewController.swift */; };
 		B38D944A24AE53440053CE36 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D944924AE53430053CE36 /* Reachability.swift */; };
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
 		B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */; };
@@ -295,6 +297,8 @@
 		B36F27BC2406E2C400FF751B /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
 		B36F27BE2406F37600FF751B /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
+		B36F2FC124DDAC620012FDCC /* DeleteCredential.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DeleteCredential.storyboard; sourceTree = "<group>"; };
+		B36F2FC324DDAFBE0012FDCC /* DeleteCredentialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteCredentialViewController.swift; sourceTree = "<group>"; };
 		B38D944924AE53430053CE36 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
 		B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RestoreAccount.storyboard; sourceTree = "<group>"; };
@@ -1149,6 +1153,7 @@
 				EE8FD4DC2372698D00EFF62E /* cells */,
 				EE7D4D032367622F007C31A8 /* CredentialsPresenter.swift */,
 				EE7D4D002367621B007C31A8 /* CredentialsViewController.swift */,
+				B36F2FC324DDAFBE0012FDCC /* DeleteCredentialViewController.swift */,
 			);
 			path = credentials;
 			sourceTree = "<group>";
@@ -1158,6 +1163,7 @@
 			children = (
 				EE904F122373B99700EE6344 /* cells */,
 				EE7D4D092367631B007C31A8 /* Credentials.storyboard */,
+				B36F2FC124DDAC620012FDCC /* DeleteCredential.storyboard */,
 			);
 			path = credentials;
 			sourceTree = "<group>";
@@ -1522,6 +1528,7 @@
 				B36F27BD2406E2C400FF751B /* About.storyboard in Resources */,
 				EE7185662384B96400C58F62 /* Browser.storyboard in Resources */,
 				EE7D4D19236A99D7007C31A8 /* NavBarCustom.xib in Resources */,
+				B36F2FC224DDAC620012FDCC /* DeleteCredential.storyboard in Resources */,
 				EE718552237DCDB100C58F62 /* Welcome.storyboard in Resources */,
 				EE7D4D0823676311007C31A8 /* Dashboard.storyboard in Resources */,
 				EE631CFB23C66259001EAA0F /* InfoPlist.strings in Resources */,
@@ -1733,6 +1740,7 @@
 				B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */,
 				EE7D4C272366B9C4007C31A8 /* LoggedUser.swift in Sources */,
 				EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */,
+				B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */,
 				EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */,
 				EE904F062373AAD200EE6344 /* NewDegreeViewCell.swift in Sources */,
 				EE7D4C422366B9C4007C31A8 /* ErrorUtils.swift in Sources */,
