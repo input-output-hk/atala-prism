@@ -1,105 +1,103 @@
 <resources>
-  <!-- Base application theme. -->
-  <style name="AppTheme" parent="Theme.MaterialComponents.Light">
-    <!-- Customize your theme here. -->
-    <item name="colorPrimary">@color/colorPrimary</item>
-    <item name="colorPrimaryVariant">@color/lightRed</item>
-    <item name="colorOnPrimary">@android:color/white</item>
-    <item name="colorSecondary">@color/black</item>
-    <item name="colorSecondaryVariant">@color/blueGrey</item>
-    <item name="colorOnSecondary">@android:color/white</item>
-    <item name="colorError">@color/colorPrimary</item>
-    <item name="colorOnError">@android:color/white</item>
-    <item name="colorSurface">#FFFFFF</item>
-    <item name="colorOnSurface">@color/black</item>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/lightRed</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSecondary">@color/black</item>
+        <item name="colorSecondaryVariant">@color/blueGrey</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorError">@color/colorPrimary</item>
+        <item name="colorOnError">@android:color/white</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">@color/black</item>
 
-    <item name="android:windowContentOverlay">@null</item>
-    <item name="actionBarStyle">@style/CustomActionBar</item>
-    <item name="textAppearanceButton">@style/AppTextAppearance.Button</item>
-    <item name="checkboxStyle">@style/CustomCheckbox</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="actionBarStyle">@style/CustomActionBar</item>
+        <item name="textAppearanceButton">@style/AppTextAppearance.Button</item>
+        <item name="checkboxStyle">@style/CustomCheckbox</item>
 
-    <item name="textInputStyle">@style/CustomOutlinedBox</item>
-    <!-- Uncomment when fonts are available
-    <item name="fontFamily">@font/roboto_mono</item>
-    <item name="android:fontFamily">@font/roboto_mono</item>
-    -->
+        <item name="textInputStyle">@style/CustomOutlinedBox</item>
+        <!-- Uncomment when fonts are available
+        <item name="fontFamily">@font/roboto_mono</item>
+        <item name="android:fontFamily">@font/roboto_mono</item>
+        -->
 
-    <item name="android:ambientShadowAlpha">0.05</item>
-    <item name="android:spotShadowAlpha">0.05</item>
+        <item name="android:ambientShadowAlpha">0.05</item>
+        <item name="android:spotShadowAlpha">0.05</item>
 
-    <!-- Style over text on toolbar-->
-    <item name="actionMenuTextColor">@color/grey_4</item>
-    <item name="android:textAllCaps">false</item>
+        <!-- Style over text on toolbar-->
+        <item name="actionMenuTextColor">@color/grey_4</item>
+        <item name="android:textAllCaps">false</item>
 
-    <item name="android:homeAsUpIndicator">@drawable/ic_back_arrow_toolbar</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_back_arrow_toolbar</item>
 
-    <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
-  </style>
+        <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
+    </style>
 
-  <!-- Action bar theme. -->
-  <style name="CustomActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
-    <item name="elevation">0dp</item>
-    <item name="background">@android:color/white</item>
-    <item name="backgroundStacked">@android:color/white</item>
-    <item name="backgroundSplit">@android:color/white</item>
-  </style>
+    <!-- Action bar theme. -->
+    <style name="CustomActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="elevation">0dp</item>
+        <item name="background">@android:color/white</item>
+        <item name="backgroundStacked">@android:color/white</item>
+        <item name="backgroundSplit">@android:color/white</item>
+    </style>
 
-  <style name="AppTextAppearance.Button" parent="TextAppearance.MaterialComponents.Button">
-    <item name="android:textAllCaps">false</item>
-  </style>
+    <style name="AppTextAppearance.Button" parent="TextAppearance.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+    </style>
 
-  <style name="CustomCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
-    <item name="android:colorAccent">@color/colorPrimary</item>
-  </style>
+    <style name="CustomCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:colorAccent">@color/colorPrimary</item>
+    </style>
 
-  <style name="CustomOutlinedBox" parent="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-    <item name="boxStrokeColor">@color/blueGrey</item>
-    <item name="hintTextColor">@color/blueGrey</item>
-    <item name="boxCornerRadiusBottomEnd">10dp</item>
-    <item name="boxCornerRadiusBottomStart">10dp</item>
-    <item name="boxCornerRadiusTopEnd">10dp</item>
-    <item name="boxCornerRadiusTopStart">10dp</item>
-    <item name="android:layout_marginTop">8dp</item>
-    <item name="android:layout_marginBottom">8dp</item>
-  </style>
+    <style name="CustomOutlinedBox" parent="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/blueGrey</item>
+        <item name="hintTextColor">@color/blueGrey</item>
+        <item name="boxCornerRadiusBottomEnd">10dp</item>
+        <item name="boxCornerRadiusBottomStart">10dp</item>
+        <item name="boxCornerRadiusTopEnd">10dp</item>
+        <item name="boxCornerRadiusTopStart">10dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
 
-  <style name="SwitchTheme" parent="Theme.AppCompat.Light">
-    <item name="android:colorControlActivated">@color/colorPrimary</item>
-  </style>
+    <style name="SwitchTheme" parent="Theme.AppCompat.Light">
+        <item name="android:colorControlActivated">@color/colorPrimary</item>
+    </style>
 
-  <style name="mytransparent.windowNoTitle" parent="AppTheme">
-    <item name="android:windowNoTitle">true</item>
-    <item name="android:background">@android:color/transparent</item>
-    <item name="android:windowBackground">@android:color/transparent</item>
-    <item name="android:colorBackgroundCacheHint">@null</item>
-    <item name="android:windowIsTranslucent">true</item>
-    <item name="android:windowAnimationStyle">@android:style/Animation</item>
-  </style>
+    <style name="mytransparent.windowNoTitle" parent="AppTheme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+    </style>
 
-  <style name="AppTheme.NoActionBar" parent="AppTheme">
-    <item name="windowActionBar">false</item>
-    <item name="windowNoTitle">true</item>
-  </style>
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 
-  <style name="AppTheme.NoActionBar.FullScreen" parent="AppTheme.NoActionBar">
-    <item name="android:windowFullscreen">true</item>
-    <item name="android:fitsSystemWindows">true</item>
-  </style>
+    <style name="AppTheme.NoActionBar.FullScreen" parent="AppTheme.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:fitsSystemWindows">true</item>
+    </style>
 
-  <style name="chip_text_style">
-    <item name="android:textSize">14sp</item>
-    <item name="android:textColor">@color/atala_red_text_color</item>
-    <item name="android:textStyle">bold</item>
-  </style>
+    <style name="chip_text_style">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/atala_red_text_color</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 
-  <style name="AppBottomSheetDialogTheme"
-      parent="Theme.Design.Light.BottomSheetDialog">
-    <item name="bottomSheetStyle">@style/AppModalStyle</item>
-  </style>
+    <style name="AppBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/AppModalStyle</item>
+    </style>
 
-  <style name="AppModalStyle"
-      parent="Widget.Design.BottomSheet.Modal">
-    <item name="android:background">@drawable/rounded_top_corners_white</item>
-  </style>
+    <style name="AppModalStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/rounded_top_corners_white</item>
+    </style>
 
 </resources>

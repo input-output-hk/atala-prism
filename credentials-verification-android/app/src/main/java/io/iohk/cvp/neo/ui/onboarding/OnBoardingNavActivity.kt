@@ -1,4 +1,4 @@
-package io.iohk.cvp.neo.ui.onBoarding
+package io.iohk.cvp.neo.ui.onboarding
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

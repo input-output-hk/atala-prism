@@ -9,7 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoActivityLaunchBinding
-import io.iohk.cvp.neo.ui.onBoarding.OnBoardingNavActivity
+import io.iohk.cvp.neo.ui.onboarding.OnBoardingNavActivity
 import io.iohk.cvp.views.activities.MainActivity
 import io.iohk.cvp.views.utils.ForegroundBackgroundListener
 

@@ -1,4 +1,4 @@
-package io.iohk.cvp.neo.ui.onBoarding.welcome
+package io.iohk.cvp.neo.ui.onboarding.welcome
 
 import android.os.Bundle
 import android.view.LayoutInflater

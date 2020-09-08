@@ -1,9 +1,10 @@
-package io.iohk.cvp.neo.ui.onBoarding.welcomeTutorial;
+package io.iohk.cvp.neo.ui.onboarding.welcometutorial;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
+
 import java.util.Arrays;
 import java.util.List;
 

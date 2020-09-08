@@ -2,16 +2,18 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:iohk="http://schemas.android.com/tools">
+
     <data>
+
         <variable
             name="viewModel"
-            type="io.iohk.cvp.neo.ui.onBoarding.welcomeTutorial.WelcomeTutorialViewModel" />
+            type="io.iohk.cvp.neo.ui.onboarding.welcometutorial.WelcomeTutorialViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_marginStart="@dimen/activity_default_side_margin"
         android:layout_marginEnd="@dimen/activity_default_side_margin"
-         android:layout_width="match_parent"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <androidx.viewpager2.widget.ViewPager2

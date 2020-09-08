@@ -1,4 +1,4 @@
-package io.iohk.cvp.neo.ui.onBoarding.termsAndConditions
+package io.iohk.cvp.neo.ui.onboarding.termsandconditions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -51,7 +50,7 @@ class TermsAndConditionsFragment : Fragment() {
                 }
                 TermsAndConditionsViewModel.NavigationAction.NEXT -> {
                     firebaseAnalytics.logEvent(FirebaseAnalyticsEvents.CONTINUE_AFTER_TC_PP, null)
-                    findNavController().navigate(R.id.action_termsAndConditionsFragment_to_walletSetupActivity)
+                    findNavController().navigate(R.id.action_termsAndConditionsFragment_to_walletSetupFragment)
                 }
             }
         })

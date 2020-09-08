@@ -1,4 +1,4 @@
-package io.iohk.cvp.neo.ui.onBoarding.welcomeTutorial
+package io.iohk.cvp.neo.ui.onboarding.welcometutorial
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

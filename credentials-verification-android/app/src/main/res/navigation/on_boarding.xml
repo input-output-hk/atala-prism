@@ -7,18 +7,18 @@
 
     <fragment
         android:id="@+id/welcomeFragment"
-        android:name="io.iohk.cvp.neo.ui.onBoarding.welcome.WelcomeFragment"
-        tools:layout="@layout/neo_fragment_welcome"
-        android:label="WelcomeFragment">
+        android:name="io.iohk.cvp.neo.ui.onboarding.welcome.WelcomeFragment"
+        android:label="WelcomeFragment"
+        tools:layout="@layout/neo_fragment_welcome">
         <action
             android:id="@+id/action_welcomeFragment_to_welcomeTutorialFragment"
             app:destination="@id/welcomeTutorialFragment" />
     </fragment>
     <fragment
         android:id="@+id/welcomeTutorialFragment"
-        tools:layout="@layout/neo_fragment_welcome_tutorial"
-        android:name="io.iohk.cvp.neo.ui.onBoarding.welcomeTutorial.WelcomeTutorialFragment"
-        android:label="WelcomeTutorialFragment">
+        android:name="io.iohk.cvp.neo.ui.onboarding.welcometutorial.WelcomeTutorialFragment"
+        android:label="WelcomeTutorialFragment"
+        tools:layout="@layout/neo_fragment_welcome_tutorial">
         <action
             android:id="@+id/action_welcomeTutorialFragment_to_termsAndConditionsActivity"
             app:destination="@id/termsAndConditionsActivity" />
@@ -45,21 +45,29 @@
         tools:layout="@layout/restore_account_activity" />
     <fragment
         android:id="@+id/termsAndConditionsFragment"
-        android:name="io.iohk.cvp.neo.ui.onBoarding.termsAndConditions.TermsAndConditionsFragment"
+        android:name="io.iohk.cvp.neo.ui.onboarding.termsandconditions.TermsAndConditionsFragment"
         android:label="TermsAndConditionsFragment"
         tools:layout="@layout/neo_fragment_terms_and_condition">
         <action
             android:id="@+id/action_termsAndConditionsFragment_to_webViewDialogFragment"
-            app:destination="@id/webViewDialogFragment"></action>
+            app:destination="@id/webViewDialogFragment" />
         <action
             android:id="@+id/action_termsAndConditionsFragment_to_walletSetupActivity"
             app:destination="@id/walletSetupActivity" />
+        <action
+            android:id="@+id/action_termsAndConditionsFragment_to_walletSetupFragment"
+            app:destination="@id/walletSetupFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
     </fragment>
     <dialog
         android:id="@+id/webViewDialogFragment"
-        tools:layout="@layout/neo_dialog_fragment_web_view"
-        android:name="io.iohk.cvp.neo.ui.commonDialogs.WebViewDialogFragment"
-        android:label="WebViewDialogFragment">
+        android:name="io.iohk.cvp.neo.ui.commondialogs.WebViewDialogFragment"
+        android:label="WebViewDialogFragment"
+        tools:layout="@layout/neo_dialog_fragment_web_view">
         <argument
             android:name="url"
             app:argType="string" />
@@ -68,4 +76,9 @@
         android:id="@+id/walletSetupActivity"
         android:name="io.iohk.cvp.views.activities.WalletSetupActivity"
         android:label="WalletSetupActivity" />
+    <fragment
+        android:id="@+id/walletSetupFragment"
+        android:name="io.iohk.cvp.neo.ui.onboarding.walletsetup.WalletSetupFragment"
+        android:label="WalletSetupFragment"
+        tools:layout="@layout/neo_fragment_wallet_setup" />
 </navigation>

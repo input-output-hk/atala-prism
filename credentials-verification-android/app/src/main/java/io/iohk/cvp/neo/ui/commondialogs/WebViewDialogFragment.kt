@@ -1,4 +1,4 @@
-package io.iohk.cvp.neo.ui.commonDialogs
+package io.iohk.cvp.neo.ui.commondialogs
 
 import android.app.Dialog
 import android.content.res.Resources

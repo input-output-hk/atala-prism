@@ -3,6 +3,7 @@ package io.iohk.cvp.neo.data
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.iohk.cvp.neo.data.local.SessionLocalDataSourceInterface
+import io.iohk.cvp.utils.CryptoUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -19,6 +20,15 @@ class SessionRepository(private val localDataSource: SessionLocalDataSourceInter
         * */
         withContext(Dispatchers.IO) {
             _sessionDataHasStored.postValue(localDataSource.hasData())
+        }
+    }
+
+    /*
+     * Generate a new Mnemonic List
+     */
+    suspend fun getNewMnemonicList(): List<String> {
+        return withContext(Dispatchers.Default) {
+            return@withContext CryptoUtils.generateMnemonicList()
         }
     }
 }

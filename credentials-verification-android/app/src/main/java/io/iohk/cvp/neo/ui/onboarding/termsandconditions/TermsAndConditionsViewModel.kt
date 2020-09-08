@@ -1,4 +1,4 @@
-package io.iohk.cvp.neo.ui.onBoarding.termsAndConditions
+package io.iohk.cvp.neo.ui.onboarding.termsandconditions
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -8,8 +8,8 @@ import io.iohk.cvp.neo.common.EventWrapper
 
 class TermsAndConditionsViewModel : ViewModel() {
     /**
-    * [NavigationAction] This class describes all the navigation options that TermsAndConditionsViewModel should have
-    * */
+     * [NavigationAction] This class describes all the navigation options that TermsAndConditionsViewModel should have
+     * */
     enum class NavigationAction { TERMS_AND_CONDITIONS, PRIVACY_POLICY, NEXT }
 
     val termsAndConditionsAccepted = MutableLiveData<Boolean>().apply { value = false }
@@ -18,7 +18,7 @@ class TermsAndConditionsViewModel : ViewModel() {
 
     val acceptButtonEnable = MediatorLiveData<Boolean>().apply {
         addSource(termsAndConditionsAccepted) { value = computeAcceptButtonEnable() }
-        addSource(privacyPolicyAccepted) { value = computeAcceptButtonEnable()}
+        addSource(privacyPolicyAccepted) { value = computeAcceptButtonEnable() }
     }
 
     private val _shouldNavigate = MutableLiveData<EventWrapper<NavigationAction>>()
@@ -46,7 +46,7 @@ class TermsAndConditionsViewModel : ViewModel() {
         _shouldNavigate.value = EventWrapper(NavigationAction.PRIVACY_POLICY)
     }
 
-    private fun computeAcceptButtonEnable():Boolean{
+    private fun computeAcceptButtonEnable(): Boolean {
         return termsAndConditionsAccepted.value == true && privacyPolicyAccepted.value == true
     }
 }

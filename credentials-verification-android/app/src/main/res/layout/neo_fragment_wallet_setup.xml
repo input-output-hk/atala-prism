@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.neo.ui.onboarding.termsandconditions.TermsAndConditionsViewModel" />
+            type="io.iohk.cvp.neo.ui.onboarding.walletsetup.WalletSetupViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,11 +16,11 @@
         android:layout_marginEnd="24dp">
 
         <TextView
-            android:id="@+id/titleLabel"
+            android:id="@+id/text_view_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
-            android:text="@string/terms_and_conditions_activity_title"
+            android:text="@string/wallet_setup_activity_title"
             android:textAlignment="textStart"
             android:textColor="@color/black"
             android:textSize="28sp"
@@ -30,56 +30,67 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/text_view_3"
-            android:layout_width="match_parent"
+            android:id="@+id/text_view_subtitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/terms_and_conditions_description"
+            android:text="@string/seed_phrase_description"
+            android:textAlignment="textStart"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_view_title" />
+
+        <GridView
+            android:id="@+id/grid_view_seed_phrase"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/white"
+            android:clickable="false"
+            android:contextClickable="false"
+            android:foregroundGravity="center"
+            android:gravity="center"
+            android:horizontalSpacing="2dp"
+            android:numColumns="3"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:verticalSpacing="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_view_subtitle" />
+
+
+        <TextView
+            android:id="@+id/text_view_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/seed_phrase_explanation"
             android:textAlignment="textStart"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/titleLabel" />
-
-
-        <include
-            android:id="@+id/terms_and_conditions_checkbox_layout"
-            checked="@={viewModel.termsAndConditionsAccepted}"
-            layout="@layout/neo_include_checkbox_with_description"
-            linkOnClick="@{(v)-> viewModel.termsAndConditionsButtonTaped()}"
-            linkText="@{@string/terms_and_conditions_activity_title}"
-            text="@{@string/accept}"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_view_3" />
+            app:layout_constraintTop_toBottomOf="@+id/grid_view_seed_phrase" />
 
         <include
-            android:id="@+id/privacy_policy_checkbox_layout"
-            checked="@={viewModel.privacyPolicyAccepted}"
+            checked="@={viewModel.mnemonicListAccepted}"
             layout="@layout/neo_include_checkbox_with_description"
-            linkOnClick="@{(v)-> viewModel.privacyPolicyButtonTaped()}"
-            linkText="@{@string/privacy_policies_agreement}"
-            text="@{@string/accept}"
+            text="@{@string/seed_phrase_acceptance}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/terms_and_conditions_checkbox_layout" />
-
+            app:layout_constraintTop_toBottomOf="@id/text_view_description" />
 
         <Button
-            android:id="@+id/continue_button"
+            android:id="@+id/accept_button"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_marginBottom="32dp"
-            android:enabled="@{viewModel.acceptButtonEnable}"
-            android:onClick="@{(view)-> viewModel.acceptButtonTaped()}"
+            android:enabled="@{viewModel.acceptButtonEnabled}"
+            android:onClick="@{(view) -> viewModel.acceptButtonTaped()}"
             android:text="@string/accept"
             app:cornerRadius="32dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

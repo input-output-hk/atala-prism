@@ -22,7 +22,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".views.activities.RestoreAccountSuccessActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:theme="@style/AppTheme.NoActionBar.FullScreen"
             android:name=".neo.ui.launch.LaunchActivity"
@@ -36,9 +36,8 @@
         </activity>
         <activity
             android:theme="@style/AppTheme.NoActionBar.FullScreen"
-            android:name=".neo.ui.onBoarding.OnBoardingNavActivity"
-            android:screenOrientation="portrait">
-        </activity>
+            android:name=".neo.ui.onboarding.OnBoardingNavActivity"
+            android:screenOrientation="portrait"></activity>
         <activity
             android:name=".views.activities.MainActivity"
             android:screenOrientation="portrait"
