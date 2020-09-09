@@ -112,7 +112,7 @@ class CardanoLedgerService private[services] (
   }
 
   private def processAtalaObjects(block: Block.Full): Future[Unit] = {
-    val atalaReferences: List[SHA256Digest] = block.transactions.flatMap { _ =>
+    val atalaReferences: List[(SHA256Digest, TransactionInfo)] = block.transactions.flatMap { _ =>
       // TODO: Extract Atala reference when metadata is available
       None
     }
@@ -122,7 +122,8 @@ class CardanoLedgerService private[services] (
 
     for {
       _ <- Future.traverse(atalaReferences) { reference =>
-        onNewObject(AtalaObjectUpdate.Reference(reference), block.header.time)
+        val (objectHash, transactionInfo) = reference
+        onNewObject(AtalaObjectUpdate.Reference(objectHash), block.header.time, transactionInfo)
       }
       _ <- keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(block.header.blockNo))
     } yield ()

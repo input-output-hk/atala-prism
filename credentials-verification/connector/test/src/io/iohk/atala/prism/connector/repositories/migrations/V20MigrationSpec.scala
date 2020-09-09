@@ -5,7 +5,7 @@ import java.util.UUID
 import doobie.implicits._
 import io.iohk.atala.prism.cmanager.models.{Student, Subject}
 import io.iohk.atala.prism.connector.repositories.daos._
-import io.iohk.atala.prism.connector.repositories.helpers.DataHelper.Implicits._
+import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import io.iohk.atala.prism.connector.repositories.helpers.DataHelper._
 import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 

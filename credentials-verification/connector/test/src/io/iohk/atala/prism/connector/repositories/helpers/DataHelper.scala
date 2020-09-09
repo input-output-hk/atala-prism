@@ -3,37 +3,19 @@ package io.iohk.atala.prism.connector.repositories.helpers
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import doobie.util.{Read, fragment}
 import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup}
 import io.iohk.atala.prism.cmanager.repositories.IssuerGroupsRepository
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.EitherValues._
 import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.ExecutionContext
 
 object DataHelper {
-  object Implicits {
-    implicit class SqlTestOps(val sql: fragment.Fragment) {
-      def runUpdate()(implicit
-          database: Transactor[IO]
-      ): Unit = {
-        sql.update.run.transact(database).unsafeRunSync()
-        ()
-      }
-      def runUnique[T: Read]()(implicit
-          database: Transactor[IO]
-      ): T = {
-        sql.query[T].unique.transact(database).unsafeRunSync()
-      }
-    }
-  }
-
-  import Implicits._
-
   def createParticipant(
       tpe: ParticipantType,
       name: String,

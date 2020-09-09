@@ -24,7 +24,7 @@ class InMemoryAtalaReferenceLedger(onNewObject: ObjectHandler)(implicit ec: Exec
     val transactionId = TransactionId.from(ref.value).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
     val transactionInfo = TransactionInfo(transactionId, Ledger.InMemory)
     for {
-      _ <- onNewObject(AtalaObjectUpdate.Reference(ref), Instant.now())
+      _ <- onNewObject(AtalaObjectUpdate.Reference(ref), Instant.now(), transactionInfo)
     } yield transactionInfo
   }
 
@@ -34,7 +34,7 @@ class InMemoryAtalaReferenceLedger(onNewObject: ObjectHandler)(implicit ec: Exec
     val transactionId = TransactionId.from(hash.value).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
     val transactionInfo = TransactionInfo(transactionId, Ledger.InMemory)
     for {
-      _ <- onNewObject(AtalaObjectUpdate.ByteContent(bytes), Instant.now())
+      _ <- onNewObject(AtalaObjectUpdate.ByteContent(bytes), Instant.now(), transactionInfo)
     } yield transactionInfo
   }
 }

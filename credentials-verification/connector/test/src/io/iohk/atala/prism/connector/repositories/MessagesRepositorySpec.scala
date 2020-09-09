@@ -7,6 +7,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong

@@ -28,7 +28,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
   private val paymentAddress: Address = Address("2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb")
   private val blockConfirmationsToWait = 31
 
-  private val noOpObjectHandler: ObjectHandler = (_, _) => Future.unit
+  private val noOpObjectHandler: ObjectHandler = (_, _, _) => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
   private lazy val keyValueService = new KeyValueService(new KeyValuesRepository(database))
 

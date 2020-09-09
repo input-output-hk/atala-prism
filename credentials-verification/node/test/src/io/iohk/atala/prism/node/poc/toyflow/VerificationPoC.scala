@@ -7,6 +7,7 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.crypto.poc.{CryptoSDKImpl, SignedCredential}
+import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -51,9 +52,9 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
 
     objectManagementServicePromise = Promise()
 
-    def onAtalaReference(ref: AtalaObjectUpdate, timestamp: Instant): Future[Unit] = {
+    def onAtalaReference(ref: AtalaObjectUpdate, timestamp: Instant, transactionInfo: TransactionInfo): Future[Unit] = {
       objectManagementServicePromise.future.futureValue
-        .saveObject(ref, timestamp)
+        .saveObject(ref, timestamp, transactionInfo)
     }
 
     atalaReferenceLedger = new InMemoryAtalaReferenceLedger(onAtalaReference)

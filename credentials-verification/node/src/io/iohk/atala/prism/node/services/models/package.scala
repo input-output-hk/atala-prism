@@ -4,6 +4,7 @@ import java.time.Instant
 
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.modeling._
+import io.iohk.atala.prism.node.models.TransactionInfo
 import shapeless.tag.@@
 
 import scala.concurrent.Future
@@ -25,6 +26,6 @@ package object models {
     final case class Reference(hash: SHA256Digest) extends AtalaObjectUpdate
     final case class ByteContent(obj: Array[Byte]) extends AtalaObjectUpdate
   }
-  type ObjectHandler = (AtalaObjectUpdate, Instant) => Future[Unit]
+  type ObjectHandler = (AtalaObjectUpdate, Instant, TransactionInfo) => Future[Unit]
 
 }

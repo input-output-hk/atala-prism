@@ -7,6 +7,7 @@ import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.node.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
@@ -48,15 +49,17 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
   import ObjectManagementServiceSpec._
 
-  val storage = new objects.ObjectStorageService.InMemory
+  private val storage = new objects.ObjectStorageService.InMemory
 
-  val ledger: AtalaReferenceLedger = mock[AtalaReferenceLedger]
-  val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
+  private val ledger: AtalaReferenceLedger = mock[AtalaReferenceLedger]
+  private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
-  lazy val objectManagmentService = new ObjectManagementService(storage, ledger, blockProcessing)
+  private lazy val objectManagmentService = new ObjectManagementService(storage, ledger, blockProcessing)
 
-  lazy val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
-  lazy val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
+  private val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
+  private val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
+  private val dummyTransactionInfo =
+    TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -106,7 +109,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "add reference to the database" in {
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
-      objectManagmentService.justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp).futureValue
+      objectManagmentService
+        .justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .futureValue
 
       val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
       atalaObject.sequenceNumber mustBe 1
@@ -116,9 +121,13 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "be idempotent - ignore re-adding the same hash" in {
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
-      objectManagmentService.justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp).futureValue
+      objectManagmentService
+        .justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .futureValue
 
-      objectManagmentService.justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp).futureValue
+      objectManagmentService
+        .justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .futureValue
 
       val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
       atalaObject.sequenceNumber mustBe 1
@@ -130,7 +139,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
-      objectManagmentService.saveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp).futureValue
+      objectManagmentService
+        .saveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing).processBlock(
@@ -157,7 +168,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         val block = exampleBlock(signedOp)
         val objectUpdate = createExampleObjectUpdate(block, includeBlock, includeObject)
 
-        objectManagmentService.saveObject(objectUpdate, Instant.ofEpochMilli(i.toLong)).futureValue
+        objectManagmentService
+          .saveObject(objectUpdate, Instant.ofEpochMilli(i.toLong), dummyTransactionInfo)
+          .futureValue
 
         val objectHash = objectUpdate match {
           case AtalaObjectUpdate.Reference(hash) => hash

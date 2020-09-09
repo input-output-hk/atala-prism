@@ -72,6 +72,8 @@ package object models {
       objectTimestamp: Instant,
       sequenceNumber: Int,
       byteContent: Option[Array[Byte]],
+      transactionId: TransactionId,
+      ledger: Ledger,
       processed: Boolean
   )
 

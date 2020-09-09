@@ -7,6 +7,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.repositories.ConnectorRepositorySpecBase
 import IntDemoRepositorySpec._
+import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import io.iohk.prism.intdemo.protos.intdemo_models
 import org.scalatest.Matchers._
 

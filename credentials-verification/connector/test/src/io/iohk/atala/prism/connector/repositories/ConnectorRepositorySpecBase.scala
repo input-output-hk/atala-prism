@@ -3,25 +3,14 @@ package io.iohk.atala.prism.connector.repositories
 import java.time.Instant
 
 import doobie.implicits._
-import doobie.util.{Read, fragment}
 import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
 abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
-
-  implicit class SqlTestOps(val sql: fragment.Fragment) {
-    def runUpdate(): Unit = {
-      sql.update.run.transact(database).unsafeRunSync()
-      ()
-    }
-    def runUnique[T: Read](): T = {
-      sql.query[T].unique.transact(database).unsafeRunSync()
-    }
-  }
-
   protected def createParticipant(
       tpe: ParticipantType,
       name: String,

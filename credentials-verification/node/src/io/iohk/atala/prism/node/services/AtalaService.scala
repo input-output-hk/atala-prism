@@ -75,32 +75,30 @@ class AtalaServiceImpl(
       .getFullBlock(blockhash)
       .flatMap { block =>
         logger trace "Block just retrieved from the Bitcoin blockchain"
-        val atalaReferences = block.transactions.flatMap { tx =>
-          tx.vout.flatMap { out =>
-            logger trace "VOut of a Block detected"
-            binaryOps
-              .extractOpReturn(out.scriptPubKey.asm)
-              .flatMap { opData =>
-                logger trace s"OP_RETURN detected in a transaction: ${out.scriptPubKey.asm}"
-                val trimmed = binaryOps.trimZeros(opData)
-                if (trimmed.startsWith(ATALA_HEADER)) {
-                  // this is an Atala transaction
-                  val data = trimmed.drop(ATALA_HEADER.length)
-                  logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
-                  val atalaObjectId = SHA256Digest(data)
-                  Some(atalaObjectId)
-                } else {
-                  None
-                }
-              }
-          }
-        }
+        val atalaReferences: List[(SHA256Digest, TransactionInfo)] = for {
+          tx <- block.transactions
+          out <- tx.vout
+          _ = logger trace "VOut of a Block detected"
+          opData <- binaryOps.extractOpReturn(out.scriptPubKey.asm)
+          _ = logger trace s"OP_RETURN detected in a transaction: ${out.scriptPubKey.asm}"
+          trimmed = binaryOps.trimZeros(opData)
+          if trimmed.startsWith(ATALA_HEADER)
+          // this is an Atala transaction
+          data = trimmed.drop(ATALA_HEADER.length)
+          _ = logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
+          atalaObjectId = SHA256Digest(data)
+        } yield (atalaObjectId, TransactionInfo(tx.id, ledger))
         logger trace s"Found ${atalaReferences.size} ATALA references"
 
         Future
-          .traverse(atalaReferences) { reference =>
+          .traverse(atalaReferences) { atalaReference =>
+            val (reference, transactionInfo) = atalaReference
             // TODO: Update Instant.ofEpochMilli(block.header.time) for proper expression
-            onNewReference(AtalaObjectUpdate.Reference(reference), Instant.ofEpochMilli(block.header.time))
+            onNewReference(
+              AtalaObjectUpdate.Reference(reference),
+              Instant.ofEpochMilli(block.header.time),
+              transactionInfo
+            )
           }
           .map(_ => Right(()))
           .toFutureEither

@@ -41,7 +41,11 @@ class ObjectManagementService(
   // - put the info about the object into the db
   // for now, until we have block processing queue, it also manages processing
   // the referenced block
-  def justSaveObject(objectUpdate: AtalaObjectUpdate, timestamp: Instant): Future[Option[AtalaObject]] = {
+  def justSaveObject(
+      objectUpdate: AtalaObjectUpdate,
+      timestamp: Instant,
+      transactionInfo: TransactionInfo
+  ): Future[Option[AtalaObject]] = {
     val hash = objectUpdate match {
       case AtalaObjectUpdate.Reference(ref) => ref
       case AtalaObjectUpdate.ByteContent(bytes) => SHA256Digest.compute(bytes)
@@ -67,7 +71,9 @@ class ObjectManagementService(
           hash,
           newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1),
           timestamp,
-          content
+          content,
+          transactionInfo.id,
+          transactionInfo.ledger
         )
       )
     } yield Some(obj)
@@ -80,9 +86,9 @@ class ObjectManagementService(
       }
   }
 
-  def saveObject(obj: AtalaObjectUpdate, timestamp: Instant): Future[Unit] = {
+  def saveObject(obj: AtalaObjectUpdate, timestamp: Instant, transactionInfo: TransactionInfo): Future[Unit] = {
     // TODO: just add the object to processing queue, instead of processing here
-    justSaveObject(obj, timestamp)
+    justSaveObject(obj, timestamp, transactionInfo)
       .flatMap {
         case Some(obj) =>
           processObject(obj).flatMap { transaction =>
