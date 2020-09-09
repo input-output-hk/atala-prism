@@ -7,7 +7,7 @@ import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student}
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
-import io.iohk.atala.prism.protos.cmanager_api
+import io.iohk.prism.protos.cmanager_api
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -5,8 +5,8 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
-import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.prism.protos.{node_api, node_models}
 
 import scala.concurrent.ExecutionContext
 

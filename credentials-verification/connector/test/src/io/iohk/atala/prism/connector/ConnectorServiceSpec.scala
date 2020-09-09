@@ -7,7 +7,7 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.crypto.EC
 import io.iohk.atala.prism.connector.model.RequestNonce
 import io.iohk.atala.prism.grpc.SignedRequestsHelper
-import io.iohk.atala.prism.protos.{connector_api, node_api}
+import io.iohk.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 

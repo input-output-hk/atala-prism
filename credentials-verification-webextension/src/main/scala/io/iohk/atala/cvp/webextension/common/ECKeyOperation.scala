@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.circe.{Json, ParsingFailure}
 import io.iohk.atala.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential, UnsignedCredentialBuilder}
 import io.iohk.atala.crypto._
-import io.iohk.atala.prism.protos.node_models._
+import io.iohk.prism.protos.node_models._
 import typings.bip32.bip32Mod.BIP32Interface
 import typings.bip32.{mod => bip32}
 import typings.node.Buffer

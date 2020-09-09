@@ -15,8 +15,8 @@ import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.{cmanager_api, node_api, node_models}
-import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
+import io.iohk.prism.protos.{cmanager_api, node_api, node_models}
+import io.iohk.prism.protos.cmanager_api.CredentialsServiceGrpc
 
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues._
@@ -32,7 +32,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,
     requestNoncesRepository,

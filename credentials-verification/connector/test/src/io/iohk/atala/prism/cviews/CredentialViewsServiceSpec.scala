@@ -7,7 +7,7 @@ import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
-import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
+import io.iohk.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
 import org.mockito.MockitoSugar._
 
 class CredentialViewsServiceSpec extends RpcSpecBase {
@@ -18,7 +18,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase {
 
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,
     requestNoncesRepository,

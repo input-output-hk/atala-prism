@@ -9,8 +9,8 @@ import io.iohk.atala.prism.cmanager.repositories.IssuersRepository
 import io.iohk.atala.prism.cstore.models.Verifier
 import io.iohk.atala.prism.cstore.repositories.VerifiersRepository
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.node_api.CreateDIDResponse
-import io.iohk.atala.prism.protos.{connector_api, node_models}
+import io.iohk.prism.protos.node_api.CreateDIDResponse
+import io.iohk.prism.protos.{connector_api, node_models}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.client.commands
 import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.{EC, ECPrivateKey}
 import io.iohk.atala.prism.node.client.Config
-import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.prism.protos.{node_api, node_models}
 
 trait Command {
   def run(api: node_api.NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit

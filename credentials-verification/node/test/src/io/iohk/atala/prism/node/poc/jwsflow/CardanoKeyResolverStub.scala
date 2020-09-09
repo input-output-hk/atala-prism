@@ -5,9 +5,9 @@ import java.security.PublicKey
 
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
-import io.iohk.atala.prism.protos.node_models.DIDData
+import io.iohk.prism.protos.node_api
+import io.iohk.prism.protos.node_api.GetDidDocumentRequest
+import io.iohk.prism.protos.node_models.DIDData
 import net.jtownson.odyssey.PublicKeyResolver
 import org.scalatest.OptionValues._
 

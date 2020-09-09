@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix}
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.protos.{node_models => proto}
+import io.iohk.prism.protos.{node_models => proto}
 
 case class CreateDIDOperation(
     id: DIDSuffix,

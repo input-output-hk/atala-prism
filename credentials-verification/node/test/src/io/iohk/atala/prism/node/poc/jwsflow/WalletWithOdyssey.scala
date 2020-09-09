@@ -9,7 +9,7 @@ import io.iohk.atala.prism.crypto.{ECKeys, ECSignature, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.poc.NodeSDK
-import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.prism.protos.{node_api, node_models}
 import net.jtownson.odyssey.VC.VCField.{CredentialSubjectField, EmptyField, IssuanceDateField, IssuerField}
 import net.jtownson.odyssey.Verifier.Es256Verifier
 import net.jtownson.odyssey.{Jws, PublicKeyResolver, VC, VCDataModel}

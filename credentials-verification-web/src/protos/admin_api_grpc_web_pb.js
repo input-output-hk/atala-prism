@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * @fileoverview gRPC-Web generated client stub for io.iohk.atala.prism.protos
+ * @fileoverview gRPC-Web generated client stub for io.iohk.prism.protos
  * @enhanceable
  * @public
  */
@@ -15,9 +15,8 @@ grpc.web = require('grpc-web');
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};
-proto.io.iohk.atala = {};
-proto.io.iohk.atala.prism = {};
-proto.io.iohk.atala.prism.protos = require('./admin_api_pb.js');
+proto.io.iohk.prism = {};
+proto.io.iohk.prism.protos = require('./admin_api_pb.js');
 
 /**
  * @param {string} hostname
@@ -27,7 +26,7 @@ proto.io.iohk.atala.prism.protos = require('./admin_api_pb.js');
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.protos.AdminServiceClient =
+proto.io.iohk.prism.protos.AdminServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -53,7 +52,7 @@ proto.io.iohk.atala.prism.protos.AdminServiceClient =
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.protos.AdminServicePromiseClient =
+proto.io.iohk.prism.protos.AdminServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -74,58 +73,58 @@ proto.io.iohk.atala.prism.protos.AdminServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.protos.PopulateDemoDatasetRequest,
- *   !proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse>}
+ *   !proto.io.iohk.prism.protos.PopulateDemoDatasetRequest,
+ *   !proto.io.iohk.prism.protos.PopulateDemoDatasetResponse>}
  */
 const methodDescriptor_AdminService_PopulateDemoDataset = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.protos.AdminService/PopulateDemoDataset',
+  '/io.iohk.prism.protos.AdminService/PopulateDemoDataset',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.protos.PopulateDemoDatasetRequest,
-  proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse,
+  proto.io.iohk.prism.protos.PopulateDemoDatasetRequest,
+  proto.io.iohk.prism.protos.PopulateDemoDatasetResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.protos.PopulateDemoDatasetRequest} request
+   * @param {!proto.io.iohk.prism.protos.PopulateDemoDatasetRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse.deserializeBinary
+  proto.io.iohk.prism.protos.PopulateDemoDatasetResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.protos.PopulateDemoDatasetRequest,
- *   !proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse>}
+ *   !proto.io.iohk.prism.protos.PopulateDemoDatasetRequest,
+ *   !proto.io.iohk.prism.protos.PopulateDemoDatasetResponse>}
  */
 const methodInfo_AdminService_PopulateDemoDataset = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse,
+  proto.io.iohk.prism.protos.PopulateDemoDatasetResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.protos.PopulateDemoDatasetRequest} request
+   * @param {!proto.io.iohk.prism.protos.PopulateDemoDatasetRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse.deserializeBinary
+  proto.io.iohk.prism.protos.PopulateDemoDatasetResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.protos.PopulateDemoDatasetRequest} request The
+ * @param {!proto.io.iohk.prism.protos.PopulateDemoDatasetRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.PopulateDemoDatasetResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.PopulateDemoDatasetResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.protos.AdminServiceClient.prototype.populateDemoDataset =
+proto.io.iohk.prism.protos.AdminServiceClient.prototype.populateDemoDataset =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.protos.AdminService/PopulateDemoDataset',
+      '/io.iohk.prism.protos.AdminService/PopulateDemoDataset',
       request,
       metadata || {},
       methodDescriptor_AdminService_PopulateDemoDataset,
@@ -134,22 +133,22 @@ proto.io.iohk.atala.prism.protos.AdminServiceClient.prototype.populateDemoDatase
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.protos.PopulateDemoDatasetRequest} request The
+ * @param {!proto.io.iohk.prism.protos.PopulateDemoDatasetRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.protos.PopulateDemoDatasetResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.protos.PopulateDemoDatasetResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.protos.AdminServicePromiseClient.prototype.populateDemoDataset =
+proto.io.iohk.prism.protos.AdminServicePromiseClient.prototype.populateDemoDataset =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.protos.AdminService/PopulateDemoDataset',
+      '/io.iohk.prism.protos.AdminService/PopulateDemoDataset',
       request,
       metadata || {},
       methodDescriptor_AdminService_PopulateDemoDataset);
 };
 
 
-module.exports = proto.io.iohk.atala.prism.protos;
+module.exports = proto.io.iohk.prism.protos;
 

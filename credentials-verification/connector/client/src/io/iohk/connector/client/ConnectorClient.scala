@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector.client
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall
 import io.grpc._
 import io.iohk.atala.prism.connector.client.commands._
-import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
+import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
 import scopt.OParser
 
 object ConnectorClient {

@@ -8,7 +8,7 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 

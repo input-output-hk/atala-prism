@@ -5,7 +5,7 @@ import java.time.LocalDate
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.cmanager.models.Student.ConnectionStatus
 import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student, Subject, UniversityCredential}
-import io.iohk.atala.prism.protos.{cmanager_models, common_models}
+import io.iohk.prism.protos.{cmanager_models, common_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 

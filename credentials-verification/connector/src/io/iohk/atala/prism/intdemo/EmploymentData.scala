@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.intdemo
 
 import io.circe.parser.parse
-import io.iohk.atala.prism.protos.credential_models
+import io.iohk.prism.protos.credential_models
 
 case class EmploymentData private (employerName: String, employerAddress: String)
 

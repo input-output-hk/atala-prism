@@ -9,7 +9,7 @@ import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.atala.prism.connector.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.protos.node_api
+import io.iohk.prism.protos.node_api
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 

@@ -8,7 +8,7 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.randomProtoECKey
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 

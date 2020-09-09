@@ -7,7 +7,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.intdemo.IntDemoRepository.valueOf
 import io.iohk.atala.prism.connector.model.TokenString
-import io.iohk.atala.prism.intdemo.protos.intdemo_models
+import io.iohk.prism.intdemo.protos.intdemo_models
 
 import scala.concurrent.Future
 

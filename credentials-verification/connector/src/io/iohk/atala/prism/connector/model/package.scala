@@ -8,7 +8,7 @@ import enumeratum.EnumEntry.Lowercase
 import enumeratum._
 import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.connector_models
+import io.iohk.prism.protos.connector_models
 
 import scala.util.Random
 

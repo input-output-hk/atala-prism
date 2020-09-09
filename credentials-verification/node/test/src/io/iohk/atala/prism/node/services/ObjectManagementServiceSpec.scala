@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInf
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.services.models.AtalaObjectUpdate
 import io.iohk.atala.prism.node.{AtalaReferenceLedger, objects}
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.prism.protos.{node_internal, node_models}
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar

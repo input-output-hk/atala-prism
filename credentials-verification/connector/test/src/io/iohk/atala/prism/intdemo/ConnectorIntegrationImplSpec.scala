@@ -6,7 +6,7 @@ import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither._
-import io.iohk.atala.prism.protos.credential_models
+import io.iohk.prism.protos.credential_models
 import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{mock, times, verify, when}

@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.node.poc
 
 import com.github.ghik.silencer.silent
-import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_api.CreateDIDRequest
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import io.iohk.prism.protos.node_api
+import io.iohk.prism.protos.node_api.CreateDIDRequest
+import io.iohk.prism.protos.node_models.SignedAtalaOperation
 
 case class Connector(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   def registerDID(signedAtalaOperation: SignedAtalaOperation): String = {

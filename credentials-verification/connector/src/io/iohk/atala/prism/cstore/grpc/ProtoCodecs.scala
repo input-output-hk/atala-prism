@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.cstore.grpc
 
 import io.iohk.atala.prism.cstore.models.{IndividualConnectionStatus, StoreIndividual, VerifierHolder}
-import io.iohk.atala.prism.protos.cstore_models
+import io.iohk.prism.protos.cstore_models
 
 object ProtoCodecs {
   def toConnectionStatusProto(status: IndividualConnectionStatus): cstore_models.IndividualConnectionStatus = {

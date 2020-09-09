@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.atala.prism.protos;
+package io.iohk.prism.protos;
 
 message Date {
     int32 year = 1; // positive value

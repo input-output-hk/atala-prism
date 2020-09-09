@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.admin
 
 import io.iohk.atala.prism.admin.Errors.AdminError.DatabaseError
-import io.iohk.atala.prism.protos.admin_api
+import io.iohk.prism.protos.admin_api
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.client
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.{ECConfig, ECPublicKey}
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.prism.protos.node_models
 
 object ProtoUtils {
   def protoECKeyFromPublicKey(key: ECPublicKey): node_models.ECKeyData = {

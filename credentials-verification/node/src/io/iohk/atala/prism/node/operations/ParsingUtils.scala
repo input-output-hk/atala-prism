@@ -8,7 +8,7 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
-import io.iohk.atala.prism.protos.{common_models, node_models}
+import io.iohk.prism.protos.{common_models, node_models}
 
 import scala.util.Try
 

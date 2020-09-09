@@ -15,8 +15,8 @@ import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, getSharedCrede
 import io.iohk.atala.prism.connector.model.{Connection, TokenString}
 import io.iohk.atala.prism.intdemo.html.UniversityDegree
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.intdemo.protos.intdemo_api
-import io.iohk.atala.prism.protos.credential_models
+import io.iohk.prism.intdemo.protos.intdemo_api
+import io.iohk.prism.protos.credential_models
 import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration

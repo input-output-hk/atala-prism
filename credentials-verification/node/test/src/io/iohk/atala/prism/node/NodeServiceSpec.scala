@@ -38,8 +38,8 @@ import io.iohk.atala.prism.node.services.{
   DIDDataService,
   ObjectManagementService
 }
-import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
-import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
+import io.iohk.prism.protos.{node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues._

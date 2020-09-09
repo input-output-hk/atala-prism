@@ -12,8 +12,8 @@ import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, Reque
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
+import io.iohk.prism.protos.node_api._
+import io.iohk.prism.protos.{connector_api, node_api, node_models}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.scalatest.MustMatchers._

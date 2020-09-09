@@ -3,7 +3,7 @@ package io.iohk.atala.prism.intdemo
 import java.time.LocalDate
 
 import io.circe.parser._
-import io.iohk.atala.prism.protos.credential_models
+import io.iohk.prism.protos.credential_models
 
 case class IdData private (name: String, dob: LocalDate)
 

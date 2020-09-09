@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.operations
 
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.prism.protos.node_models
 import org.scalatest.Assertion
 import org.scalatest.Inside._
 import org.scalatest.MustMatchers._

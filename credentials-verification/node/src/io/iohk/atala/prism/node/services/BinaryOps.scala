@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.services.models._
-import io.iohk.atala.prism.protos.node_internal._
+import io.iohk.prism.protos.node_internal._
 
 trait BinaryOps {
   def toBytes(tx: AtalaBlock): Array[Byte]

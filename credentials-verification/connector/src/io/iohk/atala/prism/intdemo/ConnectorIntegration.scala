@@ -4,8 +4,8 @@ import io.iohk.atala.prism.connector.errors.{ConnectorError, ErrorSupport}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
+import io.iohk.prism.protos.credential_models
+import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}

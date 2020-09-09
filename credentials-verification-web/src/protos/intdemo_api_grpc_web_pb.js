@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * @fileoverview gRPC-Web generated client stub for io.iohk.atala.prism.intdemo.protos
+ * @fileoverview gRPC-Web generated client stub for io.iohk.prism.intdemo.protos
  * @enhanceable
  * @public
  */
@@ -17,10 +17,9 @@ var intdemo_models_pb = require('./intdemo_models_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};
-proto.io.iohk.atala = {};
-proto.io.iohk.atala.prism = {};
-proto.io.iohk.atala.prism.intdemo = {};
-proto.io.iohk.atala.prism.intdemo.protos = require('./intdemo_api_pb.js');
+proto.io.iohk.prism = {};
+proto.io.iohk.prism.intdemo = {};
+proto.io.iohk.prism.intdemo.protos = require('./intdemo_api_pb.js');
 
 /**
  * @param {string} hostname
@@ -30,7 +29,7 @@ proto.io.iohk.atala.prism.intdemo.protos = require('./intdemo_api_pb.js');
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient =
+proto.io.iohk.prism.intdemo.protos.IDServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -56,7 +55,7 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient =
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient =
+proto.io.iohk.prism.intdemo.protos.IDServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -77,58 +76,58 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodDescriptor_IDService_GetConnectionToken = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.IDService/GetConnectionToken',
+  '/io.iohk.prism.intdemo.protos.IDService/GetConnectionToken',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodInfo_IDService_GetConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.IDServiceClient.prototype.getConnectionToken =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.IDService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_IDService_GetConnectionToken,
@@ -137,17 +136,17 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.getConnection
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.IDServicePromiseClient.prototype.getConnectionToken =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.IDService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_IDService_GetConnectionToken);
@@ -157,58 +156,58 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.getCon
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_IDService_GetSubjectStatus = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.IDService/GetSubjectStatus',
+  '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatus',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_IDService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.IDServiceClient.prototype.getSubjectStatus =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_IDService_GetSubjectStatus,
@@ -217,17 +216,17 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.getSubjectSta
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.IDServicePromiseClient.prototype.getSubjectStatus =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_IDService_GetSubjectStatus);
@@ -237,55 +236,55 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.getSub
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_IDService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.IDService/GetSubjectStatusStream',
+  '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_IDService_GetSubjectStatusStream = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.IDServiceClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_IDService_GetSubjectStatusStream);
@@ -293,16 +292,16 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.getSubjectSta
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.IDServicePromiseClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.IDService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_IDService_GetSubjectStatusStream);
@@ -312,58 +311,58 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.getSub
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse>}
  */
 const methodDescriptor_IDService_SetPersonalData = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.IDService/SetPersonalData',
+  '/io.iohk.prism.intdemo.protos.IDService/SetPersonalData',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse,
+  proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest,
+  proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse>}
  */
 const methodInfo_IDService_SetPersonalData = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse,
+  proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.setPersonalData =
+proto.io.iohk.prism.intdemo.protos.IDServiceClient.prototype.setPersonalData =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/SetPersonalData',
+      '/io.iohk.prism.intdemo.protos.IDService/SetPersonalData',
       request,
       metadata || {},
       methodDescriptor_IDService_SetPersonalData,
@@ -372,17 +371,17 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServiceClient.prototype.setPersonalDa
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.SetPersonalDataResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.setPersonalData =
+proto.io.iohk.prism.intdemo.protos.IDServicePromiseClient.prototype.setPersonalData =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.IDService/SetPersonalData',
+      '/io.iohk.prism.intdemo.protos.IDService/SetPersonalData',
       request,
       metadata || {},
       methodDescriptor_IDService_SetPersonalData);
@@ -397,7 +396,7 @@ proto.io.iohk.atala.prism.intdemo.protos.IDServicePromiseClient.prototype.setPer
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient =
+proto.io.iohk.prism.intdemo.protos.DegreeServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -423,7 +422,7 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient =
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient =
+proto.io.iohk.prism.intdemo.protos.DegreeServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -444,58 +443,58 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodDescriptor_DegreeService_GetConnectionToken = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetConnectionToken',
+  '/io.iohk.prism.intdemo.protos.DegreeService/GetConnectionToken',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodInfo_DegreeService_GetConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.DegreeServiceClient.prototype.getConnectionToken =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_DegreeService_GetConnectionToken,
@@ -504,17 +503,17 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient.prototype.getConnec
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getConnectionToken =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_DegreeService_GetConnectionToken);
@@ -524,58 +523,58 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient.prototype.ge
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_DegreeService_GetSubjectStatus = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetSubjectStatus',
+  '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatus',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_DegreeService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.DegreeServiceClient.prototype.getSubjectStatus =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_DegreeService_GetSubjectStatus,
@@ -584,17 +583,17 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient.prototype.getSubjec
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getSubjectStatus =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_DegreeService_GetSubjectStatus);
@@ -604,55 +603,55 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient.prototype.ge
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_DegreeService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetSubjectStatusStream',
+  '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_DegreeService_GetSubjectStatusStream = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.DegreeServiceClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_DegreeService_GetSubjectStatusStream);
@@ -660,16 +659,16 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServiceClient.prototype.getSubjec
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.DegreeServicePromiseClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.DegreeService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.DegreeService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_DegreeService_GetSubjectStatusStream);
@@ -684,7 +683,7 @@ proto.io.iohk.atala.prism.intdemo.protos.DegreeServicePromiseClient.prototype.ge
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient =
+proto.io.iohk.prism.intdemo.protos.EmploymentServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -710,7 +709,7 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient =
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient =
+proto.io.iohk.prism.intdemo.protos.EmploymentServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -731,58 +730,58 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodDescriptor_EmploymentService_GetConnectionToken = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetConnectionToken',
+  '/io.iohk.prism.intdemo.protos.EmploymentService/GetConnectionToken',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodInfo_EmploymentService_GetConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.EmploymentServiceClient.prototype.getConnectionToken =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_EmploymentService_GetConnectionToken,
@@ -791,17 +790,17 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient.prototype.getCo
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getConnectionToken =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_EmploymentService_GetConnectionToken);
@@ -811,58 +810,58 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient.prototyp
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_EmploymentService_GetSubjectStatus = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
+  '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_EmploymentService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.EmploymentServiceClient.prototype.getSubjectStatus =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_EmploymentService_GetSubjectStatus,
@@ -871,17 +870,17 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient.prototype.getSu
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getSubjectStatus =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_EmploymentService_GetSubjectStatus);
@@ -891,55 +890,55 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient.prototyp
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_EmploymentService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetSubjectStatusStream',
+  '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_EmploymentService_GetSubjectStatusStream = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.EmploymentServiceClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_EmploymentService_GetSubjectStatusStream);
@@ -947,16 +946,16 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServiceClient.prototype.getSu
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.EmploymentServicePromiseClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.EmploymentService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.EmploymentService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_EmploymentService_GetSubjectStatusStream);
@@ -971,7 +970,7 @@ proto.io.iohk.atala.prism.intdemo.protos.EmploymentServicePromiseClient.prototyp
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient =
+proto.io.iohk.prism.intdemo.protos.InsuranceServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -997,7 +996,7 @@ proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient =
  * @struct
  * @final
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServicePromiseClient =
+proto.io.iohk.prism.intdemo.protos.InsuranceServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -1018,58 +1017,58 @@ proto.io.iohk.atala.prism.intdemo.protos.InsuranceServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodDescriptor_InsuranceService_GetConnectionToken = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetConnectionToken',
+  '/io.iohk.prism.intdemo.protos.InsuranceService/GetConnectionToken',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  */
 const methodInfo_InsuranceService_GetConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse,
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.InsuranceServiceClient.prototype.getConnectionToken =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_InsuranceService_GetConnectionToken,
@@ -1078,17 +1077,17 @@ proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient.prototype.getCon
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getConnectionToken =
+proto.io.iohk.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getConnectionToken =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetConnectionToken',
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetConnectionToken',
       request,
       metadata || {},
       methodDescriptor_InsuranceService_GetConnectionToken);
@@ -1098,58 +1097,58 @@ proto.io.iohk.atala.prism.intdemo.protos.InsuranceServicePromiseClient.prototype
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_InsuranceService_GetSubjectStatus = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
+  '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_InsuranceService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.InsuranceServiceClient.prototype.getSubjectStatus =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_InsuranceService_GetSubjectStatus,
@@ -1158,17 +1157,17 @@ proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient.prototype.getSub
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!Promise<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getSubjectStatus =
+proto.io.iohk.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getSubjectStatus =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatus',
       request,
       metadata || {},
       methodDescriptor_InsuranceService_GetSubjectStatus);
@@ -1178,55 +1177,55 @@ proto.io.iohk.atala.prism.intdemo.protos.InsuranceServicePromiseClient.prototype
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodDescriptor_InsuranceService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
-  '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetSubjectStatusStream',
+  '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest,
- *   !proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest,
+ *   !proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  */
 const methodInfo_InsuranceService_GetSubjectStatusStream = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse,
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse,
   /**
-   * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request
+   * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
+  proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.InsuranceServiceClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_InsuranceService_GetSubjectStatusStream);
@@ -1234,21 +1233,21 @@ proto.io.iohk.atala.prism.intdemo.protos.InsuranceServiceClient.prototype.getSub
 
 
 /**
- * @param {!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
+ * @param {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse>}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.atala.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getSubjectStatusStream =
+proto.io.iohk.prism.intdemo.protos.InsuranceServicePromiseClient.prototype.getSubjectStatusStream =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/io.iohk.atala.prism.intdemo.protos.InsuranceService/GetSubjectStatusStream',
+      '/io.iohk.prism.intdemo.protos.InsuranceService/GetSubjectStatusStream',
       request,
       metadata || {},
       methodDescriptor_InsuranceService_GetSubjectStatusStream);
 };
 
 
-module.exports = proto.io.iohk.atala.prism.intdemo.protos;
+module.exports = proto.io.iohk.prism.intdemo.protos;
 

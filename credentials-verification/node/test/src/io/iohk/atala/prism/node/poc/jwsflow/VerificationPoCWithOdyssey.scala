@@ -19,7 +19,7 @@ import io.iohk.atala.prism.node.services.{
   ObjectManagementService
 }
 import io.iohk.atala.prism.node.{InMemoryAtalaReferenceLedger, NodeServiceImpl}
-import io.iohk.atala.prism.protos.node_api
+import io.iohk.prism.protos.node_api
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues._

@@ -12,7 +12,7 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.atala.prism.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
+import io.iohk.prism.protos.{connector_api, connector_models, node_api, node_models}
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._

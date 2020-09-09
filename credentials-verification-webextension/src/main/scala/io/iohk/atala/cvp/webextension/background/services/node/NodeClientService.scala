@@ -12,8 +12,8 @@ import io.iohk.atala.credentials.{
 }
 import io.iohk.atala.crypto.{EC, ECTrait}
 import io.iohk.atala.cvp.webextension.background.services.node.NodeUtils._
-import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetDidDocumentRequest}
+import io.iohk.prism.protos.node_api
+import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetDidDocumentRequest}
 import scalapb.grpc.Channels
 
 import scala.concurrent.{ExecutionContext, Future}

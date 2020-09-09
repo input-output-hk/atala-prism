@@ -20,7 +20,7 @@ import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.services.BrowserTabService
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.requests.RequestAuthenticator
-import io.iohk.atala.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
+import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 

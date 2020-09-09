@@ -8,8 +8,8 @@ import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
-import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
-import io.iohk.atala.prism.protos.node_api
+import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
+import io.iohk.prism.protos.node_api
 
 import scala.concurrent.{ExecutionContext, Future}
 
