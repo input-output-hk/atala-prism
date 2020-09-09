@@ -525,6 +525,22 @@ object util extends mill.Module {
   }
 }
 
+object mirror extends ServerPBCommon with CVPDockerModule with CodeCoverageModule {
+
+  override def mainClass = Some("io.iohk.atala.mirror.MirrorApp")
+
+  override def cvpDockerConfig = CVPDockerConfig(name = "mirror")
+
+  object test extends `tests-common` with TestCodeCoverageModule {
+    override def ivyDeps =
+      super.ivyDeps.map { deps =>
+        deps ++ mockitoDeps
+      }
+  }
+
+  override def testModule: Tests = test
+}
+
 trait CVPDockerModule extends Module { self: JavaModule =>
 
   case class CVPDockerConfig(name: String) {
