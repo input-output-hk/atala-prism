@@ -24,7 +24,7 @@ class PhraseVerificationViewModel(private val sessionRepository: SessionReposito
     private val _uiEnabled = MutableLiveData<Boolean>().apply { value = true }
 
     val uiEnabled: LiveData<Boolean> = _uiEnabled
-    
+
     // Verify Button will be enabled only when both words match
     val verifyButtonEnabled = MediatorLiveData<Boolean>().apply {
         value = false

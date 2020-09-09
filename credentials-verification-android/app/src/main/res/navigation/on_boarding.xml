@@ -42,7 +42,7 @@
         tools:layout="@layout/neo_fragment_terms_and_condition">
         <action
             android:id="@+id/action_termsAndConditionsFragment_to_webViewDialogFragment"
-            app:destination="@id/webViewDialogFragment"></action>
+            app:destination="@id/webViewDialogFragment" />
         <action
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
@@ -88,11 +88,29 @@
             android:name="verificationIndex2"
             app:argType="integer" />
         <action
-            android:id="@+id/action_phraseVerificationFragment_to_accountCreatedActivity"
-            app:destination="@id/accountCreatedActivity" />
+            android:id="@+id/action_phraseVerificationFragment_to_accountCreatedFragment"
+            app:destination="@id/accountCreatedFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:popUpTo="@id/on_board" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/neo_fragment_account_created"
+        android:id="@+id/accountCreatedFragment"
+        android:name="io.iohk.cvp.neo.ui.onboarding.accountcreated.AccountCreatedFragment"
+        android:label="AccountCreatedFragment">
+        <action
+            app:popUpTo="@id/on_board"
+            app:launchSingleTop="true"
+            android:id="@+id/action_accountCreatedFragment_to_mainActivity"
+            app:destination="@id/mainActivity" />
     </fragment>
     <activity
-        android:id="@+id/accountCreatedActivity"
-        android:name="io.iohk.cvp.views.activities.AccountCreatedActivity"
-        android:label="AccountCreatedActivity" />
+        android:id="@+id/mainActivity"
+        android:name="io.iohk.cvp.views.activities.MainActivity"
+        android:label="activity_main"
+        tools:layout="@layout/activity_main" />
 </navigation>
