@@ -50,18 +50,18 @@ trait PostgresRepositorySpec
     }
   }
 
+  private lazy val postgresConfig = getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
+
+  protected lazy val transactorConfig = TransactorFactory.Config(
+    username = postgresConfig.user,
+    password = postgresConfig.password,
+    jdbcUrl = s"jdbc:postgresql://${postgresConfig.host}/${postgresConfig.database}"
+  )
+
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    val postgresConfig = getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
-
-    val config = TransactorFactory.Config(
-      username = postgresConfig.user,
-      password = postgresConfig.password,
-      jdbcUrl = s"jdbc:postgresql://${postgresConfig.host}/${postgresConfig.database}"
-    )
-
-    _database = Some(TransactorFactory(config))
+    _database = Some(TransactorFactory(transactorConfig))
 
     import doobie.implicits._
     // solution to clean the database as provided by StackOverflow user User
@@ -75,8 +75,12 @@ trait PostgresRepositorySpec
          |COMMENT ON SCHEMA public IS 'standard public schema'
       """.stripMargin.update.run.transact(database).unsafeRunSync()
 
-    SchemaMigrations.migrate(config)
+    migrate()
     ()
+  }
+
+  protected def migrate(): Unit = {
+    val _ = SchemaMigrations.migrate(transactorConfig)
   }
 
   override def beforeEach(): Unit = {
@@ -91,6 +95,8 @@ trait PostgresRepositorySpec
 
   protected def clearDatabase(): Unit = {
     import doobie.implicits._
+
+    // note: truncate_stmt is null when the database is empty, hence, we use a trivial statement to prevent it the execution to fail
     sql"""
          |DO
          |$$$$
@@ -102,7 +108,7 @@ trait PostgresRepositorySpec
          |  FROM pg_tables
          |  WHERE schemaname IN ('public');
          |
-         |  EXECUTE truncate_stmt;
+         |  EXECUTE COALESCE(truncate_stmt, 'SELECT 1');
          |END;
          |$$$$
          |""".stripMargin.update.run.transact(database).unsafeRunSync()
