@@ -31,4 +31,10 @@ class SessionRepository(private val localDataSource: SessionLocalDataSourceInter
             return@withContext CryptoUtils.generateMnemonicList()
         }
     }
+
+    suspend fun storeSession(mnemonicList: List<String>) {
+        return withContext(Dispatchers.IO) {
+            localDataSource.storeSessionData(mnemonicList)
+        }
+    }
 }

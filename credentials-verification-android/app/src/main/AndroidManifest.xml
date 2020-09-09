@@ -52,17 +52,8 @@
             android:windowSoftInputMode="adjustPan" />
 
         <activity
-            android:name=".views.activities.TermsAndConditionsActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".views.activities.WebTermsAndConditionsActivity"
             android:theme="@style/mytransparent.windowNoTitle" />
-        <activity
-            android:name=".views.activities.WalletSetupActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".views.activities.SeedPhraseVerificationActivity"
-            android:screenOrientation="portrait" />
         <activity
             android:name=".views.activities.AccountCreatedActivity"
             android:screenOrientation="portrait" />

@@ -47,7 +47,7 @@
 
     <!-- Seed Phrase Verification -->
     <string name="seed_phrase_verification_description">Enter the following words to verify your Seed Phrase</string>
-    <string name="word_numeric">Word #%1$s</string>>
+    <string name="word_numeric">Word #%1$d</string>>
 
     <!-- Credential General Strings -->
     <string name="credential_degree_name">University Degree</string>

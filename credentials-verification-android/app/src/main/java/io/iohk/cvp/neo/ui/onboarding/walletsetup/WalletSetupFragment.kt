@@ -1,6 +1,5 @@
 package io.iohk.cvp.neo.ui.onboarding.walletsetup
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,13 +8,12 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.google.firebase.analytics.FirebaseAnalytics
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoFragmentWalletSetupBinding
-import io.iohk.cvp.neo.common.EventWrapperObserver
 import io.iohk.cvp.utils.FirebaseAnalyticsEvents
-import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity
-import java.util.*
+import io.iohk.cvp.neo.common.EventWrapperObserver
 
 class WalletSetupFragment : Fragment() {
 
@@ -54,14 +52,8 @@ class WalletSetupFragment : Fragment() {
     }
 
     private fun navigateToPhraseVerification(mnemonicList: List<String>, firstIndex: Int, secondIndex: Int) {
-        val intent = Intent(requireActivity(), SeedPhraseVerificationActivity::class.java)
-        val bundle = Bundle()
-        bundle.putStringArray(SeedPhraseVerificationActivity.SEED_PHRASE_KEY, Arrays.copyOf<String, Any>(mnemonicList.toTypedArray(),
-                mnemonicList.size,
-                Array<String>::class.java))
-        bundle.putInt(SeedPhraseVerificationActivity.FIRST_WORD_INDEX_KEY, firstIndex + 1)
-        bundle.putInt(SeedPhraseVerificationActivity.SECOND_WORD_INDEX_KEY, secondIndex + 1)
-        intent.putExtras(bundle)
-        requireActivity().startActivity(intent)
+        val action = WalletSetupFragmentDirections
+                .actionWalletSetupFragmentToPhraseVerificationFragment(mnemonicList.toTypedArray(), firstIndex, secondIndex)
+        findNavController().navigate(action)
     }
 }

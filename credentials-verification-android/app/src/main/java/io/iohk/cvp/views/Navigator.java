@@ -29,46 +29,19 @@ import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.RestoreAccountActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
 import io.iohk.cvp.views.activities.RestoreAccountSuccessActivity;
-import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
-import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.UnlockActivity;
-import io.iohk.cvp.views.activities.WalletSetupActivity;
 import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
-import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.FIRST_WORD_INDEX_KEY;
-import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SECOND_WORD_INDEX_KEY;
-import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SEED_PHRASE_KEY;
 
 public class Navigator {
 
 
     public void showConnections(Activity from, List<Integer> flags) {
         startNewActivity(from, MainActivity.class, flags);
-    }
-
-    public void showTermsAndConditions(Activity from) {
-        startNewActivity(from, TermsAndConditionsActivity.class, null);
-    }
-
-    public void showWalletSetup(Activity from) {
-        startNewActivity(from, WalletSetupActivity.class, null);
-    }
-
-    public void showSeedPhraseVerification(Activity from, List<String> seedPhrase,
-                                           Integer firstWordIndexToCheck, Integer secondWordIndexToCheck) {
-        Intent intent = getIntent(from, SeedPhraseVerificationActivity.class, null);
-        Bundle bundle = new Bundle();
-        bundle.putStringArray(SEED_PHRASE_KEY, Arrays.copyOf(seedPhrase.toArray(),
-                seedPhrase.size(),
-                String[].class));
-        bundle.putInt(FIRST_WORD_INDEX_KEY, firstWordIndexToCheck);
-        bundle.putInt(SECOND_WORD_INDEX_KEY, secondWordIndexToCheck);
-        intent.putExtras(bundle);
-        from.startActivity(intent);
     }
 
     public void showAccountCreated(Activity from) {
