@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * @fileoverview gRPC-Web generated client stub for io.iohk.prism.protos
+ * @fileoverview gRPC-Web generated client stub for io.iohk.atala.prism.protos
  * @enhanceable
  * @public
  */
@@ -19,8 +19,9 @@ var node_models_pb = require('./node_models_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};
-proto.io.iohk.prism = {};
-proto.io.iohk.prism.protos = require('./connector_api_pb.js');
+proto.io.iohk.atala = {};
+proto.io.iohk.atala.prism = {};
+proto.io.iohk.atala.prism.protos = require('./connector_api_pb.js');
 
 /**
  * @param {string} hostname
@@ -30,7 +31,7 @@ proto.io.iohk.prism.protos = require('./connector_api_pb.js');
  * @struct
  * @final
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -56,7 +57,7 @@ proto.io.iohk.prism.protos.ConnectorServiceClient =
  * @struct
  * @final
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -77,58 +78,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetConnectionByTokenRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionByTokenResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionByTokenRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse>}
  */
 const methodDescriptor_ConnectorService_GetConnectionByToken = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetConnectionByToken',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionByToken',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetConnectionByTokenRequest,
-  proto.io.iohk.prism.protos.GetConnectionByTokenResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionByTokenRequest,
+  proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionByTokenRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionByTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionByTokenResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetConnectionByTokenRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionByTokenResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionByTokenRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse>}
  */
 const methodInfo_ConnectorService_GetConnectionByToken = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetConnectionByTokenResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionByTokenRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionByTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionByTokenResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionByTokenRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionByTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetConnectionByTokenResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetConnectionByTokenResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionByToken =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getConnectionByToken =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionByToken',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionByToken',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionByToken,
@@ -137,17 +138,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionByToken
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionByTokenRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionByTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetConnectionByTokenResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetConnectionByTokenResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionByToken =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionByToken =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionByToken',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionByToken',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionByToken);
@@ -157,58 +158,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnection
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse>}
  */
 const methodDescriptor_ConnectorService_GetConnectionsPaginated = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetConnectionsPaginated',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionsPaginated',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest,
-  proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest,
+  proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse>}
  */
 const methodInfo_ConnectorService_GetConnectionsPaginated = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionsPaginated =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getConnectionsPaginated =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionsPaginated',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionsPaginated',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionsPaginated,
@@ -217,17 +218,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionsPagina
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionsPaginated =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionsPaginated =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionsPaginated',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionsPaginated',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionsPaginated);
@@ -237,58 +238,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnection
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse>}
  */
 const methodDescriptor_ConnectorService_GetConnectionTokenInfo = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetConnectionTokenInfo',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionTokenInfo',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest,
-  proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest,
+  proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse>}
  */
 const methodInfo_ConnectorService_GetConnectionTokenInfo = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionTokenInfo =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getConnectionTokenInfo =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionTokenInfo',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionTokenInfo',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionTokenInfo,
@@ -297,17 +298,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionTokenIn
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionTokenInfo =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionTokenInfo =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionTokenInfo',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionTokenInfo',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionTokenInfo);
@@ -317,58 +318,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnection
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.AddConnectionFromTokenRequest,
- *   !proto.io.iohk.prism.protos.AddConnectionFromTokenResponse>}
+ *   !proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest,
+ *   !proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse>}
  */
 const methodDescriptor_ConnectorService_AddConnectionFromToken = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/AddConnectionFromToken',
+  '/io.iohk.atala.prism.protos.ConnectorService/AddConnectionFromToken',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.AddConnectionFromTokenRequest,
-  proto.io.iohk.prism.protos.AddConnectionFromTokenResponse,
+  proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest,
+  proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.AddConnectionFromTokenResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.AddConnectionFromTokenRequest,
- *   !proto.io.iohk.prism.protos.AddConnectionFromTokenResponse>}
+ *   !proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest,
+ *   !proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse>}
  */
 const methodInfo_ConnectorService_AddConnectionFromToken = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.AddConnectionFromTokenResponse,
+  proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.AddConnectionFromTokenResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.AddConnectionFromTokenResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.AddConnectionFromTokenResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.addConnectionFromToken =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.addConnectionFromToken =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/AddConnectionFromToken',
+      '/io.iohk.atala.prism.protos.ConnectorService/AddConnectionFromToken',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_AddConnectionFromToken,
@@ -377,17 +378,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.addConnectionFromTok
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.AddConnectionFromTokenResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.addConnectionFromToken =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.addConnectionFromToken =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/AddConnectionFromToken',
+      '/io.iohk.atala.prism.protos.ConnectorService/AddConnectionFromToken',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_AddConnectionFromToken);
@@ -397,58 +398,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.addConnection
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.DeleteConnectionRequest,
- *   !proto.io.iohk.prism.protos.DeleteConnectionResponse>}
+ *   !proto.io.iohk.atala.prism.protos.DeleteConnectionRequest,
+ *   !proto.io.iohk.atala.prism.protos.DeleteConnectionResponse>}
  */
 const methodDescriptor_ConnectorService_DeleteConnection = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/DeleteConnection',
+  '/io.iohk.atala.prism.protos.ConnectorService/DeleteConnection',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.DeleteConnectionRequest,
-  proto.io.iohk.prism.protos.DeleteConnectionResponse,
+  proto.io.iohk.atala.prism.protos.DeleteConnectionRequest,
+  proto.io.iohk.atala.prism.protos.DeleteConnectionResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.DeleteConnectionRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.DeleteConnectionRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.DeleteConnectionResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.DeleteConnectionResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.DeleteConnectionRequest,
- *   !proto.io.iohk.prism.protos.DeleteConnectionResponse>}
+ *   !proto.io.iohk.atala.prism.protos.DeleteConnectionRequest,
+ *   !proto.io.iohk.atala.prism.protos.DeleteConnectionResponse>}
  */
 const methodInfo_ConnectorService_DeleteConnection = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.DeleteConnectionResponse,
+  proto.io.iohk.atala.prism.protos.DeleteConnectionResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.DeleteConnectionRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.DeleteConnectionRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.DeleteConnectionResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.DeleteConnectionResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.DeleteConnectionRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.DeleteConnectionRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.DeleteConnectionResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.DeleteConnectionResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.DeleteConnectionResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.DeleteConnectionResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.deleteConnection =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.deleteConnection =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/DeleteConnection',
+      '/io.iohk.atala.prism.protos.ConnectorService/DeleteConnection',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_DeleteConnection,
@@ -457,17 +458,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.deleteConnection =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.DeleteConnectionRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.DeleteConnectionRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.DeleteConnectionResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.DeleteConnectionResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.deleteConnection =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.deleteConnection =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/DeleteConnection',
+      '/io.iohk.atala.prism.protos.ConnectorService/DeleteConnection',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_DeleteConnection);
@@ -477,58 +478,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.deleteConnect
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.RegisterDIDRequest,
- *   !proto.io.iohk.prism.protos.RegisterDIDResponse>}
+ *   !proto.io.iohk.atala.prism.protos.RegisterDIDRequest,
+ *   !proto.io.iohk.atala.prism.protos.RegisterDIDResponse>}
  */
 const methodDescriptor_ConnectorService_RegisterDID = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/RegisterDID',
+  '/io.iohk.atala.prism.protos.ConnectorService/RegisterDID',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.RegisterDIDRequest,
-  proto.io.iohk.prism.protos.RegisterDIDResponse,
+  proto.io.iohk.atala.prism.protos.RegisterDIDRequest,
+  proto.io.iohk.atala.prism.protos.RegisterDIDResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.RegisterDIDRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.RegisterDIDRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.RegisterDIDResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.RegisterDIDResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.RegisterDIDRequest,
- *   !proto.io.iohk.prism.protos.RegisterDIDResponse>}
+ *   !proto.io.iohk.atala.prism.protos.RegisterDIDRequest,
+ *   !proto.io.iohk.atala.prism.protos.RegisterDIDResponse>}
  */
 const methodInfo_ConnectorService_RegisterDID = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.RegisterDIDResponse,
+  proto.io.iohk.atala.prism.protos.RegisterDIDResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.RegisterDIDRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.RegisterDIDRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.RegisterDIDResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.RegisterDIDResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.RegisterDIDRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.RegisterDIDRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.RegisterDIDResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.RegisterDIDResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.RegisterDIDResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.RegisterDIDResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.registerDID =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.registerDID =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/RegisterDID',
+      '/io.iohk.atala.prism.protos.ConnectorService/RegisterDID',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_RegisterDID,
@@ -537,17 +538,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.registerDID =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.RegisterDIDRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.RegisterDIDRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.RegisterDIDResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.RegisterDIDResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.registerDID =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.registerDID =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/RegisterDID',
+      '/io.iohk.atala.prism.protos.ConnectorService/RegisterDID',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_RegisterDID);
@@ -557,58 +558,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.registerDID =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.ChangeBillingPlanRequest,
- *   !proto.io.iohk.prism.protos.ChangeBillingPlanResponse>}
+ *   !proto.io.iohk.atala.prism.protos.ChangeBillingPlanRequest,
+ *   !proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse>}
  */
 const methodDescriptor_ConnectorService_ChangeBillingPlan = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/ChangeBillingPlan',
+  '/io.iohk.atala.prism.protos.ConnectorService/ChangeBillingPlan',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.ChangeBillingPlanRequest,
-  proto.io.iohk.prism.protos.ChangeBillingPlanResponse,
+  proto.io.iohk.atala.prism.protos.ChangeBillingPlanRequest,
+  proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.ChangeBillingPlanRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.ChangeBillingPlanRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.ChangeBillingPlanResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.ChangeBillingPlanRequest,
- *   !proto.io.iohk.prism.protos.ChangeBillingPlanResponse>}
+ *   !proto.io.iohk.atala.prism.protos.ChangeBillingPlanRequest,
+ *   !proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse>}
  */
 const methodInfo_ConnectorService_ChangeBillingPlan = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.ChangeBillingPlanResponse,
+  proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.ChangeBillingPlanRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.ChangeBillingPlanRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.ChangeBillingPlanResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.ChangeBillingPlanRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.ChangeBillingPlanRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.ChangeBillingPlanResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.ChangeBillingPlanResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.changeBillingPlan =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.changeBillingPlan =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/ChangeBillingPlan',
+      '/io.iohk.atala.prism.protos.ConnectorService/ChangeBillingPlan',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_ChangeBillingPlan,
@@ -617,17 +618,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.changeBillingPlan =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.ChangeBillingPlanRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.ChangeBillingPlanRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.ChangeBillingPlanResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.ChangeBillingPlanResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.changeBillingPlan =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.changeBillingPlan =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/ChangeBillingPlan',
+      '/io.iohk.atala.prism.protos.ConnectorService/ChangeBillingPlan',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_ChangeBillingPlan);
@@ -637,58 +638,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.changeBilling
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenRequest,
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenRequest,
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse>}
  */
 const methodDescriptor_ConnectorService_GenerateConnectionToken = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GenerateConnectionToken',
+  '/io.iohk.atala.prism.protos.ConnectorService/GenerateConnectionToken',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GenerateConnectionTokenRequest,
-  proto.io.iohk.prism.protos.GenerateConnectionTokenResponse,
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenRequest,
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GenerateConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenRequest,
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenRequest,
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse>}
  */
 const methodInfo_ConnectorService_GenerateConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GenerateConnectionTokenResponse,
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GenerateConnectionTokenResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GenerateConnectionTokenResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GenerateConnectionTokenResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.generateConnectionToken =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.generateConnectionToken =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GenerateConnectionToken',
+      '/io.iohk.atala.prism.protos.ConnectorService/GenerateConnectionToken',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GenerateConnectionToken,
@@ -697,17 +698,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.generateConnectionTo
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GenerateConnectionTokenResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.generateConnectionToken =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.generateConnectionToken =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GenerateConnectionToken',
+      '/io.iohk.atala.prism.protos.ConnectorService/GenerateConnectionToken',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GenerateConnectionToken);
@@ -717,58 +718,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.generateConne
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetMessagesPaginatedRequest,
- *   !proto.io.iohk.prism.protos.GetMessagesPaginatedResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesPaginatedRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse>}
  */
 const methodDescriptor_ConnectorService_GetMessagesPaginated = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetMessagesPaginated',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetMessagesPaginated',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetMessagesPaginatedRequest,
-  proto.io.iohk.prism.protos.GetMessagesPaginatedResponse,
+  proto.io.iohk.atala.prism.protos.GetMessagesPaginatedRequest,
+  proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetMessagesPaginatedRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetMessagesPaginatedRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetMessagesPaginatedResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetMessagesPaginatedRequest,
- *   !proto.io.iohk.prism.protos.GetMessagesPaginatedResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesPaginatedRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse>}
  */
 const methodInfo_ConnectorService_GetMessagesPaginated = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetMessagesPaginatedResponse,
+  proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetMessagesPaginatedRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetMessagesPaginatedRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetMessagesPaginatedResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetMessagesPaginatedRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetMessagesPaginatedRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetMessagesPaginatedResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetMessagesPaginatedResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getMessagesPaginated =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getMessagesPaginated =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetMessagesPaginated',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetMessagesPaginated',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetMessagesPaginated,
@@ -777,17 +778,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getMessagesPaginated
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetMessagesPaginatedRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetMessagesPaginatedRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetMessagesPaginatedResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetMessagesPaginatedResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getMessagesPaginated =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getMessagesPaginated =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetMessagesPaginated',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetMessagesPaginated',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetMessagesPaginated);
@@ -797,58 +798,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getMessagesPa
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetMessagesForConnectionRequest,
- *   !proto.io.iohk.prism.protos.GetMessagesForConnectionResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse>}
  */
 const methodDescriptor_ConnectorService_GetMessagesForConnection = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetMessagesForConnection',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetMessagesForConnection',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetMessagesForConnectionRequest,
-  proto.io.iohk.prism.protos.GetMessagesForConnectionResponse,
+  proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest,
+  proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetMessagesForConnectionRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetMessagesForConnectionResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetMessagesForConnectionRequest,
- *   !proto.io.iohk.prism.protos.GetMessagesForConnectionResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse>}
  */
 const methodInfo_ConnectorService_GetMessagesForConnection = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetMessagesForConnectionResponse,
+  proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetMessagesForConnectionRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetMessagesForConnectionResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetMessagesForConnectionRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetMessagesForConnectionResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetMessagesForConnectionResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getMessagesForConnection =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getMessagesForConnection =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetMessagesForConnection',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetMessagesForConnection',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetMessagesForConnection,
@@ -857,17 +858,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getMessagesForConnec
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetMessagesForConnectionRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetMessagesForConnectionResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getMessagesForConnection =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getMessagesForConnection =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetMessagesForConnection',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetMessagesForConnection',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetMessagesForConnection);
@@ -877,58 +878,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getMessagesFo
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetConnectionCommunicationKeysRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse>}
  */
 const methodDescriptor_ConnectorService_GetConnectionCommunicationKeys = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetConnectionCommunicationKeys',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionCommunicationKeys',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetConnectionCommunicationKeysRequest,
-  proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysRequest,
+  proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionCommunicationKeysRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetConnectionCommunicationKeysRequest,
- *   !proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse>}
  */
 const methodInfo_ConnectorService_GetConnectionCommunicationKeys = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse,
+  proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetConnectionCommunicationKeysRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionCommunicationKeysRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionCommunicationKeys =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getConnectionCommunicationKeys =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionCommunicationKeys',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionCommunicationKeys',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionCommunicationKeys,
@@ -937,17 +938,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getConnectionCommuni
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetConnectionCommunicationKeysRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetConnectionCommunicationKeysResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetConnectionCommunicationKeysResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionCommunicationKeys =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getConnectionCommunicationKeys =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetConnectionCommunicationKeys',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetConnectionCommunicationKeys',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetConnectionCommunicationKeys);
@@ -957,58 +958,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getConnection
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.SendMessageRequest,
- *   !proto.io.iohk.prism.protos.SendMessageResponse>}
+ *   !proto.io.iohk.atala.prism.protos.SendMessageRequest,
+ *   !proto.io.iohk.atala.prism.protos.SendMessageResponse>}
  */
 const methodDescriptor_ConnectorService_SendMessage = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/SendMessage',
+  '/io.iohk.atala.prism.protos.ConnectorService/SendMessage',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.SendMessageRequest,
-  proto.io.iohk.prism.protos.SendMessageResponse,
+  proto.io.iohk.atala.prism.protos.SendMessageRequest,
+  proto.io.iohk.atala.prism.protos.SendMessageResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.SendMessageRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.SendMessageRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.SendMessageResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.SendMessageResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.SendMessageRequest,
- *   !proto.io.iohk.prism.protos.SendMessageResponse>}
+ *   !proto.io.iohk.atala.prism.protos.SendMessageRequest,
+ *   !proto.io.iohk.atala.prism.protos.SendMessageResponse>}
  */
 const methodInfo_ConnectorService_SendMessage = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.SendMessageResponse,
+  proto.io.iohk.atala.prism.protos.SendMessageResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.SendMessageRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.SendMessageRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.SendMessageResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.SendMessageResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.SendMessageRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.SendMessageRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.SendMessageResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.SendMessageResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.SendMessageResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.SendMessageResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.sendMessage =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.sendMessage =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/SendMessage',
+      '/io.iohk.atala.prism.protos.ConnectorService/SendMessage',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_SendMessage,
@@ -1017,17 +1018,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.sendMessage =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.SendMessageRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.SendMessageRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.SendMessageResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.SendMessageResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.sendMessage =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.sendMessage =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/SendMessage',
+      '/io.iohk.atala.prism.protos.ConnectorService/SendMessage',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_SendMessage);
@@ -1037,58 +1038,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.sendMessage =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetBraintreePaymentsConfigRequest,
- *   !proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse>}
  */
 const methodDescriptor_ConnectorService_GetBraintreePaymentsConfig = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetBraintreePaymentsConfig',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetBraintreePaymentsConfig',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetBraintreePaymentsConfigRequest,
-  proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse,
+  proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest,
+  proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetBraintreePaymentsConfigRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetBraintreePaymentsConfigRequest,
- *   !proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse>}
  */
 const methodInfo_ConnectorService_GetBraintreePaymentsConfig = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse,
+  proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetBraintreePaymentsConfigRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetBraintreePaymentsConfigRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getBraintreePaymentsConfig =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getBraintreePaymentsConfig =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetBraintreePaymentsConfig',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetBraintreePaymentsConfig',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetBraintreePaymentsConfig,
@@ -1097,17 +1098,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getBraintreePayments
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetBraintreePaymentsConfigRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getBraintreePaymentsConfig =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getBraintreePaymentsConfig =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetBraintreePaymentsConfig',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetBraintreePaymentsConfig',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetBraintreePaymentsConfig);
@@ -1117,58 +1118,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getBraintreeP
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.ProcessPaymentRequest,
- *   !proto.io.iohk.prism.protos.ProcessPaymentResponse>}
+ *   !proto.io.iohk.atala.prism.protos.ProcessPaymentRequest,
+ *   !proto.io.iohk.atala.prism.protos.ProcessPaymentResponse>}
  */
 const methodDescriptor_ConnectorService_ProcessPayment = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/ProcessPayment',
+  '/io.iohk.atala.prism.protos.ConnectorService/ProcessPayment',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.ProcessPaymentRequest,
-  proto.io.iohk.prism.protos.ProcessPaymentResponse,
+  proto.io.iohk.atala.prism.protos.ProcessPaymentRequest,
+  proto.io.iohk.atala.prism.protos.ProcessPaymentResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.ProcessPaymentRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.ProcessPaymentRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.ProcessPaymentResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.ProcessPaymentResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.ProcessPaymentRequest,
- *   !proto.io.iohk.prism.protos.ProcessPaymentResponse>}
+ *   !proto.io.iohk.atala.prism.protos.ProcessPaymentRequest,
+ *   !proto.io.iohk.atala.prism.protos.ProcessPaymentResponse>}
  */
 const methodInfo_ConnectorService_ProcessPayment = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.ProcessPaymentResponse,
+  proto.io.iohk.atala.prism.protos.ProcessPaymentResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.ProcessPaymentRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.ProcessPaymentRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.ProcessPaymentResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.ProcessPaymentResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.ProcessPaymentRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.ProcessPaymentRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.ProcessPaymentResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.ProcessPaymentResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.ProcessPaymentResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.ProcessPaymentResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.processPayment =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.processPayment =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/ProcessPayment',
+      '/io.iohk.atala.prism.protos.ConnectorService/ProcessPayment',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_ProcessPayment,
@@ -1177,17 +1178,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.processPayment =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.ProcessPaymentRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.ProcessPaymentRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.ProcessPaymentResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.ProcessPaymentResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.processPayment =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.processPayment =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/ProcessPayment',
+      '/io.iohk.atala.prism.protos.ConnectorService/ProcessPayment',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_ProcessPayment);
@@ -1197,58 +1198,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.processPaymen
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetPaymentsRequest,
- *   !proto.io.iohk.prism.protos.GetPaymentsResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetPaymentsRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetPaymentsResponse>}
  */
 const methodDescriptor_ConnectorService_GetPayments = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetPayments',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetPayments',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetPaymentsRequest,
-  proto.io.iohk.prism.protos.GetPaymentsResponse,
+  proto.io.iohk.atala.prism.protos.GetPaymentsRequest,
+  proto.io.iohk.atala.prism.protos.GetPaymentsResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetPaymentsRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetPaymentsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetPaymentsResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetPaymentsResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetPaymentsRequest,
- *   !proto.io.iohk.prism.protos.GetPaymentsResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetPaymentsRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetPaymentsResponse>}
  */
 const methodInfo_ConnectorService_GetPayments = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetPaymentsResponse,
+  proto.io.iohk.atala.prism.protos.GetPaymentsResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetPaymentsRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetPaymentsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetPaymentsResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetPaymentsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetPaymentsRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetPaymentsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetPaymentsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetPaymentsResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetPaymentsResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetPaymentsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getPayments =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getPayments =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetPayments',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetPayments',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetPayments,
@@ -1257,17 +1258,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getPayments =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetPaymentsRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetPaymentsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetPaymentsResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetPaymentsResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getPayments =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getPayments =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetPayments',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetPayments',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetPayments);
@@ -1277,58 +1278,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getPayments =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetBuildInfoRequest,
- *   !proto.io.iohk.prism.protos.GetBuildInfoResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetBuildInfoRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetBuildInfoResponse>}
  */
 const methodDescriptor_ConnectorService_GetBuildInfo = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetBuildInfo',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetBuildInfo',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetBuildInfoRequest,
-  proto.io.iohk.prism.protos.GetBuildInfoResponse,
+  proto.io.iohk.atala.prism.protos.GetBuildInfoRequest,
+  proto.io.iohk.atala.prism.protos.GetBuildInfoResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetBuildInfoRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetBuildInfoResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetBuildInfoRequest,
- *   !proto.io.iohk.prism.protos.GetBuildInfoResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetBuildInfoRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetBuildInfoResponse>}
  */
 const methodInfo_ConnectorService_GetBuildInfo = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetBuildInfoResponse,
+  proto.io.iohk.atala.prism.protos.GetBuildInfoResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetBuildInfoRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetBuildInfoResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetBuildInfoRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetBuildInfoResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetBuildInfoResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetBuildInfoResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetBuildInfoResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getBuildInfo =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getBuildInfo =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetBuildInfo',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetBuildInfo',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetBuildInfo,
@@ -1337,17 +1338,17 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getBuildInfo =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetBuildInfoRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetBuildInfoResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetBuildInfoResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getBuildInfo =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getBuildInfo =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetBuildInfo',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetBuildInfo',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetBuildInfo);
@@ -1357,58 +1358,58 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getBuildInfo 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetCurrentUserRequest,
- *   !proto.io.iohk.prism.protos.GetCurrentUserResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetCurrentUserRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetCurrentUserResponse>}
  */
 const methodDescriptor_ConnectorService_GetCurrentUser = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.ConnectorService/GetCurrentUser',
+  '/io.iohk.atala.prism.protos.ConnectorService/GetCurrentUser',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetCurrentUserRequest,
-  proto.io.iohk.prism.protos.GetCurrentUserResponse,
+  proto.io.iohk.atala.prism.protos.GetCurrentUserRequest,
+  proto.io.iohk.atala.prism.protos.GetCurrentUserResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetCurrentUserRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetCurrentUserRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetCurrentUserResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetCurrentUserResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetCurrentUserRequest,
- *   !proto.io.iohk.prism.protos.GetCurrentUserResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetCurrentUserRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetCurrentUserResponse>}
  */
 const methodInfo_ConnectorService_GetCurrentUser = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetCurrentUserResponse,
+  proto.io.iohk.atala.prism.protos.GetCurrentUserResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetCurrentUserRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetCurrentUserRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetCurrentUserResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetCurrentUserResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetCurrentUserRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetCurrentUserRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetCurrentUserResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetCurrentUserResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetCurrentUserResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetCurrentUserResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getCurrentUser =
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getCurrentUser =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetCurrentUser',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetCurrentUser',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetCurrentUser,
@@ -1417,22 +1418,22 @@ proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getCurrentUser =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetCurrentUserRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetCurrentUserRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetCurrentUserResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetCurrentUserResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getCurrentUser =
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getCurrentUser =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.ConnectorService/GetCurrentUser',
+      '/io.iohk.atala.prism.protos.ConnectorService/GetCurrentUser',
       request,
       metadata || {},
       methodDescriptor_ConnectorService_GetCurrentUser);
 };
 
 
-module.exports = proto.io.iohk.prism.protos;
+module.exports = proto.io.iohk.atala.prism.protos;
 

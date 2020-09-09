@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.prism.protos;
+package io.iohk.atala.prism.protos;
 
 import "cmanager_models.proto";
 import "common_models.proto";

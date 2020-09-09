@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.testing
 
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
-import io.iohk.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
+import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
 
 import scala.concurrent.Future
 

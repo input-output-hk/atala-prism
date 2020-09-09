@@ -9,7 +9,7 @@ import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.{node_internal, node_models}
 
 import scala.concurrent.duration._
 

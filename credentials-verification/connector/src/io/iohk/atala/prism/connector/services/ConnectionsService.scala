@@ -10,8 +10,8 @@ import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories.{ConnectionsRepository, PaymentsRepository}
-import io.iohk.prism.protos.node_api
-import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}

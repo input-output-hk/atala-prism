@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.intdemo
 
-import io.iohk.prism.protos.credential_models.IssuerSentCredential
-import io.iohk.prism.protos.credential_models.{AtalaMessage, Credential, ProofRequest}
+import io.iohk.atala.prism.protos.credential_models.IssuerSentCredential
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, Credential, ProofRequest}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 

@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.services.AtalaService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import io.iohk.prism.protos.node_api._
+import io.iohk.atala.prism.protos.node_api._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.regions.Region

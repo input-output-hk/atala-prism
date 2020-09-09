@@ -8,8 +8,8 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.view.HtmlViewImage
-import io.iohk.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
-import io.iohk.prism.protos.{cviews_api, cviews_models}
+import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
+import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 

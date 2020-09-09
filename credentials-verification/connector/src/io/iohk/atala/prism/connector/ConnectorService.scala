@@ -18,8 +18,8 @@ import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, PaymentsRepository}
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.BuildInfo
-import io.iohk.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.prism.protos.{connector_api, connector_models, node_api}
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}

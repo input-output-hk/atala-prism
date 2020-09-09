@@ -15,8 +15,8 @@ import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.services.models.AtalaObjectUpdate
-import io.iohk.prism.protos.node_internal.AtalaObject.Block
-import io.iohk.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
+import io.iohk.atala.prism.protos.{node_internal, node_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 

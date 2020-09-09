@@ -5,7 +5,7 @@ import java.util.UUID
 
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
 import io.iohk.atala.prism.intdemo.SharedCredentials.credentialsOfType
-import io.iohk.prism.protos.credential_models
+import io.iohk.atala.prism.protos.credential_models
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 

@@ -14,9 +14,9 @@ import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.syntax._
-import io.iohk.prism.protos.cmanager_api
-import io.iohk.prism.protos.node_api
-import io.iohk.prism.protos.cmanager_api.{
+import io.iohk.atala.prism.protos.cmanager_api
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.protos.cmanager_api.{
   CreateGenericCredentialRequest,
   CreateGenericCredentialResponse,
   GetGenericCredentialsRequest,
@@ -24,7 +24,7 @@ import io.iohk.prism.protos.cmanager_api.{
   PublishCredentialRequest,
   PublishCredentialResponse
 }
-import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

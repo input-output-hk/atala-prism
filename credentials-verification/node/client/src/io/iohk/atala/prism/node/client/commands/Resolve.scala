@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.client.commands
 
 import io.iohk.atala.prism.node.client.Config
-import io.iohk.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some

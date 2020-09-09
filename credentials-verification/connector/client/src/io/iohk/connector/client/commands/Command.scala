@@ -3,8 +3,8 @@ package io.iohk.atala.prism.connector.client.commands
 import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.{EC, ECPrivateKey}
 import io.iohk.atala.prism.connector.client.Config
-import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
+import io.iohk.atala.prism.protos.node_models
 
 trait Command {
   def run(api: ConnectorServiceGrpc.ConnectorServiceBlockingStub, config: Config): Unit

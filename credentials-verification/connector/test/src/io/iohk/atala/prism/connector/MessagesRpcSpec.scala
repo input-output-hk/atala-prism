@@ -9,7 +9,7 @@ import io.iohk.atala.crypto.EC
 import io.iohk.atala.prism.connector.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.grpc.SignedRequestsHelper
-import io.iohk.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_api
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   "SendMessage" should {

@@ -15,7 +15,7 @@ import io.iohk.atala.prism.cstore.repositories.{VerifierHoldersRepository, Verif
 import io.iohk.atala.prism.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.prism.protos.{cstore_api, cstore_models}
+import io.iohk.atala.prism.protos.{cstore_api, cstore_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
@@ -36,7 +36,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   private lazy val holdersRepository = new VerifierHoldersRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,

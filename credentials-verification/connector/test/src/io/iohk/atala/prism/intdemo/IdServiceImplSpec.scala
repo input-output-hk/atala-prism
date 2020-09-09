@@ -8,7 +8,7 @@ import io.grpc.{Status, StatusException}
 import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import IdServiceImplSpec._
 import Testing._
-import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
+import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{mock, verify, when}
 import org.scalatest.EitherValues._

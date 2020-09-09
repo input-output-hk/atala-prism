@@ -5,14 +5,14 @@ import io.iohk.atala.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
 import io.iohk.atala.requests.RequestAuthenticator
-import io.iohk.prism.protos.cmanager_api.{PublishCredentialRequest, PublishCredentialResponse}
-import io.iohk.prism.protos.connector_api.{
+import io.iohk.atala.prism.protos.cmanager_api.{PublishCredentialRequest, PublishCredentialResponse}
+import io.iohk.atala.prism.protos.connector_api.{
   GetCurrentUserRequest,
   GetCurrentUserResponse,
   RegisterDIDRequest,
   RegisterDIDResponse
 }
-import io.iohk.prism.protos.{cmanager_api, connector_api}
+import io.iohk.atala.prism.protos.{cmanager_api, connector_api}
 import scalapb.GeneratedMessage
 import scalapb.grpc.Channels
 

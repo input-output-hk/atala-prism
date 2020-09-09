@@ -3,7 +3,7 @@ package io.iohk.atala.prism.cmanager.grpc.services
 import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup}
 import io.iohk.atala.prism.cmanager.repositories.IssuerGroupsRepository
-import io.iohk.prism.protos.{cmanager_api, cmanager_models}
+import io.iohk.atala.prism.protos.{cmanager_api, cmanager_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 

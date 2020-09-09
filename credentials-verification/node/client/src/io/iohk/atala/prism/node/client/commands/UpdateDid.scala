@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.EC
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.client.{Config, ProtoUtils, StateStorage}
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some

@@ -4,7 +4,7 @@ import java.util.Base64
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.connector.client.Config
-import io.iohk.prism.protos.connector_api.{ConnectorServiceGrpc, GetConnectionByTokenRequest, SendMessageRequest}
+import io.iohk.atala.prism.protos.connector_api.{ConnectorServiceGrpc, GetConnectionByTokenRequest, SendMessageRequest}
 
 case object SendMessage extends Command {
 

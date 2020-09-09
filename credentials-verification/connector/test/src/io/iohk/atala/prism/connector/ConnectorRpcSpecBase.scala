@@ -26,7 +26,7 @@ import io.iohk.atala.prism.grpc.{
 }
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_api
 import org.mockito.MockitoSugar._
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
@@ -160,7 +160,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
 
-  lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
     new SignedRequestsAuthenticator(
       participantsRepository,

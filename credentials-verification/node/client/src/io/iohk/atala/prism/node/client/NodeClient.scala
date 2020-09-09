@@ -4,7 +4,7 @@ import java.io.File
 
 import io.grpc._
 import io.iohk.atala.prism.node.client.commands._
-import io.iohk.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api
 import monocle.POptional
 import scopt.OParser
 

@@ -9,8 +9,8 @@ import io.iohk.atala.prism.cmanager.models.Subject.ExternalId
 import io.iohk.atala.prism.cmanager.models.requests.CreateSubject
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Subject}
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
-import io.iohk.prism.protos.cmanager_api
-import io.iohk.prism.protos.cmanager_api._
+import io.iohk.atala.prism.protos.cmanager_api
+import io.iohk.atala.prism.protos.cmanager_api._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 

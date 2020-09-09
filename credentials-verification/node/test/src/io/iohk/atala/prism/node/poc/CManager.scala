@@ -4,10 +4,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 import com.github.ghik.silencer.silent
-import io.iohk.prism.protos.cmanager_models.CManagerGenericCredential
-import io.iohk.prism.protos.node_api
-import io.iohk.prism.protos.node_api.{IssueCredentialRequest, RevokeCredentialRequest}
-import io.iohk.prism.protos.node_models.SignedAtalaOperation
+import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api.{IssueCredentialRequest, RevokeCredentialRequest}
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 case class CManager(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
