@@ -102,7 +102,7 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
                 getNavigator().showPopUp(getFragmentManager(), getResources().getString(
                         R.string.server_error_message));
             } else {
-                if(response.getResult()) {
+                if (response.getResult()) {
                     SuccessDialog.newInstance(this, R.string.server_share_successfully)
                             .show(getActivity().getSupportFragmentManager(), "dialog");
                     getFragmentManager().popBackStack();
@@ -118,9 +118,9 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
                         R.string.server_error_message));
                 return;
             }
-            if(response.getResult() != null) {
+            if (response.getResult() != null) {
                 List<ConnectionListable> connections = new ArrayList<>(response.getResult().stream()
-                        .filter(conn -> !conn.did.substring(conn.did.lastIndexOf(":"))
+                        .filter(conn -> conn.did.isEmpty() || !conn.did.substring(conn.did.lastIndexOf(":"))
                                 .equals(credential.getIssuer().getId().substring(credential.getIssuer().getId().lastIndexOf(":"))))
                         .map(ConnectionListable::new).collect(Collectors.toList()));
 
