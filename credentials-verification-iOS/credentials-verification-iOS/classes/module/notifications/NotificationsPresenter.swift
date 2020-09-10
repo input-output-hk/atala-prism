@@ -281,11 +281,13 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             }
             return nil
         }, success: {
-//            self.isFetching = false
             self.startListing()
         }, error: { _ in
-//        self.isFetching = false
-            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+            self.cleanData()
+            let credentialsDao = CredentialDAO()
+            let credentials = credentialsDao.listNewCredentials() ?? []
+            self.makeDegreeRows(degrees: credentials)
+            self.startListing()
         })
     }
 

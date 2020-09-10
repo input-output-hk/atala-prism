@@ -238,9 +238,13 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.startListing()
-        }, error: { error in
-            print(error.localizedDescription)
-            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+        }, error: { _ in
+            self.cleanData()
+            let credentialsDao = CredentialDAO()
+            self.credentials = credentialsDao.listCredentials() ?? []
+            self.filteredCredentials.append(self.credentials)
+            self.makeDegreeRows()
+            self.startListing()
         })
     }
 
