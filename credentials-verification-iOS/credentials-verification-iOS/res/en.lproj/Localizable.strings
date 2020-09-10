@@ -82,6 +82,7 @@
 "credentials_nav_title" = "Credentials";
 "credentials_degrees_new_hello" = "Hello %1$@!";
 "credentials_degrees_new_title" = "You have new credential(s)";
+"credentials_degrees_new_date" = "Received %1$@";
 "credentials_degrees_new_view_btn" = "VIEW";
 "credentials_document_title" = "National ID Card";
 "credentials_document_identity_number" = "Identity Number";
@@ -268,8 +269,8 @@
 // <!-- Notifications -->
 "notifications_title" = "Notifications";
 "notifications_scan_qr_nav_title" = "Scan QR code";
-"notifications_empty_title" = "Connect to an organization to receive your credentials";
-"notifications_empty_subtitle" = "Receive, store and share your digital credentials";
+"notifications_empty_title" = "You don’t have Notifications yet";
+"notifications_empty_subtitle" = "You can edit your notifiations\non settings section.";
 
 // <!-- Security -->
 "security_title" = "Security";
@@ -320,3 +321,11 @@
 "dateformat_format_dd_mm_yyyy" = "DD / MM / YYYY (Default)";
 "dateformat_format_mm_dd_yyyy" = "MM / DD / YYYY";
 "dateformat_format_yyyy_mm_dd" = "YYYY / MM / DD";
+
+// <!-- Activity Log -->
+"activitylog_title" = "Activity Log";
+"activitylog_received" = "Received from %1$@";
+"activitylog_shared" = "Shared with %1$@";
+"activitylog_requested" = "Requested by %1$@";
+"activitylog_connected" = "Connected";
+"activitylog_deleted" = "Deleted";

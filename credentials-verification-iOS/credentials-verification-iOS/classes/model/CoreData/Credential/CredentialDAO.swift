@@ -10,12 +10,7 @@ import UIKit
 import CoreData
 import ObjectMapper
 
-class CredentialDAO: NSObject {
-
-    func getManagedContext() -> NSManagedObjectContext? {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
-        return appDelegate.persistentContainer.viewContext
-    }
+class CredentialDAO: BaseDAO {
 
     func getSortDescriptors() -> [NSSortDescriptor] {
         return [NSSortDescriptor(key: "issuerName", ascending: true),
@@ -70,7 +65,7 @@ class CredentialDAO: NSObject {
     }
 
     func createCredential(sentCredential: Io_Iohk_Prism_Protos_Credential,
-                          viewed: Bool, messageId: String) -> Credential? {
+                          viewed: Bool, messageId: String) -> (Credential, Bool)? {
 
         if let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument) {
 
@@ -83,34 +78,36 @@ class CredentialDAO: NSObject {
     }
 
     func createCredential(type: String, credentialId: String, issuerId: String, issuerName: String,
-                          htmlView: String, dateReceived: Date, viewed: Bool, encoded: Data) -> Credential? {
+                          htmlView: String, dateReceived: Date, viewed: Bool, encoded: Data) -> (Credential, Bool)? {
         guard let managedContext = getManagedContext() else { return nil }
         let fetchRequest = Credential.createFetchRequest()
         fetchRequest.predicate = NSPredicate(format: "credentialId == %@", credentialId)
 
         if let result = try? managedContext.fetch(fetchRequest), let credential = result.first {
-            return credential
+            return (credential, false)
         }
 
-        let credential = NSEntityDescription.insertNewObject(forEntityName: "Credential",
-                                                          into: managedContext) as? Credential
-        credential?.type = type
-        credential?.credentialId = credentialId
-        credential?.issuerId = issuerId
-        credential?.issuerName = issuerName
-        credential?.htmlView = htmlView
-        credential?.dateReceived = dateReceived
-        credential?.viewed = viewed
-        credential?.encoded = encoded
-
-        do {
-            try managedContext.save()
-            return credential
-
-        } catch let error as NSError {
-            print(error.debugDescription)
-            return nil
+        if let credential = NSEntityDescription.insertNewObject(forEntityName: "Credential",
+                                                                into: managedContext) as? Credential {
+            credential.type = type
+            credential.credentialId = credentialId
+            credential.issuerId = issuerId
+            credential.issuerName = issuerName
+            credential.htmlView = htmlView
+            credential.dateReceived = dateReceived
+            credential.viewed = viewed
+            credential.encoded = encoded
+            
+            do {
+                try managedContext.save()
+                return (credential, true)
+                
+            } catch let error as NSError {
+                print(error.debugDescription)
+                return nil
+            }
         }
+        return nil
     }
 
     func deleteCredential(credential: Credential) -> Bool {

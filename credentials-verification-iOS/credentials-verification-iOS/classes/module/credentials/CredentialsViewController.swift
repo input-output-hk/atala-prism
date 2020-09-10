@@ -132,10 +132,6 @@ class CredentialsViewController: ListingBaseViewController {
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .degree:
             return "common"
-        case .newDegreeHeader:
-            return "newDegreeHeader"
-        case .newDegree:
-            return "newDegree"
         case .noResults:
             return "noResults"
         case .document:
@@ -156,10 +152,6 @@ class CredentialsViewController: ListingBaseViewController {
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .degree:
             return DegreeViewCell.default_NibName()
-        case .newDegreeHeader:
-            return NewDegreeHeaderViewCell.default_NibName()
-        case .newDegree:
-            return NewDegreeViewCell.default_NibName()
         case .noResults:
             return NoResultsViewCell.default_NibName()
         case .document:

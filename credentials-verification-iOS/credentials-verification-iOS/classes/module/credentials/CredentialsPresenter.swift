@@ -4,8 +4,7 @@ import SwiftProtobuf
 import ObjectMapper
 
 class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
-                            NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
-                            NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate,
+                            DegreeViewCellPresenterDelegate, DocumentViewCellPresenterDelegate,
                             DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate,
                             DetailPropertyViewCellPresenterDelegate, ShareDialogPresenterDelegate,
                             UISearchBarDelegate {
@@ -23,8 +22,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     enum CredentialsCellType {
         case base(value: ListingBaseCellType)
         case degree // degrees mode
-        case newDegreeHeader // degrees mode
-        case newDegree // degree mode
         case noResults // degree mode
         case document // document mode
         case detailHeader // detail mode
@@ -214,6 +211,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
                 self.cleanData()
                 let credentialsDao = CredentialDAO()
+                let historyDao = ActivityHistoryDAO()
 
                 // Parse the messages
                 for response in responses {
@@ -223,7 +221,12 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
                                                                                messageId: message.id) {
-                                contactsDao.updateMessageId(did: credential.issuerId, messageId: message.id)
+                                contactsDao.updateMessageId(did: credential.0.issuerId, messageId: message.id)
+                                if credential.1 {
+                                    historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
+                                                                     type: .credentialAdded, credential: credential.0,
+                                                                     contact: nil)
+                                }
                             }
                         }
                     }
@@ -279,14 +282,22 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     private func shareWithSelectedEmployers() {
 
+        guard let contacts = self.shareSelectedEmployers else { return }
+
         viewImpl?.config(isLoading: true)
 
         // Call the service
         ApiService.call(async: {
             do {
-                let responses = try ApiService.global.shareCredential(contacts: self.shareSelectedEmployers ?? [],
+                let responses = try ApiService.global.shareCredential(contacts: contacts,
                                                                       degree: self.detailDegree!)
                 Logger.d("shareCredential response: \(responses)")
+                let historyDao = ActivityHistoryDAO()
+                let timestamp = Date()
+                for contact in contacts {
+                    historyDao.createActivityHistory(timestamp: timestamp, type: .credentialShared,
+                                                     credential: self.detailCredential, contact: contact)
+                }
 
             } catch {
                 return error
@@ -320,50 +331,13 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         self.updateViewToState()
     }
 
-    func setup(for cell: NewDegreeViewCell) {
-
-        guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
-            let credential = cellRow.value as? Credential else {
-            return
-        }
-
-        var isLast = degreeRows!.count - 1 == rowIndex
-        if !isLast {
-            switch degreeRows![rowIndex + 1].type {
-            case .newDegree:
-                isLast = false
-            default:
-                isLast = true
-            }
-        }
-
-        cell.config(title: credential.credentialName, subtitle: credential.issuerName, logoData: nil,
-                    logoPlaceholderNamed: credential.logoPlaceholder, isLast: isLast)
-    }
-
-    func tappedAction(for cell: NewDegreeViewCell) {
-
-        guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
-            let credential = cellRow.value as? Credential else {
-            return
-        }
-        // FIXME this should be updated for HTML credentials
-        if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
-
-            degree.intCredential = credential.encoded
-            degree.type = CredentialType(rawValue: credential.type)
-            detailCredential = credential
-
-            startShowingDetails(degree: degree)
-        }
-    }
-
     func didSelectRowAt(indexPath: IndexPath) {
         if mode == .degrees {
             let rowIndex = indexPath.row
             guard let cellRow = degreeRows?[rowIndex], let credential = cellRow.value as? Credential else {
                 return
             }
+            detailCredential = credential
             // FIXME this should be updated for HTML credentials
             if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
 
@@ -397,10 +371,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         else if cellRow?.value is LoggedUser {
             startShowingDocument()
         }
-    }
-
-    func setup(for cell: NewDegreeHeaderViewCell) {
-        cell.config(name: getLoggedUser()?.firstName)
     }
 
     func setup(for cell: DocumentViewCell) {
@@ -528,6 +498,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func deleteCredential() {
         let dao = CredentialDAO()
+        let historyDao = ActivityHistoryDAO()
+        historyDao.createActivityHistory(timestamp: Date(), type: .credentialDeleted,
+                                         credential: self.detailCredential!, contact: nil)
         if dao.deleteCredential(credential: self.detailCredential!) {
             self.tappedBackButton()
             self.actionPullToRefresh()

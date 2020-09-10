@@ -9,12 +9,7 @@
 import UIKit
 import CoreData
 
-class ContactDAO: NSObject {
-
-    func getManagedContext() -> NSManagedObjectContext? {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
-        return appDelegate.persistentContainer.viewContext
-    }
+class ContactDAO: BaseDAO {
 
     func getSortDescriptors() -> [NSSortDescriptor] {
         return [NSSortDescriptor(key: "name", ascending: true),

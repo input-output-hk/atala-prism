@@ -15,16 +15,16 @@ class NotificationsViewController: ListingBaseViewController {
 
     // Views
     @IBOutlet weak var viewEmpty: InformationView!
-    @IBOutlet weak var viewScanQr: UIView!
     @IBOutlet weak var viewTable: UIView!
-    // Scan QR
-    @IBOutlet weak var viewQrScannerContainer: UIView!
-    let scanner = QRCode()
 
     var navBar: NavBarCustomStyle = NavBarCustomStyle(hasNavBar: true)
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return navBar
     }
+
+    lazy var actionHistory = SelectorAction(action: { [weak self] in
+          self?.presenterImpl.tappedHistoryButton()
+    })
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,14 +36,8 @@ class NotificationsViewController: ListingBaseViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.presenterImpl.mode = .degrees
         self.presenterImpl.actionPullToRefresh()
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        // Setup (views thar require others to be resized first)
-        setupQrScanner()
     }
 
     @discardableResult
@@ -58,21 +52,19 @@ class NotificationsViewController: ListingBaseViewController {
 
     func setupEmptyView() {
 
-        viewEmpty.config(imageNamed: "img_qr_red", title: "notifications_empty_title".localize(),
+        viewEmpty.config(imageNamed: "img_notifications_tray", title: "notifications_empty_title".localize(),
                          subtitle: "notifications_empty_subtitle".localize(),
-                         buttonText: "connections_empty_button".localize(), buttonAction: actionScan)
+                         buttonText: nil, buttonAction: nil)
     }
 
     override func config(mode: ListingBasePresenter.ListingBaseState) {
 
         let credentialsMode = presenterImpl.getMode()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
-        let isScanningQr = presenterImpl.isScanningQr()
 
         // Main views
         viewEmpty.isHidden = !isEmpty
-        viewScanQr.isHidden = !isScanningQr
-        viewTable.isHidden = isEmpty || isScanningQr
+        viewTable.isHidden = isEmpty
 
         // Change the nav bar
         if credentialsMode == .detail {
@@ -93,14 +85,14 @@ class NotificationsViewController: ListingBaseViewController {
             navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
                                        hasBackButton: credentialsMode != .degrees, rightIconName: nil,
                                        rightIconAction: nil)
+        } else if credentialsMode == .activityLog {
+            navBar = NavBarCustomStyle(hasNavBar: true, title: "activitylog_title".localize(),
+                                       hasBackButton: true, rightIconName: nil, rightIconAction: nil)
         } else {
-            let navTitle = isScanningQr
-                ? "notifications_scan_qr_nav_title".localize()
-                : "notifications_title".localize()
-            let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil
-            navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
-                                       hasBackButton: isScanningQr, rightIconName: navIconName,
-                                       rightIconAction: actionScan)
+            let navTitle =  "notifications_title".localize()
+            let navIconName = mode != .fetching ? "ico_history" : nil
+            navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: false,
+                                       rightIconName: navIconName, rightIconAction: actionHistory)
         }
 
         NavBarCustom.config(view: self)
@@ -126,9 +118,9 @@ class NotificationsViewController: ListingBaseViewController {
         case .degree:
             return "common"
         case .newDegreeHeader:
-            return "newDegreeHeader"
+            return "notificationHeader"
         case .newDegree:
-            return "newDegree"
+            return "notification"
         case .document:
             return "document"
         case .detailHeader:
@@ -137,6 +129,8 @@ class NotificationsViewController: ListingBaseViewController {
             return "detailProperty"
         case .detailFooter:
             return "detailFooter"
+        case .activityLog:
+            return "activityLog"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
@@ -148,9 +142,9 @@ class NotificationsViewController: ListingBaseViewController {
         case .degree:
             return DegreeViewCell.default_NibName()
         case .newDegreeHeader:
-            return NewDegreeHeaderViewCell.default_NibName()
+            return NotificationHeaderViewCell.default_NibName()
         case .newDegree:
-            return NewDegreeViewCell.default_NibName()
+            return NotificationViewCell.default_NibName()
         case .document:
             return DocumentViewCell.default_NibName()
         case .detailHeader:
@@ -159,6 +153,8 @@ class NotificationsViewController: ListingBaseViewController {
             return DetailPropertyViewCell.default_NibName()
         case .detailFooter:
             return DetailFooterViewCell.default_NibName()
+        case .activityLog:
+            return ActivityLogTableViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }
@@ -168,40 +164,4 @@ class NotificationsViewController: ListingBaseViewController {
 
     func setupButtons() {}
 
-    lazy var actionScan = SelectorAction(action: { [weak self] in
-          self?.presenterImpl.tappedScanButton()
-    })
-
-    // MARK: Scan QR
-
-    func setupQrScanner() {
-
-        scanner.prepareScan(viewQrScannerContainer) { (stringValue) -> Void in
-            self.presenterImpl.scannedQrCode(stringValue)
-        }
-        scanner.scanFrame = viewQrScannerContainer.frame
-        scanner.autoRemoveSubLayers = true
-        scanner.lineWidth = 0
-        scanner.strokeColor = UIColor.appRed
-        scanner.maxDetectedCount = 1
-    }
-
-    func startQrScan() {
-
-        scanner.clearDrawLayer()
-        scanner.startScan()
-    }
-
-    func stopQrScan() {
-        scanner.stopScan()
-    }
-
-    func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
-
-        let confirmMessage = ConnectionConfirmViewController.makeThisView()
-
-        customPresentViewController(confirmMessage.presentr, viewController: confirmMessage, animated: true)
-        confirmMessage.config(delegate: presenterImpl, lead: "connections_scan_qr_confirm_title".localize(),
-                              title: title, logoData: logoData, placeholderNamed: "ico_placeholder_credential")
-    }
 }

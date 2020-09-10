@@ -11,24 +11,18 @@ import SwiftProtobuf
 import ObjectMapper
 
 class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
-                                NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
-                                NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate,
+                                NotificationViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
+                                DocumentViewCellPresenterDelegate, ActivityLogViewCellPresenterDelegate,
                                 DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate,
-                                DetailPropertyViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate,
-                                ConnectionsWorkerDelegate {
+                                DetailPropertyViewCellPresenterDelegate {
 
     var viewImpl: NotificationsViewController? {
         return view as? NotificationsViewController
     }
 
-    enum ConnectionsSpecialState {
-        case none
-        case scanningQr
-    }
-
     enum CredentialsMode {
         case degrees
-        case document
+        case activityLog
         case detail
     }
 
@@ -41,6 +35,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         case detailHeader // detail mode
         case detailProperty // detail mode
         case detailFooter // detail mode
+        case activityLog // activity log mode
     }
 
     struct CellRow {
@@ -55,23 +50,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     var detailDegree: Degree?
 
-    var connectionsWorker = ConnectionsWorker()
-    var stateSpecial: ConnectionsSpecialState = .none
-
-    var contacts: [Contact] = []
-
-//    var isFetching = false
-
-    override init() {
-        super.init()
-        connectionsWorker.delegate = self
-    }
+    var activityLogs: [ActivityHistory]?
 
     // MARK: Modes
-
-    func isScanningQr() -> Bool {
-        return self.state == .special && self.stateSpecial == .scanningQr
-    }
 
     func getMode() -> CredentialsMode {
         return mode
@@ -83,9 +64,11 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         updateViewToState()
     }
 
-    func startShowingDocument() {
+    func startShowingActivityLog() {
 
-        mode = .document
+        mode = .activityLog
+        let dao = ActivityHistoryDAO()
+        activityLogs = dao.listActivityHistory()
         updateViewToState()
     }
 
@@ -145,37 +128,20 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     // MARK: Buttons
 
-    func tappedScanButton() {
-        startQrScanning()
+    func tappedHistoryButton() {
+        self.startShowingActivityLog()
     }
 
     @discardableResult
     func tappedBackButton() -> Bool {
 
-        if isScanningQr() {
-            stopQrScanning()
-            return true
-        }
         if mode != .degrees {
-            actionPullToRefresh()
+            self.startShowingDegrees()
+            self.fetchData()
+            self.updateViewToState()
             return true
         }
         return false
-    }
-
-    func startQrScanning() {
-
-        state = .special
-        stateSpecial = .scanningQr
-        updateViewToState()
-        viewImpl?.startQrScan()
-    }
-
-    func stopQrScanning() {
-
-        stateSpecial = .none
-        viewImpl?.stopQrScan()
-        startFetching()
     }
 
     // MARK: ListingBaseTableUtilsPresenterDelegate
@@ -197,11 +163,11 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     func hasData() -> Bool {
         switch mode {
         case .degrees:
-            return (degreeRows?.size() ?? 0) > 0
+            return !(degreeRows?.isEmpty ?? true)
         case .detail:
-            return (detailRows?.size() ?? 0) > 0
-        case .document:
-            return true
+            return !(detailRows?.isEmpty ?? true)
+        case .activityLog:
+            return !(activityLogs?.isEmpty ?? true)
         }
     }
 
@@ -212,11 +178,11 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
         switch mode {
         case .degrees:
-            return (degreeRows?.size() ?? 0)
-        case .document:
-            return 1
+            return degreeRows?.size() ?? 0
+        case .activityLog:
+            return activityLogs?.size() ?? 0
         case .detail:
-            return (detailRows?.size() ?? 0)
+            return detailRows?.size() ?? 0
         }
     }
 
@@ -228,8 +194,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         switch mode {
         case .degrees:
             return degreeRows![indexPath.row].type
-        case .document:
-            return .document
+        case .activityLog:
+            return .activityLog
         case .detail:
             return detailRows![indexPath.row].type
         }
@@ -242,13 +208,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     }
 
     func fetchElements() {
-        self.connectionsWorker.fetchConnections()
-    }
 
-    func fetchCredentials() {
-
-//        if isFetching { return }
-//        isFetching = true
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContacts()
 
@@ -259,6 +219,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                 Logger.d("getCredentials responses: \(responses)")
 
                 let credentialsDao = CredentialDAO()
+                let historyDao = ActivityHistoryDAO()
+
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
@@ -267,7 +229,12 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
                                                                                messageId: message.id) {
-                                contactsDao.updateMessageId(did: credential.issuerId, messageId: message.id)
+                                contactsDao.updateMessageId(did: credential.0.issuerId, messageId: message.id)
+                                if credential.1 {
+                                    historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
+                                                                     type: .credentialAdded, credential: credential.0,
+                                                                     contact: nil)
+                                }
                             }
                         }
                     }
@@ -305,37 +272,49 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     // MARK: Table
 
     func hasPullToRefresh() -> Bool {
-        true
+        mode == .degrees
     }
 
     func actionPullToRefresh() {
 
-        self.startShowingDegrees()
-        self.fetchData()
-        self.updateViewToState()
+        if mode == .degrees {
+            self.startShowingDegrees()
+            self.fetchData()
+            self.updateViewToState()
+        }
     }
 
-    func setup(for cell: NewDegreeViewCell) {
+    func setup(for cell: NotificationViewCell) {
 
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
             let credential = cellRow.value as? Credential else {
             return
         }
 
-        var isLast = degreeRows!.count - 1 == rowIndex
-        if !isLast {
-            switch degreeRows![rowIndex + 1].type {
-            case .newDegree:
-                isLast = false
-            default:
-                isLast = true
-            }
+        var title = ""
+        var placeholder = ""
+        switch CredentialType(rawValue: credential.type) {
+        case .univerityDegree:
+            title = "credentials_university_degree".localize()
+            placeholder = "icon_university"
+        case .governmentIssuedId:
+            title = "credentials_government_id".localize()
+            placeholder = "icon_id"
+        case .proofOfEmployment:
+            title = "credentials_proof_employment".localize()
+            placeholder = "icon_proof_employment"
+        case .certificatOfInsurance:
+            title = "credentials_certificate_insurance".localize()
+            placeholder = "icon_insurance"
+        default:
+            print("Unrecognized type")
         }
-        cell.config(title: credential.credentialName, subtitle: credential.issuerName, logoData: nil,
-                    logoPlaceholderNamed: credential.logoPlaceholder, isLast: isLast)
+
+        cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
+                    logoPlaceholderNamed: placeholder, date: credential.dateReceived)
     }
 
-    func tappedAction(for cell: NewDegreeViewCell) {
+    func tappedAction(for cell: NotificationViewCell) {
 
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex],
             let credential = cellRow.value as? Credential else {
@@ -409,14 +388,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         if let degree = cellRow?.value as? Degree {
             startShowingDetails(degree: degree)
         }
-        // Config for an Id
-        else if cellRow?.value is LoggedUser {
-            startShowingDocument()
-        }
-    }
-
-    func setup(for cell: NewDegreeHeaderViewCell) {
-        cell.config(name: getLoggedUser()?.firstName)
     }
 
     func setup(for cell: DocumentViewCell) {
@@ -462,6 +433,11 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         cell.config(isNew: false, type: detailDegree?.type)
     }
 
+    func setup(for cell: ActivityLogTableViewCell) {
+        let detailRow = activityLogs![cell.indexPath!.row]
+        cell.config(history: detailRow)
+    }
+
     // MARK: Accept and Decline buttons
 
     func tappedDeclineAction(for cell: DetailFooterViewCell?) {
@@ -476,49 +452,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         let credentialsDao = CredentialDAO()
         credentialsDao.setViewed(credentialId: detailDegree?.messageId ?? "")
         sharedMemory.loggedUser = sharedMemory.loggedUser
-    }
-
-    // MARK: QR Reader
-
-    func scannedQrCode(_ str: String) {
-        Logger.d("Scanned: \(str)")
-        self.connectionsWorker.validateQrCode(str, contacts: self.contacts)
-    }
-
-    func tappedDeclineAction(for: ConnectionConfirmViewController) {
-
-        Tracker.global.trackConnectionDecline()
-    }
-
-    func tappedConfirmAction(for viewController: ConnectionConfirmViewController) {
-
-        Tracker.global.trackConnectionAccept()
-        self.connectionsWorker.confirmQrCode()
-    }
-
-    // MARK: ConnectionsWorkerDelegate
-
-    func contactsFetched(contacts: [Contact]) {
-        self.contacts.removeAll()
-        self.contacts.append(contacts)
-        fetchCredentials()
-    }
-
-    func config(isLoading: Bool) {
-         self.viewImpl?.config(isLoading: isLoading)
-    }
-
-    func showErrorMessage(doShow: Bool, message: String?) {
-        self.viewImpl?.showErrorMessage(doShow: doShow, message: message)
-    }
-
-    func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
-        self.viewImpl?.onBackPressed()
-        self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData)
-    }
-
-    func conectionAccepted() {
-        NotificationCenter.default.post(name: .showContactsScreen, object: nil)
     }
 
 }

@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19E287" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19G73" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="ActivityHistory" representedClassName="ActivityHistory" syncable="YES">
+        <attribute name="contactId" optional="YES" attributeType="String"/>
+        <attribute name="contactName" optional="YES" attributeType="String"/>
+        <attribute name="credentialId" optional="YES" attributeType="String"/>
+        <attribute name="credentialName" optional="YES" attributeType="String"/>
+        <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="type" attributeType="Integer 16" usesScalarValueType="YES"/>
+    </entity>
     <entity name="Contact" representedClassName="Contact" syncable="YES">
         <attribute name="connectionId" attributeType="String"/>
         <attribute name="dateCreated" attributeType="Date" usesScalarValueType="NO"/>
@@ -20,15 +28,9 @@
         <attribute name="type" attributeType="String"/>
         <attribute name="viewed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
     </entity>
-    <entity name="CredentialHistory" representedClassName="CredentialHistory" syncable="YES">
-        <attribute name="dateShared" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="isRequested" attributeType="Boolean" usesScalarValueType="YES"/>
-        <relationship name="connection" maxCount="1" deletionRule="Nullify" destinationEntity="Contact"/>
-        <relationship name="credential" maxCount="1" deletionRule="Nullify" destinationEntity="Credential"/>
-    </entity>
     <elements>
         <element name="Contact" positionX="146.6640625" positionY="-16.45703125" width="128" height="163"/>
         <element name="Credential" positionX="-63" positionY="-18" width="128" height="163"/>
-        <element name="CredentialHistory" positionX="38.82421875" positionY="166.625" width="128" height="103"/>
+        <element name="ActivityHistory" positionX="38.82421875" positionY="166.625" width="128" height="118"/>
     </elements>
 </model>

@@ -1,12 +1,11 @@
 //
 
-protocol NewDegreeViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
+protocol NotificationViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
 
-    func setup(for cell: NewDegreeViewCell)
-    func tappedAction(for cell: NewDegreeViewCell)
+    func setup(for cell: NotificationViewCell)
 }
 
-class NewDegreeViewCell: BaseTableViewCell {
+class NotificationViewCell: BaseTableViewCell {
 
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var labelSubtitle: UILabel!
@@ -16,13 +15,14 @@ class NewDegreeViewCell: BaseTableViewCell {
     @IBOutlet weak var viewSeparator: UIView!
     @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var constraintFooterVertical: NSLayoutConstraint!
+    @IBOutlet weak var labelDate: UILabel!
 
     override class func default_NibName() -> String {
-        return "NewDegreeViewCell"
+        return "NotificationViewCell"
     }
 
-    var delegateImpl: NewDegreeViewCellPresenterDelegate? {
-        return delegate as? NewDegreeViewCellPresenterDelegate
+    var delegateImpl: NotificationViewCellPresenterDelegate? {
+        return delegate as? NotificationViewCellPresenterDelegate
     }
 
     override func initialSetup(index: IndexPath?, delegate: BaseTableViewCellPresenterDelegate?) {
@@ -30,31 +30,23 @@ class NewDegreeViewCell: BaseTableViewCell {
 
         // Setup
         delegateImpl?.setup(for: self)
-        viewMainBody.addDropShadow()
         imageLogo.layer.cornerRadius = AppConfigs.CORNER_RADIUS_REGULAR
-    }
-
-    // MARK: Component delegates
-
-    @IBAction func actionMainButtonTapped(_ sender: Any) {
-        self.delegateImpl?.tappedAction(for: self)
+        viewMainBody.addRoundCorners(radius: 6)
+        viewMainBody.addDropShadow()
     }
 
     // MARK: Config
 
-    func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String, isLast: Bool) {
+    func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String, date: Date) {
 
         labelTitle.text = title
         let hideSubtitle = subtitle == nil
         labelSubtitle.isHidden = hideSubtitle
         labelSubtitle.text = subtitle
-        constraintTitleVertical.constant = hideSubtitle ? 0.0 : -10.0
         // Logo image
         imageLogo.applyDataImage(data: logoData, placeholderNamed: logoPlaceholderNamed)
+        labelDate.text = String(format: "credentials_degrees_new_date".localize(),
+                                date.dateTimeString())
 
-        let radius = isLast ? AppConfigs.CORNER_RADIUS_REGULAR : 0.0
-        viewMainBody.addRoundCorners(radius: radius, onlyBottoms: true)
-        constraintFooterVertical.constant = isLast ? 22.0 : 0
-        viewSeparator.isHidden = isLast
     }
 }

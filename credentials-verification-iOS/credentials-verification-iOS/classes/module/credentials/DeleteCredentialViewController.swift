@@ -29,18 +29,15 @@ class DeleteCredentialViewController: UIViewController {
                                       borderColor: UIColor.appRed.cgColor)
         buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
 
-        switch CredentialType(rawValue: credential?.type ?? "") {
+        credentialName.text = credential?.credentialName
+        switch credential?.credentialType {
         case .governmentIssuedId:
-            credentialName.text = "credentials_government_id".localize()
             credentialIcon.image = #imageLiteral(resourceName: "icon_id")
         case .univerityDegree:
-            credentialName.text = "credentials_university_degree".localize()
             credentialIcon.image = #imageLiteral(resourceName: "icon_university")
         case .proofOfEmployment:
-            credentialName.text = "credentials_proof_employment".localize()
             credentialIcon.image = #imageLiteral(resourceName: "icon_proof_employment")
         case .certificatOfInsurance:
-            credentialName.text = "credentials_certificate_insurance".localize()
             credentialIcon.image = #imageLiteral(resourceName: "icon_insurance")
         default:
             print("Unrecognized type")

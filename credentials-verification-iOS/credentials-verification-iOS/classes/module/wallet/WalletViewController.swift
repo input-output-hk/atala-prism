@@ -104,8 +104,6 @@ class WalletViewController: ListingBaseViewController {
             return CommonViewCell.default_NibName()
         case .history:
             return HistoryViewCell.default_NibName()
-        case .cards:
-            return NewDegreeViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }

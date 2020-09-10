@@ -125,6 +125,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContacts()
         let credentialsDao = CredentialDAO()
+        let historyDao = ActivityHistoryDAO()
 
         // Call the service
         ApiService.call(async: {
@@ -141,7 +142,12 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
                                                                                messageId: message.id) {
-                                contactsDao.updateMessageId(did: credential.issuerId, messageId: message.id)
+                                contactsDao.updateMessageId(did: credential.0.issuerId, messageId: message.id)
+                                if credential.1 {
+                                    historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
+                                                                     type: .credentialAdded, credential: credential.0,
+                                                                     contact: nil)
+                                }
                             } else if !atalaMssg.proofRequest.connectionToken.isEmpty {
                                 proofRequest = atalaMssg.proofRequest
                                 self.detailProofRequestMessageId = message.id
@@ -194,6 +200,12 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 let responses = try ApiService.global.shareCredentials(contact: contact,
                                                                        credentials: credentials)
                 Logger.d("shareCredential response: \(responses)")
+                let historyDao = ActivityHistoryDAO()
+                let timestamp = Date()
+                for credential in credentials {
+                    historyDao.createActivityHistory(timestamp: timestamp, type: .credentialRequested,
+                                                     credential: credential, contact: contact)
+                }
 
             } catch {
                 return error
@@ -341,9 +353,16 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     // MARK: Delete
 
-    func deleteContact(contact: Contact, credentials: [Credential]?) {
+    func deleteContact(contact: Contact, credentials: [Credential]) {
         let credentialDAO = CredentialDAO()
-        if credentialDAO.deleteCredentials(credentials: credentials ?? []) {
+        let historyDao = ActivityHistoryDAO()
+        for credential in credentials {
+            historyDao.createActivityHistory(timestamp: Date(), type: .credentialDeleted,
+                                             credential: credential, contact: nil)
+        }
+        if credentialDAO.deleteCredentials(credentials: credentials) {
+            historyDao.createActivityHistory(timestamp: Date(), type: .contactDeleted,
+                                             credential: nil, contact: contact)
             let contactDao = ContactDAO()
             if contactDao.deleteContact(contact: contact) {
                 self.actionPullToRefresh()

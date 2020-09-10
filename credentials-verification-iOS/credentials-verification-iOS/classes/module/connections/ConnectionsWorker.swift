@@ -127,7 +127,10 @@ class ConnectionsWorker: NSObject {
                 let keyPath = CryptoUtils.global.confirmNewKeyUsed()
                 let dao = ContactDAO()
                 _ = DispatchQueue.main.sync {
-                    dao.createContact(connectionInfo: response.connection, keyPath: keyPath)
+                    let contact = dao.createContact(connectionInfo: response.connection, keyPath: keyPath)
+                    let historyDao = ActivityHistoryDAO()
+                    historyDao.createActivityHistory(timestamp: contact?.dateCreated, type: .contactAdded,
+                                                     credential: nil, contact: contact)
                 }
             } catch {
                 return error

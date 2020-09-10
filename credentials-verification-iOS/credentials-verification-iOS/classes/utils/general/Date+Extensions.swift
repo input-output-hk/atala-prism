@@ -81,20 +81,18 @@ extension Date {
     }
 
     func dateString() -> String {
+        let dateFormat = SharedMemory.global.loggedUser?.dateFormat ?? Common.DAFAULT_DATE_FORMAT
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.dateFormat = dateFormat
         return dateFormatter.string(from: self)
     }
 
-    func displayableString() -> String {
+    func dateTimeString() -> String {
+        let dateFormat = SharedMemory.global.loggedUser?.dateFormat ?? Common.DAFAULT_DATE_FORMAT
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM-dd-yyyy"
-        return dateFormatter.string(from: self)
-    }
-
-    func displayableSlashedString() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM/dd/yyyy"
+        dateFormatter.dateFormat = "\(dateFormat) hh:mm a"
+        dateFormatter.amSymbol = "AM"
+        dateFormatter.pmSymbol = "PM"
         return dateFormatter.string(from: self)
     }
 

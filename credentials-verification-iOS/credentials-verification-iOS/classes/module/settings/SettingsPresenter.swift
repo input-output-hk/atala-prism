@@ -100,6 +100,10 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
 
         let contactsDao = ContactDAO()
         contactsDao.deleteAllContacts()
+        
+        let historyDao = ActivityHistoryDAO()
+        historyDao.deleteAllActivityHistory()
+        
 
         sharedMemory.loggedUser = sharedMemory.loggedUser
         viewImpl?.showSuccessMessage(doShow: true, message: "settings_reset_success".localize(), title: "")
