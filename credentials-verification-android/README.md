@@ -11,7 +11,7 @@ Android Studio 4.0.0 or higher is recommended.
 ### Compiling the Crypto library
 In a terminal located inside the `/crypto/` folder run: 
 
-`sbt "project cryptoJVM" "clean"  "set test in assembly := {}" "assembly"`
+`sbt "project cryptoJVM" "set test in assembly := {}" "assembly"`
 
 After that you should have Crypto library jar file in `/crypto/jvm/target/scala-2.12/prism-crypto-XXXXX.jar` and that's it, Android project .gradle file is already set to include that jar file.
 

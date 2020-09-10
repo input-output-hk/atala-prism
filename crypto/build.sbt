@@ -52,7 +52,7 @@ lazy val crypto = crossProject(JSPlatform, JVMPlatform)
   )
   .jvmSettings(
     Test / fork := true, // Avoid classloader issues during testing with `sbt ~test`
-    assemblyJarName in assembly := s"prism-crypto-${version.value}.jar",
+    assemblyJarName in assembly := "prism-crypto.jar",
     // In order to use this library in Android, we need to bundle it with the scala stdlib
     // But we don't need the transitive dependencies/
     //
