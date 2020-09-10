@@ -109,9 +109,9 @@ val scalatagsVersion = "0.9.1"
 val scalaDomVersion = "1.0.0"
 val scalaJsChromeVersion = "0.7.0"
 val enumeratumVersion = "1.6.1"
+val scalaJsJavaTimeVersion = "1.0.0"
 val slinkyVersion = "0.6.5"
 val slinkyIjextVerion = "0.6.5+15-fa93d141"
-val scalaJsJavaTimeVersion = "1.0.0"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaDomVersion
 libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % scalaJsChromeVersion

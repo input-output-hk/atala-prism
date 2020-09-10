@@ -424,10 +424,6 @@ jobs:
           name: Compile extension and its tests
           command: cd credentials-verification-webextension && sbt test:compile
 
-      - run:
-          name: Package extension
-          command: cd credentials-verification-webextension && sbt chromePackage
-
       - save_cache:
           paths:
             - ~/.cache/coursier
@@ -447,8 +443,15 @@ jobs:
           name: Run Unit Tests
           command: cd credentials-verification-webextension && sbt test
 
+      - run:
+          name: Package the extension to release
+          command: cd credentials-verification-webextension && PROD=true sbt chromePackage
+
       - store_test_results:
           path: credentials-verification-webextension/target/test-reports
+
+      - store_artifacts:
+          path: credentials-verification-webextension/target/chrome/geud-wallet.zip
 
   build-crypto:
     working_directory: ~/repo

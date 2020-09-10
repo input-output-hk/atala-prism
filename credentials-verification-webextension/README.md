@@ -19,7 +19,7 @@ Before being able to build the extension, you'll need to install a plugin locall
 Then, running `sbt chromePackage` on this project is enough.
 
 ## Development
-- Running `sbt ~chromeUnpackedFast` will build the app each time it detects changes on the code, it also disables js optimizations which result in faster builds (placing the build at `target/chrome/unpacked-fast`).
+- Running `sbt "~chromeUnpackedFast"` will build the app each time it detects changes on the code, it also disables js optimizations which result in faster builds (placing the build at `target/chrome/unpacked-fast`).
   - You can run the following to spin up all required dependencies, except PostgreSQL, along `sbt ~chromeUnpackedFast`:
     ```shell script
     ./run_local.sh
