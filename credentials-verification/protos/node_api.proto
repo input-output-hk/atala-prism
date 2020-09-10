@@ -23,7 +23,6 @@ service NodeService {
 message GetDidDocumentRequest {
     string did = 1;
 }
-
 message GetDidDocumentResponse {
     DIDData document = 1;
 }
@@ -33,12 +32,14 @@ message CreateDIDRequest {
 }
 message CreateDIDResponse {
     string id = 1; // DID suffix, where DID is in form did:atala:[DID suffix]
+    TransactionInfo transactionInfo = 2;
 }
 
 message UpdateDIDRequest {
     SignedAtalaOperation signed_operation = 1;
 }
 message UpdateDIDResponse {
+    TransactionInfo transactionInfo = 1;
 }
 
 message IssueCredentialRequest {
@@ -46,12 +47,14 @@ message IssueCredentialRequest {
 }
 message IssueCredentialResponse {
     string id = 1; // credential id
+    TransactionInfo transactionInfo = 2;
 }
 
 message RevokeCredentialRequest {
     SignedAtalaOperation signed_operation = 1;
 }
 message RevokeCredentialResponse {
+    TransactionInfo transactionInfo = 1;
 }
 
 message GetNodeBuildInfoRequest {

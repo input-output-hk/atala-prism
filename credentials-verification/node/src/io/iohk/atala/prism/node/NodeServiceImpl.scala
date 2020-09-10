@@ -5,11 +5,12 @@ import io.iohk.cvp.BuildInfo
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.CredentialId
+import io.iohk.atala.prism.node.models.{CredentialId, Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
 import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
 import io.iohk.prism.protos.node_api
+import io.iohk.prism.protos.node_models
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,8 +37,8 @@ class NodeServiceImpl(
     for {
       operation <- operationF
       parsedOp <- errorEitherToFuture(CreateDIDOperation.parseWithMockedTime(operation))
-      _ <- objectManagement.publishAtalaOperation(operation)
-    } yield node_api.CreateDIDResponse(id = parsedOp.id.suffix)
+      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+    } yield node_api.CreateDIDResponse(id = parsedOp.id.suffix).withTransactionInfo(toTransactionInfo(transactionInfo))
   }
 
   override def updateDID(request: node_api.UpdateDIDRequest): Future[node_api.UpdateDIDResponse] = {
@@ -47,8 +48,8 @@ class NodeServiceImpl(
     for {
       operation <- operationF
       _ <- errorEitherToFuture(UpdateDIDOperation.validate(operation))
-      _ <- objectManagement.publishAtalaOperation(operation)
-    } yield node_api.UpdateDIDResponse()
+      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+    } yield node_api.UpdateDIDResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
   }
 
   override def issueCredential(request: node_api.IssueCredentialRequest): Future[node_api.IssueCredentialResponse] = {
@@ -59,8 +60,10 @@ class NodeServiceImpl(
       operation <- operationF
       parsedOp <- errorEitherToFuture(IssueCredentialOperation.parseWithMockedTime(operation))
       operation = request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
-      _ <- objectManagement.publishAtalaOperation(operation)
-    } yield node_api.IssueCredentialResponse(id = parsedOp.credentialId.id)
+      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+    } yield node_api
+      .IssueCredentialResponse(id = parsedOp.credentialId.id)
+      .withTransactionInfo(toTransactionInfo(transactionInfo))
   }
 
   override def revokeCredential(
@@ -72,8 +75,8 @@ class NodeServiceImpl(
     for {
       operation <- operationF
       _ <- errorEitherToFuture(RevokeCredentialOperation.validate(operation))
-      _ <- objectManagement.publishAtalaOperation(operation)
-    } yield node_api.RevokeCredentialResponse()
+      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+    } yield node_api.RevokeCredentialResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
   }
 
   override def getCredentialState(request: GetCredentialStateRequest): Future[GetCredentialStateResponse] = {
@@ -107,11 +110,26 @@ class NodeServiceImpl(
       )
   }
 
-  protected def errorEitherToFuture[T](either: Either[ValidationError, T]): Future[T] = {
+  private def errorEitherToFuture[T](either: Either[ValidationError, T]): Future[T] = {
     Future.fromTry {
       either.left.map { error =>
         Status.INVALID_ARGUMENT.withDescription(error.render).asRuntimeException()
       }.toTry
+    }
+  }
+
+  private def toTransactionInfo(transactionInfo: TransactionInfo): node_models.TransactionInfo = {
+    node_models.TransactionInfo().withId(transactionInfo.id.toString).withLedger(toLedger(transactionInfo.ledger))
+  }
+
+  private def toLedger(ledger: Ledger): node_models.Ledger = {
+    ledger match {
+      case Ledger.InMemory => node_models.Ledger.IN_MEMORY
+      case Ledger.BitcoinTestnet => node_models.Ledger.BITCOIN_TESTNET
+      case Ledger.BitcoinMainnet => node_models.Ledger.BITCOIN_MAINNET
+      case Ledger.CardanoTestnet => node_models.Ledger.CARDANO_TESTNET
+      case Ledger.CardanoMainnet => node_models.Ledger.CARDANO_MAINNET
+      case _ => throw new IllegalArgumentException(s"Unexpected ledger: $ledger")
     }
   }
 }

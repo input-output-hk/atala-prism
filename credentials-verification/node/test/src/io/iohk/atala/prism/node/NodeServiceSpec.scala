@@ -7,8 +7,6 @@ import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -28,7 +26,8 @@ import io.iohk.atala.prism.node.operations.{
   IssueCredentialOperationSpec,
   ParsingUtils,
   RevokeCredentialOperationSpec,
-  TimestampInfo
+  TimestampInfo,
+  UpdateDIDOperationSpec
 }
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
@@ -38,6 +37,8 @@ import io.iohk.atala.prism.node.services.{
   DIDDataService,
   ObjectManagementService
 }
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
 import io.iohk.prism.protos.{node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
@@ -62,6 +63,8 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
   private val testTransactionInfo =
     TransactionInfo(TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value, Ledger.InMemory)
+  private val testTransactionInfoProto =
+    node_models.TransactionInfo().withId(testTransactionInfo.id.toString).withLedger(node_models.Ledger.IN_MEMORY)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -130,8 +133,10 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
-      service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
+      val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
+      response.id must not be empty
+      response.transactionInfo.value mustEqual testTransactionInfoProto
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
@@ -150,6 +155,37 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
     }
   }
 
+  "NodeService.updateDID" should {
+    "publish UpdateDID operation" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        UpdateDIDOperationSpec.exampleOperation,
+        "master",
+        UpdateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
+
+      val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
+
+      response.transactionInfo.value mustEqual testTransactionInfoProto
+      verify(objectManagementService).publishAtalaOperation(operation)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "return error when provided operation is invalid" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        UpdateDIDOperationSpec.exampleOperation.update(_.updateDid.id := "abc"),
+        "master",
+        UpdateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      val error = intercept[StatusRuntimeException] {
+        service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
+      }
+      error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
+    }
+  }
+
   "NodeService.issueCredential" should {
     "publish IssueCredential operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
@@ -160,8 +196,10 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
-      service.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(operation))
+      val response = service.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(operation))
 
+      response.id must not be empty
+      response.transactionInfo.value mustEqual testTransactionInfoProto
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
@@ -190,8 +228,9 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
-      service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
+      val response = service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
 
+      response.transactionInfo.value mustEqual testTransactionInfoProto
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
