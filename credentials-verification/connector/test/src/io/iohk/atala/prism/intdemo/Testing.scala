@@ -2,7 +2,6 @@ package io.iohk.atala.prism.intdemo
 
 import io.circe.{ACursor, Decoder, HCursor}
 import org.mockito.Mockito
-import org.mockito.Mockito.timeout
 import org.mockito.verification.{VerificationMode, VerificationWithTimeout}
 
 private[intdemo] object Testing {
@@ -10,7 +9,7 @@ private[intdemo] object Testing {
   /**
     * Usage: {{{ verify(mock, eventually.times(1)).someMethod() }}}
     */
-  def eventually: VerificationWithTimeout = timeout(100)
+  def eventually: VerificationWithTimeout = Mockito.timeout(1000)
 
   /**
     * Verifies a method has never been called after an interval of 100 millis.

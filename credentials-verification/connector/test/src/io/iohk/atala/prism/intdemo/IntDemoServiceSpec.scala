@@ -60,7 +60,7 @@ class IntDemoServiceSpec extends FlatSpec {
         val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
         intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
         scheduler.tick(1 second)
-        verify(streamObserver, eventually.times(1)).onNext(intdemo_api.GetSubjectStatusResponse(expectedResponse))
+        verify(streamObserver, eventually.atLeastOnce()).onNext(intdemo_api.GetSubjectStatusResponse(expectedResponse))
         verify(connectorIntegration, neverEver).sendCredential(
           any[ParticipantId],
           any[ConnectionId],
@@ -121,7 +121,7 @@ class IntDemoServiceSpec extends FlatSpec {
 
         verify(connectorIntegration, eventually.times(1))
           .sendCredential(eqTo(issuerId), eqTo(connectionId), credentialMatcher)
-        verify(streamObserver, eventually.times(1)).onCompleted()
+        verify(streamObserver, eventually.atLeastOnce()).onCompleted()
         verify(streamObserver, neverEver).onError(any)
       }
 
@@ -218,7 +218,7 @@ class IntDemoServiceSpec extends FlatSpec {
 
     verify(connectorIntegration, eventually.times(1))
       .sendProofRequest(eqTo(issuerId), eqTo(connectionId), proofRequestMatcher)
-    verify(streamObserver, eventually.times(1))
+    verify(streamObserver, eventually.atLeastOnce())
       .onNext(intdemo_api.GetSubjectStatusResponse(intdemo_models.SubjectStatus.CONNECTED))
     verify(streamObserver, neverEver).onError(any)
   }
