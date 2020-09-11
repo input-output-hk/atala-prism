@@ -5,7 +5,6 @@ import java.util.UUID
 import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.iohk.atala.crypto.{EC, ECPublicKey}
-import io.iohk.atala.prism.ParticipantPropagatorService
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
@@ -33,7 +32,6 @@ class ConnectorService(
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
     authenticator: AuthenticatorWithGrpcHeaderParser,
-    participantPropagatorService: ParticipantPropagatorService,
     nodeService: NodeServiceGrpc.NodeService,
     participantsRepository: ParticipantsRepository,
     // TODO: remove this flag when mobile clients implement signatures
@@ -261,8 +259,6 @@ class ConnectorService(
               case Left(_) => throw new RuntimeException("Impossible")
               case Right(x) => x
             }
-
-        _ <- participantPropagatorService.propagate(id = result.id, tpe = tpe)
       } yield connector_api.RegisterDIDResponse(did = result.did)
     }
   }

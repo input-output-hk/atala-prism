@@ -8,10 +8,9 @@ import io.iohk.atala.prism.connector.model.{ConnectionId, ParticipantLogo, Parti
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.atala.prism.cstore.models.{IndividualConnectionStatus, Verifier}
-import io.iohk.atala.prism.cstore.repositories.VerifiersRepository.VerifierCreationData
+import io.iohk.atala.prism.cstore.models.IndividualConnectionStatus
 import io.iohk.atala.prism.cstore.repositories.daos.{StoredCredentialsDAO, VerifierHoldersDAO}
-import io.iohk.atala.prism.cstore.repositories.{VerifierHoldersRepository, VerifiersRepository}
+import io.iohk.atala.prism.cstore.repositories.VerifierHoldersRepository
 import io.iohk.atala.prism.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
@@ -68,11 +67,6 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
           ParticipantLogo(Vector())
         )
       )
-      .value
-      .futureValue
-
-    new VerifiersRepository(database)
-      .insert(VerifierCreationData(Verifier.Id(verifierId.uuid)))
       .value
       .futureValue
     ()

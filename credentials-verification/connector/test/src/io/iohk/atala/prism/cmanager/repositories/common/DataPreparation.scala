@@ -31,7 +31,6 @@ object DataPreparation {
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
     val participant = ParticipantInfo(ParticipantId(id.value), ParticipantType.Issuer, None, name, Option(did), None)
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
-    IssuersDAO.insert(Issuer(id)).transact(database).unsafeRunSync()
 
     Issuer(id)
   }

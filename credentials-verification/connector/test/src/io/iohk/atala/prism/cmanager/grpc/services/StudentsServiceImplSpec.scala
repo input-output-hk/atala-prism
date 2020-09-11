@@ -8,12 +8,7 @@ import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateP
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student}
-import io.iohk.atala.prism.cmanager.repositories.{
-  CredentialsRepository,
-  IssuerGroupsRepository,
-  IssuersRepository,
-  StudentsRepository
-}
+import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerGroupsRepository, StudentsRepository}
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.{cmanager_api, common_models}
@@ -30,7 +25,6 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   private val usingApiAs = usingApiAsConstructor(new cmanager_api.StudentsServiceGrpc.StudentsServiceBlockingStub(_, _))
 
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
-  private lazy val issuersRepository = new IssuersRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val studentsRepository = new StudentsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
@@ -145,10 +139,6 @@ class StudentsServiceImplSpec extends RpcSpecBase {
           ParticipantLogo(Vector())
         )
       )
-      .value
-      .futureValue
-    issuersRepository
-      .insert(IssuersRepository.IssuerCreationData(id))
       .value
       .futureValue
     id

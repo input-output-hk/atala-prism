@@ -17,7 +17,6 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   ParticipantsDAO
 }
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.atala.prism.ParticipantPropagatorService
 import io.iohk.atala.prism.grpc.{
   GrpcAuthenticationHeader,
   GrpcAuthenticationHeaderParser,
@@ -168,7 +167,6 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       nodeMock,
       GrpcAuthenticationHeaderParser
     )
-  lazy val participantPropagator = new ParticipantPropagatorService(database)(executionContext)
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val registrationService = new RegistrationService(participantsRepository, nodeMock)(executionContext)
@@ -179,7 +177,6 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     braintreePayments,
     paymentsRepository,
     authenticator,
-    participantPropagator,
     nodeMock,
     participantsRepository,
     requireSignatureOnConnectionCreation = true

@@ -2,7 +2,6 @@ package io.iohk.atala.prism.connector
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.ParticipantPropagatorService
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.atala.prism.cmanager.grpc.services.{
   CredentialsServiceImpl,
@@ -104,7 +103,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     )
 
     // connector services
-    val participantPropagatorService = new ParticipantPropagatorService(xa)(executionContext)
     val connectionsService =
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, node)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
@@ -116,7 +114,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       braintreePayments,
       paymentsRepository,
       authenticator,
-      participantPropagatorService,
       node,
       participantsRepository
     )(
