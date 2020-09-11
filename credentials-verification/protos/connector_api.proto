@@ -127,7 +127,10 @@ message GetConnectionTokenInfoRequest {
 
 // Result with information on connection token
 message GetConnectionTokenInfoResponse {
-  io.iohk.prism.protos.ParticipantInfo creator = 1; // participant who generated the code
+  io.iohk.prism.protos.ParticipantInfo creator = 1; // [Will be deprecated] participant who generated the code
+  string creatorName = 2; // same value as the one contained in `creator`
+  bytes creatorLogo = 3; // same value as the one contained in `creator`
+  string creatorDID = 4; // same value as the one contained in `creator` (if any)
 }
 
 // Request to instantiate a connection using token

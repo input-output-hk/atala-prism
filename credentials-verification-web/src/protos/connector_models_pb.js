@@ -1634,7 +1634,10 @@ proto.io.iohk.prism.protos.ConnectionInfo.toObject = function(includeInstance, m
     connectionid: jspb.Message.getFieldWithDefault(msg, 1, ""),
     created: jspb.Message.getFieldWithDefault(msg, 2, 0),
     participantinfo: (f = msg.getParticipantinfo()) && proto.io.iohk.prism.protos.ParticipantInfo.toObject(includeInstance, f),
-    token: jspb.Message.getFieldWithDefault(msg, 4, "")
+    token: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    participantname: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    participantlogo: msg.getParticipantlogo_asB64(),
+    participantdid: jspb.Message.getFieldWithDefault(msg, 7, "")
   };
 
   if (includeInstance) {
@@ -1687,6 +1690,18 @@ proto.io.iohk.prism.protos.ConnectionInfo.deserializeBinaryFromReader = function
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setToken(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setParticipantname(value);
+      break;
+    case 6:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setParticipantlogo(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setParticipantdid(value);
       break;
     default:
       reader.skipField();
@@ -1743,6 +1758,27 @@ proto.io.iohk.prism.protos.ConnectionInfo.serializeBinaryToWriter = function(mes
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getParticipantname();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
+  f = message.getParticipantlogo_asU8();
+  if (f.length > 0) {
+    writer.writeBytes(
+      6,
+      f
+    );
+  }
+  f = message.getParticipantdid();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
       f
     );
   }
@@ -1837,6 +1873,84 @@ proto.io.iohk.prism.protos.ConnectionInfo.prototype.getToken = function() {
  */
 proto.io.iohk.prism.protos.ConnectionInfo.prototype.setToken = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string participantName = 5;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.getParticipantname = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.setParticipantname = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional bytes participantLogo = 6;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.getParticipantlogo = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * optional bytes participantLogo = 6;
+ * This is a type-conversion wrapper around `getParticipantlogo()`
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.getParticipantlogo_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getParticipantlogo()));
+};
+
+
+/**
+ * optional bytes participantLogo = 6;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getParticipantlogo()`
+ * @return {!Uint8Array}
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.getParticipantlogo_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getParticipantlogo()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.setParticipantlogo = function(value) {
+  return jspb.Message.setProto3BytesField(this, 6, value);
+};
+
+
+/**
+ * optional string participantDID = 7;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.getParticipantdid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
+ */
+proto.io.iohk.prism.protos.ConnectionInfo.prototype.setParticipantdid = function(value) {
+  return jspb.Message.setProto3StringField(this, 7, value);
 };
 
 

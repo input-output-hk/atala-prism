@@ -59,8 +59,11 @@ message Connection {
 message ConnectionInfo {
     string connectionId = 1;
     int64 created = 2; // moment of instantiation as milliseconds since the Unix Epoch
-    ParticipantInfo participantInfo = 3; // information about the participant at the other end
+    ParticipantInfo participantInfo = 3; // [Will be deprecated] information about the participant at the other end
     string token = 4; // the token used to generate the connection
+    string participantName = 5; // same value as the one contained in `participantInfo`
+    bytes participantLogo = 6; // same value as the one contained in `participantInfo`
+    string participantDID = 7; // same value as the one contained in `participantInfo`
 }
 
 // Communication key for connection participant

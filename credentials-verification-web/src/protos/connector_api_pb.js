@@ -1530,7 +1530,10 @@ proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.toObject = f
  */
 proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    creator: (f = msg.getCreator()) && connector_models_pb.ParticipantInfo.toObject(includeInstance, f)
+    creator: (f = msg.getCreator()) && connector_models_pb.ParticipantInfo.toObject(includeInstance, f),
+    creatorname: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    creatorlogo: msg.getCreatorlogo_asB64(),
+    creatordid: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -1572,6 +1575,18 @@ proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.deserializeBinaryFromR
       reader.readMessage(value,connector_models_pb.ParticipantInfo.deserializeBinaryFromReader);
       msg.setCreator(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCreatorname(value);
+      break;
+    case 3:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setCreatorlogo(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCreatordid(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1607,6 +1622,27 @@ proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.serializeBinaryToWrite
       1,
       f,
       connector_models_pb.ParticipantInfo.serializeBinaryToWriter
+    );
+  }
+  f = message.getCreatorname();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getCreatorlogo_asU8();
+  if (f.length > 0) {
+    writer.writeBytes(
+      3,
+      f
+    );
+  }
+  f = message.getCreatordid();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
     );
   }
 };
@@ -1646,6 +1682,84 @@ proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.clearCreator
  */
 proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.hasCreator = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional string creatorName = 2;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.getCreatorname = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse} returns this
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.setCreatorname = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional bytes creatorLogo = 3;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.getCreatorlogo = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * optional bytes creatorLogo = 3;
+ * This is a type-conversion wrapper around `getCreatorlogo()`
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.getCreatorlogo_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getCreatorlogo()));
+};
+
+
+/**
+ * optional bytes creatorLogo = 3;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getCreatorlogo()`
+ * @return {!Uint8Array}
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.getCreatorlogo_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getCreatorlogo()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse} returns this
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.setCreatorlogo = function(value) {
+  return jspb.Message.setProto3BytesField(this, 3, value);
+};
+
+
+/**
+ * optional string creatorDID = 4;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.getCreatordid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse} returns this
+ */
+proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.setCreatordid = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 

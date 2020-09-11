@@ -93,7 +93,10 @@ case class ConnectionInfo(
       id.id.toString,
       created = instantiatedAt.toEpochMilli,
       participantInfo = Some(participantInfo.toProto),
-      token = token.token
+      token = token.token,
+      participantName = participantInfo.name,
+      participantLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
+      participantDID = participantInfo.did.getOrElse("")
     )
   }
 }

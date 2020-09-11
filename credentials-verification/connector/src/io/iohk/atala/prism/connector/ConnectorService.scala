@@ -116,7 +116,12 @@ class ConnectorService(
         .getTokenInfo(new model.TokenString(request.token))
         .wrapExceptions
         .successMap { participantInfo =>
-          connector_api.GetConnectionTokenInfoResponse(Some(participantInfo.toProto))
+          connector_api.GetConnectionTokenInfoResponse(
+            creator = Some(participantInfo.toProto),
+            creatorName = participantInfo.name,
+            creatorLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
+            creatorDID = participantInfo.did.getOrElse("")
+          )
         }
     }
   }

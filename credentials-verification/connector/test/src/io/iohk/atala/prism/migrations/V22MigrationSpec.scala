@@ -121,7 +121,7 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
       assignGroup(subjectId1, groupId1)
       insertSubject(subjectId2, issuerId1)
       assignGroup(subjectId2, groupId1)
-      // we also issue a credential to the first subject
+      // we issue a credential to the first subject
       addCredential(credentialId1, subjectId1, issuerId1, "Group 1")
       insertGroup(issuerId1, groupId2, "Group 2")
       insertSubject(subjectId3, issuerId1)
@@ -135,7 +135,7 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
       assignGroup(subjectId5, groupId3)
       insertSubject(subjectId6, issuerId2)
       assignGroup(subjectId6, groupId3)
-      // we iisuer a credential to both subjects in group 3
+      // we issue a credential to both subjects in group 3
       addCredential(credentialId2, subjectId5, issuerId2, "Group 3")
       addCredential(credentialId3, subjectId6, issuerId2, "Group 3")
       // Issuer 3 has 2 groups, but each group has a unique subject
