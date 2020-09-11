@@ -51,7 +51,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     )
 
   "createSubject" should {
-    "create a subject" in {
+    "create a subject and assign it to a group" in {
       val issuerId = createIssuer("issuer name").id
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
       val externalId = Subject.ExternalId.random()
@@ -73,19 +73,79 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
           )
 
         val response = serviceStub.createSubject(request).subject.value
+        response.groupName must be(empty)
+        response.jsonData must be(json.noSpaces)
+        response.externalId must be(request.externalId)
+
+        // the new subject needs to exist
+        val result = subjectsRepository.getBy(issuerId, 10, None, Some(group.name)).value.futureValue.right.value
+        result.size must be(1)
+        val storedSubject = result.headOption.value
+        subjectToProto(storedSubject).copy(jsonData = "") must be(response.copy(jsonData = ""))
+        storedSubject.data must be(json)
+      }
+    }
+
+    "create a subject and assign it to no group" in {
+      val issuerId = createIssuer("issuer name").id
+      val externalId = Subject.ExternalId.random()
+
+      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+        val json = Json
+          .obj(
+            "universityAssignedId" -> Json.fromString("noneyet"),
+            "fullName" -> Json.fromString("Alice Beakman"),
+            "email" -> Json.fromString("alice@bkm.me"),
+            "admissionDate" -> Json.fromString(LocalDate.now().toString)
+          )
+
+        val request = cmanager_api
+          .CreateSubjectRequest(
+            jsonData = json.noSpaces,
+            externalId = externalId.value
+          )
+
+        val response = serviceStub.createSubject(request).subject.value
         val subjectId = Subject.Id(UUID.fromString(response.id))
-        response.groupName must be(request.groupName)
+        response.groupName must be(empty)
         response.jsonData must be(json.noSpaces)
         response.externalId must be(request.externalId)
 
         // the new subject needs to exist
         val result = subjectsRepository.find(issuerId, subjectId).value.futureValue.right.value
-        result mustNot be(empty)
         val storedSubject = result.value
-        storedSubject.groupName.value must be(request.groupName)
+        subjectToProto(storedSubject).copy(jsonData = "") must be(response.copy(jsonData = ""))
         storedSubject.data must be(json)
-        storedSubject.id must be(subjectId)
-        storedSubject.externalId must be(externalId)
+      }
+    }
+
+    "fail to create a subject and assign it to a group that does not exists" in {
+      val issuerId = createIssuer("issuer name").id
+      val externalId = Subject.ExternalId.random()
+
+      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+        val json = Json
+          .obj(
+            "universityAssignedId" -> Json.fromString("noneyet"),
+            "fullName" -> Json.fromString("Alice Beakman"),
+            "email" -> Json.fromString("alice@bkm.me"),
+            "admissionDate" -> Json.fromString(LocalDate.now().toString)
+          )
+
+        val request = cmanager_api
+          .CreateSubjectRequest(
+            jsonData = json.noSpaces,
+            externalId = externalId.value,
+            groupName = "missing group"
+          )
+
+        intercept[Exception](
+          serviceStub.createSubject(request).subject.value
+        )
+
+        // the subject must not be added
+        val result = subjectsRepository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+        result must be(empty)
       }
     }
 
@@ -160,7 +220,6 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         result.size must be(1)
 
         val storedSubject = result.head
-        storedSubject.groupName.value must be(request.groupName)
         storedSubject.data must be(json)
         storedSubject.id.value.toString must be(initialResponse.id)
         storedSubject.externalId must be(externalId)
@@ -393,7 +452,6 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         storedSubject.connectionStatus must be(Student.ConnectionStatus.ConnectionMissing)
         storedSubject.connectionToken.value must be(token)
         storedSubject.connectionId must be(subject.connectionId)
-        storedSubject.groupName must be(subject.groupName)
       }
     }
   }

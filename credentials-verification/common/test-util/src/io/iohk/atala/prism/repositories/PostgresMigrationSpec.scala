@@ -46,7 +46,23 @@ import scala.collection.JavaConverters.iterableAsScalaIterableConverter
   */
 abstract class PostgresMigrationSpec(targetPrefixScript: String) extends PostgresRepositorySpec {
 
-  def test[T](beforeApply: => T, afterApplied: T => Unit): Unit = {
+  private def doNothing[T]: T => Unit = _ => ()
+
+  def test[A, T](beforeApply: => T, afterApplied: => A): Unit = {
+    s"Migrating to version $targetPrefixScript" should {
+      "work" in {
+        // apply the previous migrations
+        PostgresMigrationSpec.migrate(transactorConfig, targetPrefixScript, targetPrefixScriptExcluded = true)
+        beforeApply
+
+        // apply target migration
+        PostgresMigrationSpec.migrate(transactorConfig, targetPrefixScript, targetPrefixScriptExcluded = false)
+        afterApplied
+      }
+    }
+  }
+
+  def test[T](beforeApply: => T, afterApplied: T => Unit = doNothing): Unit = {
     s"Migrating to version $targetPrefixScript" should {
       "work" in {
         // apply the previous migrations

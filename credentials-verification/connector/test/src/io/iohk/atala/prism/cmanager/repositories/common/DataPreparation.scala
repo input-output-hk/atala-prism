@@ -53,23 +53,36 @@ object DataPreparation {
 
   def createStudent(issuer: Issuer.Id, name: String, groupName: IssuerGroup.Name, tag: String = "")(implicit
       database: Transactor[IO]
-  ): Student = {
-    val group = IssuerGroupsDAO
-      .find(issuer, groupName)
-      .transact(database)
-      .unsafeRunSync()
-      .getOrElse(throw new RuntimeException("Missing group"))
+  ): Student = createStudent(issuer, name, Some(groupName), tag)
 
+  def createStudent(issuer: Issuer.Id, name: String, groupName: Option[IssuerGroup.Name], tag: String)(implicit
+      database: Transactor[IO]
+  ): Student = {
     val request = CreateStudent(
       issuer = issuer,
       universityAssignedId = s"uid - $tag",
       fullName = name,
       email = "donthaveone@here.com",
-      admissionDate = LocalDate.now(),
-      groupName = group.name
+      admissionDate = LocalDate.now()
     )
 
-    IssuerSubjectsDAO.create(request, group.id).transact(database).unsafeRunSync()
+    groupName match {
+      case None =>
+        IssuerSubjectsDAO.createStudent(request).transact(database).unsafeRunSync()
+      case Some(name) =>
+        val group = IssuerGroupsDAO
+          .find(issuer, name)
+          .transact(database)
+          .unsafeRunSync()
+          .getOrElse(throw new RuntimeException("Missing group"))
+
+        val query = for {
+          student <- IssuerSubjectsDAO.createStudent(request)
+          _ <- IssuerGroupsDAO.addSubject(group.id, Subject.Id(student.id.value))
+        } yield student
+
+        query.transact(database).unsafeRunSync()
+    }
   }
 
   def createIssuerGroup(issuer: Issuer.Id, name: IssuerGroup.Name)(implicit database: Transactor[IO]): IssuerGroup = {
@@ -96,13 +109,11 @@ object DataPreparation {
 
   def createSubject(issuerId: Issuer.Id, subjectName: String, groupName: IssuerGroup.Name, tag: String = "")(implicit
       database: Transactor[IO]
-  ): Subject = {
-    val group = IssuerGroupsDAO
-      .find(issuerId, groupName)
-      .transact(database)
-      .unsafeRunSync()
-      .getOrElse(throw new RuntimeException("Missing group"))
+  ): Subject = createSubject(issuerId, subjectName, Some(groupName), tag)
 
+  def createSubject(issuerId: Issuer.Id, subjectName: String, groupName: Option[IssuerGroup.Name], tag: String)(implicit
+      database: Transactor[IO]
+  ): Subject = {
     val request = CreateSubject(
       issuerId = issuerId,
       data = Json.obj(
@@ -111,11 +122,25 @@ object DataPreparation {
         "email" -> "donthaveone@here.com".asJson,
         "admissionDate" -> LocalDate.now().asJson
       ),
-      externalId = Subject.ExternalId.random(),
-      groupName = group.name
+      externalId = Subject.ExternalId.random()
     )
 
-    IssuerSubjectsDAO.create(request, group.id).transact(database).unsafeRunSync()
-  }
+    groupName match {
+      case None =>
+        IssuerSubjectsDAO.create(request).transact(database).unsafeRunSync()
+      case Some(name) =>
+        val group = IssuerGroupsDAO
+          .find(issuerId, name)
+          .transact(database)
+          .unsafeRunSync()
+          .getOrElse(throw new RuntimeException(s"Group $name does not exist"))
 
+        val query = for {
+          subject <- IssuerSubjectsDAO.create(request)
+          _ <- IssuerGroupsDAO.addSubject(group.id, subject.id)
+        } yield subject
+
+        query.transact(database).unsafeRunSync()
+    }
+  }
 }

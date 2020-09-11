@@ -19,5 +19,11 @@ object SqlTestOps {
     ): T = {
       sql.query[T].unique.transact(database).unsafeRunSync()
     }
+
+    def queryList[T: Read]()(implicit
+        database: Transactor[IO]
+    ): Seq[T] = {
+      sql.query[T].to[Seq].transact(database).unsafeRunSync()
+    }
   }
 }

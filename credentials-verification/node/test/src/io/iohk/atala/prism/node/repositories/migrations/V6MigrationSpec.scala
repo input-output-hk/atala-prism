@@ -27,7 +27,7 @@ class V6MigrationSpec extends PostgresMigrationSpec("V6") {
                    |VALUES($objectId, $sequenceNumber, $objectTimestamp)""".stripMargin
         .runUpdate()
     },
-    afterApplied = { _: Unit =>
+    afterApplied = {
       val data = sql"""
            |SELECT atala_object_id, sequence_number, object_timestamp, transaction_id, ledger
            |FROM atala_objects""".stripMargin
@@ -40,7 +40,6 @@ class V6MigrationSpec extends PostgresMigrationSpec("V6") {
       // Verify new data was properly set
       data.transactionId mustBe objectId
       data.ledger mustBe "InMemory"
-      ()
     }
   )
 }

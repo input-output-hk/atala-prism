@@ -16,7 +16,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
   lazy val repository = new IssuerSubjectsRepository(database)
 
   "create" should {
-    "create a new subject" in {
+    "create a new subject and assign it to an specified group" in {
       val issuer = createIssuer("Issuer-1").id
       val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
       val externalId = ExternalId.random()
@@ -26,13 +26,62 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, group.name, json)
+      val request = CreateSubject(issuer, externalId, json)
 
-      val result = repository.create(request).value.futureValue
+      val result = repository.create(request, Some(group.name)).value.futureValue
       val subject = result.right.value
-      subject.groupName must be(group.name)
       subject.data must be(json)
       subject.externalId must be(externalId)
+      subject.connectionToken must be(empty)
+      subject.connectionId must be(empty)
+
+      // we check that the subject was added to the intended group
+      val subjectsInGroupList = repository.getBy(issuer, 10, None, Some(group.name)).value.futureValue.right.value
+      subjectsInGroupList.size must be(1)
+      subjectsInGroupList.headOption.value must be(subject)
+    }
+
+    "create a new subject and assign it to no specified group" in {
+      val issuer = createIssuer("Issuer-1").id
+      val externalId = ExternalId.random()
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "name" -> Json.fromString("Dusty Here"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateSubject(issuer, externalId, json)
+
+      val result = repository.create(request, None).value.futureValue
+      val subject = result.right.value
+      subject.data must be(json)
+      subject.externalId must be(externalId)
+      subject.connectionToken must be(empty)
+      subject.connectionId must be(empty)
+
+      // we check that the subject was added
+      val maybeSubject = repository.find(issuer, subject.id).value.futureValue.right.value.value
+      maybeSubject must be(subject)
+    }
+
+    "fail to create a new subject when the specified group does not exist" in {
+      val issuer = createIssuer("Issuer-1").id
+      val externalId = ExternalId.random()
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "name" -> Json.fromString("Dusty Here"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateSubject(issuer, externalId, json)
+
+      intercept[Exception](
+        repository.create(request, Some(IssuerGroup.Name("Grp 1"))).value.futureValue
+      )
+
+      // we check that the subject was not created
+      val subjectsList = repository.getBy(issuer, 1, None, None).value.futureValue.right.value
+      subjectsList must be(empty)
     }
 
     "fail to create a new subject with empty external id" in {
@@ -45,10 +94,10 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, group.name, json)
+      val request = CreateSubject(issuer, externalId, json)
 
       intercept[Exception](
-        repository.create(request).value.futureValue
+        repository.create(request, Some(group.name)).value.futureValue
       )
       // no subject should be created
       val createdSubjects = repository.getBy(issuer, 10, None, None).value.futureValue.right.value
@@ -65,9 +114,9 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, group.name, json)
+      val request = CreateSubject(issuer, externalId, json)
 
-      val initialResponse = repository.create(request).value.futureValue.right.value
+      val initialResponse = repository.create(request, Some(group.name)).value.futureValue.right.value
 
       val secondJson = Json.obj(
         "universityId" -> Json.fromString("uid"),
@@ -76,10 +125,10 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
 
-      val secondRequest = CreateSubject(issuer, externalId, group.name, secondJson)
+      val secondRequest = CreateSubject(issuer, externalId, secondJson)
 
       intercept[Exception](
-        repository.create(secondRequest).value.futureValue
+        repository.create(secondRequest, Some(group.name)).value.futureValue
       )
 
       val subjectsStored = repository.getBy(issuer, 10, None, None).value.futureValue.right.value
@@ -88,7 +137,6 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       subjectsStored.size must be(1)
 
       val subject = subjectsStored.head
-      subject.groupName must be(group.name)
       // the subject must have the original data
       subject.data must be(json)
       subject.id must be(initialResponse.id)
@@ -202,7 +250,6 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       updatedSubject.connectionStatus must be(Student.ConnectionStatus.ConnectionMissing)
       updatedSubject.connectionToken.value must be(token)
       updatedSubject.connectionId must be(subject.connectionId)
-      updatedSubject.groupName must be(subject.groupName)
     }
   }
 }

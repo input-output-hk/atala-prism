@@ -2,6 +2,7 @@ package io.iohk.atala.prism.cmanager.grpc.services
 
 import java.util.UUID
 
+import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs.studentToProto
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
@@ -56,7 +57,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   }
 
   "createStudent" should {
-    "create a student" in {
+    "create a student and assign it to an existing group group" in {
       val issuerId = createIssuer()
       val group = createGroup(issuerId)
 
@@ -71,16 +72,63 @@ class StudentsServiceImplSpec extends RpcSpecBase {
           .withAdmissionDate(common_models.Date().withDay(1).withMonth(10).withYear(2000))
 
         val response = serviceStub.createStudent(request).student.value
+        response.universityAssignedId must be(request.universityAssignedId)
+        response.fullName must be(request.fullName)
+        response.email must be(request.email)
+        response.admissionDate must be(request.admissionDate)
+
+        // the new student needs to exist
+        val result = studentsRepository.getBy(issuerId, 10, None, Some(group.name)).value.futureValue.right.value
+        result.size must be(1)
+        studentToProto(result.headOption.value) must be(response)
+      }
+    }
+
+    "create a student and assign it to no group" in {
+      val issuerId = createIssuer()
+
+      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+        val request = cmanager_api
+          .CreateStudentRequest(
+            universityAssignedId = "noneyet",
+            fullName = "Alice Beakman",
+            email = "alice@bkm.me"
+          )
+          .withAdmissionDate(common_models.Date().withDay(1).withMonth(10).withYear(2000))
+
+        val response = serviceStub.createStudent(request).student.value
         val studentId = Student.Id(UUID.fromString(response.id))
         response.universityAssignedId must be(request.universityAssignedId)
         response.fullName must be(request.fullName)
         response.email must be(request.email)
-        response.groupName must be(request.groupName)
         response.admissionDate must be(request.admissionDate)
 
         // the new student needs to exist
         val result = studentsRepository.find(issuerId, studentId).value.futureValue.right.value
-        result mustNot be(empty)
+        studentToProto(result.value) must be(response)
+      }
+    }
+
+    "fail to create a student and assign it to a group that does not exist" in {
+      val issuerId = createIssuer()
+
+      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+        val request = cmanager_api
+          .CreateStudentRequest(
+            universityAssignedId = "noneyet",
+            fullName = "Alice Beakman",
+            email = "alice@bkm.me",
+            groupName = "missing group"
+          )
+          .withAdmissionDate(common_models.Date().withDay(1).withMonth(10).withYear(2000))
+
+        intercept[Exception](
+          serviceStub.createStudent(request).student.value
+        )
+
+        // the new student should not be added
+        val result = studentsRepository.getBy(issuerId, 1, None, None).value.futureValue.right.value
+        result must be(empty)
       }
     }
   }
