@@ -84,6 +84,7 @@
 "credentials_degrees_new_title" = "You have new credential(s)";
 "credentials_degrees_new_date" = "Received %1$@";
 "credentials_degrees_new_view_btn" = "VIEW";
+"credentials_search" = "Search credentials";
 "credentials_document_title" = "National ID Card";
 "credentials_document_identity_number" = "Identity Number";
 "credentials_document_nationality" = "Nationality";
@@ -103,6 +104,8 @@
 "credentials_detail_award" = "Award";
 "credentials_detail_result" = "Result";
 "credentials_detail_share_button" = "Share!";
+"credentials_detail_share_search_contacts" = "Search contacts";
+"credentials_detail_share_contact_name" = "Contact Name...";
 "credentials_detail_share_success" = "Credential(s) successfully shared";
 "credentials_empty_title" = "Connect to an organization to receive your credentials";
 "credentials_empty_subtitle" = "Receive, store and share your digital credentials";

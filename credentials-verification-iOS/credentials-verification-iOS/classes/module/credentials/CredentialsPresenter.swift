@@ -43,6 +43,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var detailCredential: Credential?
 
     var shareEmployers: [Contact]?
+    var shareEmployersFiltered: [Contact]?
     var shareSelectedEmployers: [Contact]?
 
     var credentials: [Credential] = []
@@ -270,11 +271,13 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         // Clean data
         self.shareEmployers = []
+        self.shareEmployersFiltered = []
         self.shareSelectedEmployers = []
 
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContactsForShare(did: self.detailDegree?.issuer?.id ?? "") ?? []
         self.shareEmployers?.append(contentsOf: contacts)
+        self.shareEmployersFiltered?.append(contentsOf: contacts)
         self.viewImpl?.config(isLoading: false)
         self.viewImpl?.showShareDialog()
 
@@ -441,16 +444,16 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func shareItem(for view: ShareDialogViewController, at index: Int) -> Any? {
-        return shareEmployers?[index]
+        return shareEmployersFiltered?[index]
     }
 
     func shareItemCount(for view: ShareDialogViewController) -> Int {
-        return shareEmployers?.count ?? 0
+        return shareEmployersFiltered?.count ?? 0
     }
 
     func shareItemTapped(for cell: ShareDialogItemCollectionViewCell?, at index: Int, item: Any?) {
 
-        let employer = shareEmployers![index]
+        let employer = shareEmployersFiltered![index]
         if employerIsSelected(employer: employer) {
             shareSelectedEmployers?.remove(employer)
         } else {
@@ -467,11 +470,21 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func shareItemConfig(for cell: ShareDialogItemCollectionViewCell?, at index: Int, item: Any?) {
 
-        let employer = shareEmployers![index]
+        let employer = shareEmployersFiltered![index]
         let isSelected = employerIsSelected(employer: employer)
         cell?.config(name: employer.name,
                      logoData: employer.logo,
                      placeholderNamed: "ico_placeholder_employer", isSelected: isSelected)
+    }
+
+    func shareItemFilter(for view: ShareDialogViewController, searchText: String) {
+        if searchText.isEmpty {
+            shareEmployersFiltered = shareEmployers
+        } else {
+            shareEmployersFiltered = shareEmployers?.filter({
+                $0.name.lowercased().contains(searchText.lowercased())
+            })
+        }
     }
 
     // MARK: Search

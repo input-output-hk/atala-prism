@@ -10,14 +10,17 @@ protocol ShareDialogPresenterDelegate: class {
     func shareItemCount(for view: ShareDialogViewController) -> Int
     func shareItemTapped(for cell: ShareDialogItemCollectionViewCell?, at index: Int, item: Any?)
     func shareItemConfig(for cell: ShareDialogItemCollectionViewCell?, at index: Int, item: Any?)
+    func shareItemFilter(for view: ShareDialogViewController, searchText: String)
 }
 
-class ShareDialogViewController: UIViewController, PresentrDelegate, UITableViewDataSource, UITableViewDelegate {
+class ShareDialogViewController: UIViewController, PresentrDelegate, UITableViewDataSource,
+                                    UITableViewDelegate, UISearchBarDelegate {
 
     @IBOutlet weak var collectionView: UITableView!
     @IBOutlet weak var buttonConfirm: UIButton!
     @IBOutlet weak var viewBg: UIView!
     @IBOutlet weak var viewBgRest: UIView!
+    @IBOutlet weak var searchBar: UISearchBar!
 
     weak var delegate: ShareDialogPresenterDelegate?
 
@@ -32,6 +35,17 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UITableView
         collectionView.delegate = self
         collectionView.dataSource = self
         viewBgRest.addOnClickListener(action: actionBgRestTap)
+
+        searchBar.backgroundColor = .appWhite
+        searchBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+        searchBar.isTranslucent = true
+        searchBar.searchTextField.addRoundCorners(radius: 6, borderWidth: 1, borderColor: UIColor.appGreyMid.cgColor)
+        searchBar.searchTextField.backgroundColor = .appWhite
+        searchBar.placeholder = "credentials_detail_share_contact_name".localize()
+        searchBar.delegate = self
+
+        ViewControllerUtils.addTapToDismissKeyboard(view: self)
+        ViewControllerUtils.addShiftKeyboardListeners(view: self)
     }
 
     static func makeThisView() -> ShareDialogViewController {
@@ -93,12 +107,16 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UITableView
     // MARK: Collection
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.delegate?.shareItemCount(for: self) ?? 0
+        if let count = self.delegate?.shareItemCount(for: self), count != 0 {
+            return count
+        }
+        return 1
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        if let cell = collectionView.dequeueReusableCell(withIdentifier:
+        if let count = self.delegate?.shareItemCount(for: self), count != 0,
+        let cell = collectionView.dequeueReusableCell(withIdentifier:
                                                             ShareDialogItemCollectionViewCell.reuseIdentifier,
                                                          for: indexPath) as? ShareDialogItemCollectionViewCell {
 
@@ -108,12 +126,28 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UITableView
 
             return cell
         }
+        if let cell = collectionView.dequeueReusableCell(withIdentifier:
+                                                            NoResultsViewCell.reuseIdentifier,
+                                                         for: indexPath) as? NoResultsViewCell {
+            return cell
+        }
         return UITableViewCell()
     }
 
     func registerNib() {
         let nib = UINib(nibName: ShareDialogItemCollectionViewCell.nibName, bundle: nil)
         collectionView?.register(nib, forCellReuseIdentifier: ShareDialogItemCollectionViewCell.reuseIdentifier)
+
+        let emptyNib = UINib(nibName: NoResultsViewCell.default_NibName(), bundle: nil)
+        collectionView?.register(emptyNib, forCellReuseIdentifier: NoResultsViewCell.reuseIdentifier)
+    }
+
+    // MARK: Search
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+
+        delegate?.shareItemFilter(for: self, searchText: searchText)
+        collectionView.reloadData()
     }
 }
 

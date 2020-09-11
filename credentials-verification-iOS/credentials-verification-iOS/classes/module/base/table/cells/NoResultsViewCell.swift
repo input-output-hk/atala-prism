@@ -10,6 +10,10 @@ import Foundation
 
 class NoResultsViewCell: BaseTableViewCell {
 
+    class var reuseIdentifier: String {
+        return "noResults"
+    }
+
     override class func default_NibName() -> String {
         return "NoResultsViewCell"
     }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -10,7 +10,7 @@
         <!--Share Dialog View Controller-->
         <scene sceneID="oXB-Mt-W0L">
             <objects>
-                <viewController storyboardIdentifier="ShareDialog" useStoryboardIdentifierAsRestorationIdentifier="YES" id="kzT-Wc-n2g" customClass="ShareDialogViewController" customModule="ATALA" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ShareDialog" useStoryboardIdentifierAsRestorationIdentifier="YES" id="kzT-Wc-n2g" customClass="ShareDialogViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="O8I-82-ky8">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -19,21 +19,45 @@
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MJ6-30-fSs">
-                                        <rect key="frame" x="0.0" y="0.0" width="414" height="568"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="414" height="459"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </view>
                                     <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fju-JF-Vsp">
-                                        <rect key="frame" x="0.0" y="568" width="414" height="328"/>
+                                        <rect key="frame" x="0.0" y="459" width="414" height="437"/>
                                         <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="248" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZjL-zq-Fgc">
+                                                <rect key="frame" x="30" y="46" width="37" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="credentials_detail_share_search_contacts"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </label>
+                                            <searchBar contentMode="redraw" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6SZ-cz-fd4">
+                                                <rect key="frame" x="23" y="75" width="368" height="56"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </searchBar>
+                                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="J7G-VO-Jaf">
+                                                <rect key="frame" x="0.0" y="139" width="414" height="200"/>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="200" id="92Y-6T-d4H"/>
+                                                </constraints>
+                                            </tableView>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XqB-gW-2cv">
-                                                <rect key="frame" x="0.0" y="230" width="414" height="1"/>
+                                                <rect key="frame" x="0.0" y="339" width="414" height="1"/>
                                                 <color key="backgroundColor" red="0.46666666670000001" green="0.52549019610000003" blue="0.61960784310000006" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="1" id="Etr-16-9Zn"/>
                                                 </constraints>
                                             </view>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="sXx-Yf-AY0">
-                                                <rect key="frame" x="21" y="251" width="372" height="45"/>
+                                                <rect key="frame" x="21" y="360" width="372" height="45"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fl5-WZ-dle">
                                                         <rect key="frame" x="0.0" y="0.0" width="372" height="45"/>
@@ -56,26 +80,24 @@
                                                     <constraint firstAttribute="height" constant="45" id="dUg-kH-fxC"/>
                                                 </constraints>
                                             </stackView>
-                                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="J7G-VO-Jaf">
-                                                <rect key="frame" x="0.0" y="30" width="414" height="200"/>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="200" id="92Y-6T-d4H"/>
-                                                </constraints>
-                                            </tableView>
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="sXx-Yf-AY0" secondAttribute="trailing" constant="21" id="3Ze-zi-rly"/>
                                             <constraint firstAttribute="trailing" secondItem="XqB-gW-2cv" secondAttribute="trailing" id="5V1-s3-MTJ"/>
-                                            <constraint firstItem="J7G-VO-Jaf" firstAttribute="top" secondItem="fju-JF-Vsp" secondAttribute="top" constant="30" id="6k1-EL-4Uy"/>
+                                            <constraint firstItem="J7G-VO-Jaf" firstAttribute="top" secondItem="6SZ-cz-fd4" secondAttribute="bottom" constant="8" id="6k1-EL-4Uy"/>
                                             <constraint firstAttribute="trailing" secondItem="J7G-VO-Jaf" secondAttribute="trailing" id="9kZ-Tv-Ns4"/>
                                             <constraint firstItem="XqB-gW-2cv" firstAttribute="leading" secondItem="fju-JF-Vsp" secondAttribute="leading" id="DTK-sS-jEe"/>
                                             <constraint firstAttribute="bottom" secondItem="sXx-Yf-AY0" secondAttribute="bottom" constant="32" id="IsJ-ac-h6g"/>
                                             <constraint firstItem="sXx-Yf-AY0" firstAttribute="top" secondItem="XqB-gW-2cv" secondAttribute="bottom" constant="20" id="WJM-PO-Kln"/>
                                             <constraint firstItem="XqB-gW-2cv" firstAttribute="top" secondItem="J7G-VO-Jaf" secondAttribute="bottom" id="Zoh-dM-QJ4"/>
+                                            <constraint firstItem="6SZ-cz-fd4" firstAttribute="leading" secondItem="fju-JF-Vsp" secondAttribute="leading" constant="23" id="bNU-Qx-DQd"/>
+                                            <constraint firstItem="ZjL-zq-Fgc" firstAttribute="top" secondItem="fju-JF-Vsp" secondAttribute="top" constant="46" id="eDL-58-Cso"/>
+                                            <constraint firstItem="ZjL-zq-Fgc" firstAttribute="leading" secondItem="fju-JF-Vsp" secondAttribute="leading" constant="30" id="n9O-wu-YxL"/>
                                             <constraint firstItem="sXx-Yf-AY0" firstAttribute="leading" secondItem="fju-JF-Vsp" secondAttribute="leading" constant="21" id="qc4-lA-M1b"/>
+                                            <constraint firstAttribute="trailing" secondItem="6SZ-cz-fd4" secondAttribute="trailing" constant="23" id="wGL-Gl-ih6"/>
                                             <constraint firstItem="J7G-VO-Jaf" firstAttribute="leading" secondItem="fju-JF-Vsp" secondAttribute="leading" id="y3d-BB-PWR"/>
+                                            <constraint firstItem="6SZ-cz-fd4" firstAttribute="top" secondItem="ZjL-zq-Fgc" secondAttribute="bottom" constant="12" id="zAa-gl-paP"/>
                                         </constraints>
                                     </view>
                                 </subviews>
@@ -107,6 +129,7 @@
                     <connections>
                         <outlet property="buttonConfirm" destination="fl5-WZ-dle" id="V2e-qM-qRr"/>
                         <outlet property="collectionView" destination="J7G-VO-Jaf" id="NF8-rL-bcW"/>
+                        <outlet property="searchBar" destination="6SZ-cz-fd4" id="SEL-D6-poS"/>
                         <outlet property="viewBg" destination="fju-JF-Vsp" id="bgh-o8-qGN"/>
                         <outlet property="viewBgRest" destination="MJ6-30-fSs" id="AHB-pR-TdU"/>
                     </connections>

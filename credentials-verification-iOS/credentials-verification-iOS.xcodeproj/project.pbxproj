@@ -40,7 +40,6 @@
 		B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B35470F924E4252D009F4844 /* DeleteContact.storyboard */; };
 		B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35470FB24E42546009F4844 /* DeleteContactViewController.swift */; };
 		B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */; };
-		B36233CD24F413D100AC96A6 /* SearchBarCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36233CC24F413D100AC96A6 /* SearchBarCustom.swift */; };
 		B36233CF24F5880700AC96A6 /* NoResultsViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36233CE24F5880700AC96A6 /* NoResultsViewCell.swift */; };
 		B36233D124F5886500AC96A6 /* NoResultsViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B36233D024F5886500AC96A6 /* NoResultsViewCell.xib */; };
 		B36F27BD2406E2C400FF751B /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F27BC2406E2C400FF751B /* About.storyboard */; };
@@ -303,7 +302,6 @@
 		B35470F924E4252D009F4844 /* DeleteContact.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DeleteContact.storyboard; sourceTree = "<group>"; };
 		B35470FB24E42546009F4844 /* DeleteContactViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteContactViewController.swift; sourceTree = "<group>"; };
 		B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestCell.swift; sourceTree = "<group>"; };
-		B36233CC24F413D100AC96A6 /* SearchBarCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarCustom.swift; sourceTree = "<group>"; };
 		B36233CE24F5880700AC96A6 /* NoResultsViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoResultsViewCell.swift; sourceTree = "<group>"; };
 		B36233D024F5886500AC96A6 /* NoResultsViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NoResultsViewCell.xib; sourceTree = "<group>"; };
 		B36F27BC2406E2C400FF751B /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
@@ -1054,7 +1052,6 @@
 				EE8CD817237CFDB700614578 /* InformationView.swift */,
 				EE7185552383089500C58F62 /* ConnectionConfirmViewController.swift */,
 				EE71855B2383563100C58F62 /* ShareDialogViewController.swift */,
-				B36233CC24F413D100AC96A6 /* SearchBarCustom.swift */,
 			);
 			path = view;
 			sourceTree = "<group>";
@@ -1973,7 +1970,6 @@
 				EE7D4CED23673C39007C31A8 /* UIView+Extensions2.swift in Sources */,
 				EE8CD818237CFDB700614578 /* InformationView.swift in Sources */,
 				B309C16524BF5CD600AF70DF /* Credential+CoreDataClass.swift in Sources */,
-				B36233CD24F413D100AC96A6 /* SearchBarCustom.swift in Sources */,
 				EE71856E2384D0C100C58F62 /* FieldViewCell.swift in Sources */,
 				EE7D4D27236F8DE9007C31A8 /* ListingBaseViewController.swift in Sources */,
 				EE7D4C3F2366B9C4007C31A8 /* Array+Extensions.swift in Sources */,

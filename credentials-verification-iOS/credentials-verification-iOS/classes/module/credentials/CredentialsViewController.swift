@@ -52,6 +52,7 @@ class CredentialsViewController: ListingBaseViewController {
         searchBar.isTranslucent = true
         searchBar.searchTextField.addRoundCorners(radius: 6, borderWidth: 1, borderColor: UIColor.appGreyMid.cgColor)
         searchBar.searchTextField.backgroundColor = .appWhite
+        searchBar.placeholder = "credentials_search".localize()
         searchBar.delegate = presenterImpl
     }
 
@@ -104,6 +105,7 @@ class CredentialsViewController: ListingBaseViewController {
                 default:
                     print("Unrecognized type")
                 }
+
             }
         }
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: credentialsMode != .degrees,
