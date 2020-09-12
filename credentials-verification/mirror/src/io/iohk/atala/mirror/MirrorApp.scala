@@ -1,92 +1,118 @@
 package io.iohk.atala.mirror
 
-import cats.effect.{ExitCode, IO}
-import com.typesafe.config.ConfigFactory
-import doobie.util.transactor.Transactor
-import io.grpc.{Server, ServerBuilder}
-import io.iohk.atala.mirror.config.MirrorConfig
-import io.iohk.atala.prism.protos.mirror_api.MirrorServiceGrpc
-import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import monix.eval.{Task, TaskApp}
-import monix.execution.Cancelable
-import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 
-import scala.concurrent.duration._
+import scala.concurrent.blocking
+
+import com.typesafe.config.ConfigFactory
+import org.slf4j.LoggerFactory
+import cats.effect.{Blocker, ExitCode, Resource}
+import monix.eval.{Task, TaskApp}
+import monix.execution.Scheduler.Implicits.global
+import io.grpc.{Server, ServerBuilder, ServerServiceDefinition}
+import io.grpc.protobuf.services.ProtoReflectionService
+import org.flywaydb.core.Flyway
+import doobie.util.ExecutionContexts
+import doobie.hikari.HikariTransactor
+
+import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
+import io.iohk.atala.mirror.config.{MirrorConfig, TransactorConfig}
 
 object MirrorApp extends TaskApp {
-  case class Config(port: Int)
 
-  override def run(args: List[String]): Task[ExitCode] = {
-    for {
-      _ <- new MirrorApp().run()
-    } yield ExitCode.Success
-  }
-}
-
-class MirrorApp() {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def run(): Task[Unit] = {
+  /**
+    * Run the Mirror application.
+    */
+  override def run(args: List[String]): Task[ExitCode] =
+    app.use { grpcServer =>
+      logger.info("Starting GRPC server")
+      grpcServer.start
+      Task.never // run server forever
+    }
 
+  /**
+    * This is an entry point for the Mirror application.
+    * The resource contains a GRPC [[Server]] instance, that isn't started.
+    */
+  val app: Resource[Task, Server] =
     for {
-      globalConfig <- Task {
+      globalConfig <- Resource.liftF(Task {
         logger.info("Loading config")
         ConfigFactory.load()
-      }
+      })
 
-      databaseConfig = MirrorConfig.transactorConfig(globalConfig)
-      _ <- Task(runMigrations(databaseConfig))
-      transactor = createTransactor(databaseConfig)
+      mirrorConfig = MirrorConfig(globalConfig)
+      transactorConfig = TransactorConfig(globalConfig)
 
-      mirrorConfig = MirrorConfig.mirrorConfig(globalConfig)
+      tx <- createTransactor(transactorConfig)
+      _ <- Resource.liftF(runMigrations(tx))
 
-      mirrorService = new MirrorService
+      grpcServer <- createGrpcServer(
+        mirrorConfig,
+        MirrorServiceGrpc.bindService(new MirrorService(tx), scheduler)
+      )
+    } yield grpcServer
 
-      _ <- runServer(mirrorService, mirrorConfig)
-    } yield ()
-  }
+  /**
+    * Wrap a [[Server]] into a bracketed resource. The server stops when the
+    * resource is released. With the following scenarios:
+    *   - Server is shut down when there aren't any requests left.
+    *   - We wait for 30 seconds to allow finish pending requests and
+    *     then force quit the server.
+    */
+  def createGrpcServer(mirrorConfig: MirrorConfig, services: ServerServiceDefinition*): Resource[Task, Server] = {
+    val builder = ServerBuilder.forPort(mirrorConfig.port)
 
-  def createTransactor(databaseConfig: TransactorFactory.Config): Transactor[IO] = {
-    logger.info("Connecting to the database")
-    TransactorFactory(databaseConfig)
-  }
+    builder.addService(
+      ProtoReflectionService.newInstance()
+    ) // TODO: Decide before release if we should keep this (or guard it with a config flag)
+    services.foreach(builder.addService(_))
 
-  def runMigrations(databaseConfig: TransactorFactory.Config): Unit = {
-    logger.info("Applying database migrations")
-
-    val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
-
-    if (appliedMigrations == 0) {
-      logger.info("Database up to date")
-    } else {
-      logger.info(s"$appliedMigrations migration scripts applied")
-    }
-  }
-
-  def runServer(mirrorService: MirrorServiceGrpc.MirrorService, config: MirrorApp.Config): Task[Unit] = {
-    Task.create { (scheduler, callback) =>
-      logger.info("Starting server")
-      import io.grpc.protobuf.services.ProtoReflectionService
-      val server: Server = ServerBuilder
-        .forPort(config.port)
-        .addService(MirrorServiceGrpc.bindService(mirrorService, scheduler))
-        .addService(
-          ProtoReflectionService.newInstance()
-        ) //TODO: Decide before release if we should keep this (or guard it with a config flag)
-        .build()
-
-      server.start()
-      var serverWatcher: Cancelable = null
-      serverWatcher = scheduler.scheduleAtFixedRate(100.millis, 100.millis) {
-        if (server.isTerminated) {
-          callback.onSuccess(())
-          serverWatcher.cancel()
+    val shutdown = (server: Server) =>
+      Task {
+        logger.info("Stopping GRPC server")
+        server.shutdown()
+        if (!blocking(server.awaitTermination(30, TimeUnit.SECONDS))) {
+          server.shutdownNow()
         }
-      }
+      }.void
 
-      Cancelable { () =>
-        val _ = server.shutdown()
-      }
-    }
+    Resource.make(Task(builder.build()))(shutdown)
   }
+
+  /**
+    * Create resource with a db transactor.
+    */
+  def createTransactor(transactorConfig: TransactorConfig): Resource[Task, HikariTransactor[Task]] =
+    for {
+      ce <- ExecutionContexts.fixedThreadPool[Task](32) // connection EC
+      be <- Blocker[Task] // blocking EC
+      xa <- HikariTransactor.newHikariTransactor[Task](
+        transactorConfig.driver,
+        transactorConfig.jdbcUrl,
+        transactorConfig.username,
+        transactorConfig.password,
+        ce, // await connection here
+        be.blockingContext // execute JDBC operations here
+      )
+    } yield xa
+
+  /**
+    * Run db migrations with Flyway.
+    *
+    * @return number of applied migrations
+    */
+  def runMigrations(transactor: HikariTransactor[Task]): Task[Int] =
+    transactor.configure(dataSource =>
+      Task(
+        Flyway
+          .configure()
+          .dataSource(dataSource)
+          .load()
+          .migrate()
+      )
+    )
+
 }

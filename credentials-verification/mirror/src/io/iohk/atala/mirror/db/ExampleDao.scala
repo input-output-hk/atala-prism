@@ -4,7 +4,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 
 object ExampleDao {
-  def test(): ConnectionIO[Boolean] = {
-    sql"SELECT 1 = 1".query[Boolean].unique
+  def test(): ConnectionIO[String] = {
+    sql"SELECT 'test'".query[String].unique
   }
 }

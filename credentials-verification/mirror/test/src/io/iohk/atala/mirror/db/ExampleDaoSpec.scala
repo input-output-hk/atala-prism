@@ -10,7 +10,7 @@ class ExampleDaoSpec extends PostgresRepositorySpec {
 
   "ExampleDao" should {
     "run example query" in {
-      ExampleDao.test().transact(database).unsafeRunSync() mustBe true
+      ExampleDao.test().transact(database).unsafeRunSync() mustBe "test"
     }
   }
 }
