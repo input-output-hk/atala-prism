@@ -4,22 +4,37 @@ import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.background.wallet.SigningRequest
 import io.iohk.atala.cvp.webextension.popup.models.View
 import io.iohk.atala.cvp.webextension.popup.models.View.Unlock
+import org.scalajs.dom.raw.DOMParser
 import slinky.core.Component
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html.{onClick, _}
-
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.scalajs.js
 import scala.util.{Failure, Success}
+import typings.dompurify.mod.{^ => dompurify}
 
 @react class SlinkyMainWalletView extends Component {
 
+  private val domParser = new DOMParser()
+  private val emptyDiv = "<div/>"
+
   case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
   case class State(requests: List[SigningRequest], message: String)
+
   override def componentDidMount(): Unit = {
     loadRequests()
   }
+
   override def initialState: State = State(requests = Nil, "")
+
+  private def renderTemplate(request: SigningRequest) = {
+    val sanitisedHtml = dompurify.sanitize(request.subject.properties.getOrElse("html", emptyDiv))
+    domParser
+      .parseFromString(sanitisedHtml, "text/html")
+      .documentElement
+      .textContent
+  }
 
   override def render: ReactElement = {
     val cancelButton = div(className := "btn_cancel", id := "btn_cancel")("Cancel")
@@ -27,6 +42,7 @@ import scala.util.{Failure, Success}
     if (state.requests.nonEmpty) {
       val requestsToSign = for (x <- state.requests) yield {
         div(
+          div(dangerouslySetInnerHTML := js.Dynamic.literal(__html = renderTemplate(x))),
           cancelButton,
           div(
             className := "btn_sign",

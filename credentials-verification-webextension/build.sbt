@@ -143,7 +143,9 @@ npmDependencies in Compile ++= Seq(
   "bitcoinjs-lib" -> "5.1.8",
   "@types/node" -> "14.0.0",
   "react" -> "16.12.0",
-  "react-dom" -> "16.12.0"
+  "react-dom" -> "16.12.0",
+  "dompurify" -> "2.0.3",
+  "@types/dompurify" -> "2.0.3"
 )
 
 // Internal libraries
