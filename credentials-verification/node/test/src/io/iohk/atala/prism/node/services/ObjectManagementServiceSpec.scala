@@ -7,7 +7,7 @@ import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO

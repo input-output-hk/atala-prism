@@ -4,10 +4,10 @@ import java.time.Instant
 
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
-import io.iohk.atala.prism.node.models.{Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import io.iohk.atala.prism.utils.FutureEither

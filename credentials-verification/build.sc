@@ -246,24 +246,27 @@ object Crypto extends ScalaModule {
     }
 }
 
-object common extends PrismScalaModule with CodeCoverageModule {
+object common extends PrismScalaModule with PBCommon with CodeCoverageModule {
   override def moduleDeps = Seq(Crypto) ++ super.moduleDeps
 
   override def ivyDeps =
-    Agg(
-      ivy"org.flywaydb:flyway-core:6.0.2",
-      ivy"org.postgresql:postgresql:42.2.6",
-      ivy"com.typesafe:config:1.3.4",
-      ivy"org.slf4j:slf4j-api:1.7.25",
-      ivy"org.tpolecat::doobie-core:${versions.doobie}",
-      ivy"org.tpolecat::doobie-postgres-circe:${versions.doobie}",
-      ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
-      ivy"io.monix::monix:3.0.0",
-      ivy"org.bouncycastle:bcprov-jdk15on:1.62",
-      ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
-      ivy"com.lihaoyi::os-lib:0.2.7",
-      ivy"net.jtownson::odyssey:0.1.5"
-    )
+    super.ivyDeps.map { deps =>
+      deps ++ Agg(
+        ivy"org.flywaydb:flyway-core:6.0.2",
+        ivy"org.postgresql:postgresql:42.2.6",
+        ivy"com.typesafe:config:1.3.4",
+        ivy"org.slf4j:slf4j-api:1.7.25",
+        ivy"org.tpolecat::doobie-core:${versions.doobie}",
+        ivy"org.tpolecat::doobie-postgres-circe:${versions.doobie}",
+        ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
+        ivy"io.monix::monix:3.0.0",
+        ivy"org.bouncycastle:bcprov-jdk15on:1.62",
+        ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
+        ivy"com.lihaoyi::os-lib:0.2.7",
+        ivy"net.jtownson::odyssey:0.1.5",
+        ivy"com.beachape::enumeratum:1.5.13"
+      )
+    }
 
   object `test-util` extends PrismScalaModule {
     override def moduleDeps = Seq(common) ++ super.moduleDeps

@@ -2,10 +2,10 @@ package io.iohk.atala.prism.node.services
 
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.node.models.{Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import io.iohk.atala.prism.utils.FutureEither

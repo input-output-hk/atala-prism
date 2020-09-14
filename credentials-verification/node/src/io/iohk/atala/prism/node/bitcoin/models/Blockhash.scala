@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.bitcoin.models
 
 import com.typesafe.config.ConfigMemorySize
-import io.iohk.atala.prism.node.models.{HashValue, HashValueConfig, HashValueFrom}
+import io.iohk.atala.prism.models.{HashValue, HashValueConfig, HashValueFrom}
 
 import scala.collection.compat.immutable.ArraySeq
 

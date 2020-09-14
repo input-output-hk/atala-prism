@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.node.cardano
 
+import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.cardano.CardanoClient.Result
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
-import io.iohk.atala.prism.node.models.TransactionId
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext

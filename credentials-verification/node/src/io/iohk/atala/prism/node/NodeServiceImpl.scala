@@ -1,16 +1,16 @@
 package io.iohk.atala.prism.node
 
 import io.grpc.Status
-import io.iohk.cvp.BuildInfo
-import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.{CredentialId, Ledger, TransactionInfo}
+import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
-import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
+import io.iohk.atala.prism.utils.syntax._
+import io.iohk.cvp.BuildInfo
 import io.iohk.prism.protos.node_api
-import io.iohk.prism.protos.node_models
+import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
+import io.iohk.atala.prism.models.ProtoCodecs._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -115,21 +115,6 @@ class NodeServiceImpl(
       either.left.map { error =>
         Status.INVALID_ARGUMENT.withDescription(error.render).asRuntimeException()
       }.toTry
-    }
-  }
-
-  private def toTransactionInfo(transactionInfo: TransactionInfo): node_models.TransactionInfo = {
-    node_models.TransactionInfo().withId(transactionInfo.id.toString).withLedger(toLedger(transactionInfo.ledger))
-  }
-
-  private def toLedger(ledger: Ledger): node_models.Ledger = {
-    ledger match {
-      case Ledger.InMemory => node_models.Ledger.IN_MEMORY
-      case Ledger.BitcoinTestnet => node_models.Ledger.BITCOIN_TESTNET
-      case Ledger.BitcoinMainnet => node_models.Ledger.BITCOIN_MAINNET
-      case Ledger.CardanoTestnet => node_models.Ledger.CARDANO_TESTNET
-      case Ledger.CardanoMainnet => node_models.Ledger.CARDANO_MAINNET
-      case _ => throw new IllegalArgumentException(s"Unexpected ledger: $ledger")
     }
   }
 }

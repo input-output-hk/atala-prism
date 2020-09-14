@@ -4,8 +4,8 @@ import java.time.Instant
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
-import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.atala.prism.node.services.AtalaService.BitcoinNetwork

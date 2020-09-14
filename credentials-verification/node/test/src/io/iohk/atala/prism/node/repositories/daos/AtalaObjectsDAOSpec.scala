@@ -4,7 +4,7 @@ import java.time.Instant
 
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.OptionValues._
 

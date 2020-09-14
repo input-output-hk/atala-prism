@@ -1,5 +1,5 @@
 package io.iohk.atala.prism.node.bitcoin.models
 
-import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.models.TransactionId
 
 case class Utxo(txid: TransactionId, vout: Vout, amount: Btc)

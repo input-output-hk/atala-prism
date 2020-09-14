@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.cardano.dbsync.repositories
 import java.time.Instant
 
 import doobie.util.{Get, Read}
+import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction}
-import io.iohk.atala.prism.node.models.TransactionId
 
 package object daos {
   private[daos] implicit val blockHashGet: Get[BlockHash] = Get[Array[Byte]].tmap { bytes =>

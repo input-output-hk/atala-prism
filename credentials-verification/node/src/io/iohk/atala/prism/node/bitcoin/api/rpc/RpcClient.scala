@@ -15,7 +15,7 @@ import ApiModel._
 import RpcMethod._
 import BitcoinApiClient._
 import RpcClient._
-import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.models.TransactionId
 
 /**
   * Implementation of the `BitcoinApiClient` that accesses the RPC provided by bitcoind

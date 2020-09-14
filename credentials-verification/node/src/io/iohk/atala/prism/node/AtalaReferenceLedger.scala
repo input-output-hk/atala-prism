@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node
 import java.time.Instant
 
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 
 import scala.concurrent.{ExecutionContext, Future}

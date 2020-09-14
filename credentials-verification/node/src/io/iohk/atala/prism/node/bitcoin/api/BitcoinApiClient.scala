@@ -5,7 +5,7 @@ import io.iohk.atala.prism.utils.FutureEither
 
 import scala.concurrent.ExecutionContext
 import ApiModel._
-import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.models.TransactionId
 
 /**
   * Client for the public Bitcoin API. Trimmed down to the methods we need

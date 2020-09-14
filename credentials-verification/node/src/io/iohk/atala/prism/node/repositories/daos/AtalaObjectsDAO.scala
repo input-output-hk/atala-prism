@@ -5,7 +5,8 @@ import java.time.Instant
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.{AtalaObject, Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.AtalaObject
 
 object AtalaObjectsDAO {
 

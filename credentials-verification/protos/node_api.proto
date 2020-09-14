@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package io.iohk.prism.protos;
 
+import "common_models.proto";
 import "node_models.proto";
 
 service NodeService {

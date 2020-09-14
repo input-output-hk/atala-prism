@@ -12,7 +12,7 @@ import io.circe.generic.semiauto._
 import ApiModel._
 import BitcoinApiClient.BitcoinError
 import BitcoinApiClient.ErrorResponse
-import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.models.TransactionId
 
 object JsonCodecs {
 

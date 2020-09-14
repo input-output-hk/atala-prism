@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.node.models
+package io.iohk.atala.prism.models
 
 import java.util.Locale
 

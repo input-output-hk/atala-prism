@@ -7,19 +7,12 @@ import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
-import io.iohk.atala.prism.node.models.{
-  CredentialId,
-  DIDPublicKey,
-  DIDSuffix,
-  KeyUsage,
-  Ledger,
-  TransactionId,
-  TransactionInfo
-}
+import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
@@ -40,7 +33,7 @@ import io.iohk.atala.prism.node.services.{
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.prism.protos.{common_models, node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues._
@@ -64,7 +57,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   private val testTransactionInfo =
     TransactionInfo(TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value, Ledger.InMemory)
   private val testTransactionInfoProto =
-    node_models.TransactionInfo().withId(testTransactionInfo.id.toString).withLedger(node_models.Ledger.IN_MEMORY)
+    common_models.TransactionInfo().withId(testTransactionInfo.id.toString).withLedger(common_models.Ledger.IN_MEMORY)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

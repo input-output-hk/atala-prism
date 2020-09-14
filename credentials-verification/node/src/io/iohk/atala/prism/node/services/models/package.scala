@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.services
 import java.time.Instant
 
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.modeling._
-import io.iohk.atala.prism.node.models.TransactionInfo
 import shapeless.tag.@@
 
 import scala.concurrent.Future
