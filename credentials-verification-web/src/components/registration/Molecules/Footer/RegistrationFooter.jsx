@@ -15,7 +15,7 @@ const RegistrationFooter = ({ next, previous, disabled, requiresAgreement }) => 
           <CustomButton
             buttonProps={{
               onClick: previous,
-              className: 'theme-outline'
+              className: 'theme-grey'
             }}
             buttonText={t('registration.back')}
           />

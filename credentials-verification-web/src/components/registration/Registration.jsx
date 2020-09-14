@@ -7,6 +7,7 @@ import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelec
 
 const Registration = ({ renderContent, footerProps, renderFooter }) => (
   <div className="RegistrationContainer">
+    <div className="bgSquare" />
     <div className="LangSelector">
       <LanguageSelector />
     </div>

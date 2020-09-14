@@ -3,7 +3,6 @@
 .Congratulations {
   display: flex;
   flex-flow: column;
-  justify-content: space-between;
   height: 85%;
   align-items: center;
 
@@ -15,24 +14,21 @@
     width: 100%;
     padding-top: 6em;
 
-    img {
-      margin-bottom: 2em;
-    }
-
     h2 {
-      @include primary-text($h2, $primary-color);
+      @include primary-text($h1, $primary-color);
       @include letter-spacing();
+      line-height: $h1;
       strong {
-        @include secondary-text($h2, $primary-color);
+        @include secondary-text($h1, $primary-color);
       }
     }
 
     p {
-      width: 30%;
+      width: 35%;
       text-align: center;
       @include primary-text($body, $secondary-color);
       @include letter-spacing();
-      margin-bottom: 2em;
+      margin: 1em 0 2em 0;
     }
   }
 }
