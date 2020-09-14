@@ -43,7 +43,12 @@ object StateStorage {
         case Array("key", keyId, usage, curve, d) =>
           assert(curve == ECConfig.CURVE_NAME)
           val dBytes = decoder.decode(d)
-          (keyId, node_models.KeyUsage.fromName(usage).get, EC.toPrivateKey(dBytes), EC.toPublicKey(dBytes))
+          (
+            keyId,
+            node_models.KeyUsage.fromName(usage).get,
+            EC.toPrivateKey(dBytes),
+            EC.toPublicKeyFromPrivateKey(dBytes)
+          )
       }
 
       val operations = splitLines.collect {

@@ -35,7 +35,7 @@ We are going to run simple flow, creating connection between them and sending a 
 
 1. As the issuer generate connection token:
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -plaintext localhost:50051 \
  io.iohk.atala.prism.connector.ConnectorService/GenerateConnectionToken
@@ -49,7 +49,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 
 2. As the user query the token information (insert `token` from step 1):
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"token": "0Am0JpyQi8GqUKL0dZeubw=="}' \
  -plaintext localhost:50051 \
@@ -69,7 +69,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 
 3. As the user add connection from the token (insert `token` from step 1):
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"token": "0Am0JpyQi8GqUKL0dZeubw=="}' \
  -plaintext  localhost:50051 \
@@ -94,7 +94,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 
 4. As the issuer query recent connections:
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -d '{"limit": 10}' \
  -plaintext localhost:50051 \
@@ -120,7 +120,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 
 Find the next items by paginating the request:
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -d '{"limit": 10, "lastSeenConnectionId": "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a"}' \
  -plaintext localhost:50051 \
@@ -129,7 +129,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 
 5. As the issuer send message to the student (insert `connectionId` from step 4):
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
  -d '{"connectionId": "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a", "message": "SGVsbG8sIHN0dWRlbnQhCg=="}' \
  -plaintext  localhost:50051 \
@@ -144,7 +144,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 
 6. As the student query recent messages (insert `connectionId` from step 4):
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"limit": 10}' \
  -plaintext \
@@ -166,7 +166,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 
 Paginate the items by the last seen message:
 ```
-grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+grpcurl -import-path protos/ -proto protos/connector_api.proto \
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
  -d '{"limit": 10, "lastSeenMessageId": "d56728c0-6005-4d80-86fc-0d4b2fa2934a"}' \
  -plaintext \
