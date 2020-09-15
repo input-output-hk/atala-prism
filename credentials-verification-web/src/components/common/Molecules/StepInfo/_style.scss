@@ -2,9 +2,7 @@
 
 .StepsInfo {
   background-color: $light-grey;
-  border: 1px solid $grey;
-  border-radius: 4px;
-  padding: 1em 4em;
+  padding: 3em 3em 0 3em;
   .NewCredentialTitle {
     h1 {
       @include secondary-text($h1, $black);
@@ -16,7 +14,10 @@
   }
 
   .NewCredentialSteps {
-    padding: 0 2em;
+    padding: 2em 0;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
     .StepLine {
       margin-bottom: 0.75em;
       &:last-child {

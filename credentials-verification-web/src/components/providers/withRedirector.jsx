@@ -8,7 +8,7 @@ export const withRedirector = Component => props => {
 
   const redirectToHome = () => history.push('/');
 
-  const redirectToNewCredential = () => redirectTo('newCredential');
+  const redirectToNewCredential = () => redirectTo('credentials/create');
 
   const redirectToRegistration = () => redirectTo('registration');
 

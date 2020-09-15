@@ -1,6 +1,7 @@
 import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { dayMonthYearBackendFormatter } from '../../helpers/formatters';
+import credentialTypes from './credentialTypes';
 
 const { Date } = require('../../protos/common_models_pb');
 const {
@@ -255,6 +256,10 @@ function getCredentialBinary(connectionData, studentData, did) {
   return atalaMessage.serializeBinary();
 }
 
+function getCredentialTypes() {
+  return credentialTypes;
+}
+
 function CredentialsManager(config, auth) {
   this.config = config;
   this.auth = auth;
@@ -264,5 +269,6 @@ function CredentialsManager(config, auth) {
 CredentialsManager.prototype.getCredentials = getCredentials;
 CredentialsManager.prototype.createCredential = createCredential;
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
+CredentialsManager.prototype.getCredentialTypes = getCredentialTypes;
 
 export default CredentialsManager;

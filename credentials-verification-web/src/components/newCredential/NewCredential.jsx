@@ -1,40 +1,14 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import StepInfo from '../common/Molecules/StepInfo/StepInfo';
 import StepFooter from '../common/Molecules/StepFooter/StepFooter';
-import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
 const NEW_CREDENTIAL_STEP_COUNT = 3;
 
-const SaveDraft = ({ saveDraft }) => {
-  const { t } = useTranslation();
-  return (
-    <CustomButton
-      buttonProps={{ onClick: saveDraft, className: 'theme-link' }}
-      buttonText={t('actions.saveForLater')}
-    />
-  );
-};
-
-SaveDraft.propTypes = {
-  saveDraft: PropTypes.func.isRequired
-};
-
-const NewCredential = ({
-  currentStep,
-  createCredentialTemplate,
-  changeStep,
-  saveCredential,
-  renderStep,
-  renderModal,
-  openModal,
-  selectedGroup
-}) => {
-  const { t } = useTranslation();
+const NewCredential = ({ currentStep, changeStep, saveCredential, renderStep, credentialType }) => {
   const steps = [
     { stepTitle: 'newCredential.steps.step1' },
     { stepTitle: 'newCredential.steps.step2' },
@@ -42,32 +16,23 @@ const NewCredential = ({
   ];
 
   const next = [
-    createCredentialTemplate,
     () => {
-      if (!selectedGroup) {
-        message.error(t('newCredential.form.errors.noGroupSelected'));
-        return;
-      }
-
-      changeStep(currentStep + 1);
+      if (credentialType) message.warn('Further steps are not implemented yet');
+      else message.error('Please select a credential type');
     },
+    null,
+    null,
     null
   ];
 
   const goBack = () => changeStep(currentStep - 1);
-  const previous = [null, goBack, goBack];
+  const previous = [null, goBack, goBack, goBack];
 
   return (
     <React.Fragment>
-      {renderModal()}
       <div className="CredentialMainContent">
         <div className="CredentialContainerTop">
-          <StepInfo
-            title="newCredential.title"
-            subtitle="newCredential.subtitle"
-            currentStep={currentStep}
-            steps={steps}
-          />
+          <StepInfo title="newCredential.title" currentStep={currentStep} steps={steps} />
           {renderStep()}
         </div>
         <StepFooter
@@ -76,7 +41,6 @@ const NewCredential = ({
           previousStep={previous[currentStep]}
           nextStep={next[currentStep]}
           finish={saveCredential}
-          renderExtraOptions={() => <SaveDraft saveDraft={openModal} />}
           finishText="newCredential.save"
         />
       </div>
@@ -84,19 +48,12 @@ const NewCredential = ({
   );
 };
 
-NewCredential.defaultProps = {
-  selectedGroup: { name: '' }
-};
-
 NewCredential.propTypes = {
   currentStep: PropTypes.number.isRequired,
   saveCredential: PropTypes.func.isRequired,
-  createCredentialTemplate: PropTypes.func.isRequired,
   changeStep: PropTypes.func.isRequired,
   renderStep: PropTypes.func.isRequired,
-  renderModal: PropTypes.func.isRequired,
-  openModal: PropTypes.func.isRequired,
-  selectedGroup: PropTypes.shape({ name: PropTypes.string })
+  credentialType: PropTypes.string.isRequired
 };
 
 export default NewCredential;

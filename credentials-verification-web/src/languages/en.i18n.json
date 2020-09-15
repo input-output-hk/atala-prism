@@ -175,6 +175,12 @@
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential"
+    },
+    "type": {
+      "governmentId": "Government ID",
+      "educational": "Educational Credential",
+      "proofOfEmployment": "Proof of Employment",
+      "healthInsurance": "Health Insurance"
     }
   },
   "credentialSummary": {
@@ -225,6 +231,7 @@
       "step2": "Assign Recipients Group",
       "step3": "Check and Confirm Credential"
     },
+    "selectType": "Select a type of credential",
     "table": {
       "columns": {
         "identityNumber": "Identity Number",

@@ -31,7 +31,6 @@ const SideMenu = ({ location: { pathname } }) => {
     { icon: connectionsIcon, name: 'connections', restrictedTo: [ISSUER, VERIFIER] },
     { icon: iconGroups, name: 'groups', restrictedTo: [ISSUER] },
     { icon: iconCredentials, name: 'credentials', restrictedTo: [ISSUER] },
-    { icon: certificateIcon, name: 'newCredential', restrictedTo: [ISSUER] },
     { icon: credentialSummaryIcon, name: 'credentialSummary', restrictedTo: [ISSUER] }
     // The next pages are not yet developed
     // { icon: paymentIcon, name: 'payment', restrictedTo: [ISSUER, VERIFIER] }

@@ -53,8 +53,8 @@ const credentialSummary = {
 };
 const newCredential = {
   exact: true,
-  path: '/newCredential',
-  key: '/newCredential',
+  path: '/credentials/create',
+  key: '/credentials/create',
   component: withLoggedValidation(withSideBar(NewCredential), issuer)
 };
 const registration = {
