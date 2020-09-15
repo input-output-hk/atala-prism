@@ -162,9 +162,11 @@ message GetGroupsResponse {
 // generic credentials
 // The authenticated issuer is creating a credential
 message CreateGenericCredentialRequest {
-    string subjectId = 1;
+    string subjectId = 1; // required if the externalId isn't provided, otherwise, ignored.
     string credentialData = 2;
     string groupName = 3;
+    string externalId = 4; // The id provided by the issuer at subject creation time, when this isn't provided,
+                           // the subjectId is expected.
 }
 message CreateGenericCredentialResponse {
     CManagerGenericCredential genericCredential = 1;

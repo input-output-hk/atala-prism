@@ -5181,7 +5181,8 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.toObject = function(in
   var f, obj = {
     subjectid: jspb.Message.getFieldWithDefault(msg, 1, ""),
     credentialdata: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    groupname: jspb.Message.getFieldWithDefault(msg, 3, "")
+    groupname: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    externalid: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -5230,6 +5231,10 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.deserializeBinaryFromR
       var value = /** @type {string} */ (reader.readString());
       msg.setGroupname(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExternalid(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5277,6 +5282,13 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.serializeBinaryToWrite
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getExternalid();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -5334,6 +5346,24 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.getGroupname
  */
 proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setGroupname = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string externalId = 4;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.getExternalid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} returns this
+ */
+proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setExternalid = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 

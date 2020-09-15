@@ -144,7 +144,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
   }
 
-  "find" should {
+  "find by subjectId" should {
     "return the correct subject when present" in {
       val issuerId = createIssuer("Issuer X").id
       val groupName = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
@@ -164,6 +164,29 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       createSubject(issuerYId, "Bob", groupNameB)
 
       val result = repository.find(issuerYId, subjectA.id).value.futureValue.right.value
+      result must be(empty)
+    }
+  }
+
+  "find by externalId" should {
+    "return the correct subject when present" in {
+      val issuerId = createIssuer("Issuer X").id
+      val subjectA = createSubject(issuerId, "Alice", None, "subject-1")
+      createSubject(issuerId, "Bob", None, "subject-2")
+
+      val result = repository.find(issuerId, subjectA.externalId).value.futureValue.right.value
+      result.value must be(subjectA)
+    }
+
+    "return no subject when the subject is missing (issuerId and subjectId not correlated)" in {
+      val issuerXId = createIssuer("Issuer X").id
+      val issuerYId = createIssuer("Issuer Y").id
+      val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
+      val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
+      val subjectA = createSubject(issuerXId, "Alice", groupNameA)
+      createSubject(issuerYId, "Bob", groupNameB)
+
+      val result = repository.find(issuerYId, subjectA.externalId).value.futureValue.right.value
       result must be(empty)
     }
   }

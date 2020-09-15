@@ -128,6 +128,15 @@ object IssuerSubjectsDAO {
          |""".stripMargin.query[Subject].option
   }
 
+  def findSubject(issuerId: Issuer.Id, externalId: Subject.ExternalId): doobie.ConnectionIO[Option[Subject]] = {
+    sql"""
+         |SELECT subject_id, external_id, subject_data, created_at, connection_status, connection_token, connection_id
+         |FROM issuer_subjects
+         |WHERE external_id = $externalId AND
+         |      issuer_id = $issuerId
+         |""".stripMargin.query[Subject].option
+  }
+
   def update(issuerId: Issuer.Id, request: UpdateSubjectRequest): doobie.ConnectionIO[Unit] = {
     request match {
       case UpdateSubjectRequest.ConnectionTokenGenerated(subjectId, token) =>

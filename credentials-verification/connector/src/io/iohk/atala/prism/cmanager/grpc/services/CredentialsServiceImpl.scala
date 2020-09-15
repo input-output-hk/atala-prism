@@ -2,28 +2,21 @@ package io.iohk.atala.prism.cmanager.grpc.services
 
 import java.util.UUID
 
-import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.atala.prism.cmanager.models.requests.{
   CreateGenericCredential,
   CreateUniversityCredential,
   PublishCredential
 }
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
-import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
+import io.iohk.atala.prism.cmanager.models._
+import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
+import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
-import io.iohk.prism.protos.cmanager_api
-import io.iohk.prism.protos.node_api
-import io.iohk.prism.protos.cmanager_api.{
-  CreateGenericCredentialRequest,
-  CreateGenericCredentialResponse,
-  GetGenericCredentialsRequest,
-  GetGenericCredentialsResponse,
-  PublishCredentialRequest,
-  PublishCredentialResponse
-}
+import io.iohk.prism.protos.cmanager_api._
+import io.iohk.prism.protos.{cmanager_api, node_api}
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import io.scalaland.chimney.dsl._
 
@@ -32,6 +25,7 @@ import scala.util.Try
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
+    subjectsRepository: IssuerSubjectsRepository,
     authenticator: Authenticator,
     nodeService: NodeServiceGrpc.NodeService
 )(implicit
@@ -75,21 +69,52 @@ class CredentialsServiceImpl(
       request: CreateGenericCredentialRequest
   ): Future[CreateGenericCredentialResponse] =
     authenticatedHandler("createGenericCredential", request) { issuerId =>
-      val subjectId = Subject.Id(UUID.fromString(request.subjectId))
+      // get the subjectId from the externalId
+      // TODO: Avoid doing this when we stop accepting the subjectId
+      val subjectIdF = Option(request.externalId)
+        .filter(_.nonEmpty)
+        .map(Subject.ExternalId.apply) match {
+        case Some(externalId) =>
+          subjectsRepository
+            .find(issuerId, externalId)
+            .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exists")))
+            .map(_.id)
+
+        case None =>
+          val maybe = Try(request.subjectId)
+            .filter(_.nonEmpty)
+            .map(UUID.fromString)
+            .map(Subject.Id.apply)
+            .toOption
+
+          Future
+            .successful(maybe)
+            .toFutureEither(
+              new RuntimeException("The subjectId is required, if it was provided, it's an invalid value")
+            )
+      }
+
       lazy val json =
         io.circe.parser.parse(request.credentialData).getOrElse(throw new RuntimeException("Invalid json"))
-      val model = request
-        .into[CreateGenericCredential]
-        .withFieldConst(_.issuedBy, issuerId)
-        .withFieldConst(_.subjectId, subjectId)
-        .withFieldConst(_.credentialData, json)
-        .enableUnsafeOption
-        .transform
 
-      credentialsRepository
-        .create(model)
-        .map(genericCredentialToProto)
-        .map(cmanager_api.CreateGenericCredentialResponse().withGenericCredential)
+      val result = for {
+        subjectId <- subjectIdF
+        model =
+          request
+            .into[CreateGenericCredential]
+            .withFieldConst(_.issuedBy, issuerId)
+            .withFieldConst(_.subjectId, subjectId)
+            .withFieldConst(_.credentialData, json)
+            .enableUnsafeOption
+            .transform
+
+        created <-
+          credentialsRepository
+            .create(model)
+            .map(genericCredentialToProto)
+      } yield cmanager_api.CreateGenericCredentialResponse().withGenericCredential(created)
+
+      result.failOnLeft(identity)
     }
 
   override def getGenericCredentials(

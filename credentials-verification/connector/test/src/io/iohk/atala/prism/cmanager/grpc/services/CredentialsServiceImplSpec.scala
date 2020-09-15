@@ -6,18 +6,17 @@ import com.google.protobuf.ByteString
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
-import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs
 import io.iohk.atala.prism.cmanager.models.{GenericCredential, IssuerGroup}
-import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation
+import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
+import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.prism.protos.{cmanager_api, node_api, node_models}
 import io.iohk.prism.protos.cmanager_api.CredentialsServiceGrpc
-
+import io.iohk.prism.protos.{cmanager_api, node_api, node_models}
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -30,6 +29,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 
   private lazy val credentialsRepository = new CredentialsRepository(database)
+  private lazy val subjectsRepository = new IssuerSubjectsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -44,7 +44,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
     Seq(
       cmanager_api.CredentialsServiceGrpc
         .bindService(
-          new CredentialsServiceImpl(credentialsRepository, authenticator, nodeMock),
+          new CredentialsServiceImpl(credentialsRepository, subjectsRepository, authenticator, nodeMock),
           executionContext
         )
     )
@@ -83,6 +83,30 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         response.encodedSignedCredential must be(empty)
         response.publicationStoredAt must be(0)
         response.externalId must be(subject.externalId.value)
+      }
+    }
+
+    "create a generic credential given a extrenal subject id" in {
+      val issuerName = "Issuer 1"
+      val issuer = DataPreparation.createIssuer(issuerName)
+      val issuerGroup = DataPreparation.createIssuerGroup(issuer.id, IssuerGroup.Name("Group 1"))
+      val subject = DataPreparation.createSubject(issuer.id, "Subject 1", issuerGroup.name)
+
+      usingApiAs(ParticipantId(issuer.id.value)) { serviceStub =>
+        val credentialData = Json.obj(
+          "claim1" -> "claim 1".asJson,
+          "claim2" -> "claim 2".asJson,
+          "claim3" -> "claim 3".asJson
+        )
+
+        val request = cmanager_api.CreateGenericCredentialRequest(
+          credentialData = credentialData.noSpaces,
+          groupName = issuerGroup.name.value,
+          externalId = subject.externalId.value
+        )
+
+        serviceStub.createGenericCredential(request).genericCredential.value
+        succeed
       }
     }
   }
