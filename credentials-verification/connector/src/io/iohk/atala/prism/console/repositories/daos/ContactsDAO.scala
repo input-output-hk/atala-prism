@@ -1,0 +1,121 @@
+package io.iohk.atala.prism.console.repositories.daos
+
+import java.time.Instant
+import java.util.UUID
+
+import doobie.free.connection.ConnectionIO
+import doobie.implicits.toSqlInterpolator
+import io.iohk.atala.prism.cmanager.models.IssuerGroup
+import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
+import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
+import io.iohk.atala.prism.models.ParticipantId
+
+object ContactsDAO {
+
+  def createContact(data: CreateContact): ConnectionIO[Contact] = {
+    val contactId = Contact.Id(UUID.randomUUID())
+    val createdAt = Instant.now()
+    val connectionStatus: Contact.ConnectionStatus = Contact.ConnectionStatus.InvitationMissing
+    sql"""
+         |INSERT INTO contacts
+         |  (contact_id, contact_data, created_at, connection_status, created_by, external_id)
+         |VALUES
+         |  ($contactId, ${data.data}, $createdAt, $connectionStatus::CONTACT_CONNECTION_STATUS_TYPE,
+         |   ${data.createdBy}, ${data.externalId})
+         |RETURNING contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+         |""".stripMargin.query[Contact].unique
+  }
+
+  def findContact(institutionId: Institution.Id, contactId: Contact.Id): doobie.ConnectionIO[Option[Contact]] = {
+    sql"""
+           |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+           |FROM contacts
+           |WHERE contact_id = $contactId AND
+           |      created_by = $institutionId
+           |""".stripMargin.query[Contact].option
+  }
+
+  def getBy(
+      institutionId: Institution.Id,
+      limit: Int,
+      lastContactSeen: Option[Contact.Id],
+      groupName: Option[IssuerGroup.Name]
+  ): doobie.ConnectionIO[List[Contact]] = {
+
+    val query = (lastContactSeen, groupName) match {
+      case (Some(lastSeen), Some(group)) =>
+        sql"""
+               |WITH CTE AS (
+               |  SELECT created_at AS last_seen_time
+               |  FROM contacts
+               |  WHERE contact_id = $lastSeen
+               |)
+               |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+               |FROM CTE CROSS JOIN contacts
+               |     JOIN contacts_per_group USING (contact_id)
+               |     JOIN issuer_groups g USING (group_id)
+               |WHERE contacts.created_by = $institutionId AND
+               |      (created_at > last_seen_time OR (created_at = last_seen_time AND contact_id > $lastSeen)) AND
+               |      g.name = $group
+               |ORDER BY created_at ASC, contact_id
+               |LIMIT $limit
+               |""".stripMargin
+      case (Some(lastSeen), None) =>
+        sql"""
+               |WITH CTE AS (
+               |  SELECT created_at AS last_seen_time
+               |  FROM contacts
+               |  WHERE contact_id = $lastSeen
+               |)
+               |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+               |FROM CTE CROSS JOIN contacts
+               |WHERE contacts.created_by = $institutionId AND
+               |      (created_at > last_seen_time OR (created_at = last_seen_time AND contact_id > $lastSeen))
+               |ORDER BY created_at ASC, contact_id
+               |LIMIT $limit
+               |""".stripMargin
+      case (None, Some(group)) =>
+        sql"""
+               |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+               |FROM contacts
+               |     JOIN contacts_per_group USING (contact_id)
+               |     JOIN issuer_groups g USING (group_id)
+               |WHERE contacts.created_by = $institutionId AND
+               |      g.name = $group
+               |ORDER BY created_at ASC, contact_id
+               |LIMIT $limit
+               |""".stripMargin
+      case (None, None) =>
+        sql"""
+               |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+               |FROM contacts
+               |WHERE created_by = $institutionId
+               |ORDER BY created_at ASC, contact_id
+               |LIMIT $limit
+               |""".stripMargin
+    }
+    query.query[Contact].to[List]
+  }
+
+  // Called when a connection request is sent
+  def setConnectionToken(
+      organizationId: ParticipantId,
+      contactId: ParticipantId,
+      token: TokenString
+  ): ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE contacts
+         |SET connection_token = $token, connection_status = ${ConnectionStatus.ConnectionMissing: ConnectionStatus}
+         |WHERE created_by = $organizationId AND contact_id = $contactId
+         |""".stripMargin.update.run.map(_ => ())
+  }
+
+  def setConnectionAsAccepted(connectionToken: TokenString, connectionId: ConnectionId): ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE contacts
+         |SET connection_id = $connectionId, connection_status = ${ConnectionStatus.ConnectionAccepted: ConnectionStatus}
+         |WHERE connection_token = $connectionToken
+         |""".stripMargin.update.run.map(_ => ())
+  }
+}

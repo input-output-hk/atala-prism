@@ -25,9 +25,9 @@ object StoredCredentialsDAO {
       verifierId: ParticipantId,
       individualId: ParticipantId
   ): ConnectionIO[Seq[StoredSignedCredential]] = {
-    sql"""SELECT vh.holder_id, encoded_signed_credential, stored_at
-         |FROM stored_credentials sc INNER JOIN verifier_holders vh ON sc.connection_id = vh.connection_id
-         |WHERE vh.verifier_id = $verifierId AND vh.holder_id = $individualId
+    sql"""SELECT contact_id, encoded_signed_credential, stored_at
+         |FROM stored_credentials JOIN contacts USING (connection_id)
+         |WHERE created_by = $verifierId AND contact_id = $individualId
          |ORDER BY stored_at
        """.stripMargin.query[StoredSignedCredential].to[Seq]
   }

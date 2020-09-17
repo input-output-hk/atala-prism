@@ -29,10 +29,10 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT inserted.*, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
+         |SELECT inserted.*, PTS.name AS issuer_name, contacts.contact_data ->> 'full_name' AS student_name
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
-         |     JOIN issuer_subjects USING (subject_id)
+         |     JOIN contacts ON (inserted.subject_id = contacts.contact_id)
          |""".stripMargin.query[UniversityCredential].unique
   }
 
@@ -54,10 +54,10 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, contacts.contact_data ->> 'full_name' AS student_name
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
-             |     JOIN issuer_subjects USING (subject_id)
+             |     JOIN contacts ON (c.subject_id = contacts.contact_id)
              |WHERE c.issuer_id = $issuedBy AND
              |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
              |ORDER BY c.created_on ASC, credential_id
@@ -70,10 +70,10 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, contacts.contact_data ->> 'full_name' AS student_name
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
-             |     JOIN issuer_subjects USING (subject_id)
+             |     JOIN contacts ON (c.subject_id = contacts.contact_id)
              |WHERE c.issuer_id = $issuedBy
              |ORDER BY c.created_on ASC, credential_id
              |LIMIT $limit
@@ -92,10 +92,10 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
+         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, contacts.contact_data ->> 'full_name' AS student_name
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
-         |     JOIN issuer_subjects USING (subject_id)
+         |     JOIN contacts ON (c.subject_id = contacts.contact_id)
          |WHERE c.issuer_id = $issuedBy AND
          |      c.subject_id = $studentId
          |ORDER BY c.created_on ASC, credential_id
@@ -117,10 +117,10 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT inserted.*, issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data, pc.*
+         |SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, pc.*
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
-         |     JOIN issuer_subjects USING (subject_id)
+         |     JOIN contacts ON (inserted.subject_id = contacts.contact_id)
          |     LEFT JOIN published_credentials pc USING (credential_id)
          |""".stripMargin.query[GenericCredential].unique
   }
@@ -144,11 +144,11 @@ object CredentialsDAO {
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
-             |       issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data,
+             |       external_id, PTS.name AS issuer_name, contact_data,
              |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
-             |     JOIN issuer_subjects USING (subject_id)
+             |     JOIN contacts ON (c.subject_id = contacts.contact_id)
              |     LEFT JOIN published_credentials pc USING (credential_id)
              |WHERE c.issuer_id = $issuedBy AND
              |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
@@ -163,11 +163,11 @@ object CredentialsDAO {
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
-             |       issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data,
+             |       external_id, PTS.name AS issuer_name, contact_data,
              |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
-             |     JOIN issuer_subjects USING (subject_id)
+             |     JOIN contacts ON (c.subject_id = contacts.contact_id)
              |     LEFT JOIN published_credentials pc USING (credential_id)
              |WHERE c.issuer_id = $issuedBy
              |ORDER BY c.created_on ASC, credential_id
@@ -185,11 +185,11 @@ object CredentialsDAO {
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
          |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
-         |       issuer_subjects.external_id, PTS.name AS issuer_name, issuer_subjects.subject_data,
+         |       external_id, PTS.name AS issuer_name, contacts.contact_data,
          |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
-         |     JOIN issuer_subjects USING (subject_id)
+         |     JOIN contacts ON (c.subject_id = contacts.contact_id)
          |     LEFT JOIN published_credentials pc USING (credential_id)
          |WHERE c.issuer_id = $issuedBy AND
          |      c.subject_id = $subjectId

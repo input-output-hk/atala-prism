@@ -19,9 +19,25 @@ package object models {
     case object Invited extends IndividualConnectionStatus
     case object Connected extends IndividualConnectionStatus
     case object Revoked extends IndividualConnectionStatus
-  }
 
-  case class Verifier(id: Verifier.Id)
+    def toContactStatus(status: IndividualConnectionStatus): String = {
+      status match {
+        case Created => "INVITATION_MISSING"
+        case Invited => "CONNECTION_MISSING"
+        case Connected => "CONNECTION_ACCEPTED"
+        case Revoked => "CONNECTION_REVOKED"
+      }
+    }
+
+    def fromContactStatus(status: String): IndividualConnectionStatus = {
+      status match {
+        case "INVITATION_MISSING" => IndividualConnectionStatus.Created
+        case "CONNECTION_MISSING" => IndividualConnectionStatus.Invited
+        case "CONNECTION_ACCEPTED" => IndividualConnectionStatus.Connected
+        case "CONNECTION_REVOKED" => IndividualConnectionStatus.Revoked
+      }
+    }
+  }
 
   object Verifier {
     case class Id(uuid: UUID) extends AnyVal
@@ -48,21 +64,6 @@ package object models {
 
   object VerifierHolder {
     case class Id(uuid: UUID) extends AnyVal
-  }
-
-  case class SHA256Digest(value: Array[Byte]) {
-    require(value.length == 32)
-
-    def hexValue: String = value.map("%02x".format(_)).mkString("")
-
-    override def canEqual(that: Any): Boolean = that.isInstanceOf[SHA256Digest]
-
-    override def equals(obj: Any): Boolean = {
-      canEqual(obj) && (obj match {
-        case SHA256Digest(otherValue) => value.sameElements(otherValue)
-        case _ => false
-      })
-    }
   }
 
   case class StoredSignedCredential(

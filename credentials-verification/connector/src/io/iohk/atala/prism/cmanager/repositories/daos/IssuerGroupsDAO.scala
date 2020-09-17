@@ -35,7 +35,7 @@ object IssuerGroupsDAO {
   }
 
   def addSubject(groupId: IssuerGroup.Id, subjectId: Subject.Id): ConnectionIO[Unit] = {
-    sql"""INSERT INTO contacts_per_group (group_id, subject_id, added_at)
+    sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
          |VALUES ($groupId, $subjectId, now())
          |""".stripMargin.update.run.map(_ => ())
   }

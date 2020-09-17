@@ -37,7 +37,7 @@ class IntegrityTriggersSpec extends CManagerRepositorySpec {
       )
 
       // we need to check that the error is the one we recognise with the trigger
-      exc.getMessage.contains("ERROR: The group and subject do not belong to the same issuer") must be(true)
+      exc.getMessage.contains("ERROR: The group and contact do not belong to the same issuer") must be(true)
     }
   }
 }
