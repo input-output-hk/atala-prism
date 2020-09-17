@@ -15,7 +15,7 @@ import io.iohk.atala.prism.node.models.AtalaObject
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
-import io.iohk.atala.prism.node.services.models.AtalaObjectUpdate
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectUpdate}
 import io.iohk.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.prism.protos.{node_internal, node_models}
 
@@ -42,17 +42,13 @@ class ObjectManagementService(
   // - put the info about the object into the db
   // for now, until we have block processing queue, it also manages processing
   // the referenced block
-  def justSaveObject(
-      objectUpdate: AtalaObjectUpdate,
-      timestamp: Instant,
-      transactionInfo: TransactionInfo
-  ): Future[Option[AtalaObject]] = {
-    val hash = objectUpdate match {
+  def justSaveObject(notification: AtalaObjectNotification): Future[Option[AtalaObject]] = {
+    val hash = notification.update match {
       case AtalaObjectUpdate.Reference(ref) => ref
       case AtalaObjectUpdate.ByteContent(bytes) => SHA256Digest.compute(bytes)
     }
 
-    val content = objectUpdate match {
+    val content = notification.update match {
       case AtalaObjectUpdate.Reference(_) => None
       case AtalaObjectUpdate.ByteContent(bytes) => Some(bytes)
     }
@@ -71,10 +67,10 @@ class ObjectManagementService(
         AtalaObjectCreateData(
           hash,
           newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1),
-          timestamp,
+          notification.timestamp,
           content,
-          transactionInfo.id,
-          transactionInfo.ledger
+          notification.transaction.id,
+          notification.transaction.ledger
         )
       )
     } yield Some(obj)
@@ -87,9 +83,9 @@ class ObjectManagementService(
       }
   }
 
-  def saveObject(obj: AtalaObjectUpdate, timestamp: Instant, transactionInfo: TransactionInfo): Future[Unit] = {
+  def saveObject(notification: AtalaObjectNotification): Future[Unit] = {
     // TODO: just add the object to processing queue, instead of processing here
-    justSaveObject(obj, timestamp, transactionInfo)
+    justSaveObject(notification)
       .flatMap {
         case Some(obj) =>
           processObject(obj).flatMap { transaction =>

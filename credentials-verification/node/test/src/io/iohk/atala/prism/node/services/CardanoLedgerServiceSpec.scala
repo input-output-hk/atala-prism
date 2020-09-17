@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
-import io.iohk.atala.prism.node.services.models.ObjectHandler
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotificationHandler
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 
@@ -28,7 +28,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
   private val paymentAddress: Address = Address("2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb")
   private val blockConfirmationsToWait = 31
 
-  private val noOpObjectHandler: ObjectHandler = (_, _, _) => Future.unit
+  private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
   private lazy val keyValueService = new KeyValueService(new KeyValuesRepository(database))
 
@@ -91,7 +91,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
 
   private def createCardanoLedgerService(
       cardanoWalletApiClient: CardanoWalletApiClient,
-      onNewObject: ObjectHandler = noOpObjectHandler
+      onAtalaObject: AtalaObjectNotificationHandler = noOpObjectHandler
   ): CardanoLedgerService = {
     val cardanoClient = createCardanoClient(cardanoWalletApiClient)
     new CardanoLedgerService(
@@ -102,7 +102,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       blockConfirmationsToWait,
       cardanoClient,
       keyValueService,
-      onNewObject,
+      onAtalaObject,
       scheduler
     )
   }

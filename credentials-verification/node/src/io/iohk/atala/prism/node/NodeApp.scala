@@ -1,16 +1,13 @@
 package io.iohk.atala.prism.node
 
-import java.time.Instant
-
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.atala.prism.node.services.AtalaService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.prism.protos.node_api._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -69,9 +66,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
 
-    def onAtalaReference(ref: AtalaObjectUpdate, timestamp: Instant, transactionInfo: TransactionInfo): Future[Unit] = {
+    def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] = {
       objectManagementServicePromise.future.map { objectManagementService =>
-        objectManagementService.saveObject(ref, timestamp, transactionInfo)
+        objectManagementService.saveObject(notification)
         ()
       }
     }
@@ -79,11 +76,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValueService = new KeyValueService(new KeyValuesRepository(xa))
 
     val atalaReferenceLedger = globalConfig.getString("ledger") match {
-      case "bitcoin" => initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaReference)
-      case "cardano" => initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaReference)
+      case "bitcoin" => initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaObject)
+      case "cardano" => initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaObject)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
-        new InMemoryAtalaReferenceLedger(onAtalaReference)
+        new InMemoryAtalaReferenceLedger(onAtalaObject)
     }
 
     logger.info("Creating blocks processor")
@@ -115,13 +112,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     ()
   }
 
-  private def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler): AtalaService = {
+  private def initializeBitcoin(config: Config, onAtalaObject: AtalaObjectNotificationHandler): AtalaService = {
     logger.info("Creating bitcoin client")
 
     val bitcoinNetwork = BitcoinNetwork.withNameInsensitive(config.getString("network"))
     val bitcoinClient = BitcoinClient(NodeConfig.bitcoinConfig(config))
 
-    val atalaService = AtalaService(bitcoinNetwork, bitcoinClient, onAtalaReference)
+    val atalaService = AtalaService(bitcoinNetwork, bitcoinClient, onAtalaObject)
 
     // TODO: Re-enable Bitcoin syncer
     /*
@@ -139,10 +136,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def initializeCardano(
       config: Config,
       keyValueService: KeyValueService,
-      onAtalaReference: ObjectHandler
+      onAtalaObject: AtalaObjectNotificationHandler
   ): CardanoLedgerService = {
     logger.info("Creating cardano client")
-    CardanoLedgerService(NodeConfig.cardanoConfig(config), keyValueService, onAtalaReference)
+    CardanoLedgerService(NodeConfig.cardanoConfig(config), keyValueService, onAtalaObject)
   }
 
   private def stop(): Unit = {

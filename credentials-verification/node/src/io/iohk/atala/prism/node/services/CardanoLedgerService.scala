@@ -7,7 +7,7 @@ import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
-import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.utils.FutureEither
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
@@ -23,7 +23,7 @@ class CardanoLedgerService private[services] (
     blockConfirmationsToWait: Int,
     cardanoClient: CardanoClient,
     keyValueService: KeyValueService,
-    onNewObject: ObjectHandler,
+    onAtalaObject: AtalaObjectNotificationHandler,
     scheduler: Scheduler
 )(implicit
     ec: ExecutionContext
@@ -112,19 +112,16 @@ class CardanoLedgerService private[services] (
   }
 
   private def processAtalaObjects(block: Block.Full): Future[Unit] = {
-    val atalaReferences: List[(SHA256Digest, TransactionInfo)] = block.transactions.flatMap { _ =>
+    val notifications: List[AtalaObjectNotification] = block.transactions.flatMap { _ =>
       // TODO: Extract Atala reference when metadata is available
       None
     }
-    if (atalaReferences.nonEmpty) {
-      logger trace s"Found ${atalaReferences.size} ATALA references in block ${block.header.blockNo}"
+    if (notifications.nonEmpty) {
+      logger trace s"Found ${notifications.size} ATALA references in block ${block.header.blockNo}"
     }
 
     for {
-      _ <- Future.traverse(atalaReferences) { reference =>
-        val (objectHash, transactionInfo) = reference
-        onNewObject(AtalaObjectUpdate.Reference(objectHash), block.header.time, transactionInfo)
-      }
+      _ <- Future.traverse(notifications) { onAtalaObject(_) }
       _ <- keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(block.header.blockNo))
     } yield ()
   }
@@ -151,7 +148,7 @@ object CardanoLedgerService {
       cardanoClientConfig: CardanoClient.Config
   )
 
-  def apply(config: Config, keyValueService: KeyValueService, onNewObject: ObjectHandler)(implicit
+  def apply(config: Config, keyValueService: KeyValueService, onAtalaObject: AtalaObjectNotificationHandler)(implicit
       scheduler: Scheduler
   ): CardanoLedgerService = {
     val walletId = WalletId
@@ -169,7 +166,7 @@ object CardanoLedgerService {
       config.blockConfirmationsToWait,
       cardanoClient,
       keyValueService,
-      onNewObject,
+      onAtalaObject,
       scheduler
     )
   }

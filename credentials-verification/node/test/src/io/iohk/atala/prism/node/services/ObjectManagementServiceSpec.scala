@@ -11,7 +11,7 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.atala.prism.node.services.models.AtalaObjectUpdate
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectUpdate}
 import io.iohk.atala.prism.node.{AtalaReferenceLedger, objects}
 import io.iohk.prism.protos.{node_internal, node_models}
 import org.mockito
@@ -110,7 +110,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
       objectManagmentService
-        .justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .justSaveObject(
+          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        )
         .futureValue
 
       val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
@@ -122,11 +124,15 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
       objectManagmentService
-        .justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .justSaveObject(
+          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        )
         .futureValue
 
       objectManagmentService
-        .justSaveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .justSaveObject(
+          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        )
         .futureValue
 
       val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
@@ -140,7 +146,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
       objectManagmentService
-        .saveObject(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        .saveObject(
+          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+        )
         .futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
@@ -169,7 +177,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         val objectUpdate = createExampleObjectUpdate(block, includeBlock, includeObject)
 
         objectManagmentService
-          .saveObject(objectUpdate, Instant.ofEpochMilli(i.toLong), dummyTransactionInfo)
+          .saveObject(AtalaObjectNotification(objectUpdate, Instant.ofEpochMilli(i.toLong), dummyTransactionInfo))
           .futureValue
 
         val objectHash = objectUpdate match {

@@ -4,7 +4,11 @@ import java.time.Instant
 
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
+import io.iohk.atala.prism.node.services.models.{
+  AtalaObjectNotification,
+  AtalaObjectNotificationHandler,
+  AtalaObjectUpdate
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -14,7 +18,7 @@ trait AtalaReferenceLedger {
   def publishObject(bytes: Array[Byte]): Future[TransactionInfo]
 }
 
-class InMemoryAtalaReferenceLedger(onNewObject: ObjectHandler)(implicit ec: ExecutionContext)
+class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
     extends AtalaReferenceLedger {
 
   override def supportsOnChainData: Boolean = true
@@ -24,7 +28,7 @@ class InMemoryAtalaReferenceLedger(onNewObject: ObjectHandler)(implicit ec: Exec
     val transactionId = TransactionId.from(ref.value).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
     val transactionInfo = TransactionInfo(transactionId, Ledger.InMemory)
     for {
-      _ <- onNewObject(AtalaObjectUpdate.Reference(ref), Instant.now(), transactionInfo)
+      _ <- onAtalaObject(AtalaObjectNotification(AtalaObjectUpdate.Reference(ref), Instant.now(), transactionInfo))
     } yield transactionInfo
   }
 
@@ -34,7 +38,7 @@ class InMemoryAtalaReferenceLedger(onNewObject: ObjectHandler)(implicit ec: Exec
     val transactionId = TransactionId.from(hash.value).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
     val transactionInfo = TransactionInfo(transactionId, Ledger.InMemory)
     for {
-      _ <- onNewObject(AtalaObjectUpdate.ByteContent(bytes), Instant.now(), transactionInfo)
+      _ <- onAtalaObject(AtalaObjectNotification(AtalaObjectUpdate.ByteContent(bytes), Instant.now(), transactionInfo))
     } yield transactionInfo
   }
 }

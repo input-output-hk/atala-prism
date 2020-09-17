@@ -1,18 +1,15 @@
 package io.iohk.atala.prism.node.poc.jwsflow
 
 import java.nio.charset.StandardCharsets
-import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.TransactionInfo
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.models.AtalaObjectUpdate
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   CredentialsService,
@@ -20,6 +17,7 @@ import io.iohk.atala.prism.node.services.{
   ObjectManagementService
 }
 import io.iohk.atala.prism.node.{InMemoryAtalaReferenceLedger, NodeServiceImpl}
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.prism.protos.node_api
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -54,9 +52,9 @@ class VerificationPoCWithOdyssey extends PostgresRepositorySpec with MockitoSuga
 
     objectManagementServicePromise = Promise()
 
-    def onAtalaReference(ref: AtalaObjectUpdate, timestamp: Instant, transactionInfo: TransactionInfo): Future[Unit] = {
+    def onAtalaReference(notification: AtalaObjectNotification): Future[Unit] = {
       objectManagementServicePromise.future.futureValue
-        .saveObject(ref, timestamp, transactionInfo)
+        .saveObject(notification)
     }
 
     atalaReferenceLedger = new InMemoryAtalaReferenceLedger(onAtalaReference)

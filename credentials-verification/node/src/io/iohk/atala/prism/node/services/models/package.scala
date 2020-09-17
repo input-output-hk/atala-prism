@@ -26,6 +26,8 @@ package object models {
     final case class Reference(hash: SHA256Digest) extends AtalaObjectUpdate
     final case class ByteContent(obj: Array[Byte]) extends AtalaObjectUpdate
   }
-  type ObjectHandler = (AtalaObjectUpdate, Instant, TransactionInfo) => Future[Unit]
 
+  case class AtalaObjectNotification(update: AtalaObjectUpdate, timestamp: Instant, transaction: TransactionInfo)
+
+  type AtalaObjectNotificationHandler = AtalaObjectNotification => Future[Unit]
 }

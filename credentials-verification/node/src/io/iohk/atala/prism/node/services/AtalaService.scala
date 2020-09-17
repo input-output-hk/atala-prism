@@ -9,7 +9,11 @@ import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
 import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
-import io.iohk.atala.prism.node.services.models.{AtalaObjectUpdate, ObjectHandler}
+import io.iohk.atala.prism.node.services.models.{
+  AtalaObjectNotification,
+  AtalaObjectNotificationHandler,
+  AtalaObjectUpdate
+}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.LoggerFactory
@@ -24,7 +28,7 @@ class AtalaServiceImpl(
     network: BitcoinNetwork,
     bitcoinClient: BitcoinClient,
     binaryOps: BinaryOps,
-    onNewReference: ObjectHandler
+    onAtalaObject: AtalaObjectNotificationHandler
 )(implicit
     ec: ExecutionContext
 ) extends AtalaService {
@@ -75,7 +79,10 @@ class AtalaServiceImpl(
       .getFullBlock(blockhash)
       .flatMap { block =>
         logger trace "Block just retrieved from the Bitcoin blockchain"
-        val atalaReferences: List[(SHA256Digest, TransactionInfo)] = for {
+        // TODO: Update Instant.ofEpochMilli(block.header.time) for proper expression
+        val blockTimestamp = Instant.ofEpochMilli(block.header.time)
+
+        val notifications: List[AtalaObjectNotification] = for {
           tx <- block.transactions
           out <- tx.vout
           _ = logger trace "VOut of a Block detected"
@@ -87,19 +94,15 @@ class AtalaServiceImpl(
           data = trimmed.drop(ATALA_HEADER.length)
           _ = logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
           atalaObjectId = SHA256Digest(data)
-        } yield (atalaObjectId, TransactionInfo(tx.id, ledger))
-        logger trace s"Found ${atalaReferences.size} ATALA references"
+        } yield AtalaObjectNotification(
+          AtalaObjectUpdate.Reference(atalaObjectId),
+          blockTimestamp,
+          TransactionInfo(tx.id, ledger)
+        )
+        logger trace s"Found ${notifications.size} ATALA references"
 
         Future
-          .traverse(atalaReferences) { atalaReference =>
-            val (reference, transactionInfo) = atalaReference
-            // TODO: Update Instant.ofEpochMilli(block.header.time) for proper expression
-            onNewReference(
-              AtalaObjectUpdate.Reference(reference),
-              Instant.ofEpochMilli(block.header.time),
-              transactionInfo
-            )
-          }
+          .traverse(notifications) { onAtalaObject(_) }
           .map(_ => Right(()))
           .toFutureEither
       }
@@ -125,11 +128,11 @@ object AtalaService {
   def apply(
       network: BitcoinNetwork,
       bitcoinClient: BitcoinClient,
-      onNewReference: ObjectHandler
+      onAtalaObject: AtalaObjectNotificationHandler
   )(implicit
       ec: ExecutionContext
   ): AtalaService = {
     val binaryOps = BinaryOps()
-    new AtalaServiceImpl(network, bitcoinClient, binaryOps, onNewReference)
+    new AtalaServiceImpl(network, bitcoinClient, binaryOps, onAtalaObject)
   }
 }
