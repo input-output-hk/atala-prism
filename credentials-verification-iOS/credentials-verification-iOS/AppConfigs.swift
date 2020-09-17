@@ -23,6 +23,7 @@ extension UIColor {
     static let appRedLight = UIColor(netHex: 0xFFEAEB)
     static let appGreen = UIColor(netHex: 0x1ED69E)
     static let appGreen15per = UIColor(netHex: 0x2600_D793)
+    static let appGreenTransparent = UIColor(red: 0, green: 0.843, blue: 0.576, alpha: 0.1)
     static let appGrey = UIColor(netHex: 0xB6B6B6)
     static let appGreySub = UIColor(netHex: 0x979797)
     static let appGreyBlue = UIColor(netHex: 0xA0AABB)
@@ -42,6 +43,7 @@ extension UIColor {
         "appRedLight": UIColor.appRedLight,
         "appGreen": UIColor.appGreen,
         "appGreen15per": UIColor.appGreen15per,
+        "appGreenTransparent": UIColor.appGreenTransparent,
         "appGrey": UIColor.appGrey,
         "appGreySub": UIColor.appGreySub,
         "appGreyBlue": UIColor.appGreyBlue,

@@ -13,6 +13,12 @@
 		B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B30255052449E61900C8E9C0 /* Notifications.storyboard */; };
 		B3025508244A4FE900C8E9C0 /* ConnectionsWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */; };
 		B3045F1E2512B338004FAC50 /* NotificationHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3045F1D2512B338004FAC50 /* NotificationHeaderViewCell.xib */; };
+		B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309A99B250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift */; };
+		B309A99E250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B309A99C250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib */; };
+		B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309A9A1250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift */; };
+		B309A9A4250FF0A500C62B50 /* CredentialSharedViewCellViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B309A9A2250FF0A500C62B50 /* CredentialSharedViewCellViewCell.xib */; };
+		B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309A9A5250FF2F200C62B50 /* CredentialSectionViewCell.swift */; };
+		B309A9A8250FF2F200C62B50 /* CredentialSectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B309A9A6250FF2F200C62B50 /* CredentialSectionViewCell.xib */; };
 		B309C14F24BE40A200AF70DF /* AtalaPrismModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B309C14D24BE40A200AF70DF /* AtalaPrismModel.xcdatamodeld */; };
 		B309C16524BF5CD600AF70DF /* Credential+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C15F24BF5CD600AF70DF /* Credential+CoreDataClass.swift */; };
 		B309C16624BF5CD600AF70DF /* Credential+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16024BF5CD600AF70DF /* Credential+CoreDataProperties.swift */; };
@@ -269,6 +275,12 @@
 		B30255052449E61900C8E9C0 /* Notifications.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Notifications.storyboard; sourceTree = "<group>"; };
 		B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsWorker.swift; sourceTree = "<group>"; };
 		B3045F1D2512B338004FAC50 /* NotificationHeaderViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NotificationHeaderViewCell.xib; sourceTree = "<group>"; };
+		B309A99B250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialHistoryHeaderViewCell.swift; sourceTree = "<group>"; };
+		B309A99C250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CredentialHistoryHeaderViewCell.xib; sourceTree = "<group>"; };
+		B309A9A1250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSharedViewCellViewCell.swift; sourceTree = "<group>"; };
+		B309A9A2250FF0A500C62B50 /* CredentialSharedViewCellViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CredentialSharedViewCellViewCell.xib; sourceTree = "<group>"; };
+		B309A9A5250FF2F200C62B50 /* CredentialSectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSectionViewCell.swift; sourceTree = "<group>"; };
+		B309A9A6250FF2F200C62B50 /* CredentialSectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CredentialSectionViewCell.xib; sourceTree = "<group>"; };
 		B309C14E24BE40A200AF70DF /* AtalaPrismModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = AtalaPrismModel.xcdatamodel; sourceTree = "<group>"; };
 		B309C15F24BF5CD600AF70DF /* Credential+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Credential+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B309C16024BF5CD600AF70DF /* Credential+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Credential+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -1369,6 +1381,9 @@
 			isa = PBXGroup;
 			children = (
 				EE904F032373AA5A00EE6344 /* DegreeViewCell.swift */,
+				B309A99B250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift */,
+				B309A9A1250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift */,
+				B309A9A5250FF2F200C62B50 /* CredentialSectionViewCell.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1376,6 +1391,9 @@
 		EE904F122373B99700EE6344 /* cells */ = {
 			isa = PBXGroup;
 			children = (
+				B309A99C250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib */,
+				B309A9A2250FF0A500C62B50 /* CredentialSharedViewCellViewCell.xib */,
+				B309A9A6250FF2F200C62B50 /* CredentialSectionViewCell.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1564,9 +1582,11 @@
 				B3F94E8B247455720087EBFD /* SecurityMainViewCell.xib in Resources */,
 				B3F94E8A247455720087EBFD /* Security.storyboard in Resources */,
 				EE7D4D1523693A13007C31A8 /* Connections.storyboard in Resources */,
+				B309A99E250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib in Resources */,
 				B352433F24FFD59F0053A804 /* DateFormat.storyboard in Resources */,
 				B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */,
 				EE7D4C792366B9C4007C31A8 /* Localizable.strings in Resources */,
+				B309A9A8250FF2F200C62B50 /* CredentialSectionViewCell.xib in Resources */,
 				EE7185862384FBC200C58F62 /* CredentialPay.storyboard in Resources */,
 				B3F94E86247455650087EBFD /* Lock.storyboard in Resources */,
 				EE7D4C832366B9C4007C31A8 /* LaunchScreen.storyboard in Resources */,
@@ -1603,6 +1623,7 @@
 				EE8CD816237CFCF300614578 /* InformationView.xib in Resources */,
 				EE904F142373B9D000EE6344 /* CommonViewCell.xib in Resources */,
 				EE48AC022377537200C0A441 /* Tutorial.storyboard in Resources */,
+				B309A9A4250FF0A500C62B50 /* CredentialSharedViewCellViewCell.xib in Resources */,
 				EE7D4CC42366B9C5007C31A8 /* SteradianMedium.otf in Resources */,
 				EE7D4CB72366B9C5007C31A8 /* ListingLoadingViewCell.xib in Resources */,
 				EE8FD4EA23726AC000EFF62E /* Settings.storyboard in Resources */,
@@ -1819,6 +1840,7 @@
 				EE7D4D28236F8DE9007C31A8 /* ListingErrorRetryViewCell.swift in Sources */,
 				EE7D4C3D2366B9C4007C31A8 /* SelectorAction.swift in Sources */,
 				EE7D4C412366B9C4007C31A8 /* Collection+Extension.swift in Sources */,
+				B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */,
 				EE7185882384FC6A00C58F62 /* CredentialPayViewCell.swift in Sources */,
 				B3F94E96247455A60087EBFD /* SecurityMainViewCell.swift in Sources */,
 				B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */,
@@ -1854,6 +1876,7 @@
 				B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */,
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
 				B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */,
+				B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
 				EE7D4D012367621C007C31A8 /* CredentialsViewController.swift in Sources */,
@@ -1922,6 +1945,7 @@
 				EE7D4C6C2366B9C4007C31A8 /* SharedMemory.swift in Sources */,
 				EE7D4BBA2366B9C4007C31A8 /* UserUtils.swift in Sources */,
 				B38D944A24AE53440053CE36 /* Reachability.swift in Sources */,
+				B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */,
 				B35181B324196689007CA8F1 /* common_models.proto in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
 				B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */,
@@ -2136,7 +2160,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 75;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2162,7 +2186,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

@@ -5,6 +5,8 @@ import ObjectMapper
 
 class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
                             DegreeViewCellPresenterDelegate, ShareDialogPresenterDelegate,
+                            CredentialHistoryHeaderViewCellPresenterDelegate,
+                            CredentialSharedViewCellPresenterDelegate, CredentialSectionViewCellPresenterDelegate,
                             UISearchBarDelegate {
 
     var viewImpl: CredentialsViewController? {
@@ -13,14 +15,17 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     enum CredentialsMode {
         case degrees
-        case document
         case detail
+        case history
     }
 
     enum CredentialsCellType {
         case base(value: ListingBaseCellType)
         case degree // degrees mode
         case noResults // degree mode
+        case historyHeader // history mode
+        case historySection // history mode
+        case historyShared // history mode
     }
 
     struct CellRow {
@@ -31,6 +36,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var mode: CredentialsMode = .degrees
 
     var degreeRows: [CellRow]?
+    var historyRows: [CellRow]?
 
     var detailCredential: Credential?
 
@@ -53,12 +59,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         updateViewToState()
     }
 
-    func startShowingDocument() {
-
-        mode = .document
-        updateViewToState()
-    }
-
     func startShowingDetails(credential: Credential) {
 
         detailCredential = credential
@@ -67,10 +67,21 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         updateViewToState()
     }
 
+    func startShowingHistory() {
+
+        mode = .history
+        updateViewToState()
+    }
+
     // MARK: Buttons
 
     @discardableResult
     func tappedBackButton() -> Bool {
+
+        if mode == .history, let credential = detailCredential {
+            startShowingDetails(credential: credential)
+            return true
+        }
 
         if mode != .degrees {
             startShowingDegrees()
@@ -84,6 +95,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func cleanData() {
         detailCredential = nil
         degreeRows = []
+        historyRows = []
         credentials = []
         filteredCredentials = []
     }
@@ -102,7 +114,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return credentials.count > 0
         case .detail:
             return true
-        case .document:
+        case .history:
             return true
         }
     }
@@ -114,9 +126,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         switch mode {
         case .degrees:
-            return (degreeRows?.count ?? 0)
-        case .document:
-            return 1
+            return degreeRows?.count ?? 0
+        case .history:
+            return historyRows?.count ?? 0
         case .detail:
             return 0
         }
@@ -127,7 +139,11 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return .base(value: baseValue)
         }
 
-        return degreeRows![indexPath.row].type
+        if mode == .degrees {
+            return degreeRows![indexPath.row].type
+        } else {
+            return historyRows![indexPath.row].type
+        }
     }
 
     // MARK: Fetch
@@ -298,10 +314,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         if let credential = cellRow?.value as? Credential {
             startShowingDetails(credential: credential)
         }
-        // Config for an Id
-        else if cellRow?.value is LoggedUser {
-            startShowingDocument()
-        }
     }
 
     // MARK: Share
@@ -395,5 +407,69 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         } else {
             self.viewImpl?.showErrorMessage(doShow: true, message: "credentials_delete_error".localize())
         }
+    }
+
+    // MARK: History
+
+    func tappedHistoryButton() {
+        startShowingHistory()
+        fetchHistory()
+    }
+
+    func fetchHistory() {
+        guard let credentialId = detailCredential?.credentialId else { return }
+        let historyDao = ActivityHistoryDAO()
+        let history = historyDao.listActivityHistory(for: credentialId)
+        makeHistoryRows(history: history)
+    }
+
+    private func makeHistoryRows(history: [ActivityHistory]?) {
+
+        // Transform data into rows
+        self.historyRows?.removeAll()
+        self.historyRows?.append(CellRow(type: .historyHeader, value: detailCredential))
+        var hideDivider = true
+        let shared = history?.filter({
+            $0.typeEnum == .credentialShared
+        })
+        if shared?.count > 0 {
+            self.historyRows?.append(CellRow(type: .historySection,
+                                             value: ("credentials_history_shared".localize(), hideDivider)))
+            hideDivider = false
+            shared!.forEach { log in
+                self.historyRows?.append(CellRow(type: .historyShared, value: log))
+            }
+        }
+        let requested = history?.filter({
+            $0.typeEnum == .credentialRequested
+        })
+        if requested?.count > 0 {
+            self.historyRows?.append(CellRow(type: .historySection,
+                                             value: ("credentials_history_requested".localize(), hideDivider)))
+            requested!.forEach { log in
+                self.historyRows?.append(CellRow(type: .historyShared, value: log))
+            }
+        }
+    }
+
+    func setup(for cell: CredentialHistoryHeaderViewCell) {
+        guard let credential = detailCredential else { return }
+        cell.config(title: credential.issuerName, date: credential.dateReceived,
+                    icon: credential.logoPlaceholder)
+    }
+
+    func setup(for cell: CredentialSharedViewCellViewCell) {
+        guard let index = cell.indexPath?.row,
+            let log = historyRows?[index].value as? ActivityHistory,
+            let contactName = log.contactName,
+            let timestamp = log.timestamp else { return }
+        cell.config(title: contactName, date: timestamp, logoData: log.contactLogo)
+
+    }
+
+    func setup(for cell: CredentialSectionViewCell) {
+        guard let index = cell.indexPath?.row,
+            let data = historyRows?[index].value as? (String, Bool) else { return }
+        cell.config(title: data.0, hideDivider: data.1)
     }
 }

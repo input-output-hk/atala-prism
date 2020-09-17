@@ -23,6 +23,14 @@ class ActivityHistoryDAO: BaseDAO {
         return result as? [ActivityHistory]
     }
 
+    func listActivityHistory(for credentialId: String) -> [ActivityHistory]? {
+        let fetchRequest = ActivityHistory.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "credentialId == %@", credentialId)
+        fetchRequest.sortDescriptors = getSortDescriptors()
+        let result = try? getManagedContext()?.fetch(fetchRequest)
+        return result as? [ActivityHistory]
+    }
+
     @discardableResult
     func createActivityHistory(timestamp: Date?, type: ActivityHistoryType, credential: Credential?,
                                contact: Contact?) -> ActivityHistory? {
@@ -32,9 +40,10 @@ class ActivityHistoryDAO: BaseDAO {
         credentialHistory?.timestamp = timestamp
         credentialHistory?.typeEnum = type
         credentialHistory?.credentialId = credential?.credentialId
-        credentialHistory?.contactName = contact?.name ?? credential?.issuerName
-        credentialHistory?.contactId = contact?.connectionId
         credentialHistory?.credentialName = credential?.credentialName
+        credentialHistory?.contactId = contact?.connectionId
+        credentialHistory?.contactName = contact?.name ?? credential?.issuerName
+        credentialHistory?.contactLogo = contact?.logo
 
         do {
             try managedContext.save()

@@ -9,6 +9,7 @@ class CredentialsViewController: ListingBaseViewController {
     @IBOutlet weak var viewTable: UIView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableTopMarginCtrt: NSLayoutConstraint!
+    @IBOutlet weak var viewTableDivider: UIView!
     @IBOutlet weak var viewDetail: CredentialDetailView!
 
     var navBar: NavBarCustomStyle = NavBarCustomStyle(hasNavBar: true)
@@ -68,6 +69,7 @@ class CredentialsViewController: ListingBaseViewController {
         let credentialsMode = presenterImpl.getMode()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
         let isDetail = credentialsMode == .detail
+        let isHistory = credentialsMode == .history
 
         // Main views
         viewEmpty.isHidden = !isEmpty
@@ -75,30 +77,40 @@ class CredentialsViewController: ListingBaseViewController {
         viewDetail.isHidden = !isDetail
 
         // Search Bar
-        searchBar.isHidden = credentialsMode == .detail
-        tableTopMarginCtrt.constant = credentialsMode == .detail ? -56 : 0
+        searchBar.isHidden = isHistory
+        tableTopMarginCtrt.constant = isHistory ? -56 : 0
+        viewTableDivider.isHidden = !isHistory
 
         // Change the nav bar
-        var navTitle = credentialsMode == .degrees
-            ? "credentials_nav_title".localize()
-            : "credentials_document_title".localize()
+        var navTitle = "credentials_nav_title".localize()
         var navAction: SelectorAction?
         var navActionIcon: String?
         var deleteAction: SelectorAction?
         var deleteActionIcon: String?
-        if isDetail, let detailCredential = presenterImpl.detailCredential {
-            deleteActionIcon = "ico_delete"
-            deleteAction = actionDelete
-            navActionIcon = "ico_share"
-            navAction = actionShare
-            navTitle = detailCredential.credentialName
-            viewDetail.config(credential: detailCredential)
-        } else {
-            viewDetail.clearWebView()
+
+        var historyAction: SelectorAction?
+        var historyActionIcon: String?
+        if let detailCredential = presenterImpl.detailCredential {
+            if isDetail {
+                deleteActionIcon = "ico_delete"
+                deleteAction = actionDelete
+                navActionIcon = "ico_share"
+                navAction = actionShare
+                historyActionIcon = "ico_history"
+                historyAction = actionHistory
+                navTitle = detailCredential.credentialName
+                viewDetail.config(credential: detailCredential)
+            } else if isHistory {
+                navTitle = String(format: "credentials_history_title".localize(), detailCredential.credentialName)
+            } else {
+                viewDetail.clearWebView()
+            }
+
         }
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: credentialsMode != .degrees,
                                    rightIconName: navActionIcon, rightIconAction: navAction,
-                                   centerIconName: deleteActionIcon, centerIconAction: deleteAction)
+                                   centerIconName: deleteActionIcon, centerIconAction: deleteAction,
+                                   leftIconName: historyActionIcon, leftIconAction: historyAction)
         NavBarCustom.config(view: self)
     }
 
@@ -124,6 +136,12 @@ class CredentialsViewController: ListingBaseViewController {
             return "common"
         case .noResults:
             return "noResults"
+        case .historyHeader:
+            return "historyHeader"
+        case .historyShared:
+            return "historyShared"
+        case .historySection:
+            return "historySection"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
@@ -136,6 +154,12 @@ class CredentialsViewController: ListingBaseViewController {
             return DegreeViewCell.default_NibName()
         case .noResults:
             return NoResultsViewCell.default_NibName()
+        case .historyHeader:
+            return CredentialHistoryHeaderViewCell.default_NibName()
+        case .historyShared:
+            return CredentialSharedViewCellViewCell.default_NibName()
+        case .historySection:
+            return CredentialSectionViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }
@@ -151,6 +175,10 @@ class CredentialsViewController: ListingBaseViewController {
 
     lazy var actionDelete = SelectorAction(action: { [weak self] in
         self?.presenterImpl.tappedDeleteButton()
+    })
+
+    lazy var actionHistory = SelectorAction(action: { [weak self] in
+        self?.presenterImpl.tappedHistoryButton()
     })
 
     // MARK: Share

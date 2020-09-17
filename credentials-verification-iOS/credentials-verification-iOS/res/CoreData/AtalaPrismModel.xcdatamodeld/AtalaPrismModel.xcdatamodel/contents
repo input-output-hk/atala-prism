@@ -2,6 +2,7 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19G73" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="ActivityHistory" representedClassName="ActivityHistory" syncable="YES">
         <attribute name="contactId" optional="YES" attributeType="String"/>
+        <attribute name="contactLogo" optional="YES" attributeType="Binary"/>
         <attribute name="contactName" optional="YES" attributeType="String"/>
         <attribute name="credentialId" optional="YES" attributeType="String"/>
         <attribute name="credentialName" optional="YES" attributeType="String"/>
@@ -29,8 +30,8 @@
         <attribute name="viewed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
     </entity>
     <elements>
+        <element name="ActivityHistory" positionX="38.82421875" positionY="166.625" width="128" height="148"/>
         <element name="Contact" positionX="146.6640625" positionY="-16.45703125" width="128" height="163"/>
         <element name="Credential" positionX="-63" positionY="-18" width="128" height="163"/>
-        <element name="ActivityHistory" positionX="38.82421875" positionY="166.625" width="128" height="118"/>
     </elements>
 </model>

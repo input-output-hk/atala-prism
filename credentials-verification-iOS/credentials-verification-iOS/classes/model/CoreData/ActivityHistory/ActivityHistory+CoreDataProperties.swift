@@ -22,5 +22,6 @@ extension ActivityHistory {
     @NSManaged public var credentialId: String?
     @NSManaged public var contactName: String?
     @NSManaged public var contactId: String?
+    @NSManaged public var contactLogo: Data?
 
 }

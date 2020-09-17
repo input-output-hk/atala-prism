@@ -107,6 +107,10 @@
 "credentials_delete_confrimation_message" = "You are about to delete:";
 "credentials_delete_error" = "The credential couldn't be deleted";
 "credentials_detail_date" = "Received %1$@";
+"credentials_history_title" = "%1$@ History";
+"credentials_history_date" = "Shared: %1$@";
+"credentials_history_shared" = "SHARED WITH";
+"credentials_history_requested" = "REQUESTED BY";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";

@@ -70,7 +70,6 @@ class NotificationsViewController: ListingBaseViewController {
         viewDetail.isHidden = !isDetail
 
         // Change the nav bar
-
         if isDetail, let detailCredential = presenterImpl.detailCredential {
             let navTitle = detailCredential.credentialName
             viewDetail.config(credential: detailCredential)
