@@ -1,27 +1,28 @@
-package io.iohk.atala.prism.cstore
+package io.iohk.atala.prism.cstore.services
 
 import java.util.UUID
 
 import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.connector.model.ConnectionId
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, StoredCredentialsRepository}
+import io.iohk.atala.prism.console.repositories.daos.StoredCredentialsDAO.StoredSignedCredentialData
 import io.iohk.atala.prism.cstore.grpc.ProtoCodecs._
-import io.iohk.atala.prism.cstore.models.Verifier
-import io.iohk.atala.prism.cstore.repositories.VerifierHoldersRepository
-import io.iohk.atala.prism.cstore.repositories.daos.StoredCredentialsDAO.StoredSignedCredentialData
-import io.iohk.atala.prism.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData
-import io.iohk.atala.prism.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
+import io.iohk.atala.prism.cstore.repositories.daos.IndividualsDAO.IndividualCreateData
+import io.iohk.atala.prism.cstore.repositories.IndividualsRepository
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.cstore_api.{GetHoldersRequest, GetHoldersResponse}
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class CredentialsStoreService(
-    individuals: VerifierHoldersService,
+    individuals: IndividualsRepository,
     storedCredentials: StoredCredentialsRepository,
-    holdersRepository: VerifierHoldersRepository,
+    holdersRepository: ContactsRepository,
     authenticator: Authenticator
 )(implicit
     ec: ExecutionContext
@@ -36,7 +37,7 @@ class CredentialsStoreService(
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
-      val createData = VerifierHolderCreateData(
+      val createData = IndividualCreateData(
         fullName = request.fullName,
         email = Some(request.email).filterNot(_.isEmpty)
       )
@@ -80,10 +81,13 @@ class CredentialsStoreService(
     def f(participantId: ParticipantId) = {
       Future {
         implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
-        val json = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
-        val verifierId = Verifier.Id(participantId.uuid)
+        val contactData = CreateContact(
+          createdBy = Institution.Id(participantId.uuid),
+          externalId = Contact.ExternalId.random(),
+          data = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
+        )
         holdersRepository
-          .create(verifierId, json)
+          .create(contactData)
           .wrapExceptions
           .successMap(toHolderProto)
           .map(cstore_api.CreateHolderResponse().withHolder)
@@ -96,14 +100,14 @@ class CredentialsStoreService(
   }
 
   override def getHolders(request: GetHoldersRequest): Future[GetHoldersResponse] = {
-    def f(verifierId: Verifier.Id) = {
-      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> verifierId)
+    def f(createdBy: Institution.Id) = {
+      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> createdBy)
 
       val lastSeen =
-        Some(request.lastSeenHolderId).filterNot(_.isEmpty).map(UUID.fromString _ andThen Verifier.Id.apply)
+        Some(request.lastSeenHolderId).filterNot(_.isEmpty).map(UUID.fromString _ andThen Contact.Id.apply)
 
       holdersRepository
-        .list(verifierId, lastSeen, request.limit)
+        .list(createdBy, lastSeen, request.limit)
         .wrapExceptions
         .successMap { holders =>
           cstore_api.GetHoldersResponse(
@@ -113,7 +117,7 @@ class CredentialsStoreService(
     }
 
     authenticator.authenticated("getIndividuals", request) { participantId =>
-      f(Verifier.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 
@@ -124,14 +128,18 @@ class CredentialsStoreService(
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
-      val individualId = ParticipantId(request.individualId)
-
-      individuals
-        .generateTokenFor(participantId, individualId)
-        .wrapExceptions
-        .successMap { token =>
-          cstore_api.GenerateConnectionTokenForResponse(token.token)
-        }
+      for {
+        individualId <- Future.fromTry(
+          Try { Contact.Id(UUID.fromString(request.individualId)) }
+        )
+        response <-
+          individuals
+            .generateTokenFor(participantId, individualId)
+            .wrapExceptions
+            .successMap { token =>
+              cstore_api.GenerateConnectionTokenForResponse(token.token)
+            }
+      } yield response
     }
 
     authenticator.authenticated("generateConnectionTokenFor", request) { participantId =>
@@ -166,29 +174,33 @@ class CredentialsStoreService(
   override def getStoredCredentialsFor(
       request: cstore_api.GetStoredCredentialsForRequest
   ): Future[cstore_api.GetStoredCredentialsForResponse] = {
-    def f(participantId: ParticipantId) = {
-      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
+    def f(institutionId: Institution.Id) = {
+      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> institutionId)
 
-      val individualId = ParticipantId(request.individualId)
-
-      storedCredentials
-        .getCredentialsFor(participantId, individualId)
-        .wrapExceptions
-        .successMap { credentials =>
-          cstore_api.GetStoredCredentialsForResponse(
-            credentials = credentials.map { credential =>
-              cstore_models.StoredSignedCredential(
-                individualId = credential.individualId.uuid.toString,
-                encodedSignedCredential = credential.encodedSignedCredential,
-                storedAt = credential.storedAt.toEpochMilli
+      for {
+        individualId <- Future.fromTry(
+          Try { Contact.Id(UUID.fromString(request.individualId)) }
+        )
+        response <-
+          storedCredentials
+            .getCredentialsFor(institutionId, individualId)
+            .wrapExceptions
+            .successMap { credentials =>
+              cstore_api.GetStoredCredentialsForResponse(
+                credentials = credentials.map { credential =>
+                  cstore_models.StoredSignedCredential(
+                    individualId = credential.individualId.value.toString,
+                    encodedSignedCredential = credential.encodedSignedCredential,
+                    storedAt = credential.storedAt.toEpochMilli
+                  )
+                }
               )
             }
-          )
-        }
+      } yield response
     }
 
     authenticator.authenticated("getStoredCredentialsFor", request) { participantId =>
-      f(participantId)
+      f(Institution.Id(participantId.uuid))
     }
   }
 }

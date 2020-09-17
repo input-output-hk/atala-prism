@@ -1,12 +1,11 @@
-package io.iohk.atala.prism.cstore.repositories.daos
+package io.iohk.atala.prism.console.repositories.daos
 
 import java.util.UUID
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model.ConnectionId
-import io.iohk.atala.prism.cstore.models.StoredSignedCredential
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.console.models.{Contact, Institution, StoredSignedCredential}
 
 object StoredCredentialsDAO {
   case class StoredSignedCredentialData(
@@ -22,12 +21,12 @@ object StoredCredentialsDAO {
   }
 
   def getStoredCredentialsFor(
-      verifierId: ParticipantId,
-      individualId: ParticipantId
+      verifierId: Institution.Id,
+      contactId: Contact.Id
   ): ConnectionIO[Seq[StoredSignedCredential]] = {
     sql"""SELECT contact_id, encoded_signed_credential, stored_at
          |FROM stored_credentials JOIN contacts USING (connection_id)
-         |WHERE created_by = $verifierId AND contact_id = $individualId
+         |WHERE created_by = $verifierId AND contact_id = $contactId
          |ORDER BY stored_at
        """.stripMargin.query[StoredSignedCredential].to[Seq]
   }

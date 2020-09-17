@@ -47,4 +47,10 @@ package object models {
       connectionToken: Option[TokenString],
       connectionId: Option[ConnectionId]
   )
+
+  case class StoredSignedCredential(
+      individualId: Contact.Id,
+      encodedSignedCredential: String,
+      storedAt: Instant
+  )
 }

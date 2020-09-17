@@ -9,7 +9,6 @@ import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
 import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
-import io.iohk.atala.prism.models.ParticipantId
 
 object ContactsDAO {
 
@@ -38,8 +37,8 @@ object ContactsDAO {
 
   def getBy(
       institutionId: Institution.Id,
-      limit: Int,
       lastContactSeen: Option[Contact.Id],
+      limit: Int,
       groupName: Option[IssuerGroup.Name]
   ): doobie.ConnectionIO[List[Contact]] = {
 
@@ -47,7 +46,7 @@ object ContactsDAO {
       case (Some(lastSeen), Some(group)) =>
         sql"""
                |WITH CTE AS (
-               |  SELECT created_at AS last_seen_time
+               |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_seen_time
                |  FROM contacts
                |  WHERE contact_id = $lastSeen
                |)
@@ -64,7 +63,7 @@ object ContactsDAO {
       case (Some(lastSeen), None) =>
         sql"""
                |WITH CTE AS (
-               |  SELECT created_at AS last_seen_time
+               |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_seen_time
                |  FROM contacts
                |  WHERE contact_id = $lastSeen
                |)
@@ -100,21 +99,23 @@ object ContactsDAO {
 
   // Called when a connection request is sent
   def setConnectionToken(
-      organizationId: ParticipantId,
-      contactId: ParticipantId,
+      institutionId: Institution.Id,
+      contactId: Contact.Id,
       token: TokenString
   ): ConnectionIO[Unit] = {
     sql"""
          |UPDATE contacts
-         |SET connection_token = $token, connection_status = ${ConnectionStatus.ConnectionMissing: ConnectionStatus}
-         |WHERE created_by = $organizationId AND contact_id = $contactId
+         |SET connection_token = $token,
+         |    connection_status = ${ConnectionStatus.ConnectionMissing: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
+         |WHERE created_by = $institutionId AND contact_id = $contactId
          |""".stripMargin.update.run.map(_ => ())
   }
 
   def setConnectionAsAccepted(connectionToken: TokenString, connectionId: ConnectionId): ConnectionIO[Unit] = {
     sql"""
          |UPDATE contacts
-         |SET connection_id = $connectionId, connection_status = ${ConnectionStatus.ConnectionAccepted: ConnectionStatus}
+         |SET connection_id = $connectionId,
+         |    connection_status = ${ConnectionStatus.ConnectionAccepted: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
          |WHERE connection_token = $connectionToken
          |""".stripMargin.update.run.map(_ => ())
   }

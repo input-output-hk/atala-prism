@@ -15,9 +15,7 @@ import io.iohk.atala.prism.cmanager.repositories.{
   IssuerSubjectsRepository,
   StudentsRepository
 }
-import io.iohk.atala.prism.cstore.CredentialsStoreService
-import io.iohk.atala.prism.cstore.repositories.VerifierHoldersRepository
-import io.iohk.atala.prism.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
+import io.iohk.atala.prism.cstore.repositories.IndividualsRepository
 import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
@@ -26,6 +24,8 @@ import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, StoredCredentialsRepository}
+import io.iohk.atala.prism.cstore.services.CredentialsStoreService
 import io.iohk.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,
   EmploymentServiceGrpc,
@@ -134,9 +134,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator)(executionContext)
     val groupsService = new GroupsServiceImpl(issuerGroupsRepository, authenticator)(executionContext)
 
-    val storeIndividualsService = new VerifierHoldersService(xa)(executionContext)
+    val storeIndividualsService = new IndividualsRepository(xa)(executionContext)
     val storedCredentialsService = new StoredCredentialsRepository(xa)(executionContext)
-    val holdersRepository = new VerifierHoldersRepository(xa)(executionContext)
+    val holdersRepository = new ContactsRepository(xa)(executionContext)
     val credentialsStoreService =
       new CredentialsStoreService(storeIndividualsService, storedCredentialsService, holdersRepository, authenticator)(
         executionContext

@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.cstore.grpc
 
-import io.iohk.atala.prism.cstore.models.{IndividualConnectionStatus, StoreIndividual, VerifierHolder}
+import io.iohk.atala.prism.console.models.Contact
+import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
+import io.iohk.atala.prism.cstore.models.{IndividualConnectionStatus, StoreIndividual}
 import io.iohk.prism.protos.cstore_models
 
 object ProtoCodecs {
@@ -23,13 +25,20 @@ object ProtoCodecs {
     )
   }
 
-  def toHolderProto(holder: VerifierHolder): cstore_models.VerifierHolder = {
+  def toHolderProto(holder: Contact): cstore_models.VerifierHolder = {
+    val individualConnectionStatus = holder.connectionStatus match {
+      case ConnectionStatus.InvitationMissing => IndividualConnectionStatus.Created
+      case ConnectionStatus.ConnectionMissing => IndividualConnectionStatus.Invited
+      case ConnectionStatus.ConnectionAccepted => IndividualConnectionStatus.Connected
+      case ConnectionStatus.ConnectionRevoked => IndividualConnectionStatus.Revoked
+    }
+
     cstore_models
       .VerifierHolder()
-      .withHolderId(holder.id.uuid.toString)
+      .withHolderId(holder.id.value.toString)
       .withConnectionId(holder.connectionId.map(_.id.toString).getOrElse(""))
-      .withConnectionToken(holder.connectionToken.getOrElse(""))
+      .withConnectionToken(holder.connectionToken.fold("")(_.token))
       .withJsonData(holder.data.noSpaces)
-      .withStatus(toConnectionStatusProto(holder.status))
+      .withStatus(toConnectionStatusProto(individualConnectionStatus))
   }
 }

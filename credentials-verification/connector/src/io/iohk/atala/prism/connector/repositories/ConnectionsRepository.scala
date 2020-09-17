@@ -7,13 +7,13 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.crypto.ECPublicKey
 import io.iohk.atala.prism.cmanager.models
 import io.iohk.atala.prism.cmanager.repositories.daos.IssuerSubjectsDAO
-import io.iohk.atala.prism.cstore.repositories.daos.VerifierHoldersDAO
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
+import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -104,7 +104,7 @@ object ConnectionsRepository {
 
         // corresponding hack to add connectionId to the individual in cstore, TODO: ditto
         _ <- EitherT.right[ConnectorError] {
-          VerifierHoldersDAO.addConnection(token, connectionId)
+          ContactsDAO.setConnectionAsAccepted(token, connectionId)
         }
 
         _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))

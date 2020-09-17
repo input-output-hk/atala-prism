@@ -8,10 +8,13 @@ import io.iohk.atala.prism.connector.model.{ConnectionId, ParticipantLogo, Parti
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.console.models.{Contact, Institution}
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, StoredCredentialsRepository}
+import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, StoredCredentialsDAO}
 import io.iohk.atala.prism.cstore.models.IndividualConnectionStatus
-import io.iohk.atala.prism.cstore.repositories.daos.{StoredCredentialsDAO, VerifierHoldersDAO}
-import io.iohk.atala.prism.cstore.repositories.VerifierHoldersRepository
-import io.iohk.atala.prism.cstore.services.{StoredCredentialsRepository, VerifierHoldersService}
+import io.iohk.atala.prism.cstore.repositories.daos.IndividualsDAO
+import io.iohk.atala.prism.cstore.repositories.IndividualsRepository
+import io.iohk.atala.prism.cstore.services.CredentialsStoreService
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.{cstore_api, cstore_models}
@@ -30,9 +33,9 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     new cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )
 
-  lazy val individuals = new VerifierHoldersService(database)
+  lazy val individuals = new IndividualsRepository(database)
   lazy val storedCredentials = new StoredCredentialsRepository(database)
-  private lazy val holdersRepository = new VerifierHoldersRepository(database)
+  private lazy val holdersRepository = new ContactsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -82,7 +85,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         result.individual.get.email mustBe "individual@email.org"
         result.individual.get.status mustBe cstore_models.IndividualConnectionStatus.CREATED
 
-        val individual = VerifierHoldersDAO
+        val individual = IndividualsDAO
           .listIndividuals(verifierId, None, 1)
           .transact(database)
           .unsafeToFuture()
@@ -168,7 +171,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         val request = cstore_api.GenerateConnectionTokenForRequest(individualId = individualId)
         val response = serviceStub.generateConnectionTokenFor(request)
 
-        val individual = VerifierHoldersDAO
+        val individual = IndividualsDAO
           .listIndividuals(verifierId, None, 1)
           .transact(database)
           .unsafeToFuture()
@@ -183,14 +186,22 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   "storeCredential" should {
     "store credential in the database" in {
       usingApiAs(verifierId) { serviceStub =>
-        val individualId =
-          serviceStub.createIndividual(cstore_api.CreateIndividualRequest("Individual")).individual.get.individualId
-
+        val individualId = Contact.Id(
+          UUID.fromString(
+            serviceStub
+              .createIndividual(cstore_api.CreateIndividualRequest("Individual"))
+              .individual
+              .get
+              .individualId
+          )
+        )
         val connectionToken =
-          serviceStub.generateConnectionTokenFor(cstore_api.GenerateConnectionTokenForRequest(individualId)).token
+          serviceStub
+            .generateConnectionTokenFor(cstore_api.GenerateConnectionTokenForRequest(individualId.value.toString))
+            .token
         val mockConnectionId = ConnectionId(UUID.randomUUID())
-        VerifierHoldersDAO
-          .addConnection(TokenString(connectionToken), mockConnectionId)
+        ContactsDAO
+          .setConnectionAsAccepted(TokenString(connectionToken), mockConnectionId)
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -201,13 +212,13 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         serviceStub.storeCredential(request)
 
         val credential = StoredCredentialsDAO
-          .getStoredCredentialsFor(verifierId, ParticipantId(individualId))
+          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), individualId)
           .transact(database)
           .unsafeToFuture()
           .futureValue
           .head
 
-        credential.individualId.uuid.toString mustBe individualId
+        credential.individualId mustBe individualId
         credential.encodedSignedCredential mustBe encodedSignedCredential
       }
     }
@@ -222,8 +233,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         val connectionToken =
           serviceStub.generateConnectionTokenFor(cstore_api.GenerateConnectionTokenForRequest(individualId)).token
         val mockConnectionId = ConnectionId(UUID.randomUUID())
-        VerifierHoldersDAO
-          .addConnection(TokenString(connectionToken), mockConnectionId)
+        ContactsDAO
+          .setConnectionAsAccepted(TokenString(connectionToken), mockConnectionId)
           .transact(database)
           .unsafeToFuture()
           .futureValue

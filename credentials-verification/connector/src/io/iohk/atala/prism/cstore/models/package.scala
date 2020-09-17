@@ -1,11 +1,9 @@
 package io.iohk.atala.prism.cstore
 
 import java.time.Instant
-import java.util.UUID
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.{EnumEntry, _}
-import io.circe.Json
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.models.ParticipantId
 
@@ -39,10 +37,6 @@ package object models {
     }
   }
 
-  object Verifier {
-    case class Id(uuid: UUID) extends AnyVal
-  }
-
   case class StoreIndividual(
       id: ParticipantId,
       status: IndividualConnectionStatus,
@@ -51,24 +45,5 @@ package object models {
       fullName: String,
       email: Option[String],
       createdAt: Instant
-  )
-
-  case class VerifierHolder(
-      id: VerifierHolder.Id,
-      data: Json,
-      status: IndividualConnectionStatus,
-      connectionToken: Option[String],
-      connectionId: Option[ConnectionId],
-      createdAt: Instant
-  )
-
-  object VerifierHolder {
-    case class Id(uuid: UUID) extends AnyVal
-  }
-
-  case class StoredSignedCredential(
-      individualId: ParticipantId,
-      encodedSignedCredential: String,
-      storedAt: Instant
   )
 }
