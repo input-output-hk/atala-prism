@@ -16,7 +16,7 @@ class RestoreAccountViewController: BaseViewController {
     @IBOutlet weak var errorIcon: UIImageView!
     @IBOutlet weak var errorLbl: UILabel!
     @IBOutlet weak var verifyBttn: UIButton!
-    
+
     var chipsField: MDCChipField!
 
     var presenterImpl = RestoreAccountPresenter()
@@ -28,7 +28,7 @@ class RestoreAccountViewController: BaseViewController {
         // Setup
         setupButtons()
         setupViews()
-        
+
         ViewControllerUtils.addTapToDismissKeyboard(view: self)    }
 
     // MARK: Setup

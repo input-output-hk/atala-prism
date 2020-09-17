@@ -8,6 +8,21 @@ enum CredentialType: String {
     case certificatOfInsurance = "VerifiableCredential/AtalaCertificateOfInsurance"
 }
 
+class CredentialView: Mappable {
+
+    var html: String?
+
+    init() {}
+
+    required init?(map: Map) {}
+
+    // Mappable
+    func mapping(map: Map) {
+        html <- map["html"]
+    }
+
+}
+
 class Issuer: Mappable {
 
     var id: String?
@@ -71,6 +86,7 @@ class Degree: Mappable {
     var intCredential: Data?
     var isNew: Bool?
     var messageId: String?
+    var view: CredentialView?
 
     init() {}
 
@@ -88,6 +104,7 @@ class Degree: Mappable {
         employmentStatus <- map["employmentStatus"]
         policyNumber <- map["policyNumber"]
         productClass <- map["productClass"]
+        view <- map["view"]
     }
 
     static func build(_ sentCredential: Io_Iohk_Prism_Protos_Credential, messageId: String, isNew: Bool) -> Degree? {

@@ -31,6 +31,8 @@ extension UIColor {
     static let appViolet = UIColor(netHex: 0xAF2DFF)
     static let appBlue = UIColor(netHex: 0x4A2DFF)
     static let appPropertyGrey = UIColor(netHex: 0x3C393A)
+    static let textGrey = UIColor(netHex: 0x77869E)
+    static let appGreyTransparent = UIColor(red: 0.627, green: 0.667, blue: 0.733, alpha: 0.1)
 
     static let ColorNameDic: [String: UIColor] = [
         "appWhite": UIColor.appWhite,
@@ -47,6 +49,8 @@ extension UIColor {
         "appGreyLight": UIColor.appGreyLight,
         "appViolet": UIColor.appViolet,
         "appBlue": UIColor.appBlue,
-        "appPropertyGrey": UIColor.appPropertyGrey
+        "appPropertyGrey": UIColor.appPropertyGrey,
+        "textGrey": UIColor.textGrey,
+        "appGreyTransparent": UIColor.appGreyTransparent
     ]
 }

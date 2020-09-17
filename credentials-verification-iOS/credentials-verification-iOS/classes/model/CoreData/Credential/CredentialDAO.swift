@@ -71,7 +71,7 @@ class CredentialDAO: BaseDAO {
 
             return try? createCredential(type: sentCredential.typeID, credentialId: messageId,
                                          issuerId: (credential.issuer?.id)!, issuerName: (credential.issuer?.name)!,
-                                         htmlView: sentCredential.credentialDocument, dateReceived: Date(),
+                                         htmlView: (credential.view?.html)!, dateReceived: Date(),
                                          viewed: viewed, encoded: sentCredential.serializedData())
         }
         return nil
@@ -101,7 +101,6 @@ class CredentialDAO: BaseDAO {
             do {
                 try managedContext.save()
                 return (credential, true)
-                
             } catch let error as NSError {
                 print(error.debugDescription)
                 return nil

@@ -16,6 +16,7 @@ class NotificationsViewController: ListingBaseViewController {
     // Views
     @IBOutlet weak var viewEmpty: InformationView!
     @IBOutlet weak var viewTable: UIView!
+    @IBOutlet weak var viewDetail: CredentialDetailView!
 
     var navBar: NavBarCustomStyle = NavBarCustomStyle(hasNavBar: true)
     override func navBarCustomStyle() -> NavBarCustomStyle {
@@ -61,27 +62,18 @@ class NotificationsViewController: ListingBaseViewController {
 
         let credentialsMode = presenterImpl.getMode()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
+        let isDetail = credentialsMode == .detail
 
         // Main views
         viewEmpty.isHidden = !isEmpty
-        viewTable.isHidden = isEmpty
+        viewTable.isHidden = isEmpty || isDetail
+        viewDetail.isHidden = !isDetail
 
         // Change the nav bar
-        if credentialsMode == .detail {
-            let detailDegree = presenterImpl.detailDegree
-            var navTitle = ""
-            switch detailDegree!.type {
-            case .univerityDegree:
-                navTitle = "credentials_detail_title_type_university".localize()
-            case .governmentIssuedId:
-                navTitle = "credentials_detail_title_type_government_id".localize()
-            case .certificatOfInsurance:
-                navTitle = "credentials_detail_title_type_insurance".localize()
-            case .proofOfEmployment:
-                navTitle = "credentials_detail_title_type_employment".localize()
-            default:
-                print("Unrecognized type")
-            }
+
+        if isDetail, let detailCredential = presenterImpl.detailCredential {
+            let navTitle = detailCredential.credentialName
+            viewDetail.config(credential: detailCredential)
             navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
                                        hasBackButton: credentialsMode != .degrees, rightIconName: nil,
                                        rightIconAction: nil)
@@ -93,6 +85,7 @@ class NotificationsViewController: ListingBaseViewController {
             let navIconName = mode != .fetching ? "ico_history" : nil
             navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: false,
                                        rightIconName: navIconName, rightIconAction: actionHistory)
+            viewDetail.clearWebView()
         }
 
         NavBarCustom.config(view: self)
@@ -121,14 +114,6 @@ class NotificationsViewController: ListingBaseViewController {
             return "notificationHeader"
         case .newDegree:
             return "notification"
-        case .document:
-            return "document"
-        case .detailHeader:
-            return "detailHeader"
-        case .detailProperty:
-            return "detailProperty"
-        case .detailFooter:
-            return "detailFooter"
         case .activityLog:
             return "activityLog"
         default:
@@ -145,14 +130,6 @@ class NotificationsViewController: ListingBaseViewController {
             return NotificationHeaderViewCell.default_NibName()
         case .newDegree:
             return NotificationViewCell.default_NibName()
-        case .document:
-            return DocumentViewCell.default_NibName()
-        case .detailHeader:
-            return DetailHeaderViewCell.default_NibName()
-        case .detailProperty:
-            return DetailPropertyViewCell.default_NibName()
-        case .detailFooter:
-            return DetailFooterViewCell.default_NibName()
         case .activityLog:
             return ActivityLogTableViewCell.default_NibName()
         default:

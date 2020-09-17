@@ -4,9 +4,7 @@ import SwiftProtobuf
 import ObjectMapper
 
 class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
-                            DegreeViewCellPresenterDelegate, DocumentViewCellPresenterDelegate,
-                            DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate,
-                            DetailPropertyViewCellPresenterDelegate, ShareDialogPresenterDelegate,
+                            DegreeViewCellPresenterDelegate, ShareDialogPresenterDelegate,
                             UISearchBarDelegate {
 
     var viewImpl: CredentialsViewController? {
@@ -23,10 +21,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         case base(value: ListingBaseCellType)
         case degree // degrees mode
         case noResults // degree mode
-        case document // document mode
-        case detailHeader // detail mode
-        case detailProperty // detail mode
-        case detailFooter // detail mode
     }
 
     struct CellRow {
@@ -37,9 +31,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var mode: CredentialsMode = .degrees
 
     var degreeRows: [CellRow]?
-    var detailRows: [CellRow]?
 
-    var detailDegree: Degree?
     var detailCredential: Credential?
 
     var shareEmployers: [Contact]?
@@ -67,55 +59,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         updateViewToState()
     }
 
-    func startShowingDetails(degree: Degree) {
+    func startShowingDetails(credential: Credential) {
 
-        // Make the rows
-        detailRows = []
-        detailDegree = degree
-        detailRows?.append(CellRow(type: .detailHeader, value: degree))
-        switch degree.type {
-        case .univerityDegree:
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_full_name".localize(),
-                                               degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_degree_name".localize(),
-                                               degree.credentialSubject?.degreeAwarded, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_award".localize(),
-                                               degree.credentialSubject?.degreeResult, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_issuance_date".localize(),
-                                               degree.issuanceDate, true, degree.type)))
-        case .governmentIssuedId:
-            detailRows?.append(CellRow(type: .document, value: degree))
-        case .certificatOfInsurance:
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_full_name".localize(),
-                                               degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_class_insurance".localize(),
-                                               degree.productClass, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_policy_number".localize(),
-                                               degree.policyNumber, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_policy_end_date".localize(),
-                                               degree.expiryDate, true, degree.type)))
-        case .proofOfEmployment:
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employee_name".localize(),
-                                               degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_status".localize(),
-                                               degree.employmentStatus, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_start_date".localize(),
-                                               degree.issuanceDate, true, degree.type)))
-        default:
-            print("Unrecognized type")
-        }
-        detailRows?.append(CellRow(type: .detailFooter, value: degree))
+        detailCredential = credential
 
         mode = .detail
         updateViewToState()
@@ -136,10 +82,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     // MARK: ListingBaseTableUtilsPresenterDelegate
 
     func cleanData() {
-        detailDegree = nil
         detailCredential = nil
         degreeRows = []
-        detailRows = []
         credentials = []
         filteredCredentials = []
     }
@@ -157,7 +101,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         case .degrees:
             return credentials.count > 0
         case .detail:
-            return (detailRows?.count ?? 0) > 0
+            return true
         case .document:
             return true
         }
@@ -174,7 +118,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         case .document:
             return 1
         case .detail:
-            return (detailRows?.count ?? 0)
+            return 0
         }
     }
 
@@ -183,14 +127,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return .base(value: baseValue)
         }
 
-        switch mode {
-        case .degrees:
-            return degreeRows![indexPath.row].type
-        case .document:
-            return .document
-        case .detail:
-            return detailRows![indexPath.row].type
-        }
+        return degreeRows![indexPath.row].type
     }
 
     // MARK: Fetch
@@ -275,7 +212,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         self.shareSelectedEmployers = []
 
         let contactsDao = ContactDAO()
-        let contacts = contactsDao.listContactsForShare(did: self.detailDegree?.issuer?.id ?? "") ?? []
+        let contacts = contactsDao.listContactsForShare(did: self.detailCredential?.issuerId ?? "") ?? []
         self.shareEmployers?.append(contentsOf: contacts)
         self.shareEmployersFiltered?.append(contentsOf: contacts)
         self.viewImpl?.config(isLoading: false)
@@ -292,8 +229,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         // Call the service
         ApiService.call(async: {
             do {
-                let responses = try ApiService.global.shareCredential(contacts: contacts,
-                                                                      degree: self.detailDegree!)
+                let responses = try ApiService.global.shareCredential(contacts: self.shareSelectedEmployers ?? [],
+                                                                      credential: self.detailCredential!)
                 Logger.d("shareCredential response: \(responses)")
                 let historyDao = ActivityHistoryDAO()
                 let timestamp = Date()
@@ -340,16 +277,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             guard let cellRow = degreeRows?[rowIndex], let credential = cellRow.value as? Credential else {
                 return
             }
-            detailCredential = credential
-            // FIXME this should be updated for HTML credentials
-            if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
-
-                degree.intCredential = credential.encoded
-
-                degree.type = CredentialType(rawValue: credential.type)
-                detailCredential = credential
-                startShowingDetails(degree: degree)
-            }
+            startShowingDetails(credential: credential)
         }
     }
 
@@ -367,66 +295,13 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         let cellRow = degreeRows?[cell.indexPath!.row]
         // Config for a Degree
-        if let degree = cellRow?.value as? Degree {
-            startShowingDetails(degree: degree)
+        if let credential = cellRow?.value as? Credential {
+            startShowingDetails(credential: credential)
         }
         // Config for an Id
         else if cellRow?.value is LoggedUser {
             startShowingDocument()
         }
-    }
-
-    func setup(for cell: DocumentViewCell) {
-        cell.config(degree: detailDegree, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
-    }
-
-    func setup(for cell: DetailHeaderViewCell) {
-        switch detailDegree?.type {
-        case .univerityDegree:
-            cell.config(title: "credentials_detail_university_name".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        case .governmentIssuedId:
-            cell.config(title: "credentials_detail_national_id_card".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        case .certificatOfInsurance:
-            cell.config(title: "credentials_detail_provider_name".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        case .proofOfEmployment:
-            cell.config(title: "credentials_detail_company_name".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        default:
-            print("Unrecognized type")
-        }
-
-    }
-
-    func setup(for cell: DetailPropertyViewCell) {
-        let detailRow = detailRows![cell.indexPath!.row]
-        if let pair = detailRow.value as? (String?, String?, Bool?, CredentialType?) {
-            cell.config(title: pair.0, subtitle: pair.1, isLast: pair.2, type: pair.3)
-        }
-    }
-
-    func setup(for cell: DetailFooterViewCell) {
-        cell.config(isNew: detailDegree?.isNew ?? false, type: detailDegree?.type)
-    }
-
-    // MARK: Accept and Decline buttons
-
-    func tappedDeclineAction(for cell: DetailFooterViewCell?) {
-        // Do nothing
-    }
-
-    func tappedConfirmAction(for cell: DetailFooterViewCell?) {
-        // Do nothing
     }
 
     // MARK: Share

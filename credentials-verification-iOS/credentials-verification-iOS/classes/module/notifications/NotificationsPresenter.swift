@@ -12,9 +12,7 @@ import ObjectMapper
 
 class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
                                 NotificationViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
-                                DocumentViewCellPresenterDelegate, ActivityLogViewCellPresenterDelegate,
-                                DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate,
-                                DetailPropertyViewCellPresenterDelegate {
+                                 ActivityLogViewCellPresenterDelegate {
 
     var viewImpl: NotificationsViewController? {
         return view as? NotificationsViewController
@@ -31,10 +29,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         case degree // degrees mode
         case newDegreeHeader // degrees mode
         case newDegree // degree mode
-        case document // document mode
-        case detailHeader // detail mode
-        case detailProperty // detail mode
-        case detailFooter // detail mode
         case activityLog // activity log mode
     }
 
@@ -46,9 +40,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     var mode: CredentialsMode = .degrees
 
     var degreeRows: [CellRow]?
-    var detailRows: [CellRow]?
 
-    var detailDegree: Degree?
+    var detailCredential: Credential?
 
     var activityLogs: [ActivityHistory]?
 
@@ -72,56 +65,10 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         updateViewToState()
     }
 
-    func startShowingDetails(degree: Degree) {
+    func startShowingDetails(credential: Credential) {
 
-        // Make the rows
-        detailRows = []
-        detailDegree = degree
-        detailRows?.append(CellRow(type: .detailHeader, value: degree))
-        switch degree.type {
-        case .univerityDegree:
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_full_name".localize(),
-                                               degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_degree_name".localize(),
-                                               degree.credentialSubject?.degreeAwarded, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_award".localize(),
-                                               degree.credentialSubject?.degreeResult, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_issuance_date".localize(),
-                                               degree.issuanceDate, true, degree.type)))
-        case .governmentIssuedId:
-            detailRows?.append(CellRow(type: .document, value: degree))
-        case .certificatOfInsurance:
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_full_name".localize(),
-                                               degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_class_insurance".localize(),
-                                               degree.productClass, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_policy_number".localize(),
-                                               degree.policyNumber, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_policy_end_date".localize(),
-                                               degree.expiryDate, true, degree.type)))
-        case .proofOfEmployment:
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employee_name".localize(),
-                                               degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_status".localize(),
-                                               degree.employmentStatus, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty,
-                                       value: ("credentials_detail_employment_start_date".localize(),
-                                               degree.issuanceDate, true, degree.type)))
-        default:
-            print("Unrecognized type")
-        }
-        detailRows?.append(CellRow(type: .detailFooter, value: degree))
-        tappedConfirmAction(for: nil)
+        detailCredential = credential
+        markViewed()
         mode = .detail
         updateViewToState()
     }
@@ -147,9 +94,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     // MARK: ListingBaseTableUtilsPresenterDelegate
 
     func cleanData() {
-        detailDegree = nil
+        detailCredential = nil
         degreeRows = []
-        detailRows = []
     }
 
     func fetchData() {
@@ -165,7 +111,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         case .degrees:
             return !(degreeRows?.isEmpty ?? true)
         case .detail:
-            return !(detailRows?.isEmpty ?? true)
+            return true
         case .activityLog:
             return !(activityLogs?.isEmpty ?? true)
         }
@@ -182,7 +128,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         case .activityLog:
             return activityLogs?.size() ?? 0
         case .detail:
-            return detailRows?.size() ?? 0
+            return 0
         }
     }
 
@@ -197,7 +143,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         case .activityLog:
             return .activityLog
         case .detail:
-            return detailRows![indexPath.row].type
+            return .degree
         }
     }
 
@@ -241,7 +187,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                 }
                 self.cleanData()
                 let credentials = credentialsDao.listNewCredentials() ?? []
-                self.makeDegreeRows(degrees: credentials)
+                self.makeDegreeRows(credentials: credentials)
 
             } catch {
                 return error
@@ -253,19 +199,19 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             self.cleanData()
             let credentialsDao = CredentialDAO()
             let credentials = credentialsDao.listNewCredentials() ?? []
-            self.makeDegreeRows(degrees: credentials)
+            self.makeDegreeRows(credentials: credentials)
             self.startListing()
         })
     }
 
-    private func makeDegreeRows(degrees: [Credential]) {
+    private func makeDegreeRows(credentials: [Credential]) {
 
         // Transform data into rows
-        if degrees.size() > 0 {
+        if credentials.size() > 0 {
             self.degreeRows?.append(CellRow(type: .newDegreeHeader, value: nil))
         }
-        degrees.forEach { degree in
-            self.degreeRows?.append(CellRow(type: .newDegree, value: degree))
+        credentials.forEach { credential in
+            self.degreeRows?.append(CellRow(type: .newDegree, value: credential))
         }
     }
 
@@ -320,15 +266,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             let credential = cellRow.value as? Credential else {
             return
         }
-        // FIXME this should be updated for HTML credentials
-        if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
-
-            degree.intCredential = credential.encoded
-            degree.type = credential.credentialType
-            degree.isNew = credential.viewed
-            degree.messageId = credential.credentialId
-            startShowingDetails(degree: degree)
-        }
+        startShowingDetails(credential: credential)
     }
 
     func didSelectRowAt(indexPath: IndexPath) {
@@ -337,15 +275,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             guard let cellRow = degreeRows?[rowIndex], let credential = cellRow.value as? Credential else {
                 return
             }
-            // FIXME this should be updated for HTML credentials
-            if let degree = Mapper<Degree>().map(JSONString: credential.htmlView) {
-
-                degree.intCredential = credential.encoded
-                degree.type = credential.credentialType
-                degree.isNew = credential.viewed
-                degree.messageId = credential.credentialId
-                startShowingDetails(degree: degree)
-            }
+            startShowingDetails(credential: credential)
         }
     }
 
@@ -385,52 +315,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
         let cellRow = degreeRows?[cell.indexPath!.row]
         // Config for a Degree
-        if let degree = cellRow?.value as? Degree {
-            startShowingDetails(degree: degree)
+        if let credential = cellRow?.value as? Credential {
+            startShowingDetails(credential: credential)
         }
-    }
-
-    func setup(for cell: DocumentViewCell) {
-        cell.config(degree: detailDegree, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
-    }
-
-    func setup(for cell: DetailHeaderViewCell) {
-        switch detailDegree?.type {
-        case .univerityDegree:
-            cell.config(title: "credentials_detail_university_name".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        case .governmentIssuedId:
-            cell.config(title: "credentials_detail_national_id_card".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        case .certificatOfInsurance:
-            cell.config(title: "credentials_detail_provider_name".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        case .proofOfEmployment:
-            cell.config(title: "credentials_detail_company_name".localize(),
-                        subtitle: detailDegree?.issuer?.name,
-                        logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId),
-                        type: detailDegree?.type)
-        default:
-            print("Unrecognized type")
-        }
-
-    }
-
-    func setup(for cell: DetailPropertyViewCell) {
-        let detailRow = detailRows![cell.indexPath!.row]
-        if let pair = detailRow.value as? (String?, String?, Bool?, CredentialType?) {
-            cell.config(title: pair.0, subtitle: pair.1, isLast: pair.2, type: pair.3)
-        }
-    }
-
-    func setup(for cell: DetailFooterViewCell) {
-        cell.config(isNew: false, type: detailDegree?.type)
     }
 
     func setup(for cell: ActivityLogTableViewCell) {
@@ -440,17 +327,11 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     // MARK: Accept and Decline buttons
 
-    func tappedDeclineAction(for cell: DetailFooterViewCell?) {
-
-        startShowingDegrees()
-        actionPullToRefresh()
-    }
-
-    func tappedConfirmAction(for cell: DetailFooterViewCell?) {
+    func markViewed() {
 
         Tracker.global.trackCredentialNewConfirm()
         let credentialsDao = CredentialDAO()
-        credentialsDao.setViewed(credentialId: detailDegree?.messageId ?? "")
+        credentialsDao.setViewed(credentialId: detailCredential?.credentialId ?? "")
         sharedMemory.loggedUser = sharedMemory.loggedUser
     }
 

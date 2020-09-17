@@ -53,17 +53,27 @@
                                     <constraint firstItem="fZl-ag-EvW" firstAttribute="top" secondItem="2tx-jy-Y0o" secondAttribute="top" constant="72" id="sYS-vK-8hk"/>
                                 </constraints>
                             </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KCB-HM-Lwg" customClass="CredentialDetailView" customModule="Atala_PRISM" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="2tx-jy-Y0o" firstAttribute="leading" secondItem="wrl-0P-tw4" secondAttribute="leading" id="2rb-Bx-y5I"/>
+                            <constraint firstItem="wrl-0P-tw4" firstAttribute="bottom" secondItem="KCB-HM-Lwg" secondAttribute="bottom" id="QFF-wQ-3Sh"/>
                             <constraint firstItem="wrl-0P-tw4" firstAttribute="bottom" secondItem="Sjf-Ix-suD" secondAttribute="bottom" id="QYL-2V-ZKn"/>
                             <constraint firstItem="2tx-jy-Y0o" firstAttribute="bottom" secondItem="wrl-0P-tw4" secondAttribute="bottom" id="R7T-AK-3Vw"/>
                             <constraint firstItem="Sjf-Ix-suD" firstAttribute="top" secondItem="wrl-0P-tw4" secondAttribute="top" id="RMw-rK-8QG"/>
+                            <constraint firstItem="KCB-HM-Lwg" firstAttribute="top" secondItem="wrl-0P-tw4" secondAttribute="top" id="ZqB-8Q-pmW"/>
+                            <constraint firstItem="KCB-HM-Lwg" firstAttribute="leading" secondItem="wrl-0P-tw4" secondAttribute="leading" id="bNC-03-iSx"/>
+                            <constraint firstItem="Ix1-nV-3or" firstAttribute="trailing" secondItem="wrl-0P-tw4" secondAttribute="trailing" id="bhX-gv-OS0"/>
+                            <constraint firstItem="Ix1-nV-3or" firstAttribute="bottom" secondItem="wrl-0P-tw4" secondAttribute="bottom" id="eWU-uS-CP8"/>
                             <constraint firstItem="Sjf-Ix-suD" firstAttribute="leading" secondItem="wrl-0P-tw4" secondAttribute="leading" id="fiD-uU-w9O"/>
                             <constraint firstItem="2tx-jy-Y0o" firstAttribute="trailing" secondItem="wrl-0P-tw4" secondAttribute="trailing" id="gTn-D4-suM"/>
                             <constraint firstItem="wrl-0P-tw4" firstAttribute="trailing" secondItem="Sjf-Ix-suD" secondAttribute="trailing" id="imE-MV-l09"/>
                             <constraint firstItem="2tx-jy-Y0o" firstAttribute="top" secondItem="wrl-0P-tw4" secondAttribute="top" id="rGa-3e-gXy"/>
+                            <constraint firstItem="KCB-HM-Lwg" firstAttribute="trailing" secondItem="wrl-0P-tw4" secondAttribute="trailing" id="uxJ-vt-0fA"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="wrl-0P-tw4"/>
                         <userDefinedRuntimeAttributes>
@@ -74,6 +84,7 @@
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <connections>
                         <outlet property="table" destination="fZl-ag-EvW" id="82t-Dd-3CZ"/>
+                        <outlet property="viewDetail" destination="KCB-HM-Lwg" id="hcR-hC-45r"/>
                         <outlet property="viewEmpty" destination="Sjf-Ix-suD" id="EX2-Sh-pgH"/>
                         <outlet property="viewTable" destination="2tx-jy-Y0o" id="UN7-mz-LaL"/>
                     </connections>

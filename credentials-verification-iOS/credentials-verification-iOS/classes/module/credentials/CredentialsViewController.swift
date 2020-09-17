@@ -9,6 +9,7 @@ class CredentialsViewController: ListingBaseViewController {
     @IBOutlet weak var viewTable: UIView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableTopMarginCtrt: NSLayoutConstraint!
+    @IBOutlet weak var viewDetail: CredentialDetailView!
 
     var navBar: NavBarCustomStyle = NavBarCustomStyle(hasNavBar: true)
     override func navBarCustomStyle() -> NavBarCustomStyle {
@@ -66,10 +67,12 @@ class CredentialsViewController: ListingBaseViewController {
 
         let credentialsMode = presenterImpl.getMode()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
+        let isDetail = credentialsMode == .detail
 
         // Main views
         viewEmpty.isHidden = !isEmpty
-        viewTable.isHidden = isEmpty
+        viewTable.isHidden = isEmpty || isDetail
+        viewDetail.isHidden = !isDetail
 
         // Search Bar
         searchBar.isHidden = credentialsMode == .detail
@@ -83,30 +86,15 @@ class CredentialsViewController: ListingBaseViewController {
         var navActionIcon: String?
         var deleteAction: SelectorAction?
         var deleteActionIcon: String?
-        if credentialsMode == .detail {
-            let detailDegree = presenterImpl.detailDegree
-
+        if isDetail, let detailCredential = presenterImpl.detailCredential {
             deleteActionIcon = "ico_delete"
             deleteAction = actionDelete
-            if detailDegree?.isNew ?? false {
-                navTitle = "credentials_detail_title_new".localize()
-            } else {
-                navActionIcon = "ico_share"
-                navAction = actionShare
-                switch detailDegree!.type {
-                case .univerityDegree:
-                    navTitle = "credentials_detail_title_type_university".localize()
-                case .governmentIssuedId:
-                    navTitle = "credentials_detail_title_type_government_id".localize()
-                case .certificatOfInsurance:
-                    navTitle = "credentials_detail_title_type_insurance".localize()
-                case .proofOfEmployment:
-                    navTitle = "credentials_detail_title_type_employment".localize()
-                default:
-                    print("Unrecognized type")
-                }
-
-            }
+            navActionIcon = "ico_share"
+            navAction = actionShare
+            navTitle = detailCredential.credentialName
+            viewDetail.config(credential: detailCredential)
+        } else {
+            viewDetail.clearWebView()
         }
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: credentialsMode != .degrees,
                                    rightIconName: navActionIcon, rightIconAction: navAction,
@@ -136,14 +124,6 @@ class CredentialsViewController: ListingBaseViewController {
             return "common"
         case .noResults:
             return "noResults"
-        case .document:
-            return "document"
-        case .detailHeader:
-            return "detailHeader"
-        case .detailProperty:
-            return "detailProperty"
-        case .detailFooter:
-            return "detailFooter"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
@@ -156,14 +136,6 @@ class CredentialsViewController: ListingBaseViewController {
             return DegreeViewCell.default_NibName()
         case .noResults:
             return NoResultsViewCell.default_NibName()
-        case .document:
-            return DocumentViewCell.default_NibName()
-        case .detailHeader:
-            return DetailHeaderViewCell.default_NibName()
-        case .detailProperty:
-            return DetailPropertyViewCell.default_NibName()
-        case .detailFooter:
-            return DetailFooterViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }

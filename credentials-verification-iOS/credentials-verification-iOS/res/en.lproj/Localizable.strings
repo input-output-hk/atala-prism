@@ -86,23 +86,11 @@
 "credentials_degrees_new_view_btn" = "VIEW";
 "credentials_search" = "Search credentials";
 "credentials_document_title" = "National ID Card";
-"credentials_document_identity_number" = "Identity Number";
-"credentials_document_nationality" = "Nationality";
-"credentials_document_full_name" = "Full Name";
-"credentials_document_date_of_birth" = "Date of Birth";
 "credentials_detail_title_type_university" = "University Degree";
 "credentials_detail_title_type_government_id" = "Government ID";
 "credentials_detail_title_type_insurance" = "Health Insurance";
 "credentials_detail_title_type_employment" = "Proof of Employment";
 "credentials_detail_title_new" = "Add Credential";
-"credentials_detail_degree_name" = "Degree Name";
-"credentials_detail_start_date" = "Start Date";
-"credentials_detail_issuance_date" = "Issuance Date";
-"credentials_detail_university_name" = "University Name";
-"credentials_detail_full_name" = "Full Name";
-"credentials_detail_employee_name" = "Employee Name";
-"credentials_detail_award" = "Award";
-"credentials_detail_result" = "Result";
 "credentials_detail_share_button" = "Share!";
 "credentials_detail_share_search_contacts" = "Search contacts";
 "credentials_detail_share_contact_name" = "Contact Name...";
@@ -110,17 +98,7 @@
 "credentials_empty_title" = "Connect to an organization to receive your credentials";
 "credentials_empty_subtitle" = "Receive, store and share your digital credentials";
 "credentials_detail_national_id_card" = "Government ID";
-"credentials_detail_identity_number" = "Identity Number";
-"credentials_detail_date_of_birth" = "Date of Birth";
-"credentials_detail_expiration_date" = "Expiration Date";
 "credentials_detail_government_issued_digital_identity" = "Government Issued \nDigital Identity";
-"credentials_detail_company_name" = "Company Name";
-"credentials_detail_provider_name" = "Provider Name";
-"credentials_detail_employment_status" = "Employment Status";
-"credentials_detail_employment_start_date" = "Employment Start Date";
-"credentials_detail_employment_class_insurance" = "Class of Insurance";
-"credentials_detail_employment_policy_number" = "Policy Number";
-"credentials_detail_employment_policy_end_date" = "Policy End Date";
 "credentials_university_degree" = "University Degree";
 "credentials_government_id" = "Government ID";
 "credentials_proof_employment" = "Proof of Employment";
@@ -128,6 +106,7 @@
 "credentials_delete_confrimation_title" = "Are you sure?";
 "credentials_delete_confrimation_message" = "You are about to delete:";
 "credentials_delete_error" = "The credential couldn't be deleted";
+"credentials_detail_date" = "Received %1$@";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";

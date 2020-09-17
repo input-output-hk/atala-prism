@@ -107,15 +107,15 @@ class ApiService: NSObject {
     }
 
     func shareCredential(contacts: [Contact],
-                         degree: Degree) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
+                         credential: Credential) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
 
-        let messageData = degree.intCredential
+        let messageData = credential.encoded
 
         var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
 
         for contact in contacts {
             let request = Io_Iohk_Prism_Protos_SendMessageRequest.with {
-                $0.message = messageData!
+                $0.message = messageData
                 $0.connectionID = contact.connectionId
             }
             let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)

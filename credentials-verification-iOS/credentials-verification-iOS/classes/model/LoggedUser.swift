@@ -27,7 +27,7 @@ class LoggedUser: Mappable {
 
     var appPin: String?
     var appBiometrics: Bool?
-    
+
     var dateFormat: String?
 
     init() {}

@@ -14,7 +14,7 @@ class CryptoUtils: NSObject {
     var usedMnemonics: [String]?
     var seed: Data?
     var lastUsedKeyIndex: Int?
-    
+
     let signSemaphore = DispatchSemaphore(value: 1)
 
     override init() {

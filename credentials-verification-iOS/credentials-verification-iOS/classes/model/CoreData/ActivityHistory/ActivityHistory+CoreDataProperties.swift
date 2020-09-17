@@ -10,7 +10,6 @@
 import Foundation
 import CoreData
 
-
 extension ActivityHistory {
 
     @nonobjc public class func createFetchRequest() -> NSFetchRequest<ActivityHistory> {
