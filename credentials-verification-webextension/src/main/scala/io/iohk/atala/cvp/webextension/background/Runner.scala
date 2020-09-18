@@ -10,7 +10,7 @@ import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 import io.iohk.atala.cvp.webextension.common.I18NMessages
-import io.iohk.atala.cvp.webextension.common.services.BrowserTabService
+import io.iohk.atala.cvp.webextension.common.services.BrowserWindowService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -27,13 +27,19 @@ private object Logger {
 class Runner(
     commandProcessor: CommandProcessor
 )(implicit ec: ExecutionContext) {
-  val browserTabService = new BrowserTabService()
+
+  val browserWindowService = BrowserWindowService()
+
   implicit val encodeNothing = new Encoder[Nothing] {
     override def apply(a: Nothing): Json = ???
   }
 
   def run(): Unit = {
     Logger.log("This was run by the background script")
+    chrome.browserAction.BrowserAction.setPopup("") //Need to disable default popup for using window
+    chrome.browserAction.BrowserAction.onClicked.addListener(_ => {
+      browserWindowService.createOrUpdate()
+    })
     processExternalMessages()
   }
 
@@ -113,14 +119,14 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
-    val tabActionService = new BrowserTabService
+    val windowActionService = new BrowserWindowService
     val connectorClientService = ConnectorClientService(config.backendUrl)
     val nodeClientService = NodeClientService(config.backendUrl)
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, tabActionService, nodeClientService)
+      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService)
 
     val commandProcessor =
-      new CommandProcessor(browserNotificationService, browserActionService, walletManager)
+      new CommandProcessor(browserNotificationService, walletManager)
 
     new Runner(commandProcessor)
   }
@@ -132,13 +138,13 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
-    val tabActionService = BrowserTabService()
+    val windowActionService = BrowserWindowService()
 
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, tabActionService, nodeClientService)
+      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService)
 
     val commandProcessor =
-      new CommandProcessor(browserNotificationService, browserActionService, walletManager)
+      new CommandProcessor(browserNotificationService, walletManager)
 
     new Runner(commandProcessor)
   }

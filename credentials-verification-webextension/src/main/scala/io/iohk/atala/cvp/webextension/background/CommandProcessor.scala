@@ -10,6 +10,7 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
+import io.iohk.atala.cvp.webextension.common.services.BrowserWindowService
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,7 +19,6 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 private[background] class CommandProcessor(
     browserNotificationService: BrowserNotificationService,
-    browserActionService: BrowserActionService,
     walletManager: WalletManager
 )(implicit ec: ExecutionContext) {
 
@@ -60,10 +60,7 @@ private[background] class CommandProcessor(
       case Command.RecoverWallet(password, mnemonic) =>
         walletManager.recoverWallet(password, mnemonic).map(CommandResponse.apply)
       case Command.UnlockWallet(password) =>
-        for {
-          _ <- walletManager.unlock(password)
-          _ <- browserActionService.setPopup("popup.html")
-        } yield CommandResponse(())
+        walletManager.unlock(password).map(CommandResponse.apply)
       case Command.LockWallet() =>
         walletManager.lock().map(CommandResponse(_))
     }

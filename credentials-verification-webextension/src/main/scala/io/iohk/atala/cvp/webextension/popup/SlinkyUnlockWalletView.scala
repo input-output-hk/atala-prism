@@ -7,7 +7,6 @@ import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html.{value, _}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 

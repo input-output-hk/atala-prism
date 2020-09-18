@@ -17,7 +17,7 @@ import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
-import io.iohk.atala.cvp.webextension.common.services.BrowserTabService
+import io.iohk.atala.cvp.webextension.common.services.BrowserWindowService
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
@@ -83,7 +83,6 @@ private[background] class WalletManager(
     browserActionService: BrowserActionService,
     storageService: StorageService,
     connectorClientService: ConnectorClientService,
-    browserTabService: BrowserTabService,
     nodeClientService: NodeClientService
 )(implicit
     ectx: ExecutionContext
@@ -101,12 +100,6 @@ private[background] class WalletManager(
   private def updateBadge(): Unit = {
     val badgeText = if (signingRequests.nonEmpty) signingRequests.size.toString else ""
     browserActionService.setBadgeText(badgeText)
-  }
-
-  def updateTab(): Future[Unit] = {
-    Future {
-      browserTabService.createOrUpdateTab()
-    }
   }
 
   private def updateStorageKeyAndWalletData(storageKey: CryptoKey, walletData: WalletData): Unit = {
@@ -173,7 +166,6 @@ private[background] class WalletManager(
       signingRequests -= requestId
       println(s"Signed and Published = ${request.subject.id}")
       updateBadge()
-      updateTab()
     }
   }
 
@@ -316,7 +308,6 @@ private[background] class WalletManager(
             val request = SigningRequest(requestCounter, origin, sessionID, subject)
             signingRequests += requestCounter -> ((request, signaturePromise))
             updateBadge()
-            updateTab()
             signaturePromise.future
           }
           .getOrElse(
