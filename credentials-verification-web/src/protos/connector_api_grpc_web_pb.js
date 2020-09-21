@@ -13,6 +13,8 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 
+var common_models_pb = require('./common_models_pb.js')
+
 var connector_models_pb = require('./connector_models_pb.js')
 
 var node_models_pb = require('./node_models_pb.js')

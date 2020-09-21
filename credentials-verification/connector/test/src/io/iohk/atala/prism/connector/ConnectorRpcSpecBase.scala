@@ -23,7 +23,7 @@ import io.iohk.atala.prism.grpc.{
   GrpcAuthenticatorInterceptor,
   SignedRequestsHelper
 }
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.prism.protos.connector_api
 import org.mockito.MockitoSugar._
@@ -189,11 +189,13 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       tpe: ParticipantType,
       logo: Option[ParticipantLogo] = None,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[String] = None
+      did: Option[String] = None,
+      transactionId: Option[TransactionId] = None,
+      ledger: Option[Ledger] = None
   ): ParticipantId = {
     val id = ParticipantId.random()
     ParticipantsDAO
-      .insert(ParticipantInfo(id, tpe, publicKey, name, did, logo))
+      .insert(ParticipantInfo(id, tpe, publicKey, name, did, logo, transactionId, ledger))
       .transact(database)
       .unsafeToFuture()
       .futureValue

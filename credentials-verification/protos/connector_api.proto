@@ -3,6 +3,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "io.iohk.prism.protos";
 
+import "common_models.proto";
 import "connector_models.proto";
 import "node_models.proto";
 
@@ -234,6 +235,7 @@ message GetCurrentUserResponse {
 // Confirmation of DID registration
 message RegisterDIDResponse {
   string did = 1;
+  TransactionInfo transactionInfo = 2;
 }
 
 // Request to change the billing plan

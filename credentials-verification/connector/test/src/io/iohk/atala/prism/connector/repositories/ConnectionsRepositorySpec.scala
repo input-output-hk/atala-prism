@@ -45,6 +45,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         None,
         "Issuer",
         Some("did:test:issuer"),
+        None,
+        None,
         None
       )
     }

@@ -4,9 +4,8 @@ import java.time.Instant
 
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
-import doobie.util.{Get, Meta, Put, Read, Write}
+import doobie.util.{Get, Put, Read, Write}
 import io.iohk.atala.crypto.{EC, ECConfig}
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix, KeyUsage}
@@ -95,11 +94,4 @@ package object daos {
 
   implicit val blockhashPut: Put[Blockhash] = Put[Array[Byte]].contramap(_.value.toArray)
 
-  implicit val transactionIdMeta: Meta[TransactionId] =
-    Meta[Array[Byte]].timap(b =>
-      TransactionId.from(b).getOrElse(throw new IllegalArgumentException("Unexpected TransactionId"))
-    )(_.value.toArray)
-
-  implicit val ledgerMeta: Meta[Ledger] =
-    Meta[String].timap(b => Ledger.withNameInsensitiveOption(b).getOrElse(throw InvalidEnum[Ledger](b)))(_.entryName)
 }

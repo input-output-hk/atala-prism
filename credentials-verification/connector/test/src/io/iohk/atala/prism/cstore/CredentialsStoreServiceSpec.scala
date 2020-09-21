@@ -9,14 +9,15 @@ import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateP
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.console.models.{Contact, Institution}
-import io.iohk.atala.prism.console.repositories.{ContactsRepository, StoredCredentialsRepository}
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, StoredCredentialsDAO}
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, StoredCredentialsRepository}
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.cstore.models.IndividualConnectionStatus
-import io.iohk.atala.prism.cstore.repositories.daos.IndividualsDAO
 import io.iohk.atala.prism.cstore.repositories.IndividualsRepository
+import io.iohk.atala.prism.cstore.repositories.daos.IndividualsDAO
 import io.iohk.atala.prism.cstore.services.CredentialsStoreService
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
@@ -67,7 +68,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
           ParticipantType.Verifier,
           "Verifier",
           "did:prism:test",
-          ParticipantLogo(Vector())
+          ParticipantLogo(Vector()),
+          TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
         )
       )
       .value

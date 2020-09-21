@@ -8,11 +8,13 @@ import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, Reque
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.GroupsRepository
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.prism.protos.cmanager_api
 import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationDouble
 
@@ -76,9 +78,18 @@ class GroupsServiceImplSpec extends RpcSpecBase {
   private def createIssuer(): Institution.Id = {
     val id = UUID.randomUUID()
     val mockDID = "did:prims:test"
+    val mockTransactionInfo =
+      TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
     participantsRepository
       .create(
-        CreateParticipantRequest(ParticipantId(id), ParticipantType.Issuer, "", mockDID, ParticipantLogo(Vector()))
+        CreateParticipantRequest(
+          ParticipantId(id),
+          ParticipantType.Issuer,
+          "",
+          mockDID,
+          ParticipantLogo(Vector()),
+          mockTransactionInfo
+        )
       )
       .value
       .futureValue

@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.connector.services
 
-import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
+import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs, TransactionInfo}
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.prism.protos.{node_api, node_models}
 
@@ -30,18 +30,26 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
           .map(Right(_))
           .toFutureEither
       did = s"did:prism:${createDIDResponse.id}"
+      transactionInfo = ProtoCodecs.fromTransactionInfo(
+        createDIDResponse.transactionInfo.getOrElse(throw new RuntimeException("DID created has no transaction info"))
+      )
       createRequest = ParticipantsRepository.CreateParticipantRequest(
         id = ParticipantId.random(),
         tpe = tpe,
         name = name,
         did = did,
-        logo = logo
+        logo = logo,
+        transactionInfo = transactionInfo
       )
       _ <- participantsRepository.create(createRequest)
-    } yield RegistrationResult(did = did, id = createRequest.id)
+    } yield RegistrationResult(
+      did = did,
+      id = createRequest.id,
+      transactionInfo = transactionInfo
+    )
   }
 }
 
 object RegistrationService {
-  case class RegistrationResult(id: ParticipantId, did: String)
+  case class RegistrationResult(id: ParticipantId, did: String, transactionInfo: TransactionInfo)
 }

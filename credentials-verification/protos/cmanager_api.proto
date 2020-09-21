@@ -192,4 +192,6 @@ message PublishCredentialRequest {
                               // the previous operation hash
 }
 
-message PublishCredentialResponse {}
+message PublishCredentialResponse {
+    TransactionInfo transactionInfo = 1;
+}

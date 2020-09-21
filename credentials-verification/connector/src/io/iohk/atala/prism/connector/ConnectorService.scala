@@ -6,7 +6,7 @@ import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.iohk.atala.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors._
@@ -264,7 +264,9 @@ class ConnectorService(
               case Left(_) => throw new RuntimeException("Impossible")
               case Right(x) => x
             }
-      } yield connector_api.RegisterDIDResponse(did = result.did)
+      } yield connector_api
+        .RegisterDIDResponse(did = result.did)
+        .withTransactionInfo(ProtoCodecs.toTransactionInfo(result.transactionInfo))
     }
   }
 

@@ -13,6 +13,8 @@ var jspb = require('google-protobuf');
 var goog = jspb;
 var global = Function('return this')();
 
+var common_models_pb = require('./common_models_pb.js');
+goog.object.extend(proto, common_models_pb);
 var connector_models_pb = require('./connector_models_pb.js');
 goog.object.extend(proto, connector_models_pb);
 var node_models_pb = require('./node_models_pb.js');
@@ -4481,7 +4483,8 @@ proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.toObject = function(opt
  */
 proto.io.iohk.prism.protos.RegisterDIDResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    did: jspb.Message.getFieldWithDefault(msg, 1, "")
+    did: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    transactioninfo: (f = msg.getTransactioninfo()) && common_models_pb.TransactionInfo.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4522,6 +4525,11 @@ proto.io.iohk.prism.protos.RegisterDIDResponse.deserializeBinaryFromReader = fun
       var value = /** @type {string} */ (reader.readString());
       msg.setDid(value);
       break;
+    case 2:
+      var value = new common_models_pb.TransactionInfo;
+      reader.readMessage(value,common_models_pb.TransactionInfo.deserializeBinaryFromReader);
+      msg.setTransactioninfo(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -4558,6 +4566,14 @@ proto.io.iohk.prism.protos.RegisterDIDResponse.serializeBinaryToWriter = functio
       f
     );
   }
+  f = message.getTransactioninfo();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      common_models_pb.TransactionInfo.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -4576,6 +4592,43 @@ proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.getDid = function() {
  */
 proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.setDid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional TransactionInfo transactionInfo = 2;
+ * @return {?proto.io.iohk.prism.protos.TransactionInfo}
+ */
+proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.getTransactioninfo = function() {
+  return /** @type{?proto.io.iohk.prism.protos.TransactionInfo} */ (
+    jspb.Message.getWrapperField(this, common_models_pb.TransactionInfo, 2));
+};
+
+
+/**
+ * @param {?proto.io.iohk.prism.protos.TransactionInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDResponse} returns this
+*/
+proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.setTransactioninfo = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDResponse} returns this
+ */
+proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.clearTransactioninfo = function() {
+  return this.setTransactioninfo(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.hasTransactioninfo = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

@@ -6165,7 +6165,7 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.toObject = functi
  */
 proto.io.iohk.prism.protos.PublishCredentialResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    transactioninfo: (f = msg.getTransactioninfo()) && common_models_pb.TransactionInfo.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6202,6 +6202,11 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.deserializeBinaryFromReader
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = new common_models_pb.TransactionInfo;
+      reader.readMessage(value,common_models_pb.TransactionInfo.deserializeBinaryFromReader);
+      msg.setTransactioninfo(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -6231,6 +6236,51 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.serializeBinary =
  */
 proto.io.iohk.prism.protos.PublishCredentialResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getTransactioninfo();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      common_models_pb.TransactionInfo.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional TransactionInfo transactionInfo = 1;
+ * @return {?proto.io.iohk.prism.protos.TransactionInfo}
+ */
+proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.getTransactioninfo = function() {
+  return /** @type{?proto.io.iohk.prism.protos.TransactionInfo} */ (
+    jspb.Message.getWrapperField(this, common_models_pb.TransactionInfo, 1));
+};
+
+
+/**
+ * @param {?proto.io.iohk.prism.protos.TransactionInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.PublishCredentialResponse} returns this
+*/
+proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.setTransactioninfo = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.PublishCredentialResponse} returns this
+ */
+proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.clearTransactioninfo = function() {
+  return this.setTransactioninfo(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.hasTransactioninfo = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 

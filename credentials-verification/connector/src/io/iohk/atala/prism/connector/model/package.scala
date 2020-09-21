@@ -7,7 +7,7 @@ import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
 import io.iohk.atala.crypto.ECPublicKey
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.prism.protos.connector_models
 
 import scala.util.Random
@@ -47,7 +47,9 @@ case class ParticipantInfo(
     publicKey: Option[ECPublicKey],
     name: String,
     did: Option[String],
-    logo: Option[ParticipantLogo]
+    logo: Option[ParticipantLogo],
+    transactionId: Option[TransactionId],
+    ledger: Option[Ledger]
 ) {
 
   def toProto: connector_models.ParticipantInfo = {

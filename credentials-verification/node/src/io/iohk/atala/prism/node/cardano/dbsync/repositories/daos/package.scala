@@ -7,6 +7,8 @@ import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction}
 
 package object daos {
+  import io.iohk.atala.prism.models.DoobieImplicits._
+
   private[daos] implicit val blockHashGet: Get[BlockHash] = Get[Array[Byte]].tmap { bytes =>
     BlockHash
       .from(bytes)

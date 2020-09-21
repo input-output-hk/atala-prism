@@ -16,9 +16,9 @@ import io.iohk.atala.prism.console.models.IssuerGroup
 import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.prism.protos.cmanager_api.CredentialsServiceGrpc
-import io.iohk.prism.protos.{cmanager_api, node_api, node_models}
+import io.iohk.prism.protos.{cmanager_api, common_models, node_api, node_models}
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -41,6 +41,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
     nodeMock,
     GrpcAuthenticationHeaderParser
   )
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    MockitoSugar.reset(nodeMock)
+  }
 
   override def services: Seq[ServerServiceDefinition] =
     Seq(
@@ -173,6 +178,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockNodeCredentialId = mockOperationHash.hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockTransactionInfo =
+        common_models.TransactionInfo().withId(mockNodeCredentialId).withLedger(common_models.Ledger.IN_MEMORY)
 
       val issuanceOp = buildSignedIssueCredentialOp(
         SHA256Digest.compute(mockEncodedSignedCredential.getBytes()),
@@ -183,8 +190,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         .IssueCredentialRequest()
         .withSignedOperation(issuanceOp)
 
-      doReturn(Future.successful(node_api.IssueCredentialResponse(mockNodeCredentialId)))
-        .when(nodeMock)
+      doReturn(
+        Future
+          .successful(node_api.IssueCredentialResponse(mockNodeCredentialId).withTransactionInfo(mockTransactionInfo))
+      ).when(nodeMock)
         .issueCredential(nodeRequest)
 
       usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
@@ -206,10 +215,13 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         credentialList.length must be(1)
 
         val updatedCredential = credentialList.headOption.value
+        val publicationData = updatedCredential.publicationData.value
 
-        updatedCredential.publicationData.value.nodeCredentialId must be(mockNodeCredentialId)
-        updatedCredential.publicationData.value.issuanceOperationHash must be(mockOperationHash)
-        updatedCredential.publicationData.value.encodedSignedCredential must be(mockEncodedSignedCredential)
+        publicationData.nodeCredentialId must be(mockNodeCredentialId)
+        publicationData.issuanceOperationHash must be(mockOperationHash)
+        publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
+        publicationData.transactionId must be(TransactionId.from(mockNodeCredentialId).value)
+        publicationData.ledger must be(Ledger.InMemory)
         // the rest should remain unchanged
         updatedCredential.copy(publicationData = None) must be(originalCredential)
       }
@@ -243,11 +255,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withNodeCredentialId(mockNodeCredentialId)
           .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
-        verifyNoMoreInteractions(nodeMock)
-
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.id).value.futureValue.right.value
@@ -286,11 +298,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withNodeCredentialId(mockNodeCredentialId)
           .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
-        verifyNoMoreInteractions(nodeMock)
-
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, 10, None).value.futureValue.right.value
@@ -327,11 +339,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withNodeCredentialId(mockIncorrectNodeCredentialId)
           .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
-        verifyNoMoreInteractions(nodeMock)
-
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.id).value.futureValue.right.value
@@ -372,11 +384,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withNodeCredentialId(mockNodeCredentialId)
           .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
 
-        verifyNoMoreInteractions(nodeMock)
-
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.id).value.futureValue.right.value

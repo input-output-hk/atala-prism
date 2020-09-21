@@ -83,7 +83,16 @@ object ConnectionsRepository {
             .toRight(UnknownValueError("token", token.token).logWarn)
 
         // Create a holder, which has no name nor did, instead it has a public key
-        acceptorInfo = ParticipantInfo(ParticipantId.random(), ParticipantType.Holder, Some(publicKey), "", None, None)
+        acceptorInfo = ParticipantInfo(
+          id = ParticipantId.random(),
+          tpe = ParticipantType.Holder,
+          publicKey = Some(publicKey),
+          name = "",
+          did = None,
+          logo = None,
+          transactionId = None,
+          ledger = None
+        )
         _ <- EitherT.right[ConnectorError] {
           ParticipantsDAO.insert(acceptorInfo)
         }

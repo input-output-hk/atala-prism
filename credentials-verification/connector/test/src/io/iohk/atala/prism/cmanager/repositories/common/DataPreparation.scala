@@ -26,7 +26,8 @@ object DataPreparation {
     val id = Institution.Id(UUID.randomUUID())
     val did = s"did:geud:issuer-x$tag"
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
-    val participant = ParticipantInfo(ParticipantId(id.value), ParticipantType.Issuer, None, name, Option(did), None)
+    val participant =
+      ParticipantInfo(ParticipantId(id.value), ParticipantType.Issuer, None, name, Option(did), None, None, None)
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id

@@ -14,6 +14,7 @@ import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.ProtoCodecs
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
@@ -151,26 +152,38 @@ class CredentialsServiceImpl(
           "operation hash and credential id don't match"
         )
         _ = require(encodedSignedCredential.nonEmpty, "Empty encoded credential")
-        // we update the database
+        // Verify issuer
+        maybeCredential <- credentialsRepository.getBy(credentialId).toFuture
+        credential =
+          maybeCredential.getOrElse(throw new RuntimeException(s"Credential with ID $credentialId does not exist"))
+        _ = require(credential.issuedBy == issuerId, "The credential was not issued by the specified issuer")
+        // Issue the credential in the Node
+        credentialIssued <- nodeService.issueCredential {
+          node_api
+            .IssueCredentialRequest()
+            .withSignedOperation(issueCredentialOp)
+        }
+        transactionInfo =
+          credentialIssued.transactionInfo.getOrElse(throw new RuntimeException("Credential issues has no transaction"))
+        // Update the database
         _ <-
           credentialsRepository
             .storePublicationData(
               issuerId,
-              PublishCredential(credentialId, issuanceOperationHash, credentialProtocolId, encodedSignedCredential)
+              PublishCredential(
+                credentialId,
+                issuanceOperationHash,
+                credentialProtocolId,
+                encodedSignedCredential,
+                ProtoCodecs.fromTransactionInfo(transactionInfo)
+              )
             )
             .value
             .map {
               case Right(x) => x
               case Left(e) => throw new RuntimeException(s"FAILED: $e")
             }
-        // TODO: For this release we optimistically assume that the node will always manage to
-        //       publish the credential
-        _ <- nodeService.issueCredential {
-          node_api
-            .IssueCredentialRequest()
-            .withSignedOperation(issueCredentialOp)
-        }
-      } yield cmanager_api.PublishCredentialResponse()
+      } yield cmanager_api.PublishCredentialResponse().withTransactionInfo(transactionInfo)
     }
   }
 

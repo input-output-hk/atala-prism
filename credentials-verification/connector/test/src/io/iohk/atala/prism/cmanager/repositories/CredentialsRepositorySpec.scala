@@ -17,6 +17,7 @@ import org.scalatest.OptionValues._
 import io.circe.syntax._
 import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 
 class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
@@ -116,6 +117,27 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
   }
 
   "getBy" should {
+    "return the credential when found" in {
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subjectId = createSubject(issuerId, "IOHK Student 2", group.name).id
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+
+      val returnedCredential = credentialsRepository.getBy(credential.credentialId).value.futureValue.right.value.value
+
+      returnedCredential must be(credential)
+    }
+
+    "return no credential when not found" in {
+      val credentialId = GenericCredential.Id(UUID.randomUUID())
+
+      val credential = credentialsRepository.getBy(credentialId).value.futureValue.right.value
+
+      credential must be(None)
+    }
+  }
+
+  "getBy" should {
     "return the first credentials" in {
       val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
@@ -185,6 +207,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockNodeCredentialId = mockOperationHash.hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockTransactionInfo = TransactionInfo(TransactionId.from(mockNodeCredentialId).value, Ledger.InMemory)
 
       val inserted = credentialsRepository
         .storePublicationData(
@@ -193,7 +216,8 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
             originalCredential.credentialId,
             mockOperationHash,
             mockNodeCredentialId,
-            mockEncodedSignedCredential
+            mockEncodedSignedCredential,
+            mockTransactionInfo
           )
         )
         .value
@@ -207,10 +231,13 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       credentialList.length must be(1)
 
       val updatedCredential = credentialList.headOption.value
+      val publicationData = updatedCredential.publicationData.value
 
-      updatedCredential.publicationData.value.nodeCredentialId must be(mockNodeCredentialId)
-      updatedCredential.publicationData.value.issuanceOperationHash must be(mockOperationHash)
-      updatedCredential.publicationData.value.encodedSignedCredential must be(mockEncodedSignedCredential)
+      publicationData.nodeCredentialId must be(mockNodeCredentialId)
+      publicationData.issuanceOperationHash must be(mockOperationHash)
+      publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
+      publicationData.transactionId must be(mockTransactionInfo.id)
+      publicationData.ledger must be(mockTransactionInfo.ledger)
       // the rest should remain unchanged
       updatedCredential.copy(publicationData = None) must be(originalCredential)
     }
@@ -221,6 +248,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockNodeCredentialId = mockOperationHash.hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockTransactionInfo = TransactionInfo(TransactionId.from(mockNodeCredentialId).value, Ledger.InMemory)
 
       intercept[RuntimeException](
         credentialsRepository
@@ -230,7 +258,8 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
               GenericCredential.Id(UUID.randomUUID()),
               mockOperationHash,
               mockNodeCredentialId,
-              mockEncodedSignedCredential
+              mockEncodedSignedCredential,
+              mockTransactionInfo
             )
           )
           .value
@@ -252,6 +281,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockNodeCredentialId = mockOperationHash.hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockTransactionInfo = TransactionInfo(TransactionId.from(mockNodeCredentialId).value, Ledger.InMemory)
 
       intercept[RuntimeException](
         credentialsRepository
@@ -261,7 +291,8 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
               originalCredential.credentialId,
               mockOperationHash,
               mockNodeCredentialId,
-              mockEncodedSignedCredential
+              mockEncodedSignedCredential,
+              mockTransactionInfo
             )
           )
           .value

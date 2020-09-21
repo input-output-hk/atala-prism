@@ -6,12 +6,12 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.crypto.ECPublicKey
-import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.connector.errors.{ConnectorError, LoggingContext, UnknownValueError, _}
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
+import io.iohk.atala.prism.models.{ParticipantId, TransactionInfo}
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -29,7 +29,9 @@ class ParticipantsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) 
       publicKey = None,
       name = request.name,
       did = Option(request.did),
-      logo = Option(request.logo)
+      logo = Option(request.logo),
+      transactionId = Some(request.transactionInfo.id),
+      ledger = Some(request.transactionInfo.ledger)
     )
 
     ParticipantsDAO
@@ -94,7 +96,8 @@ object ParticipantsRepository {
       tpe: ParticipantType,
       name: String,
       did: String,
-      logo: ParticipantLogo
+      logo: ParticipantLogo,
+      transactionInfo: TransactionInfo
   )
 
 }

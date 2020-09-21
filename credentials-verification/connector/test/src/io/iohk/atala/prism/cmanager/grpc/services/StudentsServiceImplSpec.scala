@@ -3,16 +3,17 @@ package io.iohk.atala.prism.cmanager.grpc.services
 import java.util.UUID
 
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs.studentToProto
+import io.iohk.atala.prism.cmanager.models.Student
+import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.atala.prism.cmanager.models.Student
-import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
 import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.GroupsRepository
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.prism.protos.{cmanager_api, common_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
@@ -131,6 +132,8 @@ class StudentsServiceImplSpec extends RpcSpecBase {
 
   private def createIssuer(): Institution.Id = {
     val id = Institution.Id(UUID.randomUUID())
+    val mockTransactionInfo =
+      TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
     participantsRepository
       .create(
         CreateParticipantRequest(
@@ -138,7 +141,8 @@ class StudentsServiceImplSpec extends RpcSpecBase {
           ParticipantType.Issuer,
           "Issuer",
           "did:prism:test",
-          ParticipantLogo(Vector())
+          ParticipantLogo(Vector()),
+          mockTransactionInfo
         )
       )
       .value

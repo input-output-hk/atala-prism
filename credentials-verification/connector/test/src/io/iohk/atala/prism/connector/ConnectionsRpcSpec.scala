@@ -96,6 +96,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
           Some(keys.publicKey),
           "",
           None,
+          None,
+          None,
           None
         )
         ConnectionsDAO

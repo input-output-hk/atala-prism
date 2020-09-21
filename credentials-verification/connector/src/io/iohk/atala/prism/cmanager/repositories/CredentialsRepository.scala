@@ -62,6 +62,15 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
+  def getBy(credentialId: GenericCredential.Id): FutureEither[Nothing, Option[GenericCredential]] = {
+    CredentialsDAO
+      .getBy(credentialId)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
   def getBy(
       issuedBy: Institution.Id,
       limit: Int,

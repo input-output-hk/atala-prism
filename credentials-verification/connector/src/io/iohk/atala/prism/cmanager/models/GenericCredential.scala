@@ -6,6 +6,7 @@ import java.util.UUID
 import io.circe.Json
 import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 
 case class GenericCredential(
     credentialId: GenericCredential.Id,
@@ -22,9 +23,11 @@ case class GenericCredential(
 
 case class PublicationData(
     nodeCredentialId: String, // the id assigned by the protocol
-    issuanceOperationHash: SHA256Digest, //the hex representation of the associated issuance operation hash
+    issuanceOperationHash: SHA256Digest, // the hex representation of the associated issuance operation hash
     encodedSignedCredential: String, // the actual published credential
-    storedAt: Instant // the time when the publication data was stored in the database
+    storedAt: Instant, // the time when the publication data was stored in the database
+    transactionId: TransactionId,
+    ledger: Ledger
 )
 
 object GenericCredential {
