@@ -7,8 +7,9 @@ import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student}
+import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerGroupsRepository, StudentsRepository}
+import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.{cmanager_api, common_models}
@@ -46,7 +47,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
         )
     )
 
-  private def createGroup(issuer: Issuer.Id): IssuerGroup = {
+  private def createGroup(issuer: Institution.Id): IssuerGroup = {
     issuerGroupsRepository.create(issuer, IssuerGroup.Name("Group X")).value.futureValue.right.value
   }
 
@@ -55,7 +56,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
       val issuerId = createIssuer()
       val group = createGroup(issuerId)
 
-      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val request = cmanager_api
           .CreateStudentRequest(
             universityAssignedId = "noneyet",
@@ -81,7 +82,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
     "create a student and assign it to no group" in {
       val issuerId = createIssuer()
 
-      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val request = cmanager_api
           .CreateStudentRequest(
             universityAssignedId = "noneyet",
@@ -106,7 +107,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
     "fail to create a student and assign it to a group that does not exist" in {
       val issuerId = createIssuer()
 
-      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val request = cmanager_api
           .CreateStudentRequest(
             universityAssignedId = "noneyet",
@@ -127,8 +128,8 @@ class StudentsServiceImplSpec extends RpcSpecBase {
     }
   }
 
-  private def createIssuer(): Issuer.Id = {
-    val id = Issuer.Id(UUID.randomUUID())
+  private def createIssuer(): Institution.Id = {
+    val id = Institution.Id(UUID.randomUUID())
     participantsRepository
       .create(
         CreateParticipantRequest(
@@ -142,9 +143,5 @@ class StudentsServiceImplSpec extends RpcSpecBase {
       .value
       .futureValue
     id
-  }
-
-  private def toParticipantId(issuer: Issuer.Id): ParticipantId = {
-    ParticipantId(issuer.value)
   }
 }

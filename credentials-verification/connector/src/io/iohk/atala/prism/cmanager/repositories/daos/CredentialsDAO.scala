@@ -11,7 +11,8 @@ import io.iohk.atala.prism.cmanager.models.requests.{
   CreateUniversityCredential,
   PublishCredential
 }
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
+import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student, UniversityCredential}
+import io.iohk.atala.prism.console.models.{Contact, Institution}
 
 object CredentialsDAO {
 
@@ -37,7 +38,7 @@ object CredentialsDAO {
   }
 
   def getUniversityCredentialsBy(
-      issuedBy: Issuer.Id,
+      issuedBy: Institution.Id,
       limit: Int,
       lastSeenCredential: Option[UniversityCredential.Id]
   ): doobie.ConnectionIO[List[UniversityCredential]] = {
@@ -83,7 +84,7 @@ object CredentialsDAO {
   }
 
   def getUniversityCredentialsBy(
-      issuedBy: Issuer.Id,
+      issuedBy: Institution.Id,
       studentId: Student.Id
   ): doobie.ConnectionIO[List[UniversityCredential]] = {
     sql"""
@@ -126,7 +127,7 @@ object CredentialsDAO {
   }
 
   def getBy(
-      issuedBy: Issuer.Id,
+      issuedBy: Institution.Id,
       limit: Int,
       lastSeenCredential: Option[GenericCredential.Id]
   ): doobie.ConnectionIO[List[GenericCredential]] = {
@@ -177,7 +178,7 @@ object CredentialsDAO {
     query.query[GenericCredential].to[List]
   }
 
-  def getBy(issuedBy: Issuer.Id, subjectId: Subject.Id): doobie.ConnectionIO[List[GenericCredential]] = {
+  def getBy(issuedBy: Institution.Id, subjectId: Contact.Id): doobie.ConnectionIO[List[GenericCredential]] = {
     sql"""
          |WITH PTS AS (
          |  SELECT id AS issuer_id, name
@@ -197,7 +198,7 @@ object CredentialsDAO {
          |""".stripMargin.query[GenericCredential].to[List]
   }
 
-  def storePublicationData(issuerId: Issuer.Id, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {
+  def storePublicationData(issuerId: Institution.Id, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {
     sql"""
          | INSERT INTO published_credentials (credential_id, node_credential_id, operation_hash, encoded_signed_credential, stored_at)
          | SELECT credential_id, ${credentialData.nodeCredentialId}, ${credentialData.issuanceOperationHash}, ${credentialData.encodedSignedCredential}, now()

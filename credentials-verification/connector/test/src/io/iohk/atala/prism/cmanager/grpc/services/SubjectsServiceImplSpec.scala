@@ -4,14 +4,15 @@ import java.time.LocalDate
 import java.util.UUID
 
 import io.circe
-import io.circe.Json
+import io.circe.{Json, parser}
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs.{subjectToProto, genericCredentialToProto}
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student, Subject}
+import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs.{genericCredentialToProto, subjectToProto}
+import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories._
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
+import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.cmanager_api
@@ -52,9 +53,9 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
 
   "createSubject" should {
     "create a subject and assign it to a group" in {
-      val issuerId = createIssuer("issuer name").id
+      val issuerId = createIssuer("issuer name")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
-      val externalId = Subject.ExternalId.random()
+      val externalId = Contact.ExternalId.random()
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val json = Json
@@ -74,7 +75,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
 
         val response = serviceStub.createSubject(request).subject.value
         response.groupName must be(empty)
-        response.jsonData must be(json.noSpaces)
+        parser.parse(response.jsonData).right.value must be(json)
         response.externalId must be(request.externalId)
 
         // the new subject needs to exist
@@ -87,8 +88,8 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "create a subject and assign it to no group" in {
-      val issuerId = createIssuer("issuer name").id
-      val externalId = Subject.ExternalId.random()
+      val issuerId = createIssuer("issuer name")
+      val externalId = Contact.ExternalId.random()
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val json = Json
@@ -106,9 +107,9 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
           )
 
         val response = serviceStub.createSubject(request).subject.value
-        val subjectId = Subject.Id(UUID.fromString(response.id))
+        val subjectId = Contact.Id(UUID.fromString(response.id))
         response.groupName must be(empty)
-        response.jsonData must be(json.noSpaces)
+        parser.parse(response.jsonData).right.value must be(json)
         response.externalId must be(request.externalId)
 
         // the new subject needs to exist
@@ -120,8 +121,8 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "fail to create a subject and assign it to a group that does not exists" in {
-      val issuerId = createIssuer("issuer name").id
-      val externalId = Subject.ExternalId.random()
+      val issuerId = createIssuer("issuer name")
+      val externalId = Contact.ExternalId.random()
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val json = Json
@@ -151,7 +152,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
 
     // TODO: Remove ignore when the front end provides the external id
     "fail on attempt to create a subject with empty external id" ignore {
-      val issuerId = createIssuer("issuer name").id
+      val issuerId = createIssuer("issuer name")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
@@ -180,9 +181,9 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "fail on attempt to duplicate an external id" in {
-      val issuerId = createIssuer("issuer name").id
+      val issuerId = createIssuer("issuer name")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
-      val externalId = Subject.ExternalId.random()
+      val externalId = Contact.ExternalId.random()
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val json = Json
@@ -236,7 +237,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
 
   "getSubjects" should {
     "return the first subjects" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -262,7 +263,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "return the first subjects matching a group" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -289,7 +290,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "paginate by the last seen subject" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -314,7 +315,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "paginate by the last seen subject matching by group" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -342,7 +343,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
 
   "getSubject" should {
     "return the correct subject when present" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupName = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val subject = createSubject(issuerId, "Alice", groupName)
       createSubject(issuerId, "Bob", groupName)
@@ -359,8 +360,8 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "return no subject when the subject is missing (issuerId and subjectId not correlated)" in {
-      val issuerXId = createIssuer("Issuer X").id
-      val issuerYId = createIssuer("Issuer Y").id
+      val issuerXId = createIssuer("Issuer X")
+      val issuerYId = createIssuer("Issuer Y")
       val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
       val subject = createSubject(issuerXId, "Alice", groupNameA)
@@ -379,7 +380,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
 
   "getSubjectCredentials" should {
     "return subject's credentials" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId1 = createSubject(issuerId, "IOHK Student", group.name).id
       val subjectId2 = createSubject(issuerId, "IOHK Student 2", group.name).id
@@ -410,7 +411,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     }
 
     "return empty list of credentials when not present" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId = createSubject(issuerId, "IOHK Student", group.name).id
 
@@ -430,7 +431,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
       val issuerName = "tokenizer"
       val groupName = IssuerGroup.Name("Grp 1")
       val subjectName = "Subject 1"
-      val issuerId = createIssuer(issuerName).id
+      val issuerId = createIssuer(issuerName)
       createIssuerGroup(issuerId, groupName)
       val subject = createSubject(issuerId, subjectName, groupName)
 
@@ -448,15 +449,15 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         val storedSubject = result.value
         storedSubject.id must be(subject.id)
         storedSubject.data must be(subject.data)
-        storedSubject.createdOn must be(subject.createdOn)
-        storedSubject.connectionStatus must be(Student.ConnectionStatus.ConnectionMissing)
+        storedSubject.createdAt must be(subject.createdAt)
+        storedSubject.connectionStatus must be(Contact.ConnectionStatus.ConnectionMissing)
         storedSubject.connectionToken.value must be(token)
         storedSubject.connectionId must be(subject.connectionId)
       }
     }
   }
 
-  private def toParticipantId(issuer: Issuer.Id): ParticipantId = {
+  private def toParticipantId(issuer: Institution.Id): ParticipantId = {
     ParticipantId(issuer.value)
   }
 }

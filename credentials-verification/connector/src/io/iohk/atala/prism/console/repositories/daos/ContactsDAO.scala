@@ -35,6 +35,15 @@ object ContactsDAO {
            |""".stripMargin.query[Contact].option
   }
 
+  def findContact(issuerId: Institution.Id, externalId: Contact.ExternalId): doobie.ConnectionIO[Option[Contact]] = {
+    sql"""
+         |SELECT contact_id, external_id, contact_data, created_at, connection_status::TEXT::STUDENT_CONNECTION_STATUS_TYPE, connection_token, connection_id
+         |FROM contacts
+         |WHERE external_id = $externalId AND
+         |      created_by = $issuerId
+         |""".stripMargin.query[Contact].option
+  }
+
   def getBy(
       institutionId: Institution.Id,
       lastContactSeen: Option[Contact.Id],
@@ -111,12 +120,17 @@ object ContactsDAO {
          |""".stripMargin.update.run.map(_ => ())
   }
 
-  def setConnectionAsAccepted(connectionToken: TokenString, connectionId: ConnectionId): ConnectionIO[Unit] = {
+  def setConnectionAsAccepted(
+      createdBy: Institution.Id,
+      connectionToken: TokenString,
+      connectionId: ConnectionId
+  ): ConnectionIO[Unit] = {
     sql"""
          |UPDATE contacts
          |SET connection_id = $connectionId,
          |    connection_status = ${ConnectionStatus.ConnectionAccepted: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
-         |WHERE connection_token = $connectionToken
+         |WHERE connection_token = $connectionToken AND
+         |      created_by = $createdBy
          |""".stripMargin.update.run.map(_ => ())
   }
 }

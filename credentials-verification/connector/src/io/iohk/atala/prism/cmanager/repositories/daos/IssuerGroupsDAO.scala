@@ -4,19 +4,20 @@ import java.util.UUID
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Subject}
+import io.iohk.atala.prism.cmanager.models.IssuerGroup
+import io.iohk.atala.prism.console.models.{Contact, Institution}
 
 object IssuerGroupsDAO {
 
-  def create(issuer: Issuer.Id, name: IssuerGroup.Name): ConnectionIO[IssuerGroup] = {
+  def create(issuerId: Institution.Id, name: IssuerGroup.Name): ConnectionIO[IssuerGroup] = {
     val groupId = IssuerGroup.Id(UUID.randomUUID())
     sql"""
          |INSERT INTO issuer_groups (group_id, issuer_id, name)
-         |VALUES ($groupId, $issuer, $name)
-       """.stripMargin.update.run.map(_ => IssuerGroup(groupId, name, issuer))
+         |VALUES ($groupId, $issuerId, $name)
+       """.stripMargin.update.run.map(_ => IssuerGroup(groupId, name, issuerId))
   }
 
-  def getBy(issuer: Issuer.Id): ConnectionIO[List[IssuerGroup.Name]] = {
+  def getBy(issuer: Institution.Id): ConnectionIO[List[IssuerGroup.Name]] = {
     sql"""
          |SELECT name
          |FROM issuer_groups
@@ -25,7 +26,7 @@ object IssuerGroupsDAO {
        """.stripMargin.query[IssuerGroup.Name].to[List]
   }
 
-  def find(issuer: Issuer.Id, name: IssuerGroup.Name): ConnectionIO[Option[IssuerGroup]] = {
+  def find(issuer: Institution.Id, name: IssuerGroup.Name): ConnectionIO[Option[IssuerGroup]] = {
     sql"""
          |SELECT group_id, name, issuer_id
          |FROM issuer_groups
@@ -34,9 +35,9 @@ object IssuerGroupsDAO {
        """.stripMargin.query[IssuerGroup].option
   }
 
-  def addSubject(groupId: IssuerGroup.Id, subjectId: Subject.Id): ConnectionIO[Unit] = {
+  def addContact(groupId: IssuerGroup.Id, contactId: Contact.Id): ConnectionIO[Unit] = {
     sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
-         |VALUES ($groupId, $subjectId, now())
+         |VALUES ($groupId, $contactId, now())
          |""".stripMargin.update.run.map(_ => ())
   }
 }

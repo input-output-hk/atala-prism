@@ -5,10 +5,9 @@ import java.util.UUID
 import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
-import io.iohk.atala.prism.cmanager.models.Subject.ExternalId
-import io.iohk.atala.prism.cmanager.models.requests.CreateSubject
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Subject}
+import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
 import io.iohk.prism.protos.cmanager_api
 import io.iohk.prism.protos.cmanager_api._
 import io.scalaland.chimney.dsl._
@@ -29,15 +28,17 @@ class SubjectsServiceImpl(
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createSubject(request: cmanager_api.CreateSubjectRequest): Future[cmanager_api.CreateSubjectResponse] = {
-    def f(issuerId: Issuer.Id) = {
+    def f(issuerId: Institution.Id) = {
 
       // TODO: Remove when the front end provides the external id
-      val externalId = if (request.externalId.trim.isEmpty) ExternalId.random() else ExternalId(request.externalId.trim)
+      val externalId =
+        if (request.externalId.trim.isEmpty) Contact.ExternalId.random()
+        else Contact.ExternalId(request.externalId.trim)
       lazy val json = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
       val maybeGroupdName = if (request.groupName.trim.isEmpty) None else Some(IssuerGroup.Name(request.groupName.trim))
       val model = request
-        .into[CreateSubject]
-        .withFieldConst(_.issuerId, issuerId)
+        .into[CreateContact]
+        .withFieldConst(_.createdBy, issuerId)
         .withFieldConst(_.data, json)
         .withFieldConst(_.externalId, externalId)
         .enableUnsafeOption
@@ -55,13 +56,13 @@ class SubjectsServiceImpl(
     }
 
     authenticator.authenticated("createStudent", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 
   override def getSubjects(request: GetSubjectsRequest): Future[GetSubjectsResponse] = {
-    def f(issuerId: Issuer.Id) = {
-      val lastSeenSubject = Try(UUID.fromString(request.lastSeenSubjectId)).map(Subject.Id.apply).toOption
+    def f(issuerId: Institution.Id) = {
+      val lastSeenSubject = Try(UUID.fromString(request.lastSeenSubjectId)).map(Contact.Id.apply).toOption
       val groupName = Option(request.groupName.trim).filter(_.nonEmpty).map(IssuerGroup.Name.apply)
 
       implicit val loggingContext: LoggingContext =
@@ -82,19 +83,19 @@ class SubjectsServiceImpl(
     }
 
     authenticator.authenticated("getSubjects", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 
   override def getSubject(request: GetSubjectRequest): Future[GetSubjectResponse] = {
-    def f(issuerId: Issuer.Id) = {
-      val subjectId = Subject.Id(UUID.fromString(request.subjectId))
+    def f(issuerId: Institution.Id) = {
+      val contactId = Contact.Id(UUID.fromString(request.subjectId))
 
       implicit val loggingContext: LoggingContext =
-        LoggingContext("request" -> request, "issuerId" -> issuerId, "subjectId" -> subjectId)
+        LoggingContext("request" -> request, "issuerId" -> issuerId, "contactId" -> contactId)
 
       subjectsRepository
-        .find(issuerId, subjectId)
+        .find(issuerId, contactId)
         .map { maybe =>
           cmanager_api.GetSubjectResponse(maybe.map(subjectToProto))
         }
@@ -103,13 +104,13 @@ class SubjectsServiceImpl(
     }
 
     authenticator.authenticated("getSubject", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 
   override def getSubjectCredentials(request: GetSubjectCredentialsRequest): Future[GetSubjectCredentialsResponse] = {
-    def f(issuerId: Issuer.Id) = {
-      val subjectId = Subject.Id(UUID.fromString(request.subjectId))
+    def f(issuerId: Institution.Id) = {
+      val subjectId = Contact.Id(UUID.fromString(request.subjectId))
 
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "issuerId" -> issuerId, "subjectId" -> subjectId)
@@ -124,28 +125,28 @@ class SubjectsServiceImpl(
     }
 
     authenticator.authenticated("getSubjectCredentials", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 
   override def generateConnectionTokenForSubject(
       request: GenerateConnectionTokenForSubjectRequest
   ): Future[GenerateConnectionTokenForSubjectResponse] = {
-    def f(issuerId: Issuer.Id) = {
-      val subjectId = Subject.Id.apply(UUID.fromString(request.subjectId))
+    def f(issuerId: Institution.Id) = {
+      val contactId = Contact.Id.apply(UUID.fromString(request.subjectId))
 
       implicit val loggingContext: LoggingContext =
-        LoggingContext("request" -> request, "issuerId" -> issuerId, "subjectId" -> subjectId)
+        LoggingContext("request" -> request, "issuerId" -> issuerId, "contactId" -> contactId)
 
       subjectsRepository
-        .generateToken(issuerId, subjectId)
+        .generateToken(issuerId, contactId)
         .map(token => cmanager_api.GenerateConnectionTokenForSubjectResponse(token.token))
         .wrapExceptions
         .flatten
     }
 
     authenticator.authenticated("generateConnectionTokenForSubject", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 }

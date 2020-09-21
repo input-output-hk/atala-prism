@@ -4,16 +4,17 @@ import java.time.Instant
 import java.util.UUID
 
 import io.circe.Json
+import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.crypto.SHA256Digest
 
 case class GenericCredential(
     credentialId: GenericCredential.Id,
-    issuedBy: Issuer.Id,
-    subjectId: Subject.Id,
+    issuedBy: Institution.Id,
+    subjectId: Contact.Id,
     credentialData: Json,
     groupName: String,
     createdOn: Instant,
-    externalId: Subject.ExternalId,
+    externalId: Contact.ExternalId,
     issuerName: String,
     subjectData: Json,
     publicationData: Option[PublicationData]

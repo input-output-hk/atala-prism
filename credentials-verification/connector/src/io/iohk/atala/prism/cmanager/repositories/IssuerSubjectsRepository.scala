@@ -3,11 +3,12 @@ package io.iohk.atala.prism.cmanager.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.cmanager.models.requests.CreateSubject
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Subject}
-import io.iohk.atala.prism.cmanager.repositories.daos.{IssuerGroupsDAO, IssuerSubjectsDAO}
+import io.iohk.atala.prism.cmanager.models.IssuerGroup
+import io.iohk.atala.prism.cmanager.repositories.daos.IssuerGroupsDAO
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.repositories.daos.ConnectionTokensDAO
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
+import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -15,17 +16,17 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import scala.concurrent.ExecutionContext
 
 class IssuerSubjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
-  def create(data: CreateSubject, maybeGroupName: Option[IssuerGroup.Name]): FutureEither[Nothing, Subject] = {
+  def create(contactData: CreateContact, maybeGroupName: Option[IssuerGroup.Name]): FutureEither[Nothing, Contact] = {
     val query = maybeGroupName match {
       case None => // if we do not request the subject to be added to a group
-        IssuerSubjectsDAO.create(data)
+        ContactsDAO.createContact(contactData)
       case Some(groupName) => // if we are requesting to add a subject to a group
         for {
-          subject <- IssuerSubjectsDAO.create(data)
-          groupMaybe <- IssuerGroupsDAO.find(data.issuerId, groupName)
+          contact <- ContactsDAO.createContact(contactData)
+          groupMaybe <- IssuerGroupsDAO.find(contactData.createdBy, groupName)
           group = groupMaybe.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
-          _ <- IssuerGroupsDAO.addSubject(group.id, subject.id)
-        } yield subject
+          _ <- IssuerGroupsDAO.addContact(group.id, contact.id)
+        } yield contact
     }
 
     query
@@ -35,18 +36,18 @@ class IssuerSubjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
       .toFutureEither
   }
 
-  def find(issuerId: Issuer.Id, subjectId: Subject.Id): FutureEither[Nothing, Option[Subject]] = {
-    IssuerSubjectsDAO
-      .findSubject(issuerId, subjectId)
+  def find(issuerId: Institution.Id, subjectId: Contact.Id): FutureEither[Nothing, Option[Contact]] = {
+    ContactsDAO
+      .findContact(issuerId, subjectId)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
       .toFutureEither
   }
 
-  def find(issuerId: Issuer.Id, externalId: Subject.ExternalId): FutureEither[Nothing, Option[Subject]] = {
-    IssuerSubjectsDAO
-      .findSubject(issuerId, externalId)
+  def find(issuerId: Institution.Id, externalId: Contact.ExternalId): FutureEither[Nothing, Option[Contact]] = {
+    ContactsDAO
+      .findContact(issuerId, externalId)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -54,28 +55,25 @@ class IssuerSubjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
   }
 
   def getBy(
-      issuer: Issuer.Id,
+      issuer: Institution.Id,
       limit: Int,
-      lastSeenSubject: Option[Subject.Id],
+      lastSeenSubject: Option[Contact.Id],
       groupName: Option[IssuerGroup.Name]
-  ): FutureEither[Nothing, List[Subject]] = {
-    IssuerSubjectsDAO
-      .getBy(issuer, limit, lastSeenSubject, groupName)
+  ): FutureEither[Nothing, List[Contact]] = {
+    ContactsDAO
+      .getBy(issuer, lastSeenSubject, limit, groupName)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
       .toFutureEither
   }
 
-  def generateToken(issuerId: Issuer.Id, subjectId: Subject.Id): FutureEither[Nothing, TokenString] = {
+  def generateToken(issuerId: Institution.Id, subjectId: Contact.Id): FutureEither[Nothing, TokenString] = {
     val token = TokenString.random()
 
     val tx = for {
       _ <- ConnectionTokensDAO.insert(ParticipantId(issuerId.value), token)
-      _ <- IssuerSubjectsDAO.update(
-        issuerId,
-        IssuerSubjectsDAO.UpdateSubjectRequest.ConnectionTokenGenerated(subjectId, token)
-      )
+      _ <- ContactsDAO.setConnectionToken(Institution.Id(issuerId.value), subjectId, token)
     } yield ()
 
     tx.transact(xa)
@@ -83,5 +81,4 @@ class IssuerSubjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
       .map(_ => Right(token))
       .toFutureEither
   }
-
 }

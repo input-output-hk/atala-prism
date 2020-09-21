@@ -31,9 +31,9 @@ class CredentialViewsServiceSpec extends RpcSpecBase {
 
   "getCredentialViewTemplates" should {
     "return the predefined templates" in {
-      val issuer = DataPreparation.createIssuer("Great Issuer")
+      val issuerId = DataPreparation.createIssuer("Great Issuer")
 
-      usingApiAs(ParticipantId(issuer.id.value)) { serviceStub =>
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val response = serviceStub.getCredentialViewTemplates(GetCredentialViewTemplatesRequest())
 
         val templates = response.templates

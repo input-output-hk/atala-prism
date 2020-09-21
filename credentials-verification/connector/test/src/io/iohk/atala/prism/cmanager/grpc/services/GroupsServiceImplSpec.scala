@@ -6,8 +6,9 @@ import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup}
+import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories.IssuerGroupsRepository
+import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.cmanager_api
@@ -44,7 +45,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
     "create a group" in {
       val issuerId = createIssuer()
 
-      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val newGroup = IssuerGroup.Name("IOHK University")
         val request = cmanager_api.CreateGroupRequest(newGroup.value)
         val _ = serviceStub.createGroup(request)
@@ -65,7 +66,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
         issuerGroupsRepository.create(issuerId, group).value.futureValue.right.value
       }
 
-      usingApiAs(toParticipantId(issuerId)) { serviceStub =>
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val request = cmanager_api.GetGroupsRequest()
         val result = serviceStub.getGroups(request)
         result.groups.map(_.name).map(IssuerGroup.Name.apply) must be(groups)
@@ -73,7 +74,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
     }
   }
 
-  private def createIssuer(): Issuer.Id = {
+  private def createIssuer(): Institution.Id = {
     val id = UUID.randomUUID()
     val mockDID = "did:prims:test"
     participantsRepository
@@ -82,10 +83,6 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       )
       .value
       .futureValue
-    Issuer.Id(id)
-  }
-
-  private def toParticipantId(issuer: Issuer.Id): ParticipantId = {
-    ParticipantId(issuer.value)
+    Institution.Id(id)
   }
 }

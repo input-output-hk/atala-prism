@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, Issuer, IssuerGroup}
+import io.iohk.atala.prism.cmanager.models.{GenericCredential, IssuerGroup}
 import io.iohk.atala.prism.cmanager.models.requests.{
   CreateGenericCredential,
   CreateUniversityCredential,
@@ -15,6 +15,7 @@ import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import io.circe.syntax._
+import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.crypto.SHA256Digest
 
 class CredentialsRepositorySpec extends CManagerRepositorySpec {
@@ -26,11 +27,11 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
   "createUniversityCredential" should {
     "create a new credential" in {
       val issuerName = "Issuer-1"
-      val issuer = createIssuer(issuerName)
-      val group = createIssuerGroup(issuer.id, IssuerGroup.Name("grp1"))
-      val student = createStudent(issuer.id, "Student 1", group.name)
+      val issuerId = createIssuer(issuerName)
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val student = createStudent(issuerId, "Student 1", group.name)
       val request = CreateUniversityCredential(
-        issuedBy = issuer.id,
+        issuedBy = issuerId,
         studentId = student.id,
         title = "Major IN Applied Blockchain",
         enrollmentDate = LocalDate.now(),
@@ -53,30 +54,30 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
   "getUniversityCredentialsBy" should {
     "return the first credentials" in {
-      val issuer = createIssuer("Issuer X").id
-      val group = createIssuerGroup(issuer, IssuerGroup.Name("grp1"))
-      val student = createStudent(issuer, "IOHK Student", group.name).id
-      val credA = createCredential(issuer, student, "A")
-      val credB = createCredential(issuer, student, "B")
-      createCredential(issuer, student, "C")
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val student = createStudent(issuerId, "IOHK Student", group.name).id
+      val credA = createCredential(issuerId, student, "A")
+      val credB = createCredential(issuerId, student, "B")
+      createCredential(issuerId, student, "C")
 
-      val result = credentialsRepository.getUniversityCredentialsBy(issuer, 2, None).value.futureValue.right.value
+      val result = credentialsRepository.getUniversityCredentialsBy(issuerId, 2, None).value.futureValue.right.value
       result.toSet must be(Set(credA, credB))
     }
 
     "paginate by the last seen credential" in {
-      val issuer = createIssuer("Issuer X").id
-      val group = createIssuerGroup(issuer, IssuerGroup.Name("grp1"))
-      val student = createStudent(issuer, "IOHK Student", group.name).id
-      createCredential(issuer, student, "A")
-      createCredential(issuer, student, "B")
-      val credC = createCredential(issuer, student, "C")
-      createCredential(issuer, student, "D")
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val student = createStudent(issuerId, "IOHK Student", group.name).id
+      createCredential(issuerId, student, "A")
+      createCredential(issuerId, student, "B")
+      val credC = createCredential(issuerId, student, "C")
+      createCredential(issuerId, student, "D")
 
-      val first = credentialsRepository.getUniversityCredentialsBy(issuer, 2, None).value.futureValue.right.value
+      val first = credentialsRepository.getUniversityCredentialsBy(issuerId, 2, None).value.futureValue.right.value
       val result =
         credentialsRepository
-          .getUniversityCredentialsBy(issuer, 1, first.lastOption.map(_.id))
+          .getUniversityCredentialsBy(issuerId, 1, first.lastOption.map(_.id))
           .value
           .futureValue
           .right
@@ -90,11 +91,11 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
     "create a new credential" in {
       val issuerName = "Issuer-1"
       val subjectName = "Student 1"
-      val issuer = createIssuer(issuerName)
-      val group = createIssuerGroup(issuer.id, IssuerGroup.Name("grp1"))
-      val subject = createSubject(issuer.id, subjectName, group.name)
+      val issuerId = createIssuer(issuerName)
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subject = createSubject(issuerId, subjectName, group.name)
       val request = CreateGenericCredential(
-        issuedBy = issuer.id,
+        issuedBy = issuerId,
         subjectId = subject.id,
         credentialData = Json.obj(
           "title" -> "Major IN Applied Blockchain".asJson,
@@ -118,30 +119,30 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
   "getBy" should {
     "return the first credentials" in {
-      val issuer = createIssuer("Issuer X").id
-      val group = createIssuerGroup(issuer, IssuerGroup.Name("grp1"))
-      val subject = createSubject(issuer, "IOHK Student", group.name).id
-      val credA = createGenericCredential(issuer, subject, "A")
-      val credB = createGenericCredential(issuer, subject, "B")
-      createGenericCredential(issuer, subject, "C")
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subject = createSubject(issuerId, "IOHK Student", group.name).id
+      val credA = createGenericCredential(issuerId, subject, "A")
+      val credB = createGenericCredential(issuerId, subject, "B")
+      createGenericCredential(issuerId, subject, "C")
 
-      val result = credentialsRepository.getBy(issuer, 2, None).value.futureValue.right.value
+      val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.right.value
       result.toSet must be(Set(credA, credB))
     }
 
     "paginate by the last seen credential" in {
-      val issuer = createIssuer("Issuer X").id
-      val group = createIssuerGroup(issuer, IssuerGroup.Name("grp1"))
-      val subject = createSubject(issuer, "IOHK Student", group.name).id
-      createGenericCredential(issuer, subject, "A")
-      createGenericCredential(issuer, subject, "B")
-      val credC = createGenericCredential(issuer, subject, "C")
-      createGenericCredential(issuer, subject, "D")
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subject = createSubject(issuerId, "IOHK Student", group.name).id
+      createGenericCredential(issuerId, subject, "A")
+      createGenericCredential(issuerId, subject, "B")
+      val credC = createGenericCredential(issuerId, subject, "C")
+      createGenericCredential(issuerId, subject, "D")
 
-      val first = credentialsRepository.getBy(issuer, 2, None).value.futureValue.right.value
+      val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.right.value
       val result =
         credentialsRepository
-          .getBy(issuer, 1, first.lastOption.map(_.credentialId))
+          .getBy(issuerId, 1, first.lastOption.map(_.credentialId))
           .value
           .futureValue
           .right
@@ -152,7 +153,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
   "getBy" should {
     "return subject's credentials" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId1 = createSubject(issuerId, "IOHK Student", group.name).id
       val subjectId2 = createSubject(issuerId, "IOHK Student 2", group.name).id
@@ -167,7 +168,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "return empty list of credentials when not present" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId = createSubject(issuerId, "IOHK Student", group.name).id
 
@@ -178,7 +179,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
   "storePublicationData" should {
     "insert credential data in db" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId = createSubject(issuerId, "IOHK Student 2", group.name).id
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
@@ -217,7 +218,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "fail when credential_id is not registered" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockNodeCredentialId = mockOperationHash.hexValue
@@ -245,7 +246,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "fail when issuer_id does not belong to the credential_id" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId = createSubject(issuerId, "IOHK Student 2", group.name).id
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
@@ -257,7 +258,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       intercept[RuntimeException](
         credentialsRepository
           .storePublicationData(
-            Issuer.Id(UUID.randomUUID()),
+            Institution.Id(UUID.randomUUID()),
             PublishCredential(
               originalCredential.credentialId,
               mockOperationHash,

@@ -3,12 +3,10 @@ package io.iohk.atala.prism.cmanager.repositories
 import java.time.LocalDate
 
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
-import io.iohk.atala.prism.cmanager.models.Subject.ExternalId
-import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
-import io.iohk.atala.prism.cmanager.models.requests.CreateSubject
+import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
@@ -17,16 +15,16 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
 
   "create" should {
     "create a new subject and assign it to an specified group" in {
-      val issuer = createIssuer("Issuer-1").id
+      val issuer = createIssuer("Issuer-1")
       val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
-      val externalId = ExternalId.random()
+      val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
         "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, json)
+      val request = CreateContact(issuer, externalId, json)
 
       val result = repository.create(request, Some(group.name)).value.futureValue
       val subject = result.right.value
@@ -42,15 +40,15 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "create a new subject and assign it to no specified group" in {
-      val issuer = createIssuer("Issuer-1").id
-      val externalId = ExternalId.random()
+      val issuer = createIssuer("Issuer-1")
+      val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
         "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, json)
+      val request = CreateContact(issuer, externalId, json)
 
       val result = repository.create(request, None).value.futureValue
       val subject = result.right.value
@@ -65,56 +63,56 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "fail to create a new subject when the specified group does not exist" in {
-      val issuer = createIssuer("Issuer-1").id
-      val externalId = ExternalId.random()
+      val issuerId = createIssuer("Issuer-1")
+      val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
         "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, json)
+      val request = CreateContact(issuerId, externalId, json)
 
       intercept[Exception](
         repository.create(request, Some(IssuerGroup.Name("Grp 1"))).value.futureValue
       )
 
       // we check that the subject was not created
-      val subjectsList = repository.getBy(issuer, 1, None, None).value.futureValue.right.value
+      val subjectsList = repository.getBy(issuerId, 1, None, None).value.futureValue.right.value
       subjectsList must be(empty)
     }
 
     "fail to create a new subject with empty external id" in {
-      val issuer = createIssuer("Issuer-1").id
-      val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
-      val externalId = ExternalId("")
+      val issuerId = createIssuer("Issuer-1")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("Grp 1"))
+      val externalId = Contact.ExternalId("")
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
         "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, json)
+      val request = CreateContact(issuerId, externalId, json)
 
       intercept[Exception](
         repository.create(request, Some(group.name)).value.futureValue
       )
       // no subject should be created
-      val createdSubjects = repository.getBy(issuer, 10, None, None).value.futureValue.right.value
+      val createdSubjects = repository.getBy(issuerId, 10, None, None).value.futureValue.right.value
       createdSubjects must be(empty)
     }
 
     "fail to create a new subject with an external id already used" in {
-      val issuer = createIssuer("Issuer-1").id
-      val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
-      val externalId = ExternalId.random()
+      val issuerId = createIssuer("Issuer-1")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("Grp 1"))
+      val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
         "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateSubject(issuer, externalId, json)
+      val request = CreateContact(issuerId, externalId, json)
 
       val initialResponse = repository.create(request, Some(group.name)).value.futureValue.right.value
 
@@ -125,13 +123,13 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
 
-      val secondRequest = CreateSubject(issuer, externalId, secondJson)
+      val secondRequest = CreateContact(issuerId, externalId, secondJson)
 
       intercept[Exception](
         repository.create(secondRequest, Some(group.name)).value.futureValue
       )
 
-      val subjectsStored = repository.getBy(issuer, 10, None, None).value.futureValue.right.value
+      val subjectsStored = repository.getBy(issuerId, 10, None, None).value.futureValue.right.value
 
       // only one subject must be inserted correctly
       subjectsStored.size must be(1)
@@ -146,7 +144,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
 
   "find by subjectId" should {
     "return the correct subject when present" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupName = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val subjectA = createSubject(issuerId, "Alice", groupName)
       createSubject(issuerId, "Bob", groupName)
@@ -156,8 +154,8 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "return no subject when the subject is missing (issuerId and subjectId not correlated)" in {
-      val issuerXId = createIssuer("Issuer X").id
-      val issuerYId = createIssuer("Issuer Y").id
+      val issuerXId = createIssuer("Issuer X")
+      val issuerYId = createIssuer("Issuer Y")
       val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
       val subjectA = createSubject(issuerXId, "Alice", groupNameA)
@@ -170,7 +168,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
 
   "find by externalId" should {
     "return the correct subject when present" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val subjectA = createSubject(issuerId, "Alice", None, "subject-1")
       createSubject(issuerId, "Bob", None, "subject-2")
 
@@ -179,8 +177,8 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "return no subject when the subject is missing (issuerId and subjectId not correlated)" in {
-      val issuerXId = createIssuer("Issuer X").id
-      val issuerYId = createIssuer("Issuer Y").id
+      val issuerXId = createIssuer("Issuer X")
+      val issuerYId = createIssuer("Issuer Y")
       val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
       val subjectA = createSubject(issuerXId, "Alice", groupNameA)
@@ -193,7 +191,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
 
   "getBy" should {
     "return the first subjects" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -207,7 +205,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "return the first subjects matching a group" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -221,7 +219,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "paginate by the last seen subject" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -235,7 +233,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "paginate by the last seen subject matching by group" in {
-      val issuerId = createIssuer("Issuer X").id
+      val issuerId = createIssuer("Issuer X")
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -259,18 +257,18 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       val issuerName = "tokenizer"
       val groupName = IssuerGroup.Name("Grp 1")
       val subjectName = "Subject 1"
-      val issuerId = createIssuer(issuerName).id
+      val issuerId = createIssuer(issuerName)
       createIssuerGroup(issuerId, groupName)
 
       val subject = createSubject(issuerId, subjectName, groupName)
-      val result = repository.generateToken(issuerId, subject.id).value.futureValue
+      val result = repository.generateToken(Institution.Id(issuerId.value), subject.id).value.futureValue
       val token = result.right.value
 
       val updatedSubject = repository.find(issuerId, subject.id).value.futureValue.right.value.value
       updatedSubject.id must be(subject.id)
       updatedSubject.data must be(subject.data)
-      updatedSubject.createdOn must be(subject.createdOn)
-      updatedSubject.connectionStatus must be(Student.ConnectionStatus.ConnectionMissing)
+      updatedSubject.createdAt must be(subject.createdAt)
+      updatedSubject.connectionStatus must be(Contact.ConnectionStatus.ConnectionMissing)
       updatedSubject.connectionToken.value must be(token)
       updatedSubject.connectionId must be(subject.connectionId)
     }

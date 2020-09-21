@@ -11,6 +11,7 @@ import io.iohk.atala.prism.cmanager.models.requests.{
 import io.iohk.atala.prism.cmanager.models._
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
 import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
@@ -39,7 +40,7 @@ class CredentialsServiceImpl(
       val studentId = Student.Id(UUID.fromString(request.studentId))
       val model = request
         .into[CreateUniversityCredential]
-        .withFieldConst(_.issuedBy, issuerId)
+        .withFieldConst(_.issuedBy, Institution.Id(issuerId))
         .withFieldConst(_.studentId, studentId)
         .enableUnsafeOption
         .transform
@@ -57,7 +58,7 @@ class CredentialsServiceImpl(
       val lastSeenCredential =
         Try(UUID.fromString(request.lastSeenCredentialId)).map(UniversityCredential.Id.apply).toOption
       credentialsRepository
-        .getUniversityCredentialsBy(issuerId, request.limit, lastSeenCredential)
+        .getUniversityCredentialsBy(Institution.Id(issuerId), request.limit, lastSeenCredential)
         .map { list =>
           cmanager_api.GetCredentialsResponse(list.map(universityCredentialToProto))
         }
@@ -73,10 +74,10 @@ class CredentialsServiceImpl(
       // TODO: Avoid doing this when we stop accepting the subjectId
       val subjectIdF = Option(request.externalId)
         .filter(_.nonEmpty)
-        .map(Subject.ExternalId.apply) match {
+        .map(Contact.ExternalId.apply) match {
         case Some(externalId) =>
           subjectsRepository
-            .find(issuerId, externalId)
+            .find(Institution.Id(issuerId), externalId)
             .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exists")))
             .map(_.id)
 
@@ -84,13 +85,13 @@ class CredentialsServiceImpl(
           val maybe = Try(request.subjectId)
             .filter(_.nonEmpty)
             .map(UUID.fromString)
-            .map(Subject.Id.apply)
+            .map(Contact.Id.apply)
             .toOption
 
           Future
             .successful(maybe)
             .toFutureEither(
-              new RuntimeException("The subjectId is required, if it was provided, it's an invalid value")
+              new RuntimeException("The contactId is required, if it was provided, it's an invalid value")
             )
       }
 
@@ -98,12 +99,12 @@ class CredentialsServiceImpl(
         io.circe.parser.parse(request.credentialData).getOrElse(throw new RuntimeException("Invalid json"))
 
       val result = for {
-        subjectId <- subjectIdF
+        contactId <- subjectIdF
         model =
           request
             .into[CreateGenericCredential]
-            .withFieldConst(_.issuedBy, issuerId)
-            .withFieldConst(_.subjectId, subjectId)
+            .withFieldConst(_.issuedBy, Institution.Id(issuerId))
+            .withFieldConst(_.subjectId, contactId)
             .withFieldConst(_.credentialData, json)
             .enableUnsafeOption
             .transform
@@ -124,7 +125,7 @@ class CredentialsServiceImpl(
       val lastSeenCredential =
         Try(UUID.fromString(request.lastSeenCredentialId)).map(GenericCredential.Id.apply).toOption
       credentialsRepository
-        .getBy(issuerId, request.limit, lastSeenCredential)
+        .getBy(Institution.Id(issuerId), request.limit, lastSeenCredential)
         .map { list =>
           cmanager_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
         }
@@ -135,7 +136,7 @@ class CredentialsServiceImpl(
   override def publishCredential(request: PublishCredentialRequest): Future[PublishCredentialResponse] = {
     authenticator.authenticated("publishCredential", request) { participantId =>
       for {
-        issuerId <- Issuer.Id(participantId.uuid).tryF
+        issuerId <- Institution.Id(participantId.uuid).tryF
         credentialId = GenericCredential.Id(UUID.fromString(request.cmanagerCredentialId))
         credentialProtocolId = request.nodeCredentialId
         issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray)
@@ -176,10 +177,10 @@ class CredentialsServiceImpl(
       methodName: String,
       request: Request
   )(
-      block: Issuer.Id => FutureEither[Nothing, Response]
+      block: UUID => FutureEither[Nothing, Response]
   ): Future[Response] = {
     authenticator.authenticated(methodName, request) { participantId =>
-      block(Issuer.Id(participantId.uuid)).value
+      block(participantId.uuid).value
         .map {
           case Right(x) => x
           case Left(e) => throw new RuntimeException(s"FAILED: $e")

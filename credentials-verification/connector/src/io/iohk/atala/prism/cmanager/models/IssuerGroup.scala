@@ -3,8 +3,9 @@ package io.iohk.atala.prism.cmanager.models
 import java.util.UUID
 
 import io.iohk.atala.prism.cmanager.models.IssuerGroup._
+import io.iohk.atala.prism.console.models.Institution
 
-case class IssuerGroup(id: Id, name: Name, issuer: Issuer.Id)
+case class IssuerGroup(id: Id, name: Name, issuerId: Institution.Id)
 
 object IssuerGroup {
 

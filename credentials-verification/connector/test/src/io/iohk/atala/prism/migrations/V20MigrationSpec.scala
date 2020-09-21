@@ -6,9 +6,10 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.crypto.ECPublicKey
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student, Subject}
+import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos._
+import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import io.iohk.atala.prism.models.ParticipantId
@@ -44,7 +45,7 @@ object DataHelper {
     sql"""INSERT INTO issuer_groups (group_id,issuer_id,name)
          |VALUES ($groupId, ${issuer.uuid}, $name)
          |""".stripMargin.runUpdate()
-    IssuerGroup(IssuerGroup.Id(groupId), IssuerGroup.Name(name), Issuer.Id(issuer.uuid))
+    IssuerGroup(IssuerGroup.Id(groupId), IssuerGroup.Name(name), Institution.Id(issuer.uuid))
   }
 
   def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None)(implicit
@@ -64,7 +65,7 @@ class V20MigrationSpec extends PostgresMigrationSpec("V20") with BaseDAO {
     beforeApply = {
       val issuerId = createIssuer("test-issuer")
       val group = createGroup(issuerId, "test-group")
-      val subjectId = Subject.Id(UUID.randomUUID())
+      val subjectId = Contact.Id(UUID.randomUUID())
       val status: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
       sql"""
              |INSERT INTO issuer_subjects (subject_id, created_at, connection_status, group_id, subject_data)

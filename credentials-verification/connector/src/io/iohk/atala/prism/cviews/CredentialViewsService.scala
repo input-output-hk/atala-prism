@@ -2,7 +2,7 @@ package io.iohk.atala.prism.cviews
 
 import io.circe.Json
 import io.iohk.atala.prism.connector.Authenticator
-import io.iohk.atala.prism.cmanager.models.Issuer
+import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.intdemo.html.{HealthCredential, IdCredential, ProofOfEmployment, UniversityDegree}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -28,10 +28,10 @@ class CredentialViewsService(authenticator: Authenticator)(implicit ec: Executio
       methodName: String,
       request: Request
   )(
-      block: Issuer.Id => FutureEither[Nothing, Response]
+      block: Institution.Id => FutureEither[Nothing, Response]
   ): Future[Response] = {
     authenticator.authenticated(methodName, request) { participantId =>
-      block(Issuer.Id(participantId.uuid)).value
+      block(Institution.Id(participantId.uuid)).value
         .map {
           case Right(x) => x
           case Left(e) => throw new RuntimeException(s"FAILED: $e")

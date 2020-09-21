@@ -201,7 +201,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
             .token
         val mockConnectionId = ConnectionId(UUID.randomUUID())
         ContactsDAO
-          .setConnectionAsAccepted(TokenString(connectionToken), mockConnectionId)
+          .setConnectionAsAccepted(Institution.Id(verifierId.uuid), TokenString(connectionToken), mockConnectionId)
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -234,7 +234,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
           serviceStub.generateConnectionTokenFor(cstore_api.GenerateConnectionTokenForRequest(individualId)).token
         val mockConnectionId = ConnectionId(UUID.randomUUID())
         ContactsDAO
-          .setConnectionAsAccepted(TokenString(connectionToken), mockConnectionId)
+          .setConnectionAsAccepted(Institution.Id(verifierId.uuid), TokenString(connectionToken), mockConnectionId)
           .transact(database)
           .unsafeToFuture()
           .futureValue

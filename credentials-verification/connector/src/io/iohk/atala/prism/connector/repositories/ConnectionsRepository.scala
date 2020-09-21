@@ -5,14 +5,13 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.crypto.ECPublicKey
-import io.iohk.atala.prism.cmanager.models
-import io.iohk.atala.prism.cmanager.repositories.daos.IssuerSubjectsDAO
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
+import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -96,15 +95,11 @@ object ConnectionsRepository {
 
         // hack to add the connectionId to the student (if any), TODO: this should be moved to another layer
         _ <- EitherT.right[ConnectorError] {
-          IssuerSubjectsDAO.update(
-            models.Issuer.Id(initiator.id.uuid),
-            IssuerSubjectsDAO.UpdateSubjectRequest.ConnectionAccepted(token, connectionId)
+          ContactsDAO.setConnectionAsAccepted(
+            Institution.Id(initiator.id.uuid),
+            token,
+            connectionId
           )
-        }
-
-        // corresponding hack to add connectionId to the individual in cstore, TODO: ditto
-        _ <- EitherT.right[ConnectorError] {
-          ContactsDAO.setConnectionAsAccepted(token, connectionId)
         }
 
         _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))

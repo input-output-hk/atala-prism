@@ -8,8 +8,9 @@ import io.iohk.atala.prism.cmanager.models.requests.{
   CreateUniversityCredential,
   PublishCredential
 }
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
+import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student, UniversityCredential}
 import io.iohk.atala.prism.cmanager.repositories.daos.CredentialsDAO
+import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -27,7 +28,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   }
 
   def getUniversityCredentialsBy(
-      issuedBy: Issuer.Id,
+      issuedBy: Institution.Id,
       limit: Int,
       lastSeenCredential: Option[UniversityCredential.Id]
   ): FutureEither[Nothing, List[UniversityCredential]] = {
@@ -40,7 +41,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   }
 
   def getUniversityCredentialsBy(
-      issuedBy: Issuer.Id,
+      issuedBy: Institution.Id,
       studentId: Student.Id
   ): FutureEither[Nothing, List[UniversityCredential]] = {
     CredentialsDAO
@@ -62,7 +63,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   }
 
   def getBy(
-      issuedBy: Issuer.Id,
+      issuedBy: Institution.Id,
       limit: Int,
       lastSeenCredential: Option[GenericCredential.Id]
   ): FutureEither[Nothing, List[GenericCredential]] = {
@@ -74,7 +75,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def getBy(issuedBy: Issuer.Id, subjectId: Subject.Id): FutureEither[Nothing, List[GenericCredential]] = {
+  def getBy(issuedBy: Institution.Id, subjectId: Contact.Id): FutureEither[Nothing, List[GenericCredential]] = {
     CredentialsDAO
       .getBy(issuedBy, subjectId)
       .transact(xa)
@@ -83,7 +84,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def storePublicationData(issuerId: Issuer.Id, credentialData: PublishCredential): FutureEither[Nothing, Int] = {
+  def storePublicationData(issuerId: Institution.Id, credentialData: PublishCredential): FutureEither[Nothing, Int] = {
     CredentialsDAO
       .storePublicationData(issuerId, credentialData)
       .transact(xa)

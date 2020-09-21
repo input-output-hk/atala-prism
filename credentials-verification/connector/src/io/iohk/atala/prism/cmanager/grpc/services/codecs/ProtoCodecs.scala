@@ -4,7 +4,8 @@ import java.time.LocalDate
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.cmanager.models.Student.ConnectionStatus
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student, Subject, UniversityCredential}
+import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student, UniversityCredential}
+import io.iohk.atala.prism.console.models.Contact
 import io.iohk.prism.protos.common_models.Date
 import io.iohk.prism.protos.{cmanager_models, common_models}
 import io.scalaland.chimney.Transformer
@@ -61,12 +62,19 @@ object ProtoCodecs {
       .withGroupName("")
   }
 
-  def subjectToProto(subject: Subject): cmanager_models.IssuerSubject = {
+  def subjectToProto(subject: Contact): cmanager_models.IssuerSubject = {
+    val connectionStatus = subject.connectionStatus match {
+      case Contact.ConnectionStatus.InvitationMissing => Student.ConnectionStatus.InvitationMissing
+      case Contact.ConnectionStatus.ConnectionMissing => Student.ConnectionStatus.ConnectionMissing
+      case Contact.ConnectionStatus.ConnectionAccepted => Student.ConnectionStatus.ConnectionAccepted
+      case Contact.ConnectionStatus.ConnectionRevoked => Student.ConnectionStatus.ConnectionRevoked
+    }
+
     cmanager_models
       .IssuerSubject()
       .withId(subject.id.value.toString)
       .withExternalId(subject.externalId.value)
-      .withConnectionStatus(studentConnectionStatus2Proto.transform(subject.connectionStatus))
+      .withConnectionStatus(studentConnectionStatus2Proto.transform(connectionStatus))
       .withConnectionToken(subject.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(subject.connectionId.map(_.toString).getOrElse(""))
       // As part of ATA-2989, we decided to return an empty string to simplify the changes. This was agreed with the

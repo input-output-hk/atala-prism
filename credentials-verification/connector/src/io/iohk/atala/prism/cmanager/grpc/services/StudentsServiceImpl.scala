@@ -5,8 +5,9 @@ import java.util.UUID
 import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
-import io.iohk.atala.prism.cmanager.models.{Issuer, IssuerGroup, Student}
+import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
+import io.iohk.atala.prism.console.models.Institution
 import io.iohk.prism.protos.cmanager_api
 import io.scalaland.chimney.dsl._
 
@@ -22,7 +23,7 @@ class StudentsServiceImpl(
 ) extends cmanager_api.StudentsServiceGrpc.StudentsService {
 
   override def createStudent(request: cmanager_api.CreateStudentRequest): Future[cmanager_api.CreateStudentResponse] = {
-    def f(issuerId: Issuer.Id) = {
+    def f(issuerId: Institution.Id) = {
       Future {
         val maybeGroupName =
           if (request.groupName.trim.isEmpty) None else Some(IssuerGroup.Name(request.groupName.trim))
@@ -46,13 +47,13 @@ class StudentsServiceImpl(
     }
 
     authenticator.authenticated("createStudent", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
 
   }
 
   override def getStudents(request: cmanager_api.GetStudentsRequest): Future[cmanager_api.GetStudentsResponse] = {
-    def f(issuerId: Issuer.Id) = {
+    def f(issuerId: Institution.Id) = {
       Future {
         val lastSeenStudent = Try(UUID.fromString(request.lastSeenStudentId)).map(Student.Id.apply).toOption
         val groupName = Option(request.groupName.trim).filter(_.nonEmpty).map(IssuerGroup.Name.apply)
@@ -71,13 +72,13 @@ class StudentsServiceImpl(
     }
 
     authenticator.authenticated("getStudents", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
 
   }
 
   override def getStudent(request: cmanager_api.GetStudentRequest): Future[cmanager_api.GetStudentResponse] = {
-    def f(issuerId: Issuer.Id) = {
+    def f(issuerId: Institution.Id) = {
       Future {
         val studentId = Student.Id(UUID.fromString(request.studentId))
         studentsRepository
@@ -94,7 +95,7 @@ class StudentsServiceImpl(
     }
 
     authenticator.authenticated("getStudent", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
 
   }
@@ -102,7 +103,7 @@ class StudentsServiceImpl(
   override def getStudentCredentials(
       request: cmanager_api.GetStudentCredentialsRequest
   ): Future[cmanager_api.GetStudentCredentialsResponse] = {
-    def f(issuerId: Issuer.Id) = {
+    def f(issuerId: Institution.Id) = {
       Future {
         val studentId = Student.Id(UUID.fromString(request.studentId))
         credentialsRepository
@@ -119,14 +120,14 @@ class StudentsServiceImpl(
     }
 
     authenticator.authenticated("getStudentCredentials", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 
   override def generateConnectionTokenForStudent(
       request: cmanager_api.GenerateConnectionTokenForStudentRequest
   ): Future[cmanager_api.GenerateConnectionTokenForStudentResponse] = {
-    def f(issuerId: Issuer.Id) = {
+    def f(issuerId: Institution.Id) = {
       Future {
         val studentId = Student.Id.apply(UUID.fromString(request.studentId))
 
@@ -142,7 +143,7 @@ class StudentsServiceImpl(
     }
 
     authenticator.authenticated("generateConnectionTokenForStudent", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid))
     }
   }
 }
