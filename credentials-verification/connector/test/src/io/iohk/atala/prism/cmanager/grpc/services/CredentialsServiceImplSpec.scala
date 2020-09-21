@@ -7,11 +7,13 @@ import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, IssuerGroup}
+import io.iohk.atala.prism.cmanager.models.GenericCredential
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation
-import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
+import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.console.models.IssuerGroup
+import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
@@ -29,7 +31,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 
   private lazy val credentialsRepository = new CredentialsRepository(database)
-  private lazy val subjectsRepository = new IssuerSubjectsRepository(database)
+  private lazy val contactsRepository = new ContactsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -44,7 +46,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
     Seq(
       cmanager_api.CredentialsServiceGrpc
         .bindService(
-          new CredentialsServiceImpl(credentialsRepository, subjectsRepository, authenticator, nodeMock),
+          new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, nodeMock),
           executionContext
         )
     )

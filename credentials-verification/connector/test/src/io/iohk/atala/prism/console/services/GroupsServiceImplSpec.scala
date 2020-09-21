@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.cmanager.grpc.services
+package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
@@ -6,9 +6,8 @@ import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
-import io.iohk.atala.prism.cmanager.repositories.IssuerGroupsRepository
-import io.iohk.atala.prism.console.models.Institution
+import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
+import io.iohk.atala.prism.console.repositories.GroupsRepository
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.cmanager_api
@@ -23,7 +22,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
   private val usingApiAs = usingApiAsConstructor(new cmanager_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
-  private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
+  private lazy val issuerGroupsRepository = new GroupsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]

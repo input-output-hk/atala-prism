@@ -7,6 +7,7 @@ import io.circe.Json
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.cmanager.models
 import io.iohk.atala.prism.cmanager.models._
+import io.iohk.atala.prism.console.models.IssuerGroup
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.ParticipantId
 

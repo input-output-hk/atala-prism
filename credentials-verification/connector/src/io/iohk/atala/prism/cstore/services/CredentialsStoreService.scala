@@ -87,7 +87,7 @@ class CredentialsStoreService(
           data = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
         )
         holdersRepository
-          .create(contactData)
+          .create(contactData, None)
           .wrapExceptions
           .successMap(toHolderProto)
           .map(cstore_api.CreateHolderResponse().withHolder)
@@ -107,7 +107,7 @@ class CredentialsStoreService(
         Some(request.lastSeenHolderId).filterNot(_.isEmpty).map(UUID.fromString _ andThen Contact.Id.apply)
 
       holdersRepository
-        .list(createdBy, lastSeen, request.limit)
+        .getBy(createdBy, lastSeen, None, request.limit)
         .wrapExceptions
         .successMap { holders =>
           cstore_api.GetHoldersResponse(

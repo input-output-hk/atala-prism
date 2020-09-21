@@ -6,10 +6,10 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.crypto.ECPublicKey
-import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
+import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos._
-import io.iohk.atala.prism.console.models.{Contact, Institution}
+import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import io.iohk.atala.prism.models.ParticipantId

@@ -3,18 +3,8 @@ package io.iohk.atala.prism.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
-import io.iohk.atala.prism.cmanager.grpc.services.{
-  CredentialsServiceImpl,
-  GroupsServiceImpl,
-  StudentsServiceImpl,
-  SubjectsServiceImpl
-}
-import io.iohk.atala.prism.cmanager.repositories.{
-  CredentialsRepository,
-  IssuerGroupsRepository,
-  IssuerSubjectsRepository,
-  StudentsRepository
-}
+import io.iohk.atala.prism.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl, SubjectsServiceImpl}
+import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
 import io.iohk.atala.prism.cstore.repositories.IndividualsRepository
 import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
@@ -24,7 +14,8 @@ import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.atala.prism.console.repositories.{ContactsRepository, StoredCredentialsRepository}
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository, StoredCredentialsRepository}
+import io.iohk.atala.prism.console.services.GroupsServiceImpl
 import io.iohk.atala.prism.cstore.services.CredentialsStoreService
 import io.iohk.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,
@@ -123,11 +114,11 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     // cmanager
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val studentsRepository = new StudentsRepository(xa)(executionContext)
-    val subjectsRepository = new IssuerSubjectsRepository(xa)(executionContext)
-    val issuerGroupsRepository = new IssuerGroupsRepository(xa)(executionContext)
+    val contactsRepository = new ContactsRepository(xa)(executionContext)
+    val issuerGroupsRepository = new GroupsRepository(xa)(executionContext)
     val credentialsService =
-      new CredentialsServiceImpl(credentialsRepository, subjectsRepository, authenticator, node)(executionContext)
-    val subjectsService = new SubjectsServiceImpl(subjectsRepository, credentialsRepository, authenticator)(
+      new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, node)(executionContext)
+    val subjectsService = new SubjectsServiceImpl(contactsRepository, credentialsRepository, authenticator)(
       executionContext
     )
     val studentsService =
@@ -136,9 +127,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
 
     val storeIndividualsService = new IndividualsRepository(xa)(executionContext)
     val storedCredentialsService = new StoredCredentialsRepository(xa)(executionContext)
-    val holdersRepository = new ContactsRepository(xa)(executionContext)
     val credentialsStoreService =
-      new CredentialsStoreService(storeIndividualsService, storedCredentialsService, holdersRepository, authenticator)(
+      new CredentialsStoreService(storeIndividualsService, storedCredentialsService, contactsRepository, authenticator)(
         executionContext
       )
     val credentialViewsService = new CredentialViewsService(authenticator)(executionContext)

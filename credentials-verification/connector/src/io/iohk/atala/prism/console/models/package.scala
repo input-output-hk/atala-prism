@@ -53,4 +53,11 @@ package object models {
       encodedSignedCredential: String,
       storedAt: Instant
   )
+
+  case class IssuerGroup(id: IssuerGroup.Id, name: IssuerGroup.Name, issuerId: Institution.Id)
+
+  object IssuerGroup {
+    case class Id(value: UUID) extends AnyVal
+    case class Name(value: String) extends AnyVal
+  }
 }

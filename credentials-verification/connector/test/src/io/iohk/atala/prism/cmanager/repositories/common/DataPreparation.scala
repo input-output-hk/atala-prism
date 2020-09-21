@@ -13,8 +13,8 @@ import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
 import io.iohk.atala.prism.cmanager.models.requests.{CreateGenericCredential, CreateStudent, CreateUniversityCredential}
 import io.iohk.atala.prism.cmanager.models._
 import io.iohk.atala.prism.cmanager.repositories.{daos => cmanagerDaos}
-import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
-import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
+import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, IssuerGroupsDAO}
 import io.iohk.atala.prism.models.ParticipantId
 
 object DataPreparation {
@@ -64,7 +64,7 @@ object DataPreparation {
 
     groupName match {
       case None =>
-        IssuerSubjectsDAO.createStudent(request).transact(database).unsafeRunSync()
+        StudentsDAO.createStudent(request).transact(database).unsafeRunSync()
       case Some(name) =>
         val group = IssuerGroupsDAO
           .find(issuerId, name)
@@ -73,7 +73,7 @@ object DataPreparation {
           .getOrElse(throw new RuntimeException("Missing group"))
 
         val query = for {
-          student <- IssuerSubjectsDAO.createStudent(request)
+          student <- StudentsDAO.createStudent(request)
           _ <- IssuerGroupsDAO.addContact(group.id, Contact.Id(student.id.value))
         } yield student
 

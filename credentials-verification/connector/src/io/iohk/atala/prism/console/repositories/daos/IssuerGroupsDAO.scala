@@ -1,11 +1,10 @@
-package io.iohk.atala.prism.cmanager.repositories.daos
+package io.iohk.atala.prism.console.repositories.daos
 
 import java.util.UUID
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
-import io.iohk.atala.prism.console.models.{Contact, Institution}
+import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 
 object IssuerGroupsDAO {
 

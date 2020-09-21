@@ -5,9 +5,8 @@ import java.util.UUID
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toSqlInterpolator
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
-import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
 
 object ContactsDAO {

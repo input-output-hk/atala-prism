@@ -9,10 +9,10 @@ import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs.{genericCredentialToProto, subjectToProto}
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories._
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
-import io.iohk.atala.prism.console.models.{Contact, Institution}
+import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
+import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.prism.protos.cmanager_api
@@ -31,7 +31,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
   private val usingApiAs = usingApiAsConstructor(new cmanager_api.SubjectsServiceGrpc.SubjectsServiceBlockingStub(_, _))
 
   private lazy val participantsRepository = new ParticipantsRepository(database)
-  private lazy val subjectsRepository = new IssuerSubjectsRepository(database)
+  private lazy val contactsRepository = new ContactsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -46,7 +46,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     Seq(
       cmanager_api.SubjectsServiceGrpc
         .bindService(
-          new SubjectsServiceImpl(subjectsRepository, credentialsRepository, authenticator),
+          new SubjectsServiceImpl(contactsRepository, credentialsRepository, authenticator),
           executionContext
         )
     )
@@ -79,7 +79,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         response.externalId must be(request.externalId)
 
         // the new subject needs to exist
-        val result = subjectsRepository.getBy(issuerId, 10, None, Some(group.name)).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, Some(group.name), 10).value.futureValue.right.value
         result.size must be(1)
         val storedSubject = result.headOption.value
         subjectToProto(storedSubject).copy(jsonData = "") must be(response.copy(jsonData = ""))
@@ -113,7 +113,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         response.externalId must be(request.externalId)
 
         // the new subject needs to exist
-        val result = subjectsRepository.find(issuerId, subjectId).value.futureValue.right.value
+        val result = contactsRepository.find(issuerId, subjectId).value.futureValue.right.value
         val storedSubject = result.value
         subjectToProto(storedSubject).copy(jsonData = "") must be(response.copy(jsonData = ""))
         storedSubject.data must be(json)
@@ -145,7 +145,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         )
 
         // the subject must not be added
-        val result = subjectsRepository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.right.value
         result must be(empty)
       }
     }
@@ -175,7 +175,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         )
 
         // the new subject should not exist
-        val result = subjectsRepository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.right.value
         result must be(empty)
       }
     }
@@ -217,7 +217,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         )
 
         // the subject needs to exist as originally inserted
-        val result = subjectsRepository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.right.value
         result.size must be(1)
 
         val storedSubject = result.head
@@ -445,7 +445,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
         val token = TokenString(response.token)
 
         // the new subject needs to exist
-        val result = subjectsRepository.find(issuerId, subject.id).value.futureValue.right.value
+        val result = contactsRepository.find(issuerId, subject.id).value.futureValue.right.value
         val storedSubject = result.value
         storedSubject.id must be(subject.id)
         storedSubject.data must be(subject.data)

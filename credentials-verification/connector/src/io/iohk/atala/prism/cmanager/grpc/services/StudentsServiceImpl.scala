@@ -5,9 +5,9 @@ import java.util.UUID
 import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
-import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
+import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
-import io.iohk.atala.prism.console.models.Institution
+import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
 import io.iohk.prism.protos.cmanager_api
 import io.scalaland.chimney.dsl._
 

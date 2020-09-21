@@ -5,10 +5,10 @@ import java.util.UUID
 
 import doobie.implicits._
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
-import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
-import io.iohk.atala.prism.console.models.{Contact, Institution}
+import io.iohk.atala.prism.cmanager.models.Student
+import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 
-object IssuerSubjectsDAO {
+object StudentsDAO {
 
   def createStudent(data: CreateStudent): doobie.ConnectionIO[Student] = {
     val studentId = Student.Id(UUID.randomUUID())

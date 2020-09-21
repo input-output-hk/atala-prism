@@ -5,9 +5,9 @@ import java.util.UUID
 import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
-import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
-import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
+import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
+import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.prism.protos.cmanager_api
 import io.iohk.prism.protos.cmanager_api._
 import io.scalaland.chimney.dsl._
@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class SubjectsServiceImpl(
-    subjectsRepository: IssuerSubjectsRepository,
+    contactsRepository: ContactsRepository,
     credentialsRepository: CredentialsRepository,
     authenticator: Authenticator
 )(implicit
@@ -47,7 +47,7 @@ class SubjectsServiceImpl(
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "json" -> json, "model" -> model)
 
-      subjectsRepository
+      contactsRepository
         .create(model, maybeGroupdName)
         .map(subjectToProto)
         .map(cmanager_api.CreateSubjectResponse().withSubject)
@@ -73,8 +73,8 @@ class SubjectsServiceImpl(
           "groupName" -> groupName
         )
 
-      subjectsRepository
-        .getBy(issuerId, request.limit, lastSeenSubject, groupName)
+      contactsRepository
+        .getBy(issuerId, lastSeenSubject, groupName, request.limit)
         .map { list =>
           cmanager_api.GetSubjectsResponse(list.map(subjectToProto))
         }
@@ -94,7 +94,7 @@ class SubjectsServiceImpl(
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "issuerId" -> issuerId, "contactId" -> contactId)
 
-      subjectsRepository
+      contactsRepository
         .find(issuerId, contactId)
         .map { maybe =>
           cmanager_api.GetSubjectResponse(maybe.map(subjectToProto))
@@ -138,7 +138,7 @@ class SubjectsServiceImpl(
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "issuerId" -> issuerId, "contactId" -> contactId)
 
-      subjectsRepository
+      contactsRepository
         .generateToken(issuerId, contactId)
         .map(token => cmanager_api.GenerateConnectionTokenForSubjectResponse(token.token))
         .wrapExceptions

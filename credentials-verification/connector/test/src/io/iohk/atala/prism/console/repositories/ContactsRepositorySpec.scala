@@ -1,17 +1,16 @@
-package io.iohk.atala.prism.cmanager.repositories
+package io.iohk.atala.prism.console.repositories
 
 import java.time.LocalDate
 
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
-import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
-class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
-  lazy val repository = new IssuerSubjectsRepository(database)
+class ContactsRepositorySpec extends CManagerRepositorySpec {
+  lazy val repository = new ContactsRepository(database)
 
   "create" should {
     "create a new subject and assign it to an specified group" in {
@@ -34,7 +33,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       subject.connectionId must be(empty)
 
       // we check that the subject was added to the intended group
-      val subjectsInGroupList = repository.getBy(issuer, 10, None, Some(group.name)).value.futureValue.right.value
+      val subjectsInGroupList = repository.getBy(issuer, None, Some(group.name), 10).value.futureValue.right.value
       subjectsInGroupList.size must be(1)
       subjectsInGroupList.headOption.value must be(subject)
     }
@@ -78,7 +77,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       )
 
       // we check that the subject was not created
-      val subjectsList = repository.getBy(issuerId, 1, None, None).value.futureValue.right.value
+      val subjectsList = repository.getBy(issuerId, None, None, 1).value.futureValue.right.value
       subjectsList must be(empty)
     }
 
@@ -98,7 +97,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
         repository.create(request, Some(group.name)).value.futureValue
       )
       // no subject should be created
-      val createdSubjects = repository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+      val createdSubjects = repository.getBy(issuerId, None, None, 10).value.futureValue.right.value
       createdSubjects must be(empty)
     }
 
@@ -129,7 +128,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
         repository.create(secondRequest, Some(group.name)).value.futureValue
       )
 
-      val subjectsStored = repository.getBy(issuerId, 10, None, None).value.futureValue.right.value
+      val subjectsStored = repository.getBy(issuerId, None, None, 10).value.futureValue.right.value
 
       // only one subject must be inserted correctly
       subjectsStored.size must be(1)
@@ -200,7 +199,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       createSubject(issuerId, "Charles", groupNameC)
       createSubject(issuerId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(issuerId, 2, None, None).value.futureValue.right.value
+      val result = repository.getBy(issuerId, None, None, 2).value.futureValue.right.value
       result must be(List(subjectA, subjectB))
     }
 
@@ -214,7 +213,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       createSubject(issuerId, "Charles", groupNameC)
       val subjectA2 = createSubject(issuerId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(issuerId, 2, None, Some(groupNameA)).value.futureValue.right.value
+      val result = repository.getBy(issuerId, None, Some(groupNameA), 2).value.futureValue.right.value
       result must be(List(subjectA, subjectA2))
     }
 
@@ -228,7 +227,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       val subjectC = createSubject(issuerId, "Charles", groupNameC)
       createSubject(issuerId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(issuerId, 1, Some(subjectB.id), None).value.futureValue.right.value
+      val result = repository.getBy(issuerId, Some(subjectB.id), None, 1).value.futureValue.right.value
       result must be(List(subjectC))
     }
 
@@ -243,7 +242,7 @@ class IssuerSubjectsRepositorySpec extends CManagerRepositorySpec {
       val subjectA2 = createSubject(issuerId, "Alice 2", groupNameA)
 
       val result = repository
-        .getBy(issuerId, 1, Some(subjectA.id), Some(groupNameA))
+        .getBy(issuerId, Some(subjectA.id), Some(groupNameA), 1)
         .value
         .futureValue
         .right

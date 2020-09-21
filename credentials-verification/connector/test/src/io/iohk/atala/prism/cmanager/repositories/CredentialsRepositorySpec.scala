@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, IssuerGroup}
+import io.iohk.atala.prism.cmanager.models.GenericCredential
 import io.iohk.atala.prism.cmanager.models.requests.{
   CreateGenericCredential,
   CreateUniversityCredential,
@@ -15,14 +15,12 @@ import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import io.circe.syntax._
-import io.iohk.atala.prism.console.models.Institution
+import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
 import io.iohk.atala.prism.crypto.SHA256Digest
 
 class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
   lazy val credentialsRepository = new CredentialsRepository(database)
-  lazy val studentsRepository = new StudentsRepository(database)
-  lazy val subjectsRepository = new IssuerSubjectsRepository(database)
 
   "createUniversityCredential" should {
     "create a new credential" in {

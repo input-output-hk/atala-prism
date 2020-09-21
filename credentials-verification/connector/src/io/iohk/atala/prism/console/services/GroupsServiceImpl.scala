@@ -1,14 +1,13 @@
-package io.iohk.atala.prism.cmanager.grpc.services
+package io.iohk.atala.prism.console.services
 
 import io.iohk.atala.prism.connector.Authenticator
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
-import io.iohk.atala.prism.cmanager.repositories.IssuerGroupsRepository
-import io.iohk.atala.prism.console.models.Institution
+import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
+import io.iohk.atala.prism.console.repositories.GroupsRepository
 import io.iohk.prism.protos.{cmanager_api, cmanager_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GroupsServiceImpl(issuerGroupsRepository: IssuerGroupsRepository, authenticator: Authenticator)(implicit
+class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator: Authenticator)(implicit
     ec: ExecutionContext
 ) extends cmanager_api.GroupsServiceGrpc.GroupsService {
 

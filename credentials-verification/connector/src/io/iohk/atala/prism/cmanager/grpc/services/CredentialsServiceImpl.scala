@@ -9,9 +9,10 @@ import io.iohk.atala.prism.cmanager.models.requests.{
   PublishCredential
 }
 import io.iohk.atala.prism.cmanager.models._
-import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, IssuerSubjectsRepository}
+import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
 import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.console.models.{Contact, Institution}
+import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
@@ -26,7 +27,7 @@ import scala.util.Try
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
-    subjectsRepository: IssuerSubjectsRepository,
+    contactsRepository: ContactsRepository,
     authenticator: Authenticator,
     nodeService: NodeServiceGrpc.NodeService
 )(implicit
@@ -76,7 +77,7 @@ class CredentialsServiceImpl(
         .filter(_.nonEmpty)
         .map(Contact.ExternalId.apply) match {
         case Some(externalId) =>
-          subjectsRepository
+          contactsRepository
             .find(Institution.Id(issuerId), externalId)
             .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exists")))
             .map(_.id)

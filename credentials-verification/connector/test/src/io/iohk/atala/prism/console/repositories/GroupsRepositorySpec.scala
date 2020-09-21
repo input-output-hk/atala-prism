@@ -1,12 +1,12 @@
-package io.iohk.atala.prism.cmanager.repositories
+package io.iohk.atala.prism.console.repositories
 
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
+import io.iohk.atala.prism.console.models.IssuerGroup
 import org.scalatest.EitherValues._
 
-class IssuerGroupsRepositorySpec extends CManagerRepositorySpec {
-  lazy val repository = new IssuerGroupsRepository(database)
+class GroupsRepositorySpec extends CManagerRepositorySpec {
+  lazy val repository = new GroupsRepository(database)
 
   "create" should {
     "allow creating different groups" in {

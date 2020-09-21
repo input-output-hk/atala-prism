@@ -4,12 +4,10 @@ import java.time.LocalDate
 
 import io.circe.Json
 import doobie.implicits._
-import io.iohk.atala.prism.cmanager.models.IssuerGroup
 import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation.{createIssuer, createIssuerGroup}
-import io.iohk.atala.prism.cmanager.repositories.daos.IssuerGroupsDAO
-import io.iohk.atala.prism.console.models.{Contact, CreateContact}
-import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, IssuerGroup}
+import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, IssuerGroupsDAO}
 
 class IntegrityTriggersSpec extends CManagerRepositorySpec {
 

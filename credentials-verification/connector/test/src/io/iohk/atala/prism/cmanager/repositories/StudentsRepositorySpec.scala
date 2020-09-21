@@ -3,10 +3,10 @@ package io.iohk.atala.prism.cmanager.repositories
 import java.time.LocalDate
 
 import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
-import io.iohk.atala.prism.cmanager.models.{IssuerGroup, Student}
+import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
-import io.iohk.atala.prism.console.models.Institution
+import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
