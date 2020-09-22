@@ -463,7 +463,7 @@
   },
   "studentCreation": {
     "title": "Student Creation",
-    "success": "Successfully saved the Studentss",
+    "success": "Successfully saved the Students",
     "save": "Save",
     "newStudent": "Add a new Student",
     "cantSubmit": "These students can't be saved",
