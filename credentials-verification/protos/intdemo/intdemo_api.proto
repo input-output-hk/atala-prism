@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "intdemo_models.proto";
 
-package io.iohk.prism.intdemo.protos;
+package io.iohk.atala.prism.intdemo.protos;
 
 // This service simulates an application run by a government body who use atala's connector.
 service IDService {

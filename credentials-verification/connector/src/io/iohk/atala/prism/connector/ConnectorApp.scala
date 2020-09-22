@@ -17,7 +17,7 @@ import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesServi
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository, StoredCredentialsRepository}
 import io.iohk.atala.prism.console.services.GroupsServiceImpl
 import io.iohk.atala.prism.cstore.services.CredentialsStoreService
-import io.iohk.prism.intdemo.protos.intdemo_api.{
+import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,
   EmploymentServiceGrpc,
   IDServiceGrpc,
