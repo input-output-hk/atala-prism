@@ -1,9 +1,11 @@
 package io.iohk.cvp.neo.ui.onboarding.phraseverification
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -37,6 +39,14 @@ class PhraseVerificationFragment : Fragment() {
         setObservers()
         configureInputsViews()
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // show soft keyboard
+        requireContext()
+                .getSystemService(InputMethodManager::class.java)
+                .showSoftInput(binding.editText1, InputMethodManager.SHOW_FORCED)
     }
 
     private fun setObservers() {
