@@ -5,6 +5,7 @@ import android.app.Application;
 import javax.inject.Singleton;
 
 import dagger.Component;
+import io.iohk.cvp.neo.data.AccountRecoveryRepository;
 import io.iohk.cvp.neo.data.SessionRepository;
 import io.iohk.cvp.neo.di.modules.ApplicationModule;
 
@@ -15,4 +16,6 @@ public interface ApplicationComponent {
     void inject(Application app);
 
     SessionRepository sessionRepository();
+
+    AccountRecoveryRepository accountRecoveryRepository();
 }

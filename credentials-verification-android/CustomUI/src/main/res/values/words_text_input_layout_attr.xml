@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="WordsTextInputLayout">
+        <attr name="maxWords" format="integer" />
+        <attr name="maxLengthPerWord" format="integer" />
+        <attr name="chipsBackgroundColor" format="color" />
+        <attr name="chipsTextColor" format="color" />
+        <attr name="chipsCloseIconTint" format="color" />
+        <attr name="chipsCloseIcon" format="reference" />
+    </declare-styleable>
+</resources>

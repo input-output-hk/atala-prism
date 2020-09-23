@@ -8,32 +8,26 @@ import android.os.Bundle;
 import android.provider.Settings;
 
 
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.braintreepayments.api.dropin.DropInRequest;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.views.activities.AccountCreatedActivity;
 import io.iohk.cvp.views.activities.MainActivity;
-import io.iohk.cvp.views.activities.RestoreAccountActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
-import io.iohk.cvp.views.activities.RestoreAccountSuccessActivity;
 import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
+
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
 import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
 
@@ -123,7 +117,7 @@ public class Navigator {
     }
 
     public void showFragmentOnTop(FragmentManager supportFragmentManager, CvpFragment cvpFragment) {
-       showFragment(supportFragmentManager, cvpFragment, MAIN_FRAGMENT_TAG,null);
+        showFragment(supportFragmentManager, cvpFragment, MAIN_FRAGMENT_TAG, null);
     }
 
     public void showFragmentOnTopOfMenu(FragmentManager supportFragmentManager,
@@ -135,7 +129,7 @@ public class Navigator {
     }
 
     public void showFragmentOnTopOfMenuNoBackstack(FragmentManager supportFragmentManager,
-                                        CvpFragment cvpFragment) {
+                                                   CvpFragment cvpFragment) {
         FragmentTransaction ft = supportFragmentManager.beginTransaction();
         ft.replace(R.id.fragment_layout_over_menu, cvpFragment, MAIN_FRAGMENT_TAG);
         ft.commit();
@@ -156,10 +150,5 @@ public class Navigator {
         Intent myIntent = new Intent(ctx, UnlockActivity.class);
         myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         ctx.startActivity(myIntent);
-    }
-
-    public void showRecoveryAccountSuccess(@Nullable FragmentActivity activity) {
-        ArrayList<Integer> flags= new ArrayList<>(Arrays.asList(Intent.FLAG_ACTIVITY_CLEAR_TASK, Intent.FLAG_ACTIVITY_NEW_TASK));
-        startNewActivity(activity, RestoreAccountSuccessActivity.class, flags);
     }
 }

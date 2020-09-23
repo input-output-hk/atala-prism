@@ -100,4 +100,11 @@
         <item name="android:background">@drawable/rounded_top_corners_white</item>
     </style>
 
+    <style name="WordsTextInputLayoutStyle">
+        <item name="chipsBackgroundColor">@color/chip_bg_color</item>
+        <item name="chipsTextColor">@color/atala_red_text_color</item>
+        <item name="chipsCloseIconTint">@color/atala_red_text_color</item>
+        <item name="chipsCloseIcon">@drawable/chip_close_icon</item>
+    </style>
+
 </resources>

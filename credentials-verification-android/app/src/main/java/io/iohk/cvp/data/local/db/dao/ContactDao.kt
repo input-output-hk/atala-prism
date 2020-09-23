@@ -8,6 +8,9 @@ interface ContactDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(contact: Contact): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(contacts: List<Contact?>)
+
     @Query("SELECT * FROM contact order by id asc")
     suspend fun getAll(): List<Contact>
 
@@ -15,7 +18,7 @@ interface ContactDao {
     suspend fun updateContact(contact: Contact?)
 
     @Query("SELECT * FROM contact where connection_id = :connectionId")
-    suspend fun getContactByConnectionId(connectionId : String): Contact?
+    suspend fun getContactByConnectionId(connectionId: String): Contact?
 
     @Query("DELETE FROM Contact")
     suspend fun removeAllData()

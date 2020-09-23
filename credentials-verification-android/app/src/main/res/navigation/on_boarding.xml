@@ -19,9 +19,7 @@
         android:name="io.iohk.cvp.neo.ui.onboarding.welcometutorial.WelcomeTutorialFragment"
         android:label="WelcomeTutorialFragment"
         tools:layout="@layout/neo_fragment_welcome_tutorial">
-        <action
-            android:id="@+id/action_welcomeTutorialFragment_to_restoreAccountActivity"
-            app:destination="@id/restoreAccountActivity" />
+
         <action
             android:id="@+id/action_welcomeTutorialFragment_to_termsAndConditionsFragment"
             app:destination="@id/termsAndConditionsFragment"
@@ -29,12 +27,15 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            android:id="@+id/action_welcomeTutorialFragment_to_restoreAccountFragment2"
+            app:destination="@id/restoreAccountFragment" />
     </fragment>
-    <activity
-        android:id="@+id/restoreAccountActivity"
-        android:name="io.iohk.cvp.views.activities.RestoreAccountActivity"
-        android:label="restore_account_activity"
-        tools:layout="@layout/restore_account_activity" />
+
     <fragment
         android:id="@+id/termsAndConditionsFragment"
         android:name="io.iohk.cvp.neo.ui.onboarding.termsandconditions.TermsAndConditionsFragment"
@@ -113,4 +114,28 @@
         android:name="io.iohk.cvp.views.activities.MainActivity"
         android:label="activity_main"
         tools:layout="@layout/activity_main" />
+    <fragment
+        tools:layout="@layout/neo_fragment_restore_account"
+        android:id="@+id/restoreAccountFragment"
+        android:name="io.iohk.cvp.neo.ui.onboarding.restoreaccount.RestoreAccountFragment"
+        android:label="RestoreAccountFragment">
+        <action
+            android:id="@+id/action_restoreAccountFragment_to_restoreAccountSuccessFragment"
+            app:destination="@id/restoreAccountSuccessFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:popUpTo="@id/on_board" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/neo_fragment_restore_account_success"
+        android:id="@+id/restoreAccountSuccessFragment"
+        android:name="io.iohk.cvp.neo.ui.onboarding.restoreaccountsuccess.RestoreAccountSuccessFragment"
+        android:label="RestoreAccountSuccessFragment">
+        <action
+            android:id="@+id/action_restoreAccountSuccessFragment_to_mainActivity"
+            app:destination="@id/mainActivity" />
+    </fragment>
 </navigation>

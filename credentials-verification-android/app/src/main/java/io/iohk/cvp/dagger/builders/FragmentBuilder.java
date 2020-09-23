@@ -11,7 +11,6 @@ import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.CredentialsViewModelModule;
 import io.iohk.cvp.dagger.modules.HomeFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
-import io.iohk.cvp.dagger.modules.RestoreAccountFragmentModule;
 import io.iohk.cvp.dagger.modules.SettingsFragmentModule;
 import io.iohk.cvp.views.activities.UnlockActivity;
 import io.iohk.cvp.views.fragments.AboutFragment;
@@ -32,7 +31,6 @@ import io.iohk.cvp.views.fragments.PaymentCongratsFragment;
 import io.iohk.cvp.views.fragments.PaymentFragment;
 import io.iohk.cvp.views.fragments.PaymentHistoryFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
-import io.iohk.cvp.views.fragments.RestoreAccountFragment;
 import io.iohk.cvp.views.fragments.SecurityChangePinFragment;
 import io.iohk.cvp.views.fragments.SecurityFragment;
 import io.iohk.cvp.views.fragments.SecuritySettingsStep1Fragment;
@@ -46,91 +44,87 @@ import io.iohk.cvp.views.utils.ForegroundBackgroundListener;
 @Module
 public abstract class FragmentBuilder {
 
-  @ContributesAndroidInjector
-  abstract LargeDescriptionDialogFragment contributeLargeDescription();
+    @ContributesAndroidInjector
+    abstract LargeDescriptionDialogFragment contributeLargeDescription();
 
-  @ContributesAndroidInjector(modules = HomeFragmentModule.class)
-  abstract MyCredentialsFragment contributeHomeFragment();
+    @ContributesAndroidInjector(modules = HomeFragmentModule.class)
+    abstract MyCredentialsFragment contributeHomeFragment();
 
-  @ContributesAndroidInjector(modules = ContactsFragmentModule.class)
-  abstract ContactsFragment contributeContactsFragment();
+    @ContributesAndroidInjector(modules = ContactsFragmentModule.class)
+    abstract ContactsFragment contributeContactsFragment();
 
-  @ContributesAndroidInjector
-  abstract ProfileFragment contributeProfileFragment();
+    @ContributesAndroidInjector
+    abstract ProfileFragment contributeProfileFragment();
 
-  @ContributesAndroidInjector(modules = ConnectionActivityModule.class)
-  abstract FirstConnectionFragment contributeConnectionFragment();
+    @ContributesAndroidInjector(modules = ConnectionActivityModule.class)
+    abstract FirstConnectionFragment contributeConnectionFragment();
 
-  @ContributesAndroidInjector(modules = ConnectionsListFragmentModule.class)
-  abstract ConnectionsListFragment contributeConnectionsListFragment();
+    @ContributesAndroidInjector(modules = ConnectionsListFragmentModule.class)
+    abstract ConnectionsListFragment contributeConnectionsListFragment();
 
-  @ContributesAndroidInjector(modules = CredentialsViewModelModule.class)
-  abstract HomeFragment contributeConnectionsFragment();
+    @ContributesAndroidInjector(modules = CredentialsViewModelModule.class)
+    abstract HomeFragment contributeConnectionsFragment();
 
-  @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
-  abstract CredentialDetailFragment contributeCredentialFragment();
+    @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
+    abstract CredentialDetailFragment contributeCredentialFragment();
 
-  @ContributesAndroidInjector(modules = ConnectionsListableModule.class)
-  abstract ShareCredentialDialogFragment contributeShareCredentialDialogFragment();
+    @ContributesAndroidInjector(modules = ConnectionsListableModule.class)
+    abstract ShareCredentialDialogFragment contributeShareCredentialDialogFragment();
 
-  @ContributesAndroidInjector(modules = SettingsFragmentModule.class)
-  abstract SettingsFragment contributeSettingsFragment();
+    @ContributesAndroidInjector(modules = SettingsFragmentModule.class)
+    abstract SettingsFragment contributeSettingsFragment();
 
-  @ContributesAndroidInjector(modules = PaymentsModule.class)
-  abstract WalletFragment contributeWalletFragment();
+    @ContributesAndroidInjector(modules = PaymentsModule.class)
+    abstract WalletFragment contributeWalletFragment();
 
-  @ContributesAndroidInjector
-  abstract PaymentFragment contributePaymenFragment();
+    @ContributesAndroidInjector
+    abstract PaymentFragment contributePaymenFragment();
 
-  @ContributesAndroidInjector
-  abstract PaymentCongratsFragment contributePaymenCongratsFragment();
+    @ContributesAndroidInjector
+    abstract PaymentCongratsFragment contributePaymenCongratsFragment();
 
-  @ContributesAndroidInjector(modules = PaymentsModule.class)
-  abstract PaymentHistoryFragment contributePaymentHistoryFragment();
+    @ContributesAndroidInjector(modules = PaymentsModule.class)
+    abstract PaymentHistoryFragment contributePaymentHistoryFragment();
 
-  @ContributesAndroidInjector(modules = AddConnectionsModule.class)
-  abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragment();
+    @ContributesAndroidInjector(modules = AddConnectionsModule.class)
+    abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragment();
 
-  @ContributesAndroidInjector(modules = ConnectionsListableModule.class)
-  abstract ShareProofRequestDialogFragment contributeShareProofRequestDialogFragment();
+    @ContributesAndroidInjector(modules = ConnectionsListableModule.class)
+    abstract ShareProofRequestDialogFragment contributeShareProofRequestDialogFragment();
 
-  @ContributesAndroidInjector
-  abstract BackendIpFragment contributeBackendIpFragment();
+    @ContributesAndroidInjector
+    abstract BackendIpFragment contributeBackendIpFragment();
 
-  @ContributesAndroidInjector
-  abstract AboutFragment contributeAboutFragment();
+    @ContributesAndroidInjector
+    abstract AboutFragment contributeAboutFragment();
 
-  @ContributesAndroidInjector
-  abstract SecurityFragment contributeSecurityFragment();
+    @ContributesAndroidInjector
+    abstract SecurityFragment contributeSecurityFragment();
 
-  @ContributesAndroidInjector
-  abstract SecurityChangePinFragment contributeSecurityChangePinFragment();
+    @ContributesAndroidInjector
+    abstract SecurityChangePinFragment contributeSecurityChangePinFragment();
 
-  @ContributesAndroidInjector
-  abstract SecuritySettingsStep1Fragment contributeSecuritySettingsStep1Fragment();
+    @ContributesAndroidInjector
+    abstract SecuritySettingsStep1Fragment contributeSecuritySettingsStep1Fragment();
 
-  @ContributesAndroidInjector
-  abstract SecuritySettingsStep2Fragment contributeSecuritySettingsStep2Fragment();
+    @ContributesAndroidInjector
+    abstract SecuritySettingsStep2Fragment contributeSecuritySettingsStep2Fragment();
 
-  @ContributesAndroidInjector
-  abstract UnlockActivity contributeUnlockFragment();
+    @ContributesAndroidInjector
+    abstract UnlockActivity contributeUnlockFragment();
 
-  @ContributesAndroidInjector
-  abstract ForegroundBackgroundListener foregroundBackgroundListener();
+    @ContributesAndroidInjector
+    abstract ForegroundBackgroundListener foregroundBackgroundListener();
 
-  @ContributesAndroidInjector
-  abstract DeleteAllConnectionsDialogFragment deleteAllConnectionsDialogFragment();
+    @ContributesAndroidInjector
+    abstract DeleteAllConnectionsDialogFragment deleteAllConnectionsDialogFragment();
 
-  @ContributesAndroidInjector
-  abstract AlreadyConnectedDialogFragment alreadyConnectedDialogFragment();
+    @ContributesAndroidInjector
+    abstract AlreadyConnectedDialogFragment alreadyConnectedDialogFragment();
 
-  @ContributesAndroidInjector
-  abstract AddQrCodeDialogFragment addQrCodeDialogFragment();
+    @ContributesAndroidInjector
+    abstract AddQrCodeDialogFragment addQrCodeDialogFragment();
 
-  @ContributesAndroidInjector(modules = RestoreAccountFragmentModule.class)
-  abstract RestoreAccountFragment restoreAccountFragment();
-
-  @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
-  abstract DeleteCredentialDialogFragment deleteCredentialDialogFragment();
-
+    @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
+    abstract DeleteCredentialDialogFragment deleteCredentialDialogFragment();
 }

@@ -60,7 +60,7 @@ class WelcomeTutorialFragment : Fragment() {
             findNavController().popBackStack()
         })
         viewModel.shouldGoToRestoreAccount.observe(viewLifecycleOwner, EventWrapperObserver {
-            findNavController().navigate(R.id.action_welcomeTutorialFragment_to_restoreAccountActivity)
+            findNavController().navigate(R.id.action_welcomeTutorialFragment_to_restoreAccountFragment2)
         })
     }
 

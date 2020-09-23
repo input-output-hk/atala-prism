@@ -1,12 +1,14 @@
 package io.iohk.cvp.core;
 
 import androidx.lifecycle.ProcessLifecycleOwner;
+
 import dagger.android.AndroidInjector;
 import dagger.android.support.DaggerApplication;
 import io.iohk.cvp.dagger.components.DaggerCvpComponent;
 import io.iohk.cvp.neo.di.ApplicationComponent;
 import io.iohk.cvp.neo.di.DaggerApplicationComponent;
 import io.iohk.cvp.neo.di.modules.ApplicationModule;
+import io.iohk.cvp.neo.di.modules.RoomDataBaseModule;
 import io.iohk.cvp.views.utils.ForegroundBackgroundListener;
 
 public class CvpApplication extends DaggerApplication {
@@ -43,6 +45,7 @@ public class CvpApplication extends DaggerApplication {
         applicationComponent = DaggerApplicationComponent
                 .builder()
                 .applicationModule(new ApplicationModule(this))
+                .roomDataBaseModule(new RoomDataBaseModule(this))
                 .build();
         applicationComponent.inject(this);
     }
