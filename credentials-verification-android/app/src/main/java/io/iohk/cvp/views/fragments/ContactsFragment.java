@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -117,7 +118,6 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     public void onResume() {
         super.onResume();
         connectionsListFragment.clearConnecitons();
-        showLoading();
         getViewModel().getAllMessages();
     }
 
@@ -131,31 +131,31 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     private void initObservers() {
 
         MutableLiveData<AsyncTaskResult<List<Contact>>> contactsLiveData = getViewModel().getContactsLiveData();
-            contactsLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
-                if (connectionListResponse.getError() != null) {
-                    hideLoading();
-                    this.showGenericError();
-                    return;
-                }
-                List<Contact> contactsList = connectionListResponse.getResult();
-                if(contactsList != null)
-                    connectionsListFragment.addConnections(contactsList);
-            });
-        MutableLiveData<AsyncTaskResult<List<CredentialsToShare>>> credentialsToShareLiveData = getViewModel().getCredentialsToShareLiveData();
-            credentialsToShareLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
+        contactsLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
+            if (connectionListResponse.getError() != null) {
                 hideLoading();
-                if(connectionListResponse.getError() != null) {
-                    this.showGenericError();
-                    return;
-                }
-                List<CredentialsToShare> connectionList = connectionListResponse.getResult();
+                this.showGenericError();
+                return;
+            }
+            List<Contact> contactsList = connectionListResponse.getResult();
+            if (contactsList != null)
+                connectionsListFragment.addConnections(contactsList);
+        });
+        MutableLiveData<AsyncTaskResult<List<CredentialsToShare>>> credentialsToShareLiveData = getViewModel().getCredentialsToShareLiveData();
+        credentialsToShareLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
+            hideLoading();
+            if (connectionListResponse.getError() != null) {
+                this.showGenericError();
+                return;
+            }
+            List<CredentialsToShare> connectionList = connectionListResponse.getResult();
 
-                if(connectionList != null && !connectionList.isEmpty()) {
-                    dialogFragment = ShareProofRequestDialogFragment.newInstance(connectionList.get(0));
-                    getNavigator().showDialogFragment(getFragmentManager(),dialogFragment,SHARE_PROOF_REQUEST_DIALOG);
-                    viewModel.clearProofRequestToShow();
-                }
-            });
+            if (connectionList != null && !connectionList.isEmpty()) {
+                dialogFragment = ShareProofRequestDialogFragment.newInstance(connectionList.get(0));
+                getNavigator().showDialogFragment(getFragmentManager(), dialogFragment, SHARE_PROOF_REQUEST_DIALOG);
+                viewModel.clearProofRequestToShow();
+            }
+        });
     }
 
     private void registerTokenInfoObserver() {
@@ -165,7 +165,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        ActionBarUtils.menuItemClicked(navigator, item,this);
+        ActionBarUtils.menuItemClicked(navigator, item, this);
         // If we got here, the user's action was not recognized.
         // Invoke the superclass to handle it.
         return super.onOptionsItemSelected(item);
@@ -185,5 +185,8 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         ActivityUtils.onQrcodeResult(requestCode, resultCode, viewModel, data);
+        if (resultCode == Activity.RESULT_OK) {
+            showLoading();
+        }
     }
 }
