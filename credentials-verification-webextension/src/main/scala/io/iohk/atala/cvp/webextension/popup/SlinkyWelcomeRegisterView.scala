@@ -17,7 +17,7 @@ import slinky.web.html._
       div(className := "welcome_img")(
         img(src := "/assets/images/Done.png")
       ),
-      p(className := "welcome_registration_text")("Your account has been successfully registered!"),
+      p(className := "welcome_registration_text")("Your wallet has been successfully registered!"),
       div(className := "input__container"),
       div(className := "div__field_group")(
         div(

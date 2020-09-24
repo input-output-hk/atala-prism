@@ -38,7 +38,7 @@ import slinky.web.html._
       div(
         className := "btn_register",
         id := "registrationScreenButton",
-        "Register",
+        "Register your browser wallet",
         onClick := { () =>
           props.switchToView(Register)
         }
@@ -46,7 +46,7 @@ import slinky.web.html._
       div(
         className := "btn_recover",
         id := "recoveryScreenButton",
-        "Recover your account",
+        "Recover an existing wallet",
         onClick := { () =>
           props.switchToView(Recover)
         }

@@ -18,7 +18,7 @@ import slinky.web.html._
         img(src := "/assets/images/unlock.png")
       ),
       h3(className := "h3_welcome_back")("Welcome Back"),
-      p(className := "welcome_registration_text")("Your account has been successfully recovered"),
+      p(className := "welcome_registration_text")("Your wallet has been successfully recovered"),
       div(className := "input__container"),
       div(className := "div__field_group")(
         div(

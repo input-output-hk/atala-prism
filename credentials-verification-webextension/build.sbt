@@ -2,6 +2,7 @@ import chrome._
 import chrome.permissions.Permission
 import chrome.permissions.Permission.API
 import com.alexitc.{Chrome, ChromeSbtPlugin}
+import org.scalablytyped.converter.Flavour.Slinky
 import org.scalajs.jsenv.selenium.SeleniumJSEnv
 
 resolvers += Resolver.sonatypeRepo("releases")
@@ -101,6 +102,7 @@ buildInfoKeys ++= Seq[BuildInfoKey](
   "activeTabContextScripts" -> manifestActiveTabContextScripts
 )
 
+stFlavour := Slinky
 // dependencies
 val circe = "0.13.0"
 val grpcWebVersion = "0.3.0"
@@ -145,7 +147,8 @@ npmDependencies in Compile ++= Seq(
   "react" -> "16.12.0",
   "react-dom" -> "16.12.0",
   "dompurify" -> "2.0.3",
-  "@types/dompurify" -> "2.0.3"
+  "@types/dompurify" -> "2.0.3",
+  "@material-ui/core" -> "3.9.4"
 )
 
 // Internal libraries

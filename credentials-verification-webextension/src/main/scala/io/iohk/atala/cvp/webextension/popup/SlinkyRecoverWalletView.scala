@@ -87,7 +87,7 @@ import scala.util.{Failure, Success}
           onClick := { () =>
             recoverWallet()
           }
-        )("Recover account")
+        )("Recover wallet")
       )
     )
   }

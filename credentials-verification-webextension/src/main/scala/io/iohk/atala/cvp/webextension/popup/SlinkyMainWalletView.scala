@@ -71,7 +71,7 @@ import typings.dompurify.mod.{^ => dompurify}
       div(className := "no-pending-container", id := "mainView")(
         div(className := "img-no-pending")(img(src := "/assets/images/img-no-pending.png")),
         p(className := "welcome_text")(
-          "There are not pending requests"
+          "There are no requests pending"
         ),
         div(className := "div__field_group")(
           div(className := "lock_button", onClick := { () => lockWallet() })(

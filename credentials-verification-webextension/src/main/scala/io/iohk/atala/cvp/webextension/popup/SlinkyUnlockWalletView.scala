@@ -81,7 +81,7 @@ import scala.util.{Failure, Success}
           onClick := { () =>
             unlockWallet()
           }
-        )("Unlock your account")
+        )("Unlock your wallet")
       ),
       p(
         className := "h4_forgot",
@@ -91,7 +91,7 @@ import scala.util.{Failure, Success}
       p(
         className := "h4_recover_account",
         id := "h4_recover_account",
-        "Recover your account"
+        "Recover your wallet"
       )
     )
 

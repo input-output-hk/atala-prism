@@ -11,6 +11,7 @@
 .div__field_group {
   min-width: 240px;
   padding: 10px 0;
+  position: relative;
 }
 
 .div__header {
@@ -232,7 +233,7 @@ select {
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 7px 7px 7px 12px;
-  color: #cac7d7;
+  color: #262324;
 }
 
 select:focus {
@@ -417,4 +418,20 @@ input:focus {
     text-align: center;
     color: #17282f;
     font-size: 22px;
+}
+
+.progress_bar {
+  top: 50%;
+  left: 50%;
+  color: #4caf50;
+  position: absolute;
+  margin-top: -18px;
+  margin-left: -12px;
+}
+
+.disabled {
+  pointer-events: none;
+  /* for "disabled" effect */
+  opacity: 0.5;
+  background: #CCC;
 }

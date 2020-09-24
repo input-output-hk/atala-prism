@@ -11,6 +11,9 @@ import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
+import typings.materialUiCore.PartialClassNameMapCircul
+import typings.materialUiCore.components.CircularProgress
+import typings.materialUiCore.materialUiCoreStrings.indeterminate
 import typings.std.console
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,7 +29,8 @@ import scala.util.{Failure, Success}
       orgName: String,
       role: Role,
       fileOpt: Option[File] = None,
-      message: String
+      message: String,
+      isLoading: Boolean = false
   )
 
   private val mnemonicElement: ReactElement = div(className := "words_container")(
@@ -65,7 +69,7 @@ import scala.util.{Failure, Success}
 
   override def render: ReactElement = {
     div(id := "registrationScreen")(
-      h3(className := "h3_register", id := "h3_register", "Account registration"),
+      h3(className := "h3_register", id := "h3_register", "Wallet registration"),
       div(className := "div__field_group")(
         h4(className := "h4_register")("Save your recovery phrase"),
         mnemonicElement
@@ -102,7 +106,7 @@ import scala.util.{Failure, Success}
             input(
               id := "orgname",
               className := "_input",
-              placeholder := "Enter Organisation Name",
+              placeholder := "Enter Organization Name",
               value := state.orgName,
               onChange := (e => setOrgName(e.target.value))
             )
@@ -118,6 +122,7 @@ import scala.util.{Failure, Success}
           )
         ),
         div(className := "div__field_group")(
+          label(htmlFor := "logo")("e.g image type supported png/jpeg"),
           div(className := "input__container")(
             input(
               className := "inputfile",
@@ -137,17 +142,27 @@ import scala.util.{Failure, Success}
         div(className := "div__field_group")(
           div(
             id := "registerButton",
-            className := "btn_register",
+            if (!state.isLoading) { className := "btn_register" }
+            else { className := "btn_register disabled" },
             onClick := { () =>
-              registerOrganisation()
+              registerOrganization()
             }
-          )("Register")
+          )("Register"),
+          if (state.isLoading) {
+            CircularProgress(
+              variant = indeterminate,
+              size = 26,
+              classes = PartialClassNameMapCircul(root = "progress_bar")
+            )()
+          } else {
+            div()
+          }
         )
       )
     )
   }
 
-  private def registerOrganisation(): Unit = {
+  private def registerOrganization(): Unit = {
     if (isValidInput(state)) {
       if (state.fileOpt.isDefined) {
         state.fileOpt.foreach { file =>
@@ -169,6 +184,7 @@ import scala.util.{Failure, Success}
   }
 
   private def createWallet(bytes: Array[Byte]): Unit = {
+    setState(state.copy(isLoading = true))
     props.backgroundAPI
       .createWallet(
         state.password,
@@ -180,7 +196,7 @@ import scala.util.{Failure, Success}
       .onComplete {
         case Success(_) => props.switchToView(Register)
         case Failure(ex) =>
-          setState(state.copy(message = "Failed creating wallet"))
+          setState(state.copy(message = "Failed creating wallet", isLoading = false))
           println(s"Failed creating wallet : ${ex.getMessage}")
       }
   }
@@ -193,7 +209,7 @@ import scala.util.{Failure, Success}
       setState(state.copy(message = "Password verification does not match"))
       false
     } else if (state.orgName.isEmpty) {
-      setState(state.copy(message = "Organisation Name cannot be empty"))
+      setState(state.copy(message = "Organization Name cannot be empty"))
       false
     } else {
       setState(state.copy(message = ""))
