@@ -1,65 +1,11 @@
-import React, { Fragment, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button, message } from 'antd';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
+import ActionButtons from '../../Molecules/ActionButtons/ActionButtons';
+import { ReactComponent as GroupIcon } from '../../../../images/icon-groups.svg';
 
 import './_style.scss';
-
-const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="ControlButtons">
-      {fullInfo && (
-        <Fragment>
-          <CustomButton
-            buttonProps={{
-              onClick: setGroupToDelete,
-              className: 'theme-link',
-              disabled: true
-            }}
-            buttonText={t('groups.table.buttons.delete')}
-          />
-          <CustomButton
-            buttonProps={{
-              onClick: () => message.info(`The id to copy is ${id}`),
-              className: 'theme-link',
-              disabled: true
-            }}
-            buttonText={t('groups.table.buttons.copy')}
-          />
-        </Fragment>
-      )}
-      <Link disabled to={`group/${id}`}>
-        {t('groups.table.buttons.view')}
-      </Link>
-    </div>
-  );
-};
-
-GetActionsButtons.propTypes = {
-  id: PropTypes.string.isRequired,
-  setGroupToDelete: PropTypes.func.isRequired,
-  fullInfo: PropTypes.bool.isRequired
-};
-
-const AddCredentialsButton = ({ id }) => {
-  const { t } = useTranslation();
-
-  return (
-    <Button onClick={() => message.info('add with this id', id)}>
-      {t('groups.table.buttons.addCredential')}
-    </Button>
-  );
-};
-
-AddCredentialsButton.propTypes = {
-  id: PropTypes.string.isRequired
-};
 
 const getColumns = ({ setGroupToDelete, setGroup }) => {
   const componentName = 'groups';
@@ -69,7 +15,7 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
     key: 'actions',
     width: 300,
     render: ({ key, name }) => (
-      <GetActionsButtons
+      <ActionButtons
         id={key}
         setGroupToDelete={() => setGroupToDelete({ id: key, name })}
         fullInfo={fullInfo}
@@ -85,21 +31,23 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
     )
   };
 
-  return [nameColumn, actionColumn];
+  const iconColumn = {
+    key: 'icon',
+    width: 25,
+    render: () => <GroupIcon />
+  };
+
+  return [iconColumn, nameColumn].concat(setGroupToDelete ? [actionColumn] : []);
 };
 
-const getSelectedIndexArray = ({ name }, groups) => {
-  if (!name) return [];
-
-  const selectedIndex = groups.map(({ name: groupName }) => groupName).indexOf(name);
-
-  return [selectedIndex];
-};
-
-const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPageChange }) => {
+const GroupsTable = ({
+  setGroupToDelete,
+  groups,
+  selectedGroups,
+  setSelectedGroups,
+  onPageChange
+}) => {
   const [loading, setLoading] = useState(false);
-  const selectedRowKeys = getSelectedIndexArray(selectedGroup, groups);
-  // const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
 
   const getMoreData = () => {
     setLoading(true);
@@ -107,14 +55,14 @@ const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPage
   };
 
   const tableProps = {
-    columns: getColumns({ setGroupToDelete, setGroup }),
+    columns: getColumns({ setGroupToDelete, setSelectedGroups }),
     data: groups,
-    selectionType: !setGroup
+    selectionType: !setSelectedGroups
       ? null
       : {
-          selectedRowKeys,
-          type: 'radio',
-          onChange: (_index, [selected]) => setGroup(selected)
+          selectedRowKeys: selectedGroups,
+          type: 'checkbox',
+          onChange: setSelectedGroups
         },
     loading,
     hasMore: false,
@@ -131,16 +79,17 @@ const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPage
 
 GroupsTable.defaultProps = {
   groups: [],
-  selectedGroup: '',
-  setGroup: null
+  selectedGroups: [],
+  setSelectedGroups: null,
+  setGroupToDelete: null
 };
 
 GroupsTable.propTypes = {
-  setGroupToDelete: PropTypes.func.isRequired,
+  setGroupToDelete: PropTypes.func,
   groups: PropTypes.arrayOf(PropTypes.object),
   onPageChange: PropTypes.func.isRequired,
-  selectedGroup: PropTypes.string,
-  setGroup: PropTypes.func,
+  selectedGroups: PropTypes.arrayOf(PropTypes.string),
+  setSelectedGroups: PropTypes.func,
   hasMore: PropTypes.bool.isRequired
 };
 

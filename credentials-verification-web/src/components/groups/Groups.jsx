@@ -28,8 +28,6 @@ const NewGroupButton = ({ onClick }) => {
 const Groups = ({
   groups,
   handleGroupDeletion,
-  setGroup,
-  group,
   updateGroups,
   hasMore,
   redirector: { redirectToGroupCreation }
@@ -59,9 +57,7 @@ const Groups = ({
     setGroupToDelete,
     groups,
     onPageChange: updateGroups,
-    setGroup,
-    hasMore,
-    selectedGroup: group
+    hasMore
   };
 
   const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
@@ -71,7 +67,7 @@ const Groups = ({
       <DeleteGroupModal {...modalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
-        {!setGroup && newGroupButton}
+        {newGroupButton}
       </div>
       <GroupFilters updateGroups={updateGroups} />
       <Row>
@@ -86,16 +82,12 @@ const Groups = ({
 };
 
 Groups.defaultProps = {
-  groups: [],
-  setGroup: null,
-  group: ''
+  groups: []
 };
 
 Groups.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.shape(groupShape)),
   handleGroupDeletion: PropTypes.func.isRequired,
-  setGroup: PropTypes.func,
-  group: PropTypes.string,
   updateGroups: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
   redirector: PropTypes.shape({ redirectToGroupCreation: PropTypes.func.isRequired }).isRequired

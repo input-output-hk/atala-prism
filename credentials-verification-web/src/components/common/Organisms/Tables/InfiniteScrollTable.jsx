@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Table } from 'antd';
 import PropTypes from 'prop-types';
 import './_style.scss';
-import { xScroll, yScroll } from '../../../../helpers/constants';
+import { yScroll } from '../../../../helpers/constants';
 
 const InfiniteScrollTable = ({
   selectionType,
@@ -35,7 +35,7 @@ const InfiniteScrollTable = ({
       <Table
         rowSelection={selectionType}
         columns={columns}
-        scroll={{ x: xScroll, y: yScroll }}
+        scroll={{ y: yScroll }}
         dataSource={data}
         onChange={(_pagination, _filters, sorter) => {
           if (handleSort) return handleSort(sorter);

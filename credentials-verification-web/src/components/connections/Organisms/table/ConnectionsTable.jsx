@@ -90,6 +90,8 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
 
 const ConnectionsTable = ({
   subjects,
+  setSelectedSubjects,
+  selectedSubjects,
   inviteHolder,
   handleHoldersRequest,
   hasMore,
@@ -111,17 +113,28 @@ const ConnectionsTable = ({
         getMoreData={getMoreData}
         hasMore={hasMore}
         rowKey="id"
+        selectionType={
+          setSelectedSubjects && {
+            selectedRowKeys: selectedSubjects,
+            type: 'checkbox',
+            onChange: setSelectedSubjects
+          }
+        }
       />
     </div>
   );
 };
 
 ConnectionsTable.defaultProps = {
-  subjects: []
+  subjects: [],
+  setSelectedSubjects: null,
+  selectedSubjects: []
 };
 
 ConnectionsTable.propTypes = {
   subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
+  setSelectedSubjects: PropTypes.func,
+  selectedSubjects: PropTypes.arrayOf(PropTypes.string),
   inviteHolder: PropTypes.func.isRequired,
   viewConnectionDetail: PropTypes.func.isRequired,
   isIssuer: PropTypes.func.isRequired,

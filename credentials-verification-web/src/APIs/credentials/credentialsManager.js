@@ -206,16 +206,6 @@ function populateCredential({ issuerInfo, subjectInfo, additionalInfo }) {
   return credential;
 }
 
-export function getNamesAndSurnames(fullName) {
-  const wordsSeparator = '@';
-  const [joinedNames, joinedSurnames = ''] = fullName.split(' ');
-
-  const names = joinedNames.split(wordsSeparator);
-  const surnames = joinedSurnames.split(wordsSeparator);
-
-  return { names, surnames };
-}
-
 function parseAndPopulate(credentialData, studentData, did) {
   const { enrollmentdate, graduationdate, id, issuername, title } = credentialData;
 

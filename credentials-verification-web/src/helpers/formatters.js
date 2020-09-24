@@ -6,13 +6,17 @@ import { getCurrentLanguage } from './languageUtils';
 const completeDateFormatter = (date, format) => {
   const lang = getCurrentLanguage();
 
-  return moment
-    .utc()
-    .year(date.year)
-    .month(date.month - 1) // because Months are zero indexed on moment js
-    .date(date.day)
-    .locale(lang)
-    .format(format);
+  try {
+    return moment
+      .utc()
+      .year(date.year)
+      .month(date.month - 1) // because Months are zero indexed on moment js
+      .date(date.day)
+      .locale(lang)
+      .format(format);
+  } catch (err) {
+    return '-';
+  }
 };
 
 const completeFrontendDateFormatter = (date, format) => {

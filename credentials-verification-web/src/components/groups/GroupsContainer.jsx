@@ -9,7 +9,7 @@ import { withApi } from '../providers/withApi';
 import { dateAsUnix } from '../../helpers/formatters';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 
-const GroupsContainer = ({ api, selectingProps }) => {
+const GroupsContainer = ({ api }) => {
   const { t } = useTranslation();
 
   const [groups, setGroups] = useState([]);
@@ -65,23 +65,12 @@ const GroupsContainer = ({ api, selectingProps }) => {
       }}
       handleGroupDeletion={handleGroupDeletion}
       hasMore={hasMore}
-      {...selectingProps}
     />
   );
 };
 
-GroupsContainer.defaultProps = {
-  selectingProps: {},
-  fullInfo: true
-};
-
 GroupsContainer.propTypes = {
-  api: PropTypes.shape().isRequired,
-  selectingProps: PropTypes.shape({
-    setGroup: PropTypes.func,
-    group: PropTypes.func
-  }),
-  fullInfo: PropTypes.bool
+  api: PropTypes.shape().isRequired
 };
 
 export default withApi(GroupsContainer);

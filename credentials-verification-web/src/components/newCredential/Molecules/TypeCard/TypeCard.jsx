@@ -19,7 +19,7 @@ const TypeCard = ({ typeKey, credentialType, isSelected, onClick }) => {
         {t(credentialType.name)}
       </Row>
       <div className="line" />
-      <img className="img-credential" src={credentialType.sample} alt={`${typeKey}-sample`} />
+      <img className="img-credential" src={credentialType.sampleImage} alt={`${typeKey}-sample`} />
     </Col>
   );
 };

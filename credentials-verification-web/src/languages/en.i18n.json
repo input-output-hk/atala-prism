@@ -231,7 +231,16 @@
       "step2": "Assign Recipients Group",
       "step3": "Check and Confirm Credential"
     },
-    "selectType": "Select a type of credential",
+    "typeSelection": "Select a type of credential",
+    "targetsSelection": {
+      "groups": "Select one or more groups",
+      "subjects": "Select one or more subjects"
+    },
+    "messages": {
+      "selectTypeError": "Please select a credential type",
+      "selectRecipientError": "Please select a recipient",
+      "noFurtherSteps": "Further steps are not implemented yet"
+    },
     "table": {
       "columns": {
         "identityNumber": "Identity Number",

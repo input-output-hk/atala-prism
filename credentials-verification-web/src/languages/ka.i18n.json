@@ -54,6 +54,7 @@
     "filters": {
       "identityNumber": "Identity Number",
       "name": "Name",
+      "email": "Email",
       "status": "Status"
     },
     "buttons": {
@@ -230,7 +231,16 @@
       "step2": "Assign Recipients Group",
       "step3": "Check and Confirm Credential"
     },
-    "selectType": "Select a type of credential",
+    "typeSelection": "Select a type of credential",
+    "targetsSelection": {
+      "groups": "Select one or more groups",
+      "subjects": "Select one or more subjects"
+    },
+    "messages": {
+      "selectTypeError": "Please select a credential type",
+      "selectRecipientError": "Please select a recipient",
+      "noFurtherSteps": "Further steps are not implemented yet"
+    },
     "table": {
       "columns": {
         "identityNumber": "Identity Number",
@@ -471,7 +481,7 @@
     "missingInfoPart2": " of each individual {{isOrAre}} necesary to save it",
     "selectGroup": "Select a group for the students:",
     "table": {
-      "requirement": "Please add a {{requirement}}",
+      "requirement": "Add a {{requirement}}",
       "dateRequirement": "date earlied than today",
       "fullName": "Full Name",
       "email": "Mail account",
