@@ -3,19 +3,15 @@ package io.iohk.atala.prism.node.services
 import java.time.Instant
 
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
 import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
-import io.iohk.atala.prism.node.services.models.{
-  AtalaObjectNotification,
-  AtalaObjectNotificationHandler,
-  AtalaObjectUpdate
-}
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.prism.protos.node_internal
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -47,8 +43,16 @@ class AtalaServiceImpl(
 
   override def supportsOnChainData: Boolean = false
 
-  override def publishReference(ref: SHA256Digest): Future[TransactionInfo] = {
-    val opDataBytes: Array[Byte] = ATALA_HEADER ++ ref.value
+  override def publish(obj: node_internal.AtalaObject): Future[TransactionInfo] = {
+    if (obj.block.isBlockContent) {
+      throw new NotImplementedError("Publishing whole objects is not implemented for Bitcoin ledger")
+    } else {
+      publish(obj.toByteArray)
+    }
+  }
+
+  private def publish(ref: Array[Byte]): Future[TransactionInfo] = {
+    val opDataBytes = ATALA_HEADER ++ ref
 
     OpData(opDataBytes) match {
       case Some(opData) =>
@@ -67,10 +71,6 @@ class AtalaServiceImpl(
           new RuntimeException(s"FATAL: Atala identifier is too long to store in bitcoin (${opDataBytes.length}")
         )
     }
-  }
-
-  override def publishObject(bytes: Array[Byte]): Future[TransactionInfo] = {
-    throw new NotImplementedError("Publishing whole objects not implemented for Bitcoin ledger")
   }
 
   def synchronizeBlock(blockhash: Blockhash): Result[Nothing, Unit] = {
@@ -92,10 +92,10 @@ class AtalaServiceImpl(
           if trimmed.startsWith(ATALA_HEADER)
           // this is an Atala transaction
           data = trimmed.drop(ATALA_HEADER.length)
+          atalaObject <- parseAtalaObject(data)
           _ = logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
-          atalaObjectId = SHA256Digest(data)
         } yield AtalaObjectNotification(
-          AtalaObjectUpdate.Reference(atalaObjectId),
+          atalaObject,
           blockTimestamp,
           TransactionInfo(tx.id, ledger)
         )
@@ -107,6 +107,14 @@ class AtalaServiceImpl(
           .toFutureEither
       }
       .recoverLeft(_ => ())
+  }
+
+  private def parseAtalaObject(data: Array[Byte]): Option[node_internal.AtalaObject] = {
+    val validateAtalaObject = node_internal.AtalaObject.validate(data)
+    if (validateAtalaObject.isFailure) {
+      logger.warn(s"Could not parse Atala transaction: ${binaryOps.convertBytesToHex(data)}")
+    }
+    validateAtalaObject.toOption
   }
 }
 

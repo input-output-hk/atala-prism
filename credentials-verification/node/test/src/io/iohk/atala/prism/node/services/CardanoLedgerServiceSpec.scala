@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.node.services
 
-import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
@@ -12,6 +10,8 @@ import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClien
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotificationHandler
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.prism.protos.node_internal
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 
@@ -39,7 +39,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
   }
 
   "publishReference" should {
-    val reference = SHA256Digest.compute("AtalaObjectReference".getBytes)
+    val atalaObject = node_internal.AtalaObject()
     val expectedWalletApiPath = s"v2/wallets/$walletId/transactions"
 
     "publish a reference" in {
@@ -51,7 +51,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
       // Only test that it doesn't fail, as calling the wrong endpoint with the wrong params fails
-      cardanoLedgerService.publishReference(reference).futureValue
+      cardanoLedgerService.publish(atalaObject).futureValue
     }
 
     "fail with invalid transaction" in {
@@ -65,7 +65,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
       val error = intercept[RuntimeException] {
-        cardanoLedgerService.publishReference(reference).futureValue
+        cardanoLedgerService.publish(atalaObject).futureValue
       }
 
       error.getCause.getMessage must be("FATAL: Error while publishing reference: InvalidTransaction")

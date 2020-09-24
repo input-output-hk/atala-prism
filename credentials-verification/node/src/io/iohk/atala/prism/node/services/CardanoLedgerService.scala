@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.services
 
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.cardano.CardanoClient
@@ -9,6 +8,7 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.prism.protos.node_internal
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
@@ -49,8 +49,8 @@ class CardanoLedgerService private[services] (
 
   override def supportsOnChainData: Boolean = false
 
-  override def publishReference(ref: SHA256Digest): Future[TransactionInfo] = {
-    // TODO: Send `ref` as metadata
+  override def publish(obj: node_internal.AtalaObject): Future[TransactionInfo] = {
+    // TODO: Send `obj` as metadata
     cardanoClient
       .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), walletPassphrase)
       .value
@@ -60,10 +60,6 @@ class CardanoLedgerService private[services] (
           logger.error(s"FATAL: Error while publishing reference: $error")
           throw new RuntimeException(s"FATAL: Error while publishing reference: $error")
       }
-  }
-
-  override def publishObject(bytes: Array[Byte]): Future[TransactionInfo] = {
-    throw new NotImplementedError("Publishing whole objects not implemented for Cardano ledger")
   }
 
   private def scheduleSync(delay: FiniteDuration): Unit = {

@@ -15,7 +15,7 @@ import io.iohk.atala.prism.node.models.AtalaObject
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
-import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectUpdate}
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.prism.protos.{node_internal, node_models}
 
@@ -43,15 +43,8 @@ class ObjectManagementService(
   // for now, until we have block processing queue, it also manages processing
   // the referenced block
   def justSaveObject(notification: AtalaObjectNotification): Future[Option[AtalaObject]] = {
-    val hash = notification.update match {
-      case AtalaObjectUpdate.Reference(ref) => ref
-      case AtalaObjectUpdate.ByteContent(bytes) => SHA256Digest.compute(bytes)
-    }
-
-    val content = notification.update match {
-      case AtalaObjectUpdate.Reference(_) => None
-      case AtalaObjectUpdate.ByteContent(bytes) => Some(bytes)
-    }
+    val objectBytes = notification.atalaObject.toByteArray
+    val hash = SHA256Digest.compute(objectBytes)
 
     val query = for {
       existingObject <- AtalaObjectsDAO.get(hash)
@@ -68,7 +61,7 @@ class ObjectManagementService(
           hash,
           newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1),
           notification.timestamp,
-          content,
+          Some(objectBytes),
           notification.transaction.id,
           notification.transaction.ledger
         )
@@ -108,7 +101,7 @@ class ObjectManagementService(
     storage.put(blockHash.hexValue, blockBytes)
     storage.put(objHash.hexValue, objBytes)
 
-    atalaReferenceLedger.publishReference(objHash)
+    atalaReferenceLedger.publish(obj)
   }
 
   protected def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {

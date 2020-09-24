@@ -8,11 +8,12 @@ import doobie.implicits._
 import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.node.models.AtalaObject
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectUpdate}
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{AtalaReferenceLedger, objects}
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.prism.protos.{node_internal, node_models}
 import org.mockito
 import org.mockito.captor.ArgCaptor
@@ -69,23 +70,22 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   }
 
   "ObjectManagementService.publishAtalaOperation" should {
-    "put reference to object onto the ledger" in {
-      doReturn(Future.successful(())).when(ledger).publishReference(*)
+    "put reference to block onto the ledger" in {
+      doReturn(Future.successful(())).when(ledger).publish(*)
 
       objectManagmentService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
 
-      val refCaptor = ArgCaptor[SHA256Digest]
-      verify(ledger).publishReference(refCaptor)
-      val ref = refCaptor.value
+      val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
+      verify(ledger).publish(atalaObjectCaptor)
 
-      val atalaBlock = getBlockFromStorage(ref)
+      val atalaBlock = getBlockFromStorage(atalaObjectCaptor.value)
       atalaBlock.operations must contain theSameElementsAs (Seq(BlockProcessingServiceSpec.signedCreateDidOperation))
 
       verifyNoMoreInteractions(ledger)
     }
 
     "put many references onto the ledger" in {
-      doReturn(Future.successful(())).when(ledger).publishReference(*)
+      doReturn(Future.successful(())).when(ledger).publish(*)
 
       Future
         .traverse(exampleSignedOperations) { signedOp =>
@@ -93,11 +93,11 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         }
         .futureValue
 
-      val refCaptor = ArgCaptor[SHA256Digest]
-      verify(ledger, times(exampleOperations.size)).publishReference(refCaptor)
+      val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
+      verify(ledger, times(exampleOperations.size)).publish(atalaObjectCaptor)
 
-      for ((signedOp, ref) <- (exampleSignedOperations zip refCaptor.values)) {
-        val atalaBlock = getBlockFromStorage(ref)
+      for ((signedOp, atalaObject) <- (exampleSignedOperations zip atalaObjectCaptor.values)) {
+        val atalaBlock = getBlockFromStorage(atalaObject)
         atalaBlock.operations must contain theSameElementsAs Seq(signedOp)
       }
 
@@ -108,34 +108,34 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   "ObjectManagementService.saveReference" should {
     "add reference to the database" in {
       val block = exampleBlock()
-      val objectHash = createExampleObject(block)
+      val obj = createExampleObject(block)
       objectManagmentService
         .justSaveObject(
-          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
         .futureValue
 
-      val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
+      val atalaObject = queryAtalaObject(obj)
       atalaObject.sequenceNumber mustBe 1
       atalaObject.processed mustBe false
     }
 
     "be idempotent - ignore re-adding the same hash" in {
       val block = exampleBlock()
-      val objectHash = createExampleObject(block)
+      val obj = createExampleObject(block)
       objectManagmentService
         .justSaveObject(
-          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
         .futureValue
 
       objectManagmentService
         .justSaveObject(
-          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
         .futureValue
 
-      val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
+      val atalaObject = queryAtalaObject(obj)
       atalaObject.sequenceNumber mustBe 1
       atalaObject.processed mustBe false
     }
@@ -144,10 +144,10 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
 
       val block = exampleBlock()
-      val objectHash = createExampleObject(block)
+      val obj = createExampleObject(block)
       objectManagmentService
         .saveObject(
-          AtalaObjectNotification(AtalaObjectUpdate.Reference(objectHash), dummyTimestamp, dummyTransactionInfo)
+          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
         .futureValue
 
@@ -161,7 +161,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       verifyNoMoreInteractions(blockProcessing)
 
-      val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
+      val atalaObject = queryAtalaObject(obj)
       atalaObject.sequenceNumber mustBe 1
       atalaObject.processed mustBe true
     }
@@ -171,24 +171,18 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       val blocks = for ((signedOp, i) <- exampleSignedOperations.zipWithIndex) yield {
         val includeBlock = (i & 1) == 1
-        val includeObject = (i >> 1 & 1) == 1
 
         val block = exampleBlock(signedOp)
-        val objectUpdate = createExampleObjectUpdate(block, includeBlock, includeObject)
+        val obj = createExampleAtalaObject(block, includeBlock)
 
         objectManagmentService
-          .saveObject(AtalaObjectNotification(objectUpdate, Instant.ofEpochMilli(i.toLong), dummyTransactionInfo))
+          .saveObject(AtalaObjectNotification(obj, Instant.ofEpochMilli(i.toLong), dummyTransactionInfo))
           .futureValue
 
-        val objectHash = objectUpdate match {
-          case AtalaObjectUpdate.Reference(hash) => hash
-          case AtalaObjectUpdate.ByteContent(bytes) => SHA256Digest.compute(bytes)
-        }
-
-        val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
+        val atalaObject = queryAtalaObject(obj)
         atalaObject.sequenceNumber mustBe (i + 1)
         atalaObject.processed mustBe true
-        atalaObject.byteContent.isDefined mustBe includeObject
+        atalaObject.byteContent.isDefined mustBe true
 
         block
       }
@@ -200,11 +194,13 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       verifyNoMoreInteractions(blockProcessing)
     }
+
+    def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObject = {
+      AtalaObjectsDAO.get(SHA256Digest.compute(obj.toByteArray)).transact(database).unsafeRunSync().value
+    }
   }
 
-  protected def getBlockFromStorage(ref: SHA256Digest): node_internal.AtalaBlock = {
-    val atalaObjectData = storage.get(ref.hexValue).futureValue.value
-    val atalaObject = node_internal.AtalaObject.parseFrom(atalaObjectData)
+  protected def getBlockFromStorage(atalaObject: node_internal.AtalaObject): node_internal.AtalaBlock = {
     val atalaBlockHash = SHA256Digest(atalaObject.getBlockHash.toByteArray)
     val atalaBlockData = storage.get(atalaBlockHash.hexValue).futureValue.value
     node_internal.AtalaBlock.parseFrom(atalaBlockData)
@@ -223,15 +219,13 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     blockHash
   }
 
-  protected def storeObject(atalaObject: node_internal.AtalaObject): SHA256Digest = {
+  protected def storeObject(atalaObject: node_internal.AtalaObject): Unit = {
     val objectBytes = atalaObject.toByteArray
     val objectHash = SHA256Digest.compute(objectBytes)
-    storage.put(objectHash.hexValue, objectBytes)
-
-    objectHash
+    storage.put(objectHash.hexValue, objectBytes).futureValue
   }
 
-  protected def createExampleObject(block: node_internal.AtalaBlock): SHA256Digest = {
+  protected def createExampleObject(block: node_internal.AtalaBlock): node_internal.AtalaObject = {
     val blockBytes = block.toByteArray
     val blockHash = storeBlock(block)
 
@@ -241,16 +235,16 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value))
     )
     storeObject(atalaObject)
+    atalaObject
   }
 
-  protected def createExampleObjectUpdate(
+  protected def createExampleAtalaObject(
       block: node_internal.AtalaBlock,
-      includeBlock: Boolean,
-      includeObject: Boolean
-  ): AtalaObjectUpdate = {
+      includeBlock: Boolean
+  ): node_internal.AtalaObject = {
     val blockBytes = block.toByteArray
 
-    val atalaObject = if (includeBlock) {
+    if (includeBlock) {
       node_internal.AtalaObject(1, blockBytes.length, node_internal.AtalaObject.Block.BlockContent(block))
     } else {
       val blockHash = storeBlock(block)
@@ -260,12 +254,5 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value))
       )
     }
-
-    if (includeObject) {
-      AtalaObjectUpdate.ByteContent(atalaObject.toByteArray)
-    } else {
-      AtalaObjectUpdate.Reference(storeObject(atalaObject))
-    }
   }
-
 }

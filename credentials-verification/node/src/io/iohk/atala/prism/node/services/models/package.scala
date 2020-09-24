@@ -6,6 +6,7 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.modeling._
 import shapeless.tag.@@
+import io.iohk.prism.protos.node_internal
 
 import scala.concurrent.Future
 
@@ -21,13 +22,11 @@ package object models {
   type AtalaObjectId = SHA256Digest @@ AtalaObjectIdTag
   object AtalaObjectId extends TypeCompanion[SHA256Digest, AtalaObjectIdTag]
 
-  sealed trait AtalaObjectUpdate
-  object AtalaObjectUpdate {
-    final case class Reference(hash: SHA256Digest) extends AtalaObjectUpdate
-    final case class ByteContent(obj: Array[Byte]) extends AtalaObjectUpdate
-  }
-
-  case class AtalaObjectNotification(update: AtalaObjectUpdate, timestamp: Instant, transaction: TransactionInfo)
+  case class AtalaObjectNotification(
+      atalaObject: node_internal.AtalaObject,
+      timestamp: Instant,
+      transaction: TransactionInfo
+  )
 
   type AtalaObjectNotificationHandler = AtalaObjectNotification => Future[Unit]
 }
