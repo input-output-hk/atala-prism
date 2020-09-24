@@ -13,7 +13,7 @@ const Header = () => {
   const { t } = useTranslation();
   const { session } = useSession();
 
-  const userLogo = getLogoAsBase64(session.logo);
+  const userLogo = session.logo ? getLogoAsBase64(session.logo) : null;
 
   const theme = getThemeByRole(session.userRole);
 
@@ -28,12 +28,7 @@ const Header = () => {
         </div>
       </Col>
       <Col lg={16} className="RightSide">
-        <img
-          className="IconUniversity"
-          src={userLogo || 'icon-free-university.svg'}
-          alt="Free University Tbilisi"
-        />
-        <UserAvatar />
+        <UserAvatar logo={userLogo} />
         <LanguageSelector />
       </Col>
     </Row>
