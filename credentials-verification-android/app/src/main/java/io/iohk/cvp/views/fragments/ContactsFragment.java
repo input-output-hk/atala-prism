@@ -1,6 +1,7 @@
 package io.iohk.cvp.views.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,14 +9,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
@@ -25,9 +29,10 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.data.local.db.model.Contact;
-import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.ActivityUtils;
+import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
+import io.iohk.cvp.viewmodel.dtos.ContactToDelete;
 import io.iohk.cvp.viewmodel.dtos.CredentialsToShare;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
@@ -35,6 +40,7 @@ import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
 import io.iohk.cvp.views.utils.adapters.ContactsRecyclerViewAdapter;
+import io.iohk.cvp.views.utils.components.ContactDeletionCredentialName;
 import lombok.Setter;
 
 import static io.iohk.cvp.views.fragments.ShareProofRequestDialogFragment.SHARE_PROOF_REQUEST_DIALOG;
@@ -57,6 +63,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     @Inject
     ConnectionsListFragment connectionsListFragment;
     private CvpDialogFragment dialogFragment;
+    private AlertDialog deleteDialog;
 
 
     @Inject
@@ -87,7 +94,9 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        connectionsListFragment.setAdapter(new ContactsRecyclerViewAdapter());
+        connectionsListFragment.setAdapter(new ContactsRecyclerViewAdapter(contact -> {
+            getViewModel().getContactInfoToDelete(contact);
+        }));
 
         ConnectionTabsAdapter adapter = new ConnectionTabsAdapter(
                 getChildFragmentManager(), 1, connectionsListFragment);
@@ -114,6 +123,37 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
         return view;
     }
 
+    private void showDeleteContactDialog(ContactToDelete contactToDelete) {
+        LayoutInflater factory = LayoutInflater.from(getContext());
+        final View deleteDialogView = factory.inflate(R.layout.delete_contact_dialog, null);
+        deleteDialog = new AlertDialog.Builder(getContext()).create();
+        deleteDialog.setView(deleteDialogView);
+
+        ImageView contactLogo = deleteDialogView.findViewById(R.id.contact_logo);
+        TextView contactName = deleteDialogView.findViewById(R.id.contact_name);
+
+        try {
+            contactLogo.setImageBitmap(
+                    ImageUtils.getBitmapFromByteArray(contactToDelete.getContact().logo));
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+        }
+        contactName.setText(contactToDelete.getContact().name);
+
+        deleteDialogView.findViewById(R.id.reset_button).setOnClickListener(v -> {
+            getViewModel().deleteContact(contactToDelete.getContact());
+        });
+        deleteDialogView.findViewById(R.id.cancel_button).setOnClickListener(v -> getViewModel().hideDeleteContacDialog());
+        LinearLayout linearLayout = deleteDialogView.findViewById(R.id.credentials_container);
+        contactToDelete.getCredentialsToDelete().forEach(credential -> {
+            ContactDeletionCredentialName credentialName = new ContactDeletionCredentialName(getContext());
+            credentialName.setText(CredentialUtil.getType(credential, getContext()));
+            linearLayout.addView(credentialName);
+        });
+
+        deleteDialog.show();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -129,9 +169,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     }
 
     private void initObservers() {
-
-        MutableLiveData<AsyncTaskResult<List<Contact>>> contactsLiveData = getViewModel().getContactsLiveData();
-        contactsLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
+        getViewModel().getContactsLiveData().observe(getViewLifecycleOwner(), connectionListResponse -> {
             if (connectionListResponse.getError() != null) {
                 hideLoading();
                 this.showGenericError();
@@ -141,8 +179,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
             if (contactsList != null)
                 connectionsListFragment.addConnections(contactsList);
         });
-        MutableLiveData<AsyncTaskResult<List<CredentialsToShare>>> credentialsToShareLiveData = getViewModel().getCredentialsToShareLiveData();
-        credentialsToShareLiveData.observe(getViewLifecycleOwner(), connectionListResponse -> {
+        getViewModel().getCredentialsToShareLiveData().observe(getViewLifecycleOwner(), connectionListResponse -> {
             hideLoading();
             if (connectionListResponse.getError() != null) {
                 this.showGenericError();
@@ -150,10 +187,19 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
             }
             List<CredentialsToShare> connectionList = connectionListResponse.getResult();
 
+
             if (connectionList != null && !connectionList.isEmpty()) {
                 dialogFragment = ShareProofRequestDialogFragment.newInstance(connectionList.get(0));
                 getNavigator().showDialogFragment(getFragmentManager(), dialogFragment, SHARE_PROOF_REQUEST_DIALOG);
                 viewModel.clearProofRequestToShow();
+            }
+        });
+        getViewModel().getContactToDeleteLiveData().observe(getViewLifecycleOwner(), contactToDelete -> {
+            if (contactToDelete != null) {
+                showDeleteContactDialog(contactToDelete);
+            } else {
+                if (deleteDialog != null && deleteDialog.isShowing())
+                    deleteDialog.dismiss();
             }
         });
     }

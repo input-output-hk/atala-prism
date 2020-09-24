@@ -237,8 +237,10 @@
     <string name="incorrect_recovery_phrase">Your recovery phrase is incorrect</string>
     <string name="recovery_must_have_twelve_words">Your recovery phrase must have 12 words</string>
     <string name="recovery_phrase_hint">Add a word and press enter to confirm.</string>
-    <string name="are_you_sure">Are your sure?</string>
     <string name="you_are_about_to_delete">You are about to delete:</string>
     <string name="delete">Delete</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="you_are_about_delete">You are about to delete:</string>
+    <string name="contact_delete_action_description">If you do this, the credentials below that were issued by the contact will also be deleted:</string>
 
 </resources>

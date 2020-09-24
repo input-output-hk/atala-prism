@@ -15,7 +15,7 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
         return mAppDatabase.contactDao().getAll()
     }
 
-    override suspend fun saveAllCredentials(credentialsList:List<Credential>) {
+    override suspend fun saveAllCredentials(credentialsList: List<Credential>) {
         mAppDatabase.credentialDao().insertAllCredentials(credentialsList)
     }
 
@@ -50,5 +50,17 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
 
     override suspend fun deleteCredential(credential: Credential) {
         mAppDatabase.credentialDao().delete(credential)
+    }
+
+    override suspend fun deleteContact(contact: Contact) {
+        mAppDatabase.contactDao().delete(contact)
+    }
+
+    override suspend fun deleteCredentialByContactId(connectionId: String) {
+        mAppDatabase.credentialDao().deleteCredentialByConnectionId(connectionId)
+    }
+
+    override suspend fun getCredentialsByConnectionId(connectionId: String): List<Credential> {
+        return mAppDatabase.credentialDao().getCredentialsByConnectionId(connectionId)
     }
 }

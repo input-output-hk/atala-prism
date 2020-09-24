@@ -36,7 +36,7 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         return apiHelper.getAllMessages(ecKeyPair, lastMessageId)
     }
 
-    override suspend fun sendMultipleMessage(ecKeyPair : ECKeyPair, connectionId: String, messages: List<ByteString>) {
+    override suspend fun sendMultipleMessage(ecKeyPair: ECKeyPair, connectionId: String, messages: List<ByteString>) {
         return apiHelper.sendMultipleMessage(ecKeyPair, connectionId, messages)
     }
 
@@ -93,7 +93,7 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
     }
 
     override suspend fun getAllNewCredentials(): List<Credential> {
-        return  mDbHelper.getAllNewCredentials()
+        return mDbHelper.getAllNewCredentials()
     }
 
     override suspend fun updateCredential(credential: Credential) {
@@ -105,6 +105,18 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
     }
 
     override suspend fun deleteCredential(credential: Credential) {
-       mDbHelper.deleteCredential(credential)
+        mDbHelper.deleteCredential(credential)
+    }
+
+    override suspend fun deleteContact(contact: Contact) {
+        mDbHelper.deleteContact(contact)
+    }
+
+    override suspend fun deleteCredentialByContactId(connectionId: String) {
+        mDbHelper.deleteCredentialByContactId(connectionId)
+    }
+
+    override suspend fun getCredentialsByConnectionId(connectionId: String): List<Credential> {
+        return mDbHelper.getCredentialsByConnectionId(connectionId)
     }
 }

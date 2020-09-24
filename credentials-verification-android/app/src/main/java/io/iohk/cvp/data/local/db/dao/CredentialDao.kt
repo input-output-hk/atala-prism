@@ -11,7 +11,7 @@ interface CredentialDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllCredentials(credentials: List<Credential?>)
 
-    @Query("SELECT * FROM credential")
+    @Query("SELECT * FROM credential order by id asc")
     fun getAllCredentials(): List<Credential>
 
     @Query("DELETE FROM credential")
@@ -24,9 +24,14 @@ interface CredentialDao {
     suspend fun updateCredential(credential: Credential)
 
     @Query("SELECT * FROM credential where credential_id = :credentialId order by id asc")
-    suspend fun getCredentialByCredentialId(credentialId : String): Credential
+    suspend fun getCredentialByCredentialId(credentialId: String): Credential
 
     @Delete
     suspend fun delete(credential: Credential)
 
+    @Query("DELETE FROM credential WHERE connection_id = :connectionId")
+    fun deleteCredentialByConnectionId(connectionId: String)
+
+    @Query("SELECT * FROM credential WHERE connection_id = :connectionId order by id asc")
+    fun getCredentialsByConnectionId(connectionId: String): List<Credential>
 }

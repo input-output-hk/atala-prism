@@ -26,7 +26,12 @@ import lombok.Setter;
 public class ContactsRecyclerViewAdapter extends
         RecyclerView.Adapter<ContactsRecyclerViewAdapter.ContactViewHolder> {
 
+    private final ContactItemInteraction listener;
     protected List<Contact> connections = new ArrayList<>();
+
+    public ContactsRecyclerViewAdapter(ContactItemInteraction contactItemInteraction) {
+        listener = contactItemInteraction;
+    }
 
     @NonNull
     @Override
@@ -40,13 +45,16 @@ public class ContactsRecyclerViewAdapter extends
         Contact connection = connections.get(position);
         holder.issuerName.setText(connection.name);
         byte[] logo = connection.logo;
-        if(logo != null && logo.length > 0){
+        if (logo != null && logo.length > 0) {
             try {
                 holder.issuerLogo.setImageBitmap(ImageUtils.getBitmapFromByteArray(logo));
             } catch (Exception ex) {
                 Crashlytics.logException(ex);
             }
         }
+        holder.deleteContactBtn.setOnClickListener(v -> {
+            listener.onDeleteClicked(connection);
+        });
     }
 
     @Override
@@ -69,10 +77,16 @@ public class ContactsRecyclerViewAdapter extends
         @BindView(R.id.credential_logo)
         ImageView issuerLogo;
 
+        @BindView(R.id.delete_contact_btn)
+        ImageView deleteContactBtn;
+
         ContactViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
+    public interface ContactItemInteraction {
+        void onDeleteClicked(Contact connection);
+    }
 }
