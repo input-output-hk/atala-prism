@@ -81,7 +81,7 @@ class CredentialsServiceImpl(
           contactsRepository
             .find(Institution.Id(issuerId), externalId)
             .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exists")))
-            .map(_.id)
+            .map(_.contactId)
 
         case None =>
           val maybe = Try(request.subjectId)
@@ -199,6 +199,35 @@ class CredentialsServiceImpl(
           case Right(x) => x
           case Left(e) => throw new RuntimeException(s"FAILED: $e")
         }
+    }
+  }
+
+  override def getContactCredentials(request: GetContactCredentialsRequest): Future[GetContactCredentialsResponse] = {
+    def f(institutionId: Institution.Id): Future[GetContactCredentialsResponse] = {
+      val contactIdF = Future.fromTry {
+        Try {
+          Contact.Id(UUID.fromString(request.contactId))
+        }
+      }
+
+      for {
+        contactId <- contactIdF
+        response <-
+          credentialsRepository
+            .getBy(institutionId, contactId)
+            .map { list =>
+              cmanager_api.GetContactCredentialsResponse(list.map(genericCredentialToProto))
+            }
+            .value
+            .map {
+              case Right(x) => x
+              case Left(e) => throw new RuntimeException(s"FAILED: $e")
+            }
+      } yield response
+    }
+
+    authenticator.authenticated("getSubjectCredentials", request) { participantId =>
+      f(Institution.Id(participantId.uuid))
     }
   }
 }

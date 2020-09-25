@@ -15,7 +15,7 @@ import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository, StoredCredentialsRepository}
-import io.iohk.atala.prism.console.services.GroupsServiceImpl
+import io.iohk.atala.prism.console.services.{ContactsServiceImpl, GroupsServiceImpl}
 import io.iohk.atala.prism.cstore.services.CredentialsStoreService
 import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,
@@ -31,6 +31,7 @@ import io.iohk.prism.protos.cmanager_api.{
   SubjectsServiceGrpc
 }
 import io.iohk.prism.protos.connector_api
+import io.iohk.prism.protos.console_api.ConsoleServiceGrpc
 import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
@@ -149,6 +150,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val insuranceService =
       new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
 
+    // console (unified backend) services
+    val consoleService = new ContactsServiceImpl(contactsRepository, authenticator)(executionContext)
+
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
@@ -165,6 +169,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(EmploymentServiceGrpc.bindService(employmentService, executionContext))
       .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
       .addService(AdminServiceGrpc.bindService(adminService, executionContext))
+      .addService(ConsoleServiceGrpc.bindService(consoleService, executionContext))
       .build()
       .start()
 

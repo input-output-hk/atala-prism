@@ -35,7 +35,7 @@ class SubjectsServiceImpl(
         if (request.externalId.trim.isEmpty) Contact.ExternalId.random()
         else Contact.ExternalId(request.externalId.trim)
       lazy val json = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
-      val maybeGroupdName = if (request.groupName.trim.isEmpty) None else Some(IssuerGroup.Name(request.groupName.trim))
+      val maybeGroupName = if (request.groupName.trim.isEmpty) None else Some(IssuerGroup.Name(request.groupName.trim))
       val model = request
         .into[CreateContact]
         .withFieldConst(_.createdBy, issuerId)
@@ -48,7 +48,7 @@ class SubjectsServiceImpl(
         LoggingContext("request" -> request, "json" -> json, "model" -> model)
 
       contactsRepository
-        .create(model, maybeGroupdName)
+        .create(model, maybeGroupName)
         .map(subjectToProto)
         .map(cmanager_api.CreateSubjectResponse().withSubject)
         .wrapExceptions

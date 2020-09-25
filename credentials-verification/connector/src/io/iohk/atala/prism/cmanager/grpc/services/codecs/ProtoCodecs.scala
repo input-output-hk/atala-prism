@@ -72,7 +72,7 @@ object ProtoCodecs {
 
     cmanager_models
       .IssuerSubject()
-      .withId(subject.id.value.toString)
+      .withId(subject.contactId.value.toString)
       .withExternalId(subject.externalId.value)
       .withConnectionStatus(studentConnectionStatus2Proto.transform(connectionStatus))
       .withConnectionToken(subject.connectionToken.map(_.token).getOrElse(""))

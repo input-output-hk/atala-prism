@@ -222,7 +222,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
 
         val storedSubject = result.head
         storedSubject.data must be(json)
-        storedSubject.id.value.toString must be(initialResponse.id)
+        storedSubject.contactId.value.toString must be(initialResponse.id)
         storedSubject.externalId must be(externalId)
       }
     }
@@ -241,10 +241,10 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val subjectA = createSubject(issuerId, "Alice", groupNameA)
-      val subjectB = createSubject(issuerId, "Bob", groupNameB)
-      createSubject(issuerId, "Charles", groupNameC)
-      createSubject(issuerId, "Alice 2", groupNameA)
+      val subjectA = createContact(issuerId, "Alice", groupNameA)
+      val subjectB = createContact(issuerId, "Bob", groupNameB)
+      createContact(issuerId, "Charles", groupNameC)
+      createContact(issuerId, "Alice 2", groupNameA)
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = GetSubjectsRequest(
@@ -267,10 +267,10 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val subjectA = createSubject(issuerId, "Alice", groupNameA)
-      createSubject(issuerId, "Bob", groupNameB)
-      createSubject(issuerId, "Charles", groupNameC)
-      val subjectA2 = createSubject(issuerId, "Alice 2", groupNameA)
+      val subjectA = createContact(issuerId, "Alice", groupNameA)
+      createContact(issuerId, "Bob", groupNameB)
+      createContact(issuerId, "Charles", groupNameC)
+      val subjectA2 = createContact(issuerId, "Alice 2", groupNameA)
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = GetSubjectsRequest(
@@ -294,15 +294,15 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      createSubject(issuerId, "Alice", groupNameA)
-      val subjectB = createSubject(issuerId, "Bob", groupNameB)
-      val subjectC = createSubject(issuerId, "Charles", groupNameC)
-      createSubject(issuerId, "Alice 2", groupNameA)
+      createContact(issuerId, "Alice", groupNameA)
+      val subjectB = createContact(issuerId, "Bob", groupNameB)
+      val subjectC = createContact(issuerId, "Charles", groupNameC)
+      createContact(issuerId, "Alice 2", groupNameA)
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = GetSubjectsRequest(
           limit = 1,
-          lastSeenSubjectId = subjectB.id.value.toString
+          lastSeenSubjectId = subjectB.contactId.value.toString
         )
 
         val response = serviceStub.getSubjects(request)
@@ -319,15 +319,15 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val subjectA = createSubject(issuerId, "Alice", groupNameA)
-      createSubject(issuerId, "Bob", groupNameB)
-      createSubject(issuerId, "Charles", groupNameC)
-      val subjectA2 = createSubject(issuerId, "Alice 2", groupNameA)
+      val subjectA = createContact(issuerId, "Alice", groupNameA)
+      createContact(issuerId, "Bob", groupNameB)
+      createContact(issuerId, "Charles", groupNameC)
+      val subjectA2 = createContact(issuerId, "Alice 2", groupNameA)
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = GetSubjectsRequest(
           limit = 2,
-          lastSeenSubjectId = subjectA.id.value.toString,
+          lastSeenSubjectId = subjectA.contactId.value.toString,
           groupName = groupNameA.value
         )
 
@@ -345,12 +345,12 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     "return the correct subject when present" in {
       val issuerId = createIssuer("Issuer X")
       val groupName = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
-      val subject = createSubject(issuerId, "Alice", groupName)
-      createSubject(issuerId, "Bob", groupName)
+      val subject = createContact(issuerId, "Alice", groupName)
+      createContact(issuerId, "Bob", groupName)
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = GetSubjectRequest(
-          subjectId = subject.id.value.toString
+          subjectId = subject.contactId.value.toString
         )
 
         val response = serviceStub.getSubject(request)
@@ -364,12 +364,12 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
       val issuerYId = createIssuer("Issuer Y")
       val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
-      val subject = createSubject(issuerXId, "Alice", groupNameA)
-      createSubject(issuerYId, "Bob", groupNameB)
+      val subject = createContact(issuerXId, "Alice", groupNameA)
+      createContact(issuerYId, "Bob", groupNameB)
 
       usingApiAs(toParticipantId(issuerYId)) { serviceStub =>
         val request = GetSubjectRequest(
-          subjectId = subject.id.value.toString
+          subjectId = subject.contactId.value.toString
         )
 
         val response = serviceStub.getSubject(request)
@@ -382,8 +382,8 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     "return subject's credentials" in {
       val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
-      val subjectId1 = createSubject(issuerId, "IOHK Student", group.name).id
-      val subjectId2 = createSubject(issuerId, "IOHK Student 2", group.name).id
+      val subjectId1 = createContact(issuerId, "IOHK Student", group.name).contactId
+      val subjectId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
       createGenericCredential(issuerId, subjectId2, "A")
       val cred1 = createGenericCredential(issuerId, subjectId1, "B")
       createGenericCredential(issuerId, subjectId2, "C")
@@ -413,7 +413,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
     "return empty list of credentials when not present" in {
       val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
-      val subjectId = createSubject(issuerId, "IOHK Student", group.name).id
+      val subjectId = createContact(issuerId, "IOHK Student", group.name).contactId
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = GetSubjectCredentialsRequest(
@@ -433,21 +433,21 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
       val subjectName = "Subject 1"
       val issuerId = createIssuer(issuerName)
       createIssuerGroup(issuerId, groupName)
-      val subject = createSubject(issuerId, subjectName, groupName)
+      val subject = createContact(issuerId, subjectName, groupName)
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = cmanager_api
           .GenerateConnectionTokenForSubjectRequest(
-            subjectId = subject.id.value.toString
+            subjectId = subject.contactId.value.toString
           )
 
         val response = serviceStub.generateConnectionTokenForSubject(request)
         val token = TokenString(response.token)
 
         // the new subject needs to exist
-        val result = contactsRepository.find(issuerId, subject.id).value.futureValue.right.value
+        val result = contactsRepository.find(issuerId, subject.contactId).value.futureValue.right.value
         val storedSubject = result.value
-        storedSubject.id must be(subject.id)
+        storedSubject.contactId must be(subject.contactId)
         storedSubject.data must be(subject.data)
         storedSubject.createdAt must be(subject.createdAt)
         storedSubject.connectionStatus must be(Contact.ConnectionStatus.ConnectionMissing)

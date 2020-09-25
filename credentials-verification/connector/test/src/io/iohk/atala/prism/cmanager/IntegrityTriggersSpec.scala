@@ -31,7 +31,7 @@ class IntegrityTriggersSpec extends CManagerRepositorySpec {
 
       val query = for {
         contact <- ContactsDAO.createContact(request)
-        _ <- IssuerGroupsDAO.addContact(group.id, contact.id)
+        _ <- IssuerGroupsDAO.addContact(group.id, contact.contactId)
       } yield contact
 
       val exc = intercept[Exception](

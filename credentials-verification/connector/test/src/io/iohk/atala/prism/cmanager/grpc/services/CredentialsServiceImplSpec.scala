@@ -3,6 +3,7 @@ package io.iohk.atala.prism.cmanager.grpc.services
 import java.util.UUID
 
 import com.google.protobuf.ByteString
+import io.circe
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
@@ -10,6 +11,7 @@ import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs
 import io.iohk.atala.prism.cmanager.models.GenericCredential
 import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation
 import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
+import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.console.models.IssuerGroup
@@ -18,6 +20,7 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.prism.protos.cmanager_api.CredentialsServiceGrpc
+import io.iohk.prism.protos.cmanager_models.CManagerGenericCredential
 import io.iohk.prism.protos.{cmanager_api, common_models, node_api, node_models}
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues._
@@ -61,7 +64,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuerName = "Issuer 1"
       val issuerId = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createSubject(issuerId, "Subject 1", issuerGroup.name)
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
 
       usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val credentialData = Json.obj(
@@ -71,7 +74,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         )
 
         val request = cmanager_api.CreateGenericCredentialRequest(
-          subjectId = subject.id.value.toString,
+          subjectId = subject.contactId.value.toString,
           credentialData = credentialData.noSpaces,
           groupName = issuerGroup.name.value
         )
@@ -80,7 +83,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
         response.credentialId mustNot be(empty)
         response.issuerId must be(issuerId.value.toString)
-        response.subjectId must be(subject.id.value.toString)
+        response.subjectId must be(subject.contactId.value.toString)
         response.credentialData must be(request.credentialData)
         response.issuerName must be(issuerName)
         response.groupName must be(issuerGroup.name.value)
@@ -97,7 +100,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuerName = "Issuer 1"
       val issuerId = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createSubject(issuerId, "Subject 1", issuerGroup.name)
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
 
       usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
         val credentialData = Json.obj(
@@ -123,10 +126,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuerName = "Issuer 1"
       val issuerId = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createSubject(issuerId, "Subject 1", issuerGroup.name)
-      val credential1 = DataPreparation.createGenericCredential(issuerId, subject.id)
-      val credential2 = DataPreparation.createGenericCredential(issuerId, subject.id)
-      val credential3 = DataPreparation.createGenericCredential(issuerId, subject.id)
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val credential1 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+      val credential2 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+      val credential3 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
       val credentlal1Proto = ProtoCodecs.genericCredentialToProto(credential1)
       val credentlal2Proto = ProtoCodecs.genericCredentialToProto(credential2)
@@ -171,8 +174,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuerName = "Issuer 1"
       val issuerId = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createSubject(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.id)
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -210,7 +213,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verify(nodeMock).issueCredential(nodeRequest)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.id).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
 
         credentialList.length must be(1)
 
@@ -231,8 +234,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuerName = "Issuer 1"
       val issuerId = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createSubject(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.id)
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -262,7 +265,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.id).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
 
         credentialList.length must be(1)
 
@@ -315,8 +318,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuerName = "Issuer 1"
       val issuerId = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createSubject(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.id)
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -346,7 +349,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.id).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
 
         credentialList.length must be(1)
 
@@ -361,8 +364,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val issuerName = "Issuer 1"
       val issuerId = DataPreparation.createIssuer(issuerName)
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createSubject(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.id)
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -391,7 +394,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.id).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
 
         credentialList.length must be(1)
 
@@ -425,5 +428,60 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         )
       )
     )
+  }
+
+  private def cleanCredentialData(gc: CManagerGenericCredential): CManagerGenericCredential =
+    gc.copy(credentialData = "", subjectData = "")
+  private def credentialJsonData(gc: CManagerGenericCredential): (Json, Json) =
+    (circe.parser.parse(gc.credentialData).right.value, circe.parser.parse(gc.subjectData).right.value)
+
+  "getContactCredentials" should {
+    "return contact's credentials" in {
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val contactId1 = createContact(issuerId, "IOHK Student", group.name).contactId
+      val contactId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      createGenericCredential(issuerId, contactId2, "A")
+      val cred1 = createGenericCredential(issuerId, contactId1, "B")
+      createGenericCredential(issuerId, contactId2, "C")
+      val cred2 = createGenericCredential(issuerId, contactId1, "D")
+      createGenericCredential(issuerId, contactId2, "E")
+
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
+        val request = cmanager_api.GetContactCredentialsRequest(
+          contactId = contactId1.value.toString
+        )
+
+        val response = serviceStub.getContactCredentials(request)
+        val returnedCredentials = response.genericCredentials.toList
+        val cleanCredentials = returnedCredentials map cleanCredentialData
+        val credentialsJsons = returnedCredentials map credentialJsonData
+
+        val expectedCredentials = List(cred1, cred2)
+        val expectedCleanCredentials = expectedCredentials map {
+          ProtoCodecs.genericCredentialToProto _ andThen cleanCredentialData
+        }
+        val expectedCredentialsJsons = expectedCredentials map {
+          ProtoCodecs.genericCredentialToProto _ andThen credentialJsonData
+        }
+        cleanCredentials must be(expectedCleanCredentials)
+        credentialsJsons must be(expectedCredentialsJsons)
+      }
+    }
+
+    "return empty list of credentials when not present" in {
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val contactId = createContact(issuerId, "IOHK Student", group.name).contactId
+
+      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
+        val request = cmanager_api.GetContactCredentialsRequest(
+          contactId = contactId.value.toString
+        )
+
+        val response = serviceStub.getContactCredentials(request)
+        response.genericCredentials must be(empty)
+      }
+    }
   }
 }

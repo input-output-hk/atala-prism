@@ -35,7 +35,7 @@ object ProtoCodecs {
 
     cstore_models
       .VerifierHolder()
-      .withHolderId(holder.id.value.toString)
+      .withHolderId(holder.contactId.value.toString)
       .withConnectionId(holder.connectionId.map(_.id.toString).getOrElse(""))
       .withConnectionToken(holder.connectionToken.fold("")(_.token))
       .withJsonData(holder.data.noSpaces)

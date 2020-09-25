@@ -106,11 +106,11 @@ object DataPreparation {
     CredentialsDAO.create(request).transact(database).unsafeRunSync()
   }
 
-  def createSubject(issuerId: Institution.Id, subjectName: String, groupName: IssuerGroup.Name, tag: String = "")(
+  def createContact(issuerId: Institution.Id, subjectName: String, groupName: IssuerGroup.Name, tag: String = "")(
       implicit database: Transactor[IO]
-  ): Contact = createSubject(issuerId, subjectName, Some(groupName), tag)
+  ): Contact = createContact(issuerId, subjectName, Some(groupName), tag)
 
-  def createSubject(issuerId: Institution.Id, subjectName: String, groupName: Option[IssuerGroup.Name], tag: String)(
+  def createContact(issuerId: Institution.Id, subjectName: String, groupName: Option[IssuerGroup.Name], tag: String)(
       implicit database: Transactor[IO]
   ): Contact = {
     val request = CreateContact(
@@ -136,7 +136,7 @@ object DataPreparation {
 
         val query = for {
           contact <- ContactsDAO.createContact(request)
-          _ <- IssuerGroupsDAO.addContact(group.id, contact.id)
+          _ <- IssuerGroupsDAO.addContact(group.id, contact.contactId)
         } yield contact
 
         query.transact(database).unsafeRunSync()

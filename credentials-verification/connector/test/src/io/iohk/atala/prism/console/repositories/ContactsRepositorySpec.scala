@@ -57,7 +57,7 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       subject.connectionId must be(empty)
 
       // we check that the subject was added
-      val maybeSubject = repository.find(issuer, subject.id).value.futureValue.right.value.value
+      val maybeSubject = repository.find(issuer, subject.contactId).value.futureValue.right.value.value
       maybeSubject must be(subject)
     }
 
@@ -136,7 +136,7 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val subject = subjectsStored.head
       // the subject must have the original data
       subject.data must be(json)
-      subject.id must be(initialResponse.id)
+      subject.contactId must be(initialResponse.contactId)
       subject.externalId must be(externalId)
     }
   }
@@ -145,10 +145,10 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
     "return the correct subject when present" in {
       val issuerId = createIssuer("Issuer X")
       val groupName = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
-      val subjectA = createSubject(issuerId, "Alice", groupName)
-      createSubject(issuerId, "Bob", groupName)
+      val subjectA = createContact(issuerId, "Alice", groupName)
+      createContact(issuerId, "Bob", groupName)
 
-      val result = repository.find(issuerId, subjectA.id).value.futureValue.right.value
+      val result = repository.find(issuerId, subjectA.contactId).value.futureValue.right.value
       result.value must be(subjectA)
     }
 
@@ -157,10 +157,10 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val issuerYId = createIssuer("Issuer Y")
       val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
-      val subjectA = createSubject(issuerXId, "Alice", groupNameA)
-      createSubject(issuerYId, "Bob", groupNameB)
+      val subjectA = createContact(issuerXId, "Alice", groupNameA)
+      createContact(issuerYId, "Bob", groupNameB)
 
-      val result = repository.find(issuerYId, subjectA.id).value.futureValue.right.value
+      val result = repository.find(issuerYId, subjectA.contactId).value.futureValue.right.value
       result must be(empty)
     }
   }
@@ -168,8 +168,8 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
   "find by externalId" should {
     "return the correct subject when present" in {
       val issuerId = createIssuer("Issuer X")
-      val subjectA = createSubject(issuerId, "Alice", None, "subject-1")
-      createSubject(issuerId, "Bob", None, "subject-2")
+      val subjectA = createContact(issuerId, "Alice", None, "subject-1")
+      createContact(issuerId, "Bob", None, "subject-2")
 
       val result = repository.find(issuerId, subjectA.externalId).value.futureValue.right.value
       result.value must be(subjectA)
@@ -180,8 +180,8 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val issuerYId = createIssuer("Issuer Y")
       val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
-      val subjectA = createSubject(issuerXId, "Alice", groupNameA)
-      createSubject(issuerYId, "Bob", groupNameB)
+      val subjectA = createContact(issuerXId, "Alice", groupNameA)
+      createContact(issuerYId, "Bob", groupNameB)
 
       val result = repository.find(issuerYId, subjectA.externalId).value.futureValue.right.value
       result must be(empty)
@@ -194,10 +194,10 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val subjectA = createSubject(issuerId, "Alice", groupNameA)
-      val subjectB = createSubject(issuerId, "Bob", groupNameB)
-      createSubject(issuerId, "Charles", groupNameC)
-      createSubject(issuerId, "Alice 2", groupNameA)
+      val subjectA = createContact(issuerId, "Alice", groupNameA)
+      val subjectB = createContact(issuerId, "Bob", groupNameB)
+      createContact(issuerId, "Charles", groupNameC)
+      createContact(issuerId, "Alice 2", groupNameA)
 
       val result = repository.getBy(issuerId, None, None, 2).value.futureValue.right.value
       result must be(List(subjectA, subjectB))
@@ -208,10 +208,10 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val subjectA = createSubject(issuerId, "Alice", groupNameA)
-      createSubject(issuerId, "Bob", groupNameB)
-      createSubject(issuerId, "Charles", groupNameC)
-      val subjectA2 = createSubject(issuerId, "Alice 2", groupNameA)
+      val subjectA = createContact(issuerId, "Alice", groupNameA)
+      createContact(issuerId, "Bob", groupNameB)
+      createContact(issuerId, "Charles", groupNameC)
+      val subjectA2 = createContact(issuerId, "Alice 2", groupNameA)
 
       val result = repository.getBy(issuerId, None, Some(groupNameA), 2).value.futureValue.right.value
       result must be(List(subjectA, subjectA2))
@@ -222,12 +222,12 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      createSubject(issuerId, "Alice", groupNameA)
-      val subjectB = createSubject(issuerId, "Bob", groupNameB)
-      val subjectC = createSubject(issuerId, "Charles", groupNameC)
-      createSubject(issuerId, "Alice 2", groupNameA)
+      createContact(issuerId, "Alice", groupNameA)
+      val subjectB = createContact(issuerId, "Bob", groupNameB)
+      val subjectC = createContact(issuerId, "Charles", groupNameC)
+      createContact(issuerId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(issuerId, Some(subjectB.id), None, 1).value.futureValue.right.value
+      val result = repository.getBy(issuerId, Some(subjectB.contactId), None, 1).value.futureValue.right.value
       result must be(List(subjectC))
     }
 
@@ -236,13 +236,13 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val subjectA = createSubject(issuerId, "Alice", groupNameA)
-      createSubject(issuerId, "Bob", groupNameB)
-      createSubject(issuerId, "Charles", groupNameC)
-      val subjectA2 = createSubject(issuerId, "Alice 2", groupNameA)
+      val subjectA = createContact(issuerId, "Alice", groupNameA)
+      createContact(issuerId, "Bob", groupNameB)
+      createContact(issuerId, "Charles", groupNameC)
+      val subjectA2 = createContact(issuerId, "Alice 2", groupNameA)
 
       val result = repository
-        .getBy(issuerId, Some(subjectA.id), Some(groupNameA), 1)
+        .getBy(issuerId, Some(subjectA.contactId), Some(groupNameA), 1)
         .value
         .futureValue
         .right
@@ -259,12 +259,12 @@ class ContactsRepositorySpec extends CManagerRepositorySpec {
       val issuerId = createIssuer(issuerName)
       createIssuerGroup(issuerId, groupName)
 
-      val subject = createSubject(issuerId, subjectName, groupName)
-      val result = repository.generateToken(Institution.Id(issuerId.value), subject.id).value.futureValue
+      val subject = createContact(issuerId, subjectName, groupName)
+      val result = repository.generateToken(Institution.Id(issuerId.value), subject.contactId).value.futureValue
       val token = result.right.value
 
-      val updatedSubject = repository.find(issuerId, subject.id).value.futureValue.right.value.value
-      updatedSubject.id must be(subject.id)
+      val updatedSubject = repository.find(issuerId, subject.contactId).value.futureValue.right.value.value
+      updatedSubject.contactId must be(subject.contactId)
       updatedSubject.data must be(subject.data)
       updatedSubject.createdAt must be(subject.createdAt)
       updatedSubject.connectionStatus must be(Contact.ConnectionStatus.ConnectionMissing)

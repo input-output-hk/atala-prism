@@ -27,7 +27,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
           contact <- ContactsDAO.createContact(contactData)
           groupMaybe <- IssuerGroupsDAO.find(contactData.createdBy, groupName)
           group = groupMaybe.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
-          _ <- IssuerGroupsDAO.addContact(group.id, contact.id)
+          _ <- IssuerGroupsDAO.addContact(group.id, contact.contactId)
         } yield contact
     }
 

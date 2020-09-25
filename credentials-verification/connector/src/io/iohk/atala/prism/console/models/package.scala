@@ -39,7 +39,7 @@ package object models {
   }
 
   case class Contact(
-      id: Contact.Id,
+      contactId: Contact.Id,
       externalId: Contact.ExternalId,
       data: Json,
       createdAt: Instant,

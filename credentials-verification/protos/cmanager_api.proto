@@ -14,6 +14,8 @@ service CredentialsService {
     rpc CreateGenericCredential (CreateGenericCredentialRequest) returns (CreateGenericCredentialResponse) {}
     rpc GetGenericCredentials (GetGenericCredentialsRequest) returns (GetGenericCredentialsResponse) {}
 
+    rpc GetContactCredentials (GetContactCredentialsRequest) returns (GetContactCredentialsResponse) {}
+
     // Publish an encoded signed credential into the blockchain
     rpc PublishCredential (PublishCredentialRequest) returns (PublishCredentialResponse) {}
 }
@@ -194,4 +196,11 @@ message PublishCredentialRequest {
 
 message PublishCredentialResponse {
     TransactionInfo transactionInfo = 1;
+}
+
+message GetContactCredentialsRequest {
+    string contactId = 1;
+}
+message GetContactCredentialsResponse {
+    repeated CManagerGenericCredential genericCredentials = 1;
 }

@@ -399,6 +399,86 @@ proto.io.iohk.prism.protos.CredentialsServicePromiseClient.prototype.getGenericC
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.GetContactCredentialsRequest,
+ *   !proto.io.iohk.prism.protos.GetContactCredentialsResponse>}
+ */
+const methodDescriptor_CredentialsService_GetContactCredentials = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.CredentialsService/GetContactCredentials',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.GetContactCredentialsRequest,
+  proto.io.iohk.prism.protos.GetContactCredentialsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetContactCredentialsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.GetContactCredentialsRequest,
+ *   !proto.io.iohk.prism.protos.GetContactCredentialsResponse>}
+ */
+const methodInfo_CredentialsService_GetContactCredentials = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.GetContactCredentialsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetContactCredentialsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetContactCredentialsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetContactCredentialsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.CredentialsServiceClient.prototype.getContactCredentials =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/GetContactCredentials',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_GetContactCredentials,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.GetContactCredentialsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.CredentialsServicePromiseClient.prototype.getContactCredentials =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/GetContactCredentials',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_GetContactCredentials);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.io.iohk.prism.protos.PublishCredentialRequest,
  *   !proto.io.iohk.prism.protos.PublishCredentialResponse>}
  */

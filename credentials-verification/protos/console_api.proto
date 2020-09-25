@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package io.iohk.prism.protos;
+
+import "console_models.proto";
+import "cmanager_models.proto";
+
+service ConsoleService {
+  rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
+  rpc GetContacts (GetContactsRequest) returns (GetContactsResponse) {}
+  rpc GetContact (GetContactRequest) returns (GetContactResponse) {}
+  rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
+}
+
+message CreateContactRequest {
+  string groupName = 1;
+  string jsonData = 2;
+  // The id provided by the issuer at contact creation time
+  // An issuer cannot have two contacts with the same external id
+  // The id could be repeated in different issuers
+  string externalId = 3;
+}
+message CreateContactResponse {
+  Contact contact = 1;
+}
+
+message GetContactsRequest {
+  int32 limit = 1; // the max amount of contacts to return, must be > 0
+  string lastSeenContactId = 2; // the last seen contact (if any), the returned contacts start after this one
+  string groupName = 3; // if provided, get only the contacts that belong to this group
+}
+message GetContactsResponse {
+  repeated Contact contacts = 1;
+}
+
+message GetContactRequest {
+  string contactId = 1;
+}
+message GetContactResponse {
+  Contact contact = 1;
+}
+
+message GenerateConnectionTokenForContactRequest {
+  string contactId = 1; // the contact that will be linked to the token
+}
+message GenerateConnectionTokenForContactResponse {
+  string token = 1;
+}
