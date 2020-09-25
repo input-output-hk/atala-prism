@@ -54,6 +54,7 @@ android {
     }
     aaptOptions { cruncherEnabled = false }
     lintOptions {
+        abortOnError false
         lintConfig file("lint.xml")
     }
     kotlinOptions {
