@@ -124,7 +124,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <Button
-                android:enabled="@{viewModel.isLoading != true}"
+                android:enabled="@{viewModel.isLoading != true &amp;&amp; viewModel.acceptButtonEnabled == true}"
                 android:id="@+id/accept_button"
                 android:onClick="@{(v)-> viewModel.sendPhrase()}"
                 android:layout_width="0dp"

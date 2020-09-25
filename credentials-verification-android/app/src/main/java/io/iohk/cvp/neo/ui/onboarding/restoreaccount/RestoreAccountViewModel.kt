@@ -15,6 +15,10 @@ class RestoreAccountViewModel(private val accountRecoveryRepository: AccountReco
     // when the security words change the error messages should disappear in case there is one
     val securityWords = MutableLiveData<List<String>>().apply { observeForever(Observer { _error.value = null }) }
 
+    val acceptButtonEnabled = Transformations.map(securityWords) {
+        return@map it.size == 12
+    }
+
     private val _error = MutableLiveData<ErrorType>()
 
     val error: LiveData<ErrorType> = _error
