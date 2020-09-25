@@ -227,7 +227,7 @@ object Crypto extends ScalaModule {
     }
 
   private val cryptoDir = os.pwd / up / 'crypto
-  private val sbtEnv = Map("SBT_OPTS" -> "-Xmx1G")
+  private val sbtEnv = Map("SBT_OPTS" -> "-Xmx2G")
 
   def currentVersion: Input[String] =
     T.input {
