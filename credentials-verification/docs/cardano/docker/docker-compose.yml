@@ -9,7 +9,7 @@ services:
       - POSTGRES_DB_FILE=/run/secrets/postgres_db
       - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
       - POSTGRES_USER_FILE=/run/secrets/postgres_user
-    secrets:CredentialsRepository.scala
+    secrets:
       - postgres_password
       - postgres_user
       - postgres_db
@@ -19,7 +19,7 @@ services:
       - "5433:5432"
 
   cardano-node:
-    image: inputoutput/cardano-node:1.18.0
+    image: inputoutput/cardano-node:1.19.1
     environment:
       - NETWORK=${NETWORK:-testnet}
     volumes:
@@ -27,7 +27,7 @@ services:
       - node-ipc:/ipc
 
   cardano-db-sync:
-    image: inputoutput/cardano-db-sync:3.1.0
+    image: inputoutput/cardano-db-sync:5.0.1
     environment:
       - NETWORK=${NETWORK:-testnet}
       - POSTGRES_HOST=postgres
@@ -43,7 +43,7 @@ services:
       - node-ipc:/node-ipc
 
   cardano-wallet:
-    image: inputoutput/cardano-wallet:2020.7.28-shelley
+    image: inputoutput/cardano-wallet:2020.9.11-shelley
     depends_on:
       - cardano-node
     command: |

@@ -22,7 +22,7 @@ You can install the latest
 [Cardano Wallet CLI](https://github.com/input-output-hk/cardano-wallet/releases)
 release for Byron, but it's suggested to keep it simple with Docker:
 ```shell script
-alias cardano-wallet="docker run --network host --rm -i inputoutput/cardano-wallet:2020.7.28-shelley"
+alias cardano-wallet="docker run --network host --rm -i inputoutput/cardano-wallet:2020.9.11-shelley"
 ```
 
 However you install it, ensure you got the right version
