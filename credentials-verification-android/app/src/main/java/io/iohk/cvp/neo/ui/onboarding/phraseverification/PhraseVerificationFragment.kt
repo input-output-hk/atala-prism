@@ -1,6 +1,5 @@
 package io.iohk.cvp.neo.ui.onboarding.phraseverification
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View

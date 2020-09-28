@@ -11,15 +11,19 @@ class PhraseVerificationViewModel(private val sessionRepository: SessionReposito
                                   val verificationIndex1: Int,
                                   val verificationIndex2: Int) : ViewModel() {
 
+    private val _showInvalidWordsError = MutableLiveData<Boolean>(false)
+
+    val showInvalidWordsError: LiveData<Boolean> = _showInvalidWordsError
+
     private val expectedWord1: String = mnemonicList[verificationIndex1].toLowerCase()
 
     private val expectedWord2: String = mnemonicList[verificationIndex2].toLowerCase()
 
     // handle two way binding for the first word TextInputEditText
-    val firstWord = MutableLiveData<String>()
+    val firstWord = MutableLiveData<String>().apply { observeForever { _showInvalidWordsError.value = false } }
 
     // handle two way binding for the second word TextInputEditText
-    val secondWord = MutableLiveData<String>()
+    val secondWord = MutableLiveData<String>().apply { observeForever { _showInvalidWordsError.value = false } }
 
     private val _uiEnabled = MutableLiveData<Boolean>().apply { value = true }
 
@@ -38,6 +42,11 @@ class PhraseVerificationViewModel(private val sessionRepository: SessionReposito
     val shouldNavigateToNextScreen: LiveData<EventWrapper<Boolean>> = _shouldNavigateToNextScreen
 
     fun verifyButtonTaped() {
+        // Validate words
+        if (!expectedWord1.equals(firstWord.value, ignoreCase = true) || !expectedWord2.equals(secondWord.value, ignoreCase = true)) {
+            _showInvalidWordsError.value = true
+            return
+        }
         // UI is disabled while data is saved
         _uiEnabled.value = false
         viewModelScope.launch {
@@ -53,9 +62,7 @@ class PhraseVerificationViewModel(private val sessionRepository: SessionReposito
         if (_uiEnabled.value == false) {
             return false
         }
-        val word1 = (firstWord.value ?: "").toLowerCase()
-        val word2 = (secondWord.value ?: "").toLowerCase()
-        return word1.contentEquals(expectedWord1) && word2.contentEquals(expectedWord2)
+        return (firstWord.value ?: "").isNotBlank() && (secondWord.value ?: "").isNotBlank()
     }
 }
 

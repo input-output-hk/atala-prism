@@ -242,5 +242,6 @@
     <string name="are_you_sure">Are you sure?</string>
     <string name="you_are_about_delete">You are about to delete:</string>
     <string name="contact_delete_action_description">If you do this, the credentials below that were issued by the contact will also be deleted:</string>
+    <string name="words_were_invalid_try_again">Words were invalid. Please try again.</string>
 
 </resources>
