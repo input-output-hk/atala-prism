@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
 import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{Payment, WalletId}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import io.iohk.atala.prism.utils.FutureEither
 
@@ -24,7 +24,12 @@ trait CardanoWalletApiClient {
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransaction
     */
-  def postTransaction(walletId: WalletId, payments: List[Payment], passphrase: String): Result[TransactionId]
+  def postTransaction(
+      walletId: WalletId,
+      payments: List[Payment],
+      metadata: Option[TransactionMetadata],
+      passphrase: String
+  ): Result[TransactionId]
 }
 
 object CardanoWalletApiClient {

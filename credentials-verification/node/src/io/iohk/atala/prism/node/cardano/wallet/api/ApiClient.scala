@@ -5,7 +5,7 @@ import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{Payment, WalletId}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, Result}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient._
@@ -26,9 +26,10 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
   override def postTransaction(
       walletId: WalletId,
       payments: List[Payment],
+      metadata: Option[TransactionMetadata],
       passphrase: String
   ): Result[TransactionId] =
-    PostTransaction(walletId, payments, passphrase).run(transactionIdFromTransactionDecoder)
+    PostTransaction(walletId, payments, metadata, passphrase).run(transactionIdFromTransactionDecoder)
 
   private def call[A: Decoder](method: ApiRequest): Result[A] = {
     sttp

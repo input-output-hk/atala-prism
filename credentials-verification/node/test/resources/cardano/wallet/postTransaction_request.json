@@ -8,5 +8,8 @@
       }
     }
   ],
-  "passphrase": "Secure Passphrase"
+  "passphrase": "Secure Passphrase",
+  "metadata": {
+    "0": "0x1234567890abcdef"
+  }
 }

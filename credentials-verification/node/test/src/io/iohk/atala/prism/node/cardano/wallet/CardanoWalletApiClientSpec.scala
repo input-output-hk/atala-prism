@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
+import io.circe.Json
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse}
@@ -26,6 +27,7 @@ class CardanoWalletApiClientSpec extends WordSpec with ScalaFutures {
       ),
       Lovelace(42000000)
     )
+    val metadata = TransactionMetadata(Json.obj("0" -> Json.fromString("0x1234567890abcdef")))
     val passphrase = "Secure Passphrase"
     val expectedPath = s"v2/wallets/$walletId/transactions"
     val expectedJsonRequest = readResource("postTransaction_request.json")
@@ -38,7 +40,8 @@ class CardanoWalletApiClientSpec extends WordSpec with ScalaFutures {
           readResource("postTransaction_success_response.json")
         )
 
-      val transaction = client.postTransaction(walletId, List(payment), passphrase).value.futureValue.right.value
+      val transaction =
+        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue.right.value
 
       transaction must be(
         TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
@@ -54,7 +57,8 @@ class CardanoWalletApiClientSpec extends WordSpec with ScalaFutures {
           "Bad request"
         )
 
-      val error = client.postTransaction(walletId, List(payment), passphrase).value.futureValue.left.value
+      val error =
+        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue.left.value
 
       error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
     }

@@ -8,5 +8,11 @@
       }
     }
   ],
-  "passphrase": "Secure Passphrase"
+  "passphrase": "Secure Passphrase",
+  "metadata": {
+    "21325": {
+      "version": 1,
+      "content": [34, 3, 10, 1, 49]
+    }
+  }
 }

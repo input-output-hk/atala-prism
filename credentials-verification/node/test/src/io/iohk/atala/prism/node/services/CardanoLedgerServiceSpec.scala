@@ -38,11 +38,13 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
     TestCardanoBlockRepository.createTables()
   }
 
-  "publishReference" should {
-    val atalaObject = node_internal.AtalaObject()
+  "publish" should {
+    val atalaObject = node_internal
+      .AtalaObject()
+      .withBlock(node_internal.AtalaObject.Block.BlockContent(node_internal.AtalaBlock().withVersion("1")))
     val expectedWalletApiPath = s"v2/wallets/$walletId/transactions"
 
-    "publish a reference" in {
+    "publish an object" in {
       val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success(
         expectedWalletApiPath,
         readResource("publishReference_cardanoWalletApiRequest.json"),

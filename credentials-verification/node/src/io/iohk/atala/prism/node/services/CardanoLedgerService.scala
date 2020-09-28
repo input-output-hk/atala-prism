@@ -4,7 +4,7 @@ import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.cardano.CardanoClient
-import io.iohk.atala.prism.node.cardano.models._
+import io.iohk.atala.prism.node.cardano.models.{TransactionMetadata, _}
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.utils.FutureEither
@@ -50,9 +50,9 @@ class CardanoLedgerService private[services] (
   override def supportsOnChainData: Boolean = false
 
   override def publish(obj: node_internal.AtalaObject): Future[TransactionInfo] = {
-    // TODO: Send `obj` as metadata
+    val metadata = TransactionMetadata.fromProto(obj)
     cardanoClient
-      .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), walletPassphrase)
+      .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
       .value
       .map {
         case Right(transactionId) => TransactionInfo(transactionId, ledger)

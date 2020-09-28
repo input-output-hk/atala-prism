@@ -26,10 +26,11 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
   def postTransaction(
       walletId: WalletId,
       payments: List[Payment],
+      metadata: Option[TransactionMetadata],
       passphrase: String
   ): Result[PostTransactionError, TransactionId] = {
     cardanoWalletApiClient
-      .postTransaction(walletId, payments, passphrase)
+      .postTransaction(walletId, payments, metadata, passphrase)
       .mapLeft(e => {
         logger.error(s"Could not post the Cardano transaction: $e")
         PostTransactionError.InvalidTransaction
