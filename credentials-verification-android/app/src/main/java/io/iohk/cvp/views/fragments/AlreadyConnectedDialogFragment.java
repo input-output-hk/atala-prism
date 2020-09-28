@@ -6,8 +6,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDialogFragment;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModel;
 
@@ -20,17 +18,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.utils.ImageUtils;
-import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.activities.MainActivity;
-import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.prism.protos.ParticipantInfo;
 
 /**
@@ -88,10 +81,10 @@ public class AlreadyConnectedDialogFragment extends CvpDialogFragment {
         if (getArguments() != null) {
             issuerName = getArguments().getString(ISSUER_NAME);
             participantNameTextView.setText(issuerName);
-            try{
+            try {
                 participantLogo.setImageBitmap(ImageUtils.getBitmapFromByteArray(getArguments().getByteArray(LOGO_DATA_KEY)));
-            }catch (Exception e){
-                Crashlytics.logException(e);
+            } catch (Exception e) {
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
         }
     }
@@ -116,6 +109,7 @@ public class AlreadyConnectedDialogFragment extends CvpDialogFragment {
     protected int getViewId() {
         return R.layout.fragment_already_connected_dialog;
     }
+
     @Override
     public ViewModel getViewModel() {
         return null;

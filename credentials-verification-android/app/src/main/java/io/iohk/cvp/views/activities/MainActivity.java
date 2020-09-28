@@ -18,9 +18,9 @@ import androidx.lifecycle.ViewModelProviders;
 import com.braintreepayments.api.dropin.DropInActivity;
 import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.models.PaymentMethodNonce;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -122,19 +122,19 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         init();
 
         Preferences prefs = new Preferences(this);
-        if(prefs.isPinConfigured())
+        if (prefs.isPinConfigured())
             navigator.showUnlockScreen(this);
     }
 
     private void init() {
         viewModel.getHasConnectionsInitialScreenLiveData().observe(this, asyncTaskResult -> {
-            if(asyncTaskResult.getError() != null) {
-                Crashlytics.logException(asyncTaskResult.getError());
+            if (asyncTaskResult.getError() != null) {
+                FirebaseCrashlytics.getInstance().recordException(asyncTaskResult.getError());
                 return;
             }
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-            if(asyncTaskResult.getResult()) {
+            if (asyncTaskResult.getResult()) {
                 FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.notifications);
                 ft.replace(R.id.fragment_layout, f, MAIN_FRAGMENT_TAG);
             } else {
@@ -143,12 +143,12 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
             ft.commit();
         });
         viewModel.getHasConnectionsMoveToContactLiveData().observe(this, asyncTaskResult -> {
-            if(asyncTaskResult.getError() != null) {
-                Crashlytics.logException(asyncTaskResult.getError());
+            if (asyncTaskResult.getError() != null) {
+                FirebaseCrashlytics.getInstance().recordException(asyncTaskResult.getError());
                 return;
             }
 
-            if(asyncTaskResult.getResult()) {
+            if (asyncTaskResult.getResult()) {
                 FirstConnectionFragment firstConnectionFragment = FirstConnectionFragment.newInstance(R.string.contacts);
                 changeFragment(firstConnectionFragment);
             } else {
@@ -178,11 +178,11 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     public void onBackPressed() {
         Fragment currentFragment = getCurrentFragment();
 
-        if(isBottomBarOptionScreen(currentFragment) || isFirstConnetionContacts(currentFragment)) {
+        if (isBottomBarOptionScreen(currentFragment) || isFirstConnetionContacts(currentFragment)) {
             getSupportFragmentManager().popBackStack(INITIAL_TRANSACTION, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             bottomAppBar.setItemColors(null);
             fab.setBackgroundTintList(colorRed);
-        } else if(isInitialScreen(currentFragment)) {
+        } else if (isInitialScreen(currentFragment)) {
             this.finish();
         } else {
             getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
@@ -191,7 +191,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     private boolean isFirstConnetionContacts(Fragment currentFragment) {
-        return currentFragment instanceof FirstConnectionFragment && ((FirstConnectionFragment)currentFragment).getIdTitle() == R.string.contacts;
+        return currentFragment instanceof FirstConnectionFragment && ((FirstConnectionFragment) currentFragment).getIdTitle() == R.string.contacts;
     }
 
     private boolean isBottomBarOptionScreen(Fragment currentFragment) {
@@ -207,14 +207,14 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         }
         bottomAppBar.setItemColors(option);
 
-        if(option == CONTACTS) {
+        if (option == CONTACTS) {
             viewModel.checkIfHasConnectionsMoveToContacts();
             return;
         }
 
         getFragmentToRender(option)
                 .ifPresent(cvpFragment -> {
-                   changeFragment(cvpFragment);
+                    changeFragment(cvpFragment);
                 });
     }
 
@@ -243,9 +243,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                 FirstConnectionFragment fragment = FirstConnectionFragment.newInstance(R.string.notifications);
                 return Optional.of(fragment);
             default:
-                Crashlytics.logException(
-                        new CaseNotFoundException("Couldn't find fragment for option " + option,
-                                ErrorCode.STEP_NOT_FOUND));
+                FirebaseCrashlytics.getInstance().recordException(new CaseNotFoundException("Couldn't find fragment for option " + option,
+                        ErrorCode.STEP_NOT_FOUND));
                 return Optional.empty();
         }
     }
@@ -256,7 +255,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     private boolean isInitialScreen(Fragment currentFragment) {
-        return currentFragment instanceof  HomeFragment || currentFragment instanceof FirstConnectionFragment;
+        return currentFragment instanceof HomeFragment || currentFragment instanceof FirstConnectionFragment;
     }
 
     @Override
@@ -290,7 +289,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
             } else {
                 if (resultCode != RESULT_CANCELED) {
                     Exception error = (Exception) data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
-                    Crashlytics.logException(error);
+                    FirebaseCrashlytics.getInstance().recordException(error);
                     // TODO show error message
                 }
             }
@@ -321,7 +320,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     public void acceptConnection(String connectionToken) {
         LiveData<AsyncTaskResult<AddConnectionFromTokenResponse>> asyncTaskResultLiveData = viewModel
                 .addConnectionFromToken(connectionToken, "");
-        if(asyncTaskResultLiveData.hasActiveObservers()) {
+        if (asyncTaskResultLiveData.hasActiveObservers()) {
             return;
         }
         asyncTaskResultLiveData.observe(this, response -> {

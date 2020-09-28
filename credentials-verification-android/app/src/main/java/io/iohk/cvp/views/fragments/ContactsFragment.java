@@ -19,8 +19,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.List;
 
@@ -136,7 +136,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
             contactLogo.setImageBitmap(
                     ImageUtils.getBitmapFromByteArray(contactToDelete.getContact().logo));
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         contactName.setText(contactToDelete.getContact().name);
 

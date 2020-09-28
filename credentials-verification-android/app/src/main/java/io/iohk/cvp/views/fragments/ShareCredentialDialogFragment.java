@@ -16,8 +16,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
             credential = CredentialParse.parse(getArguments().getString(CREDENTIAL_TYPE_KEY), getArguments().getString(CREDENTIAL_DATA_KEY));
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return view;

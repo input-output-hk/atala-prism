@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.ErrorCode;
@@ -31,9 +31,8 @@ public class ConnectionTabsAdapter extends FragmentPagerAdapter {
             case 0:
                 return universitiesListFragment;
             default:
-                Crashlytics.logException(
-                        new CaseNotFoundException("Couldn't find fragment for tab " + position,
-                                ErrorCode.TAB_NOT_FOUND));
+                FirebaseCrashlytics.getInstance().recordException(new CaseNotFoundException("Couldn't find fragment for tab " + position,
+                        ErrorCode.TAB_NOT_FOUND));
                 return universitiesListFragment;
         }
     }

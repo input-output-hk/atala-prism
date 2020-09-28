@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.crypto.japi.ECKeyPair
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class RestoreAccountViewModel@Inject constructor(val dataManager: DataManager, val context: CvpApplication) : ViewModel() {
+class RestoreAccountViewModel @Inject constructor(val dataManager: DataManager, val context: CvpApplication) : ViewModel() {
 
     companion object {
         private const val STARTING_INDEX: Int = -1
@@ -51,8 +51,8 @@ class RestoreAccountViewModel@Inject constructor(val dataManager: DataManager, v
                 dataManager.saveMnemonics(phrasesList)
                 dataManager.saveIndex(lastIndex)
                 _recoveryCompletedLiveData.postValue(true)
-            } catch (ex:Exception) {
-                Crashlytics.logException(ex)
+            } catch (ex: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 _showErrorMessageLiveData.postValue(context.getString(R.string.server_error_message))
             }
         }
@@ -65,8 +65,8 @@ class RestoreAccountViewModel@Inject constructor(val dataManager: DataManager, v
             val getConnectionPaginatedResponse = dataManager.getConnection(ecKeyPair)
             saveAllConcactsAndCredentials(getConnectionPaginatedResponse.connectionsList, CryptoUtils.getPathFromIndex(nextIndex), ecKeyPair)
             recoverConnectionFromIndex(mnemonicList, nextIndex)
-        } catch (ex : StatusRuntimeException) {
-            if(ex.status.code == Status.UNKNOWN.code) {
+        } catch (ex: StatusRuntimeException) {
+            if (ex.status.code == Status.UNKNOWN.code) {
                 return currentIndex
             }
             throw ex
@@ -74,7 +74,7 @@ class RestoreAccountViewModel@Inject constructor(val dataManager: DataManager, v
     }
 
     private suspend fun saveAllConcactsAndCredentials(connectionsList: List<ConnectionInfo>, keyPath: String, ecKeyPair: ECKeyPair) {
-        connectionsList.forEach {connection ->
+        connectionsList.forEach { connection ->
             val contact = ContactMapper.mapToContact(connection, keyPath)
             getAllCredentialsFromContact(contact, ecKeyPair)
         }
@@ -86,18 +86,17 @@ class RestoreAccountViewModel@Inject constructor(val dataManager: DataManager, v
                 .filter {
                     val newMessage: AtalaMessage = AtalaMessage.parseFrom(it.message)
                     newMessage.proofRequest.typeIdsList.isEmpty()
-                } .toList()
+                }.toList()
 
-        if(credentialList.isNotEmpty()) {
+        if (credentialList.isNotEmpty()) {
             contact.lastMessageId = credentialList.last().id
             saveCredentials(credentialList)
         }
         dataManager.saveContact(contact)
     }
 
-    private suspend fun  saveCredentials(messagesPaginatedResponseList: List<ReceivedMessage>) {
-        val credentialsList = messagesPaginatedResponseList.map {
-            receivedMessage: ReceivedMessage? ->
+    private suspend fun saveCredentials(messagesPaginatedResponseList: List<ReceivedMessage>) {
+        val credentialsList = messagesPaginatedResponseList.map { receivedMessage: ReceivedMessage? ->
             return@map CredentialMapper.mapToCredential(receivedMessage)
         }.toList()
         dataManager.saveAllCredentials(credentialsList)
@@ -106,15 +105,15 @@ class RestoreAccountViewModel@Inject constructor(val dataManager: DataManager, v
 
     fun validateMnemonics(phrasesList: MutableList<String>) {
         try {
-            if(phrasesList.size < 12) {
+            if (phrasesList.size < 12) {
                 _showErrorMessageLiveData.postValue(context.getString(R.string.recovery_must_have_twelve_words))
-            } else if(!CryptoUtils.isValidMnemonicList(phrasesList)) {
+            } else if (!CryptoUtils.isValidMnemonicList(phrasesList)) {
                 _showErrorMessageLiveData.postValue(context.getString(R.string.incorrect_recovery_phrase))
             } else {
                 recoverAccount(phrasesList)
             }
-        } catch (ex:Exception) {
-            Crashlytics.logException(ex)
+        } catch (ex: Exception) {
+            FirebaseCrashlytics.getInstance().recordException(ex)
             _showErrorMessageLiveData.postValue(context.getString(R.string.incorrect_recovery_phrase))
         }
     }

@@ -16,7 +16,7 @@ import android.widget.TextView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import javax.inject.Inject;
 
@@ -81,7 +81,6 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
     }
 
 
-
     @Inject
     AcceptConnectionDialogFragment(ViewModelProvider.Factory factory) {
         this.factory = factory;
@@ -108,7 +107,7 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
         try {
             participantLogo.setImageBitmap(ImageUtils.getBitmapFromByteArray(getArguments().getByteArray(LOGO_DATA_KEY)));
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return view;
     }
@@ -120,7 +119,7 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
             connectionManageableListener = (ConnectionManageable) context;
             firebaseEventLogger = (FirebaseEventLogger) context;
         } catch (ClassCastException castException) {
-            Crashlytics.logException(castException);
+            FirebaseCrashlytics.getInstance().recordException(castException);
         }
     }
 

@@ -2,9 +2,8 @@ package io.iohk.cvp.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.iohk.cvp.data.DataManager
 import io.iohk.cvp.data.local.db.model.Credential
 import io.iohk.cvp.grpc.AsyncTaskResult
@@ -53,7 +52,7 @@ class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : N
                 credential.viewed = true
                 dataManager.updateCredential(credential)
             } catch (ex: Exception) {
-                Crashlytics.logException(ex)
+                FirebaseCrashlytics.getInstance().recordException(ex)
             }
         }
     }
@@ -72,8 +71,8 @@ class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : N
                 val credential = dataManager.getCredentialByCredentialId(credentialId)
                 dataManager.deleteCredential(credential)
                 _credentialDeletedLiveData.postValue(true)
-            } catch (ex:Exception) {
-                Crashlytics.logException(ex)
+            } catch (ex: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 _showErrorMessageLiveData.postValue(true)
             }
         }

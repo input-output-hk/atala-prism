@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.protobuf'
-apply plugin: 'io.fabric'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 
 android {
@@ -54,7 +55,6 @@ android {
     }
     aaptOptions { cruncherEnabled = false }
     lintOptions {
-        abortOnError false
         lintConfig file("lint.xml")
     }
     kotlinOptions {
@@ -158,8 +158,9 @@ dependencies {
     implementation 'javax.annotation:javax.annotation-api:1.2'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
-    implementation 'com.google.firebase:firebase-analytics:17.2.2'
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
+    implementation 'com.google.firebase:firebase-analytics:17.5.0'
+    implementation 'com.google.firebase:firebase-crashlytics:17.2.1'
+    implementation 'com.google.android.gms:play-services-base:17.4.0'
     implementation "com.google.android.material:material:$materialVersion"
     implementation 'de.hdodenhof:circleimageview:3.0.1'
     implementation 'com.madgag.spongycastle:core:1.58.0.0'
@@ -235,4 +236,4 @@ dependencies {
 
 }
 
-apply plugin: 'com.google.gms.google-services'
+

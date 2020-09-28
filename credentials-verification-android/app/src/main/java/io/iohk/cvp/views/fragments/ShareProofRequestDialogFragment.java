@@ -20,8 +20,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.stream.Collectors;
 
@@ -96,7 +96,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
             participantLogoImgView.setImageBitmap(
                     ImageUtils.getBitmapFromByteArray(credentialsToShare.getConnection().logo));
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         try {
@@ -107,7 +107,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
                 credentailsToShareContent.addView(new ShareCredentialRow(this, acceptedCredential));
             }
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return view;
@@ -121,14 +121,14 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
 
     private void initObservers() {
         getViewModel().getMessageSentLiveData().observe(getViewLifecycleOwner(), asyncTaskResult -> {
-            if(asyncTaskResult.getError() !=  null) {
+            if (asyncTaskResult.getError() != null) {
                 FragmentManager fm = getFragmentManager();
                 SupportErrorDialogFragment.newInstance(new Dialog(getContext())).show(fm, "");
                 getNavigator().showPopUp(getFragmentManager(), getResources().getString(
                         R.string.server_error_message));
                 return;
             }
-            if(asyncTaskResult.getResult()) {
+            if (asyncTaskResult.getResult()) {
                 SuccessDialog.newInstance(this, R.string.server_share_successfully)
                         .show(getFragmentManager(), "dialog");
                 this.dismiss();
@@ -136,7 +136,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
             }
         });
         getViewModel().getContactUpdatedLiveData().observe(getViewLifecycleOwner(), asyncTaskResult -> {
-            if(asyncTaskResult.getResult()) {
+            if (asyncTaskResult.getResult()) {
                 getActivity().onBackPressed();
                 dismiss();
             }
@@ -171,10 +171,10 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
         getViewModel().setLastMessageSeen(credentialsToShare.getConnection().connectionId, credentialsToShare.getMessageId());
     }
 
-    public void enableShareButton(){
-        for(int i=0; i<credentailsToShareContent.getChildCount(); i++) {
+    public void enableShareButton() {
+        for (int i = 0; i < credentailsToShareContent.getChildCount(); i++) {
             ShareCredentialRow shareCredentialRow = (ShareCredentialRow) credentailsToShareContent.getChildAt(i);
-            if(!shareCredentialRow.isChecked()){
+            if (!shareCredentialRow.isChecked()) {
                 shareButton.setEnabled(false);
                 return;
             }

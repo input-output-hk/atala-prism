@@ -11,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import butterknife.BindDrawable;
 import butterknife.BindView;
@@ -103,7 +103,7 @@ public class ShareCredentialRecyclerViewAdapter extends
                             ImageUtils.getBitmapFromByteArray(connectionInfo.getLogo()));
                 }
             } catch (Exception e) {
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
             setBackground();
         }
@@ -134,4 +134,3 @@ public class ShareCredentialRecyclerViewAdapter extends
         }
     }
 }
-

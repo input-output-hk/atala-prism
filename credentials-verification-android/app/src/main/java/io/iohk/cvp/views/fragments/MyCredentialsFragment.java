@@ -16,7 +16,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.crashlytics.android.Crashlytics;
+
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +39,7 @@ import lombok.Setter;
 
 @Setter
 @NoArgsConstructor
-public class MyCredentialsFragment extends CvpFragment<CredentialsViewModel>  implements CredentialClickListener {
+public class MyCredentialsFragment extends CvpFragment<CredentialsViewModel> implements CredentialClickListener {
 
     @BindView(R.id.credentials_list)
     RecyclerView credentialsRecyclerView;
@@ -100,7 +101,7 @@ public class MyCredentialsFragment extends CvpFragment<CredentialsViewModel>  im
                     return;
                 }
                 List<Credential> credentialList = result.getResult();
-                if(credentialList != null) {
+                if (credentialList != null) {
                     credentialsAdapter.addMesseges(credentialList);
                     if (credentialList.isEmpty()) {
                         credentialsRecyclerView.setVisibility(View.GONE);
@@ -108,7 +109,7 @@ public class MyCredentialsFragment extends CvpFragment<CredentialsViewModel>  im
                     }
                 }
             } catch (Exception e) {
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
             } finally {
                 loading.setVisibility(View.GONE);
             }

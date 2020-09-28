@@ -13,16 +13,14 @@ import android.widget.RelativeLayout;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.List;
-import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -120,7 +118,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
                     return;
                 }
                 List<Credential> messages = result.getResult();
-                if(messages != null) {
+                if (messages != null) {
                     credentialsAdapter.addMesseges(messages);
                     if (messages.isEmpty()) {
                         ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.FIRSTCONNECTION);
@@ -130,7 +128,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
                     }
                 }
             } catch (Exception e) {
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
             } finally {
                 loading.setVisibility(View.GONE);
             }
@@ -154,7 +152,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
     @Override
     public void onCredentialClickListener(Boolean isNew, Credential credential) {
 
-        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_VIEW);
+        ((MainActivity) getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_VIEW);
 
         CredentialDetailFragment credentialFragment = new CredentialDetailFragment();
         credentialFragment.setCredential(credential);

@@ -11,8 +11,7 @@ import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.lifecycle.ViewModel;
 
-
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -99,7 +98,7 @@ public class UnlockActivity extends CvpActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(BiometricManager.from(getBaseContext()).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS && prefs.getSecurityTouch()) {
+        if (BiometricManager.from(getBaseContext()).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS && prefs.getSecurityTouch()) {
             biometrics.setVisibility(View.VISIBLE);
         } else {
             biometrics.setVisibility(View.INVISIBLE);
@@ -114,7 +113,7 @@ public class UnlockActivity extends CvpActivity {
             //onAuthenticationError is called when a fatal error occurs//
             public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                 super.onAuthenticationError(errorCode, errString);
-                if(errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON && errorCode != BiometricPrompt.ERROR_USER_CANCELED)
+                if (errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON && errorCode != BiometricPrompt.ERROR_USER_CANCELED)
                     biometrics.setVisibility(View.INVISIBLE);
             }
 
@@ -134,26 +133,26 @@ public class UnlockActivity extends CvpActivity {
     }
 
     private void addPinNumber(String number) {
-        if(pin.length() > 3) {
+        if (pin.length() > 3) {
             return;
         }
         pin = pin.concat(number);
         updatePinViews();
         try {
-            if(pin.length() == 4) {
-                if(prefs.getSecurityPin().equals(new SecurityPin(pin))) {
+            if (pin.length() == 4) {
+                if (prefs.getSecurityPin().equals(new SecurityPin(pin))) {
                     UnlockActivity.this.finish();
                 } else {
                     Toast.makeText(UnlockActivity.this, R.string.incorrect_pin_code, Toast.LENGTH_SHORT).show();
                 }
             }
         } catch (WrongPinLengthException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
     }
 
-    private void removePinNumber(){
-        if(pin.length() == 0) {
+    private void removePinNumber() {
+        if (pin.length() == 0) {
             return;
         }
         pin = StringUtils.substring(pin, 0, pin.length() - 1);

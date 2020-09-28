@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +77,7 @@ public class NewCredentialsRecyclerViewAdapter extends
             holder.credentialName.setText(credential.issuerName);
 
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
     }
 
@@ -129,4 +129,3 @@ public class NewCredentialsRecyclerViewAdapter extends
     }
 
 }
-

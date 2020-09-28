@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,7 @@ public class ContactsRecyclerViewAdapter extends
             try {
                 holder.issuerLogo.setImageBitmap(ImageUtils.getBitmapFromByteArray(logo));
             } catch (Exception ex) {
-                Crashlytics.logException(ex);
+                FirebaseCrashlytics.getInstance().recordException(ex);
             }
         }
         holder.deleteContactBtn.setOnClickListener(v -> {

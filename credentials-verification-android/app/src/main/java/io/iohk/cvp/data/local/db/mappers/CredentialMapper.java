@@ -1,6 +1,6 @@
 package io.iohk.cvp.data.local.db.mappers;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.iohk.cvp.utils.CredentialParse;
@@ -11,26 +11,26 @@ import io.iohk.prism.protos.ReceivedMessage;
 
 public class CredentialMapper {
 
-   static public io.iohk.cvp.data.local.db.model.Credential mapToCredential(ReceivedMessage receivedMessage) {
-      io.iohk.cvp.data.local.db.model.Credential credentialModel = new io.iohk.cvp.data.local.db.model.Credential();
-      try {
+    static public io.iohk.cvp.data.local.db.model.Credential mapToCredential(ReceivedMessage receivedMessage) {
+        io.iohk.cvp.data.local.db.model.Credential credentialModel = new io.iohk.cvp.data.local.db.model.Credential();
+        try {
 
-         Credential credential = AtalaMessage.parseFrom(receivedMessage.getMessage())
-                 .getIssuerSentCredential().getCredential();
+            Credential credential = AtalaMessage.parseFrom(receivedMessage.getMessage())
+                    .getIssuerSentCredential().getCredential();
 
-         CredentialDto credentialDto = CredentialParse.parse(credential);
+            CredentialDto credentialDto = CredentialParse.parse(credential);
 
-         credentialModel.credentialId = receivedMessage.getId();
-         credentialModel.dateReceived = System.currentTimeMillis();
-         credentialModel.credentialEncoded = credential.toByteString();
-         credentialModel.issuerId = credentialDto.getIssuer().getId();
-         credentialModel.issuerName = credentialDto.getIssuer().getName();
-         credentialModel.credentialType = credential.getTypeId();
-         credentialModel.connectionId = receivedMessage.getConnectionId();
-         credentialModel.credentialDocument = credential.getCredentialDocument();
-      } catch (InvalidProtocolBufferException ex) {
-         Crashlytics.logException(ex);
-      }
-      return credentialModel;
-   }
+            credentialModel.credentialId = receivedMessage.getId();
+            credentialModel.dateReceived = System.currentTimeMillis();
+            credentialModel.credentialEncoded = credential.toByteString();
+            credentialModel.issuerId = credentialDto.getIssuer().getId();
+            credentialModel.issuerName = credentialDto.getIssuer().getName();
+            credentialModel.credentialType = credential.getTypeId();
+            credentialModel.connectionId = receivedMessage.getConnectionId();
+            credentialModel.credentialDocument = credential.getCredentialDocument();
+        } catch (InvalidProtocolBufferException ex) {
+            FirebaseCrashlytics.getInstance().recordException(ex);
+        }
+        return credentialModel;
+    }
 }
