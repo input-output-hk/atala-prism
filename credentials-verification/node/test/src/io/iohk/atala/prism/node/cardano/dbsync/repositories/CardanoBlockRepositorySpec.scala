@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories
 
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.circe.Json
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models._
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong
@@ -27,6 +28,57 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val block = result.right.value
       block must be(toFindBlock)
+    }
+
+    "return transactions without metadata" in {
+      val blocks = TestCardanoBlockRepository.createRandomBlocks(1)
+      blocks.foreach(TestCardanoBlockRepository.insertBlock)
+      val block = blocks(1)
+      val transaction = Transaction(TestCardanoBlockRepository.randomTransactionId(), block.header.hash, None)
+      TestCardanoBlockRepository.insertTransaction(transaction, block.transactions.size)
+
+      val result = blockRepository.getFullBlock(block.header.blockNo).value.futureValue
+
+      result.right.value.transactions.last must be(transaction)
+    }
+
+    "return transactions without non-PRISM metadata" in {
+      val blocks = TestCardanoBlockRepository.createRandomBlocks(1)
+      blocks.foreach(TestCardanoBlockRepository.insertBlock)
+      val block = blocks(1)
+      val transaction = Transaction(
+        TestCardanoBlockRepository.randomTransactionId(),
+        block.header.hash,
+        Some(TransactionMetadata(Json.obj("1" -> Json.obj("is_this_prism" -> Json.fromString("no")))))
+      )
+      TestCardanoBlockRepository.insertTransaction(transaction, block.transactions.size)
+      val transactionWithoutMetadata = transaction.copy(metadata = None)
+
+      val result = blockRepository.getFullBlock(block.header.blockNo).value.futureValue
+
+      result.right.value.transactions.last must equal(transactionWithoutMetadata)
+    }
+
+    "return transactions with PRISM metadata" in {
+      val blocks = TestCardanoBlockRepository.createRandomBlocks(1)
+      blocks.foreach(TestCardanoBlockRepository.insertBlock)
+      val block = blocks(1)
+      val transaction = Transaction(
+        TestCardanoBlockRepository.randomTransactionId(),
+        block.header.hash,
+        Some(
+          TransactionMetadata(
+            Json.obj(
+              AtalaObjectMetadata.METADATA_PRISM_INDEX.toString -> Json.obj("is_this_prism" -> Json.fromString("yes"))
+            )
+          )
+        )
+      )
+      TestCardanoBlockRepository.insertTransaction(transaction, block.transactions.size)
+
+      val result = blockRepository.getFullBlock(block.header.blockNo).value.futureValue
+
+      result.right.value.transactions.last must be(transaction)
     }
 
     "return NotFound when the block is not found" in {

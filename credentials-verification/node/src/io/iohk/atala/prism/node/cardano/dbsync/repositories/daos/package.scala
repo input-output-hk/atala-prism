@@ -3,8 +3,9 @@ package io.iohk.atala.prism.node.cardano.dbsync.repositories
 import java.time.Instant
 
 import doobie.util.{Get, Read}
+import io.circe.Json
 import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction}
+import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction, TransactionMetadata}
 
 package object daos {
   import io.iohk.atala.prism.models.DoobieImplicits._
@@ -21,7 +22,21 @@ package object daos {
   }
 
   private[daos] implicit val transactionRead: Read[Transaction] = {
-    Read[(TransactionId, BlockHash)]
-      .map((Transaction.apply _).tupled)
+    Read[(TransactionId, BlockHash, Option[Int], Option[String])]
+      .map {
+        case (transactionId, blockHash, metadataKey, metadataJson) =>
+          Transaction(
+            transactionId,
+            blockHash,
+            // Merge `metadataKey` and `metadataJson` columns into `TransactionMetadata`
+            metadataKey.map(key => {
+              val parsedMetadataJson = io.circe.parser
+                .parse(metadataJson.getOrElse("{}"))
+                .getOrElse(throw new RuntimeException(s"Metadata of transaction $transactionId could not be parsed"))
+
+              TransactionMetadata(Json.obj(key.toString -> parsedMetadataJson))
+            })
+          )
+      }
   }
 }
