@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SecurityViewController: ListingBaseViewController {
+class SecurityViewController: ListingBaseViewController, UIScrollViewDelegate {
 
     @IBOutlet weak var setupView: UIView!
     @IBOutlet weak var setupTitleLbl: UILabel!
@@ -57,6 +57,8 @@ class SecurityViewController: ListingBaseViewController {
     var presenterImpl = SecurityPresenter()
     override var presenter: BasePresenter { return presenterImpl }
 
+    var isSetupStepTwo = false
+
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return NavBarCustomStyle(hasNavBar: true, title: nil, hasBackButton: true)
     }
@@ -89,6 +91,7 @@ class SecurityViewController: ListingBaseViewController {
     func setupViews() {
         setupStepOneView.layer.cornerRadius = 3
         setupStepTwoView.layer.cornerRadius = 3
+        setupScroll.delegate = self
     }
 
     func setupForTouchID() {
@@ -113,6 +116,24 @@ class SecurityViewController: ListingBaseViewController {
             changePinView.isHidden = true
         case .changePin:
             changeScreenToChangePin()
+        }
+    }
+
+    override func getScrollableMainView() -> UIScrollView? {
+        switch presenterImpl.mode {
+        case .setup:
+            return setupScroll
+        case .main:
+            return nil
+        case .changePin:
+            return changePinView as? UIScrollView
+        }
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offset = isSetupStepTwo ? scrollView.frame.width : 0
+        if scrollView.contentOffset.x != offset {
+            scrollView.contentOffset.x = offset
         }
     }
 
@@ -217,7 +238,12 @@ class SecurityViewController: ListingBaseViewController {
     // MARK: Screens
 
     func changeScreenToSetupStepTwo() {
+        setupScroll.delegate = nil
         setupScroll.scrollRectToVisible(setupStepTwoPageView.frame, animated: true)
+        isSetupStepTwo = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.setupScroll.delegate = self
+        }
         setupStepLbl.text = "security_step_two".localize()
         setupStepTwoView.alpha = 1
     }

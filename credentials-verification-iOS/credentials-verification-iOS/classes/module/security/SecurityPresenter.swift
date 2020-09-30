@@ -298,7 +298,7 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     // MARK: Table
 
     func hasPullToRefresh() -> Bool {
-        false
+        true
     }
 
     func actionPullToRefresh() {
