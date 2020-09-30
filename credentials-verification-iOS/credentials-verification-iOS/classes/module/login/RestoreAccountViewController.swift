@@ -80,7 +80,7 @@ class RestoreAccountViewController: BaseViewController {
 
     @IBAction func verifyTapped(_ sender: Any) {
         let mnemonics = chipsField.chips.map { chip -> String in
-            return chip.titleLabel.text ?? ""
+            return chip.titleLabel.text?.lowercased() ?? ""
         }
         presenterImpl.tappedVerifyButton(mnemonics: mnemonics)
     }

@@ -28,7 +28,7 @@ class RestoreAccountPresenter: BasePresenter {
                 if !response.connections.isEmpty {
                     let keyPath = CryptoUtils.global.confirmNewKeyUsed()
                     let dao = ContactDAO()
-                    _ = DispatchQueue.main.sync {
+                    DispatchQueue.main.sync {
                         contact =  dao.createContact(connectionInfo: response.connections[0], keyPath: keyPath)
                     }
                 }

@@ -116,7 +116,7 @@ class CryptoUtils: NSObject {
     }
 
     func checkWordsValidity(indexes: [Int], words: [String]) -> Bool {
-        for pos in 0 ..< indexes.count where usedMnemonics![indexes[pos]] != words[pos] {
+        for pos in 0 ..< indexes.count where usedMnemonics![indexes[pos]] != words[pos].lowercased() {
             return false
         }
         return true
