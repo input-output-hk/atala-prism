@@ -8,7 +8,6 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import cats.effect.{Blocker, ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
-import monix.execution.Scheduler.Implicits.global
 import io.grpc.{Server, ServerBuilder, ServerServiceDefinition}
 import io.grpc.protobuf.services.ProtoReflectionService
 import org.flywaydb.core.Flyway
@@ -51,7 +50,7 @@ object MirrorApp extends TaskApp {
 
       grpcServer <- createGrpcServer(
         mirrorConfig,
-        MirrorServiceGrpc.bindService(new MirrorService(tx), scheduler)
+        MirrorServiceGrpc.bindService(new MirrorService(tx)(scheduler), scheduler)
       )
     } yield grpcServer
 

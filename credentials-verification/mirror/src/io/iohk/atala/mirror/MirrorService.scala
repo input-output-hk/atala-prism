@@ -8,9 +8,18 @@ import doobie.util.transactor.Transactor
 import doobie.implicits._
 
 import io.iohk.atala.mirror.protos.mirror_api.{CreateAccountRequest, CreateAccountResponse, MirrorServiceGrpc}
-import io.iohk.atala.mirror.db.ExampleDao
+import io.iohk.atala.mirror.db.ConnectionDao
+import io.iohk.atala.mirror.models.Connection
 
 class MirrorService(tx: Transactor[Task])(implicit s: Scheduler) extends MirrorServiceGrpc.MirrorService {
+
+  /**
+    * This is an example of usage, it'll be removed in the future.
+    */
   override def createAccount(request: CreateAccountRequest): Future[CreateAccountResponse] =
-    ExampleDao.test.transact(tx).map(CreateAccountResponse(_)).runToFuture
+    ConnectionDao
+      .insert(Connection(Connection.ConnectionToken("token"), None, Connection.ConnectionState.Invited))
+      .transact(tx)
+      .map(_ => CreateAccountResponse("test"))
+      .runToFuture
 }

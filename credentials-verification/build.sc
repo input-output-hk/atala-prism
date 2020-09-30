@@ -206,6 +206,7 @@ object versions {
   val scopt = "4.0.0-RC2"
   val silencer = "1.6.0"
   val twirl = "1.5.0"
+  val enumeratum = "1.5.14"
 }
 
 /**
@@ -314,7 +315,8 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
     Agg(
       ivy"org.flywaydb:flyway-core:6.0.2",
       ivy"org.postgresql:postgresql:42.2.6",
-      ivy"com.beachape::enumeratum:1.5.13",
+      ivy"com.beachape::enumeratum:${versions.enumeratum}",
+      ivy"com.beachape::enumeratum-doobie:${versions.enumeratum}",
       ivy"com.typesafe:config:1.3.4",
       ivy"org.slf4j:slf4j-api:1.7.25",
       ivy"ch.qos.logback:logback-core:${versions.logback}",
