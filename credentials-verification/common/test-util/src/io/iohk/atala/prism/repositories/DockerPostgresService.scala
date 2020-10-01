@@ -5,8 +5,8 @@ import java.sql.DriverManager
 import com.spotify.docker.client.DefaultDockerClient
 import com.whisk.docker._
 import com.whisk.docker.impl.spotify.SpotifyDockerFactory
-import org.scalatest.MustMatchers._
 import org.scalatest.concurrent.ScalaFutures._
+import org.scalatest.matchers.must.Matchers._
 
 import scala.concurrent.{ExecutionContext, Future}
 

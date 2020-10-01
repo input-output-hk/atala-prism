@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.admin
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 
-class SplitterSpec extends FlatSpec {
+class SplitterSpec extends AnyFlatSpec {
 
   "ScriptSplitter" should "split on a semicolon, not on an escaped semicolon" in {
     val lines =

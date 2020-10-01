@@ -6,10 +6,10 @@ import java.util.UUID
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
 import io.iohk.atala.prism.intdemo.SharedCredentials.credentialsOfType
 import io.iohk.prism.protos.credential_models
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 
-class SharedCredentialsSpec extends FlatSpec {
+class SharedCredentialsSpec extends AnyFlatSpec {
 
   "credentialsOfType" should "ignore invalid messages" in {
     val message = Message(MessageId(UUID.randomUUID()), ConnectionId(UUID.randomUUID()), Instant.now(), Array[Byte]())

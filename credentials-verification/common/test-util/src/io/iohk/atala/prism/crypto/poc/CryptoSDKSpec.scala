@@ -6,12 +6,13 @@ import java.util.UUID
 
 import com.github.ghik.silencer.silent
 import io.iohk.atala.prism.crypto.ECKeys
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 // This test displays the way to use the CryptoAPI
 // We will show the use with
 
-class CryptoSDKSpec extends WordSpec with MustMatchers {
+class CryptoSDKSpec extends AnyWordSpec with Matchers {
   "CryptoAPI" should {
     "Work with a toy credential" in {
 

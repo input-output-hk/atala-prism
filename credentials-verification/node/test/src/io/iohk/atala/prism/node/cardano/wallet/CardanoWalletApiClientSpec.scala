@@ -6,15 +6,15 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import org.scalatest.EitherValues._
-import org.scalatest.MustMatchers._
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.OptionValues._
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.ExecutionContext
 
-class CardanoWalletApiClientSpec extends WordSpec with ScalaFutures {
+class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds), interval = Span(30, Millis))
   implicit def ec: ExecutionContext = ExecutionContext.global

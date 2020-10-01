@@ -2,10 +2,10 @@ package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 
-class IdDataSpec extends FlatSpec {
+class IdDataSpec extends AnyFlatSpec {
 
   "IdData" should "extract the data from an IDCredential" in {
     val expectedFirstName = "first-name"

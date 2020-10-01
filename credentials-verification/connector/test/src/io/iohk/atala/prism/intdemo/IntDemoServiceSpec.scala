@@ -10,8 +10,8 @@ import io.iohk.prism.protos.credential_models
 import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{after, mock, verify, when}
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 import org.scalatest.prop.TableDrivenPropertyChecks._
 
@@ -19,7 +19,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class IntDemoServiceSpec extends FlatSpec {
+class IntDemoServiceSpec extends AnyFlatSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(1 second, 100 millis)
 

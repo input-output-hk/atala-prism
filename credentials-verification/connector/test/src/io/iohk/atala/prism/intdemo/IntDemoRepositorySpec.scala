@@ -9,7 +9,7 @@ import io.iohk.atala.prism.connector.repositories.ConnectorRepositorySpecBase
 import IntDemoRepositorySpec._
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import io.iohk.atala.prism.intdemo.protos.intdemo_models
-import org.scalatest.Matchers._
+import org.scalatest.matchers.should.Matchers._
 
 import scala.concurrent.duration._
 import scala.util.Random

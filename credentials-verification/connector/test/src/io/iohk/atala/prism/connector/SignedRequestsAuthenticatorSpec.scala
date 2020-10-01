@@ -16,15 +16,15 @@ import io.iohk.prism.protos.node_api._
 import io.iohk.prism.protos.{connector_api, node_api, node_models}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
-import org.scalatest.MustMatchers._
-import org.scalatest.WordSpec
+import org.scalatest.matchers.must.Matchers._
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class SignedRequestsAuthenticatorSpec extends WordSpec {
+class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   private implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   private val request = connector_api.GetConnectionTokenInfoRequest()

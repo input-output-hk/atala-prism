@@ -3,7 +3,9 @@ package io.iohk.atala.prism.repositories
 import cats.effect.IO
 import doobie.util.transactor.Transactor
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, MustMatchers, WordSpec}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import scala.concurrent.ExecutionContext
 
@@ -24,8 +26,8 @@ case class PostgresConfig(host: String, database: String, user: String, password
   * }}}
   */
 trait PostgresRepositorySpec
-    extends WordSpec
-    with MustMatchers
+    extends AnyWordSpec
+    with Matchers
     with ScalaFutures
     with BeforeAndAfterAll
     with BeforeAndAfterEach {

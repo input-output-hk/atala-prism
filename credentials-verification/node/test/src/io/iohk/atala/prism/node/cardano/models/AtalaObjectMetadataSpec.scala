@@ -2,11 +2,11 @@ package io.iohk.atala.prism.node.cardano.models
 
 import io.circe.Json
 import io.iohk.prism.protos.node_internal
-import org.scalatest.MustMatchers._
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.OptionValues._
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 
-class AtalaObjectMetadataSpec extends WordSpec {
+class AtalaObjectMetadataSpec extends AnyWordSpec {
   private val atalaObject = node_internal
     .AtalaObject()
     .withBlock(node_internal.AtalaObject.Block.BlockContent(node_internal.AtalaBlock().withVersion("1")))

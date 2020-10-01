@@ -12,15 +12,15 @@ import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{mock, verify, when}
 import org.scalatest.EitherValues._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class IdServiceImplSpec extends FlatSpec {
+class IdServiceImplSpec extends AnyFlatSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(1 second, 100 millis)
 

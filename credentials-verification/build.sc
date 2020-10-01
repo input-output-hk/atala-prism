@@ -182,9 +182,9 @@ object app extends PrismScalaModule {
   object test extends PrismTestsModule {
     override def ivyDeps =
       Agg(
-        ivy"org.scalatest::scalatest:3.0.8",
-        ivy"org.scalatest::scalatest-wordspec:3.2.0-M4",
-        ivy"org.scalatestplus::scalatestplus-scalacheck:3.1.0.0-RC2"
+        ivy"org.scalatest::scalatest:${versions.scalatest}",
+        ivy"org.scalatest::scalatest-wordspec:${versions.scalatest}",
+        ivy"org.scalatestplus::scalacheck-1-14:${versions.scalatest}.0"
       )
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
@@ -207,6 +207,7 @@ object versions {
   val silencer = "1.6.0"
   val twirl = "1.5.0"
   val enumeratum = "1.5.14"
+  val scalatest = "3.2.2"
 }
 
 /**
@@ -274,11 +275,15 @@ object common extends PrismScalaModule with PBCommon with CodeCoverageModule {
 
     override def ivyDeps =
       Agg(
+        ivy"org.scalatest::scalatest:${versions.scalatest}",
+        ivy"org.scalatest::scalatest-wordspec:${versions.scalatest}",
         ivy"com.spotify:docker-client:8.16.0",
-        ivy"com.whisk::docker-testkit-scalatest:0.9.9",
+        // Scalatest integration libraries depend on older scalatest versions and thus we
+        // exclude all "org.scalatest" artefacts from being pulled in as transitive dependencies
+        ivy"com.whisk::docker-testkit-scalatest:0.9.9".excludeOrg("org.scalatest"),
         ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
-        ivy"org.tpolecat::doobie-scalatest:${versions.doobie}",
-        ivy"com.softwaremill.diffx::diffx-scalatest:0.3.3",
+        ivy"org.tpolecat::doobie-scalatest:${versions.doobie}".excludeOrg("org.scalatest"),
+        ivy"com.softwaremill.diffx::diffx-scalatest:0.3.3".excludeOrg("org.scalatest"),
         ivy"com.beachape::enumeratum:1.5.13"
       )
   }
@@ -287,7 +292,7 @@ object common extends PrismScalaModule with PBCommon with CodeCoverageModule {
     override def moduleDeps = Seq(`test-util`) ++ super.moduleDeps
     override def ivyDeps =
       Agg(
-        ivy"org.scalatest::scalatest:3.0.8",
+        ivy"org.scalatest::scalatest:${versions.scalatest}",
         ivy"org.scalacheck::scalacheck:1.14.0",
         ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
       )
@@ -354,18 +359,18 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
   trait `tests-common` extends PrismTestsModule {
 
     val mockitoDeps = Agg(
-      ivy"org.mockito::mockito-scala:1.7.1",
-      ivy"org.mockito::mockito-scala-scalatest:1.7.1"
+      ivy"org.mockito::mockito-scala:1.16.0",
+      ivy"org.mockito::mockito-scala-scalatest:1.16.0"
     )
 
     override def moduleDeps = Seq(common.`test-util`) ++ super.moduleDeps
 
     override def ivyDeps =
       Agg(
-        ivy"org.scalatest::scalatest:3.0.8",
+        ivy"org.scalatest::scalatest:${versions.scalatest}",
         ivy"org.scalacheck::scalacheck:1.14.0",
         ivy"com.spotify:docker-client:8.16.0",
-        ivy"com.whisk::docker-testkit-scalatest:0.9.9",
+        ivy"com.whisk::docker-testkit-scalatest:0.9.9".excludeOrg("org.scalatest"),
         ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
         ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
       )

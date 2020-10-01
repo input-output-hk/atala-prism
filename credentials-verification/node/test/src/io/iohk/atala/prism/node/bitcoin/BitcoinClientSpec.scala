@@ -7,15 +7,15 @@ import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.bitcoin
 import io.iohk.atala.prism.node.bitcoin.models._
 import org.scalatest.EitherValues._
-import org.scalatest.MustMatchers._
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.OptionValues._
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class BitcoinClientSpec extends WordSpec with ScalaFutures {
+class BitcoinClientSpec extends AnyWordSpec with ScalaFutures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds), interval = Span(30, Millis))
 

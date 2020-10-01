@@ -6,10 +6,10 @@ import java.time.format.DateTimeFormatter
 import io.circe.parser.parse
 import Testing._
 import org.scalatest.EitherValues._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 
-class DegreeServiceImplSpec extends FlatSpec {
+class DegreeServiceImplSpec extends AnyFlatSpec {
 
   "getDegreeCredential" should "return a correct degree credential" in {
     val idCredential = IdServiceImpl.getIdCredential(("name", LocalDate.of(1973, 6, 2)))

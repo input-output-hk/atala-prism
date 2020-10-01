@@ -3,10 +3,10 @@ package io.iohk.atala.prism.intdemo
 import java.time.LocalDate
 
 import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.matchers.should.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class EmploymentDataSpec extends FlatSpec {
+class EmploymentDataSpec extends AnyFlatSpec {
   "EmploymentData" should "extract the data from an employment credential" in {
     val expectedFirstName = "first-name"
     val expectedDoB = LocalDate.of(1973, 6, 6)

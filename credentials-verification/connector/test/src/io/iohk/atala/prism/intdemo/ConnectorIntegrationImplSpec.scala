@@ -10,12 +10,12 @@ import io.iohk.prism.protos.credential_models
 import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{mock, times, verify, when}
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ConnectorIntegrationImplSpec extends FlatSpec {
+class ConnectorIntegrationImplSpec extends AnyFlatSpec {
 
   "sendCredential" should "send a decodable credential" in connectorIntegration {
     (connectorIntegration, messagesService) =>

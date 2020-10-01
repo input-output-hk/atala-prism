@@ -5,14 +5,16 @@ import java.nio.file.Files
 import io.iohk.atala.prism.node
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.{BeforeAndAfterAll, MustMatchers, WordSpec}
+import org.scalatest.matchers.must
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.BeforeAndAfterAll
 import os.Path
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.reflect.io.Directory
 
-abstract class ObjectStorageServiceSpecBase(val storageClassName: String) extends WordSpec with MustMatchers {
+abstract class ObjectStorageServiceSpecBase(val storageClassName: String) extends AnyWordSpec with must.Matchers {
 
   protected def createStorage: ObjectStorageService
 

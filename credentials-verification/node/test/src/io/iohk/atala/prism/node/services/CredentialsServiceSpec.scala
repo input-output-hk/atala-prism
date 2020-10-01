@@ -9,7 +9,8 @@ import io.iohk.atala.prism.node.models.nodeState.CredentialState
 import io.iohk.atala.prism.node.operations.TimestampInfo
 import io.iohk.atala.prism.node.repositories.CredentialsRepository
 import org.mockito.scalatest.MockitoSugar
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.EitherValues._
 
@@ -17,7 +18,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CredentialsServiceSpec extends WordSpec with MustMatchers with ScalaFutures with MockitoSugar {
+class CredentialsServiceSpec extends AnyWordSpec with must.Matchers with ScalaFutures with MockitoSugar {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val credentialsRepository = mock[CredentialsRepository]

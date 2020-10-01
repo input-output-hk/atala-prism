@@ -2,9 +2,10 @@ package io.iohk.atala.prism.node.operations
 
 import java.time.Instant
 
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.matchers.must
+import org.scalatest.wordspec.AnyWordSpec
 
-class TimestampInfoSpec extends WordSpec with MustMatchers {
+class TimestampInfoSpec extends AnyWordSpec with must.Matchers {
   "TimestampInfo.occurredBefore" should {
 
     "compare correctly 1" in {

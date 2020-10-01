@@ -7,10 +7,10 @@ import io.circe.parser.parse
 import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
 import Testing._
 import org.scalatest.EitherValues._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 
-class EmploymentServiceImplSpec extends FlatSpec {
+class EmploymentServiceImplSpec extends AnyFlatSpec {
 
   "getEmploymentCredential" should "return a correct employment credential" in {
     val idCredential = IdServiceImpl.getIdCredential(("name", LocalDate.of(1973, 6, 2)))

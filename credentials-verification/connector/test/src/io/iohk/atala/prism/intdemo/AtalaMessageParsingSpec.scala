@@ -2,10 +2,10 @@ package io.iohk.atala.prism.intdemo
 
 import io.iohk.prism.protos.credential_models.IssuerSentCredential
 import io.iohk.prism.protos.credential_models.{AtalaMessage, Credential, ProofRequest}
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.matchers.should.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class AtalaMessageParsingSpec extends FlatSpec {
+class AtalaMessageParsingSpec extends AnyFlatSpec {
 
   "Protobuff" should "parse a credential" in {
     val credential = Credential("type-id", "document")

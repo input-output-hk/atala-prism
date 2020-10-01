@@ -4,7 +4,7 @@ import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.prism.protos.node_models
 import org.scalatest.Assertion
 import org.scalatest.Inside._
-import org.scalatest.MustMatchers._
+import org.scalatest.matchers.must.Matchers._
 import scalapb.lenses.{Lens, Mutation}
 
 trait ProtoParsingTestHelpers {

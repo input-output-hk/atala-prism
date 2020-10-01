@@ -3,15 +3,15 @@ package io.iohk.atala.prism.intdemo
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import org.scalatest.FlatSpec
 import io.circe.parser.parse
 import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.RequiredInsuranceData
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 import Testing._
 import org.scalatest.EitherValues._
 
-class InsuranceServiceImplSpec extends FlatSpec {
+class InsuranceServiceImplSpec extends AnyFlatSpec {
 
   "getInsuranceCredential" should "return a correct insurance credential" in {
     val idCredential = IdServiceImpl.getIdCredential(("name", LocalDate.of(1973, 6, 2)))
