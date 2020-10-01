@@ -8,14 +8,19 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import cats.effect.{Blocker, ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
-import io.grpc.{Server, ServerBuilder, ServerServiceDefinition}
+import io.grpc.{Server, ServerBuilder, ServerServiceDefinition, ManagedChannelBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
+import io.grpc.stub.MetadataUtils
 import org.flywaydb.core.Flyway
 import doobie.util.ExecutionContexts
 import doobie.hikari.HikariTransactor
 
+import io.iohk.atala.crypto.EC
+import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
-import io.iohk.atala.mirror.config.{MirrorConfig, TransactorConfig}
+import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
+import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, TransactorConfig}
+import io.iohk.atala.mirror.services.{ConnectorClientService, MirrorService}
 
 object MirrorApp extends TaskApp {
 
@@ -42,15 +47,27 @@ object MirrorApp extends TaskApp {
         ConfigFactory.load()
       })
 
+      // configs
       mirrorConfig = MirrorConfig(globalConfig)
       transactorConfig = TransactorConfig(globalConfig)
+      connectorConfig = ConnectorConfig(globalConfig)
 
+      // db
       tx <- createTransactor(transactorConfig)
       _ <- Resource.liftF(runMigrations(tx))
 
+      // connector
+      connector <- Resource.pure(createConnector(connectorConfig))
+
+      // services
+      connectorService = new ConnectorClientService(connector, new RequestAuthenticator(EC), connectorConfig)
+      mirrorService = new MirrorService(tx, connectorService)
+      mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
+
+      // gRPC server
       grpcServer <- createGrpcServer(
         mirrorConfig,
-        MirrorServiceGrpc.bindService(new MirrorService(tx)(scheduler), scheduler)
+        MirrorServiceGrpc.bindService(mirrorGrpcService, scheduler)
       )
     } yield grpcServer
 
@@ -113,5 +130,24 @@ object MirrorApp extends TaskApp {
           .migrate()
       )
     )
+
+  /**
+    * Create a connector with authorization header.
+    */
+  def createConnector(
+      connectorConfig: ConnectorConfig
+  ): ConnectorServiceGrpc.ConnectorServiceStub = {
+    val headers = ConnectorClientService.createMetadataHeaders(
+      "did" -> connectorConfig.did,
+      "didKeyId" -> connectorConfig.didKeyId
+    )
+
+    val channel = ManagedChannelBuilder
+      .forAddress(connectorConfig.host, connectorConfig.port)
+      .usePlaintext()
+      .build()
+
+    MetadataUtils.attachHeaders(ConnectorServiceGrpc.stub(channel), headers)
+  }
 
 }

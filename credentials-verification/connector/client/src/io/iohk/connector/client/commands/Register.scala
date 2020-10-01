@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.connector.client.commands
 
+import java.util.Base64
+
 import com.google.protobuf.ByteString
 import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.connector.client.Config
@@ -57,5 +59,8 @@ case class Register(
       .withRole(connector_api.RegisterDIDRequest.Role.issuer)
     val response = api.registerDID(request)
     println(s"Created did with didSuffix: ${response.did}")
+    println(
+      s"Private key: ${generatedKeys.map { case (_, _, key, _) => Base64.getUrlEncoder.encodeToString(key.getEncoded) }.mkString}"
+    )
   }
 }
