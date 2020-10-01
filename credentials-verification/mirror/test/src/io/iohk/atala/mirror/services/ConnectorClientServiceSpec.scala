@@ -1,6 +1,6 @@
 package io.iohk.atala.mirror.services
 
-import java.util.Base64
+import java.util.{Base64, UUID}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -17,6 +17,9 @@ import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.connector_api.{ConnectorServiceGrpc, GenerateConnectionTokenResponse}
 import io.iohk.atala.mirror.config.ConnectorConfig
+import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
+import io.iohk.atala.mirror.models.CredentialProofRequestType
+import io.iohk.prism.protos.connector_api.{ConnectorServiceGrpc, GenerateConnectionTokenResponse, SendMessageResponse}
 
 // mill -i mirror.test.single io.iohk.atala.mirror.services.ConnectorClientServiceSpec
 class ConnectorClientServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
@@ -26,6 +29,18 @@ class ConnectorClientServiceSpec extends AnyWordSpec with Matchers with MockitoS
       when(connector.generateConnectionToken(any))
         .thenReturn(Future.successful(GenerateConnectionTokenResponse(connectionToken)))
       service.generateConnectionToken.runSyncUnsafe(1.minute) mustBe GenerateConnectionTokenResponse(connectionToken)
+    }
+
+    "request credential" in new ConnectorStubs {
+      when(connector.sendMessage(any)).thenReturn(Future.successful(SendMessageResponse()))
+      service
+        .requestCredential(
+          ConnectionId(UUID.randomUUID()),
+          ConnectionToken(connectionToken),
+          Seq(CredentialProofRequestType.RedlandIdCredential)
+        )
+        .runSyncUnsafe(1.minute)
+      verify(connector, times(1)).sendMessage(any)
     }
   }
 

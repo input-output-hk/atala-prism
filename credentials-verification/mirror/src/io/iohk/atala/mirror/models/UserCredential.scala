@@ -1,15 +1,15 @@
 package io.iohk.atala.mirror.models
 
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
-import io.iohk.atala.mirror.models.UserCredentials.{IssuersDID, RawCredential}
+import io.iohk.atala.mirror.models.UserCredential.{IssuersDID, RawCredential}
 
-case class UserCredentials(
+case class UserCredential(
     connectionToken: ConnectionToken,
     rawCredential: RawCredential,
-    issuersDID: IssuersDID
+    issuersDID: Option[IssuersDID]
 )
 
-object UserCredentials {
+object UserCredential {
   case class RawCredential(rawCredential: String) extends AnyVal
 
   case class IssuersDID(issuersDID: String) extends AnyVal
