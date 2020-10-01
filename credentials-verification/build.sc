@@ -220,31 +220,27 @@ object versions {
 object Crypto extends ScalaModule {
   def scalaVersion = versions.scala
 
-  override def ivyDeps = Agg(ivy"io.iohk::crypto:${currentVersion()}")
-
-  override def resolveDeps(deps: Task[Agg[Dep]], sources: Boolean): Task[Agg[PathRef]] =
-    T.task {
-      publishLocalCrypto()
-      super.resolveDeps(deps, sources)()
-    }
+  override def ivyDeps = Agg(ivy"io.iohk::crypto:${publishAndGetCurrentVersion()}")
 
   private val cryptoDir = os.pwd / up / 'crypto
   private val sbtEnv = Map("SBT_OPTS" -> "-Xmx2G")
 
-  def currentVersion: Input[String] =
-    T.input {
+  /**
+    * Publishes and returns the current version of the Crypto library.
+    *
+    * <p>Note this method is persisted between `mill` runs, so `mill clean` may be necessary to get the most up-to-date
+    * version.
+    */
+  def publishAndGetCurrentVersion =
+    T.persistent {
       val versionResult =
         os.proc("sbt", "cryptoJVM/version").call(cwd = cryptoDir, env = sbtEnv)
       // The version is the last word in the output
       val version = versionResult.out.text().split("\\s").filterNot(_.isEmpty).last
-      T.ctx().log.info(s"Crypto version: $version")
-      version
-    }
 
-  private def publishLocalCrypto =
-    T.input {
-      T.ctx().log.info(s"Publishing Crypto library version ${currentVersion()}")
+      T.ctx().log.info(s"Publishing Crypto library version $version")
       os.proc("sbt", "cryptoJVM/publishLocal").call(cwd = cryptoDir, env = sbtEnv, stdout = os.Inherit)
+      version
     }
 }
 
