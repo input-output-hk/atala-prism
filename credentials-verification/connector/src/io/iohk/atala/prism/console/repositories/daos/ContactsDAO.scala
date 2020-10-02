@@ -3,8 +3,11 @@ package io.iohk.atala.prism.console.repositories.daos
 import java.time.Instant
 import java.util.UUID
 
+import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
+import doobie.free.connection
 import doobie.implicits.toSqlInterpolator
+import doobie.util.fragments.{in, whereAnd}
 import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
@@ -41,6 +44,23 @@ object ContactsDAO {
          |WHERE external_id = $externalId AND
          |      created_by = $issuerId
          |""".stripMargin.query[Contact].option
+  }
+
+  def findContacts(issuerId: Institution.Id, contactIds: List[Contact.Id]): doobie.ConnectionIO[List[Contact]] = {
+    NonEmptyList.fromList(contactIds) match {
+      case Some(contactIdsNonEmpty) =>
+        fr"""
+            |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+            |FROM contacts""".stripMargin
+        val fragment =
+          fr"""
+              |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+              |FROM contacts""".stripMargin ++
+            whereAnd(fr"created_by = $issuerId", in(fr"contact_id", contactIdsNonEmpty))
+        fragment.query[Contact].to[List]
+      case None =>
+        connection.pure(List.empty)
+    }
   }
 
   def getBy(

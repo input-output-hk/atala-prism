@@ -43,6 +43,9 @@ service SubjectsService {
 service GroupsService {
     rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
     rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
+
+    // Update an existing group by adding new contacts and removing some of the old ones
+    rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse) {}
 }
 
 // The authenticated issuer is creating a credential
@@ -160,6 +163,13 @@ message GetGroupsRequest {}
 message GetGroupsResponse {
     repeated Group groups = 1;
 }
+
+message UpdateGroupRequest {
+    string groupId = 1; // the id of the existing group
+    repeated string contactIdsToAdd = 2; // the list of contact ids to be added to the specified group
+    repeated string contactIdsToRemove = 3; // the list of contact ids to be removed from the specified group
+}
+message UpdateGroupResponse {}
 
 // generic credentials
 // The authenticated issuer is creating a credential

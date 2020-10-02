@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.console.services
 
+import java.util.UUID
+
 import io.iohk.atala.prism.connector.Authenticator
-import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
+import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.GroupsRepository
 import io.iohk.prism.protos.{cmanager_api, cmanager_models}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.breakOut
 
 class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator: Authenticator)(implicit
     ec: ExecutionContext
@@ -47,4 +50,24 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
     }
   }
 
+  override def updateGroup(request: cmanager_api.UpdateGroupRequest): Future[cmanager_api.UpdateGroupResponse] = {
+    def f(issuerId: Institution.Id) = {
+      issuerGroupsRepository
+        .updateGroup(
+          issuerId,
+          IssuerGroup.Id(UUID.fromString(request.groupId)),
+          request.contactIdsToAdd.map(id => Contact.Id(UUID.fromString(id)))(breakOut),
+          request.contactIdsToRemove.map(id => Contact.Id(UUID.fromString(id)))(breakOut)
+        )
+        .value
+        .map {
+          case Right(_) => cmanager_api.UpdateGroupResponse()
+          case Left(e) => throw new RuntimeException(s"FAILED: $e")
+        }
+    }
+
+    authenticator.authenticated("getGroups", request) { participantId =>
+      f(Institution.Id(participantId.uuid))
+    }
+  }
 }
