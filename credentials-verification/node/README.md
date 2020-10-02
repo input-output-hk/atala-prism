@@ -5,9 +5,9 @@ Node requires Postgres database to run. You can easily provide it using Docker:
 docker run -it --rm -e POSTGRES_DB=geud_node_db -p 5432:5432 postgres:11.5
 ```
 
-The default setting is to use bitcoin, which requires separate client. For testing it is much easier to use in memory ledger. It can be done by setting `GEUD_NODE_LEDGER` environment variable:
+Run the Node with the default in-memory ledger:
 ```
-GEUD_NODE_LEDGER="in-memory" mill -i node.run
+mill -i node.run
 ```
 
 ## Node client

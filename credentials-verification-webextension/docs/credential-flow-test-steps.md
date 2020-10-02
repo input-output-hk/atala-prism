@@ -61,7 +61,7 @@ We will build everything from scratch.
    ```
    [terminal 2]
    atala$ cd credentials-verification
-   credentials-verification$ GEUD_NODE_LEDGER="in-memory" mill -i node.run
+   credentials-verification$ mill -i node.run
    ```
    
    Envoy
