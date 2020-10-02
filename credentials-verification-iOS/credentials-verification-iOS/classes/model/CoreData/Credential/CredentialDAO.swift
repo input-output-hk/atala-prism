@@ -65,12 +65,12 @@ class CredentialDAO: BaseDAO {
     }
 
     func createCredential(sentCredential: Io_Iohk_Prism_Protos_Credential,
-                          viewed: Bool, messageId: String) -> (Credential, Bool)? {
+                          viewed: Bool, messageId: String, connectionId: String) -> (Credential, Bool)? {
 
         if let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument) {
 
             return try? createCredential(type: sentCredential.typeID, credentialId: messageId,
-                                         issuerId: (credential.issuer?.id)!, issuerName: (credential.issuer?.name)!,
+                                         issuerId: connectionId, issuerName: (credential.issuer?.name)!,
                                          htmlView: (credential.view?.html)!, dateReceived: Date(),
                                          viewed: viewed, encoded: sentCredential.serializedData())
         }

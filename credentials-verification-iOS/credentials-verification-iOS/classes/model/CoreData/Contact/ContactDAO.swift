@@ -16,10 +16,6 @@ class ContactDAO: BaseDAO {
                 NSSortDescriptor(key: "connectionId", ascending: true)]
     }
 
-    func getDidSuffix(did: String) -> String {
-        String(did.split(separator: ":").last!)
-    }
-
     func listContacts() -> [Contact]? {
         let fetchRequest = Contact.createFetchRequest()
         fetchRequest.sortDescriptors = getSortDescriptors()
@@ -28,10 +24,9 @@ class ContactDAO: BaseDAO {
         return result
     }
 
-    func listContactsForShare(did: String) -> [Contact]? {
+    func listContactsForShare(connectionId: String) -> [Contact]? {
         let fetchRequest = Contact.createFetchRequest()
-        let didSufix = getDidSuffix(did: did)
-        fetchRequest.predicate = NSPredicate(format: "NOT did ENDSWITH %@", didSufix)
+        fetchRequest.predicate = NSPredicate(format: "connectionId != %@", connectionId)
         fetchRequest.sortDescriptors = getSortDescriptors()
 
         let result = try? getManagedContext()?.fetch(fetchRequest)
@@ -39,11 +34,10 @@ class ContactDAO: BaseDAO {
     }
 
     @discardableResult
-    func updateMessageId(did: String, messageId: String) -> Contact? {
+    func updateMessageId(connectionId: String, messageId: String) -> Contact? {
         guard let managedContext = getManagedContext() else { return nil }
         let fetchRequest = Contact.createFetchRequest()
-        let didSufix = getDidSuffix(did: did)
-        fetchRequest.predicate = NSPredicate(format: "did ENDSWITH %@", didSufix)
+        fetchRequest.predicate = NSPredicate(format: "connectionId == %@", connectionId)
         if let result = try? managedContext.fetch(fetchRequest), let contact = result.first {
             contact.lastMessageId = messageId
             do {

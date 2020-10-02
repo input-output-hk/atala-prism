@@ -67,7 +67,8 @@ class RestoreAccountPresenter: BasePresenter {
                             if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
-                                                                               messageId: message.id) {
+                                                                               messageId: message.id,
+                                                                               connectionId: message.connectionID) {
                                 contact.lastMessageId = message.id
                                 contactsDao.updateContact()
                             }

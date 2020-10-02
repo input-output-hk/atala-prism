@@ -3,7 +3,9 @@
 class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
                             ConnectionMainViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate,
                             ConnectionProofRequestPresenterDelegate, ConnectionsWorkerDelegate,
-                            UISearchBarDelegate {
+                            UISearchBarDelegate, ContactHistoryHeaderViewCellPresenterDelegate,
+                            ContactDetailSectionViewCellPresenterDelegate,
+                            ContactDetailSharedViewCellPresenterDelegate {
 
     var viewImpl: ConnectionsViewController? {
         return view as? ConnectionsViewController
@@ -12,12 +14,21 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     enum ConnectionsSpecialState {
         case none
         case scanningQr
+        case detail
     }
 
     enum ConnectionsCellType {
         case base(value: ListingBaseCellType)
         case main
         case noResults
+        case detailHeader // detail mode
+        case detailSection // detail mode
+        case detailShared // detail mode
+    }
+
+    struct CellRow {
+        var type: ConnectionsCellType
+        var value: Any?
     }
 
     var stateSpecial: ConnectionsSpecialState = .none
@@ -31,6 +42,10 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     var reachability: Reachability!
 
+    var detailRows: [CellRow]?
+
+    var detailContact: Contact?
+
     override init() {
         super.init()
         connectionsWorker.delegate = self
@@ -40,6 +55,15 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func isScanningQr() -> Bool {
         return self.state == .special && self.stateSpecial == .scanningQr
+    }
+
+    func startShowingDetails(contact: Contact) {
+
+        detailContact = contact
+
+        state = .special
+        stateSpecial = .detail
+        updateViewToState()
     }
 
     // MARK: Buttons
@@ -53,11 +77,23 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         viewImpl?.showManualInput()
     }
 
+    func tappedDeleteButton() {
+        guard let contact = detailContact else { return }
+        let credentialsDao = CredentialDAO()
+        let credentials = credentialsDao.listCredentialsForContact(did: contact.did)
+        viewImpl?.showDeleteContactConfirmation(contact: contact, credentials: credentials)
+    }
+
     @discardableResult
     func tappedBackButton() -> Bool {
 
         if isScanningQr() {
             stopQrScanning()
+            return true
+        }
+        if stateSpecial == .detail {
+            stateSpecial = .none
+            startFetching()
             return true
         }
         return false
@@ -82,6 +118,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func cleanData() {
         contacts = []
+        detailRows = []
         filteredContacts = []
     }
 
@@ -94,14 +131,22 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func hasData() -> Bool {
-        return contacts.size() > 0
+        return stateSpecial == .detail ? true : contacts.size() > 0
     }
 
     func getElementCount() -> Int {
         if let baseValue = super.getBaseElementCount() {
             return baseValue
         }
-        return filteredContacts.count == 0 ? 1 : filteredContacts.count
+
+        switch stateSpecial {
+        case .none:
+            return filteredContacts.count == 0 ? 1 : filteredContacts.count
+        case .detail:
+            return detailRows?.count ?? 0
+        case .scanningQr:
+            return 0
+        }
     }
 
     func getElementType(indexPath: IndexPath) -> ConnectionsCellType {
@@ -109,7 +154,11 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return .base(value: baseValue)
         }
 
-        return filteredContacts.count == 0 ? .noResults : .main
+        if stateSpecial == .detail {
+            return detailRows![indexPath.row].type
+        } else {
+            return filteredContacts.count == 0 ? .noResults : .main
+        }
     }
 
     // MARK: Fetch
@@ -141,8 +190,9 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                             if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
-                                                                               messageId: message.id) {
-                                contactsDao.updateMessageId(did: credential.0.issuerId, messageId: message.id)
+                                                                               messageId: message.id,
+                                                                               connectionId: message.connectionID) {
+                                contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
                                 if credential.1 {
                                     historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
                                                                      type: .credentialAdded, credential: credential.0,
@@ -258,21 +308,22 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     }
 
-    func tappedDelete(for cell: ConnectionMainViewCell) {
-        let contact = contacts[cell.indexPath!.row]
-        let credentialsDao = CredentialDAO()
-        let credentials = credentialsDao.listCredentialsForContact(did: contact.did)
-        viewImpl?.showDeleteContactConfirmation(contact: contact, credentials: credentials)
-    }
-
     func hasPullToRefresh() -> Bool {
         true
     }
 
     func actionPullToRefresh() {
 
+        stateSpecial = .none
         self.fetchData()
         self.updateViewToState()
+    }
+
+    func didSelectRowAt(indexPath: IndexPath) {
+        if stateSpecial == .none {
+            startShowingDetails(contact: filteredContacts[indexPath.row])
+            fetchHistory()
+        }
     }
 
     // MARK: QR Reader
@@ -297,12 +348,12 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func tappedDeclineAction(for viewController: ConnectionProofRequestViewController) {
         let contactDao = ContactDAO()
-        contactDao.updateMessageId(did: viewController.contact?.did ?? "", messageId: detailProofRequestMessageId!)
+        contactDao.updateMessageId(connectionId: viewController.contact?.connectionId ?? "", messageId: detailProofRequestMessageId!)
     }
 
     func tappedConfirmAction(for viewController: ConnectionProofRequestViewController) {
         let contactDao = ContactDAO()
-        contactDao.updateMessageId(did: viewController.contact?.did ?? "", messageId: detailProofRequestMessageId!)
+        contactDao.updateMessageId(connectionId: viewController.contact?.connectionId ?? "", messageId: detailProofRequestMessageId!)
         shareCredentials(contact: viewController.contact!, credentials: viewController.selectedCredentials)
     }
 
@@ -370,6 +421,79 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             }
         }
         self.viewImpl?.showErrorMessage(doShow: true, message: "credentials_delete_error".localize())
+    }
+
+    // MARK: Detail
+
+    func fetchHistory() {
+        guard let contactlId = detailContact?.connectionId else { return }
+        let historyDao = ActivityHistoryDAO()
+        let history = historyDao.listContactActivityHistory(for: contactlId)
+        makeDetailRows(history: history)
+    }
+
+    private func makeDetailRows(history: [ActivityHistory]?) {
+
+        // Transform data into rows
+        self.detailRows?.removeAll()
+        self.detailRows?.append(CellRow(type: .detailHeader, value: detailContact))
+        var hideDivider = true
+
+        let requested = history?.filter({
+            $0.typeEnum == .credentialRequested
+        })
+        if requested?.count > 0 {
+            self.detailRows?.append(CellRow(type: .detailSection,
+                                             value: ("contacts_detail_requested".localize(), hideDivider)))
+            hideDivider = false
+            requested!.forEach { log in
+                self.detailRows?.append(CellRow(type: .detailShared, value: log))
+            }
+        }
+
+        let issued = history?.filter({
+            $0.typeEnum == .credentialAdded
+        })
+        if issued?.count > 0 {
+            self.detailRows?.append(CellRow(type: .detailSection,
+                                             value: ("contacts_detail_issued".localize(), hideDivider)))
+            hideDivider = false
+            issued!.forEach { log in
+                self.detailRows?.append(CellRow(type: .detailShared, value: log))
+            }
+        }
+
+        let shared = history?.filter({
+            $0.typeEnum == .credentialShared
+        })
+        if shared?.count > 0 {
+            self.detailRows?.append(CellRow(type: .detailSection,
+                                             value: ("contacts_detail_shared".localize(), hideDivider)))
+            shared!.forEach { log in
+                self.detailRows?.append(CellRow(type: .detailShared, value: log))
+            }
+        }
+    }
+
+    func setup(for cell: ContactHistoryHeaderViewCell) {
+        guard let contact = detailContact else { return }
+        cell.config(title: contact.name, subtitle: String(contact.did.split(separator: ":").last!),
+                    date: contact.dateCreated, icon: contact.logo)
+    }
+
+    func setup(for cell: ContactDetailSharedViewCell) {
+        guard let index = cell.indexPath?.row,
+            let log = detailRows?[index].value as? ActivityHistory,
+            let credentialName = log.credentialName,
+            let timestamp = log.timestamp else { return }
+        cell.config(title: credentialName, date: timestamp, type: log.typeEnum)
+
+    }
+
+    func setup(for cell: ContactDetailSectionViewCell) {
+        guard let index = cell.indexPath?.row,
+            let data = detailRows?[index].value as? (String, Bool) else { return }
+        cell.config(title: data.0, hideDivider: data.1)
     }
 
 }

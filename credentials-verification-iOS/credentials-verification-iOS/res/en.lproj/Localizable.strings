@@ -77,6 +77,16 @@
 "contacts_university_credential"= "University Credential ";
 "contacts_employment_credential"= "Employment Credential ";
 "contacts_insurance_credential"= "Insurance Credential ";
+"contacts_detail_title"= "Contact Detail";
+"contacts_detail_did"= "· DID: %@";
+"contacts_detail_date_connected"= "Connected %@";
+"contacts_detail_requested"= "REQUESTED CREDENTIALS";
+"contacts_detail_requested_date"= "Requested %@";
+"contacts_detail_issued"= "ISSUED CREDENTIALS";
+"contacts_detail_issued_date"= "Issued %@";
+"contacts_detail_shared"= "SHARED CREDENTIALS";
+"contacts_detail_shared_date"= "Shared %@";
+
 
 // <!-- Credentials -->
 "credentials_nav_title" = "Credentials";

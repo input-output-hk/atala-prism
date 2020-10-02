@@ -174,8 +174,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                             if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
-                                                                               messageId: message.id) {
-                                contactsDao.updateMessageId(did: credential.0.issuerId, messageId: message.id)
+                                                                               messageId: message.id,
+                                                                               connectionId: message.connectionID) {
+                                contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
                                 if credential.1 {
                                     historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
                                                                      type: .credentialAdded, credential: credential.0,

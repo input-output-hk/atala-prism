@@ -174,8 +174,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                             if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
-                                                                               messageId: message.id) {
-                                contactsDao.updateMessageId(did: credential.0.issuerId, messageId: message.id)
+                                                                               messageId: message.id,
+                                                                               connectionId: message.connectionID) {
+                                contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
                                 if credential.1 {
                                     historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
                                                                      type: .credentialAdded, credential: credential.0,
@@ -228,7 +229,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         self.shareSelectedEmployers = []
 
         let contactsDao = ContactDAO()
-        let contacts = contactsDao.listContactsForShare(did: self.detailCredential?.issuerId ?? "") ?? []
+        let contacts = contactsDao.listContactsForShare(connectionId: self.detailCredential?.issuerId ?? "") ?? []
         self.shareEmployers?.append(contentsOf: contacts)
         self.shareEmployersFiltered?.append(contentsOf: contacts)
         self.viewImpl?.config(isLoading: false)
@@ -419,7 +420,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func fetchHistory() {
         guard let credentialId = detailCredential?.credentialId else { return }
         let historyDao = ActivityHistoryDAO()
-        let history = historyDao.listActivityHistory(for: credentialId)
+        let history = historyDao.listCredentialActivityHistory(for: credentialId)
         makeHistoryRows(history: history)
     }
 

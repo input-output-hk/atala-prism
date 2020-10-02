@@ -3,11 +3,10 @@
 protocol ConnectionMainViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
 
     func setup(for cell: ConnectionMainViewCell)
-    func tappedDelete(for cell: ConnectionMainViewCell)
 }
 
 class ConnectionMainViewCell: BaseTableViewCell {
-    
+
     @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var labelSubtitle: UILabel!
@@ -29,12 +28,6 @@ class ConnectionMainViewCell: BaseTableViewCell {
         delegateImpl?.setup(for: self)
         imageLogo.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
         viewMainBody.addDropShadow(opacity: 0.1)
-    }
-
-    // MARK: Component delegates
-
-    @IBAction func actionDeleteTapped(_ sender: Any) {
-        self.delegateImpl?.tappedDelete(for: self)
     }
 
     // MARK: Config

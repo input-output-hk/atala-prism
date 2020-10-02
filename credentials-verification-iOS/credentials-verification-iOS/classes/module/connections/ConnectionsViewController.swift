@@ -11,6 +11,8 @@ class ConnectionsViewController: ListingBaseViewController {
     @IBOutlet weak var viewScanQr: UIView!
     @IBOutlet weak var viewTable: UIView!
     @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var tableTopMarginCtrt: NSLayoutConstraint!
+    @IBOutlet weak var viewTableDivider: UIView!
     // Scan QR
     @IBOutlet weak var viewQrScannerContainer: UIView!
     let scanner = QRCode()
@@ -74,25 +76,39 @@ class ConnectionsViewController: ListingBaseViewController {
 
         let isScanningQr = presenterImpl.isScanningQr()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
+        let isDetail = presenterImpl.stateSpecial == .detail
 
         // Main views
         viewEmpty.isHidden = !isEmpty
         viewScanQr.isHidden = !isScanningQr
         viewTable.isHidden = isEmpty || isScanningQr
+        
+        // Search Bar
+        searchBar.isHidden = isDetail
+        tableTopMarginCtrt.constant = isDetail ? -56 : 0
+        viewTableDivider.isHidden = !isDetail
 
         // Change the nav bar
-        let navTitle = isScanningQr ? "connections_scan_qr_nav_title".localize() : "connections_nav_title".localize()
-        let attributes: [NSAttributedString.Key: Any] = [
-        .font: UIFont.systemFont(ofSize: 12),
-        .foregroundColor: UIColor.appGrey,
-        .underlineStyle: NSUnderlineStyle.single.rawValue]
-        let attributeString = (!isScanningQr && mode != .fetching && !Env.isProduction())
-            ? NSAttributedString(string: "connections_add_new".localize(), attributes: attributes)
-            : nil
-        let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil
-        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr,
-                                   rightIconName: navIconName, rightIconAction: actionScan,
-                                   textButtonTitle: attributeString, textButtonAction: actionInput)
+        if isDetail {
+            navBar = NavBarCustomStyle(hasNavBar: true, title: "contacts_detail_title".localize(),
+                                       hasBackButton: true, rightIconName: "ico_delete",
+                                       rightIconAction: actionDelete)
+        } else {
+            let navTitle = isScanningQr
+                ? "connections_scan_qr_nav_title".localize()
+                : "connections_nav_title".localize()
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 12),
+                .foregroundColor: UIColor.appGrey,
+                .underlineStyle: NSUnderlineStyle.single.rawValue]
+            let attributeString = (!isScanningQr && mode != .fetching && !Env.isProduction())
+                ? NSAttributedString(string: "connections_add_new".localize(), attributes: attributes)
+                : nil
+            let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil
+            navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr,
+                                       rightIconName: navIconName, rightIconAction: actionScan,
+                                       textButtonTitle: attributeString, textButtonAction: actionInput)
+        }
         NavBarCustom.config(view: self)
     }
 
@@ -118,6 +134,12 @@ class ConnectionsViewController: ListingBaseViewController {
             return "main"
         case .noResults:
             return "noResults"
+        case .detailHeader:
+            return "detailHeader"
+        case .detailShared:
+            return "detailShared"
+        case .detailSection:
+            return "detailSection"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
@@ -130,6 +152,12 @@ class ConnectionsViewController: ListingBaseViewController {
             return ConnectionMainViewCell.default_NibName()
         case .noResults:
             return NoResultsViewCell.default_NibName()
+        case .detailHeader:
+            return ContactHistoryHeaderViewCell.default_NibName()
+        case .detailShared:
+            return ContactDetailSharedViewCell.default_NibName()
+        case .detailSection:
+            return ContactDetailSectionViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }
@@ -143,6 +171,10 @@ class ConnectionsViewController: ListingBaseViewController {
 
     lazy var actionInput = SelectorAction(action: { [weak self] in
         self?.presenterImpl.tappedAddNewnButton()
+    })
+
+    lazy var actionDelete = SelectorAction(action: { [weak self] in
+        self?.presenterImpl.tappedDeleteButton()
     })
 
     func showManualInput() {

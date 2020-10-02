@@ -35,6 +35,12 @@
 		B32EC7F424C71B34004A5014 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32EC7F324C71B34004A5014 /* Data+Extensions.swift */; };
 		B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B33B708D249BA09D00F620D6 /* ResetData.storyboard */; };
 		B33B7090249BB17000F620D6 /* ResetDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33B708F249BB17000F620D6 /* ResetDataViewController.swift */; };
+		B3491BFB251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3491BF9251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift */; };
+		B3491BFC251A26DD0040F89E /* ContactHistoryHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3491BFA251A26DD0040F89E /* ContactHistoryHeaderViewCell.xib */; };
+		B3491C00251A2C850040F89E /* ContactDetailSectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3491BFE251A2C850040F89E /* ContactDetailSectionViewCell.swift */; };
+		B3491C01251A2C850040F89E /* ContactDetailSectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3491BFF251A2C850040F89E /* ContactDetailSectionViewCell.xib */; };
+		B3491C06251A31B10040F89E /* ContactDetailSharedViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3491C04251A31B10040F89E /* ContactDetailSharedViewCell.swift */; };
+		B3491C07251A31B10040F89E /* ContactDetailSharedViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */; };
 		B35181AB24195CAD007CA8F1 /* connector_api.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A824195CAC007CA8F1 /* connector_api.proto */; };
 		B35181AC24195CAD007CA8F1 /* connector_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A924195CAC007CA8F1 /* connector_models.proto */; };
 		B35181AD24195CAD007CA8F1 /* node_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181AA24195CAD007CA8F1 /* node_models.proto */; };
@@ -297,6 +303,12 @@
 		B32EC7F324C71B34004A5014 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		B33B708D249BA09D00F620D6 /* ResetData.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ResetData.storyboard; sourceTree = "<group>"; };
 		B33B708F249BB17000F620D6 /* ResetDataViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetDataViewController.swift; sourceTree = "<group>"; };
+		B3491BF9251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactHistoryHeaderViewCell.swift; sourceTree = "<group>"; };
+		B3491BFA251A26DD0040F89E /* ContactHistoryHeaderViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactHistoryHeaderViewCell.xib; sourceTree = "<group>"; };
+		B3491BFE251A2C850040F89E /* ContactDetailSectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailSectionViewCell.swift; sourceTree = "<group>"; };
+		B3491BFF251A2C850040F89E /* ContactDetailSectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactDetailSectionViewCell.xib; sourceTree = "<group>"; };
+		B3491C04251A31B10040F89E /* ContactDetailSharedViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailSharedViewCell.swift; sourceTree = "<group>"; };
+		B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactDetailSharedViewCell.xib; sourceTree = "<group>"; };
 		B35181A824195CAC007CA8F1 /* connector_api.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_api.proto; sourceTree = "<group>"; };
 		B35181A924195CAC007CA8F1 /* connector_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_models.proto; sourceTree = "<group>"; };
 		B35181AA24195CAD007CA8F1 /* node_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = node_models.proto; sourceTree = "<group>"; };
@@ -632,6 +644,16 @@
 				B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */,
 			);
 			path = ActivityHistory;
+			sourceTree = "<group>";
+		};
+		B3491BFD251A26F70040F89E /* cells */ = {
+			isa = PBXGroup;
+			children = (
+				B3491BFA251A26DD0040F89E /* ContactHistoryHeaderViewCell.xib */,
+				B3491BFF251A2C850040F89E /* ContactDetailSectionViewCell.xib */,
+				B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */,
+			);
+			path = cells;
 			sourceTree = "<group>";
 		};
 		B352433D24FFD5730053A804 /* dateFormat */ = {
@@ -1268,6 +1290,7 @@
 		EE7D4D10236939DC007C31A8 /* connections */ = {
 			isa = PBXGroup;
 			children = (
+				B3491BFD251A26F70040F89E /* cells */,
 				B35470F924E4252D009F4844 /* DeleteContact.storyboard */,
 				EE7D4D1423693A13007C31A8 /* Connections.storyboard */,
 				EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */,
@@ -1325,6 +1348,9 @@
 			children = (
 				EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */,
 				B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */,
+				B3491BF9251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift */,
+				B3491BFE251A2C850040F89E /* ContactDetailSectionViewCell.swift */,
+				B3491C04251A31B10040F89E /* ContactDetailSharedViewCell.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1575,8 +1601,10 @@
 				EE7D4CB82366B9C5007C31A8 /* ListingErrorRetryViewCell.xib in Resources */,
 				B3EA097F24A519E50082B71B /* ConnectionAddManual.storyboard in Resources */,
 				EE8CD810237B691100614578 /* TextFieldTitledView.xib in Resources */,
+				B3491BFC251A26DD0040F89E /* ContactHistoryHeaderViewCell.xib in Resources */,
 				EE7185732384D5E200C58F62 /* FieldViewCell.xib in Resources */,
 				EE48AC23237764E800C0A441 /* TutorialPageView.xib in Resources */,
+				B3491C01251A2C850040F89E /* ContactDetailSectionViewCell.xib in Resources */,
 				EEE43A63237A60A000E8E304 /* RegisterSeedView.xib in Resources */,
 				EE8FD4EE23726AD000EFF62E /* Profile.storyboard in Resources */,
 				B3F94E8B247455720087EBFD /* SecurityMainViewCell.xib in Resources */,
@@ -1612,6 +1640,7 @@
 				EE8CD81E237D10D700614578 /* HistoryViewCell.xib in Resources */,
 				EE71855A2383530D00C58F62 /* ShareDialog.storyboard in Resources */,
 				EE71855823831BDB00C58F62 /* ConnectionConfirm.storyboard in Resources */,
+				B3491C07251A31B10040F89E /* ContactDetailSharedViewCell.xib in Resources */,
 				EE7D4D0A2367631B007C31A8 /* Credentials.storyboard in Resources */,
 				EE904F202373BA2100EE6344 /* NotificationViewCell.xib in Resources */,
 				B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */,
@@ -1898,6 +1927,7 @@
 				B33B7090249BB17000F620D6 /* ResetDataViewController.swift in Sources */,
 				B309C14F24BE40A200AF70DF /* AtalaPrismModel.xcdatamodeld in Sources */,
 				EE7185642384B77600C58F62 /* BrowserPresenter.swift in Sources */,
+				B3491C00251A2C850040F89E /* ContactDetailSectionViewCell.swift in Sources */,
 				EE7D4BB82366B9C4007C31A8 /* TableUtils.swift in Sources */,
 				EE7D4CE523673C39007C31A8 /* UISegmentedControl+Extensions.swift in Sources */,
 				B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */,
@@ -1939,11 +1969,13 @@
 				EE7D4CF023673C39007C31A8 /* String+Extensions2.swift in Sources */,
 				EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */,
 				EE71854E237DBF4700C58F62 /* WelcomePresenter.swift in Sources */,
+				B3491C06251A31B10040F89E /* ContactDetailSharedViewCell.swift in Sources */,
 				F5E3894B234BC34D0001F1E3 /* SceneDelegate.swift in Sources */,
 				EE7D4D0D23693588007C31A8 /* ConnectionsViewController.swift in Sources */,
 				EE7D4C722366B9C4007C31A8 /* RemoteImages.swift in Sources */,
 				EE7D4C6C2366B9C4007C31A8 /* SharedMemory.swift in Sources */,
 				EE7D4BBA2366B9C4007C31A8 /* UserUtils.swift in Sources */,
+				B3491BFB251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift in Sources */,
 				B38D944A24AE53440053CE36 /* Reachability.swift in Sources */,
 				B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */,
 				B35181B324196689007CA8F1 /* common_models.proto in Sources */,

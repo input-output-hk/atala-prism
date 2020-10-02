@@ -1,31 +1,32 @@
 //
-//  CredentialHistoryHeaderViewCell.swift
+//  ContactHistoryHeaderViewCell.swift
 //  credentials-verification-iOS
 //
-//  Created by Leandro Pardo on 14/09/2020.
+//  Created by Leandro Pardo on 22/09/2020.
 //  Copyright © 2020 iohk. All rights reserved.
 //
 
 import UIKit
 
-protocol CredentialHistoryHeaderViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
+protocol ContactHistoryHeaderViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
 
-    func setup(for cell: CredentialHistoryHeaderViewCell)
+    func setup(for cell: ContactHistoryHeaderViewCell)
 }
 
-class CredentialHistoryHeaderViewCell: BaseTableViewCell {
+class ContactHistoryHeaderViewCell: BaseTableViewCell {
 
     @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var imageLogo: UIImageView!
     @IBOutlet weak var labelTitle: UILabel!
+    @IBOutlet weak var labelSubtitle: UILabel!
     @IBOutlet weak var labelDate: UILabel!
 
     override class func default_NibName() -> String {
-        return "CredentialHistoryHeaderViewCell"
+        return "ContactHistoryHeaderViewCell"
     }
 
-    var delegateImpl: CredentialHistoryHeaderViewCellPresenterDelegate? {
-        return delegate as? CredentialHistoryHeaderViewCellPresenterDelegate
+    var delegateImpl: ContactHistoryHeaderViewCellPresenterDelegate? {
+        return delegate as? ContactHistoryHeaderViewCellPresenterDelegate
     }
 
     override func initialSetup(index: IndexPath?, delegate: BaseTableViewCellPresenterDelegate?) {
@@ -39,11 +40,12 @@ class CredentialHistoryHeaderViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String, date: Date, icon: String) {
+    func config(title: String, subtitle: String, date: Date, icon: Data?) {
 
         labelTitle.text = title
+        labelSubtitle.text = String(format: "contacts_detail_did".localize(), subtitle)
         // Logo image
-        imageLogo.applyDataImage(data: nil, placeholderNamed: icon)
+        imageLogo.applyDataImage(data: icon, placeholderNamed: "icon_id")
         labelDate.text = String(format: "credentials_detail_date".localize(),
                                 date.dateTimeString())
     }

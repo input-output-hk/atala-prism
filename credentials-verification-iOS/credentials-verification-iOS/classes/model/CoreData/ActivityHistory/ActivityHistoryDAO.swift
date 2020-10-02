@@ -23,9 +23,17 @@ class ActivityHistoryDAO: BaseDAO {
         return result as? [ActivityHistory]
     }
 
-    func listActivityHistory(for credentialId: String) -> [ActivityHistory]? {
+    func listCredentialActivityHistory(for credentialId: String) -> [ActivityHistory]? {
         let fetchRequest = ActivityHistory.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "credentialId == %@", credentialId)
+        fetchRequest.sortDescriptors = getSortDescriptors()
+        let result = try? getManagedContext()?.fetch(fetchRequest)
+        return result as? [ActivityHistory]
+    }
+
+    func listContactActivityHistory(for contactId: String) -> [ActivityHistory]? {
+        let fetchRequest = ActivityHistory.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "contactId == %@", contactId)
         fetchRequest.sortDescriptors = getSortDescriptors()
         let result = try? getManagedContext()?.fetch(fetchRequest)
         return result as? [ActivityHistory]
@@ -41,7 +49,7 @@ class ActivityHistoryDAO: BaseDAO {
         credentialHistory?.typeEnum = type
         credentialHistory?.credentialId = credential?.credentialId
         credentialHistory?.credentialName = credential?.credentialName
-        credentialHistory?.contactId = contact?.connectionId
+        credentialHistory?.contactId = contact?.connectionId ?? credential?.issuerId
         credentialHistory?.contactName = contact?.name ?? credential?.issuerName
         credentialHistory?.contactLogo = contact?.logo
 
