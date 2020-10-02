@@ -35,7 +35,7 @@ module "node_container_definition" {
     { name = "GEUD_NODE_PSQL_DATABASE", value = var.psql_database },
     { name = "GEUD_NODE_PSQL_USERNAME", value = var.psql_username },
     { name = "GEUD_NODE_PSQL_PASSWORD", value = var.psql_password },
-    { name = "GEUD_NODE_LEDGER", value = "in-memory" },
+    { name = "GEUD_NODE_LEDGER", value = "cardano" },
     { name = "GEUD_NODE_CARDANO_DB_SYNC_HOST", value = var.cardano_db_sync_psql_host },
     { name = "GEUD_NODE_CARDANO_DB_SYNC_USERNAME", value = var.cardano_db_sync_psql_username },
     { name = "GEUD_NODE_CARDANO_DB_SYNC_PASSWORD", value = var.cardano_db_sync_psql_password },
