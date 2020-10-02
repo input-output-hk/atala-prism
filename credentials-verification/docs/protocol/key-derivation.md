@@ -340,3 +340,98 @@ Seed phrase: abandon amount liar amount expire adjust cage candy arch gather dru
         * (hex): 021b22881120925cf10381f5a247634665a677f98505bf183726a9b90f245a8a95
         * (x-hex): 1b22881120925cf10381f5a247634665a677f98505bf183726a9b90f245a8a95
         * (y-hex): 5a1b2feb44de35e5071810f931b8b4cf93bb6103eb86665563c65e120f6d9bc8
+
+## Future challenges
+
+A problem for a near future is that we would like to enable users to create DID Documents that contain more than just
+the canonical master key. This can be achieved today by creating a canonical DID and then performing an update
+operation. Given the metadata space we have, we could batch the two operations in a single Cardano transaction. If we
+opt for this approach, the recovery process would work without the need of changes.
+
+As an alternative, we could generate initial DID documents with more keys and data than the canonical master key and 
+back up them in some external storage. The recovery process would then iterate upon the documents and re-generate the
+keys associated to them. 
+
+Another alternative could be to extract from an initial state of DID Document its _canonical_ part, this is the initial
+master key associated to the DID. The DID suffix could be dependent only on the canonical part. For example, an initial
+DID Document could be:
+
+```
+{
+  "keys": [
+    { 
+      "id": "master0",
+      "type": "MASTER_KEY", 
+      "key": ... 
+    },
+    { 
+      "id": "issuance0",
+      "type": "ISSUING_KEY", 
+      "key": ... 
+    } 
+  ] 
+}
+```
+
+where the canonical part is the DID Document 
+
+```
+{
+    "keys": [
+        { 
+          "id": "master0",
+          "type": "MASTER_KEY", 
+          "key": ... 
+        }
+    ]
+}
+```
+
+The DID suffix could be computed from the canonical part (its hash). This could allow for published DIDs to have a 
+generic initial state without breaking our recovery process. However, the non-canonical part does not become self
+certifiable anymore. Meaning that for an unpublished DID, a user could have the DID Documents:
+
+```
+{
+  "keys": [
+    { 
+      "id": "master0",
+      "type": "MASTER_KEY", 
+      "key": ... 
+    },
+    { 
+      "id": "issuance0",
+      "type": "ISSUING_KEY", 
+      "key": ... 
+    } 
+  ] 
+}
+```
+
+and 
+
+```
+{
+  "keys": [
+    { 
+      "id": "master0",
+      "type": "MASTER_KEY", 
+      "key": ... 
+    },
+    { 
+      "id": "master2",
+      "type": "MASTER_KEY", 
+      "key": ... 
+    } 
+  ] 
+}
+```
+
+and both would have the same short form (canonical) DID.
+The approach still would not solve the recovery of [unpublished DIDs](./unpublished-dids.md).
+
+We have also mentioned that the node could expose an endpoint to obtain DIDs based on a key. This could also allow a
+recovery process that remains compatible with a generic initial DID Document. 
+
+The above non-extensive analysis suggests the need of external storage for DID recovery or to split the creation of
+complex DID Documents into a Create and an Update part.
