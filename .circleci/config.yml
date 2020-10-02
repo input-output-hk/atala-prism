@@ -184,6 +184,7 @@ jobs:
             ./build.sh -p
 
   rebuild-prism-env:
+    working_directory: ~/repo
     docker:
       - image: << pipeline.parameters.scala-mill-docker-image >>
     parameters:
