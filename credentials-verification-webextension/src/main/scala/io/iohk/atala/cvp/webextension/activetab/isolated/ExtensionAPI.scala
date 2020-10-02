@@ -31,6 +31,14 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
   */
 class ExtensionAPI()(implicit ec: ExecutionContext) {
 
+  def getSdkDetails(): Future[Event.GotSdkDetails] = {
+    val cmd = Command.GetSdkDetails
+    processCommand(cmd).collect {
+      case r: Event.GotSdkDetails => r
+      case x => throw new RuntimeException(s"Unknown response: $x")
+    }
+  }
+
   def getWalletStatus(): Future[Event.GotWalletStatus] = {
     val cmd = Command.GetWalletStatus
     processCommand(cmd).collect {

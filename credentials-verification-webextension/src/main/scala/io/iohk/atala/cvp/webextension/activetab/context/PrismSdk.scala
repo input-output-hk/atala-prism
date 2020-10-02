@@ -7,7 +7,7 @@ import io.circe.parser.parse
 import io.iohk.atala.credentials.VerificationError
 import io.iohk.atala.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
-import io.iohk.atala.cvp.webextension.activetab.models.{JsSignedMessage, JsUserDetails}
+import io.iohk.atala.cvp.webextension.activetab.models.{JsSdkDetails, JsSignedMessage, JsUserDetails}
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,6 +38,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         configurable = false
         // NOTE: The highlighted error is a bug on IntelliJ as the code compiles properly
         value = js.Dictionary(
+          "getSdkDetails" -> js.Any.fromFunction0(getSdkDetails),
           "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus),
           "login" -> js.Any.fromFunction0(login),
           "requestSignature" -> js.Any.fromFunction2(requestSignature),
@@ -46,6 +47,13 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         ): js.UndefOr[js.Any]
       }
     )
+  }
+
+  def getSdkDetails(): js.Promise[JsSdkDetails] = {
+    extensionAPI
+      .getSdkDetails()
+      .map(e => JsSdkDetails(extensionId = e.extensionId))
+      .toJSPromise
   }
 
   def getWalletStatus(): js.Promise[String] = {

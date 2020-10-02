@@ -13,8 +13,8 @@ private[activetab] sealed trait Command extends Product with Serializable
 
 private[activetab] object Command {
 
+  final case object GetSdkDetails extends Command
   final case object GetWalletStatus extends Command
-
   final case object CreateSession extends Command
 
   final case class RequestSignature(sessionId: String, subject: CredentialSubject) extends Command
