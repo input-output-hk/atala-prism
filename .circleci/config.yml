@@ -94,6 +94,7 @@ commands:
 
 jobs:
   deploy-ecr-images:
+    working_directory: ~/repo
     docker:
       - image: << pipeline.parameters.scala-mill-docker-image >>
     steps:
