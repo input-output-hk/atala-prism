@@ -38,6 +38,9 @@ public class CredentialDto {
     private String policyNumber;
 
     @Getter
+    private CredentialView view;
+
+    @Getter
     private CredentialIssuer issuer;
 
     public int getTitle() {
