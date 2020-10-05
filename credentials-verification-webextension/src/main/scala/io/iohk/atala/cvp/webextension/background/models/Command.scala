@@ -45,6 +45,9 @@ private[background] object Command {
   final case object GetWalletStatus extends CommandWithResponse[WalletStatusResult];
   final case class WalletStatusResult(status: WalletStatus)
 
+  final case class TransactionInfo(id: String)
+  final case object GetTransactionInfo extends CommandWithResponse[TransactionInfo];
+
   final case object GetUserSession extends CommandWithResponse[UserDetails];
 
   final case class CreateWallet(

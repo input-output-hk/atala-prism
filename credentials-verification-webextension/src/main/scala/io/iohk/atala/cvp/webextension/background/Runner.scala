@@ -119,7 +119,6 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
-    val windowActionService = new BrowserWindowService
     val connectorClientService = ConnectorClientService(config.backendUrl)
     val nodeClientService = NodeClientService(config.backendUrl)
     val walletManager =
@@ -138,7 +137,6 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
-    val windowActionService = BrowserWindowService()
 
     val walletManager =
       new WalletManager(browserActionService, storage, connectorClientService, nodeClientService)

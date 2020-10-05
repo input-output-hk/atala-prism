@@ -9,11 +9,13 @@ import slinky.web.ReactDOM
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
+class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI, blockchainExplorerUrl: String)(implicit
+    ec: ExecutionContext
+) {
 
   def run(): Unit = {
     dom.window.onload = _ => {
-      ReactDOM.render(WalletView(backgroundAPI), dom.document.getElementById("root"))
+      ReactDOM.render(WalletView(backgroundAPI, blockchainExplorerUrl), dom.document.getElementById("root"))
     }
   }
 
@@ -23,6 +25,6 @@ object Runner {
   def apply(config: Config)(implicit ec: ExecutionContext): Runner = {
     val messages = new I18NMessages
     val backgroundAPI = new BackgroundAPI()
-    new Runner(messages, backgroundAPI)
+    new Runner(messages, backgroundAPI, config.blockchainExplorerUrl)
   }
 }

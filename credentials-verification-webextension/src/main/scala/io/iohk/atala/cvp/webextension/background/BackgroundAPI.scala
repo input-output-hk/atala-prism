@@ -8,6 +8,7 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
   KeyList,
   SignedConnectorResponse,
   SigningRequests,
+  TransactionInfo,
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
@@ -55,6 +56,10 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
 
   def getWalletStatus(): Future[WalletStatusResult] = {
     process(Command.GetWalletStatus)
+  }
+
+  def getTransactionInfo(): Future[TransactionInfo] = {
+    process(Command.GetTransactionInfo)
   }
 
   def login(): Future[UserDetails] = {

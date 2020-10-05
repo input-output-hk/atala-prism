@@ -20,7 +20,7 @@ import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.services.BrowserWindowService
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.requests.RequestAuthenticator
-import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest}
+import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
@@ -71,6 +71,7 @@ case class WalletData(
     mnemonic: Mnemonic,
     organisationName: String,
     did: String,
+    transactionId: Option[String] = None,
     role: Role,
     logo: Array[Byte]
 ) {
@@ -221,6 +222,17 @@ private[background] class WalletManager(
     }
   }
 
+  def getTransactionId(): Future[String] = {
+    Future.fromTry {
+      Try {
+        val wallet = walletData.getOrElse(
+          throw new RuntimeException("You need to create the wallet before requesting did")
+        )
+        wallet.transactionId.getOrElse(throw new RuntimeException("Transaction Id not found"))
+      }
+    }
+  }
+
   def getLoggedInUserSession(origin: Origin): Future[UserDetails] = {
     Future.fromTry {
       Try {
@@ -358,8 +370,9 @@ private[background] class WalletManager(
   ): Future[Unit] = {
     val result = for {
       aesKey <- generateSecretKey(password)
-      did <- registerDid(mnemonic, role, organisationName, logo)
-      newWalletData = WalletData(Map.empty, mnemonic, organisationName, did, role, logo)
+      response <- registerDid(mnemonic, role, organisationName, logo)
+      newWalletData =
+        WalletData(Map.empty, mnemonic, organisationName, response.did, response.transactionInfo.map(_.id), role, logo)
       _ <- save(aesKey, newWalletData)
       _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
     } yield ()
@@ -441,7 +454,7 @@ private[background] class WalletManager(
       role: Role,
       organisationName: String,
       logo: Array[Byte]
-  ): Future[String] = {
+  ): Future[RegisterDIDResponse] = {
 
     val connectRole = Role.toConnectorApiRole(role)
     val logoByteString = ByteString.copyFrom(logo)
@@ -454,10 +467,7 @@ private[background] class WalletManager(
         organisationName,
         logoByteString
       )
-    connectorClientService.registerDID(registerDIDRequest).map { response =>
-      println(s"*****RegisteredDID******=${response.did}")
-      response.did
-    }
+    connectorClientService.registerDID(registerDIDRequest)
   }
 
   private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {

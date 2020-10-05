@@ -35,7 +35,8 @@ trait WalletDomSpec extends Suite with BeforeAndAfterAll with BeforeAndAfterEach
     Runner(
       Config(
         ActiveTabConfig(List.empty),
-        backendUrl = "http://localhost:10000/test"
+        backendUrl = "http://localhost:10000/test",
+        blockchainExplorerUrl = "http://localhost:10000/test-explorer"
       ),
       FakeConnectorClientService,
       new NodeClientService("http://localhost:10000/test")
