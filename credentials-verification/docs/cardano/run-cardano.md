@@ -1,9 +1,6 @@
-# Building & Running Cardano
+# Running Cardano
 
 The following instructions connect to the Cardano Shelley Testnet.
-
-If you want to build everything, and you most likely don't, follow these
-[instructions](build-run-cardano.md) instead.
 
 ## Setup
 
@@ -20,13 +17,13 @@ docker-compose version
 
 You can install the latest
 [Cardano Wallet CLI](https://github.com/input-output-hk/cardano-wallet/releases)
-release for Byron, but it's suggested to keep it simple with Docker:
+release for Shelley, but it's suggested to keep it simple with Docker:
 ```shell script
 alias cardano-wallet="docker run --network host --rm -i inputoutput/cardano-wallet:2020.9.11-shelley"
 ```
 
 However you install it, ensure you got the right version
-`2020.7.28 (git revision: ca96c435df4ea4f2aefc98a75ae668d5f709da56)`:
+`2020.9.11 (git revision: 0525347dc0c1e5a0ed1ba35600a93b509655b2e4)`:
 ```shell script
 cardano-wallet version
 ```
@@ -49,7 +46,8 @@ In order for components to not start over after restarts, we bind some Docker
 volumes to local directories, ensure the following exist:
 ```shell script
 cd credentials-verification/docs/cardano/docker
-mkdir -p cardano-data/node-db \
+mkdir -p \
+    cardano-data/node-db \
     cardano-data/node-ipc \
     cardano-data/postgres \
     cardano-data/wallet-db
@@ -57,7 +55,7 @@ mkdir -p cardano-data/node-db \
 
 ## Run the components
 
-Running the components from scratch should take 20-30 min for them to sync with
+Running the components from scratch should take ~1 hour for them to sync with
 the testnet:
 ```shell script
 cd credentials-verification/docs/cardano/docker
@@ -66,8 +64,10 @@ docker-compose up
 
 You can check on the sync progress with:
 ```shell script
+alias watch='watch '
 watch 'cardano-wallet network information | jq ".sync_progress"'
 ```
+Note the `alias` hack to expand `cardano-wallet` when using Docker. 
 
 ## Operations
 
@@ -133,7 +133,7 @@ cardano-wallet address list $WALLET1 | jq -r ".[0].id"
 Open https://testnets.cardano.org/en/cardano/tools/faucet/ page, paste the address,
 and request funds.
 
-Note that this is a new faucet, and it only allows one request every 24 hours.
+Note that the faucet only allows one request per user every 24 hours.
 If your request fails because of the rate limit, you can ask a teammate to
 transfer you some funds, so you can test.
 
@@ -141,6 +141,7 @@ transfer you some funds, so you can test.
 
 Verify you have enough funds in `WALLET1` to send (including fees):
 ```shell script
+alias watch='watch '
 watch "cardano-wallet wallet get $WALLET1 | jq '.balance'"
 ```
 
@@ -162,6 +163,7 @@ If you are interested on creating the Cardano transaction manually, please read
 Check the balances of your wallets, the transaction should take 20 seconds to
 be reflected:
 ```shell script
+alias watch='watch '
 watch 'cardano-wallet wallet list | jq ".[] | {name: .name, balance: .balance}"'
 ```
 
@@ -189,8 +191,8 @@ PGPASSWORD=$(cat secrets/postgres_password) \
     --variable=TXID="\x${TXID?}"
 ```
 
-Note we are passing in the `TXID` variable with a `\x` prefix, which is how the
-database expects it. This variable will be used next, but it isn't needed for
+Note we are passing in the `TXID` variable with a `\x` prefix, so it gets
+decoded into bytes. This variable will be used next, but it isn't needed for
 logging in.
 
 Run the following query to get the details for the transaction:
@@ -212,10 +214,20 @@ SELECT
   ORDER BY tx.id, tx_out.index;
 ```
 
+Also, run the following to inspect the transaction metadata:
+```sql
+SELECT tx_metadata.key, tx_metadata.json
+  FROM tx
+    JOIN tx_metadata ON tx_metadata.tx_id = tx.id
+  WHERE tx.hash = :'TXID'
+  ORDER BY tx_metadata.key;
+```
+
 If you don't get any results, `cardano-db-sync` may still be syncing, run the
 following query to find out how old the latest block is:
 ```sql
-SELECT NOW() - MAX(time) AS latestBlockAge FROM block;
+SELECT NOW() - MAX(time) AS latest_block_age FROM block;
 ```
 
-You should see the same data you see in Cardano Explorer.
+You should see the same data you see in Cardano Explorer, except metadata,
+which has not been added yet.

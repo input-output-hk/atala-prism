@@ -23,6 +23,7 @@ For more context around the plan used for integration, please read the
 [Cardano in Atala Prism](cardano-in-atala-prism.md)
 document.
 
-## Running Cardano
+## Using Cardano
 
-The steps to run the Cardano components, are detailed [here](run-cardano.md).
+The steps to connect to the Cardano components, are detailed
+[here](use-cardano.md).
