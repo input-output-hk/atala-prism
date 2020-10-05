@@ -4,10 +4,10 @@ import java.util.Base64
 
 import com.typesafe.config.Config
 
-import io.iohk.atala.crypto.ECKeyPair
-import io.iohk.atala.crypto.EC
+import io.iohk.atala.crypto.{EC, ECKeyPair}
+import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
 
-case class ConnectorConfig(host: String, port: Int, did: String, didKeyId: String, didKeyPair: ECKeyPair)
+case class ConnectorConfig(host: String, port: Int, authConfig: DidBasedAuthConfig)
 
 object ConnectorConfig {
 
@@ -27,9 +27,11 @@ object ConnectorConfig {
     ConnectorConfig(
       host = host,
       port = port,
-      did = did,
-      didKeyId = didKeyId,
-      didKeyPair = ECKeyPair(privateKey, publicKey)
+      authConfig = DidBasedAuthConfig(
+        did = did,
+        didKeyId = didKeyId,
+        didKeyPair = ECKeyPair(privateKey, publicKey)
+      )
     )
   }
 

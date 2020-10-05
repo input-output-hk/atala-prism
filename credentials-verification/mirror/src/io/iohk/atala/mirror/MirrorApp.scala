@@ -10,7 +10,6 @@ import cats.effect.{Blocker, ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
 import io.grpc.{Server, ServerBuilder, ServerServiceDefinition, ManagedChannelBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
-import io.grpc.stub.MetadataUtils
 import org.flywaydb.core.Flyway
 import doobie.util.ExecutionContexts
 import doobie.hikari.HikariTransactor
@@ -132,22 +131,17 @@ object MirrorApp extends TaskApp {
     )
 
   /**
-    * Create a connector with authorization header.
+    * Create a connector gRPC service stub.
     */
   def createConnector(
       connectorConfig: ConnectorConfig
   ): ConnectorServiceGrpc.ConnectorServiceStub = {
-    val headers = ConnectorClientService.createMetadataHeaders(
-      "did" -> connectorConfig.did,
-      "didKeyId" -> connectorConfig.didKeyId
-    )
-
     val channel = ManagedChannelBuilder
       .forAddress(connectorConfig.host, connectorConfig.port)
       .usePlaintext()
       .build()
 
-    MetadataUtils.attachHeaders(ConnectorServiceGrpc.stub(channel), headers)
+    ConnectorServiceGrpc.stub(channel)
   }
 
 }
