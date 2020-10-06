@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
 import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionDetails, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import io.iohk.atala.prism.utils.FutureEither
 
@@ -30,6 +30,22 @@ trait CardanoWalletApiClient {
       metadata: Option[TransactionMetadata],
       passphrase: String
   ): Result[TransactionId]
+
+  /**
+    * Get the details of the given transaction.
+    *
+    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
+    */
+  def getTransaction(walletId: WalletId, transactionId: TransactionId): Result[TransactionDetails]
+
+  /**
+    * Delete a transaction.
+    *
+    * <p>Note the transaction may still show up later in a block.
+    *
+    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
+    */
+  def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit]
 }
 
 object CardanoWalletApiClient {

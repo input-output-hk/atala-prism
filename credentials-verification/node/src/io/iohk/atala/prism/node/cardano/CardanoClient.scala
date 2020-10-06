@@ -28,12 +28,36 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
       payments: List[Payment],
       metadata: Option[TransactionMetadata],
       passphrase: String
-  ): Result[PostTransactionError, TransactionId] = {
+  ): Result[TransactionError, TransactionId] = {
     cardanoWalletApiClient
       .postTransaction(walletId, payments, metadata, passphrase)
       .mapLeft(e => {
         logger.error(s"Could not post the Cardano transaction: $e")
-        PostTransactionError.InvalidTransaction
+        TransactionError.InvalidTransaction
+      })
+  }
+
+  def getTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Result[TransactionError, TransactionDetails] = {
+    cardanoWalletApiClient
+      .getTransaction(walletId, transactionId)
+      .mapLeft(e => {
+        logger.error(s"Could not get Cardano transaction $transactionId: $e")
+        TransactionError.InvalidTransaction
+      })
+  }
+
+  def deleteTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Result[TransactionError, Unit] = {
+    cardanoWalletApiClient
+      .deleteTransaction(walletId, transactionId)
+      .mapLeft(e => {
+        logger.error(s"Could not delete Cardano transaction $transactionId: $e")
+        TransactionError.InvalidTransaction
       })
   }
 }

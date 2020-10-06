@@ -82,7 +82,7 @@ object FakeCardanoWalletApiClient {
   }
 
   private def sameJson(a: String, b: String): Boolean = {
-    parse(a).right.value == parse(b).right.value
+    a == b || parse(a).right.value == parse(b).right.value
   }
 
   private def createJsonErrorResponse(errorCode: String, message: String): String = {

@@ -50,4 +50,15 @@ private[api] object JsonCodecs {
   }
 
   implicit val paymentCodec: Codec[Payment] = deriveCodec[Payment]
+
+  implicit val transactionStatusDecoder: Decoder[TransactionStatus] = Decoder.decodeString.emapTry { string =>
+    Try(TransactionStatus.withNameInsensitive(string))
+  }
+
+  implicit val transactionDetailsDecoder: Decoder[TransactionDetails] = (cursor: HCursor) => {
+    for {
+      transactionId <- cursor.downField("id").as[TransactionId]
+      status <- cursor.downField("status").as[TransactionStatus]
+    } yield TransactionDetails(transactionId, status)
+  }
 }

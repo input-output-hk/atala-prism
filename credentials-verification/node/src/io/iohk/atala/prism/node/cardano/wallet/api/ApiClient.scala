@@ -5,11 +5,11 @@ import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionDetails, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, Result}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient._
-import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.PostTransaction
+import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{DeleteTransaction, GetTransaction, PostTransaction}
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
 import io.iohk.atala.prism.utils.FutureEither._
 
@@ -28,15 +28,24 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
       payments: List[Payment],
       metadata: Option[TransactionMetadata],
       passphrase: String
-  ): Result[TransactionId] =
+  ): Result[TransactionId] = {
     PostTransaction(walletId, payments, metadata, passphrase).run(transactionIdFromTransactionDecoder)
+  }
+
+  override def getTransaction(walletId: WalletId, transactionId: TransactionId): Result[TransactionDetails] = {
+    GetTransaction(walletId, transactionId).run
+  }
+
+  override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit] = {
+    DeleteTransaction(walletId, transactionId).run
+  }
 
   private def call[A: Decoder](method: ApiRequest): Result[A] = {
     sttp
       .contentType(MediaTypes.Json)
       .response(asString)
       .method(method.httpMethod, Uri.apply(config.host, config.port).path(method.path))
-      .body(method.requestBody.noSpaces)
+      .body(method.requestBody.map(_.noSpaces).getOrElse(""))
       .send()
       .map { response =>
         getResult[A](response).left
@@ -77,14 +86,19 @@ private[wallet] object ApiClient {
     * Try to map a string response a Json.
     */
   private def unsafeToJson(response: String): Json = {
-    parse(response).fold(
-      parsingFailure =>
-        throw new RuntimeException(
-          s"Cardano Wallet API Error: ${parsingFailure.message}, with response: ${response.take(256)}",
-          parsingFailure.underlying
-        ),
-      identity
-    )
+    if (response.isEmpty) {
+      // Use an empty JSON to represent empty response to simplify decoding
+      Json.obj()
+    } else {
+      parse(response).fold(
+        parsingFailure =>
+          throw new RuntimeException(
+            s"Cardano Wallet API Error: ${parsingFailure.message}, with response: ${response.take(256)}",
+            parsingFailure.underlying
+          ),
+        identity
+      )
+    }
   }
 
   /**

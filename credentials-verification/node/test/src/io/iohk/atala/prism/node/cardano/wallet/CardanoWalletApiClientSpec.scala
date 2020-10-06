@@ -16,11 +16,13 @@ import scala.concurrent.ExecutionContext
 
 class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
-  implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds), interval = Span(30, Millis))
+  implicit override val patienceConfig: PatienceConfig =
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(30, Millis))
   implicit def ec: ExecutionContext = ExecutionContext.global
 
+  private val walletId = WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
+
   "postTransaction" should {
-    val walletId = WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
     val payment = Payment(
       Address(
         "2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb"
@@ -59,6 +61,59 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
       val error =
         client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue.left.value
+
+      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+    }
+  }
+
+  "getTransaction" should {
+    val transactionId = TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+    val expectedPath = s"v2/wallets/$walletId/transactions/$transactionId"
+
+    "get transaction details" in {
+      val client =
+        FakeCardanoWalletApiClient.Success(expectedPath, "", readResource("getTransaction_success_response.json"))
+
+      val transactionDetails = client.getTransaction(walletId, transactionId).value.futureValue.right.value
+
+      transactionDetails must be(TransactionDetails(transactionId, TransactionStatus.InLedger))
+    }
+
+    "fail on server error" in {
+      val client =
+        FakeCardanoWalletApiClient.Fail(
+          expectedPath,
+          "",
+          "not_found",
+          "Bad request"
+        )
+
+      val error = client.getTransaction(walletId, transactionId).value.futureValue.left.value
+
+      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+    }
+  }
+
+  "deleteTransaction" should {
+    val transactionId = TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+    val expectedPath = s"v2/wallets/$walletId/transactions/$transactionId"
+
+    "delete a transaction" in {
+      val client = FakeCardanoWalletApiClient.Success(expectedPath, "", "")
+
+      client.deleteTransaction(walletId, transactionId).value.futureValue.right.value
+    }
+
+    "fail on server error" in {
+      val client =
+        FakeCardanoWalletApiClient.Fail(
+          expectedPath,
+          "",
+          "not_found",
+          "Bad request"
+        )
+
+      val error = client.deleteTransaction(walletId, transactionId).value.futureValue.left.value
 
       error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
     }
