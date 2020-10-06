@@ -34,12 +34,12 @@ module "connector_container_definition" {
   ]
 
   environment = [
-    { name = "GEUD_CONNECTOR_PSQL_HOST", value = var.psql_host },
-    { name = "GEUD_CONNECTOR_PSQL_DATABASE", value = var.psql_database },
-    { name = "GEUD_CONNECTOR_PSQL_USERNAME", value = var.psql_username },
-    { name = "GEUD_CONNECTOR_PSQL_PASSWORD", value = var.psql_password },
-    { name = "PRISM_CONNECTOR_NODE_HOST", value = var.node_host },
-    { name = "PRISM_CONNECTOR_NODE_PORT", value = var.node_port },
+    { name = "CONNECTOR_PSQL_HOST", value = var.psql_host },
+    { name = "CONNECTOR_PSQL_DATABASE", value = var.psql_database },
+    { name = "CONNECTOR_PSQL_USERNAME", value = var.psql_username },
+    { name = "CONNECTOR_PSQL_PASSWORD", value = var.psql_password },
+    { name = "CONNECTOR_NODE_HOST", value = var.node_host },
+    { name = "CONNECTOR_NODE_PORT", value = var.node_port },
   ]
 
   logConfiguration = {

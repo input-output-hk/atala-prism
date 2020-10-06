@@ -6,14 +6,14 @@ You can follow the same recipe as in node, by adjusting the database name
 and the port the container binds to.
 
 ```sh
-docker run -it --rm -e POSTGRES_DB=geud_connector_db -p 5433:5432 postgres:11.5
+docker run -it --rm -e POSTGRES_DB=connector_db -p 5433:5432 postgres:11.5
 ```
 
 Note that we use port `5433` instead of the usual `5432` because we assume the node db
 is already running and is bound to the latter. Now you are ready to run the connector:
 
 ```sh
-GEUD_CONNECTOR_PSQL_HOST=localhost:5433 mill -i connector.run
+CONNECTOR_PSQL_HOST=localhost:5433 mill -i connector.run
 ```
 
 

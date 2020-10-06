@@ -1,6 +1,6 @@
-# GEUD - Bitcoin
+# Atala Prism - Bitcoin
 
-This document has the high-level view of the GEUD project on top of Bitcoin.
+This document has the high-level view of the Atala Prism project on top of Bitcoin.
 
 Each participant will be responsible for managing and storing their secret keys securely, this includes issuers (like universities) and verifiers (employers).
 
@@ -9,7 +9,7 @@ Related to payments, the approach assumes we'll bill per connection, which indir
 **NOTE**: As of 02/Sep/2019, we decided to follow this approach, so, it is not a proposal anymore.
 
 ## Definitions
-- **GEUD**: The Georgia project.
+- **GEUD**: The Georgia University Demo project.
 - **Issuer**: The actor that is interested in issuing credentials to holders (like an university).
 - **Holder**: The actor who receives and holds credentials (like a student).
 - **Verifier**: The actor who is interested in verifying credentials from holders (like an employer).
@@ -33,7 +33,7 @@ Related to payments, the approach assumes we'll bill per connection, which indir
 
 - **IOHK Cloud**: The IOHK infrastructure which runs all the services and servers, controller by IOHk.
 - **Node**: The component that acts as a 2nd layer node on top of a ledger.
-- **ATALA Node**: The 2nd layer node working on top of Bitcoin. It understand DIDs and credentials, any interesting party can run this node to get the GEUD blockchain details, but is not a requirement, the data will be safe even with a single node running.
+- **ATALA Node**: The 2nd layer node working on top of Bitcoin. It understands DIDs and credentials, any interested party can run this node to get the Prism blockchain details, but is not a requirement, the data will be safe even with a single node running.
 - **ATALA Database**: The centralized database used by the ATALA Node to index information.
 - **Bitcoin**: A full Bitcoin node that keeps the blockchain available to let us retrieve the ATALA-specific transactions.
 

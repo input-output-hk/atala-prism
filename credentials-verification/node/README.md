@@ -2,10 +2,10 @@
 
 Node requires Postgres database to run. You can easily provide it using Docker:
 ```
-docker run -it --rm -e POSTGRES_DB=geud_node_db -p 5432:5432 postgres:11.5
+docker run -it --rm -e POSTGRES_DB=node_db -p 5432:5432 postgres:11.5
 ```
 
-Run the Node with the default in-memory ledger:
+Run the Node with the default ledger:
 ```
 mill -i node.run
 ```
@@ -67,3 +67,11 @@ mill -i node.client.run resolve did:atala:7abbb09e1f14edcfd06a59b3ce6cf82f49e0a1
 ```
 
 Please note that DID is in the form `did:atala:[did suffix]` where did suffix is the id returned by the creation operation.
+
+## CI settings
+Build servers will require the following settings for tests:
+```
+NODE_CARDANO_WALLET_PASSPHRASE=mypassphrase
+NODE_CARDANO_WALLET_ID="b8b1d9cba6582a2730a09ea704e84712dc6c1167"
+NODE_CARDANO_PAYMENT_ADDRESS="addr1qrlh7p9th5c9ps938ry05vq96j92lzuhqr29v46caydf2wzkvlatzplcfr8afde6wsr6weskqr8k3u80e957ecmkvkhqe4n2hn"
+```

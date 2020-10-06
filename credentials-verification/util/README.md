@@ -19,16 +19,16 @@ Following files will be generated:
 * `fake_data.sql` - SQL file inserting the data,
 * `fake_data.txt` - info file, containing UUIDs to use for testing.
 
-In order to insert the data, run (replacing `localhost` with target host and `geud_connector_db` with the relevant db):
+In order to insert the data, run (replacing `localhost` with target host and `connector_db` with the relevant db):
 
 ```
-psql -h localhost -U postgres geud_connector_db -f /fake_data.sql
+psql -h localhost -U postgres connector_db -f /fake_data.sql
 ```
 
 If you don't have `psql`, but you have docker, you can run (you might need to disable SEL for that):
 
 ```
-docker run -it -v `pwd`/fake_data.sql:/fake_data.sql --rm --network host postgres psql -h localhost -U postgres geud_connector_db -f /fake_data.sql
+docker run -it -v `pwd`/fake_data.sql:/fake_data.sql --rm --network host postgres psql -h localhost -U postgres connector_db -f /fake_data.sql
 ```
 
 If you want to insert the data to one of the AWS environments, remember to connect as the connector user for your environment.
