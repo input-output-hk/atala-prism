@@ -38,8 +38,8 @@ val scalatestplus = "3.1.2.0"
 val circe = "0.13.0"
 
 // Internal libraries
-lazy val cryptoLibJS = ProjectRef(file("../crypto"), "cryptoJS")
-lazy val cryptoLibJVM = ProjectRef(file("../crypto"), "cryptoJVM")
+lazy val cryptoLibJS = ProjectRef(file("../../crypto"), "cryptoJS")
+lazy val cryptoLibJVM = ProjectRef(file("../../crypto"), "cryptoJVM")
 
 // Proto dependencies
 val dependencyProtoList = Seq("node_models.proto")
@@ -56,12 +56,10 @@ lazy val identity = crossProject(JSPlatform, JVMPlatform)
       "org.scalatest" %%% "scalatest" % scalatest % Test,
       "org.scalatestplus" %%% "scalacheck-1-14" % scalatestplus % Test
     ),
-    // see scalapb.sbt in project folder
-    // https://scalapb.github.io/
     PB.targets in Compile := Seq(
       scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
     ),
-    PB.protoSources in Compile := Seq(file("../credentials-verification/protos")),
+    PB.protoSources in Compile := Seq(file("../../credentials-verification/protos")),
     includeFilter in PB.generate := new SimpleFileFilter((f: File) => dependencyProtoList.contains(f.getName)),
     libraryDependencies ++= Seq(
       "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"

@@ -14,18 +14,3 @@ The library is prepared to run on Android, to do so, you need to build a fat-jar
 - Then, grab the jar from `jvm/target/scala-2.12/prism-identity.jar`
 - On your Android project, invoke `io.iohk.atala.identity.DID.createUnpublishedDID` to verify the integration works.
 
-## Known issues
-
-### Slow testing
-
-JVM testing can be slow because of its many calls to generating secure mnemonics, which in turn rely on Java's
-`SecureRandom`. If testing is taking several minutes to run on Linux, consider installing `rng-tools` to keep a high
-entropy in the kernel, and speed up `/dev/random`.
-
-On Debian-based systems, you can do:
-```shell script
-sudo apt install rng-tools
-```
-
-In other systems, you may want to reconfigure the default security provider, as suggested
-[here](https://stackoverflow.com/a/49322949). Note this hasn't been tested.
