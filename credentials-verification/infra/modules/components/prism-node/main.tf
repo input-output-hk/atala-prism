@@ -74,8 +74,8 @@ resource aws_ecs_task_definition "node_task_definition" {
 
   execution_role_arn = var.execution_role_arn
 
-  cpu    = 256
-  memory = 512
+  cpu    = 512
+  memory = 1024
 
   tags = {
     Name = "${var.parent_name}-node-task-def"
