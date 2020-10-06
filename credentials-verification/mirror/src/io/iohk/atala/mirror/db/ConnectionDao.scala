@@ -6,6 +6,10 @@ import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.Connection
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 
+import cats.data.NonEmptyList
+import doobie.Fragments
+
+import doobie._
 import doobie.implicits._
 import doobie.postgres.implicits._
 
@@ -25,6 +29,17 @@ object ConnectionDao {
     | FROM connections
     | WHERE id = $id
     """.stripMargin.query[Connection].option
+  }
+
+  def findBy(ids: NonEmptyList[ConnectionId]): ConnectionIO[List[Connection]] = {
+    val sql =
+      fr"""
+          | SELECT token, id, state
+          | FROM connections
+          | WHERE
+      """.stripMargin ++ Fragments.in(fr"id", ids)
+
+    sql.query[Connection].to[List]
   }
 
   /**

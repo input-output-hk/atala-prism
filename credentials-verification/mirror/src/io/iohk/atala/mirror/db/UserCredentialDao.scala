@@ -5,24 +5,35 @@ import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.UserCredential
 import doobie.implicits._
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
+import io.iohk.atala.mirror.models.UserCredential.MessageId
 
 object UserCredentialDao {
 
-  def findBy(connectionToken: ConnectionToken): ConnectionIO[Option[UserCredential]] = {
+  def findBy(connectionToken: ConnectionToken): ConnectionIO[List[UserCredential]] = {
     sql"""
-    | SELECT connection_token, raw_credential, issuers_did
+    | SELECT connection_token, raw_credential, issuers_did, message_id, message_received_date
     | FROM user_credentials
     | WHERE connection_token = $connectionToken
-    """.stripMargin.query[UserCredential].option
+    """.stripMargin.query[UserCredential].to[List]
   }
 
   def insert(userCredential: UserCredential): ConnectionIO[Int] =
     insertMany.toUpdate0(userCredential).run
 
-  private val insertMany: Update[UserCredential] = {
+  val findLastSeenMessageId: ConnectionIO[Option[MessageId]] =
+    sql"""
+    | SELECT message_id
+    | FROM user_credentials
+    | ORDER BY message_received_date DESC
+    | LIMIT 1
+    """.stripMargin.query[MessageId].option
+
+  val insertMany: Update[UserCredential] =
     Update[UserCredential](
-      "INSERT INTO user_credentials(connection_token, raw_credential, issuers_did) values (?, ?, ?)"
+      """INSERT INTO
+        | user_credentials(connection_token, raw_credential, issuers_did, message_id, message_received_date)
+        | values (?, ?, ?, ?, ?)
+        | ON CONFLICT DO NOTHING""".stripMargin
     )
-  }
 
 }

@@ -3,7 +3,6 @@ package io.iohk.atala.mirror.services
 import monix.eval.Task
 import doobie.util.transactor.Transactor
 import doobie.implicits._
-
 import io.iohk.atala.mirror.protos.mirror_api.CreateAccountResponse
 import io.iohk.atala.mirror.db.ConnectionDao
 import io.iohk.atala.mirror.models.Connection

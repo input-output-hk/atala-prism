@@ -3,23 +3,21 @@ package io.iohk.atala.mirror
 import java.util.concurrent.TimeUnit
 
 import scala.concurrent.blocking
-
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import cats.effect.{Blocker, ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
-import io.grpc.{Server, ServerBuilder, ServerServiceDefinition, ManagedChannelBuilder}
+import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder, ServerServiceDefinition}
 import io.grpc.protobuf.services.ProtoReflectionService
 import org.flywaydb.core.Flyway
 import doobie.util.ExecutionContexts
 import doobie.hikari.HikariTransactor
-
 import io.iohk.atala.crypto.EC
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, TransactorConfig}
-import io.iohk.atala.mirror.services.{ConnectorClientService, MirrorService}
+import io.iohk.atala.mirror.services.{ConnectorClientServiceImpl, CredentialService, MirrorService}
 
 object MirrorApp extends TaskApp {
 
@@ -59,9 +57,12 @@ object MirrorApp extends TaskApp {
       connector <- Resource.pure(createConnector(connectorConfig))
 
       // services
-      connectorService = new ConnectorClientService(connector, new RequestAuthenticator(EC), connectorConfig)
+      connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), connectorConfig)
       mirrorService = new MirrorService(tx, connectorService)
+      credentialService = new CredentialService(tx, connectorService)
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
+
+      _ <- Resource.liftF(credentialService.credentialUpdatesStream.compile.drain.start)
 
       // gRPC server
       grpcServer <- createGrpcServer(

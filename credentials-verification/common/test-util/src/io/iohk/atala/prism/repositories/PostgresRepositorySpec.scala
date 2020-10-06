@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.repositories
 
+import cats.arrow.FunctionK
 import cats.effect.IO
 import doobie.util.transactor.Transactor
+import monix.eval.{Task, TaskLike}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -93,6 +95,13 @@ trait PostgresRepositorySpec
 
   implicit def database: Transactor[IO] = {
     _database.getOrElse(throw new IllegalStateException("Attempt to use database before it is ready"))
+  }
+
+  // We have to lift IO to Task, as PostgresRepositorySpec isn't generic.
+  def databaseTask: Transactor[Task] = {
+    database.mapK(new FunctionK[IO, Task] {
+      def apply[A](io: IO[A]): Task[A] = TaskLike[IO].apply(io)
+    })
   }
 
   protected def clearDatabase(): Unit = {

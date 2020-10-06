@@ -6,3 +6,5 @@ CREATE TABLE connections(
   id UUID,
   state CONNECTION_STATE NOT NULL
 );
+
+CREATE INDEX connections_id_index ON connections (id);
