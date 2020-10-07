@@ -19,6 +19,11 @@ resource "aws_service_discovery_service" "connector_discovery" {
   }
 }
 
+locals {
+  cpu    = 256
+  memory = 512
+}
+
 module "connector_container_definition" {
   source = "github.com/mongodb/terraform-aws-ecs-task-definition"
 
@@ -26,8 +31,8 @@ module "connector_container_definition" {
   image  = var.connector_docker_image
   name   = "prism-connector"
 
-  cpu    = 256
-  memory = 512
+  cpu    = local.cpu
+  memory = local.memory
 
   portMappings = [
     { containerPort = var.port, protocol = "tcp" }
@@ -69,8 +74,8 @@ resource aws_ecs_task_definition "connector_task_definition" {
 
   execution_role_arn = var.execution_role_arn
 
-  cpu    = 256
-  memory = 512
+  cpu    = local.cpu
+  memory = local.memory
 
   tags = {
     Name = "${var.parent_name}-connector-task-def"

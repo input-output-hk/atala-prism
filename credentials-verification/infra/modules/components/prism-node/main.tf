@@ -19,12 +19,20 @@ resource "aws_service_discovery_service" "node_discovery" {
   }
 }
 
+locals {
+  cpu    = 512
+  memory = 1024
+}
+
 module "node_container_definition" {
   source = "github.com/mongodb/terraform-aws-ecs-task-definition"
 
   family = "prism-node"
   image  = var.node_docker_image
   name   = "prism-node"
+
+  cpu    = local.cpu
+  memory = local.memory
 
   portMappings = [
     { containerPort = var.port, protocol = "tcp" }
@@ -74,8 +82,8 @@ resource aws_ecs_task_definition "node_task_definition" {
 
   execution_role_arn = var.execution_role_arn
 
-  cpu    = 512
-  memory = 1024
+  cpu    = local.cpu
+  memory = local.memory
 
   tags = {
     Name = "${var.parent_name}-node-task-def"
