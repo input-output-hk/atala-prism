@@ -20,6 +20,7 @@ class CardanoLedgerService private[services] (
     walletId: WalletId,
     walletPassphrase: String,
     paymentAddress: Address,
+    blockNumberSyncStart: Int,
     blockConfirmationsToWait: Int,
     cardanoClient: CardanoClient,
     keyValueService: KeyValueService,
@@ -90,7 +91,7 @@ class CardanoLedgerService private[services] (
   private[services] def syncAtalaObjects(): Future[Boolean] = {
     for {
       maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
-      lastSyncedBlockNo = maybeLastSyncedBlockNo.getOrElse(0)
+      lastSyncedBlockNo = math.max(maybeLastSyncedBlockNo.getOrElse(0), blockNumberSyncStart - 1)
       latestBlock <- cardanoClient.getLatestBlock().toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
       lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
       syncStart = lastSyncedBlockNo + 1
@@ -156,6 +157,7 @@ object CardanoLedgerService {
       walletId: String,
       walletPassphrase: String,
       paymentAddress: String,
+      blockNumberSyncStart: Int,
       blockConfirmationsToWait: Int,
       cardanoClientConfig: CardanoClient.Config
   )
@@ -175,6 +177,7 @@ object CardanoLedgerService {
       walletId,
       walletPassphrase,
       paymentAddress,
+      config.blockNumberSyncStart,
       config.blockConfirmationsToWait,
       cardanoClient,
       keyValueService,

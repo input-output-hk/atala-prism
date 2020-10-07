@@ -114,7 +114,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       // Configure the service to capture received notifications
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), notificationHandler.asHandler)
+        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
 
       val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
 
@@ -124,18 +124,38 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
 
     "sync not more than 100 Atala objects" in {
       val totalBlockCount = 200
-      // Append a transaction with PRISM metadata to the last confirmed block
       val allNotifications = createNotificationsInDb(totalBlockCount, 100, 101)
       // Configure the service to capture received notifications
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), notificationHandler.asHandler)
+        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
 
       val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
 
       pendingBlocks must be(true)
       // Only notification for block #100 should be received, as block #101 is not yet synced
       notificationHandler.receivedNotifications must be(allNotifications.take(1))
+    }
+
+    "start syncing at specified block" in {
+      val totalBlockCount = 50
+      val blockNumberSyncStart = 10
+      // Append an Atala transaction to the start sync block and the previous one
+      val allNotifications = createNotificationsInDb(totalBlockCount, blockNumberSyncStart - 1, blockNumberSyncStart)
+      // Configure the service to capture received notifications
+      val notificationHandler = new TestAtalaObjectNotificationHandler()
+      val cardanoLedgerService =
+        createCardanoLedgerService(
+          FakeCardanoWalletApiClient.NotFound(),
+          blockNumberSyncStart = blockNumberSyncStart,
+          onAtalaObject = notificationHandler.asHandler
+        )
+
+      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
+
+      pendingBlocks must be(false)
+      // Block #9 should be skipped over
+      notificationHandler.receivedNotifications must be(List(allNotifications(1)))
     }
 
     "not sync Atala objects in unconfirmed blocks" in {
@@ -145,7 +165,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       // Configure the service to capture received notifications
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), notificationHandler.asHandler)
+        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
 
       val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
 
@@ -164,7 +184,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       // Configure the service to capture received notifications
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), notificationHandler.asHandler)
+        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
 
       // Test #1: only the first object is synced
       cardanoLedgerService.syncAtalaObjects().futureValue
@@ -183,6 +203,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
 
   private def createCardanoLedgerService(
       cardanoWalletApiClient: CardanoWalletApiClient,
+      blockNumberSyncStart: Int = 0,
       onAtalaObject: AtalaObjectNotificationHandler = noOpObjectHandler
   ): CardanoLedgerService = {
     val cardanoClient = createCardanoClient(cardanoWalletApiClient)
@@ -191,6 +212,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       walletId,
       walletPassphrase,
       paymentAddress,
+      blockNumberSyncStart,
       blockConfirmationsToWait,
       cardanoClient,
       keyValueService,

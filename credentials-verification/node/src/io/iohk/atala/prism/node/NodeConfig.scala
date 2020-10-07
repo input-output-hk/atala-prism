@@ -24,6 +24,7 @@ object NodeConfig {
     val walletId = config.getString("walletId")
     val walletPassphrase = config.getString("walletPassphrase")
     val paymentAddress = config.getString("paymentAddress")
+    val blockNumberSyncStart = config.getInt("blockNumberSyncStart")
     val blockConfirmationsToWait = config.getInt("blockConfirmationsToWait")
     val dbSyncConfig = cardanoDbSyncConfig(config.getConfig("dbSync"))
     val walletConfig = cardanoWalletConfig(config.getConfig("wallet"))
@@ -32,6 +33,7 @@ object NodeConfig {
       walletId,
       walletPassphrase,
       paymentAddress,
+      blockNumberSyncStart,
       blockConfirmationsToWait,
       CardanoClient.Config(dbSyncConfig, walletConfig)
     )

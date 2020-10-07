@@ -40,6 +40,7 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
         walletId,
         clientConfig.walletPassphrase,
         paymentAddress,
+        blockNumberSyncStart = 0,
         // Do not wait on blocks becoming confirmed
         blockConfirmationsToWait = 0,
         cardanoClient,
