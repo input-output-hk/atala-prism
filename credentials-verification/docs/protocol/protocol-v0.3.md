@@ -2,7 +2,7 @@
 
 ## Motivation
 
-The goal of the protocol that we describe in this document, is to construct an scalable, decentralised and secure 
+The goal of the protocol that we describe in this document, is to construct a scalable, decentralised and secure 
 identity system. The system must provide the following features:
 1. Allow the decentralised creation of self certifiable identifiers. This is, any person can create an identifier
    without the need of coordination with, or permission from any external authority. Only the creator (controller) of 
@@ -221,7 +221,7 @@ differences from our proposal.
        use. We should be careful to not exceed reasonable metadata size. See 
        [metadata considerations](#metadata-usage-concerns) for more comments on metadata usage.
   
-For simplicity, we incline for option 2. As it would require less changes in the way we process operations. Currently,
+For simplicity, we incline for option 2. As it would require fewer changes in the way we process operations. Currently,
 when the node finds a new operation, it applies the state change right away. If we do not post the initial DID state, we
 would need to process operations differently, as DID update operations would have no initial state to be applied upon.
 Similarly, we need to have the DID state at the time of credential issuance and revocation. We will allow to publish a
@@ -243,9 +243,9 @@ expected to be publicly available. This implies that a commitment (e.g. hash, me
 enough for the users of the protocol. Nodes need the actual update data.
 
 A question we may have is, how often do we expect an update to occur? If this is not a recurrent operation, we should
-consider to leave it as an on-chain operation.
+consider leaving it as an on-chain operation.
 
-Alternatively, we could consider to add a permissioned batching service. This is:
+Alternatively, we could consider adding a permissioned batching service. This is:
 - IOHK (and selected actors) could have a DIDs that can sign authorised batches.
 - Some drawbacks are the complexities added by a missing trust model on who can batch update events, and also 
   complexities to handle data availability problems.
@@ -355,7 +355,7 @@ Given the above, we could estimate:
     minFeeB + 1024*minFeeA = 155381 + 1024*44 = 200437 lovelace = 0.200437 ADA
   ``` 
 
-We could apply some optimizations in exchange of making an slightly more complex protocol.
+We could apply some optimizations in exchange for making a slightly more complex protocol.
 See [related work](./protocol-other-ideas.md).
 
 ### Metadata usage concerns
@@ -584,7 +584,7 @@ The node state is now updated based on two possible cases.
 - Case 1: The issuer DID was already published before
 
    ```
-   alias signingKeyId    = decoded.signedWith
+   alias signingKeyId    = decoded.keyId
    alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
    alias signature       = decoded.signature
    alias messageSigned   = decoded.operation
@@ -620,7 +620,7 @@ The node state is now updated based on two possible cases.
 - Case 2: The issuer DID is published in this issuance operation
 
    ```
-   alias signingKeyId    = decoded.signedWith
+   alias signingKeyId    = decoded.keyId
    alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
    alias signature       = decoded.signature
    alias messageSigned   = decoded.operation
@@ -676,7 +676,7 @@ The preconditions to apply the operation are:
 ``` 
 alias batchId          = decoded.operation.revokeBatch.batchId
 alias signature        = decoded.signature
-alias signingKeyId     = decoded.signedWith
+alias signingKeyId     = decoded.keyId
 alias messageSigned    = decoded.operation
 alias issuerDIDSuffix  = state.credentialBatches(batchId).issuerDIDSuffix 
 
@@ -730,7 +730,7 @@ The preconditions to apply the operation are:
 ``` 
 alias batchId          = decoded.operation.revokeCredentials.batchId
 alias signature        = decoded.signature
-alias signingKeyId     = decoded.signedWith
+alias signingKeyId     = decoded.keyId
 alias messageSigned    = decoded.operation
 alias issuerDIDSuffix  = state.credentialBatches(batchId).issuerDIDSuffix 
 alias credentialHashes = decoded.operation.revokeCredentials.credentialHashes

@@ -10,11 +10,11 @@ The definitions from the [high-level-design-document](https://github.com/input-o
 - **ATALA Block**: A list of ATALA Operations, includes metadata about the block. This is equivalent to a Bitcoin Block on the 2nd layer protocol.
 - **ATALA Object**: A file that has metadata about an ATALA Block and a reference to retrieve it. A reference to an ATALA Object is the only detail stored in Bitcoin operations.
 - **Genesis Bitcoin Block**: The first Bitcoin Block aware of ATALA Objects, everything before this block can be discarded.
-- **Content Addresable Storage**: System that allows storing files and querying them based on the hash of the file. We have yet to choose whether to use centralized one (e.g. S3), decentralized (IPFS) or some combination of these.
+- **Content Addressable Storage**: System that allows storing files and querying them based on the hash of the file. We have yet to choose whether to use centralized one (e.g. S3), decentralized (IPFS) or some combination of these.
 
 ## Cryptography
 
-We use **hashing** to create short digests of potentially long data. For secure cryptographis hash algorithms there is an assumption that it is computationally intractable to find two values that have the same hash. This is why the hash is enough to uniquely identify the value. SHA256 algorithm is used, unless specified otherwise.
+We use **hashing** to create short digests of potentially long data. For secure cryptographic hash algorithms there is an assumption that it is computationally intractable to find two values that have the same hash. This is why the hash is enough to uniquely identify the value. SHA256 algorithm is used, unless specified otherwise.
 
 Cryptographic signatures are used to assure person who generated the message is who they claim they are. Keys are generated and managed by users - you can read more on that in [Key management](#key-management) section. SHA256 with ECDSA is used unless specified otherwise.
 
@@ -114,7 +114,7 @@ IssueCredentialOperation:
 
 ## Validation
 
-There are two notions related to operations: we say that an operation is **valid** if it is well-formed - has all required fields - and it is not larger than defined limits. Validity depends only on the operatioon itself and system parameters, not on its state. We say that operation is **correct** if it is valid, signed properly, and it is either creation operation or refers the previous operation correctly.
+There are two notions related to operations: we say that an operation is **valid** if it is well-formed - has all required fields - and it is not larger than defined limits. Validity depends only on the operation itself and system parameters, not on its state. We say that operation is **correct** if it is valid, signed properly, and it is either creation operation or refers the previous operation correctly.
 
 Operations that are not valid must be discarded by the node and not included in the block. Inclusion of even one invalid operation renders the whole block invalid and it must be ignored by the nodes. On the other hand operations correctness should not be checked before inclusion - the block can include incorrect operations. It is checked during state updates - incorrect operations are ignored, but one or more incorrect operations don't affect processing other operations in the block.
 
@@ -141,7 +141,7 @@ After block is considered finalized (getting N confirmations), we must look for 
 
 Here you can find the possible ATALA Operations. The list will be updated when new operation get implemented.
 
-Each operation sent via RPC to node needs to be signed by the client using relevant key (specified in the operation description) and wrapped into `SignedAtalaObject` message. Signature is generated from byte sequence obtained by binary encoding of `AtalaOperation` message.
+Each operation sent via RPC to node needs to be signed by the client using relevant key (specified in the operation description) and wrapped into `SignedAtalaOperation` message. Signature is generated from byte sequence obtained by binary encoding of `AtalaOperation` message.
 
 Operations must contain all fields, unless specified otherwise. If there is a value missing, the operation is considered invalid.
 
@@ -264,7 +264,7 @@ RPC response:
 }
 ```
 
-The returned identifier is hex encoding of the hash of the binary representation of `AtalaOperation` message. It is used to refer the credential in the revokation operation.
+The returned identifier is hex encoding of the hash of the binary representation of `AtalaOperation` message. It is used to refer the credential in the revocation operation.
 
 ### RevokeCredential
 
@@ -337,7 +337,7 @@ Key storage:
 
 ### Late publish attack
 
-Malicious issuer, running its own node, can create an Atala Block including key change operation and reference it in Bitcoin blockchain without actually making it available via the Content Addresable Storage. In following blocks they can fully publish operations signed with such key - such as credential issuance or further key changes. In the future they can make the block available, invalidating all the operations made after that.
+Malicious issuer, running its own node, can create an Atala Block including key change operation and reference it in Bitcoin blockchain without actually making it available via the Content Addressable Storage. In following blocks they can fully publish operations signed with such key - such as credential issuance or further key changes. In the future they can make the block available, invalidating all the operations made after that.
 
 We don't have a solution for that problem - but the protocol assumes some level of trust towards the issuer anyways. If they want to make a credential invalid they don't need to launch any attacks - they can just revoke it.
 

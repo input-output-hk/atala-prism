@@ -26,7 +26,7 @@ We will also user the term _Atala Event_ to refer to the event of detecting a ne
 Cardano's blockchain. In particular, we will refer to events named after the operations e.g. DID creation event, 
 credential revocation event, etc. 
 Finally, we will say that a node _processes_ an operation when it reads it from the blockchain and that it _posts_ an
-operation when a client send a request to it to publish it on the blockchain.
+operation when a client sends a request to it to publish it on the blockchain.
 
 ## Protocol
 
@@ -43,7 +43,7 @@ The current list of operations is:
 Along the operations, the protocol also provides services that any node must implement that do not affect the state.
 The list of services is:
 - **(DID resolution)** Given a published DID, return its corresponding DID Document in its latest state
-- **(Pre validation)** Given a credential's hash, a signers DID, a key identifier, and an expiration date, reply if the 
+- **(Pre validation)** Given a credential's hash, a signer's DID, a key identifier, and an expiration date, reply if the 
   credential is invalid with respect to signing dates and keys correspondence. The operation returns a key if the 
   validations pass. The client needs to validate cryptographic signatures with the provided key. See 
   [credential validation](#Verification) section for more details.
@@ -57,7 +57,7 @@ Atala operations are encoded messages that represent state transitions. The mess
 be described later in this document. When a node posts an operation, a Cardano transaction is created and submitted to 
 the Cardano network. The transaction includes the encoded operation on its metadata. In Bitcoin we used to prepend the 
 metadata messages with the string `FFFF0000`, a magic value (to be defined) which told Atala Nodes that this transaction
-has an Atala operation linked in it. We will consider to do the same in Cardano blockchain once we get more details on 
+has an Atala operation linked in it. We will consider doing the same in Cardano blockchain once we get more details on 
 the metadata field structure. 
 
 After the published Cardano transaction has N (to be defined) confirmations, we could consider the transaction as final 
@@ -125,12 +125,12 @@ Let's now move into the operations descriptions.
 
 ### Operations
 
-Users send operations via RPC to nodes. Each operation request needs to be signed by the a relevant key (specified for 
-each operation) and wrapped into `SignedAtalaObject` message. Signature is generated from byte sequence obtained by 
+Users send operations via RPC to nodes. Each operation request needs to be signed by the relevant key (specified for 
+each operation) and wrapped into `SignedAtalaOperation` message. Signature is generated from byte sequence obtained by 
 binary encoding of `AtalaOperation` message.
 
 Operations must contain the exact fields defined by schemas, unless specified otherwise. If there is an extra or missing 
-value, the operation is considered wrongly formed.
+value, the operation is considered to be invalid.
 
 We can divide operations into two kinds: ones that create a new entity (e.g. CreateDID or IssueCredential) and ones 
 that affect existing one (e.g. UpdateDID, RevokeCredential). The latter always contain a field with previous operation 
@@ -142,8 +142,9 @@ represents the decoded operation extracted from the blockchain.
 
 #### Create DID
 
-Registers DID into the ledger. DID structure here is very simple: it consists only of id and sequence of public keys 
-with their ids. It must be signed by one of the master keys given in the DID Document.
+Registers DID into the ledger. The associated initial DID Document structure here is very simple: it consists only of
+a document id (the DID) and sequence of public keys with their respective key ids. It must be signed by one of the
+master keys given in the DID Document.
 
 ```
 {
@@ -206,7 +207,7 @@ an empty option otherwise.
 If the check passes, then we get the following state update:
 ```
 state'.dids = state.dids + (didSuffix -> { lastOperationReference = hash(decoded), 
-                                           keys = createMap(decoded.operation.didData.publicKeys) }
+                                           keys = createMap(decoded.operation.didData.publicKeys) } )
 state'.credentials = state.credentials
 ```
 
@@ -222,7 +223,7 @@ Updates DID content by sequentially running update actions included. Actions ava
 The operation must be signed by a master key. Actions cannot include revocation of the key used to sign the operation. 
 In such case the operation is considered invalid. This is to protect against losing control of the DID. We assure that 
 there is always one master key present that the user is able to sign data with. 
-In order to replace the last master key, the user first has to to add a new master key and then revoke the previous one 
+In order to replace the last master key, the user first has to add a new master key and then revoke the previous one 
 in a separate operation signed by the newly added key. 
 In order for the operation to be considered valid, all its actions need to be.
 
@@ -278,8 +279,8 @@ state.dids.contains(didToUpdate) &&
 state.dids(didToUpdate).keys.contains(signingKeyId) &&
 state.dids(didToUpdate).keys(signingKeyId).usage == MasterKey &&
 state.dids(didToUpdate).lastOperationReference == decoded.operation.previousOperationHash &&
-isValid(decoded.signature, messageSigned, state.dids(didToUpdate).keys(signingKeyId).key)
-updateMap(signingKeyId, currentDidData, updateActions).nonEmpty &&
+isValid(decoded.signature, messageSigned, state.dids(didToUpdate).keys(signingKeyId).key) &&
+updateMap(signingKeyId, currentDidData, updateActions).nonEmpty
 
 ```
 
@@ -336,7 +337,7 @@ It is used to refer the credential in the revocation operation.
 When the operation is observed in the stable part of the ledger, the node performs the following checks:
 
 ```
-alias signingKeyId    = decoded.signedWith
+alias signingKeyId    = decoded.keyId
 alias issuerDIDSuffix = decoded.operation.issueCredential.credentialData.issuerDIDSuffix 
 alias signature       = decoded.signature
 alias messageSigned   = decoded.operation
@@ -382,12 +383,12 @@ Example:
 When the operation is observed in the stable part of the ledger, the node performs the following checks:
 
 ```
-alias signingKeyId    = decoded.signedWith
+alias signingKeyId    = decoded.keyId
+alias credentialId    = decoded.operation.revokeCredential.credentialId
 alias issuerDIDSuffix = state.credentials(credentialId).issuerDIDSuffix 
 alias signature       = decoded.signature
 alias messageSigned   = decoded.operation
 alias previousHash    = decoded.operation.revokeCredential.previousOperationHash
-alias credentialId    = decoded.operation.revokeCredential.credentialId
 
 state.credentials.contains(credentialId) &&
 state.credentials(credentialId).lastOperationReference == previousHash &&
@@ -426,12 +427,12 @@ jurisdiction. However, the protocol probably should guarantee that the contract 
 signed by an specific issuer with a specific valid key, its expiration date (if any) hasn't occur, and guarantee that 
 the credential's content was not altered.
 
-We could define the former type of validaty as _credential specific validity_ and the later as _protocol validity_. 
+We could define the former type of validity as _credential specific validity_ and the later as _protocol validity_. 
 Note that some credentials may not have any specific validations outside the protocol ones. E.g. birth certificates,
 university degrees, national id documents, may only require the protocol validity. But other credentials may require
 additional ones on top of those.
 
-For credential specific validations, we think that specific applications should be built on top of the our protocol 
+For credential specific validations, we think that specific applications should be built on top of our protocol 
 to fulfil specific use cases. The process described below will formalise the steps to verify protocol validity. Note 
 that **all** credentials need to be valid according to the protocol independently to the existence of other credential
 specific validations. From now on, we will use the term valid referring to protocol valid. 
@@ -451,7 +452,7 @@ The key is considered valid if it was added in the `issuerDID`'s DID Document be
 is revoked in the said DID Document, the revocation event occurred after `credIssuingEvent` (i.e. after the credential
 was recorded as issued). 
 As mentioned during the description of Issue Credential event, if we enforce that the key that signs the issuance 
-request must be the same that the one that signs the credential, then we don't need to check that the credential was 
+request must be the same as the one that signs the credential, then we don't need to check that the credential was 
 signed in proper dates because this will be guaranteed by the check performed in the IssueCredential operation. 
 If we want to keep the flexibility of using different keys, we need to validate the relation between dates of key 
 additions/revocations and credential issuance. 
@@ -464,7 +465,7 @@ simulated with a single DID by having different issuing keys for the faculties.
 Expressed with respect to the node state, given a credential C:
 ```
 // C has no expiration date or the expiration date hasn't occur yet, and
-(C.expirationDate.isEmpty || C.expirationDate.get < TODAY) && 
+(C.expirationDate.isEmpty || C.expirationDate.get >= TODAY) && 
 // the credential was posted in the chain, and
 state.credentials.get(hash(C)).nonEmpty &&
 // the credential was not revoked, and
