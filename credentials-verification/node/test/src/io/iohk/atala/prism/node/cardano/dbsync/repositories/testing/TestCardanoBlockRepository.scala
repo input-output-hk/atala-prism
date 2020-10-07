@@ -116,7 +116,7 @@ object TestCardanoBlockRepository {
     val blockHash = TestCardanoBlockRepository.randomBlockHash()
     val block = Block.Full(
       BlockHeader(blockHash, blockNo, time, previousBlock.map(_.header.hash)),
-      createRandomTransactions(blockHash, blockNo).toList
+      createRandomTransactions(blockHash, 5).toList
     )
     block
   }

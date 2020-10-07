@@ -29,6 +29,7 @@ class CardanoLedgerService private[services] (
     ec: ExecutionContext
 ) extends AtalaReferenceLedger {
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
+  private val MAX_SYNC_BLOCKS = 100
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -67,23 +68,35 @@ class CardanoLedgerService private[services] (
       // Ensure run is scheduled after completion, even if current run fails
       syncAtalaObjects()
         .recover {
-          case e => logger.error(s"Could not sync Atala objects", e)
+          case e =>
+            logger.error(s"Could not sync Atala objects", e)
+            false
         }
-        .onComplete { _ =>
-          scheduleSync(20.seconds)
+        .onComplete { pendingBlocksToSync =>
+          if (pendingBlocksToSync.toOption.getOrElse(false)) {
+            // There blocks to sync, don't wait to sync faster
+            scheduleSync(0.seconds)
+          } else {
+            scheduleSync(20.seconds)
+          }
         }
     }
     ()
   }
 
-  private[services] def syncAtalaObjects(): Future[Unit] = {
+  /**
+    * Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
+    */
+  private[services] def syncAtalaObjects(): Future[Boolean] = {
     for {
-      lastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
+      maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
+      lastSyncedBlockNo = maybeLastSyncedBlockNo.getOrElse(0)
       latestBlock <- cardanoClient.getLatestBlock().toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
-      syncStart = lastSyncedBlockNo.getOrElse(0) + 1
-      syncEnd = latestBlock.header.blockNo - blockConfirmationsToWait
+      lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
+      syncStart = lastSyncedBlockNo + 1
+      syncEnd = math.min(lastConfirmedBlockNo, lastSyncedBlockNo + MAX_SYNC_BLOCKS)
       _ <- syncBlocks(syncStart to syncEnd)
-    } yield ()
+    } yield lastConfirmedBlockNo > syncEnd
   }
 
   private def syncBlocks(blockNos: Range): Future[Unit] = {
