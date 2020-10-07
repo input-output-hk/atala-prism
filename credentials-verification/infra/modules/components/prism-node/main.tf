@@ -22,9 +22,6 @@ resource "aws_service_discovery_service" "node_discovery" {
 locals {
   cpu    = 512
   memory = 1024
-  java_heap = 1024
-  java_opts = "-Xms${local.java_heap}M -Xmx${local.java_heap}M"
-
 }
 
 module "node_container_definition" {
@@ -57,7 +54,6 @@ module "node_container_definition" {
     { name = "NODE_CARDANO_WALLET_ID", value = var.cardano_wallet_id },
     { name = "NODE_CARDANO_WALLET_PASSPHRASE", value = var.cardano_wallet_passphrase },
     { name = "NODE_CARDANO_PAYMENT_ADDRESS", value = var.cardano_payment_address },
-    { name : "JAVA_OPTS", value : "${local.java_opts}" },
   ]
 
   logConfiguration = {
