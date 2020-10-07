@@ -107,17 +107,17 @@ variable postgres_password {
 
 variable cardano_wallet_id {
   description = "Cardano wallet id to use for PRISM transactions"
-  default = ""
+  default     = ""
 }
 
 variable cardano_wallet_passphrase {
   description = "Passphrase to the wallet used for PRISM transactions"
-  default = ""
+  default     = ""
 }
 
 variable cardano_payment_address {
   description = "Address to send funds to when publishing PRISM transactions"
-  default = ""
+  default     = ""
 }
 
 variable "vpc_name" {
@@ -156,6 +156,6 @@ variable atala_prism_zoneid {
 
 variable monitoring_alerts_enabled {
   description = "Set to 1 to enable monitoring alerts from this environment to the atala-prism-service-alerts channel."
-  type = number
-  default = 0
+  type        = number
+  default     = 0
 }

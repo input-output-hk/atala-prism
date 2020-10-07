@@ -40,15 +40,15 @@ module "node" {
   psql_username = var.node_psql_username
   psql_password = var.node_psql_password
 
-  cardano_db_sync_psql_host = var.cardano_db_sync_psql_host
+  cardano_db_sync_psql_host     = var.cardano_db_sync_psql_host
   cardano_db_sync_psql_username = var.cardano_db_sync_psql_username
   cardano_db_sync_psql_password = var.cardano_db_sync_psql_password
   cardano_db_sync_psql_database = var.cardano_db_sync_psql_database
-  cardano_wallet_api_host = var.cardano_wallet_api_host
-  cardano_wallet_api_port = var.cardano_wallet_api_port
-  cardano_wallet_id = var.cardano_wallet_id
-  cardano_wallet_passphrase = var.cardano_wallet_passphrase
-  cardano_payment_address = var.cardano_payment_address
+  cardano_wallet_api_host       = var.cardano_wallet_api_host
+  cardano_wallet_api_port       = var.cardano_wallet_api_port
+  cardano_wallet_id             = var.cardano_wallet_id
+  cardano_wallet_passphrase     = var.cardano_wallet_passphrase
+  cardano_payment_address       = var.cardano_payment_address
 
   parent_name               = "prism-${var.env_name_short}"
   aws_region                = var.aws_region

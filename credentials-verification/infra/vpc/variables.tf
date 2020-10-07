@@ -1,6 +1,6 @@
 variable "env_type" {
   description = "A classification for an environment type, such as 'test' or 'prod'."
-  default = "test"
+  default     = "test"
 }
 
 variable "aws_profile" {

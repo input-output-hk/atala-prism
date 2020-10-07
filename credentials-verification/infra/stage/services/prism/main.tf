@@ -13,7 +13,7 @@ provider aws {
 
 locals {
   # if config value is not ovverriden, use default
-  vpc_state_key = coalesce(var.vpc_state_key, "infra/stage/vpc/${var.vpc_name}/terraform.tfstate")
+  vpc_state_key     = coalesce(var.vpc_state_key, "infra/stage/vpc/${var.vpc_name}/terraform.tfstate")
   cardano_state_key = coalesce(var.cardano_state_key, "infra/stage/cardano/${var.cardano_name}/terraform.tfstate")
 }
 
@@ -44,12 +44,12 @@ locals {
   private_dns_namespace_id   = data.terraform_remote_state.vpc.outputs.private_dns_namespace_id
   private_dns_namespace_name = data.terraform_remote_state.vpc.outputs.private_dns_namespace_name
 
-  cardano_db_sync_psql_host = data.terraform_remote_state.cardano.outputs.psql_host
+  cardano_db_sync_psql_host     = data.terraform_remote_state.cardano.outputs.psql_host
   cardano_db_sync_psql_username = data.terraform_remote_state.cardano.outputs.psql_username
   cardano_db_sync_psql_password = data.terraform_remote_state.cardano.outputs.psql_password
   cardano_db_sync_psql_database = data.terraform_remote_state.cardano.outputs.psql_database
-  cardano_wallet_api_host = data.terraform_remote_state.cardano.outputs.wallet_host
-  cardano_wallet_api_port = data.terraform_remote_state.cardano.outputs.wallet_port
+  cardano_wallet_api_host       = data.terraform_remote_state.cardano.outputs.wallet_host
+  cardano_wallet_api_port       = data.terraform_remote_state.cardano.outputs.wallet_port
 }
 
 resource aws_cloudwatch_log_group prism_log_group {
@@ -211,7 +211,7 @@ module "ecs_cluster" {
 }
 
 data "aws_acm_certificate" "prism_tls_cert" {
-  domain = var.atala_prism_domain
+  domain   = var.atala_prism_domain
   statuses = ["ISSUED"]
 }
 
@@ -257,15 +257,15 @@ module "prism_service" {
   node_psql_username      = local.node_psql_username
   node_psql_password      = local.node_psql_password
 
-  cardano_db_sync_psql_host = local.cardano_db_sync_psql_host
+  cardano_db_sync_psql_host     = local.cardano_db_sync_psql_host
   cardano_db_sync_psql_username = local.cardano_db_sync_psql_username
   cardano_db_sync_psql_password = local.cardano_db_sync_psql_password
   cardano_db_sync_psql_database = local.cardano_db_sync_psql_database
-  cardano_wallet_api_host = local.cardano_wallet_api_host
-  cardano_wallet_api_port = local.cardano_wallet_api_port
-  cardano_wallet_id = var.cardano_wallet_id
-  cardano_wallet_passphrase = var.cardano_wallet_passphrase
-  cardano_payment_address = var.cardano_payment_address
+  cardano_wallet_api_host       = local.cardano_wallet_api_host
+  cardano_wallet_api_port       = local.cardano_wallet_api_port
+  cardano_wallet_id             = var.cardano_wallet_id
+  cardano_wallet_passphrase     = var.cardano_wallet_passphrase
+  cardano_payment_address       = var.cardano_payment_address
 
   tls_certificate_arn = data.aws_acm_certificate.prism_tls_cert.arn
 
@@ -299,7 +299,7 @@ resource aws_route53_health_check landing_page_check {
 
 data aws_sns_topic atala_prism_service_alerts {
   provider = aws.us-east-1
-  name = "atala-prism-service-alerts"
+  name     = "atala-prism-service-alerts"
 }
 
 resource aws_cloudwatch_metric_alarm alarm {
@@ -320,29 +320,29 @@ resource aws_cloudwatch_metric_alarm alarm {
   }
 
   alarm_description = "This alarm is raised when there is no response from the landing page in environment ${var.env_name_short}."
-  alarm_actions = [data.aws_sns_topic.atala_prism_service_alerts.arn]
-  ok_actions = [data.aws_sns_topic.atala_prism_service_alerts.arn]
+  alarm_actions     = [data.aws_sns_topic.atala_prism_service_alerts.arn]
+  ok_actions        = [data.aws_sns_topic.atala_prism_service_alerts.arn]
 }
 
 
 data aws_acm_certificate cf-tls-cert {
-  provider            = aws.us-east-1
-  domain = var.atala_prism_domain
+  provider = aws.us-east-1
+  domain   = var.atala_prism_domain
   statuses = ["ISSUED"]
 }
 
 resource aws_cloudfront_distribution intdemo_cf_dist {
-  count   = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
+  count = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
 
   origin {
     domain_name = module.prism_service.envoy_lb_dns_name
     origin_id   = "${var.env_name_short}-cf-origin-id"
 
     custom_origin_config {
-      http_port = 80
-      https_port = 443
+      http_port              = 80
+      https_port             = 443
       origin_protocol_policy = "http-only"
-      origin_ssl_protocols = ["TLSv1.2"]
+      origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
 
@@ -380,13 +380,13 @@ resource aws_cloudfront_distribution intdemo_cf_dist {
   }
 
   tags = {
-    Name = "${var.env_name_short}-cf-distribution"
+    Name        = "${var.env_name_short}-cf-distribution"
     Environment = var.env_name_short
   }
 
   viewer_certificate {
-    acm_certificate_arn = data.aws_acm_certificate.cf-tls-cert.arn
-    ssl_support_method = "sni-only"
+    acm_certificate_arn      = data.aws_acm_certificate.cf-tls-cert.arn
+    ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2018"
   }
 }
@@ -407,7 +407,7 @@ resource aws_route53_record grpc_dns_entry {
 # query A record for cloudfront domain
 data dns_a_record_set cf_dns {
   count = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
-  host = aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name
+  host  = aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name
 }
 
 # create a matching one for atalaprism.io

@@ -62,7 +62,7 @@ resource postgresql_role cardano_role {
 }
 
 resource "postgresql_database" "database" {
-  name = local.psql_database
+  name  = local.psql_database
   owner = postgresql_role.cardano_role.name
 }
 

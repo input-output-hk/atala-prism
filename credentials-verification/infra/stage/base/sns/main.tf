@@ -14,18 +14,18 @@ variable aws_profile {
 // NB: cloudwatch alarms and associated SNS topic MUST be in us-east-1 (NOT us-east-2)
 // (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-checks.html)
 provider aws {
-  region = "us-east-1"
+  region  = "us-east-1"
   profile = var.aws_profile
 }
 
 variable sns_topic_name {
   description = "The topic name for monitoring alerts"
-  default = "atala-prism-service-alerts"
+  default     = "atala-prism-service-alerts"
 }
 
 variable slack_channel_name {
   description = "The slack channel where monitoring should be sent."
-  default = "atala-prism-service-alerts"
+  default     = "atala-prism-service-alerts"
 }
 
 variable slack_webhook_url {
@@ -34,13 +34,13 @@ variable slack_webhook_url {
 
 variable slack_display_user {
   description = "The username to use for reporting monitoring events to slack"
-  default = "reporter"
+  default     = "reporter"
 }
 
 module "notify_slack" {
   source = "terraform-aws-modules/notify-slack/aws"
 
-  sns_topic_name = var.sns_topic_name
+  sns_topic_name    = var.sns_topic_name
   slack_channel     = var.slack_channel_name
   slack_username    = var.slack_display_user
   slack_webhook_url = var.slack_webhook_url

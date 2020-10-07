@@ -119,8 +119,8 @@ variable cardano_wallet_api_host {
 
 variable cardano_wallet_api_port {
   description = "Cardano wallet API port"
-  type = number
-  default = 8090
+  type        = number
+  default     = 8090
 }
 
 variable cardano_wallet_id {
