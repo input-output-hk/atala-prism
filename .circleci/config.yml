@@ -67,7 +67,7 @@ commands:
     steps:
       - run:
           name: "Install coursier"
-          command: curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
+          command: curl -L -o coursier https://git.io/coursier-cli-linux && chmod +x coursier
 
   install-scalafmt:
     description: "Install scalafmt"
