@@ -11,12 +11,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.requests.RequestAuthenticator
-import io.iohk.prism.protos.connector_api.{
-  ConnectorServiceGrpc,
-  GenerateConnectionTokenResponse,
-  GetMessagesPaginatedResponse,
-  SendMessageResponse
-}
+import io.iohk.prism.protos.connector_api._
 import io.iohk.atala.mirror.config.ConnectorConfig
 import io.iohk.atala.mirror.fixtures.ConnectionFixtures.connectionId1
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
@@ -24,6 +19,7 @@ import io.iohk.atala.mirror.models.CredentialProofRequestType
 import io.iohk.prism.protos.connector_models.ReceivedMessage
 import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
 import monix.execution.Scheduler.Implicits.global
+import io.iohk.prism.protos.connector_models.ConnectionInfo
 
 // mill -i mirror.test.single io.iohk.atala.mirror.services.ConnectorClientServiceImplSpec
 class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
@@ -48,7 +44,7 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
     }
 
     "get messages paginated" in new ConnectorStubs {
-      val response = GetMessagesPaginatedResponse(Seq())
+      val response = GetMessagesPaginatedResponse(Nil)
 
       when(connector.getMessagesPaginated(any))
         .thenReturn(Future.successful(response))
@@ -104,6 +100,62 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
 
           // then
           receivedMessages mustBe List(Nil)
+        }
+      }
+    }
+
+    "get connections paginated" in new ConnectorStubs {
+      val response = GetConnectionsPaginatedResponse(Nil)
+
+      when(connector.getConnectionsPaginated(any))
+        .thenReturn(Future.successful(response))
+
+      service
+        .getConnectionsPaginated(lastSeenConnectionId = None, limit = 10)
+        .runSyncUnsafe(1.minute) mustBe response
+    }
+
+    "get connections paginated stream" when {
+      "new connections appears" should {
+        "return stream with connection info" in new ConnectorStubs {
+          // given
+          val connection = ConnectionInfo(connectionId = "id")
+          val response = GetConnectionsPaginatedResponse(Seq(connection))
+
+          when(connector.getConnectionsPaginated(any))
+            .thenReturn(Future.successful(response))
+
+          // when
+          val connectionInfos: List[ConnectionInfo] = service
+            .getConnectionsPaginatedStream(lastSeenConnectionId = None, limit = 10, 2.second)
+            .interruptAfter(1.seconds)
+            .compile
+            .toList
+            .runSyncUnsafe(1.minute)
+
+          // then
+          connectionInfos mustBe List(connection)
+        }
+      }
+
+      "there are no new connections" should {
+        "return empty stream" in new ConnectorStubs {
+          // given
+          val response = GetConnectionsPaginatedResponse(Nil)
+
+          when(connector.getConnectionsPaginated(any))
+            .thenReturn(Future.successful(response))
+
+          // when
+          val connectionInfos: List[ConnectionInfo] = service
+            .getConnectionsPaginatedStream(lastSeenConnectionId = None, limit = 10, 2.second)
+            .interruptAfter(1.seconds)
+            .compile
+            .toList
+            .runSyncUnsafe(1.minute)
+
+          // then
+          connectionInfos mustBe Nil
         }
       }
     }

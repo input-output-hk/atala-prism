@@ -11,8 +11,8 @@ import doobie.implicits._
 
 object ConnectionFixtures {
 
-  val connectionId1: ConnectionId = ConnectionId(UUID.randomUUID())
-  val connectionId2: ConnectionId = ConnectionId(UUID.randomUUID())
+  val connectionId1: ConnectionId = ConnectionId(UUID.fromString("0a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
+  val connectionId2: ConnectionId = ConnectionId(UUID.fromString("36325aef-d937-41b2-9a6c-b654e02b273d"))
   val connection1: Connection = Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited)
   val connection2: Connection = Connection(ConnectionToken("token2"), Some(connectionId2), ConnectionState.Invited)
 

@@ -34,12 +34,22 @@ object ConnectionDao {
   def findBy(ids: NonEmptyList[ConnectionId]): ConnectionIO[List[Connection]] = {
     val sql =
       fr"""
-          | SELECT token, id, state
-          | FROM connections
-          | WHERE
+      | SELECT token, id, state
+      | FROM connections
+      | WHERE
       """.stripMargin ++ Fragments.in(fr"id", ids)
 
     sql.query[Connection].to[List]
+  }
+
+  val findLastSeenConnectionId: ConnectionIO[Option[ConnectionId]] = {
+    sql"""
+    | SELECT id
+    | FROM connections
+    | WHERE id IS NOT NULL
+    | ORDER BY updated_at, id DESC
+    | LIMIT 1
+    """.stripMargin.query[ConnectionId].option
   }
 
   /**
@@ -49,6 +59,18 @@ object ConnectionDao {
     */
   def insert(connection: Connection): ConnectionIO[Int] =
     insertMany.toUpdate0(connection).run
+
+  /**
+    * Update connection by token.
+    */
+  def update(connection: Connection): ConnectionIO[Int] =
+    sql"""
+    | UPDATE connections SET
+    | id = ${connection.id},
+    | state = ${connection.state}::CONNECTION_STATE,
+    | updated_at = now()
+    | WHERE token = ${connection.token}
+    """.stripMargin.update.run
 
   /**
     * Insert many [[Conection]] rows with:

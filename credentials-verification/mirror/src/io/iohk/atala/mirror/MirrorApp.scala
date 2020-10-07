@@ -3,6 +3,7 @@ package io.iohk.atala.mirror
 import java.util.concurrent.TimeUnit
 
 import scala.concurrent.blocking
+
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import cats.effect.{Blocker, ExitCode, Resource}
@@ -62,6 +63,8 @@ object MirrorApp extends TaskApp {
       credentialService = new CredentialService(tx, connectorService)
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
 
+      // background streams
+      _ <- Resource.liftF(credentialService.connectionUpdatesStream.compile.drain.start)
       _ <- Resource.liftF(credentialService.credentialUpdatesStream.compile.drain.start)
 
       // gRPC server

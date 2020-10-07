@@ -1,18 +1,22 @@
 package io.iohk.atala.mirror.services
 
+import scala.concurrent.duration.FiniteDuration
+
 import monix.eval.Task
-import io.iohk.prism.protos.connector_api._
+import fs2.Stream
+import org.slf4j.LoggerFactory
+
 import io.iohk.atala.requests.RequestAuthenticator
+import io.iohk.prism.protos.connector_api._
+import io.iohk.prism.protos.credential_models.{AtalaMessage, ProofRequest}
+import io.iohk.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+
 import io.iohk.atala.mirror.config.ConnectorConfig
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 import io.iohk.atala.mirror.models.CredentialProofRequestType
 import io.iohk.atala.mirror.models.UserCredential.MessageId
-import io.iohk.prism.protos.connector_models.ReceivedMessage
-import io.iohk.prism.protos.credential_models.{AtalaMessage, ProofRequest}
-import fs2.Stream
-import org.slf4j.LoggerFactory
 
-import scala.concurrent.duration.FiniteDuration
+import io.iohk.atala.mirror.Utils.parseUUID
 
 trait ConnectorClientService {
 
@@ -35,6 +39,17 @@ trait ConnectorClientService {
       awakeDelay: FiniteDuration
   ): Stream[Task, Seq[ReceivedMessage]]
 
+  def getConnectionsPaginated(
+      lastSeenConnectionId: Option[ConnectionId],
+      limit: Int
+  ): Task[GetConnectionsPaginatedResponse]
+
+  def getConnectionsPaginatedStream(
+      lastSeenConnectionId: Option[ConnectionId],
+      limit: Int,
+      awakeDelay: FiniteDuration
+  ): Stream[Task, ConnectionInfo]
+
 }
 
 class ConnectorClientServiceImpl(
@@ -46,11 +61,8 @@ class ConnectorClientServiceImpl(
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def generateConnectionToken: Task[GenerateConnectionTokenResponse] = {
-    val request = GenerateConnectionTokenRequest()
-
-    authenticatedCall(request, _.generateConnectionToken)
-  }
+  def generateConnectionToken: Task[GenerateConnectionTokenResponse] =
+    authenticatedCall(GenerateConnectionTokenRequest(), _.generateConnectionToken)
 
   def requestCredential(
       connectionId: ConnectionId,
@@ -102,4 +114,52 @@ class ConnectorClientServiceImpl(
           )
       }
   }
+
+  def getConnectionsPaginated(
+      lastSeenConnectionId: Option[ConnectionId],
+      limit: Int
+  ): Task[GetConnectionsPaginatedResponse] = {
+    val request = GetConnectionsPaginatedRequest(lastSeenConnectionId.map(_.uuid.toString).getOrElse(""), limit)
+
+    authenticatedCall(request, _.getConnectionsPaginated)
+  }
+
+  /**
+    * Create a continuous stream with subsequent calls to connector's GetConnectionsPaginated method.
+    *
+    * @param lastSeenConnectionId initial connection id
+    * @param limit limit of connections per one request to the gRPC
+    * @param awakeDelay the delay between each call to the connector
+    */
+  def getConnectionsPaginatedStream(
+      lastSeenConnectionId: Option[ConnectionId],
+      limit: Int,
+      awakeDelay: FiniteDuration
+  ): Stream[Task, ConnectionInfo] = {
+    val initialAwakeDelay = false
+    Stream
+      .unfoldEval[Task, (Option[ConnectionId], Boolean), Seq[ConnectionInfo]](
+        (lastSeenConnectionId, initialAwakeDelay)
+      ) {
+        case (lastSeenConnectionId, shouldApplyAwakeDelay) =>
+          getConnectionsPaginated(lastSeenConnectionId, limit).flatMap(response =>
+            for {
+              _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
+              _ = logger.info(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}")
+
+              result = response.connections match {
+                case Nil =>
+                  val applyAwakeDelay = true
+                  Some(Nil -> (lastSeenConnectionId -> applyAwakeDelay))
+                case connections =>
+                  val applyAwakeDelay = connections.size != limit
+                  // Some(ConnectionId(connections.last.connectionId))
+                  Some(connections -> (parseUUID(connections.last.connectionId).map(ConnectionId) -> applyAwakeDelay))
+              }
+            } yield result
+          )
+      }
+      .flatMap(Stream.emits) // convert Seq[ConnectionInfo] to ConnectionInfo
+  }
+
 }

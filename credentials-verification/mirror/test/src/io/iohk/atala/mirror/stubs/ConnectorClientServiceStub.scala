@@ -1,20 +1,25 @@
 package io.iohk.atala.mirror.stubs
 
+import scala.concurrent.duration.FiniteDuration
+
 import fs2.Stream
+
 import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.mirror.services.ConnectorClientService
 import io.iohk.prism.protos.connector_api.{
   GenerateConnectionTokenResponse,
+  GetConnectionsPaginatedResponse,
   GetMessagesPaginatedResponse,
   SendMessageResponse
 }
-import io.iohk.prism.protos.connector_models.ReceivedMessage
+import io.iohk.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import monix.eval.Task
 
-import scala.concurrent.duration.FiniteDuration
-
-class ConnectorClientServiceStub(connectionToken: String = "token", receivedMessages: Seq[ReceivedMessage] = Seq.empty)
-    extends ConnectorClientService {
+class ConnectorClientServiceStub(
+    connectionToken: String = "token",
+    receivedMessages: Seq[ReceivedMessage] = Nil,
+    connectionInfos: Seq[ConnectionInfo] = Nil
+) extends ConnectorClientService {
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse] =
     Task.pure(GenerateConnectionTokenResponse(connectionToken))
@@ -35,5 +40,16 @@ class ConnectorClientServiceStub(connectionToken: String = "token", receivedMess
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, Seq[ReceivedMessage]] = Stream(receivedMessages)
+
+  def getConnectionsPaginated(
+      lastSeenConnectionId: Option[Connection.ConnectionId],
+      limit: Int
+  ): Task[GetConnectionsPaginatedResponse] = Task.pure(GetConnectionsPaginatedResponse(connectionInfos))
+
+  def getConnectionsPaginatedStream(
+      lastSeenConnectionId: Option[Connection.ConnectionId],
+      limit: Int,
+      awakeDelay: FiniteDuration
+  ): Stream[Task, ConnectionInfo] = Stream.emits(connectionInfos)
 
 }

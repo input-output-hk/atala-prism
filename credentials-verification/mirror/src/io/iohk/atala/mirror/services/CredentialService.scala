@@ -1,22 +1,24 @@
 package io.iohk.atala.mirror.services
 
+import java.time.Instant
+
+import scala.concurrent.duration.DurationInt
+
 import cats.data.NonEmptyList
 import monix.eval.Task
 import doobie.util.transactor.Transactor
-import doobie.implicits._
-import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
-import io.iohk.atala.mirror.models.UserCredential
-import cats.implicits._
-import io.iohk.atala.mirror.models.Connection.ConnectionId
-import io.iohk.atala.mirror.models.UserCredential.{MessageId, MessageReceivedDate, RawCredential}
-import io.iohk.prism.protos.connector_models.ReceivedMessage
-import java.time.Instant
-
 import fs2.Stream
-import io.iohk.atala.mirror.Utils.parseUUID
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.duration.DurationInt
+import io.iohk.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
+import io.iohk.atala.mirror.models.{Connection, UserCredential, CredentialProofRequestType}
+import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
+import io.iohk.atala.mirror.models.UserCredential.{MessageId, MessageReceivedDate, RawCredential}
+import io.iohk.atala.mirror.Utils.parseUUID
+
+import cats.implicits._
+import doobie.implicits._
 
 class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientService) {
 
@@ -24,6 +26,9 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
 
   private val GET_MESSAGES_PAGINATED_LIMIT = 100
   private val GET_MESSAGES_PAGINATED_AWAKE_DELAY = 10.seconds
+
+  private val GET_CONNECTIONS_PAGINATED_LIMIT = 100
+  private val GET_CONNECTIONS_PAGINATED_AWAKE_DELAY = 11.seconds
 
   val credentialUpdatesStream: Stream[Task, Seq[ReceivedMessage]] = {
     Stream
@@ -36,6 +41,54 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
         )
       }
       .evalTap(saveMessages)
+  }
+
+  val connectionUpdatesStream: Stream[Task, Unit] = {
+    Stream
+      .eval(
+        ConnectionDao.findLastSeenConnectionId.transact(tx)
+      )
+      .flatMap(lastSeenConnectionId =>
+        connectorService
+          .getConnectionsPaginatedStream(
+            lastSeenConnectionId,
+            GET_CONNECTIONS_PAGINATED_LIMIT,
+            GET_CONNECTIONS_PAGINATED_AWAKE_DELAY
+          )
+          .evalMap(connectionInfo => {
+            val connection = Connection(
+              token = ConnectionToken(connectionInfo.token),
+              id = parseUUID(connectionInfo.connectionId).map(ConnectionId),
+              state = ConnectionState.Connected
+            )
+
+            ConnectionDao
+              .update(connection)
+              .transact(tx)
+              .map(_ => connection)
+          })
+          .evalMap(connection => {
+            // TODO: Request credential in this place is temporary and
+            //       probably will be removed in the future.
+            val credential = CredentialProofRequestType.RedlandIdCredential
+
+            for {
+              _ <- connection.id match {
+                case None => Task.unit
+                case Some(connectionId) =>
+                  connectorService
+                    .requestCredential(
+                      connectionId = connectionId,
+                      connectionToken = connection.token,
+                      credentialProofRequestTypes = Seq(credential)
+                    )
+              }
+
+              _ = logger.info(s"Request credential: $credential")
+            } yield ()
+          })
+          .drain // discard return type, as we don't need it
+      )
   }
 
   private def saveMessages(messages: Seq[ReceivedMessage]): Task[Unit] = {

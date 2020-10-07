@@ -3,7 +3,7 @@ package io.iohk.atala.mirror.models
 import java.util.UUID
 import enumeratum.{DoobieEnum, Enum, EnumEntry}
 
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken, ConnectionState}
+import io.iohk.atala.mirror.models.Connection._
 
 case class Connection(
     token: ConnectionToken,
@@ -13,7 +13,6 @@ case class Connection(
 
 object Connection {
   case class ConnectionToken(token: String) extends AnyVal
-
   case class ConnectionId(uuid: UUID) extends AnyVal
 
   sealed abstract class ConnectionState(value: String) extends EnumEntry {

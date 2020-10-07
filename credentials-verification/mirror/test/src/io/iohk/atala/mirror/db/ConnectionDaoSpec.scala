@@ -24,6 +24,15 @@ class ConnectionDaoSpec extends PostgresRepositorySpec {
         .unsafeRunSync() mustBe 1
     }
 
+    "update conection row" in {
+      val connectionWithNewId = connection1.copy(id = connection2.id)
+      (for {
+        _ <- ConnectionDao.insert(connection1)
+        _ <- ConnectionDao.update(connectionWithNewId)
+        connection <- ConnectionDao.findBy(connection1.token)
+      } yield connection).transact(database).unsafeRunSync() mustBe Some(connectionWithNewId)
+    }
+
     "return connection by the token" in {
       (for {
         _ <- ConnectionDao.insert(connection1)
@@ -51,6 +60,18 @@ class ConnectionDaoSpec extends PostgresRepositorySpec {
     "return none if a token doesn't exist" in {
       ConnectionDao.findBy(ConnectionToken("token")).transact(database).unsafeRunSync() mustBe None
       ConnectionDao.findBy(ConnectionId(UUID.randomUUID())).transact(database).unsafeRunSync() mustBe None
+    }
+
+    "return last seen connection id" in {
+      // given
+      insertAllConnections(database).unsafeRunSync()
+
+      // when
+      val lastSeenConnectionId: Option[ConnectionId] =
+        ConnectionDao.findLastSeenConnectionId.transact(database).unsafeRunSync()
+
+      // then
+      lastSeenConnectionId mustBe connection2.id
     }
   }
 }

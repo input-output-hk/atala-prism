@@ -116,5 +116,23 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar {
       // then
       userCredentials1.size mustBe 0
     }
+
+    // "update connections periodically" in new MirrorStubs {
+    //   val uuid = UUID.randomUUID
+    //   val returnStream = Stream.emit(ConnectionInfo(token = "token", connectionId = uuid.toString))
+
+    //   when(connectorClient.getConnectionsPaginatedStream(any, any)).thenReturn(returnStream)
+
+    //   (for {
+    //     _ <- ConnectionDao.insert(connection).transact(tx)
+    //     _ <- service.updateConnectionsStream(1.second, 10).interruptAfter(1.seconds).compile.drain
+    //     result <- ConnectionDao.findBy(Connection.ConnectionToken("token")).transact(tx)
+    //   } yield result).runSyncUnsafe(1.minute) mustBe Some(
+    //     connection.copy(
+    //       id = Some(Connection.ConnectionId(uuid)),
+    //       state = Connection.ConnectionState.Connected
+    //     )
+    //   )
+    // }
   }
 }
