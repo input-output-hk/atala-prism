@@ -131,6 +131,9 @@
 "profile_field_title_email" = "Email";
 "profile_field_title_dateofbirth" = "Date of Birth";
 "profile_edit_nav_title" = "Edit Profile";
+"profile_camera" = "Take from camera";
+"profile_library" = "Choose from library";
+"profile_remove_image" = "Remove image";
 
 // <!-- Settings -->
 "settings_nav_title" = "Settings";

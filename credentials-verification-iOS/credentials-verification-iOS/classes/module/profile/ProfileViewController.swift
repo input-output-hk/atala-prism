@@ -1,6 +1,7 @@
 //
 
-class ProfileViewController: ListingBaseViewController {
+class ProfileViewController: ListingBaseViewController, UIImagePickerControllerDelegate,
+                             UINavigationControllerDelegate {
 
     var presenterImpl = ProfilePresenter()
     override var presenter: BasePresenter { return presenterImpl }
@@ -126,5 +127,45 @@ class ProfileViewController: ListingBaseViewController {
 
     override func getScrollableMainView() -> UIScrollView? {
         return table
+    }
+    
+    // MARK: Profile picture 
+
+    func chooseProfilePicture() {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.allowsEditing = true
+        let actionsheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        actionsheet.addAction(UIAlertAction(title: "profile_camera".localize(), style: .default, handler: { _ in
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                imagePickerController.sourceType = .camera
+                self.present(imagePickerController, animated: true, completion: nil)
+            }
+        }))
+        actionsheet.addAction(UIAlertAction(title: "profile_library".localize(), style: .default, handler: { _ in
+            imagePickerController.sourceType = .photoLibrary
+            self.present(imagePickerController, animated: true, completion: nil)
+        }))
+        actionsheet.addAction(UIAlertAction(title: "profile_remove_image".localize(), style: .default, handler: { _ in
+            imagePickerController.sourceType = .photoLibrary
+            self.presenterImpl.setProfiilePicture(jpegData: nil)
+        }))
+        actionsheet.addAction(UIAlertAction(title: "cancel".localize(), style: .cancel, handler: nil))
+        present(actionsheet, animated: true, completion: nil)
+    }
+
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        var image: UIImage?
+        if let editedImage = info[.editedImage] as? UIImage {
+            image = editedImage
+        } else if let originalImage = info[.originalImage] as? UIImage {
+            image = originalImage
+        }
+        if let jpegData = image?.jpegData(compressionQuality: 0.8) {
+            self.presenterImpl.setProfiilePicture(jpegData: jpegData)
+        }
+
+        picker.dismiss(animated: true)
     }
 }

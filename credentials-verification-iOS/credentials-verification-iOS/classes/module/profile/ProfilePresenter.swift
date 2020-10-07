@@ -34,6 +34,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     var editedFullname: String?
     var editedEmail: String?
     var editedCountry: String?
+    var editedImage: Data?
 
     // MARK: Modes
 
@@ -62,6 +63,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
 
         mode = .editing
         cleanData()
+        editedImage = sharedMemory.profilePic
         initialStaticCells.forEach { editingRows?.append($0) }
         updateViewToState()
     }
@@ -97,6 +99,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         if let country = editedCountry {
             sharedMemory.loggedUser?.countryShortName = country
         }
+        sharedMemory.profilePic = editedImage
         sharedMemory.loggedUser = sharedMemory.loggedUser
         // Go back
         tappedBackButton()
@@ -187,7 +190,13 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         let user = sharedMemory.loggedUser
         let name = "\(user?.firstName ?? "") \(user?.lastName ?? "")"
         let email = "\(user?.email ?? "")"
-        cell.config(name: name, email: email, isVerified: user?.isVerified ?? false, logoUrl: user?.avatarUrl)
+        let pic = mode == .editing ? editedImage : sharedMemory.profilePic
+        cell.config(name: name, email: email, isVerified: user?.isVerified ?? false, logoData: pic,
+                    isEnable: mode == .editing)
+    }
+
+    func choosePicture() {
+        viewImpl?.chooseProfilePicture()
     }
 
     func setup(for cell: TabsViewCell) {
@@ -247,5 +256,10 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
             nextCell = viewImpl?.table.cellForRow(at: nextIndex) as? FieldViewCell
         }
         return (!fieldValue.1, nextCell)
+    }
+
+    func setProfiilePicture(jpegData: Data?) {
+        editedImage = jpegData
+        updateViewToState()
     }
 }

@@ -80,7 +80,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func tappedDeleteButton() {
         guard let contact = detailContact else { return }
         let credentialsDao = CredentialDAO()
-        let credentials = credentialsDao.listCredentialsForContact(did: contact.did)
+        let credentials = credentialsDao.listCredentialsForContact(did: contact.connectionId)
         viewImpl?.showDeleteContactConfirmation(contact: contact, credentials: credentials)
     }
 

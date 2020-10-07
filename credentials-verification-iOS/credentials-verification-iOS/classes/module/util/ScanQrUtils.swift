@@ -259,6 +259,7 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     }
 
     func drawCodeCorners(_ codeObject: AVMetadataMachineReadableCodeObject) {
+        #if !targetEnvironment(simulator)
         if codeObject.corners.count == 0 {
             return
         }
@@ -270,6 +271,7 @@ open class QRCode: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         shapeLayer.path = createPath(codeObject.corners).cgPath
 
         drawLayer.addSublayer(shapeLayer)
+        #endif
     }
 
     func createPath(_ points: [CGPoint]) -> UIBezierPath {

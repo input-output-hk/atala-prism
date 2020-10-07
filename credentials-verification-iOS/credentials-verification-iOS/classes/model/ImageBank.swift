@@ -23,16 +23,14 @@ class ImageBank: Mappable {
         return id == nil ? nil : logos?[id!]
     }
 
-    static func saveLogos(list: [ConnectionBase]?) {
+    static func saveLogo(key: String, logo: Data) {
 
         if SharedMemory.global.imageBank == nil {
             SharedMemory.global.imageBank = ImageBank()
         }
-        for elem in list ?? [] {
-            if let id = elem.connectionId, let logo = elem.logoData {
-                SharedMemory.global.imageBank?.logos?[id] = logo
-            }
-        }
+        
+        SharedMemory.global.imageBank?.logos?[key] = logo
+        
         SharedMemory.global.imageBank = SharedMemory.global.imageBank
     }
 }

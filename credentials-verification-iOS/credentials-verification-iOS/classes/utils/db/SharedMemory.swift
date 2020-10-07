@@ -14,6 +14,7 @@ class SharedMemory: NSObject {
     // Main
     private var mLoggedUser: LoggedUser?
     private var mImageBank: ImageBank?
+    private var mProfilePic: Data?
 
     // Used for change screen
     var changeScreenParams: [Any?]?
@@ -58,6 +59,17 @@ class SharedMemory: NSObject {
         set {
             mImageBank = newValue
             helper.setMappableObject(key: Common.KEY_PREF + "imagebank", internalObject: mImageBank)
+        }
+    }
+
+    var profilePic: Data? {
+        get {
+            mProfilePic = preferences.data(forKey: Common.KEY_PREF + "profilePic")
+            return mProfilePic
+        }
+        set {
+            mProfilePic = newValue
+            preferences.setValue(mProfilePic, forKey: Common.KEY_PREF + "profilePic")
         }
     }
 }
