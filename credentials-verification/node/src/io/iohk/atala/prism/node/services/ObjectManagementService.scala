@@ -38,11 +38,7 @@ class ObjectManagementService(
 
   import ObjectManagementService._
 
-  // method `saveReference` should eventually do what just `justSaveReference` does
-  // - put the info about the object into the db
-  // for now, until we have block processing queue, it also manages processing
-  // the referenced block
-  def justSaveObject(notification: AtalaObjectNotification): Future[Option[AtalaObject]] = {
+  private def justSaveObject(notification: AtalaObjectNotification): Future[Option[AtalaObject]] = {
     val objectBytes = notification.atalaObject.toByteArray
     val hash = SHA256Digest.compute(objectBytes)
 
@@ -107,7 +103,11 @@ class ObjectManagementService(
   protected def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {
     val byteContentFut = obj.byteContent match {
       case Some(content) => Future.successful(content)
-      case None => storage.get(obj.objectId.hexValue).map(_.get) // TODO: error support
+      case None =>
+        val objectId = obj.objectId.hexValue
+        storage
+          .get(objectId)
+          .map(_.getOrElse(throw new RuntimeException(s"Content of object $objectId not found")))
     }
 
     byteContentFut.map(node_internal.AtalaObject.parseFrom)
@@ -119,7 +119,7 @@ class ObjectManagementService(
       case node_internal.AtalaObject.Block.BlockHash(hash) =>
         storage
           .get(SHA256Digest(hash.toByteArray).hexValue)
-          .map(_.get) // TODO: error support
+          .map(_.getOrElse(throw new RuntimeException(s"Content of block $hash not found")))
           .map(node_internal.AtalaBlock.parseFrom)
       case node_internal.AtalaObject.Block.Empty =>
         throw new IllegalStateException("Block has neither block content nor block hash")

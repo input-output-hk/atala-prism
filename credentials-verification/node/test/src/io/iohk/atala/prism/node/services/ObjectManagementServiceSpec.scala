@@ -27,7 +27,7 @@ import scala.concurrent.duration._
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
 
-  val exampleOperations = newKeysPairs.zipWithIndex.map {
+  val exampleOperations: Seq[node_models.AtalaOperation] = newKeysPairs.zipWithIndex.map {
     case (keyPair: ECKeyPair, i) =>
       BlockProcessingServiceSpec.createDidOperation.update(_.createDid.didData.publicKeys.modify { keys =>
         keys :+ node_models.PublicKey(
@@ -40,7 +40,7 @@ object ObjectManagementServiceSpec {
       })
   }
 
-  val exampleSignedOperations = exampleOperations.map { operation =>
+  val exampleSignedOperations: Seq[node_models.SignedAtalaOperation] = exampleOperations.map { operation =>
     BlockProcessingServiceSpec.signOperation(operation, "master", CreateDIDOperationSpec.masterKeys.privateKey)
   }
 }
@@ -55,7 +55,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   private val ledger: AtalaReferenceLedger = mock[AtalaReferenceLedger]
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
-  private lazy val objectManagmentService = new ObjectManagementService(storage, ledger, blockProcessing)
+  private lazy val objectManagementService = new ObjectManagementService(storage, ledger, blockProcessing)
 
   private val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
   private val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
@@ -73,13 +73,13 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "put reference to block onto the ledger" in {
       doReturn(Future.successful(())).when(ledger).publish(*)
 
-      objectManagmentService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
+      objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
 
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
 
       val atalaBlock = getBlockFromStorage(atalaObjectCaptor.value)
-      atalaBlock.operations must contain theSameElementsAs (Seq(BlockProcessingServiceSpec.signedCreateDidOperation))
+      atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
 
       verifyNoMoreInteractions(ledger)
     }
@@ -89,14 +89,14 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       Future
         .traverse(exampleSignedOperations) { signedOp =>
-          objectManagmentService.publishAtalaOperation(signedOp)
+          objectManagementService.publishAtalaOperation(signedOp)
         }
         .futureValue
 
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger, times(exampleOperations.size)).publish(atalaObjectCaptor)
 
-      for ((signedOp, atalaObject) <- (exampleSignedOperations zip atalaObjectCaptor.values)) {
+      for ((signedOp, atalaObject) <- exampleSignedOperations zip atalaObjectCaptor.values) {
         val atalaBlock = getBlockFromStorage(atalaObject)
         atalaBlock.operations must contain theSameElementsAs Seq(signedOp)
       }
@@ -105,39 +105,43 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
   }
 
-  "ObjectManagementService.saveReference" should {
-    "add reference to the database" in {
+  "ObjectManagementService.saveObject" should {
+    "add object to the database" in {
+      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+
       val block = exampleBlock()
       val obj = createExampleObject(block)
-      objectManagmentService
-        .justSaveObject(
+      objectManagementService
+        .saveObject(
           AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
         .futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.sequenceNumber mustBe 1
-      atalaObject.processed mustBe false
+      // TODO: Once processing is async, test the object is not processed
     }
 
     "be idempotent - ignore re-adding the same hash" in {
+      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+
       val block = exampleBlock()
       val obj = createExampleObject(block)
-      objectManagmentService
-        .justSaveObject(
+      objectManagementService
+        .saveObject(
           AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
         .futureValue
 
-      objectManagmentService
-        .justSaveObject(
+      objectManagementService
+        .saveObject(
           AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
         .futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.sequenceNumber mustBe 1
-      atalaObject.processed mustBe false
+      // TODO: Once processing is async, test the object is not processed
     }
 
     "process the block" in {
@@ -145,7 +149,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       val block = exampleBlock()
       val obj = createExampleObject(block)
-      objectManagmentService
+      objectManagementService
         .saveObject(
           AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
         )
@@ -175,7 +179,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         val block = exampleBlock(signedOp)
         val obj = createExampleAtalaObject(block, includeBlock)
 
-        objectManagmentService
+        objectManagementService
           .saveObject(AtalaObjectNotification(obj, Instant.ofEpochMilli(i.toLong), dummyTransactionInfo))
           .futureValue
 
