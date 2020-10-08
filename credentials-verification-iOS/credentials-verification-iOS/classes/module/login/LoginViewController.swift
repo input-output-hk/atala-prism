@@ -119,9 +119,16 @@ extension LoginViewController: TextFieldTitledViewDelegate {
     }
 
     func textFieldDidChange(for view: TextFieldTitledView, textField: UITextField, text: String?) {
+
+        if textField != textFieldUrl.textField,
+           let selectedRange = textField.selectedTextRange {
+            textField.text = text?.lowercased()
+            textField.selectedTextRange = selectedRange
+        }
         presenterImpl.textFieldTextChanged()
         textFieldUrlChanged(view)
     }
+
 }
 
 // Delete me in the future, URL config server

@@ -127,4 +127,12 @@ extension RestoreAccountViewController: MDCChipFieldDelegate {
         chipField.textField.placeholder = "restore_hint".localize()
         enableVerifyButton(enable: false)
     }
+
+    func chipField(_ chipField: MDCChipField, didChangeInput input: String?) {
+        if let input = input, !input.isEmpty,
+           let selectedRange = chipField.textField.selectedTextRange {
+            chipField.textField.text = input.lowercased()
+            chipField.textField.selectedTextRange = selectedRange
+        }
+    }
 }
