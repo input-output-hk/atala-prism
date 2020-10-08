@@ -40,11 +40,10 @@ import scala.util.{Failure, Success}
         id := "h1_title",
         "Welcome Back"
       ),
-      h3(className := "h3_title", id := "h3_title", "Please Unlock your account"),
       p(
         className := "description",
         id := "description",
-        "For safety your account locks after a while. Please insert your password to unlock."
+        "For safety reasons, your wallet is automatically locked after a period of inactivity.Please enter your password to unlock your wallet"
       ),
       p(
         className := "img_unlock",
@@ -54,7 +53,7 @@ import scala.util.{Failure, Success}
       p(
         className := "h4_unlock",
         id := "h4_unlock",
-        "Insert your password"
+        "Enter your password"
       ),
       div(className := "div__field_group")(
         label(className := "label_unlock")("Password: "),

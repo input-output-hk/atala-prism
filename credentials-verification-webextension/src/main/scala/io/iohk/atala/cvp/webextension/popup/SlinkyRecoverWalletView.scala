@@ -58,20 +58,20 @@ import scala.util.{Failure, Success}
             id := "password",
             className := "_input",
             `type` := "password",
-            placeholder := "Enter Password",
+            placeholder := "Enter password",
             value := state.password,
             onChange := (e => setPassword(e.target.value))
           )
         )
       ),
       div(className := "div__field_group")(
-        label(className := "_label")("Confirm Password"),
+        label(className := "_label")("Confirm password"),
         div(className := "input__container")(
           input(
             id := "password2",
             className := "_input",
             `type` := "password",
-            placeholder := "Confirm Password",
+            placeholder := "Re-enter password",
             value := state.password2,
             onChange := (e => setPassword2(e.target.value))
           )

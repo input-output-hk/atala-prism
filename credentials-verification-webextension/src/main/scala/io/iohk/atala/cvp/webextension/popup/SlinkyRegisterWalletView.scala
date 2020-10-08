@@ -72,6 +72,11 @@ import scala.util.{Failure, Success}
       h3(className := "h3_register", id := "h3_register", "Wallet registration"),
       div(className := "div__field_group")(
         h4(className := "h4_register")("Save your recovery phrase"),
+        p(
+          className := "description",
+          id := "description",
+          "The recovery phrase is the only way to recover your wallet. Please write it down and keep it safe."
+        ),
         mnemonicElement
       ),
       h4(className := "h4_register", id := "h4_register", "Wallet information"),
@@ -82,31 +87,31 @@ import scala.util.{Failure, Success}
             id := "password",
             className := "_input",
             `type` := "password",
-            placeholder := "Enter Password",
+            placeholder := "Enter password",
             value := state.password,
             onChange := (e => setPassword(e.target.value))
           )
         ),
         div(className := "div__field_group")(
-          label(className := "_label")("Confirm Password: "),
+          label(className := "_label")("Confirm password: "),
           div(className := "input__container")(
             input(
               id := "password2",
               className := "_input",
               `type` := "password",
-              placeholder := "Confirm password",
+              placeholder := "Re-enter password",
               value := state.password2,
               onChange := (e => setPassword2(e.target.value))
             )
           )
         ),
         div(className := "div__field_group")(
-          label(className := "_label")("Organization Name"),
+          label(className := "_label")("Organization name"),
           div(className := "input__container")(
             input(
               id := "orgname",
               className := "_input",
-              placeholder := "Enter Organization Name",
+              placeholder := "Enter your organization's name",
               value := state.orgName,
               onChange := (e => setOrgName(e.target.value))
             )
@@ -122,7 +127,7 @@ import scala.util.{Failure, Success}
           )
         ),
         div(className := "div__field_group")(
-          label(htmlFor := "logo")("e.g image type supported png/jpeg"),
+          label(htmlFor := "logo")("Supported files types: png or jpeg"),
           div(className := "input__container")(
             input(
               className := "inputfile",

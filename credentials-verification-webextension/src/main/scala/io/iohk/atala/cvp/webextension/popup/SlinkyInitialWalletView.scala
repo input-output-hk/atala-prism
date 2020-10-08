@@ -22,12 +22,12 @@ import slinky.web.html._
         h1(
           className := "h1_title",
           id := "h1_title",
-          "Prism Browser Wallet"
+          "Atala PRISM Browser Wallet"
         ),
         p(
           className := "description",
           id := "description",
-          "Register now to your browser wallet or recover your account."
+          "Register a new wallet or recover an existing wallet"
         ),
         p(
           className := "div_img",
@@ -38,7 +38,7 @@ import slinky.web.html._
       div(
         className := "btn_register",
         id := "registrationScreenButton",
-        "Register your browser wallet",
+        "Register",
         onClick := { () =>
           props.switchToView(Register)
         }
@@ -46,7 +46,7 @@ import slinky.web.html._
       div(
         className := "btn_recover",
         id := "recoveryScreenButton",
-        "Recover an existing wallet",
+        "Recover",
         onClick := { () =>
           props.switchToView(Recover)
         }
