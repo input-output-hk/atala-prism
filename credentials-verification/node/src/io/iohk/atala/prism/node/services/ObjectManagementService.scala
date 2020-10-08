@@ -18,6 +18,7 @@ import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCre
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.prism.protos.{node_internal, node_models}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,6 +38,8 @@ class ObjectManagementService(
 ) {
 
   import ObjectManagementService._
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private def justSaveObject(notification: AtalaObjectNotification): Future[Option[AtalaObject]] = {
     val objectBytes = notification.atalaObject.toByteArray
@@ -79,8 +82,11 @@ class ObjectManagementService(
         case Some(obj) =>
           processObject(obj).flatMap { transaction =>
             transaction.transact(xa).unsafeToFuture().map(_ => ())
+          } recover {
+            case error => logger.warn(s"Could not process object $obj", error)
           }
         case None =>
+          logger.warn(s"Could not save object from notification $notification")
           Future.successful(())
       }
   }
@@ -89,8 +95,11 @@ class ObjectManagementService(
     val block = node_internal.AtalaBlock("1.0", List(op))
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)
+    val objectBlock =
+      if (atalaReferenceLedger.supportsOnChainData) Block.BlockContent(block)
+      else Block.BlockHash(ByteString.copyFrom(blockHash.value))
     val obj =
-      node_internal.AtalaObject(block = Block.BlockHash(ByteString.copyFrom(blockHash.value)), blockOperationCount = 1)
+      node_internal.AtalaObject(block = objectBlock, blockOperationCount = 1)
     val objBytes = obj.toByteArray
     val objHash = SHA256Digest.compute(objBytes)
 

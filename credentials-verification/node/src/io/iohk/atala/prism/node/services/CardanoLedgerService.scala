@@ -130,7 +130,7 @@ class CardanoLedgerService private[services] (
     } yield notification
 
     if (notifications.nonEmpty) {
-      logger trace s"Found ${notifications.size} ATALA references in block ${block.header.blockNo}"
+      logger.info(s"Found ${notifications.size} Atala objects in block ${block.header.blockNo}")
     }
 
     for {

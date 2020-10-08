@@ -70,22 +70,37 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   }
 
   "ObjectManagementService.publishAtalaOperation" should {
-    "put reference to block onto the ledger" in {
+    "put block content onto the ledger when supported" in {
       doReturn(Future.successful(())).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
 
       objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
 
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
 
-      val atalaBlock = getBlockFromStorage(atalaObjectCaptor.value)
+      val atalaObject = atalaObjectCaptor.value
+      val atalaBlock = atalaObject.block.blockContent.value
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
+    }
 
-      verifyNoMoreInteractions(ledger)
+    "put reference to block onto the ledger" in {
+      doReturn(Future.successful(())).when(ledger).publish(*)
+      doReturn(false).when(ledger).supportsOnChainData
+
+      objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
+
+      val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
+      verify(ledger).publish(atalaObjectCaptor)
+
+      val atalaObject = atalaObjectCaptor.value
+      val atalaBlock = getBlockFromStorage(atalaObject)
+      atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
     }
 
     "put many references onto the ledger" in {
       doReturn(Future.successful(())).when(ledger).publish(*)
+      doReturn(false).when(ledger).supportsOnChainData
 
       Future
         .traverse(exampleSignedOperations) { signedOp =>
@@ -100,8 +115,6 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         val atalaBlock = getBlockFromStorage(atalaObject)
         atalaBlock.operations must contain theSameElementsAs Seq(signedOp)
       }
-
-      verifyNoMoreInteractions(ledger)
     }
   }
 
