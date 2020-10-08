@@ -119,7 +119,7 @@ class IntDemoServiceSpec extends AnyFlatSpec {
         intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
         scheduler.tick(1 second)
 
-        verify(connectorIntegration, eventually.times(1))
+        verify(connectorIntegration, eventually.atLeastOnce())
           .sendCredential(eqTo(issuerId), eqTo(connectionId), credentialMatcher)
         verify(streamObserver, eventually.atLeastOnce()).onCompleted()
         verify(streamObserver, neverEver).onError(any)
@@ -216,7 +216,7 @@ class IntDemoServiceSpec extends AnyFlatSpec {
     intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
     scheduler.tick(1 second)
 
-    verify(connectorIntegration, eventually.times(1))
+    verify(connectorIntegration, eventually.atLeastOnce())
       .sendProofRequest(eqTo(issuerId), eqTo(connectionId), proofRequestMatcher)
     verify(streamObserver, eventually.atLeastOnce())
       .onNext(intdemo_api.GetSubjectStatusResponse(intdemo_models.SubjectStatus.CONNECTED))
