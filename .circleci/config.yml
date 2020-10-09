@@ -443,7 +443,9 @@ jobs:
 
       - run:
           name: Run Unit Tests
-          command: cd credentials-verification-webextension && sbt test
+          command: |
+            cd credentials-verification-webextension
+            sbt test || sbt test
 
       - run:
           name: Package the extension to release
