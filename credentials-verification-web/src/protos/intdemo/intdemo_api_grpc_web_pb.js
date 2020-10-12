@@ -13,7 +13,7 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 
-var intdemo_models_pb = require('./intdemo_models_pb.js')
+var intdemo_intdemo_models_pb = require('../intdemo/intdemo_models_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};

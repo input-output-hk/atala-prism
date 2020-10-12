@@ -275,7 +275,7 @@ object common extends PrismScalaModule with PBCommon with CodeCoverageModule {
         ivy"org.scalatest::scalatest-wordspec:${versions.scalatest}",
         ivy"com.spotify:docker-client:8.16.0",
         // Scalatest integration libraries depend on older scalatest versions and thus we
-        // exclude all "org.scalatest" artefacts from being pulled in as transitive dependencies
+        // exclude all "org.scalatest" artifacts from being pulled in as transitive dependencies
         ivy"com.whisk::docker-testkit-scalatest:0.9.9".excludeOrg("org.scalatest"),
         ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
         ivy"org.tpolecat::doobie-scalatest:${versions.doobie}".excludeOrg("org.scalatest"),
@@ -383,6 +383,14 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
 
 trait PBCommon extends ScalaPBModule {
   def scalaPBVersion = versions.scalaPB
+
+  // This is a temporary measure that unifies how mill scalaPB plugin and sbt scalaPB plugin
+  // resolve imports. TODO: Delete once project uses prism-protos artifact instead of compiling
+  // its own proto files.
+  override def scalaPBIncludePath =
+    T.sources {
+      os.pwd / 'protos
+    }
 
   // merge service files, otherwise GRPC client doesn't work:
   // https://github.com/grpc/grpc-java/issues/5493

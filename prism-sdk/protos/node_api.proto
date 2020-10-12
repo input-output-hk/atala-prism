@@ -32,7 +32,7 @@ message CreateDIDRequest {
     SignedAtalaOperation signed_operation = 1;
 }
 message CreateDIDResponse {
-    string id = 1; // DID suffix, where DID is in form did:atala:[DID suffix]
+    string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
     TransactionInfo transactionInfo = 2;
 }
 

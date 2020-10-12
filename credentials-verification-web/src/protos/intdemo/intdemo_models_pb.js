@@ -1,5 +1,5 @@
 /* eslint-disable */
-// source: intdemo_models.proto
+// source: intdemo/intdemo_models.proto
 /**
  * @fileoverview
  * @enhanceable

@@ -1,5 +1,5 @@
 /* eslint-disable */
-// source: intdemo_api.proto
+// source: intdemo/intdemo_api.proto
 /**
  * @fileoverview
  * @enhanceable
@@ -13,8 +13,8 @@ var jspb = require('google-protobuf');
 var goog = jspb;
 var global = Function('return this')();
 
-var intdemo_models_pb = require('./intdemo_models_pb.js');
-goog.object.extend(proto, intdemo_models_pb);
+var intdemo_intdemo_models_pb = require('../intdemo/intdemo_models_pb.js');
+goog.object.extend(proto, intdemo_intdemo_models_pb);
 goog.exportSymbol('proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenRequest', null, global);
 goog.exportSymbol('proto.io.iohk.atala.prism.intdemo.protos.GetConnectionTokenResponse', null, global);
 goog.exportSymbol('proto.io.iohk.atala.prism.intdemo.protos.GetSubjectStatusRequest', null, global);
@@ -672,7 +672,7 @@ proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest.toObject = funct
   var f, obj = {
     connectiontoken: jspb.Message.getFieldWithDefault(msg, 1, ""),
     firstname: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    dateofbirth: (f = msg.getDateofbirth()) && intdemo_models_pb.Date.toObject(includeInstance, f)
+    dateofbirth: (f = msg.getDateofbirth()) && intdemo_intdemo_models_pb.Date.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -718,8 +718,8 @@ proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest.deserializeBinar
       msg.setFirstname(value);
       break;
     case 3:
-      var value = new intdemo_models_pb.Date;
-      reader.readMessage(value,intdemo_models_pb.Date.deserializeBinaryFromReader);
+      var value = new intdemo_intdemo_models_pb.Date;
+      reader.readMessage(value,intdemo_intdemo_models_pb.Date.deserializeBinaryFromReader);
       msg.setDateofbirth(value);
       break;
     default:
@@ -770,7 +770,7 @@ proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest.serializeBinaryT
     writer.writeMessage(
       3,
       f,
-      intdemo_models_pb.Date.serializeBinaryToWriter
+      intdemo_intdemo_models_pb.Date.serializeBinaryToWriter
     );
   }
 };
@@ -818,7 +818,7 @@ proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest.prototype.setFir
  */
 proto.io.iohk.atala.prism.intdemo.protos.SetPersonalDataRequest.prototype.getDateofbirth = function() {
   return /** @type{?proto.io.iohk.atala.prism.intdemo.protos.Date} */ (
-    jspb.Message.getWrapperField(this, intdemo_models_pb.Date, 3));
+    jspb.Message.getWrapperField(this, intdemo_intdemo_models_pb.Date, 3));
 };
 
 

@@ -34,7 +34,7 @@ message PublicKey {
 }
 
 message DIDData {
-    string id = 1; // DID suffix, where DID is in form did:atala:[DID suffix]
+    string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
     repeated PublicKey publicKeys = 2;
 }
 
