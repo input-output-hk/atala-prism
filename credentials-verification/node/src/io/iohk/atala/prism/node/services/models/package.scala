@@ -1,12 +1,10 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
-
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.modeling._
-import shapeless.tag.@@
 import io.iohk.prism.protos.node_internal
+import shapeless.tag.@@
 
 import scala.concurrent.Future
 
@@ -24,7 +22,6 @@ package object models {
 
   case class AtalaObjectNotification(
       atalaObject: node_internal.AtalaObject,
-      timestamp: Instant,
       transaction: TransactionInfo
   )
 

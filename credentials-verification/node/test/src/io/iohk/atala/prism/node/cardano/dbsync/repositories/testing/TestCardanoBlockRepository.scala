@@ -122,8 +122,8 @@ object TestCardanoBlockRepository {
   }
 
   def createRandomTransactions(blockHash: BlockHash, n: Int): Seq[Transaction] = {
-    0 to n map { _ =>
-      Transaction(TestCardanoBlockRepository.randomTransactionId(), blockHash, None)
+    0 to n map { blockIndex =>
+      Transaction(TestCardanoBlockRepository.randomTransactionId(), blockHash, blockIndex, None)
     }
   }
 

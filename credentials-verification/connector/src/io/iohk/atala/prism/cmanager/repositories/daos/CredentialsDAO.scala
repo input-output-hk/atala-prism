@@ -226,7 +226,7 @@ object CredentialsDAO {
          |       ${credentialData.nodeCredentialId},
          |       ${credentialData.issuanceOperationHash},
          |       ${credentialData.encodedSignedCredential},
-         |       ${credentialData.transactionInfo.id},
+         |       ${credentialData.transactionInfo.transactionId},
          |       ${credentialData.transactionInfo.ledger},
          |       now()
          |FROM credentials

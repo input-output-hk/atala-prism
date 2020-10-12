@@ -30,7 +30,7 @@ class ParticipantsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) 
       name = request.name,
       did = Option(request.did),
       logo = Option(request.logo),
-      transactionId = Some(request.transactionInfo.id),
+      transactionId = Some(request.transactionInfo.transactionId),
       ledger = Some(request.transactionInfo.ledger)
     )
 

@@ -22,12 +22,13 @@ package object daos {
   }
 
   private[daos] implicit val transactionRead: Read[Transaction] = {
-    Read[(TransactionId, BlockHash, Option[Int], Option[String])]
+    Read[(TransactionId, BlockHash, Int, Option[Int], Option[String])]
       .map {
-        case (transactionId, blockHash, metadataKey, metadataJson) =>
+        case (transactionId, blockHash, blockIndex, metadataKey, metadataJson) =>
           Transaction(
             transactionId,
             blockHash,
+            blockIndex,
             // Merge `metadataKey` and `metadataJson` columns into `TransactionMetadata`
             metadataKey.map(key => {
               val parsedMetadataJson = io.circe.parser

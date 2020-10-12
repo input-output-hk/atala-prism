@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
@@ -126,7 +126,16 @@ class CardanoLedgerService private[services] (
       transaction <- block.transactions
       metadata <- transaction.metadata
       atalaObject <- AtalaObjectMetadata.fromTransactionMetadata(metadata)
-      notification = AtalaObjectNotification(atalaObject, block.header.time, TransactionInfo(transaction.id, ledger))
+      notification = AtalaObjectNotification(
+        atalaObject,
+        TransactionInfo(
+          transactionId = transaction.id,
+          ledger = ledger,
+          block = Some(
+            BlockInfo(number = block.header.blockNo, timestamp = block.header.time, index = transaction.blockIndex)
+          )
+        )
+      )
     } yield notification
 
     if (notifications.nonEmpty) {

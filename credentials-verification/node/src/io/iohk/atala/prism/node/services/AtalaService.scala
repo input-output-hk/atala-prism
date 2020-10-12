@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.services
 import java.time.Instant
 
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
@@ -83,7 +83,7 @@ class AtalaServiceImpl(
         val blockTimestamp = Instant.ofEpochMilli(block.header.time)
 
         val notifications: List[AtalaObjectNotification] = for {
-          tx <- block.transactions
+          (tx, blockIndex) <- block.transactions.zipWithIndex
           out <- tx.vout
           _ = logger trace "VOut of a Block detected"
           opData <- binaryOps.extractOpReturn(out.scriptPubKey.asm)
@@ -96,8 +96,11 @@ class AtalaServiceImpl(
           _ = logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
         } yield AtalaObjectNotification(
           atalaObject,
-          blockTimestamp,
-          TransactionInfo(tx.id, ledger)
+          TransactionInfo(
+            transactionId = tx.id,
+            ledger = ledger,
+            block = Some(BlockInfo(number = block.header.height, timestamp = blockTimestamp, index = blockIndex))
+          )
         )
         logger trace s"Found ${notifications.size} ATALA references"
 

@@ -34,7 +34,13 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
       val blocks = TestCardanoBlockRepository.createRandomBlocks(1)
       blocks.foreach(TestCardanoBlockRepository.insertBlock)
       val block = blocks(1)
-      val transaction = Transaction(TestCardanoBlockRepository.randomTransactionId(), block.header.hash, None)
+      val transaction =
+        Transaction(
+          id = TestCardanoBlockRepository.randomTransactionId(),
+          blockHash = block.header.hash,
+          blockIndex = block.transactions.size,
+          metadata = None
+        )
       TestCardanoBlockRepository.insertTransaction(transaction, block.transactions.size)
 
       val result = blockRepository.getFullBlock(block.header.blockNo).value.futureValue
@@ -47,9 +53,10 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
       blocks.foreach(TestCardanoBlockRepository.insertBlock)
       val block = blocks(1)
       val transaction = Transaction(
-        TestCardanoBlockRepository.randomTransactionId(),
-        block.header.hash,
-        Some(TransactionMetadata(Json.obj("1" -> Json.obj("is_this_prism" -> Json.fromString("no")))))
+        id = TestCardanoBlockRepository.randomTransactionId(),
+        blockHash = block.header.hash,
+        blockIndex = block.transactions.size,
+        metadata = Some(TransactionMetadata(Json.obj("1" -> Json.obj("is_this_prism" -> Json.fromString("no")))))
       )
       TestCardanoBlockRepository.insertTransaction(transaction, block.transactions.size)
       val transactionWithoutMetadata = transaction.copy(metadata = None)
@@ -64,9 +71,10 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
       blocks.foreach(TestCardanoBlockRepository.insertBlock)
       val block = blocks(1)
       val transaction = Transaction(
-        TestCardanoBlockRepository.randomTransactionId(),
-        block.header.hash,
-        Some(
+        id = TestCardanoBlockRepository.randomTransactionId(),
+        blockHash = block.header.hash,
+        blockIndex = block.transactions.size,
+        metadata = Some(
           TransactionMetadata(
             Json.obj(
               AtalaObjectMetadata.METADATA_PRISM_INDEX.toString -> Json.obj("is_this_prism" -> Json.fromString("yes"))

@@ -55,13 +55,16 @@ class ObjectManagementService(
       }
 
       newestObject <- AtalaObjectsDAO.getNewest()
+      block = notification.transaction.block.getOrElse(
+        throw new IllegalArgumentException("Transaction has no block")
+      )
       obj <- AtalaObjectsDAO.insert(
         AtalaObjectCreateData(
           hash,
           newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1),
-          notification.timestamp,
+          block.timestamp,
           Some(objectBytes),
-          notification.transaction.id,
+          notification.transaction.transactionId,
           notification.transaction.ledger
         )
       )

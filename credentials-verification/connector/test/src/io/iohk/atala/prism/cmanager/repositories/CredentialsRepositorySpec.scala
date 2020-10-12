@@ -237,7 +237,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       publicationData.nodeCredentialId must be(mockNodeCredentialId)
       publicationData.issuanceOperationHash must be(mockOperationHash)
       publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
-      publicationData.transactionId must be(mockTransactionInfo.id)
+      publicationData.transactionId must be(mockTransactionInfo.transactionId)
       publicationData.ledger must be(mockTransactionInfo.ledger)
       // the rest should remain unchanged
       updatedCredential.copy(publicationData = None) must be(originalCredential)

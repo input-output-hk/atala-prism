@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.models.{Ledger, TransactionInfo}
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionInfo}
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
@@ -96,14 +96,23 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
           .withBlock(
             node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(TestCardanoBlockRepository.random32Bytes()))
           )
+        val blockIndex = block.transactions.size
         val transaction = Transaction(
           TestCardanoBlockRepository.randomTransactionId(),
           block.header.hash,
+          blockIndex,
           Some(AtalaObjectMetadata.toTransactionMetadata(atalaObject))
         )
-        TestCardanoBlockRepository.insertTransaction(transaction, block.transactions.size)
+        TestCardanoBlockRepository.insertTransaction(transaction, blockIndex)
 
-        AtalaObjectNotification(atalaObject, block.header.time, TransactionInfo(transaction.id, ledger))
+        AtalaObjectNotification(
+          atalaObject,
+          TransactionInfo(
+            transactionId = transaction.id,
+            ledger = ledger,
+            block = Some(BlockInfo(number = blockWithNotification, timestamp = block.header.time, index = blockIndex))
+          )
+        )
       }
     }
 

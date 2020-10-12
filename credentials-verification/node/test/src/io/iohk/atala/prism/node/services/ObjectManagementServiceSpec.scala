@@ -1,13 +1,11 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
-
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.AtalaObject
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
@@ -60,7 +58,11 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   private val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
   private val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
   private val dummyTransactionInfo =
-    TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
+    TransactionInfo(
+      transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+      ledger = Ledger.InMemory,
+      block = Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
+    )
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -124,11 +126,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       val block = exampleBlock()
       val obj = createExampleObject(block)
-      objectManagementService
-        .saveObject(
-          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
-        )
-        .futureValue
+      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.sequenceNumber mustBe 1
@@ -140,17 +138,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       val block = exampleBlock()
       val obj = createExampleObject(block)
-      objectManagementService
-        .saveObject(
-          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
-        )
-        .futureValue
+      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
-      objectManagementService
-        .saveObject(
-          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
-        )
-        .futureValue
+      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.sequenceNumber mustBe 1
@@ -162,11 +152,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       val block = exampleBlock()
       val obj = createExampleObject(block)
-      objectManagementService
-        .saveObject(
-          AtalaObjectNotification(obj, dummyTimestamp, dummyTransactionInfo)
-        )
-        .futureValue
+      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing).processBlock(
@@ -192,9 +178,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         val block = exampleBlock(signedOp)
         val obj = createExampleAtalaObject(block, includeBlock)
 
-        objectManagementService
-          .saveObject(AtalaObjectNotification(obj, Instant.ofEpochMilli(i.toLong), dummyTransactionInfo))
-          .futureValue
+        objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
         val atalaObject = queryAtalaObject(obj)
         atalaObject.sequenceNumber mustBe (i + 1)

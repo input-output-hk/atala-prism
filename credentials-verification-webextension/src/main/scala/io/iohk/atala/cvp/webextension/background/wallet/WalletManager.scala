@@ -17,7 +17,6 @@ import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
-import io.iohk.atala.cvp.webextension.common.services.BrowserWindowService
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
@@ -371,8 +370,15 @@ private[background] class WalletManager(
     val result = for {
       aesKey <- generateSecretKey(password)
       response <- registerDid(mnemonic, role, organisationName, logo)
-      newWalletData =
-        WalletData(Map.empty, mnemonic, organisationName, response.did, response.transactionInfo.map(_.id), role, logo)
+      newWalletData = WalletData(
+        Map.empty,
+        mnemonic,
+        organisationName,
+        response.did,
+        response.transactionInfo.map(_.transactionId),
+        role,
+        logo
+      )
       _ <- save(aesKey, newWalletData)
       _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
     } yield ()

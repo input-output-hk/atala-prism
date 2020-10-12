@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node
 import java.time.Instant
 
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.prism.protos.node_internal
 
@@ -25,9 +25,14 @@ class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler
       // Use a hash of the bytes as their in-memory transaction ID
       hash = SHA256Digest.compute(objectBytes)
       transactionId = TransactionId.from(hash.value).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
-      transactionInfo = TransactionInfo(transactionId, Ledger.InMemory)
+      transactionInfo = TransactionInfo(
+        transactionId = transactionId,
+        ledger = Ledger.InMemory,
+        // Used for informational purposes only, so fine to hard-code for testing
+        block = Some(BlockInfo(number = 1, timestamp = Instant.now(), index = 1))
+      )
       _ <- onAtalaObject(
-        AtalaObjectNotification(obj, Instant.now(), transactionInfo)
+        AtalaObjectNotification(obj, transactionInfo)
       )
     } yield transactionInfo
   }

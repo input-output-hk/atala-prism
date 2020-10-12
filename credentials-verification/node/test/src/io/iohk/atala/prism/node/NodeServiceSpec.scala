@@ -57,7 +57,10 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   private val testTransactionInfo =
     TransactionInfo(TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value, Ledger.InMemory)
   private val testTransactionInfoProto =
-    common_models.TransactionInfo().withId(testTransactionInfo.id.toString).withLedger(common_models.Ledger.IN_MEMORY)
+    common_models
+      .TransactionInfo()
+      .withTransactionId(testTransactionInfo.transactionId.toString)
+      .withLedger(common_models.Ledger.IN_MEMORY)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

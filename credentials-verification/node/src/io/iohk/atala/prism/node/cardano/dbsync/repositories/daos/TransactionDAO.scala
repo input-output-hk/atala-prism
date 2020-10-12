@@ -7,7 +7,7 @@ import io.iohk.atala.prism.node.cardano.models.{AtalaObjectMetadata, Transaction
 private[repositories] object TransactionDAO {
   def find(blockNo: Int): ConnectionIO[List[Transaction]] = {
     sql"""
-         |SELECT tx.hash, block.hash, tx_metadata.key, tx_metadata.json
+         |SELECT tx.hash, block.hash, tx.block_index, tx_metadata.key, tx_metadata.json
          |FROM tx
          |JOIN block ON block.id = tx.block
          |LEFT OUTER JOIN tx_metadata

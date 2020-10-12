@@ -17,7 +17,14 @@ enum Ledger {
     CARDANO_MAINNET = 5;
 }
 
+message BlockInfo {
+    int32 number = 1; // Number of the block in the ledger
+    int64 timestamp = 2; // Millis since epoch when the block was created
+    int32 index = 3; // Index of the transaction within the block
+}
+
 message TransactionInfo {
-    string id = 1;
-    Ledger ledger = 2;
+    string transactionId = 1; // ID of the transaction
+    Ledger ledger = 2; // Ledger the transaction was published to
+    BlockInfo block = 3; // Block the transaction was included in
 }

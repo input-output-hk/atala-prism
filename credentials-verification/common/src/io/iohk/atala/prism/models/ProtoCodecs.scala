@@ -1,18 +1,26 @@
 package io.iohk.atala.prism.models
 
+import java.time.Instant
+
 import io.iohk.prism.protos.common_models
 
 object ProtoCodecs {
   def toTransactionInfo(transactionInfo: TransactionInfo): common_models.TransactionInfo = {
-    common_models.TransactionInfo().withId(transactionInfo.id.toString).withLedger(toLedger(transactionInfo.ledger))
+    common_models
+      .TransactionInfo(
+        transactionId = transactionInfo.transactionId.toString,
+        ledger = toLedger(transactionInfo.ledger),
+        block = transactionInfo.block.map(toBlockInfo)
+      )
   }
 
   def fromTransactionInfo(transactionInfo: common_models.TransactionInfo): TransactionInfo = {
     TransactionInfo(
-      TransactionId
-        .from(transactionInfo.id)
+      transactionId = TransactionId
+        .from(transactionInfo.transactionId)
         .getOrElse(throw new RuntimeException("Corrupted transaction ID")),
-      fromLedger(transactionInfo.ledger)
+      ledger = fromLedger(transactionInfo.ledger),
+      block = transactionInfo.block.map(fromBlockInfo)
     )
   }
 
@@ -36,5 +44,21 @@ object ProtoCodecs {
       case common_models.Ledger.CARDANO_MAINNET => Ledger.CardanoMainnet
       case _ => throw new IllegalArgumentException(s"Unexpected ledger: $ledger")
     }
+  }
+
+  def toBlockInfo(blockInfo: BlockInfo): common_models.BlockInfo = {
+    common_models
+      .BlockInfo()
+      .withNumber(blockInfo.number)
+      .withTimestamp(blockInfo.timestamp.toEpochMilli)
+      .withIndex(blockInfo.index)
+  }
+
+  def fromBlockInfo(blockInfo: common_models.BlockInfo): BlockInfo = {
+    BlockInfo(
+      number = blockInfo.number,
+      timestamp = Instant.ofEpochMilli(blockInfo.timestamp),
+      index = blockInfo.index
+    )
   }
 }

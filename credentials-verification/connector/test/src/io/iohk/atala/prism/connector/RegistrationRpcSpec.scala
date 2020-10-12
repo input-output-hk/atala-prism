@@ -32,7 +32,10 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         nodeMock.createDID(*).returns {
           Future.successful(
             CreateDIDResponse("test").withTransactionInfo(
-              common_models.TransactionInfo().withId(transactionId.toString).withLedger(common_models.Ledger.IN_MEMORY)
+              common_models
+                .TransactionInfo()
+                .withTransactionId(transactionId.toString)
+                .withLedger(common_models.Ledger.IN_MEMORY)
             )
           )
         }

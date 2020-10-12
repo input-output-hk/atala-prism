@@ -182,7 +182,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val mockNodeCredentialId = mockOperationHash.hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockTransactionInfo =
-        common_models.TransactionInfo().withId(mockNodeCredentialId).withLedger(common_models.Ledger.IN_MEMORY)
+        common_models
+          .TransactionInfo()
+          .withTransactionId(mockNodeCredentialId)
+          .withLedger(common_models.Ledger.IN_MEMORY)
 
       val issuanceOp = buildSignedIssueCredentialOp(
         SHA256Digest.compute(mockEncodedSignedCredential.getBytes()),
