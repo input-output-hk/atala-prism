@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.models.GenericCredential
+import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student}
 import io.iohk.atala.prism.cmanager.models.requests.{
   CreateGenericCredential,
   CreateUniversityCredential,
@@ -113,6 +113,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       credential.subjectData must be(subject.data)
       credential.groupName must be(request.groupName)
       credential.publicationData must be(empty)
+      credential.connectionStatus must be(Student.ConnectionStatus.InvitationMissing)
     }
   }
 

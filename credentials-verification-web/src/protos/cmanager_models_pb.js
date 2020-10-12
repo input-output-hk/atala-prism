@@ -1412,7 +1412,8 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.toObject = function(include
     issuanceoperationhash: msg.getIssuanceoperationhash_asB64(),
     encodedsignedcredential: jspb.Message.getFieldWithDefault(msg, 10, ""),
     publicationstoredat: jspb.Message.getFieldWithDefault(msg, 11, 0),
-    externalid: jspb.Message.getFieldWithDefault(msg, 12, "")
+    externalid: jspb.Message.getFieldWithDefault(msg, 12, ""),
+    connectionstatus: jspb.Message.getFieldWithDefault(msg, 13, 0)
   };
 
   if (includeInstance) {
@@ -1496,6 +1497,10 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.deserializeBinaryFromReader
     case 12:
       var value = /** @type {string} */ (reader.readString());
       msg.setExternalid(value);
+      break;
+    case 13:
+      var value = /** @type {!proto.io.iohk.prism.protos.StudentConnectionStatus} */ (reader.readEnum());
+      msg.setConnectionstatus(value);
       break;
     default:
       reader.skipField();
@@ -1607,6 +1612,13 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.serializeBinaryToWriter = f
   if (f.length > 0) {
     writer.writeString(
       12,
+      f
+    );
+  }
+  f = message.getConnectionstatus();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      13,
       f
     );
   }
@@ -1850,6 +1862,24 @@ proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getExternalid = f
  */
 proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setExternalid = function(value) {
   return jspb.Message.setProto3StringField(this, 12, value);
+};
+
+
+/**
+ * optional StudentConnectionStatus connectionStatus = 13;
+ * @return {!proto.io.iohk.prism.protos.StudentConnectionStatus}
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.getConnectionstatus = function() {
+  return /** @type {!proto.io.iohk.prism.protos.StudentConnectionStatus} */ (jspb.Message.getFieldWithDefault(this, 13, 0));
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.StudentConnectionStatus} value
+ * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.prism.protos.CManagerGenericCredential.prototype.setConnectionstatus = function(value) {
+  return jspb.Message.setProto3EnumField(this, 13, value);
 };
 
 

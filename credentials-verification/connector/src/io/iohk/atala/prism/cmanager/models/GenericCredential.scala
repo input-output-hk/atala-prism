@@ -18,6 +18,7 @@ case class GenericCredential(
     externalId: Contact.ExternalId,
     issuerName: String,
     subjectData: Json,
+    connectionStatus: Student.ConnectionStatus,
     publicationData: Option[PublicationData]
 )
 

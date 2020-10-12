@@ -70,4 +70,7 @@ message CManagerGenericCredential {
     string encodedSignedCredential = 10; // the actual published credential
     uint64 publicationStoredAt = 11; // the time when the publication data was stored in the database
     string externalId = 12; // the id provided by the issuer at subject creation time
+    // NOTE: as enum values need to be unique, we reuse the student status for now, eventually,
+    // TODO: we should rename that enum.
+    StudentConnectionStatus connectionStatus = 13;
 }

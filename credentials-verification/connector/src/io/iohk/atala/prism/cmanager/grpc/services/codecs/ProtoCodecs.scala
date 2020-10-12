@@ -84,6 +84,8 @@ object ProtoCodecs {
   }
 
   def genericCredentialToProto(credential: GenericCredential): cmanager_models.CManagerGenericCredential = {
+    val connectionStatus = studentConnectionStatus2Proto.transform(credential.connectionStatus)
+
     val model = cmanager_models
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.value.toString)
@@ -94,6 +96,7 @@ object ProtoCodecs {
       .withGroupName(credential.groupName)
       .withSubjectData(credential.subjectData.noSpaces)
       .withExternalId(credential.externalId.value)
+      .withConnectionStatus(connectionStatus)
 
     credential.publicationData.fold(model) { data =>
       model
