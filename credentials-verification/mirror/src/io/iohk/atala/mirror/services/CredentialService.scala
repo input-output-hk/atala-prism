@@ -3,6 +3,7 @@ package io.iohk.atala.mirror.services
 import java.time.Instant
 
 import scala.concurrent.duration.DurationInt
+import scala.util.Try
 
 import cats.data.NonEmptyList
 import monix.eval.Task
@@ -11,6 +12,7 @@ import fs2.Stream
 import org.slf4j.LoggerFactory
 
 import io.iohk.prism.protos.connector_models.ReceivedMessage
+import io.iohk.prism.protos.credential_models
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.{Connection, UserCredential, CredentialProofRequestType}
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
@@ -91,6 +93,10 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
       )
   }
 
+  private def parseCredential(message: ReceivedMessage): Option[String] = {
+    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toOption.map(_.credentialDocument)
+  }
+
   private def saveMessages(messages: Seq[ReceivedMessage]): Task[Unit] = {
     val connectionIds = parseConnectionIds(messages)
 
@@ -107,23 +113,23 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
           .toMap
 
       userCredentials = messages.flatMap { receivedMessage =>
-        connectionIdToTokenMap.get(receivedMessage.connectionId) match {
-          case Some(token) =>
-            Some(
-              UserCredential(
-                token,
-                RawCredential(receivedMessage.message.toString),
-                None,
-                MessageId(receivedMessage.id),
-                MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received))
-              )
-            )
-          case _ =>
+        for {
+          credentialDocument <- parseCredential(receivedMessage)
+          token <- connectionIdToTokenMap.get(receivedMessage.connectionId).orElse {
             logger.warn(
               s"Message with id: ${receivedMessage.id} and connectionId ${receivedMessage.connectionId}" +
                 s"does not have corresponding connection or connection does not have connectionId, skipping it."
             )
             None
+          }
+        } yield {
+          UserCredential(
+            token,
+            RawCredential(credentialDocument),
+            None,
+            MessageId(receivedMessage.id),
+            MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received))
+          )
         }
       }.toList
 

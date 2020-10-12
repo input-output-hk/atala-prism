@@ -6,8 +6,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.mirror.models.UserCredential
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.prism.protos.connector_models.ReceivedMessage
-import io.iohk.prism.protos.credential_models.AtalaMessage
-import io.iohk.prism.protos.credential_models.IssuerSentCredential
+import io.iohk.prism.protos.credential_models.Credential
 import io.iohk.atala.mirror.db.UserCredentialDao
 import org.mockito.scalatest.MockitoSugar
 import monix.execution.Scheduler.Implicits.global
@@ -22,7 +21,9 @@ import scala.concurrent.duration.DurationInt
 class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar {
   import ConnectionFixtures._
 
-  private val rawMessage: ByteString = AtalaMessage().withIssuerSentCredential(IssuerSentCredential()).toByteString
+  private val rawMessage: ByteString = {
+    Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = "{}").toByteString
+  }
 
   "updateCredentialsStream" should {
     "upsert credentials" in {
