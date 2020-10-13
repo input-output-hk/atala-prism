@@ -5,8 +5,7 @@ import java.time.{LocalDateTime, ZoneOffset}
 import io.iohk.atala.mirror.models.UserCredential
 import io.iohk.atala.mirror.models.UserCredential.{IssuersDID, MessageId, MessageReceivedDate, RawCredential}
 
-object UserCredentialFixtures {
-  import ConnectionFixtures._
+trait UserCredentialFixtures extends ConnectionFixtures {
 
   val userCredential1: UserCredential =
     UserCredential(

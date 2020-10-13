@@ -3,14 +3,12 @@ package io.iohk.atala.mirror.db
 import scala.concurrent.duration._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import doobie.implicits._
-import io.iohk.atala.mirror.fixtures.{ConnectionFixtures, UserCredentialFixtures}
+import io.iohk.atala.mirror.fixtures.UserCredentialFixtures
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
 import io.iohk.atala.mirror.models.UserCredential.MessageId
 
 // mill -i mirror.test.single io.iohk.atala.mirror.db.UserCredentialDaoSpec
-class UserCredentialDaoSpec extends PostgresRepositorySpec {
-  import ConnectionFixtures._
-  import UserCredentialFixtures._
+class UserCredentialDaoSpec extends PostgresRepositorySpec with UserCredentialFixtures {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
 

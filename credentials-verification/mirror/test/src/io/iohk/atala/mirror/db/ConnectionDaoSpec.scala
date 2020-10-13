@@ -11,8 +11,7 @@ import doobie.implicits._
 import io.iohk.atala.mirror.fixtures.ConnectionFixtures
 
 // mill -i mirror.test.single io.iohk.atala.mirror.db.ConnectionDaoSpec
-class ConnectionDaoSpec extends PostgresRepositorySpec {
-  import ConnectionFixtures._
+class ConnectionDaoSpec extends PostgresRepositorySpec with ConnectionFixtures {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
 

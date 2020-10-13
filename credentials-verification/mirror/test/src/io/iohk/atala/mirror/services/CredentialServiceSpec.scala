@@ -1,29 +1,31 @@
 package io.iohk.atala.mirror.services
 
+import java.util.UUID
 import java.time.{Instant, LocalDateTime, ZoneOffset}
-
-import com.google.protobuf.ByteString
-import io.iohk.atala.mirror.models.UserCredential
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.prism.protos.connector_models.ReceivedMessage
-import io.iohk.prism.protos.credential_models.Credential
-import io.iohk.atala.mirror.db.UserCredentialDao
-import org.mockito.scalatest.MockitoSugar
-import monix.execution.Scheduler.Implicits.global
-import doobie.implicits._
-import io.iohk.atala.mirror.models.UserCredential.{MessageId, MessageReceivedDate, RawCredential}
-import io.iohk.atala.mirror.stubs.ConnectorClientServiceStub
-import io.iohk.atala.mirror.fixtures.ConnectionFixtures
 
 import scala.concurrent.duration.DurationInt
 
-// mill -i mirror.test.single io.iohk.atala.mirror.services.CredentialServiceSpec
-class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar {
-  import ConnectionFixtures._
+import org.mockito.scalatest.MockitoSugar
 
-  private val rawMessage: ByteString = {
-    Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = "{}").toByteString
-  }
+import io.iohk.atala.mirror.models.UserCredential
+import io.iohk.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken, ConnectionState}
+import io.iohk.atala.mirror.models.UserCredential.{MessageId, MessageReceivedDate, RawCredential}
+import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
+
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.mirror.fixtures.{ConnectionFixtures, CredentialFixtures}
+import io.iohk.atala.mirror.stubs.ConnectorClientServiceStub
+
+import doobie.implicits._
+import monix.execution.Scheduler.Implicits.global
+
+// mill -i mirror.test.single io.iohk.atala.mirror.services.CredentialServiceSpec
+class CredentialServiceSpec
+    extends PostgresRepositorySpec
+    with MockitoSugar
+    with ConnectionFixtures
+    with CredentialFixtures {
 
   "updateCredentialsStream" should {
     "upsert credentials" in {
@@ -117,23 +119,63 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar {
       // then
       userCredentials1.size mustBe 0
     }
+  }
 
-    // "update connections periodically" in new MirrorStubs {
-    //   val uuid = UUID.randomUUID
-    //   val returnStream = Stream.emit(ConnectionInfo(token = "token", connectionId = uuid.toString))
+  "updateCredentialsStream" should {
+    "update connections periodically" in {
+      // given
+      val uuid = UUID.randomUUID
+      val token = connection1.token.token
+      val connectionInfos = Seq(ConnectionInfo(token = token, connectionId = uuid.toString))
 
-    //   when(connectorClient.getConnectionsPaginatedStream(any, any)).thenReturn(returnStream)
+      val connectorClientStub = new ConnectorClientServiceStub(connectionInfos = connectionInfos)
+      val credentialService = new CredentialService(databaseTask, connectorClientStub)
 
-    //   (for {
-    //     _ <- ConnectionDao.insert(connection).transact(tx)
-    //     _ <- service.updateConnectionsStream(1.second, 10).interruptAfter(1.seconds).compile.drain
-    //     result <- ConnectionDao.findBy(Connection.ConnectionToken("token")).transact(tx)
-    //   } yield result).runSyncUnsafe(1.minute) mustBe Some(
-    //     connection.copy(
-    //       id = Some(Connection.ConnectionId(uuid)),
-    //       state = Connection.ConnectionState.Connected
-    //     )
-    //   )
-    // }
+      // when
+      val result = (for {
+        _ <- ConnectionDao.insert(connection1).transact(databaseTask)
+        _ <- credentialService.connectionUpdatesStream.interruptAfter(1.seconds).compile.drain
+        result <- ConnectionDao.findBy(ConnectionToken(token)).transact(databaseTask)
+      } yield result).runSyncUnsafe(1.minute)
+
+      // then
+      result mustBe Some(
+        connection1.copy(
+          id = Some(ConnectionId(uuid)),
+          state = ConnectionState.Connected
+        )
+      )
+    }
+  }
+
+  "CredentialService#parseCredential" should {
+    "parse credential" in new ConnectionServiceFixtures {
+      val json = """{ "key": "value" }"""
+      val receivedMessage = ReceivedMessage(
+        "id1",
+        LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
+        connectionId1.uuid.toString,
+        createRawMessage(json)
+      )
+
+      credentialService.parseCredential(receivedMessage) mustBe Some(RawCredential(json))
+    }
+  }
+
+  "CredentialService#parseConnectionId" should {
+    "parse connection id" in new ConnectionServiceFixtures {
+      val uuid = "fa50dc39-df71-47c7-b43f-8113871a4e53"
+
+      credentialService.parseConnectionId("") mustBe None
+      credentialService.parseConnectionId("wrong") mustBe None
+      credentialService.parseConnectionId(uuid) mustBe Some(
+        ConnectionId(UUID.fromString(uuid))
+      )
+    }
+  }
+
+  trait ConnectionServiceFixtures {
+    val connectorClientStub = new ConnectorClientServiceStub
+    val credentialService = new CredentialService(databaseTask, connectorClientStub)
   }
 }

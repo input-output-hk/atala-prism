@@ -13,16 +13,22 @@ import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.prism.protos.connector_api._
 import io.iohk.atala.mirror.config.ConnectorConfig
-import io.iohk.atala.mirror.fixtures.ConnectionFixtures.connectionId1
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 import io.iohk.atala.mirror.models.CredentialProofRequestType
 import io.iohk.prism.protos.connector_models.ReceivedMessage
 import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
-import monix.execution.Scheduler.Implicits.global
 import io.iohk.prism.protos.connector_models.ConnectionInfo
+import io.iohk.atala.mirror.fixtures.ConnectionFixtures
+
+import monix.execution.Scheduler.Implicits.global
 
 // mill -i mirror.test.single io.iohk.atala.mirror.services.ConnectorClientServiceImplSpec
-class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
+class ConnectorClientServiceImplSpec
+    extends AnyWordSpec
+    with Matchers
+    with MockitoSugar
+    with ArgumentMatchersSugar
+    with ConnectionFixtures {
 
   "connectorClientService" should {
     "generate connection token" in new ConnectorStubs {

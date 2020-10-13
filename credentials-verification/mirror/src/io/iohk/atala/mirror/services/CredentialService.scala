@@ -93,11 +93,7 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
       )
   }
 
-  private def parseCredential(message: ReceivedMessage): Option[String] = {
-    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toOption.map(_.credentialDocument)
-  }
-
-  private def saveMessages(messages: Seq[ReceivedMessage]): Task[Unit] = {
+  private[services] def saveMessages(messages: Seq[ReceivedMessage]): Task[Unit] = {
     val connectionIds = parseConnectionIds(messages)
 
     for {
@@ -114,7 +110,7 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
 
       userCredentials = messages.flatMap { receivedMessage =>
         for {
-          credentialDocument <- parseCredential(receivedMessage)
+          rawCredential <- parseCredential(receivedMessage)
           token <- connectionIdToTokenMap.get(receivedMessage.connectionId).orElse {
             logger.warn(
               s"Message with id: ${receivedMessage.id} and connectionId ${receivedMessage.connectionId}" +
@@ -125,7 +121,7 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
         } yield {
           UserCredential(
             token,
-            RawCredential(credentialDocument),
+            rawCredential,
             None,
             MessageId(receivedMessage.id),
             MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received))
@@ -137,7 +133,7 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
     } yield ()
   }
 
-  private def parseConnectionIds(messages: Seq[ReceivedMessage]): Seq[ConnectionId] = {
+  private[services] def parseConnectionIds(messages: Seq[ReceivedMessage]): Seq[ConnectionId] = {
     messages.flatMap { receivedMessage =>
       parseConnectionId(receivedMessage.connectionId).orElse {
         logger.warn(
@@ -149,6 +145,13 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
     }
   }
 
-  private def parseConnectionId(connectionId: String): Option[ConnectionId] = parseUUID(connectionId).map(ConnectionId)
+  private[services] def parseCredential(message: ReceivedMessage): Option[RawCredential] = {
+    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toOption
+      .map(_.credentialDocument)
+      .map(RawCredential)
+  }
+
+  private[services] def parseConnectionId(connectionId: String): Option[ConnectionId] =
+    parseUUID(connectionId).map(ConnectionId)
 
 }
