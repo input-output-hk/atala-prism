@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
 import ConnectionsTable from './Organisms/table/ConnectionsTable';
-import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import noConnections from '../../images/noConnections.svg';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
@@ -17,7 +16,6 @@ import './_style.scss';
 import { withRedirector } from '../providers/withRedirector';
 
 const Connections = ({
-  redirector: { redirectToBulkImport },
   tableProps,
   inviteHolder,
   isIssuer,
@@ -43,7 +41,7 @@ const Connections = ({
 
   const emptyProps = {
     photoSrc: noConnections,
-    model: t('connections.title')
+    model: t('contacts.title')
   };
 
   const getSubjectCredentials = connectionId => {
@@ -52,14 +50,14 @@ const Connections = ({
   };
 
   const viewConnection = connection => {
-    const { admissiondate, avatar, createdat, fullname, connectionid } = connection;
+    const { creationDate, avatar, createdat, fullname, connectionid } = connection;
 
     getSubjectCredentials(connectionid)
       .then(transactions => {
         const formattedHolder = {
           user: { icon: avatar, name: fullname, date: createdat },
           transactions,
-          date: admissiondate
+          date: creationDate
         };
 
         setCurrentConnection(formattedHolder);
@@ -76,7 +74,7 @@ const Connections = ({
   return (
     <div className="Wrapper">
       <Drawer
-        title={t('connections.detail.title')}
+        title={t('contacts.detail.title')}
         placement="right"
         onClose={() => setShowDrawer(false)}
         visible={showDrawer}
@@ -86,7 +84,7 @@ const Connections = ({
         {showDrawer && <CredentialListDetail {...currentConnection} />}
       </Drawer>
       <div className="ContentHeader">
-        <h1>{t('connections.title')}</h1>
+        <h1>{t('contacts.title')}</h1>
         <AddUserButtons isIssuer={isIssuer} />
       </div>
       <ConnectionsFilter fetchConnections={handleHoldersRequest} />
@@ -105,14 +103,13 @@ const Connections = ({
         visible={QRModalIsOpen}
         onCancel={onQRClosed}
         qrValue={connectionToken}
-        tPrefix="connections"
+        tPrefix="contacts"
       />
     </div>
   );
 };
 
 Connections.propTypes = {
-  redirector: PropTypes.shape({ redirectToBulkImport: PropTypes.func }).isRequired,
   handleHoldersRequest: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
     subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),

@@ -35,8 +35,8 @@
     },
     "learnReact": "Learn React"
   },
-  "connections": {
-    "title": "Connections",
+  "contacts": {
+    "title": "Contacts",
     "status": {
       "issuer": {
         "invitationMissing":  "Pending",
@@ -58,9 +58,7 @@
       "status": "Status"
     },
     "buttons": {
-      "bulk": "Bulk Import",
-      "manual": "Add users manually",
-      "newConnection": "New Connection"
+      "import": "Add New"
     },
     "table": {
       "columns": {
@@ -71,7 +69,13 @@
         "invite": "Invite",
         "delete": "Delete",
         "view": "View",
-        "viewCredentials": "View Credentials"
+        "viewCredentials": "View Credentials",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "fullname": "Contact Name",
+        "externalId": "External ID",
+        "creationDate": "Date Created",
+        "credentials": "Credentials"
       }
     },
     "inviteSuccessfull": "The Holder has been successfully invited",
@@ -490,17 +494,68 @@
       "delete": "Delete Individual"
     }
   },
-  "bulkImport": {
-    "title": "Import Connections",
-    "download": {
-      "title": "Download Spreadsheet",
-      "info": "To import users you have to download this template spreadsheet, complete and upload it",
-      "buttonText": "Download"
+  "importContacts": {
+    "title": "Import Contacts" ,
+    "info": "Choose between this two options: Bulk Import or Mannual Import",
+    "bulkImport": {
+      "title": "Bulk Import",
+      "info": "Import all your contacts at once."
     },
-    "upload": {
-      "title": "Upload Spreadsheet",
-      "info": "Upload your Excel document with the new users",
-      "buttonText": "Upload"
+    "manualImport": {
+      "title": "Import Manually",
+      "info": "Complete the required information."
+    },
+    "back": "Back",
+    "next": "Next"
+  },
+  "bulkImport": {
+    "title": "Import Contacts Bulk Import",
+    "info": "Follow this steps first upload the spreadsheet, fill it with the required information and then upload it to check the fields.",
+    "completeSpreadsheet": {
+      "title": "Complete Spreadsheet",
+      "info": "First download the spreadsheet, complete with the required information and upload the document.",
+      "downloadText": "Download",
+      "uploadText": "Upload"
+    },
+    "assignToGroups": {
+      "title": "Assign or Create Group",
+      "info": "Assign Contacts to 1 or more groups",
+      "placeholder": "Select groups",
+      "skipStepText": "Skip this step"
+    },
+    "errorLog": {
+      "title": "Bulk Import Error Log",
+      "info": "Your file has some errors, please correct them and upload your file again",
+      "processedRows": "Processed Rows:",
+      "correctRows": "Correct Format Lines",
+      "incorrectRows": "Incorrect Format Lines",
+      "uploadAgain": "Back",
+      "headers": {
+        "cellNumber": "Cell Number",
+        "errorDescription": "Error Description",
+        "state": "State"
+      },
+      "errors": {
+        "required": "{{headerName}} is required",
+        "emptyFile": "File is empty",
+        "emptyRow": "Row contains no values",
+        "invalidHeaderPosition": "Expected [ {{headerName}} ] header to be in column {{expectedHeaderPosition}}",
+        "excessHeader": "Invalid header {{headerNameErrorDescription}}",
+        "extraField": "Extra field containing [ {{fieldContent}} ]"
+      },
+      "extraHeaderErrorDescriptionWithName": "named: [ {{headerName}} ]",
+      "extraHeaderErrorDescriptionWithNoName": "with no name"
+    },
+    "importSuccess": {
+      "title": "Your file was succesfully uploaded",
+      "uploadedEntities": "Contacts Imported",
+      "continue": "Continue"
+    },
+    "success": {
+      "uploadedFile": "File uploaded successfully"
+    },
+    "error": {
+      "fileFormat": "File's format is incorrect"
     }
   },
   "groupCreation": {

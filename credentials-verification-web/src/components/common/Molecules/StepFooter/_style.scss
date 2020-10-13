@@ -4,7 +4,11 @@
   display: flex;
   justify-content: space-between;
   background: $light-grey;
-  padding: 1em;
+  padding: 1.5em 2em;
+  height: 5em;
+  position: sticky;
+  bottom: 0;
+
   align-items: center;
   .StepContainer {
     align-self: center;

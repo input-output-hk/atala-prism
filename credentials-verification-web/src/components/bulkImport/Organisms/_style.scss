@@ -1,10 +1,10 @@
-@import '../../css/general_styling';
+@import '../../../css/general_styling';
 
 .BulkImportContent {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 4em 0;
+  width: 100%;
 
   .StepCard {
     width: 400px;
@@ -16,9 +16,25 @@
   .ant-col {
     margin: 7px;
   }
+
 }
 
 .FooterButton {
   display: flex;
   justify-content: flex-end;
+}
+
+.StepsFooter {
+  width: 100%;
+}
+
+@media only screen and (max-width: 960px) {
+  .BulkImportContainer {
+    .BulkImportContent {
+      flex-direction: column;
+      .StepCard {
+        margin:1em;
+      }
+    }
+  }
 }

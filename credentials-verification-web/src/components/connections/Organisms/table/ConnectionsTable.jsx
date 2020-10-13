@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
-import { shortBackendDateFormatter } from '../../../../helpers/formatters';
+import { dayMonthYearBackendFormatter } from '../../../../helpers/formatters';
 import {
   CONNECTION_STATUSES_TRANSLATOR,
   INDIVIDUAL_STATUSES_TRANSLATOR
@@ -30,17 +30,28 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
         />
       )
     },
-    { key: 'fullname', render: ({ fullname }) => fullname }
+    {
+      key: 'fullname',
+      render: ({ fullname }) => (
+        <CellRenderer title="fullname" value={fullname} componentName="contacts" />
+      )
+    },
+    {
+      key: 'externalId',
+      render: ({ externalId }) => (
+        <CellRenderer title="externalId" value={externalId} componentName="contacts" />
+      )
+    }
   ];
 
   const issuerInfo = [
     {
-      key: 'admissionDate',
-      render: ({ admissiondate }) => (
+      key: 'creationDate',
+      render: ({ creationDate }) => (
         <CellRenderer
-          title="admissionDate"
-          value={shortBackendDateFormatter(admissiondate)}
-          componentName="connections"
+          title="creationDate"
+          value={dayMonthYearBackendFormatter(creationDate)}
+          componentName="contacts"
         />
       )
     }
@@ -48,9 +59,13 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
 
   const genericColumns = [
     {
-      key: 'email',
-      render: ({ email }) => (
-        <CellRenderer title="email" value={email} componentName="connections" />
+      key: 'credentials',
+      render: ({ credentials }) => (
+        <CellRenderer
+          title="credentials"
+          value={`(${credentials?.length || 0})`}
+          componentName="contacts"
+        />
       )
     },
     {

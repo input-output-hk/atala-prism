@@ -32,21 +32,21 @@ const ActionButtons = ({ inviteHolder, isIssuer, viewConnectionDetail, holder })
             className: 'theme-link',
             onClick: () => viewConnectionDetail(holder)
           }}
-          buttonText={t('connections.table.columns.viewCredentials')}
+          buttonText={t('contacts.table.columns.viewCredentials')}
         />
       )}
-      {/* TODO uncomment when this work*/}
-      {/*<CustomButton*/}
-      {/*  buttonProps={{ className: 'theme-link', disabled: true }}*/}
-      {/*  buttonText={t('connections.table.columns.delete')}*/}
-      {/*/>*/}
+      {/* TODO uncomment when this work */}
+      {/* <CustomButton */}
+      {/*  buttonProps={{ className: 'theme-link', disabled: true }} */}
+      {/*  buttonText={t('connections.table.columns.delete')} */}
+      {/* /> */}
       {showQRButton && (
         <CustomButton
           buttonProps={{
             onClick: () => inviteHolder(id),
             className: 'theme-link'
           }}
-          buttonText={t('connections.table.columns.invite')}
+          buttonText={t('contacts.table.columns.invite')}
         />
       )}
     </div>

@@ -84,9 +84,17 @@ export const WALLET_NOT_REGISTERED_ERROR = Error('errors.walletNotRegistered');
 // Connection status
 export const CONNECTION_ACCEPTED = 2;
 
-// Import connections steps
-export const DOWNLOAD_STEP = 0;
-export const UPLOAD_STEP = 1;
+// Import contacts methods
+export const BULK_IMPORT = 'bulkImport';
+export const MANUAL_IMPORT = 'manualImport';
+
+// Bulk import steps
+export const COMPLETE_SPREADSHEET_STEP = 0;
+export const ASSIGN_TO_GROUPS = 1;
+
+// Bulk import data
+export const COMMON_CONTACT_HEADERS = ['firstName', 'lastName', 'externalId'];
+export const CONTACT_METADATA_KEYS = ['index', 'originalArray'];
 
 // Keys
 export const ENTER = 'Enter';

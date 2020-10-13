@@ -1,56 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import DownloadStep from './Molecules/SpreadSheetStep/DownloadStep';
-import UploadStep from './Molecules/SpreadSheetStep/UploadStep';
+import BulkImportResult from './Organisms/BulkImportResults';
+import BulkImportSteps from './Organisms/BulkImportSteps';
 
-import './_style.scss';
-import { refShape } from '../../helpers/propShapes';
-import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+const BulkImport = ({ onUpload, cancelImport, showGroupSelection }) => {
+  const [fileData, setFileData] = useState();
+  const [selectedGroups, setSelectedGroups] = useState([]);
+  const [skipGroupsAssignment, setSkipGroupsAssignment] = useState();
+  const [results, setResults] = useState();
 
-const BulkImport = ({
-  currentStep,
-  uploadRef,
-  uploadBulkExcel,
-  setCurrentStep,
-  showNext,
-  next
-}) => {
-  const { t } = useTranslation();
+  const stepsProps = {
+    fileData,
+    setFileData,
+    selectedGroups,
+    setSelectedGroups,
+    skipGroupsAssignment,
+    setSkipGroupsAssignment,
+    showGroupSelection,
+    onFinish: () => onUpload(fileData, skipGroupsAssignment ? [] : selectedGroups, setResults),
+    cancelImport
+  };
 
-  return (
-    <div className="BulkImportContainer Wrapper">
-      <div className="ContentHeader">
-        <h1>{t('bulkImport.title')}</h1>
-      </div>
-      <div className="BulkImportContent">
-        <DownloadStep currentStep={currentStep} setAsCurrentStep={setCurrentStep} />
-        <UploadStep
-          currentStep={currentStep}
-          uploadBulkExcel={uploadBulkExcel}
-          setAsCurrentStep={setCurrentStep}
-          uploadRef={uploadRef}
-        />
-      </div>
-      <div className="FooterButton">
-        {showNext && (
-          <CustomButton
-            buttonProps={{ onClick: next, className: 'theme-outline' }}
-            buttonText={t('actions.next')}
-          />
-        )}
-      </div>
-    </div>
+  const handleReturnToUploadStep = () => {
+    setFileData(null);
+    setResults(null);
+  };
+
+  const onSteps = !results;
+
+  return onSteps ? (
+    <BulkImportSteps {...stepsProps} />
+  ) : (
+    <BulkImportResult {...results} returnToUploadStep={handleReturnToUploadStep} />
   );
 };
 
+BulkImport.defaultProps = {
+  cancelImport: () => {},
+  showGroupSelection: false
+};
+
 BulkImport.propTypes = {
-  currentStep: PropTypes.number.isRequired,
-  uploadRef: refShape.isRequired,
-  uploadBulkExcel: PropTypes.func.isRequired,
-  setCurrentStep: PropTypes.func.isRequired,
-  showNext: PropTypes.bool.isRequired,
-  next: PropTypes.func.isRequired
+  onUpload: PropTypes.func.isRequired,
+  cancelImport: PropTypes.func,
+  showGroupSelection: PropTypes.bool
 };
 
 export default BulkImport;

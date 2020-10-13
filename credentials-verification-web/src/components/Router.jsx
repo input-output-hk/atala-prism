@@ -3,7 +3,7 @@ import { Switch, Route } from 'react-router-dom';
 import Dashboard from './dashboard/Dashboard';
 import Landing from './landing/Landing';
 import I18nError from './I18nError';
-import Connections from './connections/ConnectionsContainer';
+import Contacts from './connections/ConnectionsContainer';
 import Registration from './registration/RegistrationContainer';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
@@ -13,12 +13,14 @@ import Payment from './payments/PaymentContainer';
 import Settings from './settings/SettingsContainer';
 import IndividualCreation from './individualCreation/IndividualCreationContainer';
 import StudentCreation from './studentCreation/StudentCreationContainer';
-import BulkImport from './bulkImport/BulkImportContainer';
 import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
 import GroupCreationContainer from './groupCreation/GroupCreationContainer';
+import ImportContacts from './importContacts/ImportContacts';
+import ContactsBulkImport from './contactsBulkImport/ContactsBulkImport';
+import ContactsManualImport from './contactsManualImport/ContactsManualImportContainer';
 
 const issuer = [ISSUER];
 const verifier = [VERIFIER];
@@ -27,11 +29,11 @@ const noRole = [];
 
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 
-const connections = {
+const contacts = {
   exact: true,
-  path: '/connections',
-  key: '/connections',
-  component: withLoggedValidation(withSideBar(Connections), allRoles)
+  path: '/contacts',
+  key: '/contacts',
+  component: withLoggedValidation(withSideBar(Contacts), allRoles)
 };
 const groups = {
   exact: true,
@@ -75,8 +77,9 @@ const landingRoute = {
   component: withLoggedValidation(Landing, noRole)
 };
 const dashboardRoute = {
+  exact: true,
   path: '/',
-  key: '/',
+  key: 'dashboard',
   component: withLoggedValidation(withSideBar(Dashboard), allRoles)
 };
 const settings = {
@@ -97,12 +100,6 @@ const studentCreation = {
   key: 'studentCreation',
   component: withLoggedValidation(withSideBar(StudentCreation), issuer)
 };
-const bulkImport = {
-  exact: true,
-  path: '/bulkImport',
-  key: 'bulkImport',
-  component: withLoggedValidation(withSideBar(BulkImport), allRoles)
-};
 const adminRoute = {
   exact: true,
   path: '/admin',
@@ -115,11 +112,29 @@ const groupCreationRoute = {
   key: 'groupsCreation',
   component: withLoggedValidation(withSideBar(GroupCreationContainer), allRoles)
 };
+const importContacts = {
+  exact: true,
+  path: '/contacts/import',
+  key: 'contacts/import',
+  component: withLoggedValidation(withSideBar(ImportContacts), issuer)
+};
+const bulkImport = {
+  exact: true,
+  path: '/contacts/import/bulk',
+  key: 'contactsBulkImport',
+  component: withLoggedValidation(withSideBar(ContactsBulkImport), issuer)
+};
+const manualImport = {
+  exact: true,
+  path: '/contacts/import/manual',
+  key: 'manualImport',
+  component: withLoggedValidation(withSideBar(ContactsManualImport), issuer)
+};
 
 const routes = [
   adminRoute,
   errorRoute,
-  connections,
+  contacts,
   groupCreationRoute,
   groups,
   credential,
@@ -130,9 +145,11 @@ const routes = [
   payment,
   individualCreation,
   studentCreation,
-  bulkImport,
   landingRoute,
-  dashboardRoute
+  dashboardRoute,
+  importContacts,
+  bulkImport,
+  manualImport
 ];
 
 const Router = () => (

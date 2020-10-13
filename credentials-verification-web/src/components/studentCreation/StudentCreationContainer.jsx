@@ -19,7 +19,7 @@ const createBlankStudent = key => ({
 });
 const defaultStudentList = [createBlankStudent(0)];
 
-const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }) => {
+const StudentCreationContainer = ({ api, redirector: { redirectToContacts } }) => {
   const { t } = useTranslation();
   const [students, setStudents] = useState(defaultStudentList);
   const [invalidFields, setInvalidFields] = useState([]);
@@ -101,7 +101,7 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
   };
 
   const saveStudents = () => {
-    if (!students.length) return redirectToConnections();
+    if (!students.length) return redirectToContacts();
 
     const invalidFieldos = getInvalidFields();
 
@@ -121,7 +121,7 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
     Promise.all(creationPromises)
       .then(() => {
         message.success(t('studentCreation.success'));
-        redirectToConnections();
+        redirectToContacts();
       })
       .catch(error => {
         Logger.error('Error while creating student', error);
@@ -154,7 +154,7 @@ StudentCreationContainer.propTypes = {
     subjectsManager: PropTypes.shape({ createSubject: PropTypes.func }).isRequired,
     groupsManager: PropTypes.shape({ getGroups: PropTypes.func }).isRequired
   }).isRequired,
-  redirector: PropTypes.shape({ redirectToConnections: PropTypes.func }).isRequired
+  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };
 
 export default withApi(withRedirector(StudentCreationContainer));

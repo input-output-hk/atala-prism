@@ -11,7 +11,7 @@ import './_style.scss';
 //    - theme-grey
 //    - theme-link
 const CustomButton = ({ icon, buttonText, buttonProps, loading, LoadingComponent }) => (
-  <Button {...buttonProps} disabled={loading}>
+  <Button {...buttonProps} disabled={buttonProps?.disabled || loading}>
     {icon && icon}
     {loading ? <LoadingComponent /> : buttonText}
   </Button>
@@ -34,7 +34,8 @@ CustomButton.propTypes = {
       'theme-link',
       'theme-filter'
     ]),
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    disabled: PropTypes.bool
   }).isRequired,
   buttonText: PropTypes.string,
   icon: PropTypes.element,

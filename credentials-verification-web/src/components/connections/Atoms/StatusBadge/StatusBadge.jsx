@@ -19,7 +19,7 @@ const StatusBadge = ({ status }) => {
 
   return (
     <div className={classname}>
-      <p>{t(`connections.status.${lowerCaseRole}.${status || defaultStatus}`)}</p>
+      <p>{t(`contacts.status.${lowerCaseRole}.${status || defaultStatus}`)}</p>
     </div>
   );
 };

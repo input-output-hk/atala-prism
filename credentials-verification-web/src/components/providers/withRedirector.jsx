@@ -14,9 +14,13 @@ export const withRedirector = Component => props => {
 
   const redirectToCredentials = () => redirectTo('credentials');
 
-  const redirectToConnections = () => redirectTo('connections');
+  const redirectToContacts = () => redirectTo('contacts');
 
-  const redirectToBulkImport = () => redirectTo('bulkImport');
+  const redirectToImportContacts = () => redirectTo('contacts/import');
+
+  const redirectToBulkImport = () => redirectTo('contacts/import/bulk');
+
+  const redirectToManualImport = () => redirectTo('contacts/import/manual');
 
   const redirectToStudentCreation = () => redirectTo('studentCreation');
 
@@ -31,8 +35,10 @@ export const withRedirector = Component => props => {
     redirectToNewCredential,
     redirectToRegistration,
     redirectToCredentials,
-    redirectToConnections,
+    redirectToContacts,
+    redirectToImportContacts,
     redirectToBulkImport,
+    redirectToManualImport,
     redirectToStudentCreation,
     redirectToIndividualCreation,
     redirectToGroupCreation,

@@ -4,7 +4,7 @@ import { Layout, Menu } from 'antd';
 import PropTypes from 'prop-types';
 import ReactTooltip from 'react-tooltip';
 import { useTranslation } from 'react-i18next';
-import connectionsIcon from '../../../../images/connectionsIcon.svg';
+import contactsIcon from '../../../../images/connectionsIcon.svg';
 import iconMenu from '../../../../images/icon-menu.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
@@ -28,7 +28,7 @@ const SideMenu = ({ location: { pathname } }) => {
 
   const icons = [
     { icon: iconMenu, name: '', restrictedTo: [ISSUER, VERIFIER] },
-    { icon: connectionsIcon, name: 'connections', restrictedTo: [ISSUER, VERIFIER] },
+    { icon: contactsIcon, name: 'contacts', restrictedTo: [ISSUER, VERIFIER] },
     { icon: iconGroups, name: 'groups', restrictedTo: [ISSUER] },
     { icon: iconCredentials, name: 'credentials', restrictedTo: [ISSUER] },
     { icon: credentialSummaryIcon, name: 'credentialSummary', restrictedTo: [ISSUER] }

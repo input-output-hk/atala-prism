@@ -1,0 +1,121 @@
+@import '../../../../css/general_styling';
+
+.OptionCard {
+  width: 400px;
+  height: 350px;
+  cursor: pointer;
+  text-align: center;
+  margin: 0 1em;  
+  background-color: white;
+  position: relative;
+  justify-content: center;
+  padding: 2em 2em 5em 2em;
+  border-radius: 10px;
+  box-shadow: $shadow;
+
+  &:focus {
+    outline: none;
+    border: 2px solid $primary-color;
+  }
+
+  .active{
+    border-radius: 50px;
+  }
+  .CardText {
+
+    h1 {
+      @include primary-text($h1, $black);
+      font-weight: bold;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+    }
+  }
+}
+.content-container{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.Selected {
+  border: 2px solid $primary-color;
+  border-radius: 10px;
+  box-shadow: $red-shadow;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  .ant-avatar-circle {
+    color: $primary-color;
+    background-color: white;
+    border-color: $primary-color;
+    border-radius: 20px;
+    border-style: solid;
+    border-width: 2px;
+
+    span {
+      font-size: 18px;
+      line-height: 28px;
+    }
+  }
+
+  h1 {
+    @include secondary-text($h1, $secondary-color);
+    @include letter-spacing();
+  }
+
+  p {
+    @include primary-text($body, $secondary-color);
+    @include letter-spacing();
+  }
+}
+.icon-container{
+  width: 100%;
+  text-align: end;
+  .icon{
+    color: $primary-color;
+    font-size: 25px;
+  }
+  .icon-disabled{
+    color: white;
+    font-size: 25px;
+
+  }
+
+}
+.img-container{
+  display: flex;
+  align-items: center;
+  img{
+    width: 150px;
+  }
+}
+.NotSelected {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  .ant-avatar-circle {
+    color: $grey;
+    opacity: 0.2;
+    background-color: white;
+    border-color: $dark-grey;
+    border-radius: 20px;
+    border-style: solid;
+    border-width: 2px;
+  }
+  img{
+    opacity: .5;
+  }
+
+  .CardText {
+    h1 {
+      @include primary-text($h1, $grey);
+      font-weight: bold;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+    }
+  }
+}

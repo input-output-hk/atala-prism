@@ -11,7 +11,7 @@ import Logger from '../../helpers/Logger';
 const createBlankIndividual = key => ({ key, fullName: '', email: '' });
 const defaultIndividualList = [createBlankIndividual(0)];
 
-const IndividualCreationContainer = ({ api, redirector: { redirectToConnections } }) => {
+const IndividualCreationContainer = ({ api, redirector: { redirectToContacts } }) => {
   const { t } = useTranslation();
   console.log('default indiv');
   console.log('default indiv', defaultIndividualList);
@@ -48,7 +48,7 @@ const IndividualCreationContainer = ({ api, redirector: { redirectToConnections 
   };
 
   const saveIndividuals = () => {
-    if (!individuals.length) return redirectToConnections();
+    if (!individuals.length) return redirectToContacts();
 
     const invalidIndividual = individuals.reduce((accumulator, { fullName, email }) => {
       const isInvalid = !fullName || !email;
@@ -67,7 +67,7 @@ const IndividualCreationContainer = ({ api, redirector: { redirectToConnections 
     Promise.all(creationPromises)
       .then(() => {
         message.success(t('individualCreation.success'));
-        redirectToConnections();
+        redirectToContacts();
       })
       .catch(error => {
         Logger.error('Error while creating individual', error);
@@ -95,7 +95,7 @@ IndividualCreationContainer.propTypes = {
   api: PropTypes.shape({
     credentialStore: PropTypes.shape({ createHolder: PropTypes.func }).isRequired
   }).isRequired,
-  redirector: PropTypes.shape({ redirectToConnections: PropTypes.func }).isRequired
+  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };
 
 export default withApi(withRedirector(IndividualCreationContainer));

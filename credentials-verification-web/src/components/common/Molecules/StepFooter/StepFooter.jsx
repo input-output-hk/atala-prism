@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Steps } from 'antd';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-
 import './_style.scss';
 
 const createSteps = count => {
@@ -18,12 +17,16 @@ const StepFooter = ({
   stepCount,
   previousStep,
   nextStep,
-  finish,
   renderExtraOptions,
-  finishText
+  finishText,
+  disablePrevious,
+  disableNext,
+  onCancel,
+  onFinish
 }) => {
   const { t } = useTranslation();
 
+  const firstStep = currentStep === 0;
   const lastStep = currentStep + 1 === stepCount;
 
   return (
@@ -31,9 +34,9 @@ const StepFooter = ({
       <div className="BackButtons">
         <CustomButton
           buttonProps={{
-            onClick: previousStep,
+            onClick: firstStep ? onCancel : previousStep,
             className: 'theme-grey',
-            disabled: currentStep === 0
+            disabled: disablePrevious
           }}
           buttonText={t('actions.back')}
         />
@@ -44,7 +47,11 @@ const StepFooter = ({
       <div className="ContinueButtons">
         {renderExtraOptions && <div className="SaveButton">{renderExtraOptions()}</div>}
         <CustomButton
-          buttonProps={{ onClick: lastStep ? finish : nextStep, className: 'theme-primary' }}
+          buttonProps={{
+            onClick: lastStep ? onFinish : nextStep,
+            className: 'theme-primary',
+            disabled: disableNext
+          }}
           buttonText={t(lastStep ? finishText : 'actions.next')}
         />
       </div>
@@ -53,19 +60,23 @@ const StepFooter = ({
 };
 
 StepFooter.defaultProps = {
-  renderExtraOptions: null,
-  previousStep: null,
-  nextStep: null
+  renderExtraOptions: () => {},
+  finishText: 'actions.next',
+  disablePrevious: false,
+  disableNext: false
 };
 
 StepFooter.propTypes = {
   currentStep: PropTypes.number.isRequired,
   stepCount: PropTypes.number.isRequired,
-  previousStep: PropTypes.func,
-  nextStep: PropTypes.func,
-  finish: PropTypes.func.isRequired,
+  previousStep: PropTypes.func.isRequired,
+  nextStep: PropTypes.func.isRequired,
   renderExtraOptions: PropTypes.func,
-  finishText: PropTypes.string.isRequired
+  finishText: PropTypes.string,
+  disablePrevious: PropTypes.bool,
+  disableNext: PropTypes.bool,
+  onCancel: PropTypes.func.isRequired,
+  onFinish: PropTypes.func.isRequired
 };
 
 export default StepFooter;
