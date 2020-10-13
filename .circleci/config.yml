@@ -457,6 +457,83 @@ jobs:
       - store_artifacts:
           path: credentials-verification-webextension/target/chrome/geud-wallet.zip
 
+  build-prism-sdk:
+    working_directory: ~/repo
+    docker:
+        - image: circleci/openjdk:8-jdk-node
+    environment:
+      SBT_OPTS: -Xmx2048m
+    steps:
+      - checkout
+
+      - halt-step-if-not-changed:
+          directories: "prism-sdk"
+
+      # Download and cache dependencies	
+      - restore_cache:
+          keys:
+            - prism-sdk-cache-{{ checksum "prism-sdk/build.sbt" }}-{{ checksum "prism-sdk/project/SdkBuild.scala" }}-{{ checksum "prism-sdk/project/Dependencies.scala" }}-{{ checksum "prism-sdk/project/plugins.sbt" }}-{{ checksum "prism-sdk/project/protoc.sbt" }}
+            # fallback to using the latest cache if no exact match is found	
+            - prism-sdk-cache-
+
+      - install-coursier
+
+      - install-scalafmt
+
+      - scalafmt-test
+        
+      - run:
+          name: Compile SDK and its tests
+          command: |
+            cd prism-sdk
+            sbt compile test:compile
+            
+      - save_cache:
+          paths:
+            - ~/.cache/coursier
+            - ~/.ivy2
+            - ~/.m2
+          key: prism-sdk-cache-{{ checksum "prism-sdk/build.sbt" }}-{{ checksum "prism-sdk/project/SdkBuild.scala" }}-{{ checksum "prism-sdk/project/Dependencies.scala" }}-{{ checksum "prism-sdk/project/plugins.sbt" }}-{{ checksum "prism-sdk/project/protoc.sbt" }}
+
+      - run:
+          name: Run unit tests
+          command: cd prism-sdk && sbt coverage test
+
+      - run:
+          name: Generate code coverage reports
+          command: cd prism-sdk && sbt coverageReport coverageAggregate
+
+      - run:
+          name: Aggregate test reports
+          command: |
+            cd prism-sdk
+
+            # Aggregate every JVM test report under target/jvm/test-reports
+            mkdir -p target/jvm/test-reports
+            test -e connector/jvm/target/test-reports && mv connector/jvm/target/test-reports/* target/jvm/test-reports
+            test -e credentials/jvm/target/test-reports && mv credentials/jvm/target/test-reports/* target/jvm/test-reports
+            test -e credentials/jvm/target/test-reports && mv credentials/jvm/target/test-reports/* target/jvm/test-reports
+            test -e crypto/jvm/target/test-reports && mv crypto/jvm/target/test-reports/* target/jvm/test-reports
+            test -e protos/.jvm/target/test-reports && mv protos/.jvm/target/test-reports/* target/jvm/test-reports
+
+            # Aggregate every JS test report under target/jvm/test-reports
+            mkdir -p target/js/test-reports
+            test -e connector/js/target/test-reports && mv connector/js/target/test-reports/* target/js/test-reports
+            test -e credentials/js/target/test-reports && mv credentials/js/target/test-reports/* target/js/test-reports
+            test -e credentials/js/target/test-reports && mv credentials/js/target/test-reports/* target/js/test-reports
+            test -e crypto/js/target/test-reports && mv crypto/js/target/test-reports/* target/js/test-reports
+            test -e protos/.js/target/test-reports && mv protos/.js/target/test-reports/* target/js/test-reports
+            true
+
+      - store_test_results:
+          path: prism-sdk/target/jvm/test-reports
+      - store_test_results:
+          path: prism-sdk/target/js/test-reports
+
+      # Store code coverage reports	
+      - store_artifacts:
+          path: prism-sdk/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
+
 workflows:
   version: 2.1
   build-and-deploy:
@@ -466,6 +543,7 @@ workflows:
       - build-credentials-verification-landing
       - build-credentials-verification-web
       - build-credentials-verification-webextension
+      - build-prism-sdk
       - deploy-ecr-images:
           filters:
             branches:
