@@ -11,12 +11,18 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import org.slf4j.LoggerFactory
 
+import io.iohk.atala.credentials.{
+  SignedCredential,
+  UnsignedCredential,
+  JsonBasedUnsignedCredential,
+  UnsignedCredentialBuilder
+}
 import io.iohk.prism.protos.connector_models.ReceivedMessage
 import io.iohk.prism.protos.credential_models
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.{Connection, UserCredential, CredentialProofRequestType}
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
-import io.iohk.atala.mirror.models.UserCredential.{MessageId, MessageReceivedDate, RawCredential}
+import io.iohk.atala.mirror.models.UserCredential.{IssuersDID, MessageId, MessageReceivedDate, RawCredential}
 import io.iohk.atala.mirror.Utils.parseUUID
 
 import cats.implicits._
@@ -93,7 +99,7 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
       )
   }
 
-  private[services] def saveMessages(messages: Seq[ReceivedMessage]): Task[Unit] = {
+  private def saveMessages(messages: Seq[ReceivedMessage]): Task[Unit] = {
     val connectionIds = parseConnectionIds(messages)
 
     for {
@@ -118,11 +124,12 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
             )
             None
           }
+          issuersDid = getIssuersDid(rawCredential)
         } yield {
           UserCredential(
             token,
             rawCredential,
-            None,
+            issuersDid,
             MessageId(receivedMessage.id),
             MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received))
           )
@@ -153,5 +160,17 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
 
   private[services] def parseConnectionId(connectionId: String): Option[ConnectionId] =
     parseUUID(connectionId).map(ConnectionId)
+
+  private[services] def getIssuersDid(rawCredential: RawCredential): Option[IssuersDID] = {
+    val unsignedCredential: UnsignedCredential = SignedCredential.from(rawCredential.rawCredential).toOption match {
+      case Some(signedCredential) =>
+        signedCredential.decompose[JsonBasedUnsignedCredential].credential
+      case None =>
+        UnsignedCredentialBuilder[JsonBasedUnsignedCredential]
+          .fromBytes(rawCredential.rawCredential.getBytes)
+    }
+
+    unsignedCredential.issuerDID.map(IssuersDID)
+  }
 
 }

@@ -6,13 +6,17 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.concurrent.duration.DurationInt
 
 import org.mockito.scalatest.MockitoSugar
+import io.circe.Json
 
 import io.iohk.atala.mirror.models.UserCredential
 import io.iohk.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+import io.iohk.prism.protos.credential_models.Credential
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken, ConnectionState}
-import io.iohk.atala.mirror.models.UserCredential.{MessageId, MessageReceivedDate, RawCredential}
+import io.iohk.atala.mirror.models.UserCredential.{MessageId, MessageReceivedDate, RawCredential, IssuersDID}
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 
+import io.iohk.atala.crypto.EC
+import io.iohk.atala.credentials._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.fixtures.{ConnectionFixtures, CredentialFixtures}
 import io.iohk.atala.mirror.stubs.ConnectorClientServiceStub
@@ -171,6 +175,33 @@ class CredentialServiceSpec
       credentialService.parseConnectionId(uuid) mustBe Some(
         ConnectionId(UUID.fromString(uuid))
       )
+    }
+  }
+
+  "getIssuersDid" should {
+    "parse signed credential" in new ConnectionServiceFixtures {
+      val keyPair = EC.generateKeyPair()
+      val signedCredential = CredentialsCryptoSDKImpl.signCredential(
+        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom("did:prism:id", "", Json.obj()),
+        keyPair.privateKey
+      )(EC)
+
+      val credential = RawCredential(
+        signedCredential.canonicalForm
+      )
+
+      credentialService.getIssuersDid(credential) mustBe Some(IssuersDID("did:prism:id"))
+    }
+
+    "parse unsigned credential" in new ConnectionServiceFixtures {
+      val credential = RawCredential(
+        Credential(
+          typeId = "typeId",
+          credentialDocument = """{"issuer": "did:prism:id"}"""
+        ).credentialDocument
+      )
+
+      credentialService.getIssuersDid(credential) mustBe Some(IssuersDID("did:prism:id"))
     }
   }
 
