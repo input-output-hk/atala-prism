@@ -7,7 +7,6 @@ import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import org.scalajs.dom.html
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import typings.std.{HTMLInputElement, document}
-
 import scala.concurrent.ExecutionContextExecutor
 import scala.scalajs.concurrent.JSExecutionContext
 import scala.scalajs.js
@@ -36,7 +35,9 @@ trait WalletDomSpec extends Suite with BeforeAndAfterAll with BeforeAndAfterEach
       Config(
         ActiveTabConfig(List.empty),
         backendUrl = "http://localhost:10000/test",
-        blockchainExplorerUrl = "http://localhost:10000/test-explorer"
+        blockchainExplorerUrl = "http://localhost:10000/test-explorer",
+        termsUrl = "http://localhost:10000/test-explorer",
+        privacyPolicyUrl = "http://localhost:10000/test-explorer"
       ),
       FakeConnectorClientService,
       new NodeClientService("http://localhost:10000/test")

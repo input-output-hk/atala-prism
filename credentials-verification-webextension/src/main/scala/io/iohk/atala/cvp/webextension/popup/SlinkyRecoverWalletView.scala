@@ -12,12 +12,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 @react class SlinkyRecoverWalletView extends Component {
-  case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
+  case class Props(backgroundAPI: BackgroundAPI, termsUrl: String, privacyPolicyUrl: String, switchToView: View => Unit)
   case class State(
       seed: String,
       password: String,
       password2: String,
-      message: String
+      message: String,
+      tandc: Boolean = false,
+      privacyPolicy: Boolean = false
   )
 
   private def setPassword(newValue: String): Unit = {
@@ -27,11 +29,29 @@ import scala.util.{Failure, Success}
   private def setPassword2(newValue: String): Unit = {
     setState(_.copy(password2 = newValue))
   }
+
   private def setSeedPhrase(newValue: String): Unit = {
     setState(_.copy(seed = newValue))
   }
+
   override def initialState: State = {
     State("", "", "", "")
+  }
+
+  private def setTandC(newValue: Boolean): Unit = {
+    setState(_.copy(tandc = newValue))
+  }
+
+  private def setPrivacyPolicy(newValue: Boolean): Unit = {
+    setState(_.copy(privacyPolicy = newValue))
+  }
+
+  def enableButton = {
+    if (state.tandc && state.privacyPolicy) {
+      className := "btn_verify"
+    } else {
+      className := "btn_verify disabled"
+    }
   }
 
   override def render: ReactElement = {
@@ -77,13 +97,53 @@ import scala.util.{Failure, Success}
           )
         )
       ),
+      div(className := "div__field_group")(
+        div(className := "input__container")(
+          div()(
+            input(
+              id := "tandc",
+              `type` := "checkbox",
+              onChange := (e => setTandC(e.currentTarget.checked))
+            ),
+            label(className := "_label_txt", htmlFor := "tandc")(
+              "Accept",
+              a(
+                href := s"${props.termsUrl}",
+                target := "_blank",
+                className := "_label_link"
+              )(
+                "Terms and Conditions"
+              )
+            )
+          )
+        )
+      ),
+      div(className := "div__field_group")(
+        div(className := "input__container")(
+          input(
+            id := "privacyPolicy",
+            `type` := "checkbox",
+            onChange := (e => setPrivacyPolicy(e.currentTarget.checked))
+          ),
+          label(className := "_label_txt", htmlFor := "privacyPolicy")(
+            "Accept",
+            a(
+              href := s"${props.privacyPolicyUrl}",
+              target := "_blank",
+              className := "_label_link"
+            )(
+              "Privacy Policy Agreement"
+            )
+          )
+        )
+      ),
       div(className := "status_container")(
         label(className := "_label_update")(state.message)
       ),
       div(className := "div__field_group")(
         div(
           id := "recoverButton",
-          className := "btn_verify",
+          enableButton,
           onClick := { () =>
             recoverWallet()
           }

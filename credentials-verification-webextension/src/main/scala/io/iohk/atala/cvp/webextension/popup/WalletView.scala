@@ -14,7 +14,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 @react class WalletView extends Component {
-  case class Props(backgroundAPI: BackgroundAPI, blockchainExplorerUrl: String)
+  case class Props(
+      backgroundAPI: BackgroundAPI,
+      blockchainExplorerUrl: String,
+      termsUrl: String,
+      privacyPolicyUrl: String
+  )
   case class State(walletStatus: WalletStatus, view: View)
 
   override def componentDidMount(): Unit = {
@@ -49,9 +54,19 @@ import scala.util.{Failure, Success}
       case (WalletStatus.Missing, Default) =>
         SlinkyInitialWalletView(props.backgroundAPI, (view: View) => updateView(view))
       case (WalletStatus.Missing, Register) =>
-        SlinkyRegisterWalletView(props.backgroundAPI, (view: View) => updateView(view))
+        SlinkyRegisterWalletView(
+          props.backgroundAPI,
+          props.termsUrl,
+          props.privacyPolicyUrl,
+          (view: View) => updateView(view)
+        )
       case (WalletStatus.Missing, Recover) =>
-        SlinkyRecoverWalletView(props.backgroundAPI, (view: View) => updateView(view))
+        SlinkyRecoverWalletView(
+          props.backgroundAPI,
+          props.termsUrl,
+          props.privacyPolicyUrl,
+          (view: View) => updateView(view)
+        )
       case (WalletStatus.Unlocked, Register) =>
         SlinkyWelcomeRegisterView(props.backgroundAPI, props.blockchainExplorerUrl, (view: View) => updateView(view))
       case (WalletStatus.Unlocked, Recover) =>

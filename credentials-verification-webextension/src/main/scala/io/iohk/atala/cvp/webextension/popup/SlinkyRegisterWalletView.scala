@@ -21,7 +21,7 @@ import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.{Failure, Success}
 
 @react class SlinkyRegisterWalletView extends Component {
-  case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
+  case class Props(backgroundAPI: BackgroundAPI, termsUrl: String, privacyPolicyUrl: String, switchToView: View => Unit)
   case class State(
       mnemonic: Mnemonic,
       password: String,
@@ -30,7 +30,9 @@ import scala.util.{Failure, Success}
       role: Role,
       fileOpt: Option[File] = None,
       message: String,
-      isLoading: Boolean = false
+      isLoading: Boolean = false,
+      tandc: Boolean = false,
+      privacyPolicy: Boolean = false
   )
 
   private val mnemonicElement: ReactElement = div(className := "words_container")(
@@ -67,7 +69,24 @@ import scala.util.{Failure, Success}
     State(Mnemonic(), "", "", "", Issuer, None, "")
   }
 
+  private def setTandC(newValue: Boolean): Unit = {
+    setState(_.copy(tandc = newValue))
+  }
+
+  private def setPrivacyPolicy(newValue: Boolean): Unit = {
+    setState(_.copy(privacyPolicy = newValue))
+  }
+
   override def render: ReactElement = {
+
+    def enableButton = {
+      if (state.tandc && state.privacyPolicy && !state.isLoading) {
+        className := "btn_register"
+      } else {
+        className := "btn_register disabled"
+      }
+    }
+
     div(id := "registrationScreen")(
       h3(className := "h3_register", id := "h3_register", "Wallet registration"),
       div(className := "div__field_group")(
@@ -139,6 +158,46 @@ import scala.util.{Failure, Success}
             label(htmlFor := "logo")("Upload your logo")
           )
         ),
+        div(className := "div__field_group")(
+          div(className := "input__container")(
+            div()(
+              input(
+                id := "tandc",
+                `type` := "checkbox",
+                onChange := (e => setTandC(e.currentTarget.checked))
+              ),
+              label(className := "_label_txt", htmlFor := "tandc")(
+                "Accept",
+                a(
+                  href := s"${props.termsUrl}",
+                  target := "_blank",
+                  className := "_label_link"
+                )(
+                  "Terms and Conditions"
+                )
+              )
+            )
+          )
+        ),
+        div(className := "div__field_group")(
+          div(className := "input__container")(
+            input(
+              id := "privacyPolicy",
+              `type` := "checkbox",
+              onChange := (e => setPrivacyPolicy(e.currentTarget.checked))
+            ),
+            label(className := "_label_txt", htmlFor := "privacyPolicy")(
+              "Accept",
+              a(
+                href := s"${props.privacyPolicyUrl}",
+                target := "_blank",
+                className := "_label_link"
+              )(
+                "Privacy Policy Agreement"
+              )
+            )
+          )
+        ),
         div(className := "status_container")(
           div(className := "input__container")(
             label(className := "_label_update")(state.message)
@@ -147,8 +206,7 @@ import scala.util.{Failure, Success}
         div(className := "div__field_group")(
           div(
             id := "registerButton",
-            if (!state.isLoading) { className := "btn_register" }
-            else { className := "btn_register disabled" },
+            enableButton,
             onClick := { () =>
               registerOrganization()
             }
