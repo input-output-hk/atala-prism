@@ -152,7 +152,7 @@ npmDependencies in Compile ++= Seq(
 )
 
 // Internal libraries
-lazy val cryptoLib = ProjectRef(file("../crypto"), "cryptoJS")
+lazy val cryptoLib = ProjectRef(file("../prism-sdk"), "prismCryptoJS")
 dependsOn(cryptoLib)
 
 // Enable DOM testing with Chrome under Selenium

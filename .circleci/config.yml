@@ -235,7 +235,7 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification crypto"
+          directories: "credentials-verification"
 
       - restore_cache:
           keys:
@@ -362,7 +362,7 @@ jobs:
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "credentials-verification-android crypto"
+          directories: "credentials-verification-android prism-sdk"
       - run: yes | sdkmanager --licenses || exit 0
       - run: yes | sdkmanager --update || exit 0
 
@@ -377,8 +377,8 @@ jobs:
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
       - install-sbt
       - run:
-          name: Assembly Crypto
-          command: cd crypto && sbt cryptoJVM/assembly
+          name: Assembly Prism Crypto
+          command: cd prism-sdk && sbt prismCryptoJVM/assembly
       - run:
           name: Run Lint Tests
           command: cd credentials-verification-android && ./gradlew lint test
@@ -403,7 +403,7 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification credentials-verification-webextension crypto"
+          directories: "credentials-verification credentials-verification-webextension prism-sdk"
 
       - run:
           name: Set environment variables
@@ -457,60 +457,6 @@ jobs:
       - store_artifacts:
           path: credentials-verification-webextension/target/chrome/geud-wallet.zip
 
-  build-crypto:
-    working_directory: ~/repo
-    docker:
-        - image: circleci/openjdk:8-jdk-node
-    steps:
-      - checkout
-
-      - halt-step-if-not-changed:
-          directories: "crypto"
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - crypto-cache-v2-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
-            # fallback to using the latest cache if no exact match is found
-            - crypto-cache-v2-
-
-      - install-coursier
-
-      - install-scalafmt
-
-      - scalafmt-test
-
-      - run:
-          name: Compile crypto and its tests
-          command: |
-            cd crypto
-            # Retry on failure as this step is flaky
-            sbt test:compile || sbt test:compile
-
-      - save_cache:
-          paths:
-            - ~/.cache/coursier
-            - ~/.ivy2
-            - ~/.m2
-          key: crypto-cache-v2-{{ checksum "crypto/build.sbt" }}-{{ checksum "crypto/project/plugins.sbt" }}
-
-      - run:
-          name: Run unit tests
-          command: cd crypto && sbt coverage test
-
-      - run:
-          name: Generate code coverage reports
-          command: cd crypto && sbt coverageReport
-
-      - store_test_results:
-          path: crypto/js/target/test-reports
-      - store_test_results:
-          path: crypto/jvm/target/test-reports
-
-      # Store code coverage reports
-      - store_artifacts:
-          path: crypto/jvm/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
-
 workflows:
   version: 2.1
   build-and-deploy:
@@ -520,7 +466,6 @@ workflows:
       - build-credentials-verification-landing
       - build-credentials-verification-web
       - build-credentials-verification-webextension
-      - build-crypto
       - deploy-ecr-images:
           filters:
             branches:

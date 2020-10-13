@@ -211,7 +211,7 @@ dependencies {
     testDependencies.each { k, dep -> compile dep }
     testCoreDependencies.each { k, dep -> androidTestImplementation dep }
     espressoTestDependencies.each { k, dep -> androidTestImplementation dep }
-    implementation files('../../crypto/jvm/target/scala-2.12/prism-crypto.jar')
+    implementation files('../../prism-sdk/crypto/jvm/target/scala-2.12/prism-crypto.jar')
     implementation "androidx.core:core-ktx:$coreKtxVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

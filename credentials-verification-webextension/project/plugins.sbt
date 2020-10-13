@@ -21,4 +21,4 @@ addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.3.4")
 
 libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.10.2"
 
-libraryDependencies += "com.thesamet.scalapb.grpcweb" %% "scalapb-grpcweb-code-gen" % "0.2.0+21-b26c9e0a-SNAPSHOT"
+libraryDependencies += "com.thesamet.scalapb.grpcweb" %% "scalapb-grpcweb-code-gen" % "0.3.0"

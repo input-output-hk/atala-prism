@@ -220,9 +220,9 @@ object versions {
 object Crypto extends ScalaModule {
   def scalaVersion = versions.scala
 
-  override def ivyDeps = Agg(ivy"io.iohk::crypto:${publishAndGetCurrentVersion()}")
+  override def ivyDeps = Agg(ivy"io.iohk::prism-crypto:${publishAndGetCurrentVersion()}")
 
-  private val cryptoDir = os.pwd / up / 'crypto
+  private val sdkDir = os.pwd / up / "prism-sdk"
   private val sbtEnv = Map("SBT_OPTS" -> "-Xmx2G")
 
   /**
@@ -234,12 +234,13 @@ object Crypto extends ScalaModule {
   def publishAndGetCurrentVersion =
     T.persistent {
       val versionResult =
-        os.proc("sbt", "cryptoJVM/version").call(cwd = cryptoDir, env = sbtEnv)
+        os.proc("sbt", "prismCryptoJVM/version").call(cwd = sdkDir, env = sbtEnv)
+
       // The version is the last word in the output
-      val version = versionResult.out.text().split("\\s").filterNot(_.isEmpty).last
+      val version = versionResult.out.text().split("\\s").filterNot(_.length <= 4).last
 
       T.ctx().log.info(s"Publishing Crypto library version $version")
-      os.proc("sbt", "cryptoJVM/publishLocal").call(cwd = cryptoDir, env = sbtEnv, stdout = os.Inherit)
+      os.proc("sbt", "prismCryptoJVM/publishLocal").call(cwd = sdkDir, env = sbtEnv, stdout = os.Inherit)
       version
     }
 }
