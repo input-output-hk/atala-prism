@@ -11,6 +11,7 @@ import mill._
 import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scoverage.ScoverageModule
 import mill.define.{Command, Target}
+import mill.modules.Assembly.Rule
 import mill.scalalib._
 import mill.twirllib._
 
@@ -232,7 +233,7 @@ object SDK extends ScalaModule {
   /**
     * Publishes and returns the current version of the PRISM SDK.
     *
-   * <p>Note this method is persisted between `mill` runs, so `mill clean` may be necessary to get the most up-to-date
+    * <p>Note this method is persisted between `mill` runs, so `mill clean` may be necessary to get the most up-to-date
     * version.
     */
   def publishAndGetCurrentVersion =
@@ -347,6 +348,12 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
   val awsS3Deps = Agg(
     ivy"software.amazon.awssdk:s3:2.11.8"
   )
+
+  // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
+  override def assemblyRules =
+    super.assemblyRules ++ Seq(
+      Rule.AppendPattern("META-INF/services/*")
+    )
 
   override def buildInfoPackageName = Some("io.iohk.cvp")
 
