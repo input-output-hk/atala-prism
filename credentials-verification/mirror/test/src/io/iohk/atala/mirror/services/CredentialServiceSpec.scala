@@ -18,23 +18,20 @@ import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.crypto.EC
 import io.iohk.atala.credentials._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.mirror.fixtures.{ConnectionFixtures, CredentialFixtures}
+import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.stubs.ConnectorClientServiceStub
 
 import doobie.implicits._
 import monix.execution.Scheduler.Implicits.global
 
 // mill -i mirror.test.single io.iohk.atala.mirror.services.CredentialServiceSpec
-class CredentialServiceSpec
-    extends PostgresRepositorySpec
-    with MockitoSugar
-    with ConnectionFixtures
-    with CredentialFixtures {
+class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
+  import ConnectionFixtures._, CredentialFixtures._
 
   "updateCredentialsStream" should {
     "upsert credentials" in {
       // given
-      insertAllConnections(databaseTask).runSyncUnsafe(1.minute)
+      ConnectionFixtures.insertAll(database).unsafeRunSync()
       val receivedMessage1 = ReceivedMessage(
         "id1",
         LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),

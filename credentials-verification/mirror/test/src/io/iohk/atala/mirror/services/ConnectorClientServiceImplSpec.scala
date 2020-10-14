@@ -18,7 +18,7 @@ import io.iohk.atala.mirror.models.CredentialProofRequestType
 import io.iohk.prism.protos.connector_models.ReceivedMessage
 import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
 import io.iohk.prism.protos.connector_models.ConnectionInfo
-import io.iohk.atala.mirror.fixtures.ConnectionFixtures
+import io.iohk.atala.mirror.MirrorFixtures
 
 import monix.execution.Scheduler.Implicits.global
 
@@ -28,7 +28,7 @@ class ConnectorClientServiceImplSpec
     with Matchers
     with MockitoSugar
     with ArgumentMatchersSugar
-    with ConnectionFixtures {
+    with MirrorFixtures {
 
   "connectorClientService" should {
     "generate connection token" in new ConnectorStubs {
@@ -67,7 +67,7 @@ class ConnectorClientServiceImplSpec
           val receivedMessage = ReceivedMessage(
             "id1",
             LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
-            connectionId1.uuid.toString,
+            ConnectionFixtures.connectionId1.uuid.toString,
             AtalaMessage().withIssuerSentCredential(IssuerSentCredential()).toByteString
           )
           val response = GetMessagesPaginatedResponse(Seq(receivedMessage))

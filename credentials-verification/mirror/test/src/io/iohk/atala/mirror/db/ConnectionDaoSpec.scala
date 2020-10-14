@@ -7,11 +7,13 @@ import cats.data.NonEmptyList
 import scala.concurrent.duration._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
+import io.iohk.atala.mirror.MirrorFixtures
+
 import doobie.implicits._
-import io.iohk.atala.mirror.fixtures.ConnectionFixtures
 
 // mill -i mirror.test.single io.iohk.atala.mirror.db.ConnectionDaoSpec
-class ConnectionDaoSpec extends PostgresRepositorySpec with ConnectionFixtures {
+class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
+  import ConnectionFixtures._
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
 
@@ -63,7 +65,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with ConnectionFixtures {
 
     "return last seen connection id" in {
       // given
-      insertAllConnections(database).unsafeRunSync()
+      ConnectionFixtures.insertAll(database).unsafeRunSync()
 
       // when
       val lastSeenConnectionId: Option[ConnectionId] =
