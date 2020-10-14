@@ -1,4 +1,6 @@
 import com.typesafe.sbt.GitVersioning
+import mdoc.MdocPlugin
+import mdoc.MdocPlugin.autoImport._
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 import org.scalablytyped.converter.plugin.ScalablyTypedConverterPlugin
 import sbt._
@@ -106,6 +108,24 @@ object SdkBuild {
     commonProject(crossProject(JSPlatform, JVMPlatform) in file("connector"))
       .settings(name := "prism-connector")
       .dependsOn(prismIdentity)
+
+  lazy val prismDocs =
+    project
+      .in(file("prism-docs"))
+      .settings(
+        mdocVariables := Map(
+          "VERSION" -> version.value
+        ),
+        libraryDependencies ++= bouncyDependencies
+      )
+      .dependsOn(
+        prismCrypto.jvm,
+        prismProtos.jvm,
+        prismIdentity.jvm,
+        prismCredentials.jvm,
+        prismConnector.jvm
+      )
+      .enablePlugins(MdocPlugin)
 
   lazy val sdk = (project in file("."))
     .aggregate(

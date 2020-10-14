@@ -534,6 +534,14 @@ jobs:
       - store_artifacts:
           path: prism-sdk/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
 
+      - run:
+          name: Generate documentation
+          command: cd prism-sdk && sbt prismDocs/mdoc
+
+      # Store generated documentation
+      - store_artifacts:
+          path: prism-sdk/prism-docs/target/mdoc
+
 workflows:
   version: 2.1
   build-and-deploy:
