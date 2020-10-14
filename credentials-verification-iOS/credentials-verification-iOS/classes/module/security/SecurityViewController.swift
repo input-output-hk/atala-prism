@@ -35,6 +35,7 @@ class SecurityViewController: ListingBaseViewController, UIScrollViewDelegate {
 
     @IBOutlet weak var changeDescriptionLbl: UILabel!
     @IBOutlet weak var changePinView: UIView!
+    @IBOutlet weak var changePinScroll: UIScrollView!
     @IBOutlet weak var changePinOldDigOneTf: UITextField!
     @IBOutlet weak var changePinOldDigTwoTf: UITextField!
     @IBOutlet weak var changePinOldDigThreeTf: UITextField!
@@ -126,7 +127,7 @@ class SecurityViewController: ListingBaseViewController, UIScrollViewDelegate {
         case .main:
             return nil
         case .changePin:
-            return changePinView as? UIScrollView
+            return changePinScroll
         }
     }
 
