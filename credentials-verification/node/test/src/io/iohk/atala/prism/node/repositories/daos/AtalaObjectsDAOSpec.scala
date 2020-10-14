@@ -28,7 +28,7 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
         .unsafeRunSync()
       val retrieved = AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
       retrieved.objectId mustBe objectId
-      retrieved.sequenceNumber mustBe 1
+      retrieved.blockIndex mustBe 1
       retrieved.objectTimestamp mustBe objectTimestamp
       retrieved.byteContent mustBe None
       retrieved.transactionId mustBe transactionId
@@ -44,20 +44,6 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
       AtalaObjectsDAO.setProcessed(objectId).transact(database).unsafeRunSync()
       val retrieved = AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
       retrieved.processed mustBe true
-    }
-
-    "return object with highest sequence number" in {
-      for ((objId, zeroBasedI) <- objectIds.zipWithIndex) {
-        AtalaObjectsDAO
-          .insert(
-            AtalaObjectsDAO.AtalaObjectCreateData(objId, zeroBasedI + 1, objectTimestamp, None, transactionId, ledger)
-          )
-          .transact(database)
-          .unsafeRunSync()
-      }
-
-      val retrieved = AtalaObjectsDAO.getNewest().transact(database).unsafeRunSync().value
-      retrieved.sequenceNumber mustBe objectIds.size
     }
   }
 }

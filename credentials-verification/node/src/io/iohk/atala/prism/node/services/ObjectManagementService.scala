@@ -24,10 +24,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ReferenceAlreadyProcessed extends Exception
 
-object ObjectManagementService {
-  val INITIAL_SEQUENCE_NUMBER = 1
-}
-
 class ObjectManagementService(
     storage: ObjectStorageService,
     atalaReferenceLedger: AtalaReferenceLedger,
@@ -36,8 +32,6 @@ class ObjectManagementService(
     xa: Transactor[IO],
     ec: ExecutionContext
 ) {
-
-  import ObjectManagementService._
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -54,14 +48,13 @@ class ObjectManagementService(
         }
       }
 
-      newestObject <- AtalaObjectsDAO.getNewest()
       block = notification.transaction.block.getOrElse(
         throw new IllegalArgumentException("Transaction has no block")
       )
       obj <- AtalaObjectsDAO.insert(
         AtalaObjectCreateData(
           hash,
-          newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1),
+          block.index,
           block.timestamp,
           Some(objectBytes),
           notification.transaction.transactionId,
@@ -142,7 +135,7 @@ class ObjectManagementService(
     for {
       protobufObject <- getProtobufObject(obj)
       block <- getBlockFromObject(protobufObject)
-      blockTransaction = processBlock(block, obj.objectTimestamp, obj.sequenceNumber)
+      blockTransaction = processBlock(block, obj.objectTimestamp, obj.blockIndex)
     } yield for {
       result <- blockTransaction
       _ <- AtalaObjectsDAO.setProcessed(obj.objectId)
@@ -152,8 +145,8 @@ class ObjectManagementService(
   protected def processBlock(
       block: node_internal.AtalaBlock,
       blockTimestamp: Instant,
-      blockSequenceNumber: Int
+      blockIndex: Int
   ): ConnectionIO[Boolean] = {
-    blockProcessing.processBlock(block, blockTimestamp, blockSequenceNumber)
+    blockProcessing.processBlock(block, blockTimestamp, blockIndex)
   }
 }

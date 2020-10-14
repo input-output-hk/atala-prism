@@ -129,7 +129,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val atalaObject = queryAtalaObject(obj)
-      atalaObject.sequenceNumber mustBe 1
+      atalaObject.blockIndex mustBe 1
       // TODO: Once processing is async, test the object is not processed
     }
 
@@ -143,7 +143,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val atalaObject = queryAtalaObject(obj)
-      atalaObject.sequenceNumber mustBe 1
+      atalaObject.blockIndex mustBe 1
       // TODO: Once processing is async, test the object is not processed
     }
 
@@ -165,7 +165,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       verifyNoMoreInteractions(blockProcessing)
 
       val atalaObject = queryAtalaObject(obj)
-      atalaObject.sequenceNumber mustBe 1
+      atalaObject.blockIndex mustBe 1
       atalaObject.processed mustBe true
     }
 
@@ -181,7 +181,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
         val atalaObject = queryAtalaObject(obj)
-        atalaObject.sequenceNumber mustBe (i + 1)
+        atalaObject.blockIndex mustBe dummyABSequenceNumber
         atalaObject.processed mustBe true
         atalaObject.byteContent.isDefined mustBe true
 

@@ -21,7 +21,7 @@ trait BlockProcessingService {
   def processBlock(
       block: node_internal.AtalaBlock,
       blockTimestamp: Instant,
-      blockSequenceNumber: Int
+      blockIndex: Int
   ): ConnectionIO[Boolean]
 }
 
@@ -82,13 +82,13 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   override def processBlock(
       block: node_internal.AtalaBlock,
       blockTimestamp: Instant,
-      blockSequenceNumber: Int
+      blockIndex: Int
   ): ConnectionIO[Boolean] = {
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
     val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) {
       case (signedOperation, osn) =>
-        parseOperation(signedOperation, TimestampInfo(blockTimestamp, blockSequenceNumber, osn)).left
+        parseOperation(signedOperation, TimestampInfo(blockTimestamp, blockIndex, osn)).left
           .map(err => (signedOperation, err))
     }
 

@@ -64,7 +64,7 @@ package object models {
   case class AtalaObject(
       objectId: SHA256Digest,
       objectTimestamp: Instant,
-      sequenceNumber: Int,
+      blockIndex: Int,
       byteContent: Option[Array[Byte]],
       transactionId: TransactionId,
       ledger: Ledger,
