@@ -11,7 +11,7 @@ services:
       - node-ipc:/ipc
 
   cardano-db-sync:
-    image: inputoutput/cardano-db-sync:5.0.1
+    image: inputoutput/cardano-db-sync:5.0.2
     environment:
       - NETWORK=${cardano_network}
       - POSTGRES_HOST=${postgres_host}
