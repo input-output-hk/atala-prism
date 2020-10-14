@@ -11,7 +11,7 @@ object UserCredentialDao {
 
   def findBy(connectionToken: ConnectionToken): ConnectionIO[List[UserCredential]] = {
     sql"""
-    | SELECT connection_token, raw_credential, issuers_did, message_id, message_received_date
+    | SELECT connection_token, raw_credential, issuers_did, message_id, message_received_date, status
     | FROM user_credentials
     | WHERE connection_token = $connectionToken
     """.stripMargin.query[UserCredential].to[List]
@@ -31,8 +31,8 @@ object UserCredentialDao {
   val insertMany: Update[UserCredential] =
     Update[UserCredential](
       """INSERT INTO
-        | user_credentials(connection_token, raw_credential, issuers_did, message_id, message_received_date)
-        | values (?, ?, ?, ?, ?)
+        | user_credentials(connection_token, raw_credential, issuers_did, message_id, message_received_date, status)
+        | values (?, ?, ?, ?, ?, ?::CREDENTIAL_STATUS)
         | ON CONFLICT DO NOTHING""".stripMargin
     )
 

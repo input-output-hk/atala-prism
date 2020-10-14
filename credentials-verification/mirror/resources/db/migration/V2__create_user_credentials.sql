@@ -1,10 +1,13 @@
 
+CREATE TYPE CREDENTIAL_STATUS AS ENUM ('RECEIVED', 'VALID', 'INVALID', 'REVOKED');
+
 CREATE TABLE user_credentials(
   connection_token TEXT NOT NULL,
   raw_credential TEXT NOT NULL,
   issuers_did TEXT,
   message_id TEXT NOT NULL,
   message_received_date TIMESTAMPTZ NOT NULL,
+  status CREDENTIAL_STATUS NOT NULL,
   CONSTRAINT user_credentials_connection_token_fk FOREIGN KEY (connection_token) REFERENCES connections (token),
   CONSTRAINT user_credentials_message_id_unique UNIQUE (message_id)
 );

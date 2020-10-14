@@ -1,34 +1,55 @@
 package io.iohk.atala.mirror.services
 
-import java.time.Instant
-
 import scala.concurrent.duration.DurationInt
 import scala.util.Try
 
-import cats.data.NonEmptyList
+import cats.data.{EitherT, NonEmptyList, ValidatedNel}
 import monix.eval.Task
 import doobie.util.transactor.Transactor
-import fs2.Stream
-import org.slf4j.LoggerFactory
-
-import io.iohk.atala.credentials.{
-  SignedCredential,
-  UnsignedCredential,
-  JsonBasedUnsignedCredential,
-  UnsignedCredentialBuilder
-}
-import io.iohk.prism.protos.connector_models.ReceivedMessage
 import io.iohk.prism.protos.credential_models
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
-import io.iohk.atala.mirror.models.{Connection, UserCredential, CredentialProofRequestType}
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
-import io.iohk.atala.mirror.models.UserCredential.{IssuersDID, MessageId, MessageReceivedDate, RawCredential}
+import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType}
+import io.iohk.atala.mirror.models.Connection.ConnectionState
+import io.iohk.atala.mirror.models.UserCredential
+import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
+import io.iohk.atala.mirror.models.UserCredential.{
+  CredentialStatus,
+  IssuersDID,
+  MessageId,
+  MessageReceivedDate,
+  RawCredential
+}
+import io.iohk.prism.protos.connector_models.ReceivedMessage
+import java.time.Instant
+
+import io.iohk.atala.credentials.{
+  CredentialData,
+  CredentialVerification,
+  CredentialsCryptoSDKImpl,
+  JsonBasedUnsignedCredential,
+  KeyData,
+  SignedCredential,
+  UnsignedCredential,
+  UnsignedCredentialBuilder
+}
+import io.iohk.atala.crypto.EC
+import JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
+import cats.data.Validated.{Invalid, Valid}
+import fs2.Stream
 import io.iohk.atala.mirror.Utils.parseUUID
+import org.slf4j.LoggerFactory
+import io.iohk.atala.credentials.VerificationError
+import io.iohk.atala.mirror.NodeUtils.{computeNodeCredentialId, fromProtoKey, fromTimestampInfoProto}
+import io.iohk.prism.protos.node_api.GetCredentialStateResponse
 
 import cats.implicits._
 import doobie.implicits._
 
-class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientService) {
+class CredentialService(
+    tx: Transactor[Task],
+    connectorService: ConnectorClientService,
+    nodeService: NodeClientService
+) {
 
   private val logger = LoggerFactory.getLogger(classOf[CredentialService])
 
@@ -114,7 +135,7 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
           .flatMap(connection => connection.id.map(_.uuid.toString -> connection.token))
           .toMap
 
-      userCredentials = messages.flatMap { receivedMessage =>
+      userCredentials <- Task.sequence(messages.flatMap { receivedMessage =>
         for {
           rawCredential <- parseCredential(receivedMessage)
           token <- connectionIdToTokenMap.get(receivedMessage.connectionId).orElse {
@@ -124,17 +145,8 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
             )
             None
           }
-          issuersDid = getIssuersDid(rawCredential)
-        } yield {
-          UserCredential(
-            token,
-            rawCredential,
-            issuersDid,
-            MessageId(receivedMessage.id),
-            MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received))
-          )
-        }
-      }.toList
+        } yield createUserCredential(receivedMessage, token, rawCredential)
+      }.toList)
 
       _ <- UserCredentialDao.insertMany.updateMany(userCredentials).transact(tx)
     } yield ()
@@ -171,6 +183,101 @@ class CredentialService(tx: Transactor[Task], connectorService: ConnectorClientS
     }
 
     unsignedCredential.issuerDID.map(IssuersDID)
+  }
+
+  private def createUserCredential(
+      receivedMessage: ReceivedMessage,
+      token: ConnectionToken,
+      rawCredential: RawCredential
+  ): Task[UserCredential] = {
+    verifyCredential(rawCredential.rawCredential).map { result =>
+      val credentialStatus = result match {
+        case Right(verificationResult) => parseCredentialStatus(verificationResult)
+        case Left(parsingError) =>
+          logger.warn(parsingError)
+          CredentialStatus.Received
+      }
+
+      UserCredential(
+        token,
+        rawCredential,
+        getIssuersDid(rawCredential),
+        MessageId(receivedMessage.id),
+        MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received)),
+        credentialStatus
+      )
+    }
+  }
+
+  private def parseCredentialStatus(result: ValidatedNel[VerificationError, Unit]): CredentialStatus =
+    result match {
+      case Valid(_) => CredentialStatus.Valid
+      case Invalid(errors) =>
+        errors.head match {
+          case _: VerificationError.Revoked => CredentialStatus.Revoked
+          case _: VerificationError.KeyWasNotValid => CredentialStatus.Invalid
+          case _: VerificationError.KeyWasRevoked => CredentialStatus.Invalid
+          case VerificationError.InvalidSignature => CredentialStatus.Invalid
+        }
+    }
+
+  private[services] def verifyCredential(
+      signedCredentialStringRepresentation: String
+  ): Task[Either[String, ValidatedNel[VerificationError, Unit]]] = {
+    (for {
+      signedCredential <-
+        SignedCredential.from(signedCredentialStringRepresentation).toEither.left.map(_.getMessage).toEitherT[Task]
+      unsignedCredential = signedCredential.decompose[JsonBasedUnsignedCredential].credential
+      issuerDID <- unsignedCredential.issuerDID.toRight("issuerDID is missing in received credential").toEitherT[Task]
+      issuanceKeyId <-
+        unsignedCredential.issuanceKeyId.toRight("issuanceKeyId is missing in received credential").toEitherT[Task]
+      keyData <- getKeyData(issuerDID = issuerDID, issuanceKeyId = issuanceKeyId)
+      credentialData <- getCredentialData(
+        computeNodeCredentialId(
+          credentialHash = CredentialsCryptoSDKImpl.hash(signedCredential),
+          did = issuerDID
+        )
+      )
+    } yield CredentialVerification.verifyCredential(keyData, credentialData, signedCredential)(EC)).value
+  }
+
+  private[services] def getKeyData(issuerDID: String, issuanceKeyId: String): EitherT[Task, String, KeyData] = {
+    for {
+      didData <- EitherT(nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID $issuerDID")))
+
+      issuingKeyProto <-
+        didData.publicKeys
+          .find(_.id == issuanceKeyId)
+          .toRight(s"KeyId not found: $issuanceKeyId")
+          .toEitherT[Task]
+
+      issuingKey <- fromProtoKey(issuingKeyProto)
+        .toRight(s"Failed to parse proto key: $issuingKeyProto")
+        .toEitherT[Task]
+
+      addedOn <-
+        issuingKeyProto.addedOn
+          .map(fromTimestampInfoProto)
+          .toRight(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId ")
+          .toEitherT[Task]
+
+      revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
+    } yield KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
+  }
+
+  private[services] def getCredentialData(nodeCredentialId: String): EitherT[Task, String, CredentialData] = {
+    for {
+      response <- EitherT[Task, String, GetCredentialStateResponse](
+        nodeService.getCredentialState(nodeCredentialId).map(Right(_))
+      )
+      publishedOn <-
+        response.publicationDate
+          .map(fromTimestampInfoProto)
+          .toRight(s"Missing publication date $nodeCredentialId")
+          .toEitherT[Task]
+
+      revokedOn = response.revocationDate map fromTimestampInfoProto
+    } yield CredentialData(issuedOn = publishedOn, revokedOn = revokedOn)
   }
 
 }

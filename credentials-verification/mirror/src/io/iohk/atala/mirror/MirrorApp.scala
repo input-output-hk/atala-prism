@@ -17,8 +17,14 @@ import io.iohk.atala.crypto.EC
 import io.iohk.atala.requests.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
-import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, TransactorConfig}
-import io.iohk.atala.mirror.services.{ConnectorClientServiceImpl, CredentialService, MirrorService}
+import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, NodeConfig, TransactorConfig}
+import io.iohk.atala.mirror.services.{
+  ConnectorClientServiceImpl,
+  CredentialService,
+  MirrorService,
+  NodeClientServiceImpl
+}
+import io.iohk.prism.protos.node_api.NodeServiceGrpc
 
 object MirrorApp extends TaskApp {
 
@@ -49,6 +55,7 @@ object MirrorApp extends TaskApp {
       mirrorConfig = MirrorConfig(globalConfig)
       transactorConfig = TransactorConfig(globalConfig)
       connectorConfig = ConnectorConfig(globalConfig)
+      nodeConfig = NodeConfig(globalConfig)
 
       // db
       tx <- createTransactor(transactorConfig)
@@ -57,10 +64,14 @@ object MirrorApp extends TaskApp {
       // connector
       connector <- Resource.pure(createConnector(connectorConfig))
 
+      // node
+      node <- Resource.pure(createNode(nodeConfig))
+
       // services
       connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), connectorConfig)
+      nodeService = new NodeClientServiceImpl(node)
       mirrorService = new MirrorService(tx, connectorService)
-      credentialService = new CredentialService(tx, connectorService)
+      credentialService = new CredentialService(tx, connectorService, nodeService)
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
 
       // background streams
@@ -146,6 +157,20 @@ object MirrorApp extends TaskApp {
       .build()
 
     ConnectorServiceGrpc.stub(channel)
+  }
+
+  /**
+    * Create a node gRPC service stub.
+    */
+  def createNode(
+      nodeConfig: NodeConfig
+  ): NodeServiceGrpc.NodeServiceStub = {
+    val channel = ManagedChannelBuilder
+      .forAddress(nodeConfig.host, nodeConfig.port)
+      .usePlaintext()
+      .build()
+
+    NodeServiceGrpc.stub(channel)
   }
 
 }
