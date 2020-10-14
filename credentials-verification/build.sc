@@ -1,7 +1,6 @@
 import java.time.{LocalDateTime, ZoneOffset}
 
 import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
-import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-scoverage:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION`
 import $ivy.`io.github.davidgregory084::mill-tpolecat:0.1.3`
@@ -10,11 +9,8 @@ import coursier.maven.MavenRepository
 import io.github.davidgregory084.TpolecatModule
 import mill._
 import mill.contrib.buildinfo.BuildInfo
-import mill.contrib.scalapblib._
 import mill.contrib.scoverage.ScoverageModule
-import mill.define.{Command, Input, Sources, Target, Task}
-import mill.eval.PathRef
-import mill.modules.Assembly.Rule
+import mill.define.{Command, Target}
 import mill.scalalib._
 import mill.twirllib._
 
@@ -201,7 +197,7 @@ object versions {
   val doobie = "0.7.0"
   val sttp = "1.6.6"
   val logback = "1.2.3"
-  val grpc = "1.24.0"
+  val grpc = "1.28.1"
   val monocle = "2.0.0"
   val scopt = "4.0.0-RC2"
   val silencer = "1.6.0"
@@ -217,16 +213,23 @@ object versions {
   * version has been previously built locally. It runs once and only once per `mill` run, guaranteeing the Crypto
   * library used is always up-to-date.
   */
-object Crypto extends ScalaModule {
+object SDK extends ScalaModule {
   def scalaVersion = versions.scala
 
-  override def ivyDeps = Agg(ivy"io.iohk::prism-crypto:${publishAndGetCurrentVersion()}")
+  override def ivyDeps =
+    T {
+      val version = publishAndGetCurrentVersion()
+      Agg(
+        ivy"io.iohk::prism-crypto:$version",
+        ivy"io.iohk::prism-protos:$version"
+      )
+    }
 
   private val sdkDir = os.pwd / up / "prism-sdk"
   private val sbtEnv = Map("SBT_OPTS" -> "-Xmx2G")
 
   /**
-    * Publishes and returns the current version of the Crypto library.
+    * Publishes and returns the current version of the PRISM SDK.
     *
     * <p>Note this method is persisted between `mill` runs, so `mill clean` may be necessary to get the most up-to-date
     * version.
@@ -234,19 +237,19 @@ object Crypto extends ScalaModule {
   def publishAndGetCurrentVersion =
     T.persistent {
       val versionResult =
-        os.proc("sbt", "prismCryptoJVM/version").call(cwd = sdkDir, env = sbtEnv)
+        os.proc("sbt", "sdk/version").call(cwd = sdkDir, env = sbtEnv)
 
       // The version is the last word in the output
       val version = versionResult.out.text().split("\\s").filterNot(_.length <= 4).last
 
-      T.ctx().log.info(s"Publishing Crypto library version $version")
-      os.proc("sbt", "prismCryptoJVM/publishLocal").call(cwd = sdkDir, env = sbtEnv, stdout = os.Inherit)
+      T.ctx().log.info(s"Publishing PRISM SDK version $version")
+      os.proc("sbt", "sdk/publishLocal").call(cwd = sdkDir, env = sbtEnv, stdout = os.Inherit)
       version
     }
 }
 
-object common extends PrismScalaModule with PBCommon with CodeCoverageModule {
-  override def moduleDeps = Seq(Crypto) ++ super.moduleDeps
+object common extends PrismScalaModule with CodeCoverageModule {
+  override def moduleDeps = Seq(SDK) ++ super.moduleDeps
 
   override def ivyDeps =
     super.ivyDeps.map { deps =>
@@ -334,6 +337,9 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
       ivy"io.monix::monix:3.0.0",
       ivy"io.scalaland::chimney:0.3.3",
       ivy"io.grpc:grpc-netty:${versions.grpc}",
+      ivy"io.grpc:grpc-services:${versions.grpc}",
+      ivy"io.grpc:grpc-context:${versions.grpc}",
+      ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}",
       ivy"com.chuusai::shapeless:2.3.3"
     )
 
@@ -382,41 +388,7 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
   }
 }
 
-trait PBCommon extends ScalaPBModule {
-  def scalaPBVersion = versions.scalaPB
-
-  // This is a temporary measure that unifies how mill scalaPB plugin and sbt scalaPB plugin
-  // resolve imports. TODO: Delete once project uses prism-protos artifact instead of compiling
-  // its own proto files.
-  override def scalaPBIncludePath =
-    T.sources {
-      os.pwd / 'protos
-    }
-
-  // merge service files, otherwise GRPC client doesn't work:
-  // https://github.com/grpc/grpc-java/issues/5493
-  override def assemblyRules =
-    super.assemblyRules ++ Seq(
-      Rule.AppendPattern("META-INF/services/*")
-    )
-
-  override def ivyDeps =
-    super.ivyDeps.map { deps =>
-      deps ++ Agg(
-        ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}",
-        ivy"io.grpc:grpc-services:${versions.grpc}"
-      )
-    }
-
-  override def scalaPBSources: Sources =
-    T.sources {
-      os.pwd / 'protos
-    }
-}
-
-trait ServerPBCommon extends ServerCommon with PBCommon
-
-object node extends ServerPBCommon with CVPDockerModule with CodeCoverageModule {
+object node extends ServerCommon with CVPDockerModule with CodeCoverageModule {
 
   override def mainClass = Some("io.iohk.atala.prism.node.NodeApp")
 
@@ -453,12 +425,7 @@ object node extends ServerPBCommon with CVPDockerModule with CodeCoverageModule 
   }
 }
 
-object connector extends ServerPBCommon with CVPDockerModule with TwirlModule with CodeCoverageModule {
-
-  // for some reason, the credential.proto is breaking the integration with mill and ScalaPB
-  // and the reason seems to be while generating lenses, the same protobuf file compiles just
-  // fine while using sbt.
-  override def scalaPBLenses = T { false }
+object connector extends ServerCommon with CVPDockerModule with TwirlModule with CodeCoverageModule {
 
   def twirlVersion = versions.twirl
 
@@ -522,7 +489,7 @@ object connector extends ServerPBCommon with CVPDockerModule with TwirlModule wi
 }
 
 object util extends mill.Module {
-  object keyderivation extends PrismScalaModule with PBCommon {
+  object keyderivation extends PrismScalaModule {
     override def moduleDeps = Seq(common) ++ super.moduleDeps
 
     override def repositories =
@@ -540,7 +507,7 @@ object util extends mill.Module {
   }
 }
 
-object mirror extends ServerPBCommon with CVPDockerModule with CodeCoverageModule {
+object mirror extends ServerCommon with CVPDockerModule with CodeCoverageModule {
 
   override def mainClass = Some("io.iohk.atala.mirror.MirrorApp")
 

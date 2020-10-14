@@ -86,8 +86,8 @@ object SdkBuild {
       .jsSettings(
         libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % scalapb.grpcweb.BuildInfo.version,
         PB.targets in Compile := Seq(
-          scalapb.gen(grpc = false) -> (sourceManaged in Compile).value,
-          scalapb.grpcweb.GrpcWebCodeGenerator -> (sourceManaged in Compile).value
+          scalapb.gen(grpc = false) -> (sourceManaged in Compile).value / "scalapb",
+          scalapb.grpcweb.GrpcWebCodeGenerator -> (sourceManaged in Compile).value / "scalapb"
         )
       )
 

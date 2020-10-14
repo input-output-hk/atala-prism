@@ -130,9 +130,6 @@ libraryDependencies += "me.shadaj" %%% "slinky-core" % slinkyVersion // core Rea
 libraryDependencies += "me.shadaj" %%% "slinky-web" % slinkyVersion // React DOM, HTML and SVG tags
 libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % slinkyIjextVerion // Intellij plugin for slinky
 
-// grpc libraries
-libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % grpcWebVersion
-
 // Test
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 
@@ -153,7 +150,8 @@ npmDependencies in Compile ++= Seq(
 
 // Internal libraries
 lazy val cryptoLib = ProjectRef(file("../prism-sdk"), "prismCryptoJS")
-dependsOn(cryptoLib)
+lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJS")
+dependsOn(cryptoLib, protosLib)
 
 // Enable DOM testing with Chrome under Selenium
 requireJsDomEnv in Test := true
@@ -185,23 +183,4 @@ jsEnv in Test := {
 
 addCompilerPlugin(
   "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full
-)
-
-PB.protoSources in Compile := Seq(file("../credentials-verification/protos"))
-val dependencyProtoList =
-  Seq(
-    "connector_api.proto",
-    "connector_models.proto",
-    "node_api.proto",
-    "node_models.proto",
-    "common_models.proto",
-    "cmanager_models.proto",
-    "cmanager_api.proto"
-  )
-
-includeFilter in PB.generate := new SimpleFileFilter((f: File) => dependencyProtoList.contains(f.getName))
-
-PB.targets in Compile := Seq(
-  scalapb.gen(grpc = false) -> (sourceManaged in Compile).value / "scalapb",
-  scalapb.grpcweb.GrpcWebCodeGenerator -> (sourceManaged in Compile).value / "scalapb"
 )
