@@ -7,7 +7,6 @@ import Contacts from './connections/ConnectionsContainer';
 import Registration from './registration/RegistrationContainer';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
-import CredentialSummaries from './credentialSummaries/CredentialSummaryController';
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
 import Settings from './settings/SettingsContainer';
@@ -46,12 +45,6 @@ const credential = {
   path: '/credentials',
   key: '/credentials',
   component: withLoggedValidation(withSideBar(Credential), issuer)
-};
-const credentialSummary = {
-  exact: true,
-  path: '/credentialSummary',
-  key: '/credentialSummary',
-  component: withLoggedValidation(withSideBar(CredentialSummaries), issuer)
 };
 const newCredential = {
   exact: true,
@@ -139,7 +132,6 @@ const routes = [
   groups,
   credential,
   settings,
-  credentialSummary,
   newCredential,
   registration,
   payment,

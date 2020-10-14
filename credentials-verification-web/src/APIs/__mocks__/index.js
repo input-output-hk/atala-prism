@@ -11,7 +11,6 @@ import {
 import { savePictureInS3, saveCredential, saveDraft } from './credentialInteractions';
 import { getTermsAndConditions, getPrivacyPolicy } from './documents';
 import { toProtoDate } from './helpers';
-import { getCredentialSummaries } from './credentialSummaries';
 import { getPayments, getCurrencies, getAmounts } from './payments';
 import { getSettings, editSettings } from './settings';
 import {
@@ -43,7 +42,6 @@ export const mockApi = {
   getTermsAndConditions,
   getPrivacyPolicy,
   toProtoDate,
-  getCredentialSummaries,
   getPayments,
   getCurrencies,
   getAmounts,

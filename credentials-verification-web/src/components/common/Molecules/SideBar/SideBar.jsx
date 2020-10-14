@@ -8,9 +8,6 @@ import contactsIcon from '../../../../images/connectionsIcon.svg';
 import iconMenu from '../../../../images/icon-menu.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
-// import iconTransactions from '../../../../images/icon-transactions.svg';
-import certificateIcon from '../../../../images/certificateIcon.svg';
-import credentialSummaryIcon from '../../../../images/credentialSummaryIcon.svg';
 import settingsIcon from '../../../../images/settingsIcon.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
 import { useSession } from '../../../providers/SessionContext';
@@ -30,11 +27,7 @@ const SideMenu = ({ location: { pathname } }) => {
     { icon: iconMenu, name: '', restrictedTo: [ISSUER, VERIFIER] },
     { icon: contactsIcon, name: 'contacts', restrictedTo: [ISSUER, VERIFIER] },
     { icon: iconGroups, name: 'groups', restrictedTo: [ISSUER] },
-    { icon: iconCredentials, name: 'credentials', restrictedTo: [ISSUER] },
-    { icon: credentialSummaryIcon, name: 'credentialSummary', restrictedTo: [ISSUER] }
-    // The next pages are not yet developed
-    // { icon: paymentIcon, name: 'payment', restrictedTo: [ISSUER, VERIFIER] }
-    // { icon: iconTransactions, name: 'transactions' }
+    { icon: iconCredentials, name: 'credentials', restrictedTo: [ISSUER] }
   ];
 
   const iconsByRole = icons.filter(({ restrictedTo }) => restrictedTo.includes(role));
