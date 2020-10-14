@@ -30,10 +30,21 @@ object ProtoCodecs {
       .withOperationSequenceNumber(timestampInfo.operationSequenceNumber)
   }
 
-  def toDIDDataProto(didDataState: models.nodeState.DIDDataState): node_models.DIDData = {
+  def atalaOperationToDIDDataProto(did: String, op: node_models.AtalaOperation): node_models.DIDData = {
     node_models
       .DIDData()
-      .withId(didDataState.didSuffix.suffix)
+      .withId(did)
+      .withPublicKeys(
+        op.getCreateDid.didData
+          .getOrElse(throw new RuntimeException("DID document with no keys"))
+          .publicKeys
+      )
+  }
+
+  def toDIDDataProto(did: String, didDataState: models.nodeState.DIDDataState): node_models.DIDData = {
+    node_models
+      .DIDData()
+      .withId(did)
       .withPublicKeys(
         didDataState.keys.map(key =>
           toProtoPublicKey(

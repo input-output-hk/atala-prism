@@ -39,7 +39,7 @@ object GitSupport {
   /**
     * Calculate a publishable version.
     *
-    * <p>The output format is {@code <BRANCH>-<N_COMMITS>-<CURRENT_COMMIT>}, where:
+   * <p>The output format is {@code <BRANCH>-<N_COMMITS>-<CURRENT_COMMIT>}, where:
     * <ul>
     *   <li>{@code <BRANCH>} is the name of the current branch, unless it's a feature branch starting with
     *   {@code ATA-<ID>}, for which it returns such prefix.
@@ -47,7 +47,7 @@ object GitSupport {
     *   <li>{@code <CURRENT_COMMIT>} is the short hash of {@code HEAD}.
     * </ul>
     *
-    * <p>NOTE: This naming convention is also encoded into terraform env.sh and the circle-ci build.
+   * <p>NOTE: This naming convention is also encoded into terraform env.sh and the circle-ci build.
     */
   def publishVersion(): String = {
     val branchPrefix =
@@ -209,7 +209,7 @@ object versions {
 /**
   * Crypto library wrapped in a Mill module, ensuring it's locally available for other modules.
   *
-  * <p>This module gets the version of the Crypto library to ensure the right one exists and is used, even if a newer
+ * <p>This module gets the version of the Crypto library to ensure the right one exists and is used, even if a newer
   * version has been previously built locally. It runs once and only once per `mill` run, guaranteeing the Crypto
   * library used is always up-to-date.
   */
@@ -221,7 +221,8 @@ object SDK extends ScalaModule {
       val version = publishAndGetCurrentVersion()
       Agg(
         ivy"io.iohk::prism-crypto:$version",
-        ivy"io.iohk::prism-protos:$version"
+        ivy"io.iohk::prism-protos:$version",
+        ivy"io.iohk::prism-identity:$version"
       )
     }
 
@@ -231,7 +232,7 @@ object SDK extends ScalaModule {
   /**
     * Publishes and returns the current version of the PRISM SDK.
     *
-    * <p>Note this method is persisted between `mill` runs, so `mill clean` may be necessary to get the most up-to-date
+   * <p>Note this method is persisted between `mill` runs, so `mill clean` may be necessary to get the most up-to-date
     * version.
     */
   def publishAndGetCurrentVersion =
@@ -389,6 +390,7 @@ trait ServerCommon extends PrismScalaModule with BuildInfo {
 }
 
 object node extends ServerCommon with CVPDockerModule with CodeCoverageModule {
+  override def moduleDeps = Seq(SDK) ++ super.moduleDeps
 
   override def mainClass = Some("io.iohk.atala.prism.node.NodeApp")
 

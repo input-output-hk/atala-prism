@@ -37,6 +37,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     val short = s"did:prism:$canonicalSuffix"
     val long = s"did:prism:$canonicalSuffix:$encodedStateUsed"
     val wrong = "did:prism:wrong"
+    val nonPrismDID = "did:other:wrong"
 
     "get the correct canonical suffix" in {
       DID.getCanonicalSuffix(short).value mustBe canonicalSuffix
@@ -72,6 +73,18 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
         case DID.DIDFormat.Unknown => // do nothing, the test would fail on the other cases
         case _ => fail("unexpected format for unknown DID")
       }
+    }
+
+    "properly obtain the DID suffix" in {
+      DID.getSuffix(short).value mustBe canonicalSuffix
+      DID.getSuffix(long).value mustBe s"$canonicalSuffix:$encodedStateUsed"
+      DID.getSuffix(wrong) mustBe None
+    }
+
+    "properly strip the PRISM DID preffix" in {
+      DID.stripPrismPrefix(short) mustBe canonicalSuffix
+      DID.stripPrismPrefix(long) mustBe s"$canonicalSuffix:$encodedStateUsed"
+      DID.stripPrismPrefix(nonPrismDID) mustBe nonPrismDID
     }
 
     "properly validate a long form DID" in {

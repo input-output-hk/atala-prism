@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node
 
 import io.grpc.Status
+import io.iohk.atala.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -9,7 +10,7 @@ import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.cvp.BuildInfo
-import io.iohk.prism.protos.node_api
+import io.iohk.prism.protos.{node_api, node_models}
 import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -21,12 +22,32 @@ class NodeServiceImpl(
 )(implicit
     ec: ExecutionContext
 ) extends node_api.NodeServiceGrpc.NodeService {
-  override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
 
-    didDataService.findByDID(request.did).value.flatMap {
-      case Left(err: NodeError) => Future.failed(err.toStatus.asRuntimeException())
-      case Right(didDataState) =>
-        Future.successful(node_api.GetDidDocumentResponse(Some(ProtoCodecs.toDIDDataProto(didDataState))))
+  import NodeServiceImpl._
+
+  override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
+    implicit val didService: DIDDataService = didDataService
+
+    DID.getFormat(request.did) match {
+      case DID.DIDFormat.Canonical(_) =>
+        resolve(request.did) orElse (err => Future.failed(err.toStatus.asRuntimeException()))
+      case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
+        // we first check that the encoded initial state matches the corresponding hash
+        longForm.validate
+          .fold(failWith(s"Invalid long form DID: ${request.did}")) { validatedLongForm =>
+            // validation succeeded, we check if the DID was published
+            resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = request.did) orElse { _ =>
+              // if it was not published, we return the encoded initial state
+              succeedWith(
+                ProtoCodecs.atalaOperationToDIDDataProto(
+                  DID.stripPrismPrefix(request.did),
+                  validatedLongForm.initialState
+                )
+              )
+            }
+          }
+      case DID.DIDFormat.Unknown =>
+        failWith(s"DID format not supported: ${request.did}")
     }
   }
 
@@ -116,5 +137,32 @@ class NodeServiceImpl(
         Status.INVALID_ARGUMENT.withDescription(error.render).asRuntimeException()
       }.toTry
     }
+  }
+}
+
+object NodeServiceImpl {
+  private def succeedWith(didData: node_models.DIDData): Future[node_api.GetDidDocumentResponse] = {
+    Future.successful(node_api.GetDidDocumentResponse(Some(didData)))
+  }
+
+  def failWith(msg: String): Future[node_api.GetDidDocumentResponse] = Future.failed(new RuntimeException(msg))
+
+  private case class OrElse(did: String, state: Future[Either[NodeError, models.nodeState.DIDDataState]]) {
+    def orElse(
+        ifFailed: NodeError => Future[node_api.GetDidDocumentResponse]
+    )(implicit ec: ExecutionContext): Future[node_api.GetDidDocumentResponse] =
+      state.flatMap {
+        case Right(st) =>
+          succeedWith(ProtoCodecs.toDIDDataProto(DID.stripPrismPrefix(did), st))
+        case Left(err: NodeError) => ifFailed(err)
+      }
+  }
+
+  private def resolve(did: String, butShowInDIDDocument: String)(implicit didDataService: DIDDataService): OrElse = {
+    OrElse(butShowInDIDDocument, didDataService.findByDID(did).value)
+  }
+
+  private def resolve(did: String)(implicit didDataService: DIDDataService): OrElse = {
+    OrElse(did, didDataService.findByDID(did).value)
   }
 }

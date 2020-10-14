@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
+import io.iohk.atala.identity.DID
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -116,6 +117,58 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       publicKey.revokedOn mustBe empty
 
       ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe key.key
+    }
+
+    "return DID document for an unpublished DID" in {
+      val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
+      val longFormDID = DID.createUnpublishedDID(masterKey)
+
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID))
+      val document = response.document.value
+      document.id mustBe longFormDID.stripPrefix("did:prism:")
+      document.publicKeys.size mustBe 1
+
+      val publicKey = document.publicKeys.headOption.value
+      publicKey.id mustBe "master0"
+      publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
+      publicKey.addedOn mustBe empty
+      publicKey.revokedOn mustBe empty
+
+      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe masterKey
+    }
+
+    "return DID document for a long form DID after it was published" in {
+      val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
+      val issuingKey = CreateDIDOperationSpec.issuingKeys.publicKey
+      val longFormDID = DID.createUnpublishedDID(masterKey)
+
+      // we simulate the publication of the DID and the addition of an issuing key
+      val didDigest = SHA256Digest.fromHex(DID.getCanonicalSuffix(longFormDID).value)
+      val didSuffix = DIDSuffix(didDigest)
+      val dummyTime = TimestampInfo.dummyTime
+      DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
+      val key1 = DIDPublicKey(didSuffix, "master0", KeyUsage.MasterKey, masterKey)
+      val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
+      PublicKeysDAO.insert(key1, dummyTime).transact(database).unsafeRunSync()
+      PublicKeysDAO.insert(key2, dummyTime).transact(database).unsafeRunSync()
+
+      // we now resolve the long form DID
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID))
+      val document = response.document.value
+      document.id mustBe longFormDID.stripPrefix("did:prism:")
+      document.publicKeys.size mustBe 2
+
+      val publicKey1 = document.publicKeys.find(_.id == "master0").value
+      publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
+      ProtoCodecs.fromTimestampInfoProto(publicKey1.addedOn.value) mustBe dummyTime
+      publicKey1.revokedOn mustBe empty
+      ParsingUtils.parseECKey(ValueAtPath(publicKey1.getEcKeyData, Path.root)).right.value mustBe masterKey
+
+      val publicKey2 = document.publicKeys.find(_.id == "issuance0").value
+      publicKey2.usage mustBe node_models.KeyUsage.ISSUING_KEY
+      ProtoCodecs.fromTimestampInfoProto(publicKey2.addedOn.value) mustBe dummyTime
+      publicKey2.revokedOn mustBe empty
+      ParsingUtils.parseECKey(ValueAtPath(publicKey2.getEcKeyData, Path.root)).right.value mustBe issuingKey
     }
   }
 
