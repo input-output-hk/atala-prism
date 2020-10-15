@@ -11,7 +11,6 @@ import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
 import Settings from './settings/SettingsContainer';
 import IndividualCreation from './individualCreation/IndividualCreationContainer';
-import StudentCreation from './studentCreation/StudentCreationContainer';
 import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
@@ -87,12 +86,6 @@ const individualCreation = {
   key: 'individualCreation',
   component: withLoggedValidation(withSideBar(IndividualCreation), verifier)
 };
-const studentCreation = {
-  exact: true,
-  path: '/studentCreation',
-  key: 'studentCreation',
-  component: withLoggedValidation(withSideBar(StudentCreation), issuer)
-};
 const adminRoute = {
   exact: true,
   path: '/admin',
@@ -136,7 +129,6 @@ const routes = [
   registration,
   payment,
   individualCreation,
-  studentCreation,
   landingRoute,
   dashboardRoute,
   importContacts,

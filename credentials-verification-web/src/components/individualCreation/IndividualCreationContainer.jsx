@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { message } from 'antd';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { v4 as uuidv4 } from 'uuid';
 import IndividualCreation from './IndividualCreation';
 import { withApi } from '../providers/withApi';
 import { withRedirector } from '../providers/withRedirector';
@@ -59,9 +60,10 @@ const IndividualCreationContainer = ({ api, redirector: { redirectToContacts } }
     setIndvalidIndividuals(invalidIndividual);
 
     if (invalidIndividual) return;
-
-    const creationPromises = individuals.map(({ fullName, email }) =>
-      api.credentialStore.createHolder(fullName, email)
+    const creationPromises = individuals.map(individual =>
+      // TODO Added a uuid as external id as it was required from the backend
+      // This will be removed when we unify roles
+      api.contactsManager.createContact(null, individual, uuidv4())
     );
 
     Promise.all(creationPromises)
@@ -93,7 +95,7 @@ const IndividualCreationContainer = ({ api, redirector: { redirectToContacts } }
 
 IndividualCreationContainer.propTypes = {
   api: PropTypes.shape({
-    credentialStore: PropTypes.shape({ createHolder: PropTypes.func }).isRequired
+    contactsManager: PropTypes.shape({ createContact: PropTypes.func }).isRequired
   }).isRequired,
   redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };

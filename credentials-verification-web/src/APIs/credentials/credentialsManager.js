@@ -6,7 +6,8 @@ import credentialTypes from './credentialTypes';
 const { Date } = require('../../protos/common_models_pb');
 const {
   GetGenericCredentialsRequest,
-  CreateGenericCredentialRequest
+  CreateGenericCredentialRequest,
+  GetContactCredentialsRequest
 } = require('../../protos/cmanager_api_pb');
 const {
   Credential,
@@ -250,6 +251,20 @@ function getCredentialTypes() {
   return credentialTypes;
 }
 
+async function getContactCredentials(contactId) {
+  Logger.info('Getting credentials for contact:', contactId);
+  const req = new GetContactCredentialsRequest();
+  req.setContactid(contactId);
+
+  const metadata = await this.auth.getMetadata(req);
+
+  const res = await this.client.getContactCredentials(req, metadata);
+  const credentialsList = res.getGenericcredentialsList();
+  Logger.info('Got credentials:', credentialsList);
+
+  return credentialsList;
+}
+
 function CredentialsManager(config, auth) {
   this.config = config;
   this.auth = auth;
@@ -260,5 +275,6 @@ CredentialsManager.prototype.getCredentials = getCredentials;
 CredentialsManager.prototype.createCredential = createCredential;
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 CredentialsManager.prototype.getCredentialTypes = getCredentialTypes;
+CredentialsManager.prototype.getContactCredentials = getContactCredentials;
 
 export default CredentialsManager;

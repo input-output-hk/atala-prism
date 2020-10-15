@@ -22,18 +22,18 @@ export const AVATAR_WIDTH = 50;
 
 export const PENDING_CONNECTION = 'PENDING_CONNECTION';
 export const CONNECTION_STATUSES = {
-  invitationMissing: 0,
-  connectionMissing: 1,
-  connectionAccepted: 2,
-  connectionRevoked: 3
+  invitationMissing: 1,
+  connectionMissing: 2,
+  connectionAccepted: 3,
+  connectionRevoked: 4
 };
 export const CONNECTION_STATUSES_TRANSLATOR = __.invert(CONNECTION_STATUSES);
 
 export const INDIVIDUAL_STATUSES = {
-  created: 0,
-  invited: 1,
-  connected: 2,
-  revoked: 3
+  created: 1,
+  invited: 2,
+  connected: 3,
+  revoked: 4
 };
 export const INDIVIDUAL_STATUSES_TRANSLATOR = __.invert(INDIVIDUAL_STATUSES);
 
@@ -80,7 +80,7 @@ export const WALLET_NOT_LOGGED_ERROR = Error('errors.walletNotLogged');
 export const WALLET_NOT_REGISTERED_ERROR = Error('errors.walletNotRegistered');
 
 // Connection status
-export const CONNECTION_ACCEPTED = 2;
+export const CONNECTION_ACCEPTED = 3;
 
 // Import contacts methods
 export const BULK_IMPORT = 'bulkImport';

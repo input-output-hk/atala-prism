@@ -17,16 +17,14 @@ protoc -I=$OUT_DIR \
     node_models.proto \
     connector_models.proto \
     connector_api.proto \
-    cstore_models.proto \
-    cstore_api.proto \
     cmanager_models.proto \
     cmanager_api.proto \
     credential_models.proto \
     admin_api.proto \
-    intdemo/intdemo_models.proto \
-    intdemo/intdemo_api.proto \
     cviews_models.proto \
-    cviews_api.proto
+    cviews_api.proto \
+    console_models.proto \
+    console_api.proto
 
 # Add /* eslint-disable */ as first line in all protobuf generated files
 # This is needed because react has an unresolved issue that prevents ignoring all files in a folder.

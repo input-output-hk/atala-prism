@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
+import { omit } from 'lodash';
 import { withApi } from '../providers/withApi';
 import { withRedirector } from '../providers/withRedirector';
 import BulkImport from '../bulkImport/BulkImport';
@@ -53,7 +54,7 @@ const ContactsBulkImport = ({ api, redirector: { redirectToImportContacts } }) =
 
   const createNewGroups = async groups => {
     const preExistingGroups = await api.groupsManager.getGroups();
-    const newGroups = groups.filter(group => !preExistingGroups.includes(group));
+    const newGroups = groups.filter(group => !preExistingGroups.map(g => g.name).includes(group));
     const groupCreationPromises = newGroups.map(group => api.groupsManager.createGroup(group));
 
     return Promise.all(groupCreationPromises);
@@ -61,10 +62,13 @@ const ContactsBulkImport = ({ api, redirector: { redirectToImportContacts } }) =
 
   const createNewContacts = async (contactsData, groups) => {
     const contactCreationPromises = contactsData
-      // .map(contact => api.subjectsManager.createSubject(groups, contact)))
       .map(contact =>
         groups.map(group =>
-          api.subjectsManager.createSubject(group, creationDateDecorator(contact))
+          api.contactsManager.createContact(
+            group,
+            creationDateDecorator(omit(contact, ['originalArray'])),
+            contact.externalId
+          )
         )
       )
       .flat();
@@ -94,7 +98,7 @@ ContactsBulkImport.propTypes = {
       getGroups: PropTypes.func.isRequired,
       createGroup: PropTypes.func.isRequired
     }).isRequired,
-    subjectsManager: PropTypes.shape({ createSubject: PropTypes.func.isRequired }).isRequired
+    contactsManager: PropTypes.shape({ createContact: PropTypes.func.isRequired }).isRequired
   }).isRequired,
   redirector: PropTypes.shape({ redirectToImportContacts: PropTypes.func }).isRequired
 };

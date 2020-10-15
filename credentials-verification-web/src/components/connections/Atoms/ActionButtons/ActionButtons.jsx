@@ -20,7 +20,7 @@ const showQR = ({ status }) => {
 
 const ActionButtons = ({ inviteHolder, isIssuer, viewConnectionDetail, holder }) => {
   const { t } = useTranslation();
-  const { id } = holder;
+  const { contactid } = holder;
 
   const showQRButton = showQR(holder);
 
@@ -43,7 +43,7 @@ const ActionButtons = ({ inviteHolder, isIssuer, viewConnectionDetail, holder })
       {showQRButton && (
         <CustomButton
           buttonProps={{
-            onClick: () => inviteHolder(id),
+            onClick: () => inviteHolder(contactid),
             className: 'theme-link'
           }}
           buttonText={t('contacts.table.columns.invite')}

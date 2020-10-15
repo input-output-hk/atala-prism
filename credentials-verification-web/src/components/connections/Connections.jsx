@@ -44,7 +44,7 @@ const Connections = ({
     model: t('contacts.title')
   };
 
-  const getSubjectCredentials = connectionId => {
+  const getContactCredentials = connectionId => {
     const { getCredentials } = tableProps;
     return getCredentials(connectionId);
   };
@@ -52,7 +52,7 @@ const Connections = ({
   const viewConnection = connection => {
     const { creationDate, avatar, createdat, fullname, connectionid } = connection;
 
-    getSubjectCredentials(connectionid)
+    getContactCredentials(connectionid)
       .then(transactions => {
         const formattedHolder = {
           user: { icon: avatar, name: fullname, date: createdat },

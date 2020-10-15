@@ -7,6 +7,7 @@ import Logger from '../../helpers/Logger';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
+import { contactMapper } from '../../APIs/helpers';
 
 const ConnectionsContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -14,6 +15,8 @@ const ConnectionsContainer = ({ api }) => {
   const [subjects, setSubjects] = useState([]);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+
+  const isIssuer = () => api.wallet.isIssuer();
 
   const getConnections = ({
     pageSize,
@@ -23,10 +26,8 @@ const ConnectionsContainer = ({ api }) => {
     _email,
     isRefresh,
     oldConnections = []
-  }) => {
-    const getIndividuals = api.getIndividuals(api.wallet.isIssuer());
-
-    return (hasMore || isRefresh ? getIndividuals(pageSize, lastId) : Promise.resolve([]))
+  }) =>
+    (hasMore || isRefresh ? api.contactsManager.getContacts(lastId, pageSize) : Promise.resolve([]))
       .then(connections => {
         if (connections.length < HOLDER_PAGE_SIZE) {
           setHasMore(false);
@@ -36,18 +37,7 @@ const ConnectionsContainer = ({ api }) => {
           );
         }
 
-        const connectionsWithKey = connections.map(
-          ({ status: holderStatus, connectionstatus, id: holderId, individualid, ...rest }) => {
-            const existingId = holderId || individualid;
-            const indivStatus = holderStatus !== undefined ? holderStatus : connectionstatus;
-
-            return Object.assign({}, rest, {
-              key: existingId,
-              status: indivStatus,
-              id: existingId
-            });
-          }
-        );
+        const connectionsWithKey = connections.map(contactMapper);
 
         const updatedConnections = oldConnections.concat(connectionsWithKey);
 
@@ -70,16 +60,15 @@ const ConnectionsContainer = ({ api }) => {
         Logger.error('[Connections.getConnections] Error while getting connections', error);
         message.error(t('errors.errorGetting', { model: 'Holders' }));
       });
-  };
 
   const refreshConnections = () => getConnections({ pageSize: subjects.length, isRefresh: true });
 
   const handleHoldersRequest = (_name, _email, _status) => {
-    const { id } = getLastArrayElementOrEmpty(subjects);
+    const { contactid } = getLastArrayElementOrEmpty(subjects);
 
     return getConnections({
       pageSize: HOLDER_PAGE_SIZE,
-      lastId: id,
+      lastId: contactid,
       _name,
       _status,
       _email,
@@ -87,11 +76,7 @@ const ConnectionsContainer = ({ api }) => {
     });
   };
 
-  const inviteHolder = studentId => {
-    const generateConnectionToken = api.generateConnectionToken(api.wallet.isIssuer());
-
-    return generateConnectionToken(studentId);
-  };
+  const inviteHolder = studentId => api.contactsManager.generateConnectionToken(studentId);
 
   useEffect(() => {
     if (!subjects.length) handleHoldersRequest();
@@ -105,8 +90,6 @@ const ConnectionsContainer = ({ api }) => {
     hasMore,
     getCredentials
   };
-
-  const isIssuer = () => api.wallet.isIssuer();
 
   return (
     <Connections

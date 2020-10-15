@@ -24,6 +24,7 @@ const CompleteSpreadSheetStep = ({ currentStep, setCurrentStep, inputData, setFi
 
   const parseFile = ({ onSuccess, onError, file }) => {
     Papa.parse(file, {
+      skipEmptyLines: true,
       complete: result => {
         setFileData({
           ...result,

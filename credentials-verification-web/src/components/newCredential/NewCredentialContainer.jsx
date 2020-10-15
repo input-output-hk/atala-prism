@@ -10,6 +10,7 @@ import { withRedirector } from '../providers/withRedirector';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import Logger from '../../helpers/Logger';
+import { contactMapper } from '../../APIs/helpers';
 
 const NewCredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -41,21 +42,14 @@ const NewCredentialContainer = ({ api }) => {
       });
 
   const getSubjects = () => {
-    const getIndividuals = api.getIndividuals(api.wallet.isIssuer());
-    const { id: lastId } = getLastArrayElementOrEmpty(subjects);
+    const { contactid: lastId } = getLastArrayElementOrEmpty(subjects);
 
-    return getIndividuals(HOLDER_PAGE_SIZE, lastId)
+    return api.contactsManager
+      .getContacts(lastId, HOLDER_PAGE_SIZE)
       .then(connections => {
         if (connections.length < HOLDER_PAGE_SIZE) setHasMoreSubjects(false);
 
-        const subjectsWithKey = connections.map(
-          ({ status: holderStatus, connectionstatus, id: holderId, individualid, ...rest }) => {
-            const id = holderId || individualid;
-            const status = holderStatus !== undefined ? holderStatus : connectionstatus;
-
-            return Object.assign({}, rest, { key: id, status, id });
-          }
-        );
+        const subjectsWithKey = connections.map(contactMapper);
 
         const updatedSubjects = subjects.concat(subjectsWithKey);
         setSubjects(updatedSubjects);
@@ -142,7 +136,9 @@ NewCredentialContainer.propTypes = {
       getCredentialTypes: PropTypes.func,
       createCredential: PropTypes.func
     }).isRequired,
-    getIndividuals: PropTypes.func,
+    contactsManager: PropTypes.shape({
+      getContacts: PropTypes.func
+    }),
     wallet: PropTypes.shape({ isIssuer: PropTypes.func })
   }).isRequired,
   redirector: PropTypes.shape({

@@ -1,23 +1,16 @@
 import { omit } from 'lodash';
 
 // TODO: adapt the rest of the frontend so this isn't necessary
-export function holderToIndividual(holder) {
-  const jsondata = JSON.parse(holder.jsondata);
-  return {
-    ...omit(holder, ['holderid']),
-    ...jsondata,
-    individualid: holder.holderid
-  };
-}
-
-// TODO: adapt the rest of the frontend so this isn't necessary
-export function subjectToStudent(subject) {
-  const jsondata = JSON.parse(subject.jsondata);
-  return {
-    ...omit(subject, ['jsondata']),
+export function contactMapper(contact) {
+  const jsondata = JSON.parse(contact.jsondata);
+  const { status: holderStatus, connectionstatus, contactid, ...rest } = {
+    ...omit(contact, ['jsondata', 'holderid']),
     ...jsondata,
     ...parseName(jsondata)
   };
+  const status = holderStatus !== undefined ? holderStatus : connectionstatus;
+
+  return Object.assign({}, rest, { key: contactid, status, contactid });
 }
 
 // TODO: adapt the rest of the frontend so this isn't necessary
