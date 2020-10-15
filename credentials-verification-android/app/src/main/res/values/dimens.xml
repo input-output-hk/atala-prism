@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <dimen name="tutorial_texts_margin_end">88dp</dimen>
-  <dimen name="activity_default_side_margin">24dp</dimen>
-  <dimen name="card_corner_radius">8dp</dimen>
-  <dimen name="internal_margin">8dp</dimen>
-  <dimen name="titles_text_size">22sp</dimen>
-  <dimen name="little_text">13sp</dimen>
-  <dimen name="small_text">10sp</dimen>
+    <dimen name="tutorial_texts_margin_end">88dp</dimen>
+    <dimen name="activity_default_side_margin">24dp</dimen>
+    <dimen name="card_corner_radius">8dp</dimen>
+    <dimen name="internal_margin">8dp</dimen>
+    <dimen name="titles_text_size">22sp</dimen>
+    <dimen name="little_text">13sp</dimen>
+    <dimen name="small_text">10sp</dimen>
+    <dimen name="dp_0">0dp</dimen>
+    <dimen name="dp_2">2dp</dimen>
 </resources>

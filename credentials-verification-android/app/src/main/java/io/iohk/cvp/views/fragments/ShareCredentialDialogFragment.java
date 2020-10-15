@@ -5,40 +5,31 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.common.SupportErrorDialogFragment;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.google.protobuf.ByteString;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import butterknife.BindView;
-import butterknife.OnClick;
+import dagger.android.support.DaggerDialogFragment;
 import io.iohk.cvp.R;
+import io.iohk.cvp.data.local.db.model.Contact;
+import io.iohk.cvp.databinding.NeoDialogShareCredentialBinding;
+import io.iohk.cvp.neo.common.OnSelectItem;
+import io.iohk.cvp.neo.common.extensions.FragmentActivityExtensionsKt;
+import io.iohk.cvp.neo.common.model.CheckableData;
 import io.iohk.cvp.utils.CredentialParse;
-import io.iohk.cvp.viewmodel.ConnectionsListablesViewModel;
-import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
+import io.iohk.cvp.viewmodel.ShareCredentialDialogViewModel;
+import io.iohk.cvp.viewmodel.ShareCredentialDialogViewModelFactory;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
-import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
-import io.iohk.cvp.views.interfaces.SelectedVerifiersUpdateable;
-import io.iohk.cvp.views.utils.adapters.ShareCredentialRecyclerViewAdapter;
+import io.iohk.cvp.views.utils.adapters.CheckableContactRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.dialogs.SuccessDialog;
 import lombok.NoArgsConstructor;
 
@@ -47,43 +38,46 @@ import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_ENCODED_KEY;
 import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_TYPE_KEY;
 
 @NoArgsConstructor
-public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListablesViewModel> implements SelectedVerifiersUpdateable {
+public class ShareCredentialDialogFragment extends DaggerDialogFragment implements OnSelectItem<CheckableData<Contact>> {
 
     @Inject
-    ViewModelProvider.Factory factory;
+    ShareCredentialDialogViewModelFactory factory;
 
-    @BindView(R.id.background)
-    public ConstraintLayout background;
+    private ShareCredentialDialogViewModel viewModel;
 
-    @BindView(R.id.verifier_recycler_view)
-    public RecyclerView recyclerView;
-
-    @BindView(R.id.share_button)
-    public Button button;
-
-    private ShareCredentialRecyclerViewAdapter adapter;
-
-    private Set<ConnectionListable> selectedVerifiers = new HashSet<>();
+    private CheckableContactRecyclerViewAdapter adapter;
 
     private CredentialDto credential;
+
+    private NeoDialogShareCredentialBinding binding;
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        return new BottomSheetDialog(getContext(), getTheme());
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        viewModel = getViewModel();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        binding = DataBindingUtil.inflate(inflater, R.layout.neo_dialog_share_credential, container, false);
+        binding.setLifecycleOwner(this);
+        binding.setViewModel(viewModel);
+        configureRecyclerView();
         try {
-            adapter = new ShareCredentialRecyclerViewAdapter(this, getResources().getDisplayMetrics().density);
-            recyclerView.setLayoutManager(
-                    new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-            recyclerView.setAdapter(adapter);
-
             credential = CredentialParse.parse(getArguments().getString(CREDENTIAL_TYPE_KEY), getArguments().getString(CREDENTIAL_DATA_KEY));
+            String credentialIssuerId = credential.getIssuer().getId();
+            viewModel.fetchContacts(credentialIssuerId.substring(credentialIssuerId.lastIndexOf(":")), requireArguments().getByteArray(CREDENTIAL_ENCODED_KEY));
         } catch (Exception e) {
             FirebaseCrashlytics.getInstance().recordException(e);
         }
-
-        return view;
+        return binding.getRoot();
     }
 
     @Override
@@ -93,82 +87,63 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
     }
 
     private void initObservers() {
-        viewModel.getMessageSentLiveData().observe(getViewLifecycleOwner(), response -> {
-            hideLoading();
-            FragmentManager fm = getFragmentManager();
-            if (response.getError() != null) {
-                SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
-                        .show(fm, "");
-                getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                        R.string.server_error_message));
-            } else {
-                if (response.getResult()) {
-                    SuccessDialog.newInstance(this, R.string.server_share_successfully)
-                            .show(getActivity().getSupportFragmentManager(), "dialog");
-                    getFragmentManager().popBackStack();
-                    viewModel.shouldNotShowSuccessDialog();
+        // Update the contact list
+        viewModel.getFilteredContacts().observe(getViewLifecycleOwner(), checkableContacts -> {
+            adapter.clear();
+            adapter.addAll(checkableContacts);
+            adapter.notifyDataSetChanged();
+        });
+
+        // Handle ViewModel errors
+        viewModel.getError().observe(getViewLifecycleOwner(), errorEvent -> {
+            ShareCredentialDialogViewModel.ErrorType errorType = errorEvent.getContentIfNotHandled();
+            if (errorType != null) {
+                switch (errorType) {
+                    case CantLoadContactsError:
+                        FragmentActivityExtensionsKt.showErrorDialog(requireActivity(), R.string.error_loading_contacts);
+                        dismiss();
+                        break;
+                    case CantShareCredentialError:
+                        FragmentActivityExtensionsKt.showErrorDialog(requireActivity(), R.string.server_error_message);
+                        break;
                 }
             }
         });
 
-        viewModel.allConnectionsLiveData().observe(getViewLifecycleOwner(), response -> {
-            hideLoading();
-            if (response.getError() != null) {
-                getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                        R.string.server_error_message));
-                return;
-            }
-            if (response.getResult() != null) {
-                List<ConnectionListable> connections = new ArrayList<>(response.getResult().stream()
-                        .filter(conn -> conn.did.isEmpty() || !conn.did.substring(conn.did.lastIndexOf(":"))
-                                .equals(credential.getIssuer().getId().substring(credential.getIssuer().getId().lastIndexOf(":"))))
-                        .map(ConnectionListable::new).collect(Collectors.toList()));
-
-                adapter.addConnections(connections);
-                adapter.notifyDataSetChanged();
+        // Handles when credential is being sent (this locks the UI with a loading dialog)
+        viewModel.getCredentialSharingIsInProcess().observe(getViewLifecycleOwner(), isInSharingProcess -> {
+            if (isInSharingProcess) {
+                FragmentActivityExtensionsKt.showBlockUILoading(requireActivity());
+            } else {
+                FragmentActivityExtensionsKt.hideBlockUILoading(requireActivity());
             }
         });
-        viewModel.getAllConnections();
+
+        // Handles when the credential has been sent successfully
+        viewModel.getCredentialHasBeenShared().observe(getViewLifecycleOwner(), completeEvent -> {
+            if (completeEvent.getContentIfNotHandled() != null) {
+                SuccessDialog.newInstance(this, R.string.server_share_successfully).show(requireActivity().getSupportFragmentManager(), "dialog");
+                dismiss();
+            }
+        });
     }
 
-    @OnClick(R.id.background)
-    void onBackgroundClick() {
-        requireActivity().onBackPressed();
-    }
-
-    @Override
-    public ConnectionsListablesViewModel getViewModel() {
-        ConnectionsListablesViewModel viewModel = ViewModelProviders.of(this, factory)
-                .get(ConnectionsListablesViewModel.class);
-        viewModel.setContext(getContext());
+    private ShareCredentialDialogViewModel getViewModel() {
+        ShareCredentialDialogViewModel viewModel = ViewModelProviders.of(this, factory)
+                .get(ShareCredentialDialogViewModel.class);
         return viewModel;
     }
 
+    private void configureRecyclerView() {
+        adapter = new CheckableContactRecyclerViewAdapter(this);
+        binding.verifierRecyclerView.setLayoutManager(
+                new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+        binding.verifierRecyclerView.setAdapter(adapter);
+    }
+
+    // Handles when a contact is selected or deselected
     @Override
-    protected AppBarConfigurator getAppBarConfigurator() {
-        return null;
-    }
-
-    @Override
-    protected int getViewId() {
-        return R.layout.component_share_credential_dialog;
-    }
-
-    public void updateButtonState() {
-        button.setEnabled(adapter.areConnectionsSelected());
-    }
-
-    @OnClick(R.id.share_button)
-    public void onShareClick() {
-        showLoading();
-        viewModel.sendMessageToMultipleConnections(selectedVerifiers, ByteString.copyFrom(getArguments().getByteArray(CREDENTIAL_ENCODED_KEY)));
-    }
-
-    public void updateSelectedVerifiers(ConnectionListable connection, Boolean isSelected) {
-        if (isSelected) {
-            selectedVerifiers.add(connection);
-        } else {
-            selectedVerifiers.remove(connection);
-        }
+    public void onSelect(CheckableData<Contact> contactCheckableData) {
+        viewModel.selectDeselectContact(contactCheckableData);
     }
 }

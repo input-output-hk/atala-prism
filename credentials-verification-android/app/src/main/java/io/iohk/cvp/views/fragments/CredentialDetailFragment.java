@@ -79,8 +79,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
         switch (item.getItemId()) {
             case R.id.action_share_credential:
-                navigator.showFragmentOnTopOfMenu(
-                        requireActivity().getSupportFragmentManager(), getShareFragment());
+                getShareFragment().show(requireActivity().getSupportFragmentManager(), null);
                 return true;
             case android.R.id.home:
                 requireActivity().onBackPressed();

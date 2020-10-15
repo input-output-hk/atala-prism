@@ -1,6 +1,11 @@
 package io.iohk.cvp.neo.common;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.InverseBindingAdapter;
@@ -44,5 +49,24 @@ public class DataBindingAdapters {
                 attrChange.onChange();
             }
         });
+    }
+
+    /**
+     * [ImageView] Bindings Adapters
+     */
+
+    @BindingAdapter({"iohk:imageInBytes", "iohk:failImage"})
+    public static void visible(ImageView imageView, byte[] imageInBytes, Drawable failImage) {
+        if (imageInBytes != null && imageInBytes.length > 0) {
+            try {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imageInBytes, 0, imageInBytes.length);
+                imageView.setImageBitmap(bitmap);
+            } catch (Exception ex) {
+                imageView.setImageDrawable(failImage);
+                Log.e("iohk:imageInBytes", ex.getLocalizedMessage());
+            }
+        } else {
+            imageView.setImageDrawable(failImage);
+        }
     }
 }

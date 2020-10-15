@@ -6,11 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.protobuf.ByteString
 import io.iohk.cvp.data.DataManager
 import io.iohk.cvp.data.local.db.mappers.CredentialMapper
-import io.iohk.cvp.data.local.db.model.Contact
 import io.iohk.cvp.grpc.AsyncTaskResult
 import io.iohk.cvp.utils.CryptoUtils
-import io.iohk.cvp.viewmodel.dtos.ConnectionDataDto
-import io.iohk.cvp.viewmodel.dtos.ConnectionListable
 import io.iohk.atala.prism.protos.AtalaMessage
 import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.*
@@ -19,11 +16,10 @@ import javax.inject.Inject
 
 class ConnectionsListablesViewModel() : CvpViewModel() {
 
-    private val _connectionsLiveData = MutableLiveData<AsyncTaskResult<List<Contact?>>>()
     private val _messageSentLiveData = MutableLiveData<AsyncTaskResult<Boolean>>(AsyncTaskResult(false))
     private val _connectionIdUpdatedLiveData = MutableLiveData<AsyncTaskResult<Boolean>>()
 
-    private lateinit var dataManager : DataManager
+    private lateinit var dataManager: DataManager
 
     @Inject
     constructor(dataManager: DataManager) : this() {
@@ -48,7 +44,7 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
                 delay(TimeUnit.SECONDS.toMillis(1))
                 updateStoredMessages(connectionId)
                 _messageSentLiveData.postValue(AsyncTaskResult(true))
-            } catch (ex:Exception) {
+            } catch (ex: Exception) {
                 _messageSentLiveData.postValue(AsyncTaskResult(ex))
             }
         }
@@ -61,7 +57,7 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
             val newMessage: AtalaMessage = AtalaMessage.parseFrom(it.message)
             newMessage.proofRequest.typeIdsList.isEmpty()
         }
-        if(credentialList.isNotEmpty()) {
+        if (credentialList.isNotEmpty()) {
             storeCredentials(credentialList)
             updateContactLastMessageSeenId(connectionId, credentialList.last().id)
         } else {
@@ -74,7 +70,7 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
             try {
                 updateContactLastMessageSeenId(connectionId, messageId)
                 _connectionIdUpdatedLiveData.postValue(AsyncTaskResult(true))
-            } catch (ex:Exception) {
+            } catch (ex: Exception) {
                 _connectionIdUpdatedLiveData.postValue(AsyncTaskResult(ex))
             }
         }
@@ -82,8 +78,7 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
     }
 
     private suspend fun storeCredentials(credentialList: List<ReceivedMessage>) {
-        val credentialToStore = credentialList.map {
-            receivedMessage: ReceivedMessage? ->
+        val credentialToStore = credentialList.map { receivedMessage: ReceivedMessage? ->
             return@map CredentialMapper.mapToCredential(receivedMessage)
         }.toList()
         dataManager.saveAllCredentials(credentialToStore)
@@ -93,43 +88,5 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
         val contact = dataManager.getContactByConnectionId(connectionId)
         contact?.lastMessageId = messageId
         dataManager.updateContact(contact!!)
-    }
-
-    fun allConnectionsLiveData(): MutableLiveData<AsyncTaskResult<List<Contact?>>> {
-        return _connectionsLiveData
-    }
-
-    fun sendMessageToMultipleConnections(selectedVerifiers: MutableSet<ConnectionListable>, byteString: ByteString) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val connectionDataList = selectedVerifiers.map { connectionListable ->
-                    ConnectionDataDto(connectionListable.connectionIdValue, dataManager.getKeyPairFromPath(connectionListable.keyDerivationPath))
-                }
-                dataManager.sendMessageToMultipleConnections(connectionDataList, byteString)
-                /* TODO - When connection is created server take a few milliseconds to create all messages,
-                    added a delay to avoid getting empty messages. This should be changed when server implement stream connections */
-                delay(TimeUnit.SECONDS.toMillis(1))
-                connectionDataList.forEach { connectionDataDto: ConnectionDataDto ->
-                    updateStoredMessages(connectionDataDto.connectionId)
-                }
-                _messageSentLiveData.postValue(AsyncTaskResult(true))
-            } catch (ex:Exception) {
-                _messageSentLiveData.postValue(AsyncTaskResult(ex))
-            }
-        }
-    }
-
-    fun getAllConnections() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                _connectionsLiveData.postValue(AsyncTaskResult(dataManager.getAllContacts()))
-            } catch (ex:Exception) {
-                _connectionsLiveData.postValue(AsyncTaskResult(ex))
-            }
-        }
-    }
-
-    fun shouldNotShowSuccessDialog() {
-        _connectionIdUpdatedLiveData.postValue(AsyncTaskResult(false))
     }
 }
