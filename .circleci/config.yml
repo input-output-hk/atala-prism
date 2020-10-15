@@ -235,7 +235,7 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification"
+          directories: "credentials-verification prism-sdk"
 
       - restore_cache:
           keys:
@@ -512,7 +512,7 @@ jobs:
             mkdir -p target/jvm/test-reports
             test -e connector/jvm/target/test-reports && mv connector/jvm/target/test-reports/* target/jvm/test-reports
             test -e credentials/jvm/target/test-reports && mv credentials/jvm/target/test-reports/* target/jvm/test-reports
-            test -e credentials/jvm/target/test-reports && mv credentials/jvm/target/test-reports/* target/jvm/test-reports
+            test -e identity/jvm/target/test-reports && mv identity/jvm/target/test-reports/* target/jvm/test-reports
             test -e crypto/jvm/target/test-reports && mv crypto/jvm/target/test-reports/* target/jvm/test-reports
             test -e protos/.jvm/target/test-reports && mv protos/.jvm/target/test-reports/* target/jvm/test-reports
 
@@ -520,7 +520,7 @@ jobs:
             mkdir -p target/js/test-reports
             test -e connector/js/target/test-reports && mv connector/js/target/test-reports/* target/js/test-reports
             test -e credentials/js/target/test-reports && mv credentials/js/target/test-reports/* target/js/test-reports
-            test -e credentials/js/target/test-reports && mv credentials/js/target/test-reports/* target/js/test-reports
+            test -e identity/js/target/test-reports && mv identity/js/target/test-reports/* target/js/test-reports
             test -e crypto/js/target/test-reports && mv crypto/js/target/test-reports/* target/js/test-reports
             test -e protos/.js/target/test-reports && mv protos/.js/target/test-reports/* target/js/test-reports
             true

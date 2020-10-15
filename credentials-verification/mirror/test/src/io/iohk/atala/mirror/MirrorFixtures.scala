@@ -7,7 +7,7 @@ import cats.effect.Sync
 import doobie.util.transactor.Transactor
 import doobie.free.connection.ConnectionIO
 import com.google.protobuf.ByteString
-import io.iohk.prism.protos.credential_models.Credential
+import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.mirror.models._
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
@@ -15,19 +15,19 @@ import io.iohk.atala.mirror.db.ConnectionDao
 import doobie.implicits._
 import cats.implicits._
 import io.circe.Json
-import io.iohk.atala.credentials.{
+import io.iohk.atala.prism.credentials.{
   CredentialsCryptoSDKImpl,
   JsonBasedUnsignedCredential,
   SignedCredential,
   TimestampInfo,
   UnsignedCredential
 }
-import io.iohk.atala.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.mirror.NodeUtils.computeNodeCredentialId
 import io.iohk.atala.mirror.stubs.NodeClientServiceStub
-import io.iohk.prism.protos.node_api.GetCredentialStateResponse
-import io.iohk.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
-import io.iohk.prism.protos.node_models.PublicKey.KeyData.EcKeyData
+import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
+import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
+import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 
 trait MirrorFixtures {
 

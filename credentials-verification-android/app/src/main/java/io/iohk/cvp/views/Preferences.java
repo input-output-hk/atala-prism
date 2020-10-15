@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import io.iohk.atala.crypto.japi.ECKeyPair;
+import io.iohk.atala.prism.crypto.japi.ECKeyPair;
 import io.iohk.cvp.core.exception.WrongPinLengthException;
 import io.iohk.cvp.data.local.preferences.SecurityPin;
 import io.iohk.cvp.utils.CryptoUtils;

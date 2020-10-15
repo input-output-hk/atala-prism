@@ -10,7 +10,7 @@ import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO.CreateCredentialData
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models
 
 case class IssueCredentialOperation(
     credentialId: CredentialId,
@@ -89,7 +89,7 @@ object IssueCredentialOperation extends SimpleOperationCompanion[IssueCredential
       contestHash <- credentialData.child(_.contentHash, "contentHash").parse { contentHash =>
         Either.cond(
           contentHash.size == SHA256Digest.BYTE_LENGTH,
-          SHA256Digest(contentHash.toByteArray),
+          SHA256Digest(contentHash.toByteArray.toVector),
           s"must be of ${SHA256Digest.BYTE_LENGTH} bytes"
         )
       }

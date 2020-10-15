@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.connector.services
 
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -10,8 +10,8 @@ import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories.{ConnectionsRepository, PaymentsRepository}
-import io.iohk.prism.protos.node_api
-import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node
 
 import io.grpc.Status
-import io.iohk.atala.identity.DID
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -10,8 +10,8 @@ import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.cvp.BuildInfo
-import io.iohk.prism.protos.{node_api, node_models}
-import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
+import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 

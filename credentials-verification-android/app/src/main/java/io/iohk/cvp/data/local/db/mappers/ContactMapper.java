@@ -4,11 +4,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import io.iohk.cvp.data.local.db.model.Contact;
-import io.iohk.prism.protos.AddConnectionFromTokenResponse;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.HolderInfo;
-import io.iohk.prism.protos.IssuerInfo;
-import io.iohk.prism.protos.VerifierInfo;
+import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse;
+import io.iohk.atala.prism.protos.ConnectionInfo;
+import io.iohk.atala.prism.protos.HolderInfo;
+import io.iohk.atala.prism.protos.IssuerInfo;
+import io.iohk.atala.prism.protos.VerifierInfo;
 
 public class ContactMapper {
 

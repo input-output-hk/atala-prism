@@ -8,8 +8,8 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
-import io.iohk.atala.credentials.VerificationError
-import io.iohk.atala.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.credentials.VerificationError
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
@@ -18,8 +18,8 @@ import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, e
 import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
-import io.iohk.atala.requests.RequestAuthenticator
-import io.iohk.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
+import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 

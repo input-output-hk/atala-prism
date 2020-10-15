@@ -5,10 +5,10 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.List;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.GetMessagesPaginatedRequest;
-import io.iohk.prism.protos.GetMessagesPaginatedResponse;
-import io.iohk.prism.protos.ReceivedMessage;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest;
+import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse;
+import io.iohk.atala.prism.protos.ReceivedMessage;
 
 public class GetMessagesRunnable<A> extends
         CommonGrpcRunnable<List<ReceivedMessage>> {

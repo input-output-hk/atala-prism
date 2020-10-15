@@ -3,7 +3,7 @@ package io.iohk.atala.cvp.webextension.activetab.models
 import cats.data.ValidatedNel
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.credentials.VerificationError
+import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.cvp.webextension.common.models.{SignedMessage, UserDetails}
 
 import scala.util.Try

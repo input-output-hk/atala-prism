@@ -19,7 +19,7 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.viewmodel.PaymentViewModel;
 import io.iohk.cvp.views.utils.components.PaymentState;
-import io.iohk.prism.protos.Payment;
+import io.iohk.atala.prism.protos.Payment;
 
 public class PaymentsHistoryRecyclerViewAdapter extends
     RecyclerView.Adapter<PaymentsHistoryRecyclerViewAdapter.ViewHolder> {

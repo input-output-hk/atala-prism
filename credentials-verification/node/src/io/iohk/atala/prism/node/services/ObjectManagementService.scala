@@ -16,8 +16,8 @@ import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.prism.protos.node_internal.AtalaObject.Block
-import io.iohk.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
+import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -93,7 +93,7 @@ class ObjectManagementService(
     val blockHash = SHA256Digest.compute(blockBytes)
     val objectBlock =
       if (atalaReferenceLedger.supportsOnChainData) Block.BlockContent(block)
-      else Block.BlockHash(ByteString.copyFrom(blockHash.value))
+      else Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray))
     val obj =
       node_internal.AtalaObject(block = objectBlock, blockOperationCount = 1)
     val objBytes = obj.toByteArray
@@ -123,7 +123,7 @@ class ObjectManagementService(
       case node_internal.AtalaObject.Block.BlockContent(block) => Future.successful(block)
       case node_internal.AtalaObject.Block.BlockHash(hash) =>
         storage
-          .get(SHA256Digest(hash.toByteArray).hexValue)
+          .get(SHA256Digest(hash.toByteArray.toVector).hexValue)
           .map(_.getOrElse(throw new RuntimeException(s"Content of block $hash not found")))
           .map(node_internal.AtalaBlock.parseFrom)
       case node_internal.AtalaObject.Block.Empty =>

@@ -7,12 +7,12 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
-import io.iohk.atala.crypto.EC;
-import io.iohk.atala.crypto.ECKeyPair;
-import io.iohk.atala.crypto.ECSignature;
-import io.iohk.atala.crypto.MnemonicChecksumException;
-import io.iohk.atala.crypto.MnemonicLengthException;
-import io.iohk.atala.crypto.MnemonicWordException;
+import io.iohk.atala.prism.crypto.EC;
+import io.iohk.atala.prism.crypto.ECKeyPair;
+import io.iohk.atala.prism.crypto.ECSignature;
+import io.iohk.atala.prism.crypto.MnemonicChecksumException;
+import io.iohk.atala.prism.crypto.MnemonicLengthException;
+import io.iohk.atala.prism.crypto.MnemonicWordException;
 import io.iohk.cvp.utils.CryptoUtils;
 
 import static org.junit.Assert.assertFalse;

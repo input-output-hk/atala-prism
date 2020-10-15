@@ -11,8 +11,8 @@ import io.iohk.cvp.grpc.AsyncTaskResult
 import io.iohk.cvp.utils.CryptoUtils
 import io.iohk.cvp.viewmodel.dtos.ConnectionDataDto
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable
-import io.iohk.prism.protos.AtalaMessage
-import io.iohk.prism.protos.ReceivedMessage
+import io.iohk.atala.prism.protos.AtalaMessage
+import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject

@@ -3,9 +3,9 @@ package io.iohk.cvp.grpc;
 import androidx.lifecycle.MutableLiveData;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.ProcessPaymentRequest;
-import io.iohk.prism.protos.ProcessPaymentResponse;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.ProcessPaymentRequest;
+import io.iohk.atala.prism.protos.ProcessPaymentResponse;
 
 public class ProcessPaymentRunnable extends CommonGrpcRunnable<ProcessPaymentResponse> {
 

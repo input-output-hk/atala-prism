@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.atala.prism.protos.ConnectionInfo;
 import lombok.Setter;
 
 @Setter

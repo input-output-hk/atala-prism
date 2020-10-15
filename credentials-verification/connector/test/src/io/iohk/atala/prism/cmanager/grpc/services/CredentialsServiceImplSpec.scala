@@ -19,9 +19,9 @@ import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
-import io.iohk.prism.protos.cmanager_api.CredentialsServiceGrpc
-import io.iohk.prism.protos.cmanager_models.CManagerGenericCredential
-import io.iohk.prism.protos.{cmanager_api, common_models, node_api, node_models}
+import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
+import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
+import io.iohk.atala.prism.protos.{cmanager_api, common_models, node_api, node_models}
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -37,7 +37,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   private lazy val contactsRepository = new ContactsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,
     requestNoncesRepository,
@@ -209,7 +209,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
 
         serviceStub.publishCredential(request)
 
@@ -259,7 +259,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
 
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
@@ -302,7 +302,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
 
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
@@ -343,7 +343,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEncodedSignedCredential)
           .withNodeCredentialId(mockIncorrectNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
 
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
@@ -388,7 +388,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
           .withIssueCredentialOperation(issuanceOp)
           .withEncodedSignedCredential(mockEmptyEncodedSignedCredential)
           .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value))
+          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
 
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
@@ -423,7 +423,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
               credentialData = Some(
                 node_models.CredentialData(
                   issuer = didSuffix,
-                  contentHash = ByteString.copyFrom(credentialHash.value)
+                  contentHash = ByteString.copyFrom(credentialHash.value.toArray)
                 )
               )
             )

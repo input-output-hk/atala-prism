@@ -12,17 +12,17 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.iohk.atala.crypto.japi.ECKeyPair;
+import io.iohk.atala.prism.crypto.japi.ECKeyPair;
 import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.utils.GrpcUtils;
-import io.iohk.prism.protos.AddConnectionFromTokenRequest;
-import io.iohk.prism.protos.AddConnectionFromTokenResponse;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.EncodedPublicKey;
-import io.iohk.prism.protos.GetConnectionsPaginatedRequest;
-import io.iohk.prism.protos.GetConnectionsPaginatedResponse;
-import io.iohk.prism.protos.GetMessagesPaginatedRequest;
-import io.iohk.prism.protos.GetMessagesPaginatedResponse;
+import io.iohk.atala.prism.protos.AddConnectionFromTokenRequest;
+import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.EncodedPublicKey;
+import io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest;
+import io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse;
+import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest;
+import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse;
 
 
 @RunWith(BlockJUnit4ClassRunner.class)

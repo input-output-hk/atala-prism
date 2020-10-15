@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
-import io.iohk.atala.identity.DID
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -33,8 +33,8 @@ import io.iohk.atala.prism.node.services.{
 }
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
-import io.iohk.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
+import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues._

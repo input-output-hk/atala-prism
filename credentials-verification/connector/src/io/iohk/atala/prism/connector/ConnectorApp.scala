@@ -23,18 +23,18 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   IDServiceGrpc,
   InsuranceServiceGrpc
 }
-import io.iohk.prism.protos.admin_api.AdminServiceGrpc
-import io.iohk.prism.protos.cmanager_api.{
+import io.iohk.atala.prism.protos.admin_api.AdminServiceGrpc
+import io.iohk.atala.prism.protos.cmanager_api.{
   CredentialsServiceGrpc,
   GroupsServiceGrpc,
   StudentsServiceGrpc,
   SubjectsServiceGrpc
 }
-import io.iohk.prism.protos.connector_api
-import io.iohk.prism.protos.console_api.ConsoleServiceGrpc
-import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
-import io.iohk.prism.protos.cviews_api.CredentialViewsServiceGrpc
-import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.connector_api
+import io.iohk.atala.prism.protos.console_api.ConsoleServiceGrpc
+import io.iohk.atala.prism.protos.cstore_api.CredentialsStoreServiceGrpc
+import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext

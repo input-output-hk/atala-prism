@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.models
 
 import io.circe.Json
-import io.iohk.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.OptionValues._
 import org.scalatest.wordspec.AnyWordSpec

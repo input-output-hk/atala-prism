@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.grpc.GetPaymentsRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.prism.protos.Payment;
+import io.iohk.atala.prism.protos.Payment;
 
 public class PaymentViewModel extends CvpViewModel {
 

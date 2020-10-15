@@ -2,8 +2,8 @@ package io.iohk.cvp.utils
 
 import com.google.protobuf.ByteString
 import io.grpc.Metadata
-import io.iohk.atala.crypto.japi.ECKeyPair
-import io.iohk.prism.protos.EncodedPublicKey
+import io.iohk.atala.prism.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.protos.EncodedPublicKey
 
 class GrpcUtils {
     companion object {

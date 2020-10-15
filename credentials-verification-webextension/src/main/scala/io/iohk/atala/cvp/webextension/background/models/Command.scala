@@ -3,7 +3,7 @@ package io.iohk.atala.cvp.webextension.background.models
 import cats.data.ValidatedNel
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.credentials.VerificationError
+import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models._

@@ -4,7 +4,7 @@ import java.security.{PublicKey => JPublicKey}
 import java.util.Base64
 
 import enumeratum._
-import io.iohk.atala.prism.crypto.ECKeys
+import io.iohk.atala.prism.crypto.{EC, ECKeys, ECPublicKey}
 import io.iohk.dids.security.DIDPublicKeyType
 import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPublicKey}
 import org.bouncycastle.jce.ECNamedCurveTable
@@ -147,6 +147,18 @@ package object dids {
           throw new IllegalArgumentException(s"Unsupported key type: ${key.getClass.getCanonicalName}")
       }
     }
+
+    def toECPublicKey(key: PublicKey): Try[ECPublicKey] =
+      key match {
+        case PublicKey(_, _, jwkKey @ JWKPublicKey("EC", _, crv, _, _, _, _, _)) =>
+          if (JWKUtils.jwkSupportedCurves.get(crv).contains(ECKeys.CURVE_NAME)) {
+            Success(EC.toPublicKey(jwkKey.xBytes, jwkKey.yBytes))
+          } else {
+            Failure(new IllegalArgumentException("Unsupported EC curve"))
+          }
+        case _ =>
+          Failure(new IllegalArgumentException("Unsupported key type"))
+      }
 
     def toJavaPublicKey(key: PublicKey): Try[JPublicKey] =
       key match {

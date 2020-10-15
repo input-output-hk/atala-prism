@@ -6,9 +6,9 @@ import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
-import io.iohk.prism.protos.connector_models
+import io.iohk.atala.prism.protos.connector_models
 
 import scala.util.Random
 

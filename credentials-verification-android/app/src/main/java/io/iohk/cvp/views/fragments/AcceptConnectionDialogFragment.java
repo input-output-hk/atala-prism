@@ -29,7 +29,7 @@ import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.interfaces.ConnectionManageable;
 import io.iohk.cvp.views.interfaces.FirebaseEventLogger;
-import io.iohk.prism.protos.ParticipantInfo;
+import io.iohk.atala.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor

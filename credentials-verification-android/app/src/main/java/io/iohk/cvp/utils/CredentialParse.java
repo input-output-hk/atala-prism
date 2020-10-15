@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
-import io.iohk.prism.protos.Credential;
+import io.iohk.atala.prism.protos.Credential;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.poc
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix}
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models
 
 object NodeSDK {
   def buildIssueCredentialOp(
@@ -16,7 +16,7 @@ object NodeSDK {
           credentialData = Some(
             node_models.CredentialData(
               issuer = didSuffix.suffix,
-              contentHash = ByteString.copyFrom(credentialHash.value)
+              contentHash = ByteString.copyFrom(credentialHash.value.toArray)
             )
           )
         )
@@ -35,7 +35,7 @@ object NodeSDK {
     node_models.AtalaOperation(
       operation = node_models.AtalaOperation.Operation.RevokeCredential(
         node_models.RevokeCredentialOperation(
-          previousOperationHash = ByteString.copyFrom(previousOperationHash.value),
+          previousOperationHash = ByteString.copyFrom(previousOperationHash.value.toArray),
           credentialId = credentialId.id
         )
       )

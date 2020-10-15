@@ -5,10 +5,10 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.List;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.GetConnectionsPaginatedRequest;
-import io.iohk.prism.protos.GetConnectionsPaginatedResponse;
+import io.iohk.atala.prism.protos.ConnectionInfo;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest;
+import io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse;
 
 public class GetConnectionsInfoRunnable extends CommonGrpcRunnable<List<ConnectionInfo>> {
 

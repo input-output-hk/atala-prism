@@ -6,20 +6,20 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 import cats.data.ValidatedNel
 import org.mockito.scalatest.MockitoSugar
 import io.iohk.atala.mirror.models.UserCredential
-import io.iohk.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-import io.iohk.prism.protos.credential_models.Credential
+import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.UserCredential.IssuersDID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
-import io.iohk.atala.credentials._
+import io.iohk.atala.prism.credentials._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.MirrorFixtures
 import doobie.implicits._
 import monix.execution.Scheduler.Implicits.global
 import io.circe.Json
-import io.iohk.atala.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential}
+import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageId, MessageReceivedDate, RawCredential}
-import io.iohk.atala.crypto.{EC, ECTrait}
+import io.iohk.atala.prism.crypto.{EC, ECTrait}
 import io.iohk.atala.mirror.NodeUtils.computeNodeCredentialId
 import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
 

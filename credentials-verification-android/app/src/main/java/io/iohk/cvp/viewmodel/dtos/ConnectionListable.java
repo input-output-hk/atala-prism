@@ -3,10 +3,10 @@ package io.iohk.cvp.viewmodel.dtos;
 import java.util.Optional;
 
 import io.iohk.cvp.data.local.db.model.Contact;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.IssuerInfo;
-import io.iohk.prism.protos.ParticipantInfo;
-import io.iohk.prism.protos.VerifierInfo;
+import io.iohk.atala.prism.protos.ConnectionInfo;
+import io.iohk.atala.prism.protos.IssuerInfo;
+import io.iohk.atala.prism.protos.ParticipantInfo;
+import io.iohk.atala.prism.protos.VerifierInfo;
 import lombok.Data;
 
 @Data

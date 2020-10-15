@@ -2,17 +2,22 @@ package io.iohk.atala.prism.node.poc.jwsflow
 
 import java.net.URI
 import java.nio.charset.StandardCharsets
-import java.security.{PrivateKey, PublicKey}
+import java.security.spec.{ECParameterSpec, ECPrivateKeySpec}
+import java.security.KeyFactory
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{ECKeys, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.crypto.ECConfig.CURVE_NAME
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.poc.NodeSDK
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import net.jtownson.odyssey.VC.VCField.{CredentialSubjectField, EmptyField, IssuanceDateField, IssuerField}
 import net.jtownson.odyssey.Verifier.Es256Verifier
 import net.jtownson.odyssey.{Jws, PublicKeyResolver, VC, VCDataModel}
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
 
@@ -24,14 +29,14 @@ case class WalletWithOdyssey(
   // there should probably be
   private def getKeyId(jws: String): String = Jws.parse(jws).get.protectedHeaders("kid").noSpaces
 
-  private val masterKeyPair = ECKeys.generateKeyPair()
-  private val masterPrivateKey = masterKeyPair.getPrivate
-  private val masterPublicKey = masterKeyPair.getPublic
-  private val issuanceKeyPair = ECKeys.generateKeyPair()
-  private val issuancePrivateKey = issuanceKeyPair.getPrivate
-  private val issuancePublicKey = issuanceKeyPair.getPublic
+  private val masterKeyPair = EC.generateKeyPair()
+  private val masterPrivateKey = masterKeyPair.privateKey
+  private val masterPublicKey = masterKeyPair.publicKey
+  private val issuanceKeyPair = EC.generateKeyPair()
+  private val issuancePrivateKey = issuanceKeyPair.privateKey
+  private val issuancePublicKey = issuanceKeyPair.publicKey
 
-  private var dids: Map[String, Map[String, PrivateKey]] = Map()
+  private var dids: Map[String, Map[String, ECPrivateKey]] = Map()
 
   def generateDID(): (DIDSuffix, node_models.AtalaOperation) = {
     // This could be encapsulated in the "NodeSDK". I added it here for simplicity
@@ -81,7 +86,7 @@ case class WalletWithOdyssey(
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(ECSignature.sign(key, operation.toByteArray).toArray)
+      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).data)
     )
   }
 
@@ -91,8 +96,19 @@ case class WalletWithOdyssey(
       did: String
   ): Jws[Jws.JwsField.EmptyField with Jws.JwsField.SignatureField] = {
     val privateKey = dids(did)(keyId)
+    val ecParameterSpec = ECNamedCurveTable.getParameterSpec(CURVE_NAME)
+    val ecNamedCurveSpec: ECParameterSpec = new ECNamedCurveSpec(
+      ecParameterSpec.getName,
+      ecParameterSpec.getCurve,
+      ecParameterSpec.getG,
+      ecParameterSpec.getN
+    )
+    val privateKeyJava = KeyFactory
+      .getInstance("EC", new BouncyCastleProvider)
+      .generatePrivate(new ECPrivateKeySpec(privateKey.getD.bigInteger, ecNamedCurveSpec))
+
     credential
-      .withEs256Signature(new URI(s"$did#$keyId"), privateKey)
+      .withEs256Signature(new URI(s"$did#$keyId"), privateKeyJava)
       .toJws
   }
 
@@ -164,12 +180,12 @@ case class WalletWithOdyssey(
     // NOTE: Signature validation is done when the JWS is decoded to VCDataModel
   }
 
-  private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {
-    val point = ECKeys.getECPoint(key)
+  private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
+    val point = key.getCurvePoint
     node_models.ECKeyData(
-      curve = ECKeys.CURVE_NAME,
-      x = ByteString.copyFrom(point.getAffineX.toByteArray),
-      y = ByteString.copyFrom(point.getAffineY.toByteArray)
+      curve = ECConfig.CURVE_NAME,
+      x = ByteString.copyFrom(point.x.toByteArray),
+      y = ByteString.copyFrom(point.y.toByteArray)
     )
   }
 }

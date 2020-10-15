@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models
 
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction

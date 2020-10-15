@@ -33,7 +33,7 @@ import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.CredentialClickListener;
 import io.iohk.cvp.views.utils.adapters.NewCredentialsRecyclerViewAdapter;
-import io.iohk.prism.protos.ReceivedMessage;
+import io.iohk.atala.prism.protos.ReceivedMessage;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 

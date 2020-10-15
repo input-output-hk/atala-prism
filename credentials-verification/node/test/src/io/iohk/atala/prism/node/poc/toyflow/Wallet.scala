@@ -1,29 +1,33 @@
 package io.iohk.atala.prism.node.poc.toyflow
 
 import java.nio.charset.StandardCharsets
-import java.security.{PrivateKey, PublicKey}
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.poc.{CryptoSDKImpl, SignedCredential}
-import io.iohk.atala.prism.crypto.{ECKeys, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.credentials.{
+  CredentialsCryptoSDKImpl,
+  JsonBasedUnsignedCredential,
+  SignedCredential,
+  UnsignedCredentialBuilder
+}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.poc.NodeSDK
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
-  private val cryptoSDK = CryptoSDKImpl
+  private val cryptoSDK = CredentialsCryptoSDKImpl
 
-  val masterKeyPair = ECKeys.generateKeyPair()
-  val masterPrivateKey = masterKeyPair.getPrivate
-  val masterPublicKey = masterKeyPair.getPublic
-  val issuanceKeyPair = ECKeys.generateKeyPair()
-  val issuancePrivateKey = issuanceKeyPair.getPrivate
-  val issuancePublicKey = issuanceKeyPair.getPublic
+  val masterKeyPair = EC.generateKeyPair()
+  val masterPrivateKey = masterKeyPair.privateKey
+  val masterPublicKey = masterKeyPair.publicKey
+  val issuanceKeyPair = EC.generateKeyPair()
+  val issuancePrivateKey = issuanceKeyPair.privateKey
+  val issuancePublicKey = issuanceKeyPair.publicKey
 
-  private var dids: Map[DIDSuffix, Map[String, PrivateKey]] = Map()
+  private var dids: Map[DIDSuffix, Map[String, ECPrivateKey]] = Map()
 
   def generateDID(): (DIDSuffix, node_models.AtalaOperation) = {
     // This could be encapsulated in the "NodeSDK". I added it here for simplicity
@@ -73,7 +77,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(ECSignature.sign(key, operation.toByteArray).toArray)
+      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).data)
     )
   }
 
@@ -84,13 +88,15 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   ): SignedCredential = {
     val privateKey = dids(didSuffix)(keyId)
     val credentialBytes = credential.getBytes(StandardCharsets.UTF_8)
-    cryptoSDK.signCredential(privateKey, credentialBytes)
+    cryptoSDK.signCredential(
+      UnsignedCredentialBuilder[JsonBasedUnsignedCredential].fromBytes(credentialBytes),
+      privateKey
+    )(EC)
   }
 
   def verifyCredential(signedCredential: SignedCredential): Boolean = {
     // get credential hash and compute id
-    val (cred, _) = SignedCredential.decode(signedCredential)
-    val concreteRepresentation = new String(cred, StandardCharsets.UTF_8)
+    val concreteRepresentation = signedCredential.credential.value
 
     // extract user DIDSuffix and keyId from credential
     val issuerDID = GenericCredentialsSDK.getIssuerDID(concreteRepresentation)
@@ -127,7 +133,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val issuancekeyData = issuancekeyProtoOption.value
     val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value)
     val issuanceKeyRevokedOn = issuancekeyData.revokedOn map ProtoCodecs.fromTimestampInfoProto
-    val issuancekey = issuancekeyProtoOption flatMap ProtoCodecs.fromProtoKeyLegacy
+    val issuancekey = issuancekeyProtoOption flatMap ProtoCodecs.fromProtoKey
 
     // run all verifications, including signature
 
@@ -148,15 +154,15 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       credentialIssuanceDate.occurredBefore(issuanceKeyRevokedOn.value)
     ) &&
     // the signature is valid
-    cryptoSDK.verify(issuancekey.value, signedCredential)
+    cryptoSDK.verifyCredentialSignature(signedCredential, issuancekey.value)(EC)
   }
 
-  private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {
-    val point = ECKeys.getECPoint(key)
+  private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
+    val point = key.getCurvePoint
     node_models.ECKeyData(
-      curve = ECKeys.CURVE_NAME,
-      x = ByteString.copyFrom(point.getAffineX.toByteArray),
-      y = ByteString.copyFrom(point.getAffineY.toByteArray)
+      curve = ECConfig.CURVE_NAME,
+      x = ByteString.copyFrom(point.x.toByteArray),
+      y = ByteString.copyFrom(point.y.toByteArray)
     )
   }
 }

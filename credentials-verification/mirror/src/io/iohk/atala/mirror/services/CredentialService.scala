@@ -6,7 +6,7 @@ import scala.util.Try
 import cats.data.{EitherT, NonEmptyList, ValidatedNel}
 import monix.eval.Task
 import doobie.util.transactor.Transactor
-import io.iohk.prism.protos.credential_models
+import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType}
 import io.iohk.atala.mirror.models.Connection.ConnectionState
@@ -19,10 +19,10 @@ import io.iohk.atala.mirror.models.UserCredential.{
   MessageReceivedDate,
   RawCredential
 }
-import io.iohk.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import java.time.Instant
 
-import io.iohk.atala.credentials.{
+import io.iohk.atala.prism.credentials.{
   CredentialData,
   CredentialVerification,
   CredentialsCryptoSDKImpl,
@@ -32,15 +32,15 @@ import io.iohk.atala.credentials.{
   UnsignedCredential,
   UnsignedCredentialBuilder
 }
-import io.iohk.atala.crypto.EC
+import io.iohk.atala.prism.crypto.EC
 import JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
 import cats.data.Validated.{Invalid, Valid}
 import fs2.Stream
 import io.iohk.atala.mirror.Utils.parseUUID
 import org.slf4j.LoggerFactory
-import io.iohk.atala.credentials.VerificationError
+import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.mirror.NodeUtils.{computeNodeCredentialId, fromProtoKey, fromTimestampInfoProto}
-import io.iohk.prism.protos.node_api.GetCredentialStateResponse
+import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
 
 import cats.implicits._
 import doobie.implicits._

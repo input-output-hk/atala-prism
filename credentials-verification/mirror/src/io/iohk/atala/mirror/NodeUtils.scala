@@ -2,9 +2,9 @@ package io.iohk.atala.mirror
 import java.time.Instant
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.credentials
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.credentials
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.protos.node_models
 
 object NodeUtils {
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {

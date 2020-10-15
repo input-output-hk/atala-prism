@@ -6,7 +6,7 @@ import java.util.concurrent.{Executor, TimeUnit}
 import doobie.implicits._
 import io.grpc._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
-import io.iohk.atala.crypto.{EC, ECKeyPair, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
@@ -25,7 +25,7 @@ import io.iohk.atala.prism.grpc.{
 }
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_api
 import org.mockito.MockitoSugar._
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
@@ -36,7 +36,7 @@ trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], keys: ECKeyPair, request: GeneratedMessage)(f: STUB => T): T = {
-    val payload = SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+    val payload = SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray
     val signature = EC.sign(payload.array, keys.privateKey)
     apply(requestNonce, signature, keys.publicKey)(f)
   }
@@ -116,7 +116,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
             appExecutor.execute { () =>
               applier.apply(
                 GrpcAuthenticationHeader
-                  .PublicKeyBased(RequestNonce(requestNonce), publicKey, signature)
+                  .PublicKeyBased(model.RequestNonce(requestNonce), publicKey, signature)
                   .toMetadata
               )
             }
@@ -159,7 +159,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
 
-  lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
     new SignedRequestsAuthenticator(
       participantsRepository,

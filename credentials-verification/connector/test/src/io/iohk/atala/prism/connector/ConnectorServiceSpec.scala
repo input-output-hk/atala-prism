@@ -4,10 +4,9 @@ import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.crypto.EC
-import io.iohk.atala.prism.connector.model.RequestNonce
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.grpc.SignedRequestsHelper
-import io.iohk.prism.protos.{connector_api, node_api}
+import io.iohk.atala.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 
@@ -44,7 +43,7 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
       val request = connector_api.GetCurrentUserRequest()
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature = EC.sign(
-        SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray,
+        SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray,
         privateKey
       )
       (requestNonce, signature, keys.publicKey, request)

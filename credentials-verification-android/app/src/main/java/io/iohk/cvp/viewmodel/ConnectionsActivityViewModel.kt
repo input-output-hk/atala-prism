@@ -10,7 +10,7 @@ import io.iohk.cvp.data.local.db.model.Credential
 import io.iohk.cvp.grpc.AsyncTaskResult
 import io.iohk.cvp.viewmodel.dtos.ContactToDelete
 import io.iohk.cvp.viewmodel.dtos.CredentialsToShare
-import io.iohk.prism.protos.*
+import io.iohk.atala.prism.protos.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.concurrent.TimeUnit

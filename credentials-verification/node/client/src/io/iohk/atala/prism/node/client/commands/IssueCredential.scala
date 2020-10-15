@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.client.commands
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.client.{Config, StateStorage}
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
@@ -22,7 +22,7 @@ case class IssueCredential(issuer: Option[String] = None, contentHash: Option[SH
 
     val issueCredentialOp = node_models.IssueCredentialOperation(
       credentialData = Some(
-        node_models.CredentialData(issuer = issuerVal, contentHash = ByteString.copyFrom(contentHash.get.value))
+        node_models.CredentialData(issuer = issuerVal, contentHash = ByteString.copyFrom(contentHash.get.value.toArray))
       )
     )
 

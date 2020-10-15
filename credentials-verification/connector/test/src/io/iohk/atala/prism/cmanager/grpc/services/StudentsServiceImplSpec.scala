@@ -14,7 +14,7 @@ import io.iohk.atala.prism.console.repositories.GroupsRepository
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
-import io.iohk.prism.protos.{cmanager_api, common_models}
+import io.iohk.atala.prism.protos.{cmanager_api, common_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -32,7 +32,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   private lazy val studentsRepository = new StudentsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new SignedRequestsAuthenticator(
       participantsRepository,

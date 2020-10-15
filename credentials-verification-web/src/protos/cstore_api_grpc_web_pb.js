@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * @fileoverview gRPC-Web generated client stub for io.iohk.prism.protos
+ * @fileoverview gRPC-Web generated client stub for io.iohk.atala.prism.protos
  * @enhanceable
  * @public
  */
@@ -17,8 +17,9 @@ var cstore_models_pb = require('./cstore_models_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};
-proto.io.iohk.prism = {};
-proto.io.iohk.prism.protos = require('./cstore_api_pb.js');
+proto.io.iohk.atala = {};
+proto.io.iohk.atala.prism = {};
+proto.io.iohk.atala.prism.protos = require('./cstore_api_pb.js');
 
 /**
  * @param {string} hostname
@@ -28,7 +29,7 @@ proto.io.iohk.prism.protos = require('./cstore_api_pb.js');
  * @struct
  * @final
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -54,7 +55,7 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient =
  * @struct
  * @final
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -75,58 +76,58 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.CreateIndividualRequest,
- *   !proto.io.iohk.prism.protos.CreateIndividualResponse>}
+ *   !proto.io.iohk.atala.prism.protos.CreateIndividualRequest,
+ *   !proto.io.iohk.atala.prism.protos.CreateIndividualResponse>}
  */
 const methodDescriptor_CredentialsStoreService_CreateIndividual = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.CredentialsStoreService/CreateIndividual',
+  '/io.iohk.atala.prism.protos.CredentialsStoreService/CreateIndividual',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.CreateIndividualRequest,
-  proto.io.iohk.prism.protos.CreateIndividualResponse,
+  proto.io.iohk.atala.prism.protos.CreateIndividualRequest,
+  proto.io.iohk.atala.prism.protos.CreateIndividualResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.CreateIndividualRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.CreateIndividualRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.CreateIndividualResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.CreateIndividualResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.CreateIndividualRequest,
- *   !proto.io.iohk.prism.protos.CreateIndividualResponse>}
+ *   !proto.io.iohk.atala.prism.protos.CreateIndividualRequest,
+ *   !proto.io.iohk.atala.prism.protos.CreateIndividualResponse>}
  */
 const methodInfo_CredentialsStoreService_CreateIndividual = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.CreateIndividualResponse,
+  proto.io.iohk.atala.prism.protos.CreateIndividualResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.CreateIndividualRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.CreateIndividualRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.CreateIndividualResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.CreateIndividualResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CreateIndividualRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.CreateIndividualRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.CreateIndividualResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.CreateIndividualResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.CreateIndividualResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.CreateIndividualResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.createIndividual =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient.prototype.createIndividual =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/CreateIndividual',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/CreateIndividual',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_CreateIndividual,
@@ -135,17 +136,17 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.createIndivid
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CreateIndividualRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.CreateIndividualRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.CreateIndividualResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.CreateIndividualResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.createIndividual =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient.prototype.createIndividual =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/CreateIndividual',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/CreateIndividual',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_CreateIndividual);
@@ -155,58 +156,58 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.create
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetIndividualsRequest,
- *   !proto.io.iohk.prism.protos.GetIndividualsResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetIndividualsRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetIndividualsResponse>}
  */
 const methodDescriptor_CredentialsStoreService_GetIndividuals = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.CredentialsStoreService/GetIndividuals',
+  '/io.iohk.atala.prism.protos.CredentialsStoreService/GetIndividuals',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetIndividualsRequest,
-  proto.io.iohk.prism.protos.GetIndividualsResponse,
+  proto.io.iohk.atala.prism.protos.GetIndividualsRequest,
+  proto.io.iohk.atala.prism.protos.GetIndividualsResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetIndividualsRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetIndividualsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetIndividualsResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetIndividualsResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetIndividualsRequest,
- *   !proto.io.iohk.prism.protos.GetIndividualsResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetIndividualsRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetIndividualsResponse>}
  */
 const methodInfo_CredentialsStoreService_GetIndividuals = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetIndividualsResponse,
+  proto.io.iohk.atala.prism.protos.GetIndividualsResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetIndividualsRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetIndividualsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetIndividualsResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetIndividualsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetIndividualsRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetIndividualsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetIndividualsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetIndividualsResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetIndividualsResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetIndividualsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.getIndividuals =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient.prototype.getIndividuals =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GetIndividuals',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GetIndividuals',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GetIndividuals,
@@ -215,17 +216,17 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.getIndividual
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetIndividualsRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetIndividualsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetIndividualsResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetIndividualsResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.getIndividuals =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient.prototype.getIndividuals =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GetIndividuals',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GetIndividuals',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GetIndividuals);
@@ -235,58 +236,58 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.getInd
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest,
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForRequest,
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse>}
  */
 const methodDescriptor_CredentialsStoreService_GenerateConnectionTokenFor = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.CredentialsStoreService/GenerateConnectionTokenFor',
+  '/io.iohk.atala.prism.protos.CredentialsStoreService/GenerateConnectionTokenFor',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest,
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse,
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForRequest,
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest,
- *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForRequest,
+ *   !proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse>}
  */
 const methodInfo_CredentialsStoreService_GenerateConnectionTokenFor = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse,
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.generateConnectionTokenFor =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient.prototype.generateConnectionTokenFor =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GenerateConnectionTokenFor',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GenerateConnectionTokenFor',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GenerateConnectionTokenFor,
@@ -295,17 +296,17 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.generateConne
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.generateConnectionTokenFor =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient.prototype.generateConnectionTokenFor =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GenerateConnectionTokenFor',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GenerateConnectionTokenFor',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GenerateConnectionTokenFor);
@@ -315,58 +316,58 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.genera
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.StoreCredentialRequest,
- *   !proto.io.iohk.prism.protos.StoreCredentialResponse>}
+ *   !proto.io.iohk.atala.prism.protos.StoreCredentialRequest,
+ *   !proto.io.iohk.atala.prism.protos.StoreCredentialResponse>}
  */
 const methodDescriptor_CredentialsStoreService_StoreCredential = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.CredentialsStoreService/StoreCredential',
+  '/io.iohk.atala.prism.protos.CredentialsStoreService/StoreCredential',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.StoreCredentialRequest,
-  proto.io.iohk.prism.protos.StoreCredentialResponse,
+  proto.io.iohk.atala.prism.protos.StoreCredentialRequest,
+  proto.io.iohk.atala.prism.protos.StoreCredentialResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.StoreCredentialRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.StoreCredentialRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.StoreCredentialResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.StoreCredentialResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.StoreCredentialRequest,
- *   !proto.io.iohk.prism.protos.StoreCredentialResponse>}
+ *   !proto.io.iohk.atala.prism.protos.StoreCredentialRequest,
+ *   !proto.io.iohk.atala.prism.protos.StoreCredentialResponse>}
  */
 const methodInfo_CredentialsStoreService_StoreCredential = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.StoreCredentialResponse,
+  proto.io.iohk.atala.prism.protos.StoreCredentialResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.StoreCredentialRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.StoreCredentialRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.StoreCredentialResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.StoreCredentialResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.StoreCredentialRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.StoreCredentialRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.StoreCredentialResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.StoreCredentialResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.StoreCredentialResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.StoreCredentialResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.storeCredential =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient.prototype.storeCredential =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/StoreCredential',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/StoreCredential',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_StoreCredential,
@@ -375,17 +376,17 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.storeCredenti
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.StoreCredentialRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.StoreCredentialRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.StoreCredentialResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.StoreCredentialResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.storeCredential =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient.prototype.storeCredential =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/StoreCredential',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/StoreCredential',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_StoreCredential);
@@ -395,58 +396,58 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.storeC
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetStoredCredentialsForRequest,
- *   !proto.io.iohk.prism.protos.GetStoredCredentialsForResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetStoredCredentialsForRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse>}
  */
 const methodDescriptor_CredentialsStoreService_GetStoredCredentialsFor = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.CredentialsStoreService/GetStoredCredentialsFor',
+  '/io.iohk.atala.prism.protos.CredentialsStoreService/GetStoredCredentialsFor',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetStoredCredentialsForRequest,
-  proto.io.iohk.prism.protos.GetStoredCredentialsForResponse,
+  proto.io.iohk.atala.prism.protos.GetStoredCredentialsForRequest,
+  proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetStoredCredentialsForRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetStoredCredentialsForRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetStoredCredentialsForRequest,
- *   !proto.io.iohk.prism.protos.GetStoredCredentialsForResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetStoredCredentialsForRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse>}
  */
 const methodInfo_CredentialsStoreService_GetStoredCredentialsFor = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetStoredCredentialsForResponse,
+  proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetStoredCredentialsForRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetStoredCredentialsForRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetStoredCredentialsForRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetStoredCredentialsForRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetStoredCredentialsForResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetStoredCredentialsForResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.getStoredCredentialsFor =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient.prototype.getStoredCredentialsFor =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GetStoredCredentialsFor',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GetStoredCredentialsFor',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GetStoredCredentialsFor,
@@ -455,17 +456,17 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.getStoredCred
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetStoredCredentialsForRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetStoredCredentialsForRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetStoredCredentialsForResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetStoredCredentialsForResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.getStoredCredentialsFor =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient.prototype.getStoredCredentialsFor =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GetStoredCredentialsFor',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GetStoredCredentialsFor',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GetStoredCredentialsFor);
@@ -475,58 +476,58 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.getSto
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.CreateHolderRequest,
- *   !proto.io.iohk.prism.protos.CreateHolderResponse>}
+ *   !proto.io.iohk.atala.prism.protos.CreateHolderRequest,
+ *   !proto.io.iohk.atala.prism.protos.CreateHolderResponse>}
  */
 const methodDescriptor_CredentialsStoreService_CreateHolder = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.CredentialsStoreService/CreateHolder',
+  '/io.iohk.atala.prism.protos.CredentialsStoreService/CreateHolder',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.CreateHolderRequest,
-  proto.io.iohk.prism.protos.CreateHolderResponse,
+  proto.io.iohk.atala.prism.protos.CreateHolderRequest,
+  proto.io.iohk.atala.prism.protos.CreateHolderResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.CreateHolderRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.CreateHolderResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.CreateHolderResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.CreateHolderRequest,
- *   !proto.io.iohk.prism.protos.CreateHolderResponse>}
+ *   !proto.io.iohk.atala.prism.protos.CreateHolderRequest,
+ *   !proto.io.iohk.atala.prism.protos.CreateHolderResponse>}
  */
 const methodInfo_CredentialsStoreService_CreateHolder = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.CreateHolderResponse,
+  proto.io.iohk.atala.prism.protos.CreateHolderResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.CreateHolderRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.CreateHolderResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.CreateHolderResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.CreateHolderRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.CreateHolderResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.CreateHolderResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.CreateHolderResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.CreateHolderResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.createHolder =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient.prototype.createHolder =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/CreateHolder',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/CreateHolder',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_CreateHolder,
@@ -535,17 +536,17 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.createHolder 
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.CreateHolderRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.CreateHolderResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.CreateHolderResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.createHolder =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient.prototype.createHolder =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/CreateHolder',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/CreateHolder',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_CreateHolder);
@@ -555,58 +556,58 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.create
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.prism.protos.GetHoldersRequest,
- *   !proto.io.iohk.prism.protos.GetHoldersResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetHoldersRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetHoldersResponse>}
  */
 const methodDescriptor_CredentialsStoreService_GetHolders = new grpc.web.MethodDescriptor(
-  '/io.iohk.prism.protos.CredentialsStoreService/GetHolders',
+  '/io.iohk.atala.prism.protos.CredentialsStoreService/GetHolders',
   grpc.web.MethodType.UNARY,
-  proto.io.iohk.prism.protos.GetHoldersRequest,
-  proto.io.iohk.prism.protos.GetHoldersResponse,
+  proto.io.iohk.atala.prism.protos.GetHoldersRequest,
+  proto.io.iohk.atala.prism.protos.GetHoldersResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetHoldersRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetHoldersRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetHoldersResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetHoldersResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.prism.protos.GetHoldersRequest,
- *   !proto.io.iohk.prism.protos.GetHoldersResponse>}
+ *   !proto.io.iohk.atala.prism.protos.GetHoldersRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetHoldersResponse>}
  */
 const methodInfo_CredentialsStoreService_GetHolders = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.prism.protos.GetHoldersResponse,
+  proto.io.iohk.atala.prism.protos.GetHoldersResponse,
   /**
-   * @param {!proto.io.iohk.prism.protos.GetHoldersRequest} request
+   * @param {!proto.io.iohk.atala.prism.protos.GetHoldersRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.io.iohk.prism.protos.GetHoldersResponse.deserializeBinary
+  proto.io.iohk.atala.prism.protos.GetHoldersResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetHoldersRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetHoldersRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetHoldersResponse)}
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetHoldersResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetHoldersResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetHoldersResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.getHolders =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServiceClient.prototype.getHolders =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GetHolders',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GetHolders',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GetHolders,
@@ -615,22 +616,22 @@ proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.getHolders =
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.GetHoldersRequest} request The
+ * @param {!proto.io.iohk.atala.prism.protos.GetHoldersRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.io.iohk.prism.protos.GetHoldersResponse>}
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetHoldersResponse>}
  *     A native promise that resolves to the response
  */
-proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.getHolders =
+proto.io.iohk.atala.prism.protos.CredentialsStoreServicePromiseClient.prototype.getHolders =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.prism.protos.CredentialsStoreService/GetHolders',
+      '/io.iohk.atala.prism.protos.CredentialsStoreService/GetHolders',
       request,
       metadata || {},
       methodDescriptor_CredentialsStoreService_GetHolders);
 };
 
 
-module.exports = proto.io.iohk.prism.protos;
+module.exports = proto.io.iohk.atala.prism.protos;
 

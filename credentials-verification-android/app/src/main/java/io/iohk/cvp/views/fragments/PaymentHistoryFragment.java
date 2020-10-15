@@ -28,7 +28,7 @@ import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import io.iohk.cvp.views.utils.adapters.PaymentsHistoryRecyclerViewAdapter;
-import io.iohk.prism.protos.Payment;
+import io.iohk.atala.prism.protos.Payment;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 

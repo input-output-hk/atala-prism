@@ -3,9 +3,9 @@ package io.iohk.cvp.grpc;
 import androidx.lifecycle.MutableLiveData;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.GetBraintreePaymentsConfigRequest;
-import io.iohk.prism.protos.GetBraintreePaymentsConfigResponse;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.GetBraintreePaymentsConfigRequest;
+import io.iohk.atala.prism.protos.GetBraintreePaymentsConfigResponse;
 
 public class GetBraintreePaymentsConfigRunnable extends CommonGrpcRunnable<String> {
 

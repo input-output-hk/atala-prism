@@ -6,7 +6,7 @@ import java.util.Base64
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.{ECKeys, SHA256Digest}
 import io.iohk.atala.prism.node.models.DIDSuffix
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models
 
 object EncodedSizes {
   def main(args: Array[String]): Unit = {

@@ -16,7 +16,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.views.Preferences;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
 
 public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
 

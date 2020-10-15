@@ -24,7 +24,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ImageUtils;
-import io.iohk.prism.protos.ParticipantInfo;
+import io.iohk.atala.prism.protos.ParticipantInfo;
 
 /**
  * A simple {@link Fragment} subclass.

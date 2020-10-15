@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.connector
 
 import io.grpc.Context
-import io.iohk.atala.crypto.{EC, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
-import io.iohk.atala.prism.connector.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 
@@ -97,7 +96,7 @@ class SignedRequestsAuthenticator(
       participantId: ParticipantId,
       publicKey: ECPublicKey,
       request: Array[Byte],
-      requestNonce: RequestNonce,
+      requestNonce: model.RequestNonce,
       signature: ECSignature
   )(implicit ec: ExecutionContext): FutureEither[SignatureVerificationError, ParticipantId] = {
     val payload = SignedRequestsHelper.merge(requestNonce, request).toArray

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.console.grpc
 
 import io.iohk.atala.prism.console.models
 import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
-import io.iohk.prism.protos.console_models
+import io.iohk.atala.prism.protos.console_models
 
 object ProtoCodecs {
 

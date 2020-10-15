@@ -3,12 +3,12 @@ package io.iohk.atala.prism.node.operations
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
-import io.iohk.prism.protos.{common_models, node_models}
+import io.iohk.atala.prism.protos.{common_models, node_models}
 
 import scala.util.Try
 
@@ -68,7 +68,7 @@ object ParsingUtils {
     hash.parse { hash =>
       Either.cond(
         hash.size() == SHA256Digest.BYTE_LENGTH,
-        SHA256Digest(hash.toByteArray),
+        SHA256Digest(hash.toByteArray.toVector),
         s"mush have ${SHA256Digest.BYTE_LENGTH} bytes"
       )
     }

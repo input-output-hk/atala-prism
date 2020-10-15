@@ -3,9 +3,9 @@ package io.iohk.atala.cvp.webextension.background.services.node
 import java.time.Instant
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.credentials
-import io.iohk.atala.crypto.{EC, ECPublicKey, SHA256Digest}
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.credentials
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.protos.node_models
 
 object NodeUtils {
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {

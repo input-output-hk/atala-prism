@@ -4,13 +4,13 @@ import com.google.protobuf.ByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.MetadataUtils
-import io.iohk.atala.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.crypto.japi.ECKeyPair
 import io.iohk.cvp.BuildConfig
 import io.iohk.cvp.utils.CryptoUtils
 import io.iohk.cvp.utils.GrpcUtils
 import io.iohk.cvp.viewmodel.dtos.ConnectionDataDto
 import io.iohk.cvp.views.Preferences
-import io.iohk.prism.protos.*
+import io.iohk.atala.prism.protos.*
 import javax.inject.Inject
 
 class AppApiHelper @Inject constructor(private val prefs: Preferences) : ApiHelper {

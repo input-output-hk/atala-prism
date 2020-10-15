@@ -4,7 +4,7 @@ import cats.data.{EitherT, OptionT}
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._

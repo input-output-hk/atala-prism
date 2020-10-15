@@ -7,8 +7,8 @@ import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.ContactsRepository
-import io.iohk.prism.protos.console_api
-import io.iohk.prism.protos.console_api.{
+import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.protos.console_api.{
   CreateContactRequest,
   CreateContactResponse,
   GenerateConnectionTokenForContactRequest,

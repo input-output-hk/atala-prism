@@ -14,8 +14,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import org.mockito.{MockitoSugar, ArgumentMatchersSugar}
 
-import io.iohk.atala.crypto.{EC, ECKeyPair, ECPrivateKey}
-import io.iohk.atala.requests.{RequestAuthenticator, SignedConnectorRequest}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPrivateKey}
+import io.iohk.atala.prism.connector.{RequestAuthenticator, SignedConnectorRequest}
 import io.iohk.atala.mirror.services.BaseGrpcClientService.AuthHeaders
 
 import monix.execution.Scheduler.Implicits.global

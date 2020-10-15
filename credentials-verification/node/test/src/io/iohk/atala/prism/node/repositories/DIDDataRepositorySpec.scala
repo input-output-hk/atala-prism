@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.repositories
 
-import io.iohk.atala.crypto.EC
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}

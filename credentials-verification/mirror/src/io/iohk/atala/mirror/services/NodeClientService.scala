@@ -1,7 +1,7 @@
 package io.iohk.atala.mirror.services
 
-import io.iohk.prism.protos.node_api._
-import io.iohk.prism.protos.node_models.DIDData
+import io.iohk.atala.prism.protos.node_api._
+import io.iohk.atala.prism.protos.node_models.DIDData
 import monix.eval.Task
 
 trait NodeClientService {

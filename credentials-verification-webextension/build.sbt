@@ -151,7 +151,9 @@ npmDependencies in Compile ++= Seq(
 // Internal libraries
 lazy val cryptoLib = ProjectRef(file("../prism-sdk"), "prismCryptoJS")
 lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJS")
-dependsOn(cryptoLib, protosLib)
+lazy val credentialsLib = ProjectRef(file("../prism-sdk"), "prismCredentialsJS")
+lazy val connectorLib = ProjectRef(file("../prism-sdk"), "prismConnectorJS")
+dependsOn(cryptoLib, protosLib, credentialsLib, connectorLib)
 
 // Enable DOM testing with Chrome under Selenium
 requireJsDomEnv in Test := true

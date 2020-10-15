@@ -8,7 +8,7 @@ import io.iohk.atala.prism.cmanager.models.requests.CreateStudent
 import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
 import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
-import io.iohk.prism.protos.cmanager_api
+import io.iohk.atala.prism.protos.cmanager_api
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

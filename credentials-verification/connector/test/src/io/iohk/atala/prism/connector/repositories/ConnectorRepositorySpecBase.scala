@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector.repositories
 import java.time.Instant
 
 import doobie.implicits._
-import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId

@@ -7,7 +7,7 @@ import io.iohk.cvp.data.DataManager
 import io.iohk.cvp.data.local.db.mappers.ContactMapper
 import io.iohk.cvp.grpc.AsyncTaskResult
 import io.iohk.cvp.utils.CryptoUtils
-import io.iohk.prism.protos.AddConnectionFromTokenResponse
+import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject

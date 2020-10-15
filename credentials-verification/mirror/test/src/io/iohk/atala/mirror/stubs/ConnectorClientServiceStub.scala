@@ -6,13 +6,13 @@ import fs2.Stream
 
 import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.mirror.services.ConnectorClientService
-import io.iohk.prism.protos.connector_api.{
+import io.iohk.atala.prism.protos.connector_api.{
   GenerateConnectionTokenResponse,
   GetConnectionsPaginatedResponse,
   GetMessagesPaginatedResponse,
   SendMessageResponse
 }
-import io.iohk.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import monix.eval.Task
 
 class ConnectorClientServiceStub(

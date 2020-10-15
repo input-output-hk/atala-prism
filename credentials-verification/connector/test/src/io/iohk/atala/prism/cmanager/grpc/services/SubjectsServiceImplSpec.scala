@@ -15,9 +15,9 @@ import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.prism.protos.cmanager_api
-import io.iohk.prism.protos.cmanager_api.{GetSubjectCredentialsRequest, GetSubjectRequest, GetSubjectsRequest}
-import io.iohk.prism.protos.cmanager_models.{CManagerGenericCredential, IssuerSubject}
+import io.iohk.atala.prism.protos.cmanager_api
+import io.iohk.atala.prism.protos.cmanager_api.{GetSubjectCredentialsRequest, GetSubjectRequest, GetSubjectsRequest}
+import io.iohk.atala.prism.protos.cmanager_models.{CManagerGenericCredential, IssuerSubject}
 import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -34,7 +34,7 @@ class SubjectsServiceImplSpec extends RpcSpecBase {
   private lazy val contactsRepository = new ContactsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,
     requestNoncesRepository,

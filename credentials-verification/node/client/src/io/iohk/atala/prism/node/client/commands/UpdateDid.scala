@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.node.client.commands
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.crypto.EC
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.client.{Config, ProtoUtils, StateStorage}
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
@@ -59,7 +59,7 @@ case class UpdateDid(
     val updateDidOp = node_models.UpdateDIDOperation(
       id = suffix,
       actions = addActions ++ removeActions,
-      previousOperationHash = ByteString.copyFrom(lastOperation.value)
+      previousOperationHash = ByteString.copyFrom(lastOperation.value.toArray)
     )
 
     val (masterKeyId, _, masterKey, _) = keys.find(_._2 == node_models.KeyUsage.MASTER_KEY).get

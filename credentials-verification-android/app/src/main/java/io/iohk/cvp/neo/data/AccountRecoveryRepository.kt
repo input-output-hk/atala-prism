@@ -2,8 +2,8 @@ package io.iohk.cvp.neo.data
 
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import io.iohk.atala.crypto.japi.ECKeyPair
-import io.iohk.atala.crypto.MnemonicLengthException
+import io.iohk.atala.prism.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.crypto.MnemonicLengthException
 import io.iohk.cvp.data.local.db.mappers.ContactMapper
 import io.iohk.cvp.data.local.db.mappers.CredentialMapper
 import io.iohk.cvp.data.local.db.model.Contact
@@ -15,8 +15,8 @@ import io.iohk.cvp.neo.data.local.CredentialsLocalDataSourceInterface
 import io.iohk.cvp.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.cvp.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.cvp.utils.CryptoUtils
-import io.iohk.prism.protos.AtalaMessage
-import io.iohk.prism.protos.ReceivedMessage
+import io.iohk.atala.prism.protos.AtalaMessage
+import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException

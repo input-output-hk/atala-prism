@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.models
 
 import io.circe.Json
-import io.iohk.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_internal
 
 object AtalaObjectMetadata {
   // Last 16 bits of 344977920845, which is the decimal representation of the concatenation of the hexadecimal values

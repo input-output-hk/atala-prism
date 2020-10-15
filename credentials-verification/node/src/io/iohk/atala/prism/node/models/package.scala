@@ -4,7 +4,7 @@ import java.time.Instant
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
-import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.operations.TimestampInfo

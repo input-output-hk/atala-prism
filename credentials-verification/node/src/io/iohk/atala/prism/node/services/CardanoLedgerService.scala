@@ -8,7 +8,7 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_internal
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 

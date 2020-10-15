@@ -6,11 +6,11 @@ import cats.data.EitherT
 import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.crypto.{EC, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.Path
-import io.iohk.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 
 import scala.collection.generic.CanBuildFrom

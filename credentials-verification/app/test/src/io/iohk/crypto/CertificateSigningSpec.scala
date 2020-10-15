@@ -4,9 +4,11 @@ import java.net.URI
 import java.time.LocalDateTime
 import java.util.Base64
 
+import io.iohk.atala.prism.crypto.ECConfig.CURVE_NAME
 import io.iohk.claims.json._
 import io.iohk.claims.{Certificate, SubjectClaims}
-import io.iohk.atala.prism.crypto.ECKeys
+import io.iohk.atala.prism.crypto.EC
+import org.bouncycastle.jce.ECNamedCurveTable
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -16,8 +18,12 @@ class CertificateSigningSpec extends AnyWordSpec with Matchers {
 
   val urlBase64EncodedD = "avwoe7yP0B58wMp7sALpCToCnA6gD2Dsv5bnScWzOL0"
   val dBytes = Base64.getUrlDecoder.decode(urlBase64EncodedD)
-  val publicKey = ECKeys.toPublicKey(dBytes)
-  val privateKey = ECKeys.toPrivateKey(dBytes)
+  val ecParameterSpec = ECNamedCurveTable.getParameterSpec(CURVE_NAME)
+  val bigInteger = BigInt(1, dBytes).bigInteger
+  val ecPoint = ecParameterSpec.getG.multiply(bigInteger).normalize()
+
+  val privateKey = EC.toPrivateKey(bigInteger)
+  val publicKey = EC.toPublicKey(ecPoint.getXCoord.toBigInteger, ecPoint.getYCoord.toBigInteger)
 
   val certificate = Certificate(
     URI.create("did:example:university"),
@@ -33,7 +39,7 @@ class CertificateSigningSpec extends AnyWordSpec with Matchers {
     }
 
     "not verify certificate when signature doesn't match the key" in {
-      val otherPublicKey = ECKeys.generateKeyPair().getPublic
+      val otherPublicKey = EC.generateKeyPair().publicKey
       val encoded = CertificateSigning.sign(certificate, URI.create("did:example:university/keys/1"), privateKey)
       CertificateSigning.verify(encoded, otherPublicKey) shouldBe false
     }

@@ -6,8 +6,8 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.cmanager.models.Student.ConnectionStatus
 import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student, UniversityCredential}
 import io.iohk.atala.prism.console.models.Contact
-import io.iohk.prism.protos.common_models.Date
-import io.iohk.prism.protos.{cmanager_models, common_models}
+import io.iohk.atala.prism.protos.common_models.Date
+import io.iohk.atala.prism.protos.{cmanager_models, common_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
@@ -101,7 +101,7 @@ object ProtoCodecs {
     credential.publicationData.fold(model) { data =>
       model
         .withNodeCredentialId(data.nodeCredentialId)
-        .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value))
+        .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withPublicationStoredAt(data.storedAt.toEpochMilli)
     }

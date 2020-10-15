@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_internal
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}

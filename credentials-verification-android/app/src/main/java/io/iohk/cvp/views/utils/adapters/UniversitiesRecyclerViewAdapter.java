@@ -10,8 +10,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ImageUtils;
-import io.iohk.prism.protos.ConnectionInfo;
-import io.iohk.prism.protos.IssuerInfo;
+import io.iohk.atala.prism.protos.ConnectionInfo;
+import io.iohk.atala.prism.protos.IssuerInfo;
 
 public class UniversitiesRecyclerViewAdapter extends
         ConnectionsRecyclerViewAdapter<UniversitiesRecyclerViewAdapter.ViewHolder> {

@@ -4,8 +4,8 @@ import cats.data.ValidatedNel
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.credentials.VerificationError
-import io.iohk.atala.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
+import io.iohk.atala.prism.credentials.VerificationError
+import io.iohk.atala.prism.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
 import io.iohk.atala.cvp.webextension.activetab.models.{JsSdkDetails, JsSignedMessage, JsUserDetails}
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}

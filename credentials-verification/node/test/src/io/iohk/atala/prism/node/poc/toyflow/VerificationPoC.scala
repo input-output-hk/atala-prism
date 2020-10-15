@@ -4,8 +4,8 @@ import java.util.concurrent.TimeUnit
 
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
+import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, SignedCredential}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.crypto.poc.{CryptoSDKImpl, SignedCredential}
 import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
@@ -17,7 +17,7 @@ import io.iohk.atala.prism.node.services.{
 }
 import io.iohk.atala.prism.node.{InMemoryAtalaReferenceLedger, NodeServiceImpl, objects}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 
@@ -113,7 +113,6 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
       val connector = Connector(nodeServiceStub)
       val wallet = Wallet(nodeServiceStub)
       val cmanager = CManager(nodeServiceStub)
-      val cryptoSDK = CryptoSDKImpl
 
       // 1. issuer generates a DID with the wallet
       val (didSuffix, createDIDOp) = wallet.generateDID()
@@ -143,7 +142,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
 
       // 6. she issues the credential through the cmanager
       // we create the issuance operation
-      val hash = cryptoSDK.hash(signedCredential)
+      val hash = CredentialsCryptoSDKImpl.hash(signedCredential)
       val issueCredentialOp = NodeSDK.buildIssueCredentialOp(hash, didSuffix)
       val calculatedCredentialId = NodeSDK.computeCredId(issueCredentialOp)
       val signedIssueCredentialOp = wallet.signOperation(issueCredentialOp, issuanceKeyId, didSuffix)

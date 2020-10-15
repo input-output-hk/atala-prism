@@ -5,7 +5,7 @@ import android.text.format.DateFormat;
 
 import java.util.Calendar;
 
-import io.iohk.prism.protos.Date;
+import io.iohk.atala.prism.protos.Date;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

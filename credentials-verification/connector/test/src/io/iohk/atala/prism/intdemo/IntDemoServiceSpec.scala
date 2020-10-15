@@ -6,7 +6,7 @@ import IntDemoServiceSpec._
 import Testing.{eventually, neverEver}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
-import io.iohk.prism.protos.credential_models
+import io.iohk.atala.prism.protos.credential_models
 import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{after, mock, verify, when}

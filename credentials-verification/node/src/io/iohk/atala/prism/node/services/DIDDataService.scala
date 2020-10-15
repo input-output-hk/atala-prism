@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import io.iohk.atala.identity.DID
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.node.errors

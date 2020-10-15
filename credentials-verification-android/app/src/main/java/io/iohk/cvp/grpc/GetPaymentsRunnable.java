@@ -5,10 +5,10 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.List;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.GetPaymentsRequest;
-import io.iohk.prism.protos.GetPaymentsResponse;
-import io.iohk.prism.protos.Payment;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.GetPaymentsRequest;
+import io.iohk.atala.prism.protos.GetPaymentsResponse;
+import io.iohk.atala.prism.protos.Payment;
 
 public class GetPaymentsRunnable extends CommonGrpcRunnable<List<Payment>> {
 

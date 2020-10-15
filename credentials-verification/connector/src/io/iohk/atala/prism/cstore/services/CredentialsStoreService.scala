@@ -12,8 +12,8 @@ import io.iohk.atala.prism.cstore.grpc.ProtoCodecs._
 import io.iohk.atala.prism.cstore.repositories.daos.IndividualsDAO.IndividualCreateData
 import io.iohk.atala.prism.cstore.repositories.IndividualsRepository
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.prism.protos.cstore_api.{GetHoldersRequest, GetHoldersResponse}
-import io.iohk.prism.protos.{cstore_api, cstore_models}
+import io.iohk.atala.prism.protos.cstore_api.{GetHoldersRequest, GetHoldersResponse}
+import io.iohk.atala.prism.protos.{cstore_api, cstore_models}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}

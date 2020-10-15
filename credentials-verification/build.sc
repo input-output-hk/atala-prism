@@ -223,7 +223,9 @@ object SDK extends ScalaModule {
       Agg(
         ivy"io.iohk::prism-crypto:$version",
         ivy"io.iohk::prism-protos:$version",
-        ivy"io.iohk::prism-identity:$version"
+        ivy"io.iohk::prism-identity:$version",
+        ivy"io.iohk::prism-credentials:$version",
+        ivy"io.iohk::prism-connector:$version"
       )
     }
 

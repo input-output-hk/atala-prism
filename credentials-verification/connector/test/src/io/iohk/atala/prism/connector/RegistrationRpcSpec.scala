@@ -6,8 +6,8 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.prism.protos.node_api.CreateDIDResponse
-import io.iohk.prism.protos.{common_models, connector_api, node_models}
+import io.iohk.atala.prism.protos.node_api.CreateDIDResponse
+import io.iohk.atala.prism.protos.{common_models, connector_api, node_models}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._

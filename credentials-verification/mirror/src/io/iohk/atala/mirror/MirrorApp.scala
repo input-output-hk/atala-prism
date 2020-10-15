@@ -13,10 +13,10 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import org.flywaydb.core.Flyway
 import doobie.util.ExecutionContexts
 import doobie.hikari.HikariTransactor
-import io.iohk.atala.crypto.EC
-import io.iohk.atala.requests.RequestAuthenticator
+import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
-import io.iohk.prism.protos.connector_api.ConnectorServiceGrpc
+import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, NodeConfig, TransactorConfig}
 import io.iohk.atala.mirror.services.{
   ConnectorClientServiceImpl,
@@ -24,7 +24,7 @@ import io.iohk.atala.mirror.services.{
   MirrorService,
   NodeClientServiceImpl
 }
-import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 
 object MirrorApp extends TaskApp {
 

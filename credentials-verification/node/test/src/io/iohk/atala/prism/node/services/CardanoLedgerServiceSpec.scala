@@ -14,7 +14,7 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_internal
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._

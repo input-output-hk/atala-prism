@@ -6,7 +6,7 @@ libraryDependencies += "io.iohk" % "prism-sdk" % "@VERSION@"
 ```
 
 ```scala mdoc
-import io.iohk.atala.crypto.EC
+import io.iohk.atala.prism.crypto.EC
 
 val keyPair = EC.generateKeyPair()
 ```

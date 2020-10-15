@@ -1,6 +1,6 @@
 package io.iohk.cvp.grpc;
 
-import io.iohk.prism.protos.ParticipantInfo;
+import io.iohk.atala.prism.protos.ParticipantInfo;
 import lombok.Data;
 
 @Data

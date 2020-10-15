@@ -4,11 +4,13 @@ import java.net.URI
 import java.time.LocalDateTime
 import java.util.Base64
 
+import io.iohk.atala.prism.crypto.ECConfig.CURVE_NAME
 import io.iohk.claims.json._
 import io.iohk.claims.{Certificate, SubjectClaims}
 import io.iohk.crypto.{SignableEncoding, TwoLineJsonEncoding}
-import io.iohk.atala.prism.crypto.ECKeys
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.dids.DIDLoader
+import org.bouncycastle.jce.ECNamedCurveTable
 import org.scalatest.OptionValues._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -23,8 +25,12 @@ class IssuerSpec extends AnyWordSpec with Matchers {
   val issuerDidDocument = DIDLoader.getDID(os.resource / "issuer" / "did.json").get
   val urlBase64EncodedD = "avwoe7yP0B58wMp7sALpCToCnA6gD2Dsv5bnScWzOL0"
   val dBytes = Base64.getUrlDecoder.decode(urlBase64EncodedD)
-  val publicKey = ECKeys.toPublicKey(dBytes)
-  val privateKey = ECKeys.toPrivateKey(dBytes)
+  val ecParameterSpec = ECNamedCurveTable.getParameterSpec(CURVE_NAME)
+  val bigInteger = BigInt(1, dBytes).bigInteger
+  val ecPoint = ecParameterSpec.getG.multiply(bigInteger).normalize()
+
+  val privateKey = EC.toPrivateKey(bigInteger)
+  val publicKey = EC.toPublicKey(ecPoint.getXCoord.toBigInteger, ecPoint.getYCoord.toBigInteger)
 
   val claims = SubjectClaims(URI.create("did:example:student"), Map("degree" -> "Masters Degree in Astrology"))
 
@@ -50,10 +56,10 @@ class IssuerSpec extends AnyWordSpec with Matchers {
     }
 
     "throw an expection when trying to sign with key unknown to DID document" in {
-      val keys = ECKeys.generateKeyPair()
+      val keys = EC.generateKeyPair()
 
       an[IllegalArgumentException] shouldBe thrownBy {
-        Issuer.sign(claims, keys.getPrivate, keys.getPublic, issuerDidDocument)
+        Issuer.sign(claims, keys.privateKey, keys.publicKey, issuerDidDocument)
       }
     }
 

@@ -7,8 +7,8 @@ import io.grpc.stub.{AbstractStub, MetadataUtils}
 import scalapb.GeneratedMessage
 import monix.eval.Task
 
-import io.iohk.atala.crypto.ECKeyPair
-import io.iohk.atala.requests.RequestAuthenticator
+import io.iohk.atala.prism.crypto.ECKeyPair
+import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.services.BaseGrpcClientService.{DidBasedAuthConfig, AuthHeaders}
 
 /**

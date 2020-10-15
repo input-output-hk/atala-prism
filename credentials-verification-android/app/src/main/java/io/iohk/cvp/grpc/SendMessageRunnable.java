@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.SendMessageRequest;
-import io.iohk.prism.protos.SendMessageResponse;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.SendMessageRequest;
+import io.iohk.atala.prism.protos.SendMessageResponse;
 
 public class SendMessageRunnable extends CommonGrpcRunnable<Boolean> {
 

@@ -4,7 +4,7 @@ import java.util.Base64
 
 import com.typesafe.config.Config
 
-import io.iohk.atala.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
 
 case class ConnectorConfig(host: String, port: Int, authConfig: DidBasedAuthConfig)

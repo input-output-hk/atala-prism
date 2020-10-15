@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.prism.protos;
+package io.iohk.atala.prism.protos;
 
 message TimestampInfo {
     uint64 blockTimestamp = 1; // timestamp provided from the underlying blockchain

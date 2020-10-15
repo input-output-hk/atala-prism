@@ -8,7 +8,7 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 
@@ -28,7 +28,7 @@ object IssueCredentialOperationSpec {
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
   lazy val issuer = issuerOperation.id
   val content = ""
-  val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes)).value
+  val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes).toVector).value
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.IssueCredential(
@@ -36,7 +36,7 @@ object IssueCredentialOperationSpec {
         credentialData = Some(
           node_models.CredentialData(
             issuer = issuer.suffix,
-            contentHash = ByteString.copyFrom(contentHash)
+            contentHash = ByteString.copyFrom(contentHash.toArray)
           )
         )
       )

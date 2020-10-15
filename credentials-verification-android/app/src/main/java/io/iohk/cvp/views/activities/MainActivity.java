@@ -31,7 +31,7 @@ import javax.inject.Inject;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
-import io.iohk.atala.crypto.DerivationPath;
+import io.iohk.atala.prism.crypto.DerivationPath;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.ErrorCode;
@@ -51,7 +51,7 @@ import io.iohk.cvp.views.interfaces.FirebaseEventLogger;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
-import io.iohk.prism.protos.AddConnectionFromTokenResponse;
+import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse;
 import lombok.Getter;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;

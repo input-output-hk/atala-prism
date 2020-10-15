@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.client.commands
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.client.{Config, State, StateStorage}
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
@@ -20,7 +20,7 @@ case class RevokeCredential(credentialId: String = "", previousOperation: Option
 
     val revokeCredentialOp = node_models.RevokeCredentialOperation(
       credentialId = credentialId,
-      previousOperationHash = ByteString.copyFrom(lastOperation.value)
+      previousOperationHash = ByteString.copyFrom(lastOperation.value.toArray)
     )
 
     val atalaOp =

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.services
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
-import io.iohk.atala.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.AtalaObject
@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{AtalaReferenceLedger, objects}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
@@ -202,7 +202,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   }
 
   protected def getBlockFromStorage(atalaObject: node_internal.AtalaObject): node_internal.AtalaBlock = {
-    val atalaBlockHash = SHA256Digest(atalaObject.getBlockHash.toByteArray)
+    val atalaBlockHash = SHA256Digest(atalaObject.getBlockHash.toByteArray.toVector)
     val atalaBlockData = storage.get(atalaBlockHash.hexValue).futureValue.value
     node_internal.AtalaBlock.parseFrom(atalaBlockData)
   }
@@ -233,7 +233,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     val atalaObject = node_internal.AtalaObject(
       1,
       blockBytes.length,
-      node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value))
+      node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray))
     )
     storeObject(atalaObject)
     atalaObject
@@ -252,7 +252,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       node_internal.AtalaObject(
         1,
         blockBytes.length,
-        node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value))
+        node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray))
       )
     }
   }

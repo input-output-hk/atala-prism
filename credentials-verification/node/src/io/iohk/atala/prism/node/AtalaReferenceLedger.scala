@@ -5,7 +5,7 @@ import java.time.Instant
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_internal
 
 import scala.concurrent.{ExecutionContext, Future}
 

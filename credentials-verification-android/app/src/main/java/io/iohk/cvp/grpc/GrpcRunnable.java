@@ -1,6 +1,6 @@
 package io.iohk.cvp.grpc;
 
-import io.iohk.prism.protos.ConnectorServiceGrpc;
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
 
 public interface GrpcRunnable<A> {
 

@@ -8,10 +8,10 @@ import org.junit.runner.RunWith;
 
 import java.security.SecureRandom;
 
-import io.iohk.atala.crypto.japi.CryptoProvider;
-import io.iohk.atala.crypto.japi.EC;
-import io.iohk.atala.crypto.japi.ECKeyPair;
-import io.iohk.atala.crypto.japi.ECSignature;
+import io.iohk.atala.prism.crypto.japi.CryptoProvider;
+import io.iohk.atala.prism.crypto.japi.EC;
+import io.iohk.atala.prism.crypto.japi.ECKeyPair;
+import io.iohk.atala.prism.crypto.japi.ECSignature;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

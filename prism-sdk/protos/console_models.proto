@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.prism.protos;
+package io.iohk.atala.prism.protos;
 
 enum ContactConnectionStatus {
   STATUS_MISSING = 0; // default value, represents the lack of status

@@ -5,7 +5,7 @@ import java.util.Base64
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.errors.{ConnectorError, LoggingContext, UnknownValueError, _}
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO

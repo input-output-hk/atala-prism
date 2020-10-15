@@ -2,7 +2,7 @@ package io.iohk.cvp
 
 import com.google.protobuf.ByteString
 import io.iohk.cvp.data.local.db.mappers.ContactMapper
-import io.iohk.prism.protos.*
+import io.iohk.atala.prism.protos.*
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test

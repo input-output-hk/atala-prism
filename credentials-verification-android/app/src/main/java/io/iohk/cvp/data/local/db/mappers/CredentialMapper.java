@@ -5,9 +5,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.iohk.cvp.utils.CredentialParse;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
-import io.iohk.prism.protos.AtalaMessage;
-import io.iohk.prism.protos.Credential;
-import io.iohk.prism.protos.ReceivedMessage;
+import io.iohk.atala.prism.protos.AtalaMessage;
+import io.iohk.atala.prism.protos.Credential;
+import io.iohk.atala.prism.protos.ReceivedMessage;
 
 public class CredentialMapper {
 

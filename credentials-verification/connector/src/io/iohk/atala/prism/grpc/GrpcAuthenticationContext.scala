@@ -3,7 +3,7 @@ package io.iohk.atala.prism.grpc
 import java.util.{Base64, UUID}
 
 import io.grpc.{Context, Metadata, Status, StatusRuntimeException}
-import io.iohk.atala.crypto.{EC, ECSignature}
+import io.iohk.atala.prism.crypto.{EC, ECSignature}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.connector.model.RequestNonce
 import io.iohk.atala.prism.models.ParticipantId

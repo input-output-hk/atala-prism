@@ -3,9 +3,9 @@ package io.iohk.atala.prism.connector.client.commands
 import java.util.Base64
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.connector.client.Config
-import io.iohk.prism.protos.{connector_api, node_models}
+import io.iohk.atala.prism.protos.{connector_api, node_models}
 
 case class Register(
     keysToGenerate: Vector[(String, node_models.KeyUsage)] = Vector("master" -> node_models.KeyUsage.MASTER_KEY)

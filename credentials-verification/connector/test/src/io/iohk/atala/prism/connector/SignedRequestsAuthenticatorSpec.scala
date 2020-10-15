@@ -4,16 +4,15 @@ import java.util.UUID
 
 import com.google.protobuf.ByteString
 import io.grpc.Context
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey, ECSignature}
-import io.iohk.atala.requests.RequestAuthenticator
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.prism.protos.node_api._
-import io.iohk.prism.protos.{connector_api, node_api, node_models}
+import io.iohk.atala.prism.protos.node_api._
+import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.scalatest.matchers.must.Matchers._
@@ -71,7 +70,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           publicKey = keys.publicKey,
           signature = ECSignature(signedRequest.signature)
         )
@@ -91,7 +90,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         requestAuthenticator.signConnectorRequest(request.toByteArray, EC.generateKeyPair().privateKey)
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           publicKey = keys.publicKey,
           signature = ECSignature(signedRequest.signature)
         )
@@ -112,7 +111,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
           // Different nonce
-          requestNonce = RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          requestNonce = model.RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
           publicKey = keys.publicKey,
           signature = ECSignature(signedRequest.signature)
         )
@@ -132,7 +131,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           publicKey = keys.publicKey,
           signature = ECSignature(signedRequest.signature)
         )
@@ -164,7 +163,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .DIDBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId,
           signature = ECSignature(signedRequest.signature)
@@ -197,7 +196,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .DIDBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId,
           signature = ECSignature(signedRequest.signature)
@@ -230,7 +229,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val header = GrpcAuthenticationHeader
         .DIDBased(
           // Different nonce
-          requestNonce = RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          requestNonce = model.RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
           did = did,
           keyId = keyId,
           signature = ECSignature(signedRequest.signature)
@@ -261,7 +260,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
           Some(
             GrpcAuthenticationHeader
               .DIDBased(
-                requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+                requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
                 did = did,
                 keyId = keyId,
                 signature = ECSignature(signedRequest.signature)
@@ -292,7 +291,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .DIDBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId,
           signature = ECSignature(signedRequest.signature)
@@ -324,7 +323,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .DIDBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId + "1", // set a different key id
           signature = ECSignature(signedRequest.signature)
@@ -356,7 +355,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .DIDBased(
-          requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce = model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId + "1", // set a different key id
           signature = ECSignature(signedRequest.signature)
@@ -425,7 +424,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
     val requestNoncesRepository = mock[RequestNoncesRepository]
     requestNoncesRepository
-      .burn(any[ParticipantId], any[RequestNonce])
+      .burn(any[ParticipantId], any[model.RequestNonce])
       .returns(Future(burnNonce()).map(Right(_)).toFutureEither)
 
     val customNode = mock[NodeServiceGrpc.NodeService]

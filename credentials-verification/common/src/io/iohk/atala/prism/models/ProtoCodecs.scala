@@ -2,7 +2,7 @@ package io.iohk.atala.prism.models
 
 import java.time.Instant
 
-import io.iohk.prism.protos.common_models
+import io.iohk.atala.prism.protos.common_models
 
 object ProtoCodecs {
   def toTransactionInfo(transactionInfo: TransactionInfo): common_models.TransactionInfo = {

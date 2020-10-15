@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.services
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.modeling._
-import io.iohk.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_internal
 import shapeless.tag.@@
 
 import scala.concurrent.Future

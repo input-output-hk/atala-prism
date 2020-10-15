@@ -1,7 +1,7 @@
 package io.iohk.cvp.data.local
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.crypto.japi.ECKeyPair
 import io.iohk.cvp.data.DataManager
 import io.iohk.cvp.data.local.db.DbHelper
 import io.iohk.cvp.data.local.db.model.Contact
@@ -9,7 +9,7 @@ import io.iohk.cvp.data.local.db.model.Credential
 import io.iohk.cvp.data.local.preferences.PreferencesHelper
 import io.iohk.cvp.data.local.remote.ApiHelper
 import io.iohk.cvp.viewmodel.dtos.ConnectionDataDto
-import io.iohk.prism.protos.*
+import io.iohk.atala.prism.protos.*
 import javax.inject.Inject
 
 class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelper: ApiHelper, private var prefHelper: PreferencesHelper) : DataManager {

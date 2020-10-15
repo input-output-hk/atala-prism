@@ -19,44 +19,44 @@ var common_models_pb = require('./common_models_pb.js');
 goog.object.extend(proto, common_models_pb);
 var node_models_pb = require('./node_models_pb.js');
 goog.object.extend(proto, node_models_pb);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateCredentialRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateCredentialResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateGenericCredentialRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateGenericCredentialResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateGroupRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateGroupResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateStudentRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateStudentResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateSubjectRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.CreateSubjectResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetContactCredentialsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetContactCredentialsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetCredentialsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetCredentialsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetGenericCredentialsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetGenericCredentialsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetGroupsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetGroupsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetStudentCredentialsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetStudentCredentialsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetStudentRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetStudentResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetStudentsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetStudentsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetSubjectCredentialsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetSubjectCredentialsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetSubjectRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetSubjectResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetSubjectsRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.GetSubjectsResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.PublishCredentialRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.PublishCredentialResponse', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.UpdateGroupRequest', null, global);
-goog.exportSymbol('proto.io.iohk.prism.protos.UpdateGroupResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateCredentialRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateCredentialResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateGroupRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateGroupResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateStudentRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateStudentResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateSubjectRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateSubjectResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetCredentialsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetCredentialsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetGroupsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetGroupsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetStudentRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetStudentResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetStudentsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetStudentsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetSubjectRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetSubjectResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetSubjectsRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.GetSubjectsResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.PublishCredentialRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.PublishCredentialResponse', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.UpdateGroupRequest', null, global);
+goog.exportSymbol('proto.io.iohk.atala.prism.protos.UpdateGroupResponse', null, global);
 /**
  * Generated by JsPbCodeGenerator.
  * @param {Array=} opt_data Optional initial data array, typically from a
@@ -67,16 +67,16 @@ goog.exportSymbol('proto.io.iohk.prism.protos.UpdateGroupResponse', null, global
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateCredentialRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateCredentialRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateCredentialRequest.displayName = 'proto.io.iohk.prism.protos.CreateCredentialRequest';
+  proto.io.iohk.atala.prism.protos.CreateCredentialRequest.displayName = 'proto.io.iohk.atala.prism.protos.CreateCredentialRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -88,16 +88,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateCredentialResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateCredentialResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateCredentialResponse.displayName = 'proto.io.iohk.prism.protos.CreateCredentialResponse';
+  proto.io.iohk.atala.prism.protos.CreateCredentialResponse.displayName = 'proto.io.iohk.atala.prism.protos.CreateCredentialResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -109,16 +109,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetCredentialsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetCredentialsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetCredentialsRequest.displayName = 'proto.io.iohk.prism.protos.GetCredentialsRequest';
+  proto.io.iohk.atala.prism.protos.GetCredentialsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetCredentialsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -130,16 +130,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetCredentialsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetCredentialsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetCredentialsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetCredentialsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetCredentialsResponse.displayName = 'proto.io.iohk.prism.protos.GetCredentialsResponse';
+  proto.io.iohk.atala.prism.protos.GetCredentialsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetCredentialsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -151,16 +151,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateStudentRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateStudentRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateStudentRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateStudentRequest.displayName = 'proto.io.iohk.prism.protos.CreateStudentRequest';
+  proto.io.iohk.atala.prism.protos.CreateStudentRequest.displayName = 'proto.io.iohk.atala.prism.protos.CreateStudentRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -172,16 +172,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateStudentResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateStudentResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateStudentResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateStudentResponse.displayName = 'proto.io.iohk.prism.protos.CreateStudentResponse';
+  proto.io.iohk.atala.prism.protos.CreateStudentResponse.displayName = 'proto.io.iohk.atala.prism.protos.CreateStudentResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -193,16 +193,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetStudentsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetStudentsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetStudentsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetStudentsRequest.displayName = 'proto.io.iohk.prism.protos.GetStudentsRequest';
+  proto.io.iohk.atala.prism.protos.GetStudentsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetStudentsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -214,16 +214,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetStudentsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetStudentsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetStudentsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetStudentsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetStudentsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetStudentsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetStudentsResponse.displayName = 'proto.io.iohk.prism.protos.GetStudentsResponse';
+  proto.io.iohk.atala.prism.protos.GetStudentsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetStudentsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -235,16 +235,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetStudentRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetStudentRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetStudentRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetStudentRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetStudentRequest.displayName = 'proto.io.iohk.prism.protos.GetStudentRequest';
+  proto.io.iohk.atala.prism.protos.GetStudentRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetStudentRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -256,16 +256,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetStudentResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetStudentResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetStudentResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetStudentResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetStudentResponse.displayName = 'proto.io.iohk.prism.protos.GetStudentResponse';
+  proto.io.iohk.atala.prism.protos.GetStudentResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetStudentResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -277,16 +277,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetStudentCredentialsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetStudentCredentialsRequest.displayName = 'proto.io.iohk.prism.protos.GetStudentCredentialsRequest';
+  proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -298,16 +298,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetStudentCredentialsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetStudentCredentialsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetStudentCredentialsResponse.displayName = 'proto.io.iohk.prism.protos.GetStudentCredentialsResponse';
+  proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -319,16 +319,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.displayName = 'proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest';
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.displayName = 'proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -340,16 +340,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.displayName = 'proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse';
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.displayName = 'proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -361,16 +361,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateSubjectRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateSubjectRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateSubjectRequest.displayName = 'proto.io.iohk.prism.protos.CreateSubjectRequest';
+  proto.io.iohk.atala.prism.protos.CreateSubjectRequest.displayName = 'proto.io.iohk.atala.prism.protos.CreateSubjectRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -382,16 +382,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateSubjectResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateSubjectResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateSubjectResponse.displayName = 'proto.io.iohk.prism.protos.CreateSubjectResponse';
+  proto.io.iohk.atala.prism.protos.CreateSubjectResponse.displayName = 'proto.io.iohk.atala.prism.protos.CreateSubjectResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -403,16 +403,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetSubjectsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetSubjectsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetSubjectsRequest.displayName = 'proto.io.iohk.prism.protos.GetSubjectsRequest';
+  proto.io.iohk.atala.prism.protos.GetSubjectsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetSubjectsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -424,16 +424,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetSubjectsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetSubjectsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetSubjectsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetSubjectsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetSubjectsResponse.displayName = 'proto.io.iohk.prism.protos.GetSubjectsResponse';
+  proto.io.iohk.atala.prism.protos.GetSubjectsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetSubjectsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -445,16 +445,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetSubjectRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetSubjectRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetSubjectRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetSubjectRequest.displayName = 'proto.io.iohk.prism.protos.GetSubjectRequest';
+  proto.io.iohk.atala.prism.protos.GetSubjectRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetSubjectRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -466,16 +466,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetSubjectResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetSubjectResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetSubjectResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetSubjectResponse.displayName = 'proto.io.iohk.prism.protos.GetSubjectResponse';
+  proto.io.iohk.atala.prism.protos.GetSubjectResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetSubjectResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -487,16 +487,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetSubjectCredentialsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.displayName = 'proto.io.iohk.prism.protos.GetSubjectCredentialsRequest';
+  proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -508,16 +508,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetSubjectCredentialsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.displayName = 'proto.io.iohk.prism.protos.GetSubjectCredentialsResponse';
+  proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -529,16 +529,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.displayName = 'proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest';
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.displayName = 'proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -550,16 +550,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.displayName = 'proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse';
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.displayName = 'proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -571,16 +571,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateGroupRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateGroupRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateGroupRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateGroupRequest.displayName = 'proto.io.iohk.prism.protos.CreateGroupRequest';
+  proto.io.iohk.atala.prism.protos.CreateGroupRequest.displayName = 'proto.io.iohk.atala.prism.protos.CreateGroupRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -592,16 +592,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateGroupResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateGroupResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateGroupResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateGroupResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateGroupResponse.displayName = 'proto.io.iohk.prism.protos.CreateGroupResponse';
+  proto.io.iohk.atala.prism.protos.CreateGroupResponse.displayName = 'proto.io.iohk.atala.prism.protos.CreateGroupResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -613,16 +613,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetGroupsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetGroupsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetGroupsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetGroupsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetGroupsRequest.displayName = 'proto.io.iohk.prism.protos.GetGroupsRequest';
+  proto.io.iohk.atala.prism.protos.GetGroupsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetGroupsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -634,16 +634,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetGroupsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetGroupsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetGroupsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetGroupsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetGroupsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetGroupsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetGroupsResponse.displayName = 'proto.io.iohk.prism.protos.GetGroupsResponse';
+  proto.io.iohk.atala.prism.protos.GetGroupsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetGroupsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -655,16 +655,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.UpdateGroupRequest.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.UpdateGroupRequest.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.UpdateGroupRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.UpdateGroupRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.UpdateGroupRequest.displayName = 'proto.io.iohk.prism.protos.UpdateGroupRequest';
+  proto.io.iohk.atala.prism.protos.UpdateGroupRequest.displayName = 'proto.io.iohk.atala.prism.protos.UpdateGroupRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -676,16 +676,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.UpdateGroupResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.UpdateGroupResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.UpdateGroupResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.UpdateGroupResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.UpdateGroupResponse.displayName = 'proto.io.iohk.prism.protos.UpdateGroupResponse';
+  proto.io.iohk.atala.prism.protos.UpdateGroupResponse.displayName = 'proto.io.iohk.atala.prism.protos.UpdateGroupResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -697,16 +697,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateGenericCredentialRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateGenericCredentialRequest.displayName = 'proto.io.iohk.prism.protos.CreateGenericCredentialRequest';
+  proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.displayName = 'proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -718,16 +718,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.CreateGenericCredentialResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.CreateGenericCredentialResponse.displayName = 'proto.io.iohk.prism.protos.CreateGenericCredentialResponse';
+  proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.displayName = 'proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -739,16 +739,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetGenericCredentialsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetGenericCredentialsRequest.displayName = 'proto.io.iohk.prism.protos.GetGenericCredentialsRequest';
+  proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -760,16 +760,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetGenericCredentialsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetGenericCredentialsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetGenericCredentialsResponse.displayName = 'proto.io.iohk.prism.protos.GetGenericCredentialsResponse';
+  proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -781,16 +781,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.PublishCredentialRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.PublishCredentialRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.PublishCredentialRequest.displayName = 'proto.io.iohk.prism.protos.PublishCredentialRequest';
+  proto.io.iohk.atala.prism.protos.PublishCredentialRequest.displayName = 'proto.io.iohk.atala.prism.protos.PublishCredentialRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -802,16 +802,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse = function(opt_data) {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.PublishCredentialResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.PublishCredentialResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.PublishCredentialResponse.displayName = 'proto.io.iohk.prism.protos.PublishCredentialResponse';
+  proto.io.iohk.atala.prism.protos.PublishCredentialResponse.displayName = 'proto.io.iohk.atala.prism.protos.PublishCredentialResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -823,16 +823,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest = function(opt_data) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetContactCredentialsRequest, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetContactCredentialsRequest.displayName = 'proto.io.iohk.prism.protos.GetContactCredentialsRequest';
+  proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.displayName = 'proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -844,16 +844,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.GetContactCredentialsResponse.repeatedFields_, null);
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.io.iohk.prism.protos.GetContactCredentialsResponse, jspb.Message);
+goog.inherits(proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.io.iohk.prism.protos.GetContactCredentialsResponse.displayName = 'proto.io.iohk.prism.protos.GetContactCredentialsResponse';
+  proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.displayName = 'proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse';
 }
 
 
@@ -871,8 +871,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateCredentialRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateCredentialRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -881,11 +881,11 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.toObject = function
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateCredentialRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     studentid: jspb.Message.getFieldWithDefault(msg, 1, ""),
     title: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -905,23 +905,23 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.toObject = function(includeIn
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateCredentialRequest;
-  return proto.io.iohk.prism.protos.CreateCredentialRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateCredentialRequest;
+  return proto.io.iohk.atala.prism.protos.CreateCredentialRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateCredentialRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -963,9 +963,9 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.deserializeBinaryFromReader =
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateCredentialRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateCredentialRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -973,11 +973,11 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.serializeBinary = f
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateCredentialRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStudentid();
   if (f.length > 0) {
@@ -1023,16 +1023,16 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.serializeBinaryToWriter = fun
  * optional string studentId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.getStudentid = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.getStudentid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.setStudentid = function(value) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.setStudentid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -1041,44 +1041,44 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.setStudentid = func
  * optional string title = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.getTitle = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.getTitle = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.setTitle = function(value) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.setTitle = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
  * optional Date enrollmentDate = 3;
- * @return {?proto.io.iohk.prism.protos.Date}
+ * @return {?proto.io.iohk.atala.prism.protos.Date}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.getEnrollmentdate = function() {
-  return /** @type{?proto.io.iohk.prism.protos.Date} */ (
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.getEnrollmentdate = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.Date} */ (
     jspb.Message.getWrapperField(this, common_models_pb.Date, 3));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.Date|undefined} value
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} returns this
 */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.setEnrollmentdate = function(value) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.setEnrollmentdate = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.clearEnrollmentdate = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.clearEnrollmentdate = function() {
   return this.setEnrollmentdate(undefined);
 };
 
@@ -1087,35 +1087,35 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.clearEnrollmentdate
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.hasEnrollmentdate = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.hasEnrollmentdate = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
 
 /**
  * optional Date graduationDate = 4;
- * @return {?proto.io.iohk.prism.protos.Date}
+ * @return {?proto.io.iohk.atala.prism.protos.Date}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.getGraduationdate = function() {
-  return /** @type{?proto.io.iohk.prism.protos.Date} */ (
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.getGraduationdate = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.Date} */ (
     jspb.Message.getWrapperField(this, common_models_pb.Date, 4));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.Date|undefined} value
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} returns this
 */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.setGraduationdate = function(value) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.setGraduationdate = function(value) {
   return jspb.Message.setWrapperField(this, 4, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.clearGraduationdate = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.clearGraduationdate = function() {
   return this.setGraduationdate(undefined);
 };
 
@@ -1124,7 +1124,7 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.clearGraduationdate
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.hasGraduationdate = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.hasGraduationdate = function() {
   return jspb.Message.getField(this, 4) != null;
 };
 
@@ -1133,16 +1133,16 @@ proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.hasGraduationdate =
  * optional string groupName = 5;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.getGroupname = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.getGroupname = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateCredentialRequest.prototype.setGroupname = function(value) {
+proto.io.iohk.atala.prism.protos.CreateCredentialRequest.prototype.setGroupname = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -1163,8 +1163,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateCredentialResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateCredentialResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -1173,11 +1173,11 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.toObject = functio
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateCredentialResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateCredentialResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     credential: (f = msg.getCredential()) && cmanager_models_pb.CManagerCredential.toObject(includeInstance, f)
   };
@@ -1193,23 +1193,23 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.toObject = function(includeI
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateCredentialResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialResponse}
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateCredentialResponse;
-  return proto.io.iohk.prism.protos.CreateCredentialResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateCredentialResponse;
+  return proto.io.iohk.atala.prism.protos.CreateCredentialResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateCredentialResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateCredentialResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateCredentialResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialResponse}
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -1234,9 +1234,9 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.deserializeBinaryFromReader 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateCredentialResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateCredentialResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1244,11 +1244,11 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.serializeBinary = 
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateCredentialResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateCredentialResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getCredential();
   if (f != null) {
@@ -1263,28 +1263,28 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.serializeBinaryToWriter = fu
 
 /**
  * optional CManagerCredential credential = 1;
- * @return {?proto.io.iohk.prism.protos.CManagerCredential}
+ * @return {?proto.io.iohk.atala.prism.protos.CManagerCredential}
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.getCredential = function() {
-  return /** @type{?proto.io.iohk.prism.protos.CManagerCredential} */ (
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.prototype.getCredential = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.CManagerCredential} */ (
     jspb.Message.getWrapperField(this, cmanager_models_pb.CManagerCredential, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.CManagerCredential|undefined} value
- * @return {!proto.io.iohk.prism.protos.CreateCredentialResponse} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.CManagerCredential|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialResponse} returns this
 */
-proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.setCredential = function(value) {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.prototype.setCredential = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.CreateCredentialResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateCredentialResponse} returns this
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.clearCredential = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.prototype.clearCredential = function() {
   return this.setCredential(undefined);
 };
 
@@ -1293,7 +1293,7 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.clearCredential = 
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.hasCredential = function() {
+proto.io.iohk.atala.prism.protos.CreateCredentialResponse.prototype.hasCredential = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -1314,8 +1314,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetCredentialsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetCredentialsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -1324,11 +1324,11 @@ proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.toObject = function(o
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetCredentialsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetCredentialsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     limit: jspb.Message.getFieldWithDefault(msg, 1, 0),
     lastseencredentialid: jspb.Message.getFieldWithDefault(msg, 2, "")
@@ -1345,23 +1345,23 @@ proto.io.iohk.prism.protos.GetCredentialsRequest.toObject = function(includeInst
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetCredentialsRequest;
-  return proto.io.iohk.prism.protos.GetCredentialsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetCredentialsRequest;
+  return proto.io.iohk.atala.prism.protos.GetCredentialsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetCredentialsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetCredentialsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -1389,9 +1389,9 @@ proto.io.iohk.prism.protos.GetCredentialsRequest.deserializeBinaryFromReader = f
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetCredentialsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetCredentialsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1399,11 +1399,11 @@ proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.serializeBinary = fun
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetCredentialsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetCredentialsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getLimit();
   if (f !== 0) {
@@ -1426,16 +1426,16 @@ proto.io.iohk.prism.protos.GetCredentialsRequest.serializeBinaryToWriter = funct
  * optional int32 limit = 1;
  * @return {number}
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.getLimit = function() {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
  * @param {number} value
- * @return {!proto.io.iohk.prism.protos.GetCredentialsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.setLimit = function(value) {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.prototype.setLimit = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
 };
 
@@ -1444,16 +1444,16 @@ proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.setLimit = function(v
  * optional string lastSeenCredentialId = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.getLastseencredentialid = function() {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.prototype.getLastseencredentialid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetCredentialsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.setLastseencredentialid = function(value) {
+proto.io.iohk.atala.prism.protos.GetCredentialsRequest.prototype.setLastseencredentialid = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -1464,7 +1464,7 @@ proto.io.iohk.prism.protos.GetCredentialsRequest.prototype.setLastseencredential
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.repeatedFields_ = [1];
 
 
 
@@ -1481,8 +1481,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetCredentialsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetCredentialsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -1491,11 +1491,11 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.toObject = function(
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetCredentialsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetCredentialsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     credentialsList: jspb.Message.toObjectList(msg.getCredentialsList(),
     cmanager_models_pb.CManagerCredential.toObject, includeInstance)
@@ -1512,23 +1512,23 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.toObject = function(includeIns
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetCredentialsResponse;
-  return proto.io.iohk.prism.protos.GetCredentialsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetCredentialsResponse;
+  return proto.io.iohk.atala.prism.protos.GetCredentialsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetCredentialsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetCredentialsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -1553,9 +1553,9 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.deserializeBinaryFromReader = 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetCredentialsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetCredentialsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1563,11 +1563,11 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.serializeBinary = fu
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetCredentialsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetCredentialsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getCredentialsList();
   if (f.length > 0) {
@@ -1582,38 +1582,38 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.serializeBinaryToWriter = func
 
 /**
  * repeated CManagerCredential credentials = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.CManagerCredential>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.CManagerCredential>}
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.getCredentialsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.CManagerCredential>} */ (
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.prototype.getCredentialsList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.CManagerCredential>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.CManagerCredential, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.CManagerCredential>} value
- * @return {!proto.io.iohk.prism.protos.GetCredentialsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.CManagerCredential>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.setCredentialsList = function(value) {
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.prototype.setCredentialsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CManagerCredential=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.CManagerCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.CManagerCredential}
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerCredential}
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.addCredentials = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.CManagerCredential, opt_index);
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.prototype.addCredentials = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.CManagerCredential, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetCredentialsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetCredentialsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.clearCredentialsList = function() {
+proto.io.iohk.atala.prism.protos.GetCredentialsResponse.prototype.clearCredentialsList = function() {
   return this.setCredentialsList([]);
 };
 
@@ -1634,8 +1634,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateStudentRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateStudentRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -1644,11 +1644,11 @@ proto.io.iohk.prism.protos.CreateStudentRequest.prototype.toObject = function(op
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateStudentRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     universityassignedid: jspb.Message.getFieldWithDefault(msg, 1, ""),
     fullname: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -1668,23 +1668,23 @@ proto.io.iohk.prism.protos.CreateStudentRequest.toObject = function(includeInsta
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateStudentRequest;
-  return proto.io.iohk.prism.protos.CreateStudentRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateStudentRequest;
+  return proto.io.iohk.atala.prism.protos.CreateStudentRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateStudentRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -1725,9 +1725,9 @@ proto.io.iohk.prism.protos.CreateStudentRequest.deserializeBinaryFromReader = fu
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateStudentRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateStudentRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1735,11 +1735,11 @@ proto.io.iohk.prism.protos.CreateStudentRequest.prototype.serializeBinary = func
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateStudentRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getUniversityassignedid();
   if (f.length > 0) {
@@ -1784,16 +1784,16 @@ proto.io.iohk.prism.protos.CreateStudentRequest.serializeBinaryToWriter = functi
  * optional string universityAssignedId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.getUniversityassignedid = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.getUniversityassignedid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.setUniversityassignedid = function(value) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.setUniversityassignedid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -1802,16 +1802,16 @@ proto.io.iohk.prism.protos.CreateStudentRequest.prototype.setUniversityassignedi
  * optional string fullName = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.getFullname = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.getFullname = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.setFullname = function(value) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.setFullname = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -1820,44 +1820,44 @@ proto.io.iohk.prism.protos.CreateStudentRequest.prototype.setFullname = function
  * optional string email = 3;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.getEmail = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.getEmail = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.setEmail = function(value) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.setEmail = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
 /**
  * optional Date admissionDate = 4;
- * @return {?proto.io.iohk.prism.protos.Date}
+ * @return {?proto.io.iohk.atala.prism.protos.Date}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.getAdmissiondate = function() {
-  return /** @type{?proto.io.iohk.prism.protos.Date} */ (
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.getAdmissiondate = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.Date} */ (
     jspb.Message.getWrapperField(this, common_models_pb.Date, 4));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.Date|undefined} value
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} returns this
 */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.setAdmissiondate = function(value) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.setAdmissiondate = function(value) {
   return jspb.Message.setWrapperField(this, 4, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.clearAdmissiondate = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.clearAdmissiondate = function() {
   return this.setAdmissiondate(undefined);
 };
 
@@ -1866,7 +1866,7 @@ proto.io.iohk.prism.protos.CreateStudentRequest.prototype.clearAdmissiondate = f
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.hasAdmissiondate = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.hasAdmissiondate = function() {
   return jspb.Message.getField(this, 4) != null;
 };
 
@@ -1875,16 +1875,16 @@ proto.io.iohk.prism.protos.CreateStudentRequest.prototype.hasAdmissiondate = fun
  * optional string groupName = 5;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.getGroupname = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.getGroupname = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateStudentRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateStudentRequest.prototype.setGroupname = function(value) {
+proto.io.iohk.atala.prism.protos.CreateStudentRequest.prototype.setGroupname = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -1905,8 +1905,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateStudentResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateStudentResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -1915,11 +1915,11 @@ proto.io.iohk.prism.protos.CreateStudentResponse.prototype.toObject = function(o
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateStudentResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateStudentResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     student: (f = msg.getStudent()) && cmanager_models_pb.Student.toObject(includeInstance, f)
   };
@@ -1935,23 +1935,23 @@ proto.io.iohk.prism.protos.CreateStudentResponse.toObject = function(includeInst
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateStudentResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentResponse}
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateStudentResponse;
-  return proto.io.iohk.prism.protos.CreateStudentResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateStudentResponse;
+  return proto.io.iohk.atala.prism.protos.CreateStudentResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateStudentResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateStudentResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateStudentResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentResponse}
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -1976,9 +1976,9 @@ proto.io.iohk.prism.protos.CreateStudentResponse.deserializeBinaryFromReader = f
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateStudentResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateStudentResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1986,11 +1986,11 @@ proto.io.iohk.prism.protos.CreateStudentResponse.prototype.serializeBinary = fun
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateStudentResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateStudentResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStudent();
   if (f != null) {
@@ -2005,28 +2005,28 @@ proto.io.iohk.prism.protos.CreateStudentResponse.serializeBinaryToWriter = funct
 
 /**
  * optional Student student = 1;
- * @return {?proto.io.iohk.prism.protos.Student}
+ * @return {?proto.io.iohk.atala.prism.protos.Student}
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.prototype.getStudent = function() {
-  return /** @type{?proto.io.iohk.prism.protos.Student} */ (
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.prototype.getStudent = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.Student} */ (
     jspb.Message.getWrapperField(this, cmanager_models_pb.Student, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.Student|undefined} value
- * @return {!proto.io.iohk.prism.protos.CreateStudentResponse} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.Student|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentResponse} returns this
 */
-proto.io.iohk.prism.protos.CreateStudentResponse.prototype.setStudent = function(value) {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.prototype.setStudent = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.CreateStudentResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateStudentResponse} returns this
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.prototype.clearStudent = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.prototype.clearStudent = function() {
   return this.setStudent(undefined);
 };
 
@@ -2035,7 +2035,7 @@ proto.io.iohk.prism.protos.CreateStudentResponse.prototype.clearStudent = functi
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.CreateStudentResponse.prototype.hasStudent = function() {
+proto.io.iohk.atala.prism.protos.CreateStudentResponse.prototype.hasStudent = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2056,8 +2056,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetStudentsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetStudentsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2066,11 +2066,11 @@ proto.io.iohk.prism.protos.GetStudentsRequest.prototype.toObject = function(opt_
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetStudentsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     limit: jspb.Message.getFieldWithDefault(msg, 1, 0),
     lastseenstudentid: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -2088,23 +2088,23 @@ proto.io.iohk.prism.protos.GetStudentsRequest.toObject = function(includeInstanc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetStudentsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsRequest}
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetStudentsRequest;
-  return proto.io.iohk.prism.protos.GetStudentsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetStudentsRequest;
+  return proto.io.iohk.atala.prism.protos.GetStudentsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetStudentsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetStudentsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsRequest}
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2136,9 +2136,9 @@ proto.io.iohk.prism.protos.GetStudentsRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetStudentsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetStudentsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2146,11 +2146,11 @@ proto.io.iohk.prism.protos.GetStudentsRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetStudentsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getLimit();
   if (f !== 0) {
@@ -2180,16 +2180,16 @@ proto.io.iohk.prism.protos.GetStudentsRequest.serializeBinaryToWriter = function
  * optional int32 limit = 1;
  * @return {number}
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.getLimit = function() {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
  * @param {number} value
- * @return {!proto.io.iohk.prism.protos.GetStudentsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.setLimit = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.setLimit = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
 };
 
@@ -2198,16 +2198,16 @@ proto.io.iohk.prism.protos.GetStudentsRequest.prototype.setLimit = function(valu
  * optional string lastSeenStudentId = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.getLastseenstudentid = function() {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.getLastseenstudentid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetStudentsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.setLastseenstudentid = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.setLastseenstudentid = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -2216,16 +2216,16 @@ proto.io.iohk.prism.protos.GetStudentsRequest.prototype.setLastseenstudentid = f
  * optional string groupName = 3;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.getGroupname = function() {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.getGroupname = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetStudentsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetStudentsRequest.prototype.setGroupname = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentsRequest.prototype.setGroupname = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -2236,7 +2236,7 @@ proto.io.iohk.prism.protos.GetStudentsRequest.prototype.setGroupname = function(
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.repeatedFields_ = [1];
 
 
 
@@ -2253,8 +2253,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetStudentsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetStudentsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -2263,11 +2263,11 @@ proto.io.iohk.prism.protos.GetStudentsResponse.prototype.toObject = function(opt
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetStudentsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     studentsList: jspb.Message.toObjectList(msg.getStudentsList(),
     cmanager_models_pb.Student.toObject, includeInstance)
@@ -2284,23 +2284,23 @@ proto.io.iohk.prism.protos.GetStudentsResponse.toObject = function(includeInstan
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetStudentsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsResponse}
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetStudentsResponse;
-  return proto.io.iohk.prism.protos.GetStudentsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetStudentsResponse;
+  return proto.io.iohk.atala.prism.protos.GetStudentsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetStudentsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetStudentsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsResponse}
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2325,9 +2325,9 @@ proto.io.iohk.prism.protos.GetStudentsResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetStudentsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetStudentsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2335,11 +2335,11 @@ proto.io.iohk.prism.protos.GetStudentsResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetStudentsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStudentsList();
   if (f.length > 0) {
@@ -2354,38 +2354,38 @@ proto.io.iohk.prism.protos.GetStudentsResponse.serializeBinaryToWriter = functio
 
 /**
  * repeated Student students = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.Student>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.Student>}
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.prototype.getStudentsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.Student>} */ (
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.prototype.getStudentsList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.Student>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.Student, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.Student>} value
- * @return {!proto.io.iohk.prism.protos.GetStudentsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.Student>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetStudentsResponse.prototype.setStudentsList = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.prototype.setStudentsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.Student=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.Student=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.Student}
+ * @return {!proto.io.iohk.atala.prism.protos.Student}
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.prototype.addStudents = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.Student, opt_index);
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.prototype.addStudents = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.Student, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetStudentsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetStudentsResponse.prototype.clearStudentsList = function() {
+proto.io.iohk.atala.prism.protos.GetStudentsResponse.prototype.clearStudentsList = function() {
   return this.setStudentsList([]);
 };
 
@@ -2406,8 +2406,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetStudentRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetStudentRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetStudentRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetStudentRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2416,11 +2416,11 @@ proto.io.iohk.prism.protos.GetStudentRequest.prototype.toObject = function(opt_i
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetStudentRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetStudentRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     studentid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -2436,23 +2436,23 @@ proto.io.iohk.prism.protos.GetStudentRequest.toObject = function(includeInstance
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetStudentRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentRequest}
  */
-proto.io.iohk.prism.protos.GetStudentRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetStudentRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetStudentRequest;
-  return proto.io.iohk.prism.protos.GetStudentRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetStudentRequest;
+  return proto.io.iohk.atala.prism.protos.GetStudentRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetStudentRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetStudentRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentRequest}
  */
-proto.io.iohk.prism.protos.GetStudentRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetStudentRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2476,9 +2476,9 @@ proto.io.iohk.prism.protos.GetStudentRequest.deserializeBinaryFromReader = funct
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetStudentRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetStudentRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetStudentRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetStudentRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2486,11 +2486,11 @@ proto.io.iohk.prism.protos.GetStudentRequest.prototype.serializeBinary = functio
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetStudentRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetStudentRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStudentid();
   if (f.length > 0) {
@@ -2506,16 +2506,16 @@ proto.io.iohk.prism.protos.GetStudentRequest.serializeBinaryToWriter = function(
  * optional string studentId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetStudentRequest.prototype.getStudentid = function() {
+proto.io.iohk.atala.prism.protos.GetStudentRequest.prototype.getStudentid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetStudentRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentRequest} returns this
  */
-proto.io.iohk.prism.protos.GetStudentRequest.prototype.setStudentid = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentRequest.prototype.setStudentid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -2536,8 +2536,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetStudentResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetStudentResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetStudentResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetStudentResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -2546,11 +2546,11 @@ proto.io.iohk.prism.protos.GetStudentResponse.prototype.toObject = function(opt_
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetStudentResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     student: (f = msg.getStudent()) && cmanager_models_pb.Student.toObject(includeInstance, f)
   };
@@ -2566,23 +2566,23 @@ proto.io.iohk.prism.protos.GetStudentResponse.toObject = function(includeInstanc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetStudentResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentResponse}
  */
-proto.io.iohk.prism.protos.GetStudentResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetStudentResponse;
-  return proto.io.iohk.prism.protos.GetStudentResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetStudentResponse;
+  return proto.io.iohk.atala.prism.protos.GetStudentResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetStudentResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetStudentResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentResponse}
  */
-proto.io.iohk.prism.protos.GetStudentResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2607,9 +2607,9 @@ proto.io.iohk.prism.protos.GetStudentResponse.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetStudentResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetStudentResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetStudentResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2617,11 +2617,11 @@ proto.io.iohk.prism.protos.GetStudentResponse.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetStudentResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStudent();
   if (f != null) {
@@ -2636,28 +2636,28 @@ proto.io.iohk.prism.protos.GetStudentResponse.serializeBinaryToWriter = function
 
 /**
  * optional Student student = 1;
- * @return {?proto.io.iohk.prism.protos.Student}
+ * @return {?proto.io.iohk.atala.prism.protos.Student}
  */
-proto.io.iohk.prism.protos.GetStudentResponse.prototype.getStudent = function() {
-  return /** @type{?proto.io.iohk.prism.protos.Student} */ (
+proto.io.iohk.atala.prism.protos.GetStudentResponse.prototype.getStudent = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.Student} */ (
     jspb.Message.getWrapperField(this, cmanager_models_pb.Student, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.Student|undefined} value
- * @return {!proto.io.iohk.prism.protos.GetStudentResponse} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.Student|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentResponse} returns this
 */
-proto.io.iohk.prism.protos.GetStudentResponse.prototype.setStudent = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.prototype.setStudent = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.GetStudentResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentResponse} returns this
  */
-proto.io.iohk.prism.protos.GetStudentResponse.prototype.clearStudent = function() {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.prototype.clearStudent = function() {
   return this.setStudent(undefined);
 };
 
@@ -2666,7 +2666,7 @@ proto.io.iohk.prism.protos.GetStudentResponse.prototype.clearStudent = function(
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.GetStudentResponse.prototype.hasStudent = function() {
+proto.io.iohk.atala.prism.protos.GetStudentResponse.prototype.hasStudent = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2687,8 +2687,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetStudentCredentialsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2697,11 +2697,11 @@ proto.io.iohk.prism.protos.GetStudentCredentialsRequest.prototype.toObject = fun
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetStudentCredentialsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     studentid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -2717,23 +2717,23 @@ proto.io.iohk.prism.protos.GetStudentCredentialsRequest.toObject = function(incl
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetStudentCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetStudentCredentialsRequest;
-  return proto.io.iohk.prism.protos.GetStudentCredentialsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest;
+  return proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetStudentCredentialsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetStudentCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2757,9 +2757,9 @@ proto.io.iohk.prism.protos.GetStudentCredentialsRequest.deserializeBinaryFromRea
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetStudentCredentialsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2767,11 +2767,11 @@ proto.io.iohk.prism.protos.GetStudentCredentialsRequest.prototype.serializeBinar
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetStudentCredentialsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStudentid();
   if (f.length > 0) {
@@ -2787,16 +2787,16 @@ proto.io.iohk.prism.protos.GetStudentCredentialsRequest.serializeBinaryToWriter 
  * optional string studentId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.prototype.getStudentid = function() {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.prototype.getStudentid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetStudentCredentialsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsRequest.prototype.setStudentid = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsRequest.prototype.setStudentid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -2807,7 +2807,7 @@ proto.io.iohk.prism.protos.GetStudentCredentialsRequest.prototype.setStudentid =
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.repeatedFields_ = [1];
 
 
 
@@ -2824,8 +2824,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetStudentCredentialsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -2834,11 +2834,11 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.toObject = fu
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetStudentCredentialsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     credentialList: jspb.Message.toObjectList(msg.getCredentialList(),
     cmanager_models_pb.CManagerCredential.toObject, includeInstance)
@@ -2855,23 +2855,23 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.toObject = function(inc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetStudentCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetStudentCredentialsResponse;
-  return proto.io.iohk.prism.protos.GetStudentCredentialsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse;
+  return proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetStudentCredentialsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetStudentCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2896,9 +2896,9 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.deserializeBinaryFromRe
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetStudentCredentialsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2906,11 +2906,11 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.serializeBina
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetStudentCredentialsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getCredentialList();
   if (f.length > 0) {
@@ -2925,38 +2925,38 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.serializeBinaryToWriter
 
 /**
  * repeated CManagerCredential credential = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.CManagerCredential>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.CManagerCredential>}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.getCredentialList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.CManagerCredential>} */ (
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.prototype.getCredentialList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.CManagerCredential>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.CManagerCredential, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.CManagerCredential>} value
- * @return {!proto.io.iohk.prism.protos.GetStudentCredentialsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.CManagerCredential>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.setCredentialList = function(value) {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.prototype.setCredentialList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CManagerCredential=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.CManagerCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.CManagerCredential}
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerCredential}
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.addCredential = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.CManagerCredential, opt_index);
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.prototype.addCredential = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.CManagerCredential, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetStudentCredentialsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.clearCredentialList = function() {
+proto.io.iohk.atala.prism.protos.GetStudentCredentialsResponse.prototype.clearCredentialList = function() {
   return this.setCredentialList([]);
 };
 
@@ -2977,8 +2977,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2987,11 +2987,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.to
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     studentid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -3007,23 +3007,23 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.toObject = f
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest;
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest;
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3047,9 +3047,9 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.deserializeB
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3057,11 +3057,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.se
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStudentid();
   if (f.length > 0) {
@@ -3077,16 +3077,16 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.serializeBin
  * optional string studentId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.getStudentid = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.getStudentid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest} returns this
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.setStudentid = function(value) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentRequest.prototype.setStudentid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -3107,8 +3107,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -3117,11 +3117,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.t
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     token: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -3137,23 +3137,23 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.toObject = 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse;
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse;
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3177,9 +3177,9 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.deserialize
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3187,11 +3187,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.s
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getToken();
   if (f.length > 0) {
@@ -3207,16 +3207,16 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.serializeBi
  * optional string token = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.getToken = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.getToken = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse} returns this
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.setToken = function(value) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForStudentResponse.prototype.setToken = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -3237,8 +3237,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateSubjectRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateSubjectRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -3247,11 +3247,11 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.toObject = function(op
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateSubjectRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     groupname: jspb.Message.getFieldWithDefault(msg, 1, ""),
     jsondata: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -3269,23 +3269,23 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.toObject = function(includeInsta
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateSubjectRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest}
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateSubjectRequest;
-  return proto.io.iohk.prism.protos.CreateSubjectRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateSubjectRequest;
+  return proto.io.iohk.atala.prism.protos.CreateSubjectRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateSubjectRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateSubjectRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest}
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3317,9 +3317,9 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.deserializeBinaryFromReader = fu
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateSubjectRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateSubjectRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3327,11 +3327,11 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.serializeBinary = func
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateSubjectRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getGroupname();
   if (f.length > 0) {
@@ -3361,16 +3361,16 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.serializeBinaryToWriter = functi
  * optional string groupName = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.getGroupname = function() {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.getGroupname = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateSubjectRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.setGroupname = function(value) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.setGroupname = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -3379,16 +3379,16 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.setGroupname = functio
  * optional string jsonData = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.getJsondata = function() {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.getJsondata = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateSubjectRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.setJsondata = function(value) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.setJsondata = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -3397,16 +3397,16 @@ proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.setJsondata = function
  * optional string externalId = 3;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.getExternalid = function() {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.getExternalid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateSubjectRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateSubjectRequest.prototype.setExternalid = function(value) {
+proto.io.iohk.atala.prism.protos.CreateSubjectRequest.prototype.setExternalid = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -3427,8 +3427,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateSubjectResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateSubjectResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -3437,11 +3437,11 @@ proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.toObject = function(o
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateSubjectResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateSubjectResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     subject: (f = msg.getSubject()) && cmanager_models_pb.IssuerSubject.toObject(includeInstance, f)
   };
@@ -3457,23 +3457,23 @@ proto.io.iohk.prism.protos.CreateSubjectResponse.toObject = function(includeInst
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateSubjectResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectResponse}
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateSubjectResponse;
-  return proto.io.iohk.prism.protos.CreateSubjectResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateSubjectResponse;
+  return proto.io.iohk.atala.prism.protos.CreateSubjectResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateSubjectResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateSubjectResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateSubjectResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectResponse}
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3498,9 +3498,9 @@ proto.io.iohk.prism.protos.CreateSubjectResponse.deserializeBinaryFromReader = f
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateSubjectResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateSubjectResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3508,11 +3508,11 @@ proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.serializeBinary = fun
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateSubjectResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateSubjectResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSubject();
   if (f != null) {
@@ -3527,28 +3527,28 @@ proto.io.iohk.prism.protos.CreateSubjectResponse.serializeBinaryToWriter = funct
 
 /**
  * optional IssuerSubject subject = 1;
- * @return {?proto.io.iohk.prism.protos.IssuerSubject}
+ * @return {?proto.io.iohk.atala.prism.protos.IssuerSubject}
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.getSubject = function() {
-  return /** @type{?proto.io.iohk.prism.protos.IssuerSubject} */ (
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.prototype.getSubject = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.IssuerSubject} */ (
     jspb.Message.getWrapperField(this, cmanager_models_pb.IssuerSubject, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.IssuerSubject|undefined} value
- * @return {!proto.io.iohk.prism.protos.CreateSubjectResponse} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.IssuerSubject|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectResponse} returns this
 */
-proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.setSubject = function(value) {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.prototype.setSubject = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.CreateSubjectResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateSubjectResponse} returns this
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.clearSubject = function() {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.prototype.clearSubject = function() {
   return this.setSubject(undefined);
 };
 
@@ -3557,7 +3557,7 @@ proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.clearSubject = functi
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.CreateSubjectResponse.prototype.hasSubject = function() {
+proto.io.iohk.atala.prism.protos.CreateSubjectResponse.prototype.hasSubject = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -3578,8 +3578,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetSubjectsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetSubjectsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -3588,11 +3588,11 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.toObject = function(opt_
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetSubjectsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     limit: jspb.Message.getFieldWithDefault(msg, 1, 0),
     lastseensubjectid: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -3610,23 +3610,23 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.toObject = function(includeInstanc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetSubjectsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest}
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetSubjectsRequest;
-  return proto.io.iohk.prism.protos.GetSubjectsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetSubjectsRequest;
+  return proto.io.iohk.atala.prism.protos.GetSubjectsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetSubjectsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetSubjectsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest}
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3658,9 +3658,9 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetSubjectsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetSubjectsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3668,11 +3668,11 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetSubjectsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getLimit();
   if (f !== 0) {
@@ -3702,16 +3702,16 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.serializeBinaryToWriter = function
  * optional int32 limit = 1;
  * @return {number}
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.getLimit = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
  * @param {number} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.setLimit = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.setLimit = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
 };
 
@@ -3720,16 +3720,16 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.setLimit = function(valu
  * optional string lastSeenSubjectId = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.getLastseensubjectid = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.getLastseensubjectid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.setLastseensubjectid = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.setLastseensubjectid = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -3738,16 +3738,16 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.setLastseensubjectid = f
  * optional string groupName = 3;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.getGroupname = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.getGroupname = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.setGroupname = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectsRequest.prototype.setGroupname = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -3758,7 +3758,7 @@ proto.io.iohk.prism.protos.GetSubjectsRequest.prototype.setGroupname = function(
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.repeatedFields_ = [1];
 
 
 
@@ -3775,8 +3775,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetSubjectsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetSubjectsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -3785,11 +3785,11 @@ proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.toObject = function(opt
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetSubjectsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     subjectsList: jspb.Message.toObjectList(msg.getSubjectsList(),
     cmanager_models_pb.IssuerSubject.toObject, includeInstance)
@@ -3806,23 +3806,23 @@ proto.io.iohk.prism.protos.GetSubjectsResponse.toObject = function(includeInstan
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetSubjectsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsResponse}
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetSubjectsResponse;
-  return proto.io.iohk.prism.protos.GetSubjectsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetSubjectsResponse;
+  return proto.io.iohk.atala.prism.protos.GetSubjectsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetSubjectsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetSubjectsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsResponse}
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3847,9 +3847,9 @@ proto.io.iohk.prism.protos.GetSubjectsResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetSubjectsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetSubjectsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3857,11 +3857,11 @@ proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetSubjectsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSubjectsList();
   if (f.length > 0) {
@@ -3876,38 +3876,38 @@ proto.io.iohk.prism.protos.GetSubjectsResponse.serializeBinaryToWriter = functio
 
 /**
  * repeated IssuerSubject subjects = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.IssuerSubject>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.IssuerSubject>}
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.getSubjectsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.IssuerSubject>} */ (
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.prototype.getSubjectsList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.IssuerSubject>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.IssuerSubject, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.IssuerSubject>} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.IssuerSubject>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.setSubjectsList = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.prototype.setSubjectsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.IssuerSubject=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.IssuerSubject=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.IssuerSubject}
+ * @return {!proto.io.iohk.atala.prism.protos.IssuerSubject}
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.addSubjects = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.IssuerSubject, opt_index);
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.prototype.addSubjects = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.IssuerSubject, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetSubjectsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectsResponse.prototype.clearSubjectsList = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectsResponse.prototype.clearSubjectsList = function() {
   return this.setSubjectsList([]);
 };
 
@@ -3928,8 +3928,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetSubjectRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetSubjectRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -3938,11 +3938,11 @@ proto.io.iohk.prism.protos.GetSubjectRequest.prototype.toObject = function(opt_i
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetSubjectRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     subjectid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -3958,23 +3958,23 @@ proto.io.iohk.prism.protos.GetSubjectRequest.toObject = function(includeInstance
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetSubjectRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectRequest}
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetSubjectRequest;
-  return proto.io.iohk.prism.protos.GetSubjectRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetSubjectRequest;
+  return proto.io.iohk.atala.prism.protos.GetSubjectRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetSubjectRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetSubjectRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectRequest}
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3998,9 +3998,9 @@ proto.io.iohk.prism.protos.GetSubjectRequest.deserializeBinaryFromReader = funct
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetSubjectRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetSubjectRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4008,11 +4008,11 @@ proto.io.iohk.prism.protos.GetSubjectRequest.prototype.serializeBinary = functio
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetSubjectRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSubjectid();
   if (f.length > 0) {
@@ -4028,16 +4028,16 @@ proto.io.iohk.prism.protos.GetSubjectRequest.serializeBinaryToWriter = function(
  * optional string subjectId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.prototype.getSubjectid = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.prototype.getSubjectid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectRequest} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectRequest.prototype.setSubjectid = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectRequest.prototype.setSubjectid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -4058,8 +4058,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetSubjectResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetSubjectResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -4068,11 +4068,11 @@ proto.io.iohk.prism.protos.GetSubjectResponse.prototype.toObject = function(opt_
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetSubjectResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     subject: (f = msg.getSubject()) && cmanager_models_pb.IssuerSubject.toObject(includeInstance, f)
   };
@@ -4088,23 +4088,23 @@ proto.io.iohk.prism.protos.GetSubjectResponse.toObject = function(includeInstanc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetSubjectResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectResponse}
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetSubjectResponse;
-  return proto.io.iohk.prism.protos.GetSubjectResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetSubjectResponse;
+  return proto.io.iohk.atala.prism.protos.GetSubjectResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetSubjectResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetSubjectResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectResponse}
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4129,9 +4129,9 @@ proto.io.iohk.prism.protos.GetSubjectResponse.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetSubjectResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetSubjectResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4139,11 +4139,11 @@ proto.io.iohk.prism.protos.GetSubjectResponse.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetSubjectResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSubject();
   if (f != null) {
@@ -4158,28 +4158,28 @@ proto.io.iohk.prism.protos.GetSubjectResponse.serializeBinaryToWriter = function
 
 /**
  * optional IssuerSubject subject = 1;
- * @return {?proto.io.iohk.prism.protos.IssuerSubject}
+ * @return {?proto.io.iohk.atala.prism.protos.IssuerSubject}
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.prototype.getSubject = function() {
-  return /** @type{?proto.io.iohk.prism.protos.IssuerSubject} */ (
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.prototype.getSubject = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.IssuerSubject} */ (
     jspb.Message.getWrapperField(this, cmanager_models_pb.IssuerSubject, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.IssuerSubject|undefined} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectResponse} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.IssuerSubject|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectResponse} returns this
 */
-proto.io.iohk.prism.protos.GetSubjectResponse.prototype.setSubject = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.prototype.setSubject = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.GetSubjectResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectResponse} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.prototype.clearSubject = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.prototype.clearSubject = function() {
   return this.setSubject(undefined);
 };
 
@@ -4188,7 +4188,7 @@ proto.io.iohk.prism.protos.GetSubjectResponse.prototype.clearSubject = function(
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.GetSubjectResponse.prototype.hasSubject = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectResponse.prototype.hasSubject = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -4209,8 +4209,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -4219,11 +4219,11 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.prototype.toObject = fun
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     subjectid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -4239,23 +4239,23 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.toObject = function(incl
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetSubjectCredentialsRequest;
-  return proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest;
+  return proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4279,9 +4279,9 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.deserializeBinaryFromRea
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4289,11 +4289,11 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.prototype.serializeBinar
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSubjectid();
   if (f.length > 0) {
@@ -4309,16 +4309,16 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.serializeBinaryToWriter 
  * optional string subjectId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.prototype.getSubjectid = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.prototype.getSubjectid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.prototype.setSubjectid = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsRequest.prototype.setSubjectid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -4329,7 +4329,7 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsRequest.prototype.setSubjectid =
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.repeatedFields_ = [1];
 
 
 
@@ -4346,8 +4346,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -4356,11 +4356,11 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.toObject = fu
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     genericcredentialsList: jspb.Message.toObjectList(msg.getGenericcredentialsList(),
     cmanager_models_pb.CManagerGenericCredential.toObject, includeInstance)
@@ -4377,23 +4377,23 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.toObject = function(inc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetSubjectCredentialsResponse;
-  return proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse;
+  return proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4418,9 +4418,9 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.deserializeBinaryFromRe
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4428,11 +4428,11 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.serializeBina
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getGenericcredentialsList();
   if (f.length > 0) {
@@ -4447,38 +4447,38 @@ proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.serializeBinaryToWriter
 
 /**
  * repeated CManagerGenericCredential genericCredentials = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.getGenericcredentialsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>} */ (
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.prototype.getGenericcredentialsList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.CManagerGenericCredential, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>} value
- * @return {!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.setGenericcredentialsList = function(value) {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.prototype.setGenericcredentialsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CManagerGenericCredential=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential}
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential}
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.addGenericcredentials = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.CManagerGenericCredential, opt_index);
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.prototype.addGenericcredentials = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.CManagerGenericCredential, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.prototype.clearGenericcredentialsList = function() {
+proto.io.iohk.atala.prism.protos.GetSubjectCredentialsResponse.prototype.clearGenericcredentialsList = function() {
   return this.setGenericcredentialsList([]);
 };
 
@@ -4499,8 +4499,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -4509,11 +4509,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.to
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     subjectid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -4529,23 +4529,23 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.toObject = f
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest;
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest;
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4569,9 +4569,9 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.deserializeB
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4579,11 +4579,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.se
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSubjectid();
   if (f.length > 0) {
@@ -4599,16 +4599,16 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.serializeBin
  * optional string subjectId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.getSubjectid = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.getSubjectid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest} returns this
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.setSubjectid = function(value) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectRequest.prototype.setSubjectid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -4629,8 +4629,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -4639,11 +4639,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.t
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     token: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -4659,23 +4659,23 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.toObject = 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse;
-  return proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse;
+  return proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4699,9 +4699,9 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.deserialize
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4709,11 +4709,11 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.s
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getToken();
   if (f.length > 0) {
@@ -4729,16 +4729,16 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.serializeBi
  * optional string token = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.getToken = function() {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.getToken = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse} returns this
  */
-proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.setToken = function(value) {
+proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForSubjectResponse.prototype.setToken = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -4759,8 +4759,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateGroupRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateGroupRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -4769,11 +4769,11 @@ proto.io.iohk.prism.protos.CreateGroupRequest.prototype.toObject = function(opt_
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateGroupRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGroupRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -4789,23 +4789,23 @@ proto.io.iohk.prism.protos.CreateGroupRequest.toObject = function(includeInstanc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateGroupRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGroupRequest}
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateGroupRequest;
-  return proto.io.iohk.prism.protos.CreateGroupRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateGroupRequest;
+  return proto.io.iohk.atala.prism.protos.CreateGroupRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateGroupRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGroupRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateGroupRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGroupRequest}
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4829,9 +4829,9 @@ proto.io.iohk.prism.protos.CreateGroupRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateGroupRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateGroupRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4839,11 +4839,11 @@ proto.io.iohk.prism.protos.CreateGroupRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateGroupRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGroupRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getName();
   if (f.length > 0) {
@@ -4859,16 +4859,16 @@ proto.io.iohk.prism.protos.CreateGroupRequest.serializeBinaryToWriter = function
  * optional string name = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.prototype.getName = function() {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateGroupRequest.prototype.setName = function(value) {
+proto.io.iohk.atala.prism.protos.CreateGroupRequest.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -4889,8 +4889,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateGroupResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateGroupResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateGroupResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -4899,11 +4899,11 @@ proto.io.iohk.prism.protos.CreateGroupResponse.prototype.toObject = function(opt
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateGroupResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGroupResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGroupResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
 
   };
@@ -4919,23 +4919,23 @@ proto.io.iohk.prism.protos.CreateGroupResponse.toObject = function(includeInstan
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateGroupResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGroupResponse}
  */
-proto.io.iohk.prism.protos.CreateGroupResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateGroupResponse;
-  return proto.io.iohk.prism.protos.CreateGroupResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateGroupResponse;
+  return proto.io.iohk.atala.prism.protos.CreateGroupResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateGroupResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGroupResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateGroupResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGroupResponse}
  */
-proto.io.iohk.prism.protos.CreateGroupResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4955,9 +4955,9 @@ proto.io.iohk.prism.protos.CreateGroupResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateGroupResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateGroupResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateGroupResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4965,11 +4965,11 @@ proto.io.iohk.prism.protos.CreateGroupResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateGroupResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGroupResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGroupResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
@@ -4990,8 +4990,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetGroupsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetGroupsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetGroupsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -5000,11 +5000,11 @@ proto.io.iohk.prism.protos.GetGroupsRequest.prototype.toObject = function(opt_in
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetGroupsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGroupsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGroupsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 
   };
@@ -5020,23 +5020,23 @@ proto.io.iohk.prism.protos.GetGroupsRequest.toObject = function(includeInstance,
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetGroupsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGroupsRequest}
  */
-proto.io.iohk.prism.protos.GetGroupsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetGroupsRequest;
-  return proto.io.iohk.prism.protos.GetGroupsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetGroupsRequest;
+  return proto.io.iohk.atala.prism.protos.GetGroupsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetGroupsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGroupsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetGroupsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGroupsRequest}
  */
-proto.io.iohk.prism.protos.GetGroupsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -5056,9 +5056,9 @@ proto.io.iohk.prism.protos.GetGroupsRequest.deserializeBinaryFromReader = functi
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetGroupsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetGroupsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetGroupsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5066,11 +5066,11 @@ proto.io.iohk.prism.protos.GetGroupsRequest.prototype.serializeBinary = function
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetGroupsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetGroupsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGroupsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
@@ -5081,7 +5081,7 @@ proto.io.iohk.prism.protos.GetGroupsRequest.serializeBinaryToWriter = function(m
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.repeatedFields_ = [1];
 
 
 
@@ -5098,8 +5098,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetGroupsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetGroupsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -5108,11 +5108,11 @@ proto.io.iohk.prism.protos.GetGroupsResponse.prototype.toObject = function(opt_i
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetGroupsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGroupsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     groupsList: jspb.Message.toObjectList(msg.getGroupsList(),
     cmanager_models_pb.Group.toObject, includeInstance)
@@ -5129,23 +5129,23 @@ proto.io.iohk.prism.protos.GetGroupsResponse.toObject = function(includeInstance
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetGroupsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGroupsResponse}
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetGroupsResponse;
-  return proto.io.iohk.prism.protos.GetGroupsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetGroupsResponse;
+  return proto.io.iohk.atala.prism.protos.GetGroupsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetGroupsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGroupsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetGroupsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGroupsResponse}
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -5170,9 +5170,9 @@ proto.io.iohk.prism.protos.GetGroupsResponse.deserializeBinaryFromReader = funct
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetGroupsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetGroupsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5180,11 +5180,11 @@ proto.io.iohk.prism.protos.GetGroupsResponse.prototype.serializeBinary = functio
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetGroupsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetGroupsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getGroupsList();
   if (f.length > 0) {
@@ -5199,38 +5199,38 @@ proto.io.iohk.prism.protos.GetGroupsResponse.serializeBinaryToWriter = function(
 
 /**
  * repeated Group groups = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.Group>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.Group>}
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.prototype.getGroupsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.Group>} */ (
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.prototype.getGroupsList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.Group>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.Group, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.Group>} value
- * @return {!proto.io.iohk.prism.protos.GetGroupsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.Group>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetGroupsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetGroupsResponse.prototype.setGroupsList = function(value) {
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.prototype.setGroupsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.Group=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.Group=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.Group}
+ * @return {!proto.io.iohk.atala.prism.protos.Group}
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.prototype.addGroups = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.Group, opt_index);
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.prototype.addGroups = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.Group, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetGroupsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetGroupsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetGroupsResponse.prototype.clearGroupsList = function() {
+proto.io.iohk.atala.prism.protos.GetGroupsResponse.prototype.clearGroupsList = function() {
   return this.setGroupsList([]);
 };
 
@@ -5241,7 +5241,7 @@ proto.io.iohk.prism.protos.GetGroupsResponse.prototype.clearGroupsList = functio
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.repeatedFields_ = [2,3];
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.repeatedFields_ = [2,3];
 
 
 
@@ -5258,8 +5258,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.UpdateGroupRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.UpdateGroupRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -5268,11 +5268,11 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.toObject = function(opt_
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.UpdateGroupRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     groupid: jspb.Message.getFieldWithDefault(msg, 1, ""),
     contactidstoaddList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
@@ -5290,23 +5290,23 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.toObject = function(includeInstanc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest}
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.UpdateGroupRequest;
-  return proto.io.iohk.prism.protos.UpdateGroupRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.UpdateGroupRequest;
+  return proto.io.iohk.atala.prism.protos.UpdateGroupRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.UpdateGroupRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest}
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -5338,9 +5338,9 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.UpdateGroupRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.UpdateGroupRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5348,11 +5348,11 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.UpdateGroupRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getGroupid();
   if (f.length > 0) {
@@ -5382,16 +5382,16 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.serializeBinaryToWriter = function
  * optional string groupId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.getGroupid = function() {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.getGroupid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.setGroupid = function(value) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.setGroupid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -5400,16 +5400,16 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.setGroupid = function(va
  * repeated string contactIdsToAdd = 2;
  * @return {!Array<string>}
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.getContactidstoaddList = function() {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.getContactidstoaddList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
 
 /**
  * @param {!Array<string>} value
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.setContactidstoaddList = function(value) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.setContactidstoaddList = function(value) {
   return jspb.Message.setField(this, 2, value || []);
 };
 
@@ -5417,18 +5417,18 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.setContactidstoaddList =
 /**
  * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.addContactidstoadd = function(value, opt_index) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.addContactidstoadd = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.clearContactidstoaddList = function() {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.clearContactidstoaddList = function() {
   return this.setContactidstoaddList([]);
 };
 
@@ -5437,16 +5437,16 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.clearContactidstoaddList
  * repeated string contactIdsToRemove = 3;
  * @return {!Array<string>}
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.getContactidstoremoveList = function() {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.getContactidstoremoveList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
 
 /**
  * @param {!Array<string>} value
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.setContactidstoremoveList = function(value) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.setContactidstoremoveList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -5454,18 +5454,18 @@ proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.setContactidstoremoveLis
 /**
  * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.addContactidstoremove = function(value, opt_index) {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.addContactidstoremove = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.UpdateGroupRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupRequest} returns this
  */
-proto.io.iohk.prism.protos.UpdateGroupRequest.prototype.clearContactidstoremoveList = function() {
+proto.io.iohk.atala.prism.protos.UpdateGroupRequest.prototype.clearContactidstoremoveList = function() {
   return this.setContactidstoremoveList([]);
 };
 
@@ -5486,8 +5486,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.UpdateGroupResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.UpdateGroupResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.UpdateGroupResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.UpdateGroupResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -5496,11 +5496,11 @@ proto.io.iohk.prism.protos.UpdateGroupResponse.prototype.toObject = function(opt
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.UpdateGroupResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.UpdateGroupResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.UpdateGroupResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.UpdateGroupResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
 
   };
@@ -5516,23 +5516,23 @@ proto.io.iohk.prism.protos.UpdateGroupResponse.toObject = function(includeInstan
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.UpdateGroupResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupResponse}
  */
-proto.io.iohk.prism.protos.UpdateGroupResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.UpdateGroupResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.UpdateGroupResponse;
-  return proto.io.iohk.prism.protos.UpdateGroupResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.UpdateGroupResponse;
+  return proto.io.iohk.atala.prism.protos.UpdateGroupResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.UpdateGroupResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.UpdateGroupResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.UpdateGroupResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.UpdateGroupResponse}
  */
-proto.io.iohk.prism.protos.UpdateGroupResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.UpdateGroupResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -5552,9 +5552,9 @@ proto.io.iohk.prism.protos.UpdateGroupResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.UpdateGroupResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.UpdateGroupResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.UpdateGroupResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.UpdateGroupResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5562,11 +5562,11 @@ proto.io.iohk.prism.protos.UpdateGroupResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.UpdateGroupResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.UpdateGroupResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.UpdateGroupResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.UpdateGroupResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
@@ -5587,8 +5587,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateGenericCredentialRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -5597,11 +5597,11 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.toObject = f
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     subjectid: jspb.Message.getFieldWithDefault(msg, 1, ""),
     credentialdata: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -5620,23 +5620,23 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.toObject = function(in
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateGenericCredentialRequest;
-  return proto.io.iohk.prism.protos.CreateGenericCredentialRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest;
+  return proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -5672,9 +5672,9 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.deserializeBinaryFromR
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateGenericCredentialRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5682,11 +5682,11 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.serializeBin
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSubjectid();
   if (f.length > 0) {
@@ -5723,16 +5723,16 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.serializeBinaryToWrite
  * optional string subjectId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.getSubjectid = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.getSubjectid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setSubjectid = function(value) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.setSubjectid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -5741,16 +5741,16 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setSubjectid
  * optional string credentialData = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.getCredentialdata = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.getCredentialdata = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setCredentialdata = function(value) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.setCredentialdata = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -5759,16 +5759,16 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setCredentia
  * optional string groupName = 3;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.getGroupname = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.getGroupname = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setGroupname = function(value) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.setGroupname = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -5777,16 +5777,16 @@ proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setGroupname
  * optional string externalId = 4;
  * @return {string}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.getExternalid = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.getExternalid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialRequest.prototype.setExternalid = function(value) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialRequest.prototype.setExternalid = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -5807,8 +5807,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.CreateGenericCredentialResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -5817,11 +5817,11 @@ proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.toObject = 
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     genericcredential: (f = msg.getGenericcredential()) && cmanager_models_pb.CManagerGenericCredential.toObject(includeInstance, f)
   };
@@ -5837,23 +5837,23 @@ proto.io.iohk.prism.protos.CreateGenericCredentialResponse.toObject = function(i
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.CreateGenericCredentialResponse;
-  return proto.io.iohk.prism.protos.CreateGenericCredentialResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse;
+  return proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -5878,9 +5878,9 @@ proto.io.iohk.prism.protos.CreateGenericCredentialResponse.deserializeBinaryFrom
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.CreateGenericCredentialResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5888,11 +5888,11 @@ proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.serializeBi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getGenericcredential();
   if (f != null) {
@@ -5907,28 +5907,28 @@ proto.io.iohk.prism.protos.CreateGenericCredentialResponse.serializeBinaryToWrit
 
 /**
  * optional CManagerGenericCredential genericCredential = 1;
- * @return {?proto.io.iohk.prism.protos.CManagerGenericCredential}
+ * @return {?proto.io.iohk.atala.prism.protos.CManagerGenericCredential}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.getGenericcredential = function() {
-  return /** @type{?proto.io.iohk.prism.protos.CManagerGenericCredential} */ (
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.prototype.getGenericcredential = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.CManagerGenericCredential} */ (
     jspb.Message.getWrapperField(this, cmanager_models_pb.CManagerGenericCredential, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.CManagerGenericCredential|undefined} value
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialResponse} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.CManagerGenericCredential|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse} returns this
 */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.setGenericcredential = function(value) {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.prototype.setGenericcredential = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.CreateGenericCredentialResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse} returns this
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.clearGenericcredential = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.prototype.clearGenericcredential = function() {
   return this.setGenericcredential(undefined);
 };
 
@@ -5937,7 +5937,7 @@ proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.clearGeneri
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.CreateGenericCredentialResponse.prototype.hasGenericcredential = function() {
+proto.io.iohk.atala.prism.protos.CreateGenericCredentialResponse.prototype.hasGenericcredential = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -5958,8 +5958,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetGenericCredentialsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -5968,11 +5968,11 @@ proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.toObject = fun
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     limit: jspb.Message.getFieldWithDefault(msg, 1, 0),
     lastseencredentialid: jspb.Message.getFieldWithDefault(msg, 2, "")
@@ -5989,23 +5989,23 @@ proto.io.iohk.prism.protos.GetGenericCredentialsRequest.toObject = function(incl
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetGenericCredentialsRequest;
-  return proto.io.iohk.prism.protos.GetGenericCredentialsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest;
+  return proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -6033,9 +6033,9 @@ proto.io.iohk.prism.protos.GetGenericCredentialsRequest.deserializeBinaryFromRea
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetGenericCredentialsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6043,11 +6043,11 @@ proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.serializeBinar
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getLimit();
   if (f !== 0) {
@@ -6070,16 +6070,16 @@ proto.io.iohk.prism.protos.GetGenericCredentialsRequest.serializeBinaryToWriter 
  * optional int32 limit = 1;
  * @return {number}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.getLimit = function() {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
  * @param {number} value
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.setLimit = function(value) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.prototype.setLimit = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
 };
 
@@ -6088,16 +6088,16 @@ proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.setLimit = fun
  * optional string lastSeenCredentialId = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.getLastseencredentialid = function() {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.prototype.getLastseencredentialid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.setLastseencredentialid = function(value) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsRequest.prototype.setLastseencredentialid = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -6108,7 +6108,7 @@ proto.io.iohk.prism.protos.GetGenericCredentialsRequest.prototype.setLastseencre
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.repeatedFields_ = [1];
 
 
 
@@ -6125,8 +6125,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetGenericCredentialsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -6135,11 +6135,11 @@ proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.toObject = fu
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     credentialsList: jspb.Message.toObjectList(msg.getCredentialsList(),
     cmanager_models_pb.CManagerGenericCredential.toObject, includeInstance)
@@ -6156,23 +6156,23 @@ proto.io.iohk.prism.protos.GetGenericCredentialsResponse.toObject = function(inc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetGenericCredentialsResponse;
-  return proto.io.iohk.prism.protos.GetGenericCredentialsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse;
+  return proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -6197,9 +6197,9 @@ proto.io.iohk.prism.protos.GetGenericCredentialsResponse.deserializeBinaryFromRe
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetGenericCredentialsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6207,11 +6207,11 @@ proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.serializeBina
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getCredentialsList();
   if (f.length > 0) {
@@ -6226,38 +6226,38 @@ proto.io.iohk.prism.protos.GetGenericCredentialsResponse.serializeBinaryToWriter
 
 /**
  * repeated CManagerGenericCredential credentials = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.getCredentialsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>} */ (
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.prototype.getCredentialsList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.CManagerGenericCredential, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>} value
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.setCredentialsList = function(value) {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.prototype.setCredentialsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CManagerGenericCredential=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential}
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential}
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.addCredentials = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.CManagerGenericCredential, opt_index);
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.prototype.addCredentials = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.CManagerGenericCredential, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetGenericCredentialsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetGenericCredentialsResponse.prototype.clearCredentialsList = function() {
+proto.io.iohk.atala.prism.protos.GetGenericCredentialsResponse.prototype.clearCredentialsList = function() {
   return this.setCredentialsList([]);
 };
 
@@ -6278,8 +6278,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.PublishCredentialRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.PublishCredentialRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -6288,11 +6288,11 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.toObject = functio
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.PublishCredentialRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     encodedsignedcredential: jspb.Message.getFieldWithDefault(msg, 1, ""),
     cmanagercredentialid: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -6312,23 +6312,23 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.toObject = function(includeI
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.PublishCredentialRequest;
-  return proto.io.iohk.prism.protos.PublishCredentialRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.PublishCredentialRequest;
+  return proto.io.iohk.atala.prism.protos.PublishCredentialRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.PublishCredentialRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -6369,9 +6369,9 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.deserializeBinaryFromReader 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.PublishCredentialRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.PublishCredentialRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6379,11 +6379,11 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.serializeBinary = 
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.PublishCredentialRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getEncodedsignedcredential();
   if (f.length > 0) {
@@ -6428,16 +6428,16 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.serializeBinaryToWriter = fu
  * optional string encodedSignedCredential = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getEncodedsignedcredential = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.getEncodedsignedcredential = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setEncodedsignedcredential = function(value) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.setEncodedsignedcredential = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -6446,44 +6446,44 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setEncodedsignedcr
  * optional string cmanagerCredentialId = 2;
  * @return {string}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getCmanagercredentialid = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.getCmanagercredentialid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setCmanagercredentialid = function(value) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.setCmanagercredentialid = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
  * optional SignedAtalaOperation issueCredentialOperation = 3;
- * @return {?proto.io.iohk.prism.protos.SignedAtalaOperation}
+ * @return {?proto.io.iohk.atala.prism.protos.SignedAtalaOperation}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getIssuecredentialoperation = function() {
-  return /** @type{?proto.io.iohk.prism.protos.SignedAtalaOperation} */ (
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.getIssuecredentialoperation = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.SignedAtalaOperation} */ (
     jspb.Message.getWrapperField(this, node_models_pb.SignedAtalaOperation, 3));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.SignedAtalaOperation|undefined} value
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.SignedAtalaOperation|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} returns this
 */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setIssuecredentialoperation = function(value) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.setIssuecredentialoperation = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.clearIssuecredentialoperation = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.clearIssuecredentialoperation = function() {
   return this.setIssuecredentialoperation(undefined);
 };
 
@@ -6492,7 +6492,7 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.clearIssuecredenti
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.hasIssuecredentialoperation = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.hasIssuecredentialoperation = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
@@ -6501,16 +6501,16 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.hasIssuecredential
  * optional string nodeCredentialId = 4;
  * @return {string}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getNodecredentialid = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.getNodecredentialid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setNodecredentialid = function(value) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.setNodecredentialid = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -6519,7 +6519,7 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setNodecredentiali
  * optional bytes operationHash = 5;
  * @return {string}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.getOperationhash = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -6529,7 +6529,7 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash =
  * This is a type-conversion wrapper around `getOperationhash()`
  * @return {string}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash_asB64 = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.getOperationhash_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
       this.getOperationhash()));
 };
@@ -6542,7 +6542,7 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash_a
  * This is a type-conversion wrapper around `getOperationhash()`
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash_asU8 = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.getOperationhash_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
       this.getOperationhash()));
 };
@@ -6550,9 +6550,9 @@ proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.getOperationhash_a
 
 /**
  * @param {!(string|Uint8Array)} value
- * @return {!proto.io.iohk.prism.protos.PublishCredentialRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialRequest} returns this
  */
-proto.io.iohk.prism.protos.PublishCredentialRequest.prototype.setOperationhash = function(value) {
+proto.io.iohk.atala.prism.protos.PublishCredentialRequest.prototype.setOperationhash = function(value) {
   return jspb.Message.setProto3BytesField(this, 5, value);
 };
 
@@ -6573,8 +6573,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.PublishCredentialResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.PublishCredentialResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -6583,11 +6583,11 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.toObject = functi
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.PublishCredentialResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.PublishCredentialResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     transactioninfo: (f = msg.getTransactioninfo()) && common_models_pb.TransactionInfo.toObject(includeInstance, f)
   };
@@ -6603,23 +6603,23 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.toObject = function(include
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.PublishCredentialResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialResponse}
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.PublishCredentialResponse;
-  return proto.io.iohk.prism.protos.PublishCredentialResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.PublishCredentialResponse;
+  return proto.io.iohk.atala.prism.protos.PublishCredentialResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.PublishCredentialResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.PublishCredentialResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.PublishCredentialResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialResponse}
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -6644,9 +6644,9 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.deserializeBinaryFromReader
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.PublishCredentialResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.PublishCredentialResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6654,11 +6654,11 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.serializeBinary =
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.PublishCredentialResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.PublishCredentialResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTransactioninfo();
   if (f != null) {
@@ -6673,28 +6673,28 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.serializeBinaryToWriter = f
 
 /**
  * optional TransactionInfo transactionInfo = 1;
- * @return {?proto.io.iohk.prism.protos.TransactionInfo}
+ * @return {?proto.io.iohk.atala.prism.protos.TransactionInfo}
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.getTransactioninfo = function() {
-  return /** @type{?proto.io.iohk.prism.protos.TransactionInfo} */ (
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.prototype.getTransactioninfo = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.TransactionInfo} */ (
     jspb.Message.getWrapperField(this, common_models_pb.TransactionInfo, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.prism.protos.TransactionInfo|undefined} value
- * @return {!proto.io.iohk.prism.protos.PublishCredentialResponse} returns this
+ * @param {?proto.io.iohk.atala.prism.protos.TransactionInfo|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialResponse} returns this
 */
-proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.setTransactioninfo = function(value) {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.prototype.setTransactioninfo = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.io.iohk.prism.protos.PublishCredentialResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.PublishCredentialResponse} returns this
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.clearTransactioninfo = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.prototype.clearTransactioninfo = function() {
   return this.setTransactioninfo(undefined);
 };
 
@@ -6703,7 +6703,7 @@ proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.clearTransactioni
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.io.iohk.prism.protos.PublishCredentialResponse.prototype.hasTransactioninfo = function() {
+proto.io.iohk.atala.prism.protos.PublishCredentialResponse.prototype.hasTransactioninfo = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -6724,8 +6724,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetContactCredentialsRequest.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -6734,11 +6734,11 @@ proto.io.iohk.prism.protos.GetContactCredentialsRequest.prototype.toObject = fun
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     contactid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
@@ -6754,23 +6754,23 @@ proto.io.iohk.prism.protos.GetContactCredentialsRequest.toObject = function(incl
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetContactCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetContactCredentialsRequest;
-  return proto.io.iohk.prism.protos.GetContactCredentialsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest;
+  return proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetContactCredentialsRequest}
+ * @return {!proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -6794,9 +6794,9 @@ proto.io.iohk.prism.protos.GetContactCredentialsRequest.deserializeBinaryFromRea
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetContactCredentialsRequest.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6804,11 +6804,11 @@ proto.io.iohk.prism.protos.GetContactCredentialsRequest.prototype.serializeBinar
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getContactid();
   if (f.length > 0) {
@@ -6824,16 +6824,16 @@ proto.io.iohk.prism.protos.GetContactCredentialsRequest.serializeBinaryToWriter 
  * optional string contactId = 1;
  * @return {string}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.prototype.getContactid = function() {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.prototype.getContactid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.io.iohk.prism.protos.GetContactCredentialsRequest} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest} returns this
  */
-proto.io.iohk.prism.protos.GetContactCredentialsRequest.prototype.setContactid = function(value) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsRequest.prototype.setContactid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -6844,7 +6844,7 @@ proto.io.iohk.prism.protos.GetContactCredentialsRequest.prototype.setContactid =
  * @private {!Array<number>}
  * @const
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.repeatedFields_ = [1];
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.repeatedFields_ = [1];
 
 
 
@@ -6861,8 +6861,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.io.iohk.prism.protos.GetContactCredentialsResponse.toObject(opt_includeInstance, this);
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -6871,11 +6871,11 @@ proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.toObject = fu
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.io.iohk.prism.protos.GetContactCredentialsResponse} msg The msg instance to transform.
+ * @param {!proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.toObject = function(includeInstance, msg) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     genericcredentialsList: jspb.Message.toObjectList(msg.getGenericcredentialsList(),
     cmanager_models_pb.CManagerGenericCredential.toObject, includeInstance)
@@ -6892,23 +6892,23 @@ proto.io.iohk.prism.protos.GetContactCredentialsResponse.toObject = function(inc
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.io.iohk.prism.protos.GetContactCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.deserializeBinary = function(bytes) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.io.iohk.prism.protos.GetContactCredentialsResponse;
-  return proto.io.iohk.prism.protos.GetContactCredentialsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse;
+  return proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.io.iohk.prism.protos.GetContactCredentialsResponse} msg The message object to deserialize into.
+ * @param {!proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.io.iohk.prism.protos.GetContactCredentialsResponse}
+ * @return {!proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -6933,9 +6933,9 @@ proto.io.iohk.prism.protos.GetContactCredentialsResponse.deserializeBinaryFromRe
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.serializeBinary = function() {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.io.iohk.prism.protos.GetContactCredentialsResponse.serializeBinaryToWriter(this, writer);
+  proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6943,11 +6943,11 @@ proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.serializeBina
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.io.iohk.prism.protos.GetContactCredentialsResponse} message
+ * @param {!proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getGenericcredentialsList();
   if (f.length > 0) {
@@ -6962,40 +6962,40 @@ proto.io.iohk.prism.protos.GetContactCredentialsResponse.serializeBinaryToWriter
 
 /**
  * repeated CManagerGenericCredential genericCredentials = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>}
+ * @return {!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.getGenericcredentialsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>} */ (
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.prototype.getGenericcredentialsList = function() {
+  return /** @type{!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>} */ (
     jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.CManagerGenericCredential, 1));
 };
 
 
 /**
- * @param {!Array<!proto.io.iohk.prism.protos.CManagerGenericCredential>} value
- * @return {!proto.io.iohk.prism.protos.GetContactCredentialsResponse} returns this
+ * @param {!Array<!proto.io.iohk.atala.prism.protos.CManagerGenericCredential>} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse} returns this
 */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.setGenericcredentialsList = function(value) {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.prototype.setGenericcredentialsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.CManagerGenericCredential=} opt_value
+ * @param {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.CManagerGenericCredential}
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential}
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.addGenericcredentials = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.CManagerGenericCredential, opt_index);
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.prototype.addGenericcredentials = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.atala.prism.protos.CManagerGenericCredential, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.io.iohk.prism.protos.GetContactCredentialsResponse} returns this
+ * @return {!proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse} returns this
  */
-proto.io.iohk.prism.protos.GetContactCredentialsResponse.prototype.clearGenericcredentialsList = function() {
+proto.io.iohk.atala.prism.protos.GetContactCredentialsResponse.prototype.clearGenericcredentialsList = function() {
   return this.setGenericcredentialsList([]);
 };
 
 
-goog.object.extend(exports, proto.io.iohk.prism.protos);
+goog.object.extend(exports, proto.io.iohk.atala.prism.protos);

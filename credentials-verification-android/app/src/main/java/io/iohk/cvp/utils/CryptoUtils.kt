@@ -2,10 +2,10 @@ package io.iohk.cvp.utils
 
 import android.util.Base64
 import io.grpc.Metadata
-import io.iohk.atala.crypto.MnemonicChecksumException
-import io.iohk.atala.crypto.MnemonicLengthException
-import io.iohk.atala.crypto.MnemonicWordException
-import io.iohk.atala.crypto.japi.*
+import io.iohk.atala.prism.crypto.MnemonicChecksumException
+import io.iohk.atala.prism.crypto.MnemonicLengthException
+import io.iohk.atala.prism.crypto.MnemonicWordException
+import io.iohk.atala.prism.crypto.japi.*
 import java.util.*
 
 class CryptoUtils {

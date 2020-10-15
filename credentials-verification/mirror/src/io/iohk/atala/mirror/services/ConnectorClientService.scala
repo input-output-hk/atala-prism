@@ -6,10 +6,10 @@ import monix.eval.Task
 import fs2.Stream
 import org.slf4j.LoggerFactory
 
-import io.iohk.atala.requests.RequestAuthenticator
-import io.iohk.prism.protos.connector_api._
-import io.iohk.prism.protos.credential_models.{AtalaMessage, ProofRequest}
-import io.iohk.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.protos.connector_api._
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, ProofRequest}
+import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 
 import io.iohk.atala.mirror.config.ConnectorConfig
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}

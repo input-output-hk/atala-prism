@@ -1,0 +1,3 @@
+package io.iohk.atala.prism.credentials
+
+class JsonBasedUnsignedCredentialSpec extends UnsignedCredentialSpec[JsonBasedUnsignedCredential]

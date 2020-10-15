@@ -1,6 +1,6 @@
 package io.iohk.test
 
-import io.iohk.atala.prism.crypto.{ECKeys, ECSignature}
+import io.iohk.atala.prism.crypto.{EC, ECKeys}
 import io.iohk.dids.DIDLoader
 import javax.xml.bind.DatatypeConverter
 
@@ -35,8 +35,8 @@ object IssueCredential {
 
       println("Issuing the credential")
       val encodedMetadata = encode(metadata)
-      val signature = ECSignature.sign(issuerPrivateKey, encodedMetadata)
-      val credential = Credential(metadata = metadata, signature = signature)
+      val signature = EC.sign(encodedMetadata, EC.toPrivateKey(issuerPrivateKey.getEncoded))
+      val credential = Credential(metadata = metadata, signature = signature.data.toVector)
 
       val outputFilename = s"$inputFilename.sig"
       println(s"Saving the credential to $outputFilename")

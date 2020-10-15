@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "node_models.proto";
 
-package io.iohk.prism.protos;
+package io.iohk.atala.prism.protos;
 
 // These models are intended for internal usage inside
 // the AtalaNode (not to be publicly accessible from the gRPC API)

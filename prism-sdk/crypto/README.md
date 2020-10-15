@@ -14,7 +14,7 @@ There is an SDK version that runs on JavaScript (intended to run on iOS for now)
 The library is prepared to run on Android, to do so, you need to build a fat-jar manually which includes the Scala stdlib, then, import such jar in the Android project:
 - Run `sbt "project cryptoJVM" "assembly"`
 - Then, grab the jar from `jvm/target/scala-2.12/prism-crypto-{version}.jar`
-- On your Android project, invoke `io.iohk.atala.crypto.AndroidEC.generateKeyPair()` to verify the integration works.
+- On your Android project, invoke `io.iohk.atala.prism.crypto.AndroidEC.generateKeyPair()` to verify the integration works.
 
 ## Known issues
 

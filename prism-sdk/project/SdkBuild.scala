@@ -102,11 +102,17 @@ object SdkBuild {
   lazy val prismCredentials =
     commonProject(crossProject(JSPlatform, JVMPlatform) in file("credentials"))
       .settings(name := "prism-credentials")
+      .jvmSettings(
+        libraryDependencies ++= (bouncyDependencies ++ spongyDependencies).map(_ % "provided")
+      )
       .dependsOn(prismIdentity)
 
   lazy val prismConnector =
     commonProject(crossProject(JSPlatform, JVMPlatform) in file("connector"))
       .settings(name := "prism-connector")
+      .jvmSettings(
+        libraryDependencies ++= (bouncyDependencies ++ spongyDependencies).map(_ % "provided")
+      )
       .dependsOn(prismIdentity)
 
   lazy val prismDocs =

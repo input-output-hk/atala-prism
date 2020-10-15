@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import io.iohk.atala.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.crypto.japi.ECKeyPair
 import io.iohk.cvp.R
 import io.iohk.cvp.core.CvpApplication
 import io.iohk.cvp.data.DataManager
@@ -16,9 +16,9 @@ import io.iohk.cvp.data.local.db.mappers.CredentialMapper
 import io.iohk.cvp.data.local.db.model.Contact
 import io.iohk.cvp.utils.CryptoUtils
 import io.iohk.cvp.views.utils.SingleLiveEvent
-import io.iohk.prism.protos.AtalaMessage
-import io.iohk.prism.protos.ConnectionInfo
-import io.iohk.prism.protos.ReceivedMessage
+import io.iohk.atala.prism.protos.AtalaMessage
+import io.iohk.atala.prism.protos.ConnectionInfo
+import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter

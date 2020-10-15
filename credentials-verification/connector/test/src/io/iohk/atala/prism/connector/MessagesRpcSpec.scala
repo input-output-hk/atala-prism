@@ -5,11 +5,10 @@ import java.util.UUID
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.crypto.EC
-import io.iohk.atala.prism.connector.model.RequestNonce
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.grpc.SignedRequestsHelper
-import io.iohk.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_api
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   "SendMessage" should {
@@ -50,7 +49,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         EC.sign(
-          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray,
+          SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray,
           privateKey
         )
       val issuerId = createIssuer("Issuer", Some(keys.publicKey))

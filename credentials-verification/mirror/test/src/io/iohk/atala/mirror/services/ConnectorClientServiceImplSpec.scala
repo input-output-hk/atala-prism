@@ -10,14 +10,14 @@ import monix.eval.Task
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
-import io.iohk.atala.requests.RequestAuthenticator
-import io.iohk.prism.protos.connector_api._
+import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.mirror.config.ConnectorConfig
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 import io.iohk.atala.mirror.models.CredentialProofRequestType
-import io.iohk.prism.protos.connector_models.ReceivedMessage
-import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
-import io.iohk.prism.protos.connector_models.ConnectionInfo
+import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
+import io.iohk.atala.prism.protos.connector_models.ConnectionInfo
 import io.iohk.atala.mirror.MirrorFixtures
 
 import monix.execution.Scheduler.Implicits.global

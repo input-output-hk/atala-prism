@@ -4,7 +4,7 @@ import java.io.{BufferedReader, InputStreamReader}
 import java.util.Base64
 
 import io.iohk.atala.prism.node.client.Config
-import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 
 case class SendOperation() extends Command {
   override def run(api: node_api.NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {

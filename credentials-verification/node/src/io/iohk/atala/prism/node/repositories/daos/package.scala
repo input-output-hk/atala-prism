@@ -5,7 +5,7 @@ import java.time.Instant
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Put, Read, Write}
-import io.iohk.atala.crypto.{EC, ECConfig}
+import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix, KeyUsage}

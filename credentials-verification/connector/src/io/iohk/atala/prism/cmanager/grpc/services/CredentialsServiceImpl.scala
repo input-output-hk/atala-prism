@@ -18,9 +18,9 @@ import io.iohk.atala.prism.models.ProtoCodecs
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
-import io.iohk.prism.protos.cmanager_api._
-import io.iohk.prism.protos.{cmanager_api, node_api}
-import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.cmanager_api._
+import io.iohk.atala.prism.protos.{cmanager_api, node_api}
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -141,7 +141,7 @@ class CredentialsServiceImpl(
         issuerId <- Institution.Id(participantId.uuid).tryF
         credentialId = GenericCredential.Id(UUID.fromString(request.cmanagerCredentialId))
         credentialProtocolId = request.nodeCredentialId
-        issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray)
+        issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray.toVector)
         encodedSignedCredential = request.encodedSignedCredential
         issueCredentialOp =
           request.issueCredentialOperation

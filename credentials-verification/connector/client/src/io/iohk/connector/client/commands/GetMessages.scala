@@ -7,12 +7,12 @@ import io.circe.Printer
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.iohk.atala.prism.connector.client.Config
-import io.iohk.prism.protos.connector_api.{
+import io.iohk.atala.prism.protos.connector_api.{
   ConnectorServiceGrpc,
   GetConnectionByTokenRequest,
   GetMessagesForConnectionRequest
 }
-import io.iohk.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 
 case object GetMessages extends Command {
 

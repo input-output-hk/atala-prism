@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "io.iohk.prism.protos";
+option java_package = "io.iohk.atala.prism.protos";
 
 import "common_models.proto";
 
-package io.iohk.prism.protos;
+package io.iohk.atala.prism.protos;
 
 enum KeyUsage {
     // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want user to explicitly choose the usage
@@ -39,7 +39,7 @@ message CredentialData {
     string id = 1;
     string issuer = 2;
     bytes contentHash = 3;
-    io.iohk.prism.protos.Date issuanceDate = 4;
+    io.iohk.atala.prism.protos.Date issuanceDate = 4;
 }
 
 message CreateDIDOperation {
@@ -74,7 +74,7 @@ message IssueCredentialOperation {
 message RevokeCredentialOperation {
     bytes previousOperationHash = 1;
     string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
-    io.iohk.prism.protos.Date revocationDate = 3;
+    io.iohk.atala.prism.protos.Date revocationDate = 3;
 }
 
 message AtalaOperation {

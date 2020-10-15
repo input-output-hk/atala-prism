@@ -2,12 +2,12 @@ package io.iohk.atala.prism.node.operations
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 

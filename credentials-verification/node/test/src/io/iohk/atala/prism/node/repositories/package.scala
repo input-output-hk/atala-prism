@@ -5,7 +5,7 @@ import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix}
 
 package object repositories {
 
-  def digestGen(kind: Byte, i: Byte) = SHA256Digest(kind.toByte +: Array.fill(30)(0.toByte) :+ i.toByte)
+  def digestGen(kind: Byte, i: Byte) = SHA256Digest(kind.toByte +: Vector.fill(30)(0.toByte) :+ i.toByte)
 
   def didSuffixFromDigest(digest: SHA256Digest) = DIDSuffix(digest.hexValue)
 

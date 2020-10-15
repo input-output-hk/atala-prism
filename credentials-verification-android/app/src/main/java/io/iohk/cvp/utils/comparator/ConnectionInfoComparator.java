@@ -2,7 +2,7 @@ package io.iohk.cvp.utils.comparator;
 
 import java.util.Comparator;
 
-import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.atala.prism.protos.ConnectionInfo;
 
 /**
  * Compare the ConnectionInfo object according to the issuer name

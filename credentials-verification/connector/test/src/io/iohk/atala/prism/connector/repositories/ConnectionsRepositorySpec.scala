@@ -4,7 +4,7 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
-import io.iohk.atala.crypto.EC
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId

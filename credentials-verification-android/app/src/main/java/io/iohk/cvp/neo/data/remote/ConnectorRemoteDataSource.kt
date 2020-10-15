@@ -1,10 +1,10 @@
 package io.iohk.cvp.neo.data.remote
 
 import io.grpc.stub.MetadataUtils
-import io.iohk.atala.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.crypto.japi.ECKeyPair
 import io.iohk.cvp.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.cvp.utils.CryptoUtils
-import io.iohk.prism.protos.*
+import io.iohk.atala.prism.protos.*
 
 class ConnectorRemoteDataSource(sessionLocalDataSource: SessionLocalDataSourceInterface) : BaseRemoteDataSource(sessionLocalDataSource) {
 

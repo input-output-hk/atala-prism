@@ -5,11 +5,11 @@ import java.time.Instant
 
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models
 
 package object operations {
 

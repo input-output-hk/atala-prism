@@ -8,8 +8,8 @@ import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.ContactsRepository
-import io.iohk.prism.protos.cmanager_api
-import io.iohk.prism.protos.cmanager_api._
+import io.iohk.atala.prism.protos.cmanager_api
+import io.iohk.atala.prism.protos.cmanager_api._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
