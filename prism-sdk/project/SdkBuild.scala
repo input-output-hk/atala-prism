@@ -133,17 +133,14 @@ object SdkBuild {
       )
       .enablePlugins(MdocPlugin)
 
-  lazy val sdk = (project in file("."))
-    .aggregate(
-      prismCrypto.jvm,
-      prismCrypto.js,
-      prismProtos.jvm,
-      prismProtos.js,
-      prismIdentity.jvm,
-      prismIdentity.js,
-      prismCredentials.jvm,
-      prismCredentials.js,
-      prismConnector.jvm,
-      prismConnector.js
-    )
+  lazy val sdk =
+    commonProject(crossProject(JSPlatform, JVMPlatform) in file("."))
+      .settings(name := "sdk")
+      .aggregate(
+        prismCrypto,
+        prismProtos,
+        prismIdentity,
+        prismCredentials,
+        prismConnector
+      )
 }

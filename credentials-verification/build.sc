@@ -241,13 +241,13 @@ object SDK extends ScalaModule {
   def publishAndGetCurrentVersion =
     T.persistent {
       val versionResult =
-        os.proc("sbt", "sdk/version").call(cwd = sdkDir, env = sbtEnv)
+        os.proc("sbt", "sdkJVM/version").call(cwd = sdkDir, env = sbtEnv)
 
       // The version is the last word in the output
       val version = versionResult.out.text().split("\\s").filterNot(_.length <= 4).last
 
       T.ctx().log.info(s"Publishing PRISM SDK version $version")
-      os.proc("sbt", "sdk/publishLocal").call(cwd = sdkDir, env = sbtEnv, stdout = os.Inherit)
+      os.proc("sbt", "sdkJVM/publishLocal").call(cwd = sdkDir, env = sbtEnv, stdout = os.Inherit)
       version
     }
 }
