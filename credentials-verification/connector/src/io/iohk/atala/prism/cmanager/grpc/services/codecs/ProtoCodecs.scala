@@ -62,7 +62,7 @@ object ProtoCodecs {
       .withGroupName("")
   }
 
-  def subjectToProto(subject: Contact): cmanager_models.IssuerSubject = {
+  def issuerToProto(subject: Contact): cmanager_models.IssuerContact = {
     val connectionStatus = subject.connectionStatus match {
       case Contact.ConnectionStatus.InvitationMissing => Student.ConnectionStatus.InvitationMissing
       case Contact.ConnectionStatus.ConnectionMissing => Student.ConnectionStatus.ConnectionMissing
@@ -71,7 +71,7 @@ object ProtoCodecs {
     }
 
     cmanager_models
-      .IssuerSubject()
+      .IssuerContact()
       .withId(subject.contactId.value.toString)
       .withExternalId(subject.externalId.value)
       .withConnectionStatus(studentConnectionStatus2Proto.transform(connectionStatus))
@@ -90,11 +90,11 @@ object ProtoCodecs {
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.value.toString)
       .withIssuerId(credential.issuedBy.value.toString)
-      .withSubjectId(credential.subjectId.value.toString)
+      .withContactId(credential.subjectId.value.toString)
       .withCredentialData(credential.credentialData.noSpaces)
       .withIssuerName(credential.issuerName)
       .withGroupName(credential.groupName)
-      .withSubjectData(credential.subjectData.noSpaces)
+      .withContactData(credential.subjectData.noSpaces)
       .withExternalId(credential.externalId.value)
       .withConnectionStatus(connectionStatus)
 

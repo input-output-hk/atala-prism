@@ -74,7 +74,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         )
 
         val request = cmanager_api.CreateGenericCredentialRequest(
-          subjectId = subject.contactId.value.toString,
+          contactId = subject.contactId.value.toString,
           credentialData = credentialData.noSpaces,
           groupName = issuerGroup.name.value
         )
@@ -83,11 +83,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
         response.credentialId mustNot be(empty)
         response.issuerId must be(issuerId.value.toString)
-        response.subjectId must be(subject.contactId.value.toString)
+        response.contactId must be(subject.contactId.value.toString)
         response.credentialData must be(request.credentialData)
         response.issuerName must be(issuerName)
         response.groupName must be(issuerGroup.name.value)
-        io.circe.parser.parse(response.subjectData).right.value must be(subject.data)
+        io.circe.parser.parse(response.contactData).right.value must be(subject.data)
         response.nodeCredentialId must be(empty)
         response.issuanceOperationHash must be(empty)
         response.encodedSignedCredential must be(empty)
@@ -434,9 +434,9 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   }
 
   private def cleanCredentialData(gc: CManagerGenericCredential): CManagerGenericCredential =
-    gc.copy(credentialData = "", subjectData = "")
+    gc.copy(credentialData = "", contactData = "")
   private def credentialJsonData(gc: CManagerGenericCredential): (Json, Json) =
-    (circe.parser.parse(gc.credentialData).right.value, circe.parser.parse(gc.subjectData).right.value)
+    (circe.parser.parse(gc.credentialData).right.value, circe.parser.parse(gc.contactData).right.value)
 
   "getContactCredentials" should {
     "return contact's credentials" in {

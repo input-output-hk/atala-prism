@@ -15,7 +15,7 @@ enum ContactConnectionStatus {
 
 message Contact {
   string contactId = 1;
-  string externalId = 2; // the id provided by the issuer at subject creation time
+  string externalId = 2; // the id provided by the issuer at contact creation time
   string jsonData = 3;
   ContactConnectionStatus connectionStatus = 4;
   string connectionToken = 5; // present when the status is ConnectionMissing

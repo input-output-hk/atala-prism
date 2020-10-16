@@ -33,16 +33,6 @@ service StudentsService {
     rpc GenerateConnectionTokenForStudent (GenerateConnectionTokenForStudentRequest) returns (GenerateConnectionTokenForStudentResponse) {}
 }
 
-service SubjectsService {
-    rpc CreateSubject (CreateSubjectRequest) returns (CreateSubjectResponse) {}
-    rpc GetSubjects (GetSubjectsRequest) returns (GetSubjectsResponse) {}
-    rpc GetSubject (GetSubjectRequest) returns (GetSubjectResponse) {}
-    rpc GetSubjectCredentials (GetSubjectCredentialsRequest) returns (GetSubjectCredentialsResponse) {}
-
-    // Generate a connection token to get connected to a specific subject
-    rpc GenerateConnectionTokenForSubject (GenerateConnectionTokenForSubjectRequest) returns (GenerateConnectionTokenForSubjectResponse) {}
-}
-
 service GroupsService {
     rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
     rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
@@ -113,48 +103,6 @@ message GenerateConnectionTokenForStudentResponse {
     string token = 1;
 }
 
-// subjects
-message CreateSubjectRequest {
-    string groupName = 1;
-    string jsonData = 2;
-    string externalId = 3; // The id provided by the issuer at subject creation time
-                           // An issuer cannot have two subjects with the same external id
-                           // The id could be repeated in different issuers
-}
-message CreateSubjectResponse {
-    IssuerSubject subject = 1;
-}
-
-message GetSubjectsRequest {
-    int32 limit = 1; // the max amount of subjects to return, must be > 0
-    string lastSeenSubjectId = 2; // the last seen subject (if any), the returned subjects start after this one
-    string groupName = 3; // if provided, get only the subjects that belong to this group
-}
-message GetSubjectsResponse {
-    repeated IssuerSubject subjects = 1;
-}
-
-message GetSubjectRequest {
-    string subjectId = 1;
-}
-message GetSubjectResponse {
-    IssuerSubject subject = 1;
-}
-
-message GetSubjectCredentialsRequest {
-    string subjectId = 1;
-}
-message GetSubjectCredentialsResponse {
-    repeated CManagerGenericCredential genericCredentials = 1;
-}
-
-message GenerateConnectionTokenForSubjectRequest {
-    string subjectId = 1; // the subject that will be linked to the token
-}
-message GenerateConnectionTokenForSubjectResponse {
-    string token = 1;
-}
-
 
 // groups
 message CreateGroupRequest {
@@ -177,11 +125,11 @@ message UpdateGroupResponse {}
 // generic credentials
 // The authenticated issuer is creating a credential
 message CreateGenericCredentialRequest {
-    string subjectId = 1; // required if the externalId isn't provided, otherwise, ignored.
+    string contactId = 1; // required if the externalId isn't provided, otherwise, ignored.
     string credentialData = 2;
     string groupName = 3;
-    string externalId = 4; // The id provided by the issuer at subject creation time, when this isn't provided,
-                           // the subjectId is expected.
+    string externalId = 4; // The id provided by the issuer at contact creation time, when this isn't provided,
+                           // the contactId is expected.
 }
 message CreateGenericCredentialResponse {
     CManagerGenericCredential genericCredential = 1;

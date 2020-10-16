@@ -41,8 +41,8 @@ enum StudentConnectionStatus {
     ConnectionRevoked = 3;
 }
 
-// subject
-message IssuerSubject {
+// Contact
+message IssuerContact {
     string id = 1;
     string jsonData = 2;
     string groupName = 3;
@@ -51,7 +51,7 @@ message IssuerSubject {
     StudentConnectionStatus connectionStatus = 4;
     string connectionToken = 5; // present when the status is ConnectionMissing
     string connectionId = 6; // present when the status is ConnectionAccepted
-    string externalId = 7; // the id provided by the issuer at subject creation time
+    string externalId = 7; // the id provided by the issuer at contact creation time
 }
 
 message Group {
@@ -62,17 +62,17 @@ message Group {
 message CManagerGenericCredential {
     string credentialId = 1; // credential identifier internal to the cmanager
     string issuerId = 2; // issuer identifier internal to the cmanager/connector
-    string subjectId = 3; // subject identifier internal to cmanager/connector
+    string contactId = 3; // contact identifier internal to cmanager/connector
     string credentialData = 4; // the actual claims of the credential
     string issuerName = 5; // the name of the issuer according to the cmanager/connector internal data
     string groupName = 6; // group name associated to the credential in the cmanager internal data
-    string subjectData = 7; // internal data from the related subject stored in cmanager tables
+    string contactData = 7; // internal data from the related contact stored in cmanager tables
     // the fields below will only be populated after the credential is published in the blockchain
     string nodeCredentialId = 8; // the id assigned to the published credential by the protocol
     bytes issuanceOperationHash = 9; // the hash of the associated issuance operation
     string encodedSignedCredential = 10; // the actual published credential
     uint64 publicationStoredAt = 11; // the time when the publication data was stored in the database
-    string externalId = 12; // the id provided by the issuer at subject creation time
+    string externalId = 12; // the id provided by the issuer at contact creation time
     // NOTE: as enum values need to be unique, we reuse the student status for now, eventually,
     // TODO: we should rename that enum.
     StudentConnectionStatus connectionStatus = 13;

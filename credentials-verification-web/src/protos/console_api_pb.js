@@ -15,8 +15,6 @@ var global = Function('return this')();
 
 var console_models_pb = require('./console_models_pb.js');
 goog.object.extend(proto, console_models_pb);
-var cmanager_models_pb = require('./cmanager_models_pb.js');
-goog.object.extend(proto, cmanager_models_pb);
 goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateContactRequest', null, global);
 goog.exportSymbol('proto.io.iohk.atala.prism.protos.CreateContactResponse', null, global);
 goog.exportSymbol('proto.io.iohk.atala.prism.protos.GenerateConnectionTokenForContactRequest', null, global);

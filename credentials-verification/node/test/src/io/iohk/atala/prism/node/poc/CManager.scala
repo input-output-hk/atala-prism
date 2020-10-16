@@ -16,7 +16,7 @@ case class CManager(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     CManagerGenericCredential(
       credentialId = UUID.randomUUID().toString,
       issuerId = UUID.randomUUID().toString,
-      subjectId = UUID.randomUUID().toString,
+      contactId = UUID.randomUUID().toString,
       credentialData = s"""{
            | "title" : "Bs in Computer Science",
            | "enrollmentDate" : "${LocalDate.now()}",

@@ -84,7 +84,7 @@ class CredentialsServiceImpl(
             .map(_.contactId)
 
         case None =>
-          val maybe = Try(request.subjectId)
+          val maybe = Try(request.contactId)
             .filter(_.nonEmpty)
             .map(UUID.fromString)
             .map(Contact.Id.apply)

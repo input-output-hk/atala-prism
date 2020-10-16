@@ -14,8 +14,6 @@ grpc.web = require('grpc-web');
 
 
 var console_models_pb = require('./console_models_pb.js')
-
-var cmanager_models_pb = require('./cmanager_models_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};

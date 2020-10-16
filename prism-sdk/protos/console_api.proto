@@ -6,7 +6,6 @@ option java_package = "io.iohk.atala.prism.protos";
 package io.iohk.atala.prism.protos;
 
 import "console_models.proto";
-import "cmanager_models.proto";
 
 service ConsoleService {
   rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
