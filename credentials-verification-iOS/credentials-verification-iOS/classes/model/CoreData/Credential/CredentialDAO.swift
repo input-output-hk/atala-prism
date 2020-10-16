@@ -64,7 +64,7 @@ class CredentialDAO: BaseDAO {
         return nil
     }
 
-    func createCredential(sentCredential: Io_Iohk_Prism_Protos_Credential,
+    func createCredential(sentCredential: Io_Iohk_Atala_Prism_Protos_Credential,
                           viewed: Bool, messageId: String, connectionId: String) -> (Credential, Bool)? {
 
         if let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument) {

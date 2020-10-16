@@ -1,9 +1,30 @@
 syntax = "proto3";
 
-package io.iohk.prism.protos;
+package io.iohk.atala.prism.protos;
 
 message Date {
     int32 year = 1; // positive value
     int32 month = 2; // value in the [1, 12] interval
     int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
+}
+
+enum Ledger {
+    UNKNOWN_LEDGER = 0; // Invalid default value
+    IN_MEMORY = 1;
+    BITCOIN_TESTNET = 2;
+    BITCOIN_MAINNET = 3;
+    CARDANO_TESTNET = 4;
+    CARDANO_MAINNET = 5;
+}
+
+message BlockInfo {
+    int32 number = 1; // Number of the block in the ledger
+    int64 timestamp = 2; // Millis since epoch when the block was created
+    int32 index = 3; // Index of the transaction within the block
+}
+
+message TransactionInfo {
+    string transactionId = 1; // ID of the transaction
+    Ledger ledger = 2; // Ledger the transaction was published to
+    BlockInfo block = 3; // Block the transaction was included in
 }

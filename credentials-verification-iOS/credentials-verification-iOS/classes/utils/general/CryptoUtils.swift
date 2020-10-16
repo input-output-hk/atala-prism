@@ -58,12 +58,12 @@ class CryptoUtils: NSObject {
         return "m/\(lastUsedKeyIndex!)'/0'/0'"
     }
 
-    func encodedPublicKey(keyPath: String) -> Io_Iohk_Prism_Protos_EncodedPublicKey {
+    func encodedPublicKey(keyPath: String) -> Io_Iohk_Atala_Prism_Protos_EncodedPublicKey {
         let keychain = HDKeychain(seed: seed!, network: .testnetBTC)
         let derived = try? keychain.derivedKey(path: keyPath)
         let publicKey = derived?.extendedPublicKey().publicKey()
         let pointData = getUncompressedKey(publicKey: publicKey!)
-        var protoPublicKey: Io_Iohk_Prism_Protos_EncodedPublicKey = Io_Iohk_Prism_Protos_EncodedPublicKey()
+        var protoPublicKey: Io_Iohk_Atala_Prism_Protos_EncodedPublicKey = Io_Iohk_Atala_Prism_Protos_EncodedPublicKey()
         protoPublicKey.publicKey = pointData
         return protoPublicKey
     }

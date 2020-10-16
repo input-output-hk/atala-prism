@@ -107,7 +107,7 @@ class Degree: Mappable {
         view <- map["view"]
     }
 
-    static func build(_ sentCredential: Io_Iohk_Prism_Protos_Credential, messageId: String, isNew: Bool) -> Degree? {
+    static func build(_ sentCredential: Io_Iohk_Atala_Prism_Protos_Credential, messageId: String, isNew: Bool) -> Degree? {
 
         let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument)
 

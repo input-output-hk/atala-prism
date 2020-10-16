@@ -170,7 +170,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
+                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData: message.message) {
                             if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,

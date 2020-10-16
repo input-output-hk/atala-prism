@@ -10,8 +10,8 @@ class ApiService: NSObject {
 
     // MARK: Service
 
-    lazy var service: Io_Iohk_Prism_Protos_ConnectorServiceServiceClient = {
-        let serv = Io_Iohk_Prism_Protos_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
+    lazy var service: Io_Iohk_Atala_Prism_Protos_ConnectorServiceServiceClient = {
+        let serv = Io_Iohk_Atala_Prism_Protos_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
         serv.channel.timeout = 10
         return serv
     }()
@@ -52,19 +52,19 @@ class ApiService: NSObject {
 
     // MARK: Connections
 
-    func getConnectionTokenInfo(token: String) throws -> Io_Iohk_Prism_Protos_GetConnectionTokenInfoResponse {
+    func getConnectionTokenInfo(token: String) throws -> Io_Iohk_Atala_Prism_Protos_GetConnectionTokenInfoResponse {
 
         let userId = FakeData.fakeUserId()
-        return try service.getConnectionTokenInfo(Io_Iohk_Prism_Protos_GetConnectionTokenInfoRequest.with {
+        return try service.getConnectionTokenInfo(Io_Iohk_Atala_Prism_Protos_GetConnectionTokenInfoRequest.with {
             $0.token = token
         }, metadata: makeMeta(userId))
     }
 
     func addConnectionToken(token: String,
-                            nonce: String) throws -> Io_Iohk_Prism_Protos_AddConnectionFromTokenResponse {
+                            nonce: String) throws -> Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenResponse {
         let keyPath = CryptoUtils.global.getNextPublicKeyPath()
         let encodedPublicKey = CryptoUtils.global.encodedPublicKey(keyPath: keyPath)
-        let request = Io_Iohk_Prism_Protos_AddConnectionFromTokenRequest.with {
+        let request = Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenRequest.with {
             $0.token = token
             $0.holderEncodedPublicKey = encodedPublicKey
             $0.paymentNonce = nonce
@@ -74,9 +74,9 @@ class ApiService: NSObject {
     }
 
     func getConnection(keyPath: String, limit: Int32 = DEFAULT_REQUEST_LIMIT)
-        throws -> Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse {
+        throws -> Io_Iohk_Atala_Prism_Protos_GetConnectionsPaginatedResponse {
 
-        let request = Io_Iohk_Prism_Protos_GetConnectionsPaginatedRequest.with {
+        let request = Io_Iohk_Atala_Prism_Protos_GetConnectionsPaginatedRequest.with {
             // $0.lastSeenConnectionID = token
             $0.limit = limit
         }
@@ -89,11 +89,11 @@ class ApiService: NSObject {
     // MARK: Credentials
 
     func getCredentials(contacts: [Contact]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
-        throws -> [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] {
+        throws -> [Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse] {
 
-        var responseList: [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] = []
+        var responseList: [Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse] = []
         for contact in contacts ?? [] {
-            let request = Io_Iohk_Prism_Protos_GetMessagesPaginatedRequest.with {
+            let request = Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest.with {
                 $0.limit = limit
                 if let lastMessage = contact.lastMessageId {
                     $0.lastSeenMessageID = lastMessage
@@ -107,14 +107,14 @@ class ApiService: NSObject {
     }
 
     func shareCredential(contacts: [Contact],
-                         credential: Credential) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
+                         credential: Credential) throws -> [Io_Iohk_Atala_Prism_Protos_SendMessageResponse] {
 
         let messageData = credential.encoded
 
-        var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
+        var responseList: [Io_Iohk_Atala_Prism_Protos_SendMessageResponse] = []
 
         for contact in contacts {
-            let request = Io_Iohk_Prism_Protos_SendMessageRequest.with {
+            let request = Io_Iohk_Atala_Prism_Protos_SendMessageRequest.with {
                 $0.message = messageData
                 $0.connectionID = contact.connectionId
             }
@@ -126,13 +126,13 @@ class ApiService: NSObject {
     }
 
     func shareCredentials(contact: Contact,
-                          credentials: [Credential]) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
+                          credentials: [Credential]) throws -> [Io_Iohk_Atala_Prism_Protos_SendMessageResponse] {
 
-        var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
+        var responseList: [Io_Iohk_Atala_Prism_Protos_SendMessageResponse] = []
 
         for credential in credentials {
             let messageData = credential.encoded
-            let request = Io_Iohk_Prism_Protos_SendMessageRequest.with {
+            let request = Io_Iohk_Atala_Prism_Protos_SendMessageRequest.with {
                 $0.message = messageData
                 $0.connectionID = contact.connectionId
             }
@@ -145,20 +145,16 @@ class ApiService: NSObject {
 
     // MARK: Payments
 
-    func getPaymentToken() throws -> Io_Iohk_Prism_Protos_GetBraintreePaymentsConfigResponse {
+    func getPaymentToken() throws -> Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigResponse {
 
-        return try service.getBraintreePaymentsConfig(Io_Iohk_Prism_Protos_GetBraintreePaymentsConfigRequest.with { _ in
+        return try service.getBraintreePaymentsConfig(Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigRequest.with { _ in
         }, metadata: makeMeta())
     }
 
-    func getPaymentsHistory(userIds: [String]?) throws -> [Io_Iohk_Prism_Protos_GetPaymentsResponse] {
+    func getPaymentsHistory(userIds: [String]?) throws -> [Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigResponse] {
 
-        var responseList: [Io_Iohk_Prism_Protos_GetPaymentsResponse] = []
-        for userId in userIds ?? [] {
-            let response = try service.getPayments(Io_Iohk_Prism_Protos_GetPaymentsRequest.with { _ in
-            }, metadata: makeMeta(userId))
-            responseList.append(response)
-        }
+        var responseList: [Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigResponse] = []
+
         return responseList
     }
 }

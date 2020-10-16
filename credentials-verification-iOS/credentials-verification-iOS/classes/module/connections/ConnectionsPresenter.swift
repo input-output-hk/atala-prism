@@ -182,11 +182,11 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 let responses = try ApiService.global.getCredentials(contacts: contacts)
                 Logger.d("getCredentials responses: \(responses)")
 
-                var proofRequest: Io_Iohk_Prism_Protos_ProofRequest?
+                var proofRequest: Io_Iohk_Atala_Prism_Protos_ProofRequest?
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
+                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData: message.message) {
                             if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
                                 let credential = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
@@ -220,7 +220,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         })
     }
 
-    func askProofRequest(proofRequest: Io_Iohk_Prism_Protos_ProofRequest) {
+    func askProofRequest(proofRequest: Io_Iohk_Atala_Prism_Protos_ProofRequest) {
         let credentialsDao = CredentialDAO()
         let credentials = credentialsDao.listCredentials() ?? []
         let filteredCredentials = credentials.filter {

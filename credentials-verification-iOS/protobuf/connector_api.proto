@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.prism.protos;
+package io.iohk.atala.prism.protos;
 
 service ConnectorService {
 
@@ -73,6 +73,9 @@ service ConnectorService {
   // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
   rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
 
+  // Returns public keys that can be used for secure communication with the other end of connection
+  rpc GetConnectionCommunicationKeys (GetConnectionCommunicationKeysRequest) returns (GetConnectionCommunicationKeysResponse) {}
+
   // Send message over a connection
   //
   // Available to: Issuer, Holder, Validator
@@ -86,9 +89,10 @@ service ConnectorService {
   rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
   rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
   rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
-
   // Return the information about the Connector and Node builds
   rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
+  // Return the details for the authenticated user
+  rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
 }
 
 message GetConnectionByTokenRequest {
@@ -96,7 +100,7 @@ message GetConnectionByTokenRequest {
 }
 
 message GetConnectionByTokenResponse {
-  Connection connection = 1;
+    io.iohk.atala.prism.protos.Connection connection = 1;
 }
 
 // Request connections instantiated by us / with us possibly after a known connection
@@ -107,7 +111,7 @@ message GetConnectionsPaginatedRequest {
 
 // Result with connections instantiated
 message GetConnectionsPaginatedResponse {
-  repeated ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
+  repeated io.iohk.atala.prism.protos.ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
 }
 
 // Request to obtain information of connection token
@@ -117,21 +121,24 @@ message GetConnectionTokenInfoRequest {
 
 // Result with information on connection token
 message GetConnectionTokenInfoResponse {
-  ParticipantInfo creator = 1; // participant who generated the code
+  io.iohk.atala.prism.protos.ParticipantInfo creator = 1; // [Will be deprecated] participant who generated the code
+  string creatorName = 2; // same value as the one contained in `creator`
+  bytes creatorLogo = 3; // same value as the one contained in `creator`
+  string creatorDID = 4; // same value as the one contained in `creator` (if any)
 }
 
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
-  ConnectorPublicKey holderPublicKey = 2;
+  io.iohk.atala.prism.protos.ConnectorPublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
   // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
-  EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
+  io.iohk.atala.prism.protos.EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
 }
 
 // Confirmation of connection instantiation
 message AddConnectionFromTokenResponse {
-  ConnectionInfo connection = 1; // instantiated connection info
+  io.iohk.atala.prism.protos.ConnectionInfo connection = 1; // instantiated connection info
   string userId = 2; // your generated user id
 }
 
@@ -161,14 +168,24 @@ message GetMessagesPaginatedRequest {
 
 // Response with messages
 message GetMessagesPaginatedResponse {
-  repeated ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+  repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
 }
 
 message GetMessagesForConnectionRequest {
   string connectionId = 1;
 }
 message GetMessagesForConnectionResponse {
-  repeated ReceivedMessage messages = 1;
+  repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1;
+}
+
+message GetConnectionCommunicationKeysRequest {
+  string connectionId = 1;
+}
+
+message GetConnectionCommunicationKeysResponse {
+  // keys that can be used for communication with the other end of connection with their ids
+  // keyId inside might be empty if there is just one key in the collection
+  repeated io.iohk.atala.prism.protos.ConnectionKey keys = 1;
 }
 
 // Request to send message
@@ -185,7 +202,7 @@ message SendMessageResponse {
 
 // Request to register DID
 message RegisterDIDRequest {
-  SignedAtalaOperation createDIDOperation = 1;
+  io.iohk.atala.prism.protos.SignedAtalaOperation createDIDOperation = 1;
   Role role = 2;
   string name = 3;
   bytes logo = 4;
@@ -196,14 +213,27 @@ message RegisterDIDRequest {
   }
 }
 
+message GetCurrentUserRequest {}
+message GetCurrentUserResponse {
+  Role role = 1;
+  string name = 2;
+  bytes logo = 3;
+
+  enum Role {
+    issuer = 0;
+    verifier = 1;
+  }
+}
+
 // Confirmation of DID registration
 message RegisterDIDResponse {
   string did = 1;
+  TransactionInfo transactionInfo = 2;
 }
 
 // Request to change the billing plan
 message ChangeBillingPlanRequest {
-  BillingPlan billingPlan = 1; // new billing plan
+  io.iohk.atala.prism.protos.BillingPlan billingPlan = 1; // new billing plan
 }
 
 // Confirmation of billing plan change
@@ -220,12 +250,12 @@ message ProcessPaymentRequest {
   string nonce = 2; // client nonce
 }
 message ProcessPaymentResponse {
-  Payment payment = 1;
+  io.iohk.atala.prism.protos.Payment payment = 1;
 }
 
 message GetPaymentsRequest {}
 message GetPaymentsResponse {
-  repeated Payment payments = 1;
+  repeated io.iohk.atala.prism.protos.Payment payments = 1;
 }
 
 message GetBuildInfoRequest {}
@@ -236,6 +266,7 @@ message GetBuildInfoResponse {
   string buildTime = 4;
   string nodeVersion = 5;
 }
+
 
 // MARK: - connector_models.proto
 
@@ -296,8 +327,18 @@ message Connection {
 message ConnectionInfo {
     string connectionId = 1;
     int64 created = 2; // moment of instantiation as milliseconds since the Unix Epoch
-    ParticipantInfo participantInfo = 3; // information about the participant at the other end
+    ParticipantInfo participantInfo = 3; // [Will be deprecated] information about the participant at the other end
     string token = 4; // the token used to generate the connection
+    string participantName = 5; // same value as the one contained in `participantInfo`
+    bytes participantLogo = 6; // same value as the one contained in `participantInfo`
+    string participantDID = 7; // same value as the one contained in `participantInfo`
+}
+
+// Communication key for connection participant
+message ConnectionKey {
+  // identifier of the key; can be empty if participant uses one key only
+  string keyId = 1;
+  EncodedPublicKey key = 2;
 }
 
 
@@ -327,7 +368,14 @@ message Payment {
     string failureReason = 5;
 }
 
+
 // MARK: - node_models.proto
+
+message TimestampInfo {
+    uint64 blockTimestamp = 1; // timestamp provided from the underlying blockchain
+    uint32 blockSequenceNumber = 2; // transaction index inside the underlying blockchain block
+    uint32 operationSequenceNumber = 3; // operation index inside the AtalaBlock
+}
 
 enum KeyUsage {
     // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want user to explicitly choose the usage
@@ -347,13 +395,15 @@ message ECKeyData {
 message PublicKey {
     string id = 1;
     KeyUsage usage = 2;
+    TimestampInfo addedOn = 3;
+    TimestampInfo revokedOn = 4;
     oneof keyData {
         ECKeyData ecKeyData = 8;
     };
 }
 
 message DIDData {
-    string id = 1; // DID suffix, where DID is in form did:atala:[DID suffix]
+    string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
     repeated PublicKey publicKeys = 2;
 }
 
@@ -361,7 +411,6 @@ message CredentialData {
     string id = 1;
     string issuer = 2;
     bytes contentHash = 3;
-    Date issuanceDate = 4;
 }
 
 message CreateDIDOperation {
@@ -396,7 +445,6 @@ message IssueCredentialOperation {
 message RevokeCredentialOperation {
     bytes previousOperationHash = 1;
     string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
-    Date revocationDate = 3;
 }
 
 message AtalaOperation {
@@ -414,6 +462,7 @@ message SignedAtalaOperation {
     AtalaOperation operation = 3;
 }
 
+
 // MARK: - common_models.proto
 
 message Date {
@@ -421,6 +470,28 @@ message Date {
     int32 month = 2; // value in the [1, 12] interval
     int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
 }
+
+enum Ledger {
+    UNKNOWN_LEDGER = 0; // Invalid default value
+    IN_MEMORY = 1;
+    BITCOIN_TESTNET = 2;
+    BITCOIN_MAINNET = 3;
+    CARDANO_TESTNET = 4;
+    CARDANO_MAINNET = 5;
+}
+
+message BlockInfo {
+    int32 number = 1; // Number of the block in the ledger
+    int64 timestamp = 2; // Millis since epoch when the block was created
+    int32 index = 3; // Index of the transaction within the block
+}
+
+message TransactionInfo {
+    string transactionId = 1; // ID of the transaction
+    Ledger ledger = 2; // Ledger the transaction was published to
+    BlockInfo block = 3; // Block the transaction was included in
+}
+
 
 // MARK: - credential_models.proto
 
@@ -566,11 +637,19 @@ message ProofRequest {
     string connectionToken = 2;
 }
 
+message EncryptedMessage {
+    // identifier of the key used to encrypt the message; may be empty if the receiver uses only one key
+    string keyId = 1;
+    // encrypted content of the message; after decryption it should be deserialized as AtalaMessage instance
+    bytes encryptedContent = 2;
+}
+
 message AtalaMessage {
     oneof message {
         IssuerSentCredential issuerSentCredential = 1;
         HolderSentCredential holderSentCredential = 2;
         ProofRequest proofRequest = 3;
+        EncryptedMessage encryptedMessage = 4;
     }
 }
 

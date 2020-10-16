@@ -44,9 +44,6 @@
 		B35181AB24195CAD007CA8F1 /* connector_api.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A824195CAC007CA8F1 /* connector_api.proto */; };
 		B35181AC24195CAD007CA8F1 /* connector_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A924195CAC007CA8F1 /* connector_models.proto */; };
 		B35181AD24195CAD007CA8F1 /* node_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181AA24195CAD007CA8F1 /* node_models.proto */; };
-		B35181B324196689007CA8F1 /* common_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181B224196689007CA8F1 /* common_models.proto */; };
-		B35181BA24196898007CA8F1 /* connector_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B624196898007CA8F1 /* connector_api.pb.swift */; };
-		B35181BB24196898007CA8F1 /* connector_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B724196898007CA8F1 /* connector_api.grpc.swift */; };
 		B352433F24FFD59F0053A804 /* DateFormat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B352433E24FFD59F0053A804 /* DateFormat.storyboard */; };
 		B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B352434124FFDA080053A804 /* DateFormatTableViewCell.swift */; };
 		B352434424FFDA080053A804 /* DateFormatViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B352434224FFDA080053A804 /* DateFormatViewCell.xib */; };
@@ -62,6 +59,9 @@
 		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
 		B36F2FC224DDAC620012FDCC /* DeleteCredential.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F2FC124DDAC620012FDCC /* DeleteCredential.storyboard */; };
 		B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F2FC324DDAFBE0012FDCC /* DeleteCredentialViewController.swift */; };
+		B37FDA4A253897F00024766B /* common_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B37FDA49253897F00024766B /* common_models.proto */; };
+		B37FDB1625389CD40024766B /* connector_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37FDB1425389CD40024766B /* connector_api.pb.swift */; };
+		B37FDB1725389CD40024766B /* connector_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37FDB1525389CD40024766B /* connector_api.grpc.swift */; };
 		B38D944A24AE53440053CE36 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D944924AE53430053CE36 /* Reachability.swift */; };
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
 		B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */; };
@@ -312,9 +312,6 @@
 		B35181A824195CAC007CA8F1 /* connector_api.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_api.proto; sourceTree = "<group>"; };
 		B35181A924195CAC007CA8F1 /* connector_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_models.proto; sourceTree = "<group>"; };
 		B35181AA24195CAD007CA8F1 /* node_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = node_models.proto; sourceTree = "<group>"; };
-		B35181B224196689007CA8F1 /* common_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = common_models.proto; sourceTree = "<group>"; };
-		B35181B624196898007CA8F1 /* connector_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.pb.swift; sourceTree = "<group>"; };
-		B35181B724196898007CA8F1 /* connector_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.grpc.swift; sourceTree = "<group>"; };
 		B352433E24FFD59F0053A804 /* DateFormat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DateFormat.storyboard; sourceTree = "<group>"; };
 		B352434124FFDA080053A804 /* DateFormatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatTableViewCell.swift; sourceTree = "<group>"; };
 		B352434224FFDA080053A804 /* DateFormatViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DateFormatViewCell.xib; sourceTree = "<group>"; };
@@ -330,6 +327,9 @@
 		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
 		B36F2FC124DDAC620012FDCC /* DeleteCredential.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DeleteCredential.storyboard; sourceTree = "<group>"; };
 		B36F2FC324DDAFBE0012FDCC /* DeleteCredentialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteCredentialViewController.swift; sourceTree = "<group>"; };
+		B37FDA49253897F00024766B /* common_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = common_models.proto; sourceTree = "<group>"; };
+		B37FDB1425389CD40024766B /* connector_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.pb.swift; sourceTree = "<group>"; };
+		B37FDB1525389CD40024766B /* connector_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.grpc.swift; sourceTree = "<group>"; };
 		B38D944924AE53430053CE36 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
 		B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RestoreAccount.storyboard; sourceTree = "<group>"; };
@@ -887,9 +887,9 @@
 		EE7D49BE2366B5A7007C31A8 /* protobuf */ = {
 			isa = PBXGroup;
 			children = (
-				B35181B224196689007CA8F1 /* common_models.proto */,
-				B35181B624196898007CA8F1 /* connector_api.pb.swift */,
-				B35181B724196898007CA8F1 /* connector_api.grpc.swift */,
+				B37FDB1525389CD40024766B /* connector_api.grpc.swift */,
+				B37FDB1425389CD40024766B /* connector_api.pb.swift */,
+				B37FDA49253897F00024766B /* common_models.proto */,
 				B35181A824195CAC007CA8F1 /* connector_api.proto */,
 				B35181A924195CAC007CA8F1 /* connector_models.proto */,
 				B35181AA24195CAD007CA8F1 /* node_models.proto */,
@@ -1840,6 +1840,7 @@
 				EE7D4C402366B9C4007C31A8 /* String+Extensions.swift in Sources */,
 				B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */,
 				EE7D4C272366B9C4007C31A8 /* LoggedUser.swift in Sources */,
+				B37FDB1625389CD40024766B /* connector_api.pb.swift in Sources */,
 				EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */,
 				B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */,
 				EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */,
@@ -1889,7 +1890,6 @@
 				EE7D4CCD2367368D007C31A8 /* ViewUtils.swift in Sources */,
 				EE7D4C022366B9C4007C31A8 /* BaseNavigationController.swift in Sources */,
 				EE7D4CF823673C39007C31A8 /* UIApplication+Extensions.swift in Sources */,
-				B35181BB24196898007CA8F1 /* connector_api.grpc.swift in Sources */,
 				EE71856023839E6A00C58F62 /* CommonViewCell.swift in Sources */,
 				B32A7B72243288A500B52586 /* ConnectionProofRequestViewController.swift in Sources */,
 				EE22F1EA23A486FA003C4F87 /* wallet.pb.swift in Sources */,
@@ -1959,6 +1959,7 @@
 				B3A3E32A24D0972500DEA1EE /* RestoreAccountPresenter.swift in Sources */,
 				EE7D4D29236F8DE9007C31A8 /* ListingEmptyViewCell.swift in Sources */,
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
+				B37FDA4A253897F00024766B /* common_models.proto in Sources */,
 				EE7D4CE423673C39007C31A8 /* Locale+Extensions.swift in Sources */,
 				EE8FD4E823726A5F00EFF62E /* WalletViewController.swift in Sources */,
 				EE7D4D0F23693596007C31A8 /* ConnectionsPresenter.swift in Sources */,
@@ -1978,7 +1979,6 @@
 				B3491BFB251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift in Sources */,
 				B38D944A24AE53440053CE36 /* Reachability.swift in Sources */,
 				B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */,
-				B35181B324196689007CA8F1 /* common_models.proto in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
 				B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */,
 				B3A98F5724EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift in Sources */,
@@ -1987,7 +1987,6 @@
 				EE7D4C6F2366B9C4007C31A8 /* SharedMemoryHelper.swift in Sources */,
 				B30255012449E33D00C8E9C0 /* NotificationsViewController.swift in Sources */,
 				EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */,
-				B35181BA24196898007CA8F1 /* connector_api.pb.swift in Sources */,
 				EE8FD4E623726A5500EFF62E /* WalletPresenter.swift in Sources */,
 				B309C16A24BF5CD600AF70DF /* Contact+CoreDataProperties.swift in Sources */,
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
@@ -1997,6 +1996,7 @@
 				EE48AC0D2377542600C0A441 /* RegisterPresenter.swift in Sources */,
 				EEEFB91023ADBAE2005BA755 /* CredentialsDtos.swift in Sources */,
 				EE7185692384D09800C58F62 /* ProfileViewCell.swift in Sources */,
+				B37FDB1725389CD40024766B /* connector_api.grpc.swift in Sources */,
 				EE7D49D22366B697007C31A8 /* Common.swift in Sources */,
 				EE7D4CED23673C39007C31A8 /* UIView+Extensions2.swift in Sources */,
 				EE8CD818237CFDB700614578 /* InformationView.swift in Sources */,
@@ -2192,7 +2192,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 85;
+				CURRENT_PROJECT_VERSION = 86;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2218,7 +2218,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 85;
+				CURRENT_PROJECT_VERSION = 86;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

@@ -65,7 +65,7 @@ class ContactDAO: BaseDAO {
     }
 
     @discardableResult
-    func createContact(connectionInfo: Io_Iohk_Prism_Protos_ConnectionInfo, keyPath: String) -> Contact? {
+    func createContact(connectionInfo: Io_Iohk_Atala_Prism_Protos_ConnectionInfo, keyPath: String) -> Contact? {
         if connectionInfo.hasParticipantInfo {
             // Issuers
             if connectionInfo.participantInfo.issuer.name.count > 0 {

@@ -30,7 +30,7 @@ class ConnectionBase: Mappable {
 
 class ConnectionMaker {
 
-    static func build(_ item: Io_Iohk_Prism_Protos_ConnectionInfo) -> ConnectionBase? {
+    static func build(_ item: Io_Iohk_Atala_Prism_Protos_ConnectionInfo) -> ConnectionBase? {
 
         if item.hasParticipantInfo {
             let res = build(item.participantInfo)
@@ -41,7 +41,7 @@ class ConnectionMaker {
         return nil
     }
 
-    static func build(_ item: Io_Iohk_Prism_Protos_ParticipantInfo) -> ConnectionBase? {
+    static func build(_ item: Io_Iohk_Atala_Prism_Protos_ParticipantInfo) -> ConnectionBase? {
 
         // Issuers
         if item.issuer.name.count > 0 {
@@ -64,7 +64,7 @@ class ConnectionMaker {
         return nil
     }
 
-    static func parseResponseList(_ responses: [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse])
+    static func parseResponseList(_ responses: [Io_Iohk_Atala_Prism_Protos_GetConnectionsPaginatedResponse])
         -> [ConnectionBase] {
 
         var connections: [ConnectionBase] = []
