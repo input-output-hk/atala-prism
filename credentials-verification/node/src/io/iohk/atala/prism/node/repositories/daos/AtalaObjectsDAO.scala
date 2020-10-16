@@ -1,41 +1,44 @@
 package io.iohk.atala.prism.node.repositories.daos
 
-import java.time.Instant
-
+import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.models.DoobieImplicits._
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.models.AtalaObject
 
 object AtalaObjectsDAO {
 
-  case class AtalaObjectCreateData(
-      objectId: SHA256Digest,
-      sequenceNumber: Int,
-      objectTimestamp: Instant,
-      byteContent: Option[Array[Byte]] = None,
-      transactionId: TransactionId,
-      ledger: Ledger
-  )
+  case class AtalaObjectCreateData(objectId: SHA256Digest, byteContent: Array[Byte])
+  case class AtalaObjectSetTransactionInfo(objectId: SHA256Digest, transactionInfo: TransactionInfo)
 
-  def insert(data: AtalaObjectCreateData): ConnectionIO[AtalaObject] = {
+  def insert(data: AtalaObjectCreateData): ConnectionIO[Unit] = {
     sql"""
-         |INSERT INTO atala_objects
-         |  (atala_object_id, sequence_number, object_timestamp, object_content, transaction_id, ledger)
-         |VALUES (${data.objectId}, ${data.sequenceNumber}, ${data.objectTimestamp}, ${data.byteContent},
-         |        ${data.transactionId}, ${data.ledger})
-         |RETURNING atala_object_id, object_timestamp, sequence_number, object_content, transaction_id, ledger,
-         |          processed
-       """.stripMargin.query[AtalaObject].unique
+         |INSERT INTO atala_objects (atala_object_id, object_content)
+         |VALUES (${data.objectId}, ${data.byteContent})
+       """.stripMargin.update.run.map(_ => ())
+  }
+
+  def setTransactionInfo(data: AtalaObjectSetTransactionInfo): ConnectionIO[Unit] = {
+    val transaction = data.transactionInfo
+    transaction.block match {
+      case Some(block) =>
+        sql"""
+             |INSERT INTO atala_object_txs (atala_object_id, ledger, block_number, block_index, block_timestamp, transaction_id)
+             |VALUES (${data.objectId}, ${transaction.ledger}, ${block.number}, ${block.index}, ${block.timestamp}, ${transaction.transactionId})
+           """.stripMargin.update.run.map(_ => ())
+      case _ => connection.raiseError(new IllegalArgumentException("Transaction has bo block"))
+    }
   }
 
   def get(objectId: SHA256Digest): ConnectionIO[Option[AtalaObject]] = {
     sql"""
-         |SELECT atala_object_id, object_timestamp, sequence_number, object_content, transaction_id, ledger, processed
-         |FROM atala_objects
-         |WHERE atala_object_id = $objectId
+         |SELECT obj.atala_object_id, obj.object_content, obj.processed,
+         |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+         |FROM atala_objects AS obj
+         |  LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
+         |WHERE obj.atala_object_id = $objectId
        """.stripMargin
       .query[AtalaObject]
       .option

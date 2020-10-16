@@ -6,13 +6,19 @@ import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Put, Read, Write}
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
+import doobie.util.{Get, Meta, Put, Read, Write}
+import io.iohk.atala.prism.crypto.{EC, ECConfig}
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.DoobieImplicits._
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix, KeyUsage}
+import io.iohk.atala.prism.node.models.{AtalaObject, CredentialId, DIDSuffix, KeyUsage}
 import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object daos {
-  implicit val pgKeyUsageMeta = pgEnumString[KeyUsage](
+
+  implicit val pgKeyUsageMeta: Meta[KeyUsage] = pgEnumString[KeyUsage](
     "KEY_USAGE",
     a => KeyUsage.withNameOption(a).getOrElse(throw InvalidEnum[KeyUsage](a)),
     _.entryName
@@ -94,4 +100,42 @@ package object daos {
 
   implicit val blockhashPut: Put[Blockhash] = Put[Array[Byte]].contramap(_.value.toArray)
 
+  implicit val sha256Meta: Meta[SHA256Digest] =
+    Meta[Array[Byte]].timap(value => SHA256Digest(value.toVector))(_.value.toArray)
+
+  implicit val atalaObjectRead: Read[AtalaObject] = {
+    Read[
+      (
+          SHA256Digest,
+          Option[Array[Byte]],
+          Boolean,
+          Option[TransactionId],
+          Option[Ledger],
+          Option[Int],
+          Option[Instant],
+          Option[Int]
+      )
+    ].map {
+      case (
+            objectId,
+            byteContent,
+            processed,
+            maybeTransactionId,
+            maybeLedger,
+            maybeBlockNumber,
+            maybeBlockTimestamp,
+            maybeBlockIndex
+          ) =>
+        AtalaObject(
+          objectId,
+          byteContent,
+          processed,
+          (maybeTransactionId, maybeLedger, maybeBlockNumber, maybeBlockTimestamp, maybeBlockIndex) match {
+            case (Some(transactionId), Some(ledger), Some(blockNumber), Some(blockTimestamp), Some(blockIndex)) =>
+              Some(TransactionInfo(transactionId, ledger, Some(BlockInfo(blockNumber, blockTimestamp, blockIndex))))
+            case _ => None
+          }
+        )
+    }
+  }
 }

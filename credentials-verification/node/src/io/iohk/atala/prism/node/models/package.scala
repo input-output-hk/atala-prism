@@ -1,12 +1,10 @@
 package io.iohk.atala.prism.node
 
-import java.time.Instant
-
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object models {
@@ -63,12 +61,12 @@ package object models {
 
   case class AtalaObject(
       objectId: SHA256Digest,
-      objectTimestamp: Instant,
-      blockIndex: Int,
+      // TODO: Remove Option as it is no longer possible
       byteContent: Option[Array[Byte]],
-      transactionId: TransactionId,
-      ledger: Ledger,
-      processed: Boolean
+      // Whether the object has been processed (e.g., DIDs were recognized and stored in DB)
+      processed: Boolean,
+      // Blockchain transaction the object was first found in
+      transaction: Option[TransactionInfo] = None
   )
 
   object nodeState {

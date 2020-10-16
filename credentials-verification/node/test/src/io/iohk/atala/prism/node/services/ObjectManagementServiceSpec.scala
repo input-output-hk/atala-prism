@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.node.services
 
+import java.time.Instant
+
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
@@ -73,42 +75,42 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
   "ObjectManagementService.publishAtalaOperation" should {
     "put block content onto the ledger when supported" in {
-      doReturn(Future.successful(())).when(ledger).publish(*)
+      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
-      objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
+      val transactionInfo =
+        objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
 
+      transactionInfo mustBe dummyTransactionInfo
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
-
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = atalaObject.block.blockContent.value
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
     }
 
     "put reference to block onto the ledger" in {
-      doReturn(Future.successful(())).when(ledger).publish(*)
+      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
       doReturn(false).when(ledger).supportsOnChainData
 
-      objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
+      val transactionInfo =
+        objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
 
+      transactionInfo mustBe dummyTransactionInfo
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
-
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = getBlockFromStorage(atalaObject)
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
     }
 
     "put many references onto the ledger" in {
-      doReturn(Future.successful(())).when(ledger).publish(*)
+      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
       doReturn(false).when(ledger).supportsOnChainData
 
-      Future
-        .traverse(exampleSignedOperations) { signedOp =>
-          objectManagementService.publishAtalaOperation(signedOp)
-        }
-        .futureValue
+      exampleSignedOperations.foreach { signedOp =>
+        objectManagementService.publishAtalaOperation(signedOp).futureValue
+      }
 
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger, times(exampleOperations.size)).publish(atalaObjectCaptor)
@@ -121,29 +123,44 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   }
 
   "ObjectManagementService.saveObject" should {
-    "add object to the database" in {
+    "add object to the database when nonexistent (unpublished)" in {
       doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      val obj = createExampleObject(exampleBlock())
 
-      val block = exampleBlock()
-      val obj = createExampleObject(block)
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val atalaObject = queryAtalaObject(obj)
-      atalaObject.blockIndex mustBe 1
+      atalaObject.transaction.value mustBe dummyTransactionInfo
       // TODO: Once processing is async, test the object is not processed
     }
 
-    "be idempotent - ignore re-adding the same hash" in {
+    "update object to the database when existing without transaction info (published but not confirmed)" in {
       doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
-
-      val block = exampleBlock()
-      val obj = createExampleObject(block)
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+      val obj = createExampleObject(exampleBlock(signedOperation))
+      objectManagementService.publishAtalaOperation(signedOperation)
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val atalaObject = queryAtalaObject(obj)
-      atalaObject.blockIndex mustBe 1
+      atalaObject.transaction.value mustBe dummyTransactionInfo
+      // TODO: Once processing is async, test the object is not processed
+    }
+
+    "not update the object when existing with transaction info (confirmed)" in {
+      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      val obj = createExampleObject(exampleBlock())
+
+      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      val dummyTransactionInfo2 = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = Ledger.InMemory,
+        block = Some(BlockInfo(number = 100, timestamp = Instant.now, index = 100))
+      )
+      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo2)).futureValue
+
+      val atalaObject = queryAtalaObject(obj)
+      atalaObject.transaction.value mustBe dummyTransactionInfo
       // TODO: Once processing is async, test the object is not processed
     }
 
@@ -165,7 +182,6 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       verifyNoMoreInteractions(blockProcessing)
 
       val atalaObject = queryAtalaObject(obj)
-      atalaObject.blockIndex mustBe 1
       atalaObject.processed mustBe true
     }
 
@@ -181,7 +197,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
         val atalaObject = queryAtalaObject(obj)
-        atalaObject.blockIndex mustBe dummyABSequenceNumber
+        atalaObject.transaction.value mustBe dummyTransactionInfo
         atalaObject.processed mustBe true
         atalaObject.byteContent.isDefined mustBe true
 
