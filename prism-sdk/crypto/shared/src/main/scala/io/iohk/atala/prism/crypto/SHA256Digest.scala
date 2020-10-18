@@ -3,9 +3,9 @@ package io.iohk.atala.prism.crypto
 case class SHA256Digest(value: Vector[Byte]) {
   require(value.length == SHA256Digest.BYTE_LENGTH)
 
-  def hexValue: String = value.map(b => "%02x".format(b & 0xff)).mkString("")
+  def hexValue: String = ECUtils.bytesToHex(value.toArray)
 
-  override def toString(): String = s"SHA256Digest($hexValue)"
+  override def toString: String = s"SHA256Digest($hexValue)"
 }
 
 object SHA256Digest {

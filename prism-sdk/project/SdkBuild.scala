@@ -122,7 +122,7 @@ object SdkBuild {
         mdocVariables := Map(
           "VERSION" -> version.value
         ),
-        libraryDependencies ++= bouncyDependencies
+        libraryDependencies ++= bouncyDependencies :+ bitcoinj
       )
       .dependsOn(
         prismCrypto.jvm,
