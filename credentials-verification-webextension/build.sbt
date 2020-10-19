@@ -9,7 +9,7 @@ resolvers += Resolver.sonatypeRepo("releases")
 resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-name := "geud-wallet"
+name := "prism-wallet"
 version := "0.1"
 scalaVersion := "2.12.10"
 scalacOptions ++= Seq(

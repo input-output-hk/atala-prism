@@ -35,11 +35,16 @@ object Main {
 
   @JSExportTopLevel("runOnBackground")
   def runOnBackground(): Unit = {
+    logVersionInfo()
     background.Runner(config).run()
   }
 
   @JSExportTopLevel("runOnPopup")
   def runOnPopup(): Unit = {
     popup.Runner(config).run()
+  }
+
+  private def logVersionInfo(): Unit = {
+    org.scalajs.dom.console.log(s"Prism Wallet is running, $BuildInfo")
   }
 }
