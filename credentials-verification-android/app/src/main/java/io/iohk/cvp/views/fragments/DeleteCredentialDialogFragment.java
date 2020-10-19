@@ -39,6 +39,7 @@ import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
 import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_ID_KEY;
 import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_TYPE_KEY;
 
+// TODO This needs its own [ViewModel]
 @NoArgsConstructor
 public class DeleteCredentialDialogFragment extends CvpDialogFragment<CredentialsViewModel> {
     private static final float DELETE_ALL_CONNECTIONS_DIALOG_WIDTH = 350;
@@ -101,7 +102,7 @@ public class DeleteCredentialDialogFragment extends CvpDialogFragment<Credential
 
     private void initObservers() {
         getViewModel().getDeleteCredentialLiveData().observe(getViewLifecycleOwner(), credentialDeleted -> {
-            if(credentialDeleted) {
+            if (credentialDeleted) {
                 onInputListener.credentialDeleted();
                 this.dismiss();
             }

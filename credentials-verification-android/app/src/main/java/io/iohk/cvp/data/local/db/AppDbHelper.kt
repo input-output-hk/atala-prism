@@ -36,6 +36,10 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
         return mAppDatabase.credentialDao().getAllCredentials()
     }
 
+    override fun allCredentials(): LiveData<List<Credential>> {
+        return mAppDatabase.credentialDao().all()
+    }
+
     override suspend fun getContactByConnectionId(connectionId: String): Contact? {
         return mAppDatabase.contactDao().getContactByConnectionId(connectionId)
     }

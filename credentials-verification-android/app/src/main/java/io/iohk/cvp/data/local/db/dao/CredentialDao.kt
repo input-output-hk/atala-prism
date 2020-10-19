@@ -1,5 +1,6 @@
 package io.iohk.cvp.data.local.db.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import io.iohk.cvp.data.local.db.model.Credential
 
@@ -13,6 +14,9 @@ interface CredentialDao {
 
     @Query("SELECT * FROM credential order by id asc")
     fun getAllCredentials(): List<Credential>
+
+    @Query("SELECT * FROM credential order by id asc")
+    fun all(): LiveData<List<Credential>>
 
     @Query("DELETE FROM credential")
     fun removeAllData()

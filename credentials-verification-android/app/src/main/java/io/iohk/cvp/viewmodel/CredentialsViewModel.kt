@@ -12,6 +12,10 @@ import kotlinx.coroutines.*
 import java.lang.Exception
 import javax.inject.Inject
 
+/*
+* TODO This ViewModel is being used by 3 independent views [CredentialDetailFragment], [DeleteCredentialDialogFragment],
+*  and [HomeFragment] it is necessary to split this into 3 independent ViewModel´s.
+**/
 class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : NewConnectionsViewModel(dataManager) {
 
     private val _credentials = MutableLiveData(AsyncTaskResult<List<Credential>>())

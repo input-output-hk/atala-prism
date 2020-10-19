@@ -93,6 +93,10 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         return mDbHelper.getAllCredentials()
     }
 
+    override fun allCredentials(): LiveData<List<Credential>> {
+        return mDbHelper.allCredentials()
+    }
+
     override suspend fun getContactByConnectionId(connectionId: String): Contact? {
         return mDbHelper.getContactByConnectionId(connectionId)
     }

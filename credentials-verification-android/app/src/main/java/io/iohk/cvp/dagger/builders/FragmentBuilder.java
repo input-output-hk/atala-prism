@@ -9,7 +9,7 @@ import io.iohk.cvp.dagger.modules.ContactsFragmentModule;
 import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.CredentialsViewModelModule;
 import io.iohk.cvp.dagger.modules.DeleteContactAlertDialogModule;
-import io.iohk.cvp.dagger.modules.HomeFragmentModule;
+import io.iohk.cvp.dagger.modules.MyCredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
 import io.iohk.cvp.dagger.modules.SettingsFragmentModule;
 import io.iohk.cvp.dagger.modules.ShareCredentialDialogModule;
@@ -27,7 +27,6 @@ import io.iohk.cvp.views.fragments.DeleteCredentialDialogFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
-import io.iohk.cvp.views.fragments.MyCredentialsFragment;
 import io.iohk.cvp.views.fragments.PaymentCongratsFragment;
 import io.iohk.cvp.views.fragments.PaymentFragment;
 import io.iohk.cvp.views.fragments.PaymentHistoryFragment;
@@ -39,6 +38,7 @@ import io.iohk.cvp.views.fragments.SecuritySettingsStep2Fragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
 import io.iohk.cvp.views.fragments.ShareProofRequestDialogFragment;
+import io.iohk.cvp.views.fragments.MyCredentialsFragment;
 import io.iohk.cvp.views.fragments.WalletFragment;
 import io.iohk.cvp.views.utils.ForegroundBackgroundListener;
 
@@ -48,8 +48,8 @@ public abstract class FragmentBuilder {
     @ContributesAndroidInjector
     abstract LargeDescriptionDialogFragment contributeLargeDescription();
 
-    @ContributesAndroidInjector(modules = HomeFragmentModule.class)
-    abstract MyCredentialsFragment contributeHomeFragment();
+    @ContributesAndroidInjector(modules = MyCredentialsFragmentModule.class)
+    abstract MyCredentialsFragment contributeMyCredentialsFragment();
 
     @ContributesAndroidInjector
     abstract ProfileFragment contributeProfileFragment();

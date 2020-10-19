@@ -8,10 +8,10 @@ import io.iohk.cvp.utils.ViewModelProviderFactory;
 import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
-import io.iohk.cvp.views.fragments.MyCredentialsFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.fragments.WalletFragment;
+import io.iohk.cvp.views.fragments.MyCredentialsFragment;
 
 @Module
 public class MainActivityModule {

@@ -28,6 +28,7 @@ import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// TODO This needs its own ViewModel
 @Setter
 @NoArgsConstructor
 public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> implements DeleteCredentialDialogFragment.OnDeleteCredential {
@@ -37,12 +38,10 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     private static final int DELETE_ALL_CONNECTIONS_REQUEST_CODE = 22;
 
-    @Setter
     private Credential credential;
 
     private CredentialDto credentialDto;
 
-    @Setter
     private Boolean credentialIsNew;
 
     @BindView(R.id.web_view)
@@ -147,5 +146,13 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     @Override
     public void credentialDeleted() {
         getFragmentManager().popBackStack();
+    }
+
+    public void setCredential(Credential credential) {
+        this.credential = credential;
+    }
+
+    public void setCredentialIsNew(Boolean credentialIsNew) {
+        this.credentialIsNew = credentialIsNew;
     }
 }

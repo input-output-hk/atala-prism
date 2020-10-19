@@ -44,6 +44,7 @@ import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// TODO This needs its own [ViewModel]
 @Setter
 @NoArgsConstructor
 public class HomeFragment extends CvpFragment<CredentialsViewModel> implements CredentialClickListener {
