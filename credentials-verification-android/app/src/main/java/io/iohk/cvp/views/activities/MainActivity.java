@@ -31,7 +31,6 @@ import javax.inject.Inject;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
-import io.iohk.atala.prism.crypto.DerivationPath;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.ErrorCode;
@@ -40,14 +39,17 @@ import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.ContactsFragment;
+import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.MyCredentialsFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
+import io.iohk.cvp.views.fragments.ShareProofRequestDialogFragment;
 import io.iohk.cvp.views.interfaces.ConnectionManageable;
 import io.iohk.cvp.views.interfaces.FirebaseEventLogger;
+import io.iohk.cvp.views.interfaces.MainActivityEventHandler;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
@@ -58,7 +60,7 @@ import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVIT
 import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
 import static io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption.CONTACTS;
 
-public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener, FirebaseEventLogger, ConnectionManageable {
+public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener, FirebaseEventLogger, ConnectionManageable, MainActivityEventHandler {
 
     public static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT";
 
@@ -155,7 +157,14 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                 changeFragment(contactsFragment);
             }
         });
-
+        // handle when exist a message with a proof requests
+        viewModel.getCredentialsRequests().observe(this, credentialsRequests -> {
+            if (!credentialsRequests.isEmpty()) {
+                // TODO this code only shows the dialog of the first message, it needs to fix this so that it can handle more than one
+                CvpDialogFragment dialog = ShareProofRequestDialogFragment.newInstance(credentialsRequests.get(0));
+                getNavigator().showDialogFragment(getSupportFragmentManager(), dialog, null);
+            }
+        });
         viewModel.checkIfHasConnectionsInitialScreen();
     }
 
@@ -222,7 +231,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         Fragment currentFragment = getCurrentFragment();
 
         if (currentFragment instanceof ContactsFragment && cvpFragment instanceof ContactsFragment) {
-            ((ContactsFragment) currentFragment).getViewModel().getAllMessages();
+            //((ContactsFragment) currentFragment).getViewModel().getAllMessages();
         } else {
             String transactionTag = isInitialScreen(currentFragment) ? INITIAL_TRANSACTION : null;
             navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG, transactionTag);
@@ -343,5 +352,23 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     protected void onStart() {
         super.onStart();
 
+    }
+
+
+    /*
+     * MainActivityEventHandler is a temporary solution that helps us to know when a new
+     * Contact / Connection has been added and thus request a messages synchronization.
+     * this will be discarded when there is a stream of events in the backend or we have
+     * the appropriate data repositories in this application.
+     */
+    @Override
+    public void handleEvent(MainActivityEvent event) {
+        if (event.equals(MainActivityEvent.NEW_CONTACT)) {
+            // navigate to contact TAB
+            onNavigation(CONTACTS);
+            bottomAppBar.setItemColors(CONTACTS);
+            // request for a message sync
+            viewModel.syncMessages();
+        }
     }
 }

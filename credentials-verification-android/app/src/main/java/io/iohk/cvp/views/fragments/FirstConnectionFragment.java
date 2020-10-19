@@ -1,6 +1,7 @@
 package io.iohk.cvp.views.fragments;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -17,10 +18,9 @@ import javax.inject.Inject;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
-import io.iohk.cvp.utils.ActivityUtils;
+import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
-import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
@@ -63,12 +63,6 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        registerTokenInfoObserver();
-    }
-
-    private void registerTokenInfoObserver() {
-        ActivityUtils.registerObserver((MainActivity) getActivity(),
-                viewModel);
     }
 
     private int getTitleId() {
@@ -119,8 +113,14 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY) {
+            if (resultCode == Activity.RESULT_OK && data.hasExtra(IntentDataConstants.QR_RESULT)) {
+                final String token = data.getStringExtra(IntentDataConstants.QR_RESULT);
+                AcceptConnectionDialogFragment.Companion.build(token).show(getActivity().getSupportFragmentManager(), null);
+            }
+            return;
+        }
         super.onActivityResult(requestCode, resultCode, data);
-        ActivityUtils.onQrcodeResult(requestCode, resultCode, viewModel, data);
     }
 
     @Override

@@ -35,8 +35,7 @@ class CheckableContactRecyclerViewAdapter(private val onSelectedContact: OnSelec
     override fun getItemCount(): Int {
         return checkableContacts.size
     }
-
-
+    
     /*
     * A ViewHolder Class for [CheckableContactRecyclerViewAdapter]
     * */

@@ -2,13 +2,13 @@ package io.iohk.cvp.dagger.builders;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
-import io.iohk.cvp.dagger.modules.AddConnectionsModule;
+import io.iohk.cvp.dagger.modules.AcceptConnectionDialogModule;
 import io.iohk.cvp.dagger.modules.ConnectionActivityModule;
-import io.iohk.cvp.dagger.modules.ConnectionsListFragmentModule;
 import io.iohk.cvp.dagger.modules.ConnectionsListableModule;
 import io.iohk.cvp.dagger.modules.ContactsFragmentModule;
 import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.CredentialsViewModelModule;
+import io.iohk.cvp.dagger.modules.DeleteContactAlertDialogModule;
 import io.iohk.cvp.dagger.modules.HomeFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
 import io.iohk.cvp.dagger.modules.SettingsFragmentModule;
@@ -19,10 +19,10 @@ import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
 import io.iohk.cvp.views.fragments.AddQrCodeDialogFragment;
 import io.iohk.cvp.views.fragments.AlreadyConnectedDialogFragment;
 import io.iohk.cvp.views.fragments.BackendIpFragment;
-import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.CredentialDetailFragment;
 import io.iohk.cvp.views.fragments.DeleteAllConnectionsDialogFragment;
+import io.iohk.cvp.views.fragments.DeleteContactAlertDialogFragment;
 import io.iohk.cvp.views.fragments.DeleteCredentialDialogFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
@@ -51,17 +51,11 @@ public abstract class FragmentBuilder {
     @ContributesAndroidInjector(modules = HomeFragmentModule.class)
     abstract MyCredentialsFragment contributeHomeFragment();
 
-    @ContributesAndroidInjector(modules = ContactsFragmentModule.class)
-    abstract ContactsFragment contributeContactsFragment();
-
     @ContributesAndroidInjector
     abstract ProfileFragment contributeProfileFragment();
 
     @ContributesAndroidInjector(modules = ConnectionActivityModule.class)
     abstract FirstConnectionFragment contributeConnectionFragment();
-
-    @ContributesAndroidInjector(modules = ConnectionsListFragmentModule.class)
-    abstract ConnectionsListFragment contributeConnectionsListFragment();
 
     @ContributesAndroidInjector(modules = CredentialsViewModelModule.class)
     abstract HomeFragment contributeConnectionsFragment();
@@ -71,6 +65,9 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector(modules = ShareCredentialDialogModule.class)
     abstract ShareCredentialDialogFragment contributeShareCredentialDialogFragment();
+
+    @ContributesAndroidInjector(modules = ContactsFragmentModule.class)
+    abstract ContactsFragment contributeContactsFragment();
 
     @ContributesAndroidInjector(modules = SettingsFragmentModule.class)
     abstract SettingsFragment contributeSettingsFragment();
@@ -87,8 +84,8 @@ public abstract class FragmentBuilder {
     @ContributesAndroidInjector(modules = PaymentsModule.class)
     abstract PaymentHistoryFragment contributePaymentHistoryFragment();
 
-    @ContributesAndroidInjector(modules = AddConnectionsModule.class)
-    abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragment();
+    @ContributesAndroidInjector(modules = AcceptConnectionDialogModule.class)
+    abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragmentRefactored();
 
     @ContributesAndroidInjector(modules = ConnectionsListableModule.class)
     abstract ShareProofRequestDialogFragment contributeShareProofRequestDialogFragment();
@@ -128,4 +125,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
     abstract DeleteCredentialDialogFragment deleteCredentialDialogFragment();
+
+    @ContributesAndroidInjector(modules = DeleteContactAlertDialogModule.class)
+    abstract DeleteContactAlertDialogFragment deleteContactDialogFragment();
 }

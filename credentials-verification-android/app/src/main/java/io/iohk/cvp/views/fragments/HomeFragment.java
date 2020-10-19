@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -29,8 +30,9 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.data.DataManager;
 import io.iohk.cvp.data.local.db.model.Credential;
 import io.iohk.cvp.grpc.AsyncTaskResult;
-import io.iohk.cvp.utils.ActivityUtils;
+import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
+import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
@@ -98,13 +100,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        registerTokenInfoObserver();
         initObservers();
-    }
-
-    private void registerTokenInfoObserver() {
-        ActivityUtils.registerObserver((MainActivity) getActivity(),
-                viewModel);
     }
 
     private void initObservers() {
@@ -185,7 +181,15 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> implements C
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY) {
+            if (resultCode == Activity.RESULT_OK && data.hasExtra(IntentDataConstants.QR_RESULT)) {
+                final String token = data.getStringExtra(IntentDataConstants.QR_RESULT);
+                // TODO momentary solution, the use of "safeArgs" will be implemented
+                AcceptConnectionDialogFragment dialog = AcceptConnectionDialogFragment.Companion.build(token);
+                dialog.show(requireActivity().getSupportFragmentManager(), null);
+            }
+            return;
+        }
         super.onActivityResult(requestCode, resultCode, data);
-        ActivityUtils.onQrcodeResult(requestCode, resultCode, viewModel, data);
     }
 }

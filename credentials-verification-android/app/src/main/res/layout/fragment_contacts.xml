@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:iohk="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="io.iohk.cvp.viewmodel.ContactsViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/search_text_input_layout"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="@dimen/activity_default_side_margin"
+            android:layout_marginStart="@dimen/activity_default_side_margin"
+            android:hint="@string/search_contacts"
+            app:layout_constraintTop_toBottomOf="@+id/label"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:maxLines="1"
+                android:id="@+id/search_edit_text"
+                android:text="@={viewModel.searchText}"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/contacts_recycler_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/search_text_input_layout" />
+
+        <include
+            android:layout_marginTop="16dp"
+            iohk:visible="@{viewModel.contacts.size() == 0 &amp;&amp; !viewModel.searchText.empty}"
+            layout="@layout/neo_include_no_results_found"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@+id/contacts_recycler_view"
+            app:layout_constraintStart_toStartOf="@+id/contacts_recycler_view"
+            app:layout_constraintEnd_toEndOf="@+id/contacts_recycler_view" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

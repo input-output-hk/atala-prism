@@ -1,11 +1,14 @@
 package io.iohk.cvp.data.local.db
 
+import androidx.lifecycle.LiveData
 import io.iohk.cvp.data.local.db.model.Contact
 import io.iohk.cvp.data.local.db.model.Credential
 
 interface DbHelper {
     suspend fun saveContact(contact: Contact): Long
     suspend fun getAllContacts(): List<Contact>
+    fun allContacts(): LiveData<List<Contact>>
+    suspend fun contactById(id: Int): Contact?
     suspend fun saveAllCredentials(credentialsList: List<Credential>)
     suspend fun updateContact(contact: Contact)
     suspend fun getAllCredentials(): List<Credential>

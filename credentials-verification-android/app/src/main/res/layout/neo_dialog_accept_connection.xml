@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:iohk="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="io.iohk.cvp.viewmodel.AcceptConnectionDialogViewModel" />
+    </data>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <ProgressBar
+            iohk:visible="@{viewModel.isLoading}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            iohk:visible="@{!viewModel.isLoading}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="26dp">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{viewModel.participantInfoResponse.alreadyAdded ? @string/you_have_already_connected : @string/connection_acept_title}"
+                android:layout_marginBottom="@dimen/bt_form_padding"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:id="@+id/info_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+
+                    android:id="@+id/participantName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="@{viewModel.participantName}"
+                    android:textColor="@color/black"
+                    android:textSize="18dp"
+                    android:textStyle="bold" />
+
+
+                <ImageView
+
+                    iohk:imageInBytes="@{viewModel.participantLogo}"
+                    iohk:failImage="@{@drawable/ic_conection_list}"
+                    android:id="@+id/participantLogo"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:srcCompat="@drawable/ic_conection_list" />
+            </LinearLayout>
+
+            <TextView
+                iohk:visible="@{viewModel.participantInfoResponse.alreadyAdded}"
+                android:id="@+id/body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:text="@string/please_reset_data" />
+
+            <FrameLayout
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/grey_2"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp" />
+
+            <LinearLayout
+                android:id="@+id/buttons_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    iohk:visible="@{!viewModel.participantInfoResponse.alreadyAdded}"
+                    android:onClick="@{(v)-> viewModel.decline()}"
+                    android:id="@+id/cancel_button"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/white"
+                    android:text="@string/cancel"
+                    android:textAllCaps="false"
+                    android:textColor="@color/colorPrimary"
+                    app:cornerRadius="32dp"
+                    app:strokeColor="@color/colorPrimary"
+                    app:strokeWidth="2dp" />
+
+                <Button
+                    iohk:visible="@{!viewModel.participantInfoResponse.alreadyAdded}"
+                    android:onClick="@{(v)-> viewModel.confirm()}"
+                    android:id="@+id/connect_button"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="@string/connection_acept_button"
+                    android:textAllCaps="false"
+                    app:cornerRadius="32dp" />
+
+                <Button
+                    iohk:visible="@{viewModel.participantInfoResponse.alreadyAdded}"
+                    android:id="@+id/ok_button"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="@string/ok"
+                    android:textAllCaps="false"
+                    app:cornerRadius="32dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

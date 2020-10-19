@@ -1,5 +1,6 @@
 package io.iohk.cvp.data.local.db.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import io.iohk.cvp.data.local.db.model.Contact
 
@@ -13,6 +14,12 @@ interface ContactDao {
 
     @Query("SELECT * FROM contact order by id asc")
     suspend fun getAll(): List<Contact>
+
+    @Query("SELECT * FROM contact order by id asc")
+    fun all(): LiveData<List<Contact>>
+
+    @Query("SELECT * from contact where id = :id LIMIT 1")
+    suspend fun contactById(id: Int): Contact?
 
     @Update
     suspend fun updateContact(contact: Contact?)

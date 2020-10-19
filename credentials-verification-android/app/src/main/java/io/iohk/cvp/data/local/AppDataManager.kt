@@ -1,5 +1,6 @@
 package io.iohk.cvp.data.local
 
+import androidx.lifecycle.LiveData
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.japi.ECKeyPair
 import io.iohk.cvp.data.DataManager
@@ -22,6 +23,14 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
 
     override suspend fun getAllContacts(): List<Contact> {
         return mDbHelper.getAllContacts()
+    }
+
+    override fun allContacts(): LiveData<List<Contact>> {
+        return mDbHelper.allContacts()
+    }
+
+    override suspend fun contactById(id: Int): Contact? {
+        return mDbHelper.contactById(id)
     }
 
     override suspend fun saveAllCredentials(credentialsList: List<Credential>) {

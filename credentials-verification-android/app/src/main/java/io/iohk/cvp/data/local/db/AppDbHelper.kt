@@ -1,5 +1,6 @@
 package io.iohk.cvp.data.local.db
 
+import androidx.lifecycle.LiveData
 import io.iohk.cvp.data.local.db.model.Contact
 import io.iohk.cvp.data.local.db.model.Credential
 import javax.inject.Inject
@@ -13,6 +14,14 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
 
     override suspend fun getAllContacts(): List<Contact> {
         return mAppDatabase.contactDao().getAll()
+    }
+
+    override fun allContacts(): LiveData<List<Contact>> {
+        return mAppDatabase.contactDao().all()
+    }
+
+    override suspend fun contactById(id: Int): Contact? {
+        return mAppDatabase.contactDao().contactById(id)
     }
 
     override suspend fun saveAllCredentials(credentialsList: List<Credential>) {
