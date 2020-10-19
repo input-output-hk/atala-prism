@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node
 import java.time.{LocalDateTime, ZoneOffset}
 import java.util.concurrent.TimeUnit
 
+import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
@@ -17,6 +18,7 @@ import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, DIDSuffix, K
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
+  IssueCredentialBatchOperationSpec,
   IssueCredentialOperationSpec,
   ParsingUtils,
   RevokeCredentialOperationSpec,
@@ -262,6 +264,46 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       val error = intercept[StatusRuntimeException] {
         service.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(operation))
+      }
+      error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
+    }
+  }
+
+  "NodeService.issueCredentialBatch" should {
+    "publish IssueCredentialBatch operation" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        IssueCredentialBatchOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
+
+      val response = service.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(operation))
+
+      val expectedBatchId =
+        SHA256Digest
+          .compute(
+            IssueCredentialBatchOperationSpec.exampleOperation.getIssueCredentialBatch.getCredentialBatchData.toByteArray
+          )
+          .hexValue
+
+      response.batchId mustBe expectedBatchId
+      response.transactionInfo.value mustEqual testTransactionInfoProto
+      verify(objectManagementService).publishAtalaOperation(operation)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "return error when provided operation is invalid" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        IssueCredentialBatchOperationSpec.exampleOperation
+          .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := ByteString.copyFrom("abc".getBytes)),
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      val error = intercept[StatusRuntimeException] {
+        service.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(operation))
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
     }

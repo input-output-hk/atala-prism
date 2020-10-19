@@ -4,13 +4,12 @@ import java.time.Instant
 
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
-import doobie.util.{Get, Put, Read, Write}
-import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import doobie.util.{Get, Meta, Put, Read, Write}
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.DoobieImplicits._
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{AtalaObject, CredentialId, DIDSuffix, KeyUsage}
@@ -29,6 +28,9 @@ package object daos {
 
   implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
   implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
+
+  implicit val credentialBatchIdMeta: Meta[CredentialBatchId] =
+    Meta[String].timap(CredentialBatchId.fromString(_).get)(_.id)
 
   implicit val didPublicKeyWrite: Write[DIDPublicKeyState] = {
     Write[

@@ -2,7 +2,9 @@ package io.iohk.atala.prism.node
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.operations.TimestampInfo
@@ -75,6 +77,15 @@ package object models {
         credentialId: CredentialId,
         issuerDIDSuffix: DIDSuffix,
         contentHash: SHA256Digest,
+        issuedOn: TimestampInfo,
+        revokedOn: Option[TimestampInfo] = None,
+        lastOperation: SHA256Digest
+    )
+
+    case class CredentialBatchState(
+        batchId: CredentialBatchId,
+        issuerDIDSuffix: DIDSuffix,
+        merkleRoot: MerkleRoot,
         issuedOn: TimestampInfo,
         revokedOn: Option[TimestampInfo] = None,
         lastOperation: SHA256Digest

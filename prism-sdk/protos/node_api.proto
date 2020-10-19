@@ -17,6 +17,8 @@ service NodeService {
 
     rpc IssueCredential(IssueCredentialRequest) returns (IssueCredentialResponse) {}
 
+    rpc IssueCredentialBatch(IssueCredentialBatchRequest) returns (IssueCredentialBatchResponse) {}
+
     rpc RevokeCredential(RevokeCredentialRequest) returns (RevokeCredentialResponse) {}
 
     rpc GetCredentialState(GetCredentialStateRequest) returns (GetCredentialStateResponse) {}
@@ -51,6 +53,14 @@ message IssueCredentialRequest {
 }
 message IssueCredentialResponse {
     string id = 1; // credential id
+    TransactionInfo transactionInfo = 2;
+}
+
+message IssueCredentialBatchRequest {
+    SignedAtalaOperation signed_operation = 1;
+}
+message IssueCredentialBatchResponse {
+    string batchId = 1; // id of the batch posted
     TransactionInfo transactionInfo = 2;
 }
 

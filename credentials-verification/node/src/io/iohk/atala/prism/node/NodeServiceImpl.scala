@@ -10,10 +10,17 @@ import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.cvp.BuildInfo
-import io.iohk.atala.prism.protos.{node_api, node_models}
-import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetCredentialStateResponse}
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_api.{
+  GetCredentialStateRequest,
+  GetCredentialStateResponse,
+  IssueCredentialBatchRequest,
+  IssueCredentialBatchResponse
+}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class NodeServiceImpl(
     didDataService: DIDDataService,
@@ -137,6 +144,22 @@ class NodeServiceImpl(
         Status.INVALID_ARGUMENT.withDescription(error.render).asRuntimeException()
       }.toTry
     }
+  }
+
+  override def issueCredentialBatch(request: IssueCredentialBatchRequest): Future[IssueCredentialBatchResponse] = {
+    val operationF = Future.fromTry {
+      Try {
+        request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
+      }
+    }
+
+    for {
+      operation <- operationF
+      parsedOp <- errorEitherToFuture(IssueCredentialBatchOperation.parseWithMockedTime(operation))
+      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+    } yield node_api
+      .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.id)
+      .withTransactionInfo(toTransactionInfo(transactionInfo))
   }
 }
 
