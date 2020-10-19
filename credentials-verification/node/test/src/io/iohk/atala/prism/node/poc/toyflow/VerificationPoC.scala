@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.poc.toyflow
 
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
@@ -16,8 +17,9 @@ import io.iohk.atala.prism.node.services.{
   ObjectManagementService
 }
 import io.iohk.atala.prism.node.{InMemoryAtalaReferenceLedger, NodeServiceImpl, objects}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 
@@ -26,7 +28,6 @@ import scala.concurrent.{Future, Promise}
 
 class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with BeforeAndAfterEach {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
-  implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   protected var serverName: String = _
   protected var serverHandle: Server = _
@@ -57,7 +58,12 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
 
     atalaReferenceLedger = new InMemoryAtalaReferenceLedger(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
-    objectManagementService = new ObjectManagementService(storage, atalaReferenceLedger, blockProcessingService)
+    objectManagementService = ObjectManagementService(
+      ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      storage,
+      atalaReferenceLedger,
+      blockProcessingService
+    )
     objectManagementServicePromise.success(objectManagementService)
 
     serverName = InProcessServerBuilder.generateName()
@@ -67,10 +73,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
       .directExecutor()
       .addService(
         node_api.NodeServiceGrpc
-          .bindService(
-            new NodeServiceImpl(didDataService, objectManagementService, credentialsService),
-            executionContext
-          )
+          .bindService(new NodeServiceImpl(didDataService, objectManagementService, credentialsService), ec)
       )
       .build()
       .start()

@@ -87,7 +87,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataService = new DIDDataService(new DIDDataRepository(xa))
     val credentialsService = new CredentialsService(new CredentialsRepository(xa))
-    val objectManagementService = new ObjectManagementService(storage, atalaReferenceLedger, blockProcessingService)
+
+    val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
+    val objectManagementService = ObjectManagementService(
+      ObjectManagementService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
+      storage,
+      atalaReferenceLedger,
+      blockProcessingService
+    )
     objectManagementServicePromise.success(objectManagementService)
 
     val nodeService = new NodeServiceImpl(didDataService, objectManagementService, credentialsService)

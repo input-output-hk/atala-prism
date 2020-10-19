@@ -105,6 +105,32 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
     }
   }
 
+  "updateStatus" should {
+    "update the status" in {
+      def getByStatus(status: AtalaObjectTransactionSubmissionStatus): List[AtalaObjectTransactionSubmission] = {
+        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status).runSync
+      }
+
+      insertAtalaObject(atalaObjectId, byteContent)
+      val pendingSubmission = AtalaObjectTransactionSubmission(
+        atalaObjectId,
+        ledger,
+        transactionId1,
+        submissionTimestamp,
+        AtalaObjectTransactionSubmissionStatus.Pending
+      )
+      AtalaObjectTransactionSubmissionsDAO.insert(pendingSubmission).runSync
+
+      AtalaObjectTransactionSubmissionsDAO
+        .updateStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
+        .runSync
+
+      getByStatus(AtalaObjectTransactionSubmissionStatus.InLedger) mustBe List(
+        pendingSubmission.copy(status = AtalaObjectTransactionSubmissionStatus.InLedger)
+      )
+    }
+  }
+
   private def insertAtalaObject(objectId: SHA256Digest, byteContent: Array[Byte]): Unit = {
     AtalaObjectsDAO
       .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))

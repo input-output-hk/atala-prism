@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
+import java.time.{Duration, Instant}
 
 import cats.effect.IO
 import com.google.protobuf.ByteString
@@ -9,7 +9,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
@@ -19,26 +19,30 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
+import io.iohk.atala.prism.node.services.ObjectManagementService.Config
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.atala.prism.protos.{node_internal, node_models}
+import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.concurrent.duration._
 
 private class AtalaObjectCannotBeModified extends Exception
 private class AtalaObjectAlreadyPublished extends Exception
 
-class ObjectManagementService(
+class ObjectManagementService private (
+    config: Config,
     storage: ObjectStorageService,
     atalaReferenceLedger: AtalaReferenceLedger,
     blockProcessing: BlockProcessingService
-)(implicit
-    xa: Transactor[IO],
-    ec: ExecutionContext
-) {
+)(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
+
+  // Schedule first run
+  scheduleRetryOldPendingTransactions(config.ledgerPendingTransactionSyncDelay)
 
   private def setObjectTransactionDetails(notification: AtalaObjectNotification): Future[Option[AtalaObject]] = {
     val objectBytes = notification.atalaObject.toByteArray
@@ -121,13 +125,23 @@ class ObjectManagementService(
       _ <- storage.put(blockHash.hexValue, blockBytes)
       _ <- storage.put(objHash.hexValue, objBytes)
       // Publish object to the blockchain
-      transactionInfo <- atalaReferenceLedger.publish(obj)
+      transactionInfo <- publishAndRecordTransaction(objHash, obj)
+    } yield transactionInfo
+  }
+
+  private def publishAndRecordTransaction(
+      atalaObjectId: SHA256Digest,
+      atalaObject: node_internal.AtalaObject
+  ): Future[TransactionInfo] = {
+    for {
+      // Publish object to the blockchain
+      transactionInfo <- atalaReferenceLedger.publish(atalaObject)
       // Store transaction submission
       _ <-
         AtalaObjectTransactionSubmissionsDAO
           .insert(
             AtalaObjectTransactionSubmission(
-              objHash,
+              atalaObjectId,
               transactionInfo.ledger,
               transactionInfo.transactionId,
               Instant.now,
@@ -176,5 +190,97 @@ class ObjectManagementService(
       wasProcessed <- blockProcess
       _ <- AtalaObjectsDAO.setProcessed(obj.objectId)
     } yield wasProcessed
+  }
+
+  private def scheduleRetryOldPendingTransactions(delay: FiniteDuration): Unit = {
+    scheduler.scheduleOnce(delay) {
+      // Ensure run is scheduled after completion, even if current run fails
+      retryOldPendingTransactions()
+        .recover {
+          case e =>
+            logger.error(s"Could not retry old pending transactions", e)
+            false
+        }
+        .onComplete { _ =>
+          scheduleRetryOldPendingTransactions(config.ledgerPendingTransactionSyncDelay)
+        }
+    }
+    ()
+  }
+
+  private[services] def retryOldPendingTransactions(): Future[Unit] = {
+    for {
+      // Query old pending transactions
+      pendingTransactions <-
+        AtalaObjectTransactionSubmissionsDAO
+          .getBy(
+            olderThan = Instant.now.minus(config.ledgerPendingTransactionTimeout),
+            status = AtalaObjectTransactionSubmissionStatus.Pending
+          )
+          .transact(xa)
+          .unsafeToFuture
+      // Process each pending transaction
+      _ <- Future.traverse(pendingTransactions) { retryTransactionIfPending }
+    } yield ()
+  }
+
+  private def retryTransactionIfPending(transaction: AtalaObjectTransactionSubmission): Future[Unit] = {
+    for {
+      // Get current status
+      transactionDetails <- atalaReferenceLedger.getTransactionDetails(transaction.transactionId)
+      _ <- {
+        transactionDetails.status match {
+          // Transaction made it to the ledger, simply update status so it does not retry
+          case TransactionStatus.InLedger =>
+            AtalaObjectTransactionSubmissionsDAO
+              .updateStatus(transaction.atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
+              .transact(xa)
+              .unsafeToFuture()
+
+          // Transaction is still pending, so it needs to be retried
+          case TransactionStatus.Pending => retryTransaction(transaction)
+        }
+      }
+    } yield ()
+  }
+
+  private def retryTransaction(transaction: AtalaObjectTransactionSubmission): Future[Unit] = {
+    for {
+      // Delete transaction submission and record its status in the DB
+      _ <- atalaReferenceLedger.deleteTransaction(transaction.transactionId)
+      _ <-
+        AtalaObjectTransactionSubmissionsDAO
+          .updateStatus(transaction.atalaObjectId, AtalaObjectTransactionSubmissionStatus.Deleted)
+          .transact(xa)
+          .unsafeToFuture()
+      // Retrieve and parse object from the DB
+      maybeAtalaObject <- AtalaObjectsDAO.get(transaction.atalaObjectId).transact(xa).unsafeToFuture
+      atalaObject =
+        maybeAtalaObject
+          .flatMap(_.byteContent)
+          .map(node_internal.AtalaObject.validate)
+          .flatMap(_.toOption)
+          .getOrElse(
+            throw new RuntimeException(s"Byte contents of object ${transaction.atalaObjectId} could not be parsed")
+          )
+      // Publish object to the blockchain again
+      _ <- publishAndRecordTransaction(transaction.atalaObjectId, atalaObject)
+    } yield ()
+  }
+}
+
+object ObjectManagementService {
+  case class Config(
+      ledgerPendingTransactionTimeout: Duration,
+      ledgerPendingTransactionSyncDelay: FiniteDuration = 20.seconds
+  )
+
+  def apply(
+      config: Config,
+      storage: ObjectStorageService,
+      atalaReferenceLedger: AtalaReferenceLedger,
+      blockProcessing: BlockProcessingService
+  )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
+    new ObjectManagementService(config, storage, atalaReferenceLedger, blockProcessing)
   }
 }

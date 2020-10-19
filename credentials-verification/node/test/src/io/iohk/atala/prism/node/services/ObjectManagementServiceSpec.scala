@@ -6,7 +6,14 @@ import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{
+  BlockInfo,
+  Ledger,
+  TransactionDetails,
+  TransactionId,
+  TransactionInfo,
+  TransactionStatus
+}
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectTransactionSubmission,
@@ -18,6 +25,7 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{AtalaReferenceLedger, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
@@ -58,7 +66,13 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   private val ledger: AtalaReferenceLedger = mock[AtalaReferenceLedger]
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
-  private lazy val objectManagementService = new ObjectManagementService(storage, ledger, blockProcessing)
+  private lazy val objectManagementService =
+    ObjectManagementService(
+      ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      storage,
+      ledger,
+      blockProcessing
+    )
 
   private val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
   private val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
@@ -113,13 +127,19 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = getBlockFromStorage(atalaObject)
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
+      // Verify transaction submission
+      val transactionSubmissions = queryPendingTransactionSubmissions()
+      transactionSubmissions.size mustBe 1
+      val transactionSubmission = transactionSubmissions.head
+      transactionSubmission.ledger mustBe transactionInfo.ledger
+      transactionSubmission.transactionId mustBe transactionInfo.transactionId
     }
   }
 
   "ObjectManagementService.saveObject" should {
     "add object to the database when nonexistent (unpublished)" in {
       doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
-      val obj = createExampleObject(exampleBlock())
+      val obj = createAtalaObject()
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
@@ -131,7 +151,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "update object to the database when existing without transaction info (published but not confirmed)" in {
       doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-      val obj = createExampleObject(exampleBlock(signedOperation))
+      val obj = createAtalaObject(createBlock(signedOperation))
       objectManagementService.publishAtalaOperation(signedOperation)
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
@@ -143,7 +163,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
     "not update the object when existing with transaction info (confirmed)" in {
       doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
-      val obj = createExampleObject(exampleBlock())
+      val obj = createAtalaObject()
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
       val dummyTransactionInfo2 = TransactionInfo(
@@ -161,8 +181,8 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "process the block" in {
       doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
 
-      val block = exampleBlock()
-      val obj = createExampleObject(block)
+      val block = createBlock()
+      val obj = createAtalaObject(block)
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
@@ -185,8 +205,8 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val blocks = for ((signedOp, i) <- exampleSignedOperations.zipWithIndex) yield {
         val includeBlock = (i & 1) == 1
 
-        val block = exampleBlock(signedOp)
-        val obj = createExampleAtalaObject(block, includeBlock)
+        val block = createBlock(signedOp)
+        val obj = createAtalaObject(block, includeBlock)
 
         objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
@@ -207,7 +227,109 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObject = {
-      AtalaObjectsDAO.get(SHA256Digest.compute(obj.toByteArray)).transact(database).unsafeRunSync().value
+      AtalaObjectsDAO.get(getObjectId(obj)).transact(database).unsafeRunSync().value
+    }
+  }
+
+  "retryOldPendingTransactions" should {
+    val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+    val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
+    val atalaObjectId = getObjectId(atalaObject)
+
+    def mockTransactionStatus(transactionId: TransactionId, status: TransactionStatus): Unit = {
+      doReturn(Future.successful(TransactionDetails(transactionId, status)))
+        .when(ledger)
+        .getTransactionDetails(transactionId)
+      ()
+    }
+
+    def setAtalaObjectTransactionSubmissionStatus(
+        atalaObjectId: SHA256Digest,
+        status: AtalaObjectTransactionSubmissionStatus
+    ): Unit = {
+      AtalaObjectTransactionSubmissionsDAO
+        .updateStatus(atalaObjectId, status)
+        .transact(database)
+        .unsafeRunSync()
+      ()
+    }
+
+    "ignore in-ledger transactions" in {
+      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+      // Publish once and update status
+      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      setAtalaObjectTransactionSubmissionStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
+
+      objectManagementService.retryOldPendingTransactions().futureValue
+
+      // It should have published only once
+      verify(ledger).publish(atalaObject)
+    }
+
+    "ignore deleted transactions" in {
+      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      setAtalaObjectTransactionSubmissionStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.Deleted)
+
+      objectManagementService.retryOldPendingTransactions().futureValue
+
+      // It should have published only once
+      verify(ledger).publish(atalaObject)
+    }
+
+    "retry old pending transactions" in {
+      val dummyTransactionId2 = TransactionId.from(SHA256Digest.compute("id2".getBytes).value).value
+      val dummyTransactionInfo2 = dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
+      // Return dummyTransactionInfo and then dummyTransactionInfo2
+      doReturn(Future.successful(dummyTransactionInfo), Future.successful(dummyTransactionInfo2))
+        .when(ledger)
+        .publish(*)
+      doReturn(Future.unit).when(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
+      doReturn(true).when(ledger).supportsOnChainData
+      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
+
+      objectManagementService.retryOldPendingTransactions().futureValue
+
+      // It should have published twice and deleted the first one
+      verify(ledger, times(2)).publish(atalaObject)
+      verify(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
+    }
+
+    "not retry new pending transactions" in {
+      // Use a service that does have a 10-minute timeout for pending transactions
+      val objectManagementService =
+        ObjectManagementService(
+          ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ofMinutes(10)),
+          storage,
+          ledger,
+          blockProcessing
+        )
+      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
+
+      objectManagementService.retryOldPendingTransactions().futureValue
+
+      // It should have published only once
+      verify(ledger).publish(atalaObject)
+      verify(ledger, never).deleteTransaction(dummyTransactionInfo.transactionId)
+    }
+
+    "not retry in-ledger transactions" in {
+      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.InLedger)
+
+      objectManagementService.retryOldPendingTransactions().futureValue
+
+      // It should have published only once
+      verify(ledger).publish(atalaObject)
+      verify(ledger, never).deleteTransaction(dummyTransactionInfo.transactionId)
     }
   }
 
@@ -225,7 +347,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     node_internal.AtalaBlock.parseFrom(atalaBlockData)
   }
 
-  protected def exampleBlock(
+  protected def createBlock(
       signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
   ): node_internal.AtalaBlock = {
     node_internal.AtalaBlock(version = "1.0", operations = Seq(signedOperation))
@@ -238,40 +360,25 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     blockHash
   }
 
-  protected def storeObject(atalaObject: node_internal.AtalaObject): Unit = {
-    val objectBytes = atalaObject.toByteArray
-    val objectHash = SHA256Digest.compute(objectBytes)
-    storage.put(objectHash.hexValue, objectBytes).futureValue
-  }
-
-  protected def createExampleObject(block: node_internal.AtalaBlock): node_internal.AtalaObject = {
-    val blockBytes = block.toByteArray
-    val blockHash = storeBlock(block)
-
-    val atalaObject = node_internal.AtalaObject(
-      1,
-      blockBytes.length,
-      node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray))
-    )
-    storeObject(atalaObject)
-    atalaObject
-  }
-
-  protected def createExampleAtalaObject(
-      block: node_internal.AtalaBlock,
-      includeBlock: Boolean
+  protected def createAtalaObject(
+      block: node_internal.AtalaBlock = createBlock(),
+      includeBlock: Boolean = true
   ): node_internal.AtalaObject = {
-    val blockBytes = block.toByteArray
-
     if (includeBlock) {
-      node_internal.AtalaObject(1, blockBytes.length, node_internal.AtalaObject.Block.BlockContent(block))
+      node_internal.AtalaObject(
+        block = node_internal.AtalaObject.Block.BlockContent(block),
+        blockOperationCount = 1
+      )
     } else {
       val blockHash = storeBlock(block)
       node_internal.AtalaObject(
-        1,
-        blockBytes.length,
-        node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray))
+        block = node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray)),
+        blockOperationCount = 1
       )
     }
+  }
+
+  private def getObjectId(obj: node_internal.AtalaObject): SHA256Digest = {
+    SHA256Digest.compute(obj.toByteArray)
   }
 }
