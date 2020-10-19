@@ -5,14 +5,19 @@ import java.time.Instant
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Meta, Put, Read, Write}
-import io.iohk.atala.prism.crypto.{EC, ECConfig}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{EC, ECConfig, SHA256Digest}
 import io.iohk.atala.prism.models.DoobieImplicits._
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{AtalaObject, CredentialId, DIDSuffix, KeyUsage}
+import io.iohk.atala.prism.node.models.{
+  AtalaObject,
+  AtalaObjectTransactionSubmissionStatus,
+  CredentialId,
+  DIDSuffix,
+  KeyUsage
+}
 import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object daos {
@@ -22,6 +27,16 @@ package object daos {
     a => KeyUsage.withNameOption(a).getOrElse(throw InvalidEnum[KeyUsage](a)),
     _.entryName
   )
+
+  implicit val pgAtalaObjectTransactionStatusMeta: Meta[AtalaObjectTransactionSubmissionStatus] =
+    pgEnumString[AtalaObjectTransactionSubmissionStatus](
+      "ATALA_OBJECT_TRANSACTION_STATUS",
+      a =>
+        AtalaObjectTransactionSubmissionStatus
+          .withNameOption(a)
+          .getOrElse(throw InvalidEnum[AtalaObjectTransactionSubmissionStatus](a)),
+      _.entryName
+    )
 
   implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.suffix)
   implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix(_))

@@ -1,20 +1,23 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
+import java.time.{Duration, Instant}
 
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.AtalaObject
+import io.iohk.atala.prism.node.models.{
+  AtalaObject,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus
+}
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
-import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
+import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{AtalaReferenceLedger, objects}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
@@ -82,11 +85,18 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
 
       transactionInfo mustBe dummyTransactionInfo
+      // Verify published AtalaObject
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = atalaObject.block.blockContent.value
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
+      // Verify transaction submission
+      val transactionSubmissions = queryPendingTransactionSubmissions()
+      transactionSubmissions.size mustBe 1
+      val transactionSubmission = transactionSubmissions.head
+      transactionSubmission.ledger mustBe transactionInfo.ledger
+      transactionSubmission.transactionId mustBe transactionInfo.transactionId
     }
 
     "put reference to block onto the ledger" in {
@@ -97,28 +107,12 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
 
       transactionInfo mustBe dummyTransactionInfo
+      // Verify published AtalaObject
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = getBlockFromStorage(atalaObject)
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
-    }
-
-    "put many references onto the ledger" in {
-      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
-      doReturn(false).when(ledger).supportsOnChainData
-
-      exampleSignedOperations.foreach { signedOp =>
-        objectManagementService.publishAtalaOperation(signedOp).futureValue
-      }
-
-      val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
-      verify(ledger, times(exampleOperations.size)).publish(atalaObjectCaptor)
-
-      for ((signedOp, atalaObject) <- exampleSignedOperations zip atalaObjectCaptor.values) {
-        val atalaBlock = getBlockFromStorage(atalaObject)
-        atalaBlock.operations must contain theSameElementsAs Seq(signedOp)
-      }
     }
   }
 
@@ -215,6 +209,14 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObject = {
       AtalaObjectsDAO.get(SHA256Digest.compute(obj.toByteArray)).transact(database).unsafeRunSync().value
     }
+  }
+
+  private def queryPendingTransactionSubmissions(): List[AtalaObjectTransactionSubmission] = {
+    // Query into the future to return all of them
+    AtalaObjectTransactionSubmissionsDAO
+      .getBy(Instant.now.plus(Duration.ofSeconds(1)), AtalaObjectTransactionSubmissionStatus.Pending)
+      .transact(database)
+      .unsafeRunSync()
   }
 
   protected def getBlockFromStorage(atalaObject: node_internal.AtalaObject): node_internal.AtalaBlock = {

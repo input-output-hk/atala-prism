@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.node.services
 
+import java.time.Instant
+
 import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.free.connection
@@ -9,10 +11,14 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.AtalaReferenceLedger
-import io.iohk.atala.prism.node.models.AtalaObject
+import io.iohk.atala.prism.node.models.{
+  AtalaObject,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus
+}
 import io.iohk.atala.prism.node.objects.ObjectStorageService
-import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
+import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -109,14 +115,31 @@ class ObjectManagementService(
     } yield ()
 
     for {
+      // Insert object into DB
       _ <- insertObject.transact(xa).unsafeToFuture()
+      // Store object and block in off-chain storage
       _ <- storage.put(blockHash.hexValue, blockBytes)
       _ <- storage.put(objHash.hexValue, objBytes)
+      // Publish object to the blockchain
       transactionInfo <- atalaReferenceLedger.publish(obj)
+      // Store transaction submission
+      _ <-
+        AtalaObjectTransactionSubmissionsDAO
+          .insert(
+            AtalaObjectTransactionSubmission(
+              objHash,
+              transactionInfo.ledger,
+              transactionInfo.transactionId,
+              Instant.now,
+              AtalaObjectTransactionSubmissionStatus.Pending
+            )
+          )
+          .transact(xa)
+          .unsafeToFuture()
     } yield transactionInfo
   }
 
-  protected def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {
+  private def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {
     val byteContentFut = obj.byteContent match {
       case Some(content) => Future.successful(content)
       case None =>
@@ -129,7 +152,7 @@ class ObjectManagementService(
     byteContentFut.map(node_internal.AtalaObject.parseFrom)
   }
 
-  protected def getBlockFromObject(obj: node_internal.AtalaObject): Future[node_internal.AtalaBlock] = {
+  private def getBlockFromObject(obj: node_internal.AtalaObject): Future[node_internal.AtalaBlock] = {
     obj.block match {
       case node_internal.AtalaObject.Block.BlockContent(block) => Future.successful(block)
       case node_internal.AtalaObject.Block.BlockHash(hash) =>
@@ -142,7 +165,7 @@ class ObjectManagementService(
     }
   }
 
-  protected def processObject(obj: AtalaObject): Future[ConnectionIO[Boolean]] = {
+  private def processObject(obj: AtalaObject): Future[ConnectionIO[Boolean]] = {
     for {
       protobufObject <- getProtobufObject(obj)
       block <- getBlockFromObject(protobufObject)
