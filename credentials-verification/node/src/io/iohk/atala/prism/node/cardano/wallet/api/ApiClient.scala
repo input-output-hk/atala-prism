@@ -4,8 +4,8 @@ import com.softwaremill.sttp._
 import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
-import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionDetails, TransactionMetadata, WalletId}
+import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, Result}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient._

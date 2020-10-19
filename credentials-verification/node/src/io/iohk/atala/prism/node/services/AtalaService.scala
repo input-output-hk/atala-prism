@@ -3,15 +3,22 @@ package io.iohk.atala.prism.node.services
 import java.time.Instant
 
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionInfo}
+import io.iohk.atala.prism.models.{
+  BlockInfo,
+  Ledger,
+  TransactionDetails,
+  TransactionId,
+  TransactionInfo,
+  TransactionStatus
+}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
 import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
+import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.atala.prism.protos.node_internal
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -71,6 +78,16 @@ class AtalaServiceImpl(
           new RuntimeException(s"FATAL: Atala identifier is too long to store in bitcoin (${opDataBytes.length}")
         )
     }
+  }
+
+  override def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails] = {
+    // TODO: Implement, until then we will assume everything works as expected
+    Future.successful(TransactionDetails(transactionId, TransactionStatus.InLedger))
+  }
+
+  override def deleteTransaction(transactionId: TransactionId): Future[Unit] = {
+    // TODO: Implement once `getTransactionDetails` is implemented, until then it should not be called
+    Future.failed(new NotImplementedError)
   }
 
   def synchronizeBlock(blockhash: Blockhash): Result[Nothing, Unit] = {

@@ -1,16 +1,16 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
 import io.circe.Json
-import io.iohk.atala.prism.models.TransactionId
+import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import org.scalatest.EitherValues._
-import org.scalatest.matchers.must.Matchers._
 import org.scalatest.OptionValues._
-import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.ExecutionContext
 

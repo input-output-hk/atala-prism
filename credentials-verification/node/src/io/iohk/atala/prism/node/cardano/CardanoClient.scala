@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.cardano
 
-import io.iohk.atala.prism.models.TransactionId
+import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.cardano.CardanoClient.Result
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient

@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.node.cardano.models
+package io.iohk.atala.prism.models
 
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}

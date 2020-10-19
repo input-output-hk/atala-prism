@@ -3,7 +3,14 @@ package io.iohk.atala.prism.node
 import java.time.Instant
 
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{
+  BlockInfo,
+  Ledger,
+  TransactionDetails,
+  TransactionId,
+  TransactionInfo,
+  TransactionStatus
+}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
 
@@ -11,7 +18,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait AtalaReferenceLedger {
   def supportsOnChainData: Boolean
+
   def publish(obj: node_internal.AtalaObject): Future[TransactionInfo]
+
+  def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails]
+
+  def deleteTransaction(transactionId: TransactionId): Future[Unit]
 }
 
 class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
@@ -35,5 +47,14 @@ class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler
         AtalaObjectNotification(obj, transactionInfo)
       )
     } yield transactionInfo
+  }
+
+  override def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails] = {
+    // In-memory transactions are immediately in the ledger
+    Future.successful(TransactionDetails(transactionId, TransactionStatus.InLedger))
+  }
+
+  override def deleteTransaction(transactionId: TransactionId): Future[Unit] = {
+    Future.failed(new IllegalArgumentException("In-memory transactions cannot be deleted"))
   }
 }

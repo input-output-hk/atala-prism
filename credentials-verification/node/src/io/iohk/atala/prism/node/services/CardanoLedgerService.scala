@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.node.services
 
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionInfo}
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionDetails, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.utils.FutureEither
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
@@ -62,6 +62,18 @@ class CardanoLedgerService private[services] (
           logger.error(s"FATAL: Error while publishing reference: $error")
           throw new RuntimeException(s"FATAL: Error while publishing reference: $error")
       }
+  }
+
+  override def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails] = {
+    cardanoClient
+      .getTransaction(walletId, transactionId)
+      .toFuture(_ => new RuntimeException(s"Could not get transaction $transactionId"))
+  }
+
+  override def deleteTransaction(transactionId: TransactionId): Future[Unit] = {
+    cardanoClient
+      .deleteTransaction(walletId, transactionId)
+      .toFuture(_ => new RuntimeException(s"Could not delete transaction $transactionId"))
   }
 
   private def scheduleSync(delay: FiniteDuration): Unit = {

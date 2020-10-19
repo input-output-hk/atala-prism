@@ -1,7 +1,14 @@
 package io.iohk.atala.prism.node.services
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionInfo}
+import io.iohk.atala.prism.models.{
+  BlockInfo,
+  Ledger,
+  TransactionDetails,
+  TransactionId,
+  TransactionInfo,
+  TransactionStatus
+}
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
@@ -11,10 +18,10 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
-import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -76,6 +83,60 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
       }
 
       error.getCause.getMessage must be("FATAL: Error while publishing reference: InvalidTransaction")
+    }
+  }
+
+  "getTransactionDetails" should {
+    val transactionId = TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+    val expectedWalletApiPath = s"v2/wallets/$walletId/transactions/$transactionId"
+
+    "get the transaction details" in {
+      val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success(
+        expectedWalletApiPath,
+        "",
+        readResource("getTransaction_success_cardanoWalletApiResponse.json")
+      )
+      val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
+
+      val transactionDetails = cardanoLedgerService.getTransactionDetails(transactionId).futureValue
+
+      transactionDetails must be(TransactionDetails(transactionId, TransactionStatus.InLedger))
+    }
+
+    "fail to get the transaction details when the wallet fails" in {
+      val cardanoWalletApiClient =
+        FakeCardanoWalletApiClient.Fail(expectedWalletApiPath, "", "internal", "Internal error")
+      val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
+
+      val error = intercept[RuntimeException] {
+        cardanoLedgerService.getTransactionDetails(transactionId).futureValue
+      }
+
+      error.getCause.getMessage must be(s"Could not get transaction $transactionId")
+    }
+  }
+
+  "deleteTransaction" should {
+    val transactionId = TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+    val expectedWalletApiPath = s"v2/wallets/$walletId/transactions/$transactionId"
+
+    "delete a transaction" in {
+      val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success(expectedWalletApiPath, "", "")
+      val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
+
+      cardanoLedgerService.deleteTransaction(transactionId).futureValue
+    }
+
+    "fail to delete a transaction when the wallet fails" in {
+      val cardanoWalletApiClient =
+        FakeCardanoWalletApiClient.Fail(expectedWalletApiPath, "", "internal", "Internal error")
+      val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
+
+      val error = intercept[RuntimeException] {
+        cardanoLedgerService.deleteTransaction(transactionId).futureValue
+      }
+
+      error.getCause.getMessage must be(s"Could not delete transaction $transactionId")
     }
   }
 

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
-import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionDetails, TransactionMetadata, WalletId}
+import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import io.iohk.atala.prism.utils.FutureEither
 
