@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.viewmodel.DeleteContactAlertDialogViewModel" />
+            type="io.iohk.atala.prism.app.viewmodel.DeleteContactAlertDialogViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"

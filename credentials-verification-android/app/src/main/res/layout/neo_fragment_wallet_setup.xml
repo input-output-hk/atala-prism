@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.neo.ui.onboarding.walletsetup.WalletSetupViewModel" />
+            type="io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup.WalletSetupViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

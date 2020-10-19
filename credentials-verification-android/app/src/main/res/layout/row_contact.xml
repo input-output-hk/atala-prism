@@ -7,7 +7,7 @@
 
         <variable
             name="contact"
-            type="io.iohk.cvp.data.local.db.model.Contact" />
+            type="io.iohk.atala.prism.app.data.local.db.model.Contact" />
     </data>
 
     <androidx.cardview.widget.CardView

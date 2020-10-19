@@ -110,7 +110,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textPinCode">
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinCharacter1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -126,7 +126,7 @@
                     android:textColor="@color/black"
                     android:textSize="20dp" />
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinCharacter2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -142,7 +142,7 @@
                     android:textColor="@color/black"
                     android:textSize="20dp" />
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinCharacter3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -158,7 +158,7 @@
                     android:textColor="@color/black"
                     android:textSize="20dp" />
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinCharacter4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -202,7 +202,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textConfirmPinCode">
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinRepeatCharacter1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -218,7 +218,7 @@
                     android:textColor="@color/black"
                     android:textSize="20dp" />
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinRepeatCharacter2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -234,7 +234,7 @@
                     android:textColor="@color/black"
                     android:textSize="20dp" />
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinRepeatCharacter3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -250,7 +250,7 @@
                     android:textColor="@color/black"
                     android:textSize="20dp" />
 
-                <io.iohk.cvp.views.utils.components.PinEditText
+                <io.iohk.atala.prism.app.views.utils.components.PinEditText
                     android:id="@+id/pinRepeatCharacter4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

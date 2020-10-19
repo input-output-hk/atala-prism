@@ -6,7 +6,7 @@
     android:background="@drawable/bg_profile"
     android:paddingTop="25dp">
 
-  <io.iohk.cvp.views.utils.components.OptionItem
+  <io.iohk.atala.prism.app.views.utils.components.OptionItem
       android:id="@+id/credit_card_button"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
       app:logoImage="@drawable/ic_credit_card"
       app:primaryText="@string/credit_card_option_name" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
+  <io.iohk.atala.prism.app.views.utils.components.OptionItem
       android:id="@+id/digital_lari_button"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
       app:logoImage="@drawable/ic_digital_lari"
       app:primaryText="@string/digital_lari_option_name" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
+  <io.iohk.atala.prism.app.views.utils.components.OptionItem
       android:id="@+id/cash_button"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -49,7 +49,7 @@
       app:logoImage="@drawable/ic_cash"
       app:primaryText="@string/cash_option_name" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
+  <io.iohk.atala.prism.app.views.utils.components.OptionItem
       android:id="@+id/wire_transfer_button"
       android:layout_width="0dp"
       android:layout_height="wrap_content"

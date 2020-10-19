@@ -3,9 +3,9 @@ package cvp
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import io.iohk.cvp.data.local.db.AppDatabase
-import io.iohk.cvp.data.local.db.dao.CredentialDao
-import io.iohk.cvp.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.AppDatabase
+import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao
+import io.iohk.atala.prism.app.data.local.db.model.Credential
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope

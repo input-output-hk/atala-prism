@@ -81,7 +81,7 @@
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
-    <io.iohk.cvp.views.utils.components.PaymentState
+    <io.iohk.atala.prism.app.views.utils.components.PaymentState
       android:id="@+id/text_view_state"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"

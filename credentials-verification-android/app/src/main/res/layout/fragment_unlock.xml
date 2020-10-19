@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_unlock"
-    tools:context=".views.activities.UnlockActivity">
+    tools:context=".prism.app.views.activities.UnlockActivity">
 
     <ImageView
         android:id="@+id/imageView9"

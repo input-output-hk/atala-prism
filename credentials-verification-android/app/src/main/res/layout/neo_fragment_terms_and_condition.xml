@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.neo.ui.onboarding.termsandconditions.TermsAndConditionsViewModel" />
+            type="io.iohk.atala.prism.app.neo.ui.onboarding.termsandconditions.TermsAndConditionsViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

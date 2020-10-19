@@ -3,9 +3,9 @@ package cvp
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import io.iohk.cvp.data.local.db.AppDatabase
-import io.iohk.cvp.data.local.db.dao.ContactDao
-import io.iohk.cvp.data.local.db.model.Contact
+import io.iohk.atala.prism.app.data.local.db.AppDatabase
+import io.iohk.atala.prism.app.data.local.db.dao.ContactDao
+import io.iohk.atala.prism.app.data.local.db.model.Contact
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope

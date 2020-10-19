@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.neo.ui.onboarding.welcometutorial.WelcomeTutorialViewModel" />
+            type="io.iohk.atala.prism.app.neo.ui.onboarding.welcometutorial.WelcomeTutorialViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

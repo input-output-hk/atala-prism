@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.viewmodel.ContactsViewModel" />
+            type="io.iohk.atala.prism.app.viewmodel.ContactsViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

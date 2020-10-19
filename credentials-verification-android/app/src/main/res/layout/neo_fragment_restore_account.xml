@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.neo.ui.onboarding.restoreaccount.RestoreAccountViewModel" />
+            type="io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccount.RestoreAccountViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

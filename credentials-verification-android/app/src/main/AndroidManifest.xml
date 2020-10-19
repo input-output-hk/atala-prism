@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
-        android:name=".core.CvpApplication"
+        android:name="io.iohk.atala.prism.app.core.PrismApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_new"
         android:label="@string/app_name"
@@ -22,7 +22,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:theme="@style/AppTheme.NoActionBar.FullScreen"
-            android:name=".neo.ui.launch.LaunchActivity"
+            android:name="io.iohk.atala.prism.app.neo.ui.launch.LaunchActivity"
             android:noHistory="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -33,29 +33,29 @@
         </activity>
         <activity
             android:theme="@style/AppTheme.NoActionBar.FullScreen"
-            android:name=".neo.ui.onboarding.OnBoardingNavActivity"
-            android:screenOrientation="portrait"></activity>
+            android:name="io.iohk.atala.prism.app.neo.ui.onboarding.OnBoardingNavActivity"
+            android:screenOrientation="portrait" />
         <activity
-            android:name=".views.activities.MainActivity"
+            android:name="io.iohk.atala.prism.app.views.activities.MainActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".views.activities.UnlockActivity"
+            android:name="io.iohk.atala.prism.app.views.activities.UnlockActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
 
         <activity
-            android:name=".views.activities.WebTermsAndConditionsActivity"
+            android:name="io.iohk.atala.prism.app.views.activities.WebTermsAndConditionsActivity"
             android:theme="@style/mytransparent.windowNoTitle" />
         <activity
-            android:name=".views.activities.AccountCreatedActivity"
+            android:name="io.iohk.atala.prism.app.views.activities.AccountCreatedActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".views.activities.QrCodeScanner"
+            android:name="io.iohk.atala.prism.app.views.activities.QrCodeScanner"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".views.activities.WebViewActivity"
+            android:name="io.iohk.atala.prism.app.views.activities.WebViewActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"

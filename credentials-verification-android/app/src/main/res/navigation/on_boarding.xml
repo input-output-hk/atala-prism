@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/welcomeFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.welcome.WelcomeFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.welcome.WelcomeFragment"
         android:label="WelcomeFragment"
         tools:layout="@layout/neo_fragment_welcome">
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/welcomeTutorialFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.welcometutorial.WelcomeTutorialFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.welcometutorial.WelcomeTutorialFragment"
         android:label="WelcomeTutorialFragment"
         tools:layout="@layout/neo_fragment_welcome_tutorial">
 
@@ -38,7 +38,7 @@
 
     <fragment
         android:id="@+id/termsAndConditionsFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.termsandconditions.TermsAndConditionsFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.termsandconditions.TermsAndConditionsFragment"
         android:label="TermsAndConditionsFragment"
         tools:layout="@layout/neo_fragment_terms_and_condition">
         <action
@@ -55,7 +55,7 @@
     <dialog
         android:id="@+id/webViewDialogFragment"
         tools:layout="@layout/neo_dialog_fragment_web_view"
-        android:name="io.iohk.cvp.neo.ui.commondialogs.WebViewDialogFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.commondialogs.WebViewDialogFragment"
         android:label="WebViewDialogFragment">
         <argument
             android:name="url"
@@ -64,7 +64,7 @@
     <fragment
         tools:layout="@layout/neo_fragment_wallet_setup"
         android:id="@+id/walletSetupFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.walletsetup.WalletSetupFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup.WalletSetupFragment"
         android:label="WalletSetupFragment">
         <action
             app:enterAnim="@anim/slide_in_right"
@@ -77,7 +77,7 @@
     <fragment
         tools:layout="@layout/neo_fragment_phrase_verification"
         android:id="@+id/phraseVerificationFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.phraseverification.PhraseVerificationFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.phraseverification.PhraseVerificationFragment"
         android:label="PhraseVerificationFragment">
         <argument
             android:name="mnemonicList"
@@ -101,7 +101,7 @@
     <fragment
         tools:layout="@layout/neo_fragment_account_created"
         android:id="@+id/accountCreatedFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.accountcreated.AccountCreatedFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.accountcreated.AccountCreatedFragment"
         android:label="AccountCreatedFragment">
         <action
             app:popUpTo="@id/on_board"
@@ -111,13 +111,13 @@
     </fragment>
     <activity
         android:id="@+id/mainActivity"
-        android:name="io.iohk.cvp.views.activities.MainActivity"
+        android:name="io.iohk.atala.prism.app.views.activities.MainActivity"
         android:label="activity_main"
         tools:layout="@layout/activity_main" />
     <fragment
         tools:layout="@layout/neo_fragment_restore_account"
         android:id="@+id/restoreAccountFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.restoreaccount.RestoreAccountFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccount.RestoreAccountFragment"
         android:label="RestoreAccountFragment">
         <action
             android:id="@+id/action_restoreAccountFragment_to_restoreAccountSuccessFragment"
@@ -132,7 +132,7 @@
     <fragment
         tools:layout="@layout/neo_fragment_restore_account_success"
         android:id="@+id/restoreAccountSuccessFragment"
-        android:name="io.iohk.cvp.neo.ui.onboarding.restoreaccountsuccess.RestoreAccountSuccessFragment"
+        android:name="io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccountsuccess.RestoreAccountSuccessFragment"
         android:label="RestoreAccountSuccessFragment">
         <action
             android:id="@+id/action_restoreAccountSuccessFragment_to_mainActivity"

@@ -12,7 +12,7 @@
       android:paddingTop="25dp"
       android:paddingBottom="20dp">
 
-        <io.iohk.cvp.views.utils.components.OptionItem
+        <io.iohk.atala.prism.app.views.utils.components.OptionItem
             android:id="@+id/backup"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -27,7 +27,7 @@
             app:primaryText="@string/backup_button_name"
             app:secondaryText="@string/backup_button_description" />
 
-      <io.iohk.cvp.views.utils.components.OptionItem
+      <io.iohk.atala.prism.app.views.utils.components.OptionItem
           android:id="@+id/delete_credentials"
           android:layout_width="0dp"
           android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
           app:primaryText="@string/reset"
           app:secondaryText="@string/delete_contacts_credentials" />
 
-        <io.iohk.cvp.views.utils.components.OptionItem
+        <io.iohk.atala.prism.app.views.utils.components.OptionItem
             android:id="@+id/security"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
             app:primaryText="@string/security_button_name"
             app:secondaryText="@string/security_button_description" />
 
-        <io.iohk.cvp.views.utils.components.OptionItem
+        <io.iohk.atala.prism.app.views.utils.components.OptionItem
             android:id="@+id/support"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -75,7 +75,7 @@
             app:primaryText="@string/support_button_name"
             app:secondaryText="@string/support_button_description" />
 
-        <io.iohk.cvp.views.utils.components.OptionItem
+        <io.iohk.atala.prism.app.views.utils.components.OptionItem
             android:id="@+id/about"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -91,7 +91,7 @@
             app:primaryText="@string/about_button_name"
             app:secondaryText="@string/about_button_description" />
 
-        <io.iohk.cvp.views.utils.components.OptionItem
+        <io.iohk.atala.prism.app.views.utils.components.OptionItem
             android:id="@+id/backend_ip"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

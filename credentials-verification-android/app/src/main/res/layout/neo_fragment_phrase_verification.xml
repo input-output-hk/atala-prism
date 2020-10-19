@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.cvp.neo.ui.onboarding.phraseverification.PhraseVerificationViewModel" />
+            type="io.iohk.atala.prism.app.neo.ui.onboarding.phraseverification.PhraseVerificationViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
