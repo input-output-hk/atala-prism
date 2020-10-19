@@ -60,6 +60,16 @@ abstract class GenericEC(proviver: java.security.Provider) extends ECTrait {
     new JavaECPublicKeySpec(ecPoint, ecNamedCurveSpec)
   }
 
+  /**
+    * Sign the byte array with the given private key
+    *
+    * NOTE: The underlying BC implementation ends up using a nonce, don't expect to get the same result by using the
+    *  same arguments.
+    *
+    * @param data the data to sign
+    * @param privateKey the private key used to sign the given data
+    * @return a digital signature
+    */
   override def sign(data: Array[Byte], privateKey: ECPrivateKey): ECSignature = {
     privateKey match {
       case key: JvmECPrivateKey =>

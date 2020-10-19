@@ -1,9 +1,10 @@
 package io.iohk.atala.mirror
+
 import java.time.Instant
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
 
 object NodeUtils {
@@ -39,30 +40,4 @@ object NodeUtils {
       timestampInfoProto.operationSequenceNumber
     )
   }
-
-  def computeNodeCredentialId(
-      credentialHash: SHA256Digest,
-      did: String
-  ): String = {
-    SHA256Digest
-      .compute(
-        node_models
-          .AtalaOperation(
-            operation = node_models.AtalaOperation.Operation.IssueCredential(
-              node_models.IssueCredentialOperation(
-                credentialData = Some(
-                  node_models.CredentialData(
-                    issuer = stripDidPrefix(did),
-                    contentHash = ByteString.copyFrom(credentialHash.value.toArray)
-                  )
-                )
-              )
-            )
-          )
-          .toByteArray
-      )
-      .hexValue
-  }
-
-  def stripDidPrefix(did: String): String = did.stripPrefix("did:prism:")
 }

@@ -1,33 +1,33 @@
 package io.iohk.atala.mirror
 
-import java.util.UUID
 import java.time.{Instant, LocalDateTime, ZoneOffset}
+import java.util.UUID
 
 import cats.effect.Sync
-import doobie.util.transactor.Transactor
-import doobie.free.connection.ConnectionIO
+import cats.implicits._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.protos.credential_models.Credential
-import io.iohk.atala.mirror.models._
+import doobie.free.connection.ConnectionIO
+import doobie.implicits._
+import doobie.util.transactor.Transactor
+import io.circe.Json
+import io.iohk.atala.mirror.db.ConnectionDao
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
-import io.iohk.atala.mirror.db.ConnectionDao
-import doobie.implicits._
-import cats.implicits._
-import io.circe.Json
+import io.iohk.atala.mirror.models._
+import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.credentials.{
   CredentialsCryptoSDKImpl,
   JsonBasedUnsignedCredential,
   SignedCredential,
+  SlayerCredentialId,
   TimestampInfo,
   UnsignedCredential
 }
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
-import io.iohk.atala.mirror.NodeUtils.computeNodeCredentialId
-import io.iohk.atala.mirror.stubs.NodeClientServiceStub
+import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
-import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
+import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
 
 trait MirrorFixtures {
 
@@ -117,20 +117,19 @@ trait MirrorFixtures {
         revocationDate = None
       )
 
-    val nodeCredentialId: String = computeNodeCredentialId(
-      credentialHash = CredentialsCryptoSDKImpl.hash(signedCredential),
-      did = issuerDID
-    )
+    val nodeCredentialId: SlayerCredentialId = SlayerCredentialId
+      .compute(
+        credential = signedCredential,
+        did = issuerDID
+      )
 
     val defaultNodeClientStub =
-      new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId -> getCredentialStateResponse))
+      new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
 
     val rawMessage: ByteString = createRawMessage("{}")
 
     def createRawMessage(json: String): ByteString = {
       Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = json).toByteString
     }
-
   }
-
 }

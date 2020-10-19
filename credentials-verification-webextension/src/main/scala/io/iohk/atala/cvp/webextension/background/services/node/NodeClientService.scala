@@ -1,17 +1,16 @@
 package io.iohk.atala.cvp.webextension.background.services.node
 
 import cats.data.ValidatedNel
-import io.iohk.atala.prism.credentials.VerificationError
+import io.iohk.atala.cvp.webextension.background.services.node.NodeUtils._
 import io.iohk.atala.prism.credentials.{
   CredentialData,
   CredentialVerification,
-  CredentialsCryptoSDKImpl,
-  JsonBasedUnsignedCredential,
   KeyData,
-  SignedCredential
+  SignedCredentialDetails,
+  SlayerCredentialId,
+  VerificationError
 }
 import io.iohk.atala.prism.crypto.{EC, ECTrait}
-import io.iohk.atala.cvp.webextension.background.services.node.NodeUtils._
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetDidDocumentRequest}
 import scalapb.grpc.Channels
@@ -28,18 +27,17 @@ class NodeClientService(url: String) {
   )(implicit executionContext: ExecutionContext): Future[ValidatedNel[VerificationError, Unit]] = {
 
     for {
-      signedCredential <- Future.fromTry(SignedCredential.from(signedCredentialStringRepresentation))
-      unsignedCredential = signedCredential.decompose[JsonBasedUnsignedCredential].credential
-      issuerDID = unsignedCredential.issuerDID.get
-      issuanceKeyId = unsignedCredential.issuanceKeyId.get
-      keyData <- getKeyData(issuerDID = issuerDID, issuanceKeyId = issuanceKeyId)
-      credentialData <- getCredentialData(
-        computeNodeCredentialId(
-          credentialHash = CredentialsCryptoSDKImpl.hash(signedCredential),
-          didSuffix = issuerDID.stripPrefix("did:prism:")
-        )
-      )
-    } yield CredentialVerification.verifyCredential(keyData, credentialData, signedCredential)
+      data <- Future.fromTry {
+        SignedCredentialDetails
+          .compute(signedCredentialStringRepresentation)
+          .left
+          .map(e => new RuntimeException(e.msg))
+          .toTry
+      }
+
+      keyData <- getKeyData(issuerDID = data.issuerDID, issuanceKeyId = data.issuanceKeyId)
+      credentialData <- getCredentialData(data.slayerCredentialId)
+    } yield CredentialVerification.verifyCredential(keyData, credentialData, data.credential)
   }
 
   private def getKeyData(issuerDID: String, issuanceKeyId: String)(implicit ec: ExecutionContext): Future[KeyData] = {
@@ -59,15 +57,17 @@ class NodeClientService(url: String) {
     } yield KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
   }
 
-  private def getCredentialData(nodeCredentialId: String)(implicit ec: ExecutionContext): Future[CredentialData] = {
+  private def getCredentialData(
+      credentialId: SlayerCredentialId
+  )(implicit ec: ExecutionContext): Future[CredentialData] = {
     for {
       response <- nodeServiceApi.getCredentialState(
-        GetCredentialStateRequest().withCredentialId(nodeCredentialId)
+        GetCredentialStateRequest().withCredentialId(credentialId.string)
       )
       publishedOn =
         response.publicationDate
           .map(fromTimestampInfoProto)
-          .getOrElse(throw new Exception(s"Missing publication date $nodeCredentialId"))
+          .getOrElse(throw new Exception(s"Missing publication date $credentialId"))
       revokedOn = response.revocationDate map fromTimestampInfoProto
     } yield CredentialData(issuedOn = publishedOn, revokedOn = revokedOn)
   }

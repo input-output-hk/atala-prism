@@ -1,34 +1,31 @@
 package io.iohk.atala.mirror.services
 
-import java.util.UUID
 import java.time.{Instant, LocalDateTime, ZoneOffset}
+import java.util.UUID
 
 import cats.data.ValidatedNel
-import org.mockito.scalatest.MockitoSugar
+import doobie.implicits._
+import io.circe.Json
+import io.iohk.atala.mirror.MirrorFixtures
+import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
+import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.UserCredential
+import io.iohk.atala.mirror.models.UserCredential._
+import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
+import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential, _}
+import io.iohk.atala.prism.crypto.{EC, ECTrait}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import io.iohk.atala.prism.protos.credential_models.Credential
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
-import io.iohk.atala.mirror.models.UserCredential.IssuersDID
-import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
-import io.iohk.atala.prism.credentials._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.mirror.MirrorFixtures
-import doobie.implicits._
 import monix.execution.Scheduler.Implicits.global
-import io.circe.Json
-import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential}
-import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageId, MessageReceivedDate, RawCredential}
-import io.iohk.atala.prism.crypto.{EC, ECTrait}
-import io.iohk.atala.mirror.NodeUtils.computeNodeCredentialId
-import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
+import org.mockito.scalatest.MockitoSugar
 
-import scala.Right
 import scala.concurrent.duration.DurationInt
 
 // mill -i mirror.test.single io.iohk.atala.mirror.services.CredentialServiceSpec
 class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
-  import ConnectionFixtures._, CredentialFixtures._
+  import ConnectionFixtures._
+  import CredentialFixtures._
 
   implicit def ecTrait: ECTrait = EC
 
@@ -113,10 +110,9 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       val connectorClientStub =
         new ConnectorClientServiceStub(receivedMessages = Seq(receivedMessage))
 
-      val nodeCredentialId =
-        computeNodeCredentialId(CredentialsCryptoSDKImpl.hash(credentialSignedWithWrongKey), issuerDID)
+      val nodeCredentialId = SlayerCredentialId.compute(credentialSignedWithWrongKey, issuerDID)
       val nodeClientStub =
-        new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId -> getCredentialStateResponse))
+        new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
       val credentialService = new CredentialService(databaseTask, connectorClientStub, nodeClientStub)
 
       // when
@@ -267,11 +263,10 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
       val connectorClientStub = new ConnectorClientServiceStub
 
-      val nodeCredentialId =
-        computeNodeCredentialId(CredentialsCryptoSDKImpl.hash(credentialSignedWithWrongKey), issuerDID)
+      val nodeCredentialId = SlayerCredentialId.compute(credentialSignedWithWrongKey, issuerDID)
 
       val nodeClientStub =
-        new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId -> getCredentialStateResponse))
+        new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
 
       val credentialService = new CredentialService(databaseTask, connectorClientStub, nodeClientStub)
 

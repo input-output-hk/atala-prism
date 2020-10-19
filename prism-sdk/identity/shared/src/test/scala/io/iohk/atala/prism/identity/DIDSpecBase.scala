@@ -123,4 +123,18 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
       }
     }
   }
+
+  "stripPrismPrefix" should {
+    "strip the did:prism: prefix" in {
+      val input = "did:prism:aabbccddee"
+      val expected = "aabbccddee"
+      DID.stripPrismPrefix(input) mustBe expected
+    }
+
+    "don't do anything if the exact prefix is not present" in {
+      val input = "did:prism-aabbccddee"
+      val expected = "did:prism-aabbccddee"
+      DID.stripPrismPrefix(input) mustBe expected
+    }
+  }
 }
