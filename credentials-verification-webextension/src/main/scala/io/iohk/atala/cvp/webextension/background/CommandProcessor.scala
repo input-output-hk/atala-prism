@@ -2,16 +2,14 @@ package io.iohk.atala.cvp.webextension.background
 
 import io.circe.generic.auto._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
-  KeyList,
   SignedConnectorResponse,
   SigningRequests,
   TransactionInfo,
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
-import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
+import io.iohk.atala.cvp.webextension.background.services.browser.BrowserNotificationService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
-import io.iohk.atala.cvp.webextension.common.services.BrowserWindowService
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,10 +26,6 @@ private[background] class CommandProcessor(
       case Command.SendBrowserNotification(title, message) =>
         browserNotificationService.notify(title, message)
         Future.successful(CommandResponse(Event.BrowserNotificationSent(): Event))
-      case Command.ListKeys =>
-        Future.successful(CommandResponse[KeyList] {
-          KeyList(walletManager.listKeys().toList)
-        })
       case Command.RequestSignature(sessionId, subject) =>
         walletManager.requestSignature(origin, sessionId, subject).map(CommandResponse.apply)
       case Command.GetSigningRequests =>
@@ -48,8 +42,6 @@ private[background] class CommandProcessor(
           .verifySignedCredential(origin, sessionId, signedCredentialStringRepresentation)
           .map(Command.VerifySignedCredentialResponse.apply)
           .map(CommandResponse.apply)
-      case Command.CreateKey(keyName) =>
-        walletManager.createKey(keyName).map(_ => CommandResponse(()))
       case Command.GetWalletStatus =>
         walletManager.getStatus().map(WalletStatusResult.apply).map(CommandResponse.apply)
       case Command.GetUserSession =>

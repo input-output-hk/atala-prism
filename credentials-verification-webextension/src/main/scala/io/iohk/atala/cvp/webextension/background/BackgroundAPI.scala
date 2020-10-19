@@ -5,7 +5,6 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
-  KeyList,
   SignedConnectorResponse,
   SigningRequests,
   TransactionInfo,
@@ -40,14 +39,6 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
         throw new RuntimeException(reason)
       case _: Event.BrowserNotificationSent => ()
     }
-  }
-
-  def createKey(keyName: String): Future[Unit] = {
-    process(Command.CreateKey(keyName))
-  }
-
-  def listKeys(): Future[KeyList] = {
-    process(Command.ListKeys)
   }
 
   def getSignatureRequests(): Future[SigningRequests] = {

@@ -9,11 +9,12 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.prism.credentials.VerificationError
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.background.wallet.WalletManager.LOCAL_STORAGE_KEY
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
@@ -105,27 +106,6 @@ private[background] class WalletManager(
   private def updateStorageKeyAndWalletData(storageKey: CryptoKey, walletData: WalletData): Unit = {
     this.storageKey = Some(storageKey)
     this.walletData = Some(walletData)
-  }
-
-  def createKey(name: String): Future[ECKeyPair] = {
-    (walletData, storageKey) match {
-      case (Some(wallet), Some(encryptionKey)) =>
-        if (wallet.keys.contains(name)) {
-          Future.failed(new IllegalArgumentException("Key exists"))
-        } else {
-          val newKeyPair = EC.generateKeyPair()
-          val newWalletData = wallet.addKey(name, newKeyPair.privateKey.getHexEncoded)
-          for {
-            _ <- save(encryptionKey, newWalletData)
-            _ = updateStorageKeyAndWalletData(storageKey.get, newWalletData)
-          } yield newKeyPair
-        }
-      case _ => Future.failed(new RuntimeException("The wallet has not been loaded"))
-    }
-  }
-
-  def listKeys(): Seq[String] = {
-    walletData.map(_.keys.keys.toSeq).getOrElse(Seq.empty)
   }
 
   def getSigningRequests(): Seq[SigningRequest] = {

@@ -23,68 +23,7 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
   def setUpWallet(api: BackgroundAPI, keys: Seq[String] = List()): Future[Unit] = {
     for {
       _ <- api.createWallet(PASSWORD, Mnemonic(), Verifier, ORGANISATION_NAME, Array())
-      _ <- Future.sequence(keys.map(api.createKey))
     } yield ()
-  }
-
-  "createKey" should {
-    "fail when the wallet is not loaded" in {
-      val api = new BackgroundAPI()
-
-      recoverToExceptionIf[RuntimeException] {
-        for {
-          _ <- api.createKey(TEST_KEY)
-        } yield ()
-      }.map(_.getMessage mustBe "The wallet has not been loaded")
-    }
-
-    "create a new key" in {
-      val api = new BackgroundAPI()
-
-      for {
-        _ <- setUpWallet(api)
-
-        _ <- api.createKey(TEST_KEY)
-        keys <- api.listKeys()
-      } yield {
-        keys.names mustBe Array(TEST_KEY)
-      }
-    }
-
-    "fail when creating an existing key" in {
-      val api = new BackgroundAPI()
-      recoverToExceptionIf[RuntimeException] {
-        for {
-          _ <- setUpWallet(api, List(TEST_KEY))
-
-          _ <- api.createKey(TEST_KEY)
-        } yield ()
-      }.map(_.getMessage mustBe "Key exists")
-    }
-  }
-
-  "listKeys" should {
-    "return no keys when the wallet is not loaded" in {
-      val api = new BackgroundAPI()
-
-      for {
-        keys <- api.listKeys()
-      } yield {
-        keys.names mustBe empty
-      }
-    }
-
-    "return all keys" in {
-      val api = new BackgroundAPI()
-
-      for {
-        _ <- setUpWallet(api, List(TEST_KEY))
-
-        keys <- api.listKeys()
-      } yield {
-        keys.names mustBe Array(TEST_KEY)
-      }
-    }
   }
 
   "Login request" should {

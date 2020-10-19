@@ -23,10 +23,16 @@ scalacOptions ++= Seq(
 
 enablePlugins(ChromeSbtPlugin, BuildInfoPlugin, ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin)
 
+version in webpack := "4.8.1"
+
 // scala-js-chrome
 scalaJSLinkerConfig := scalaJSLinkerConfig.value.withRelativizeSourceMapBase(
   Some((Compile / fastOptJS / artifactPath).value.toURI)
 )
+
+scalaJSLinkerConfig in (Compile, fastOptJS) ~= { _.withSourceMap(false) }
+scalaJSLinkerConfig in (Compile, fullOptJS) ~= { _.withSourceMap(false) }
+
 skip in packageJSDependencies := false
 
 webpackBundlingMode := BundlingMode.Application

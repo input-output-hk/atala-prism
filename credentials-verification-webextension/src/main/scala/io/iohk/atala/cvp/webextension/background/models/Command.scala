@@ -32,11 +32,6 @@ private[background] object Command {
 
   final case class SignatureResult(signature: String)
 
-  final case class CreateKey(keyName: String) extends CommandWithResponse[Unit]
-
-  final case object ListKeys extends CommandWithResponse[KeyList]
-  final case class KeyList(names: List[String])
-
   final case object GetSigningRequests extends CommandWithResponse[SigningRequests]
   final case class SigningRequests(requests: List[SigningRequest])
 
