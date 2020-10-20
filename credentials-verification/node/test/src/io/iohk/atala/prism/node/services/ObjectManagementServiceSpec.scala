@@ -105,6 +105,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = atalaObject.block.blockContent.value
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
+      // Verify off-chain storage is not used
+      verifyStorage(atalaBlock.toByteArray, expectedInStorage = false)
+      verifyStorage(atalaObject.toByteArray, expectedInStorage = false)
       // Verify transaction submission
       val transactionSubmissions = queryPendingTransactionSubmissions()
       transactionSubmissions.size mustBe 1
@@ -127,12 +130,25 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = getBlockFromStorage(atalaObject)
       atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
+      // Verify off-chain storage is used
+      verifyStorage(atalaBlock.toByteArray, expectedInStorage = true)
+      verifyStorage(atalaObject.toByteArray, expectedInStorage = true)
       // Verify transaction submission
       val transactionSubmissions = queryPendingTransactionSubmissions()
       transactionSubmissions.size mustBe 1
       val transactionSubmission = transactionSubmissions.head
       transactionSubmission.ledger mustBe transactionInfo.ledger
       transactionSubmission.transactionId mustBe transactionInfo.transactionId
+    }
+
+    def verifyStorage(bytes: Array[Byte], expectedInStorage: Boolean): Unit = {
+      val maybeBytes = storage.get(SHA256Digest.compute(bytes).hexValue).futureValue
+      if (expectedInStorage) {
+        maybeBytes.value mustBe bytes
+      } else {
+        maybeBytes mustBe None
+      }
+      ()
     }
   }
 

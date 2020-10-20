@@ -118,12 +118,24 @@ class ObjectManagementService private (
       }
     } yield ()
 
+    def storeDataOffChain(): Future[Unit] = {
+      if (atalaReferenceLedger.supportsOnChainData) {
+        // No need to store off-chain as whole object is in the chain already
+        Future.unit
+      } else {
+        // Store object and block in off-chain storage
+        for {
+          _ <- storage.put(blockHash.hexValue, blockBytes)
+          _ <- storage.put(objHash.hexValue, objBytes)
+        } yield ()
+      }
+    }
+
     for {
       // Insert object into DB
       _ <- insertObject.transact(xa).unsafeToFuture()
-      // Store object and block in off-chain storage
-      _ <- storage.put(blockHash.hexValue, blockBytes)
-      _ <- storage.put(objHash.hexValue, objBytes)
+      // If the ledger does not support data on-chain, then store it off-chain
+      _ <- storeDataOffChain()
       // Publish object to the blockchain
       transactionInfo <- publishAndRecordTransaction(objHash, obj)
     } yield transactionInfo
