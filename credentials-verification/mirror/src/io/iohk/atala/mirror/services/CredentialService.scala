@@ -64,7 +64,10 @@ class CredentialService(
       .evalTap(saveMessages)
   }
 
-  val connectionUpdatesStream: Stream[Task, Unit] = {
+  /**
+    * @param immediatelyRequestedCredential Request credential proof in this place is temporary and probably will be removed in the future.
+    */
+  def connectionUpdatesStream(immediatelyRequestedCredential: CredentialProofRequestType): Stream[Task, Unit] = {
     Stream
       .eval(
         ConnectionDao.findLastSeenConnectionId.transact(tx)
@@ -89,10 +92,6 @@ class CredentialService(
               .map(_ => connection)
           })
           .evalMap(connection => {
-            // TODO: Request credential in this place is temporary and
-            //       probably will be removed in the future.
-            val credential = CredentialProofRequestType.RedlandIdCredential
-
             for {
               _ <- connection.id match {
                 case None => Task.unit
@@ -101,11 +100,11 @@ class CredentialService(
                     .requestCredential(
                       connectionId = connectionId,
                       connectionToken = connection.token,
-                      credentialProofRequestTypes = Seq(credential)
+                      credentialProofRequestTypes = Seq(immediatelyRequestedCredential)
                     )
               }
 
-              _ = logger.info(s"Request credential: $credential")
+              _ = logger.info(s"Request credential: $immediatelyRequestedCredential")
             } yield ()
           })
           .drain // discard return type, as we don't need it
@@ -133,7 +132,7 @@ class CredentialService(
           token <- connectionIdToTokenMap.get(receivedMessage.connectionId).orElse {
             logger.warn(
               s"Message with id: ${receivedMessage.id} and connectionId ${receivedMessage.connectionId}" +
-                s"does not have corresponding connection or connection does not have connectionId, skipping it."
+                "does not have corresponding connection or connection does not have connectionId, skipping it."
             )
             None
           }
@@ -149,7 +148,7 @@ class CredentialService(
       parseConnectionId(receivedMessage.connectionId).orElse {
         logger.warn(
           s"Message with id: ${receivedMessage.id} has incorrect connectionId. ${receivedMessage.connectionId} " +
-            s"is not valid UUID"
+            "is not valid UUID"
         )
         None
       }
@@ -157,9 +156,13 @@ class CredentialService(
   }
 
   private[services] def parseCredential(message: ReceivedMessage): Option[RawCredential] = {
-    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toOption
-      .map(_.credentialDocument)
-      .map(RawCredential)
+    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toEither match {
+      case Left(error) =>
+        logger.warn(s"Parse credential error: ${error.getMessage}")
+        None
+      case Right(credential) =>
+        Some(credential.credentialDocument).map(RawCredential)
+    }
   }
 
   private[services] def parseConnectionId(connectionId: String): Option[ConnectionId] =
@@ -205,6 +208,7 @@ class CredentialService(
     result match {
       case Valid(_) => CredentialStatus.Valid
       case Invalid(errors) =>
+        logger.warn(s"Parse credential error: $errors")
         errors.head match {
           case _: VerificationError.Revoked => CredentialStatus.Revoked
           case _: VerificationError.KeyWasNotValid => CredentialStatus.Invalid

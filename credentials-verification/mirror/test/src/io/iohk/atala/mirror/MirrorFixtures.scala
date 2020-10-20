@@ -88,18 +88,13 @@ trait MirrorFixtures {
     val issuanceKeyId = "Issuance-0"
     val issuerDID = "did:prism:123456678abcdefg"
 
-    val unsignedCredential: UnsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-      issuerDID = issuerDID,
-      issuanceKeyId = issuanceKeyId,
-      claims = Json.obj()
-    )
+    val unsignedCredential: UnsignedCredential = createUnsignedCredential(issuanceKeyId, issuerDID)
 
     val keyAddedDate: TimestampInfo = TimestampInfo(Instant.now().minusSeconds(1), 1, 1)
     val credentialIssueDate: TimestampInfo = TimestampInfo(Instant.now(), 2, 2)
 
     val keys: ECKeyPair = EC.generateKeyPair()
-    val signedCredential: SignedCredential =
-      CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)(EC)
+    val signedCredential: SignedCredential = createSignedCredential(unsignedCredential, keys)
 
     val publicKey: PublicKey = PublicKey(
       id = issuanceKeyId,
@@ -131,5 +126,16 @@ trait MirrorFixtures {
     def createRawMessage(json: String): ByteString = {
       Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = json).toByteString
     }
+
+    def createUnsignedCredential(issuanceKeyId: String, issuerDID: String): UnsignedCredential =
+      JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
+        issuerDID = issuerDID,
+        issuanceKeyId = issuanceKeyId,
+        claims = Json.obj()
+      )
+
+    def createSignedCredential(unsignedCredential: UnsignedCredential, keys: ECKeyPair): SignedCredential =
+      CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)(EC)
+
   }
 }

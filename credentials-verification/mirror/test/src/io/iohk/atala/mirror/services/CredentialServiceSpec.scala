@@ -16,6 +16,11 @@ import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsig
 import io.iohk.atala.prism.crypto.{EC, ECTrait}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import io.iohk.atala.prism.protos.credential_models.Credential
+import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
+import io.iohk.atala.mirror.models.UserCredential.IssuersDID
+import io.iohk.atala.mirror.models.CredentialProofRequestType
+import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
+import io.iohk.atala.prism.credentials._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
 import org.mockito.scalatest.MockitoSugar
@@ -174,7 +179,12 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       // when
       val result = (for {
         _ <- ConnectionDao.insert(connection1).transact(databaseTask)
-        _ <- credentialService.connectionUpdatesStream.interruptAfter(1.seconds).compile.drain
+        _ <-
+          credentialService
+            .connectionUpdatesStream(CredentialProofRequestType.RedlandIdCredential)
+            .interruptAfter(1.seconds)
+            .compile
+            .drain
         result <- ConnectionDao.findBy(ConnectionToken(token)).transact(databaseTask)
       } yield result).runSyncUnsafe(1.minute)
 

@@ -25,6 +25,7 @@ import io.iohk.atala.mirror.services.{
   NodeClientServiceImpl
 }
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.mirror.models.CredentialProofRequestType
 
 object MirrorApp extends TaskApp {
 
@@ -69,13 +70,23 @@ object MirrorApp extends TaskApp {
 
       // services
       connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), connectorConfig)
-      nodeService = new NodeClientServiceImpl(node)
+      nodeService = new NodeClientServiceImpl(node, connectorConfig.authConfig)
       mirrorService = new MirrorService(tx, connectorService)
       credentialService = new CredentialService(tx, connectorService, nodeService)
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
 
       // background streams
-      _ <- Resource.liftF(credentialService.connectionUpdatesStream.compile.drain.start)
+      _ <- Resource.liftF(
+        credentialService
+          .connectionUpdatesStream(
+            // TODO: We are sending unsigned credential form intdemo by default, it allows
+            //       to test the Mirror with the mobile apps, to check signed flow, see: [[MirrorE2eSpec]].
+            immediatelyRequestedCredential = CredentialProofRequestType.RedlandIdCredential
+          )
+          .compile
+          .drain
+          .start
+      )
       _ <- Resource.liftF(credentialService.credentialUpdatesStream.compile.drain.start)
 
       // gRPC server
