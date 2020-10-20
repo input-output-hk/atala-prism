@@ -477,7 +477,6 @@
   },
   "studentCreation": {
     "title": "Student Creation",
-    "success": "Successfully saved the Students",
     "save": "Save",
     "newStudent": "Add a new Student",
     "cantSubmit": "These students can't be saved",
@@ -497,6 +496,7 @@
   "importContacts": {
     "title": "Import Contacts" ,
     "info": "Choose between this two options: Bulk Import or Mannual Import",
+    "success": "Contact(s) successfully created",
     "bulkImport": {
       "title": "Bulk Import",
       "info": "Import all your contacts at once."

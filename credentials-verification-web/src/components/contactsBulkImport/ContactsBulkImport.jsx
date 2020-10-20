@@ -41,7 +41,7 @@ const ContactsBulkImport = ({ api, redirector: { redirectToImportContacts } }) =
       const groupCreations = await createNewGroups(groups);
       const contactCreations = await createNewContacts(contactsData, groups);
 
-      message.success(t('studentCreation.success'));
+      message.success(t('importContacts.success'));
       setResults({
         groupCreations: groupCreations.length,
         contactCreations: contactCreations.length
