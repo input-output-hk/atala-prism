@@ -88,20 +88,20 @@ const BulkImportErrorLog = ({ fileData: { fileObj }, validationErrors, returnToU
               <div className="processedRows">
                 <p>
                   <strong>{t('bulkImport.errorLog.processedRows')}</strong>
-                  {validationErrors.length}
+                  {` ${validationErrors.length}`}
                 </p>
               </div>
               <div className="okRows">
                 <img src={greenCheck} alt="ok" />
                 <p>
-                  <strong>{validationErrors.length - invalidRows.length}</strong>
+                  <strong>{`${validationErrors.length - invalidRows.length} `}</strong>
                   {t('bulkImport.errorLog.correctRows')}
                 </p>
               </div>
               <div className="xRows">
                 <img src={redCross} alt="not-ok" />
                 <p>
-                  <strong>{invalidRows.length}</strong>
+                  <strong>{`${invalidRows.length} `}</strong>
                   {t('bulkImport.errorLog.incorrectRows')}
                 </p>
               </div>
