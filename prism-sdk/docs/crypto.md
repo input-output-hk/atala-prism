@@ -93,13 +93,12 @@ KeyDerivation.deriveKey(seed, path)
 
 It is possible to build Merkle tree proofs of inclusion and verify them by using `MerkleTree`:
 ```scala mdoc:to-string
-import cats.data.NonEmptyList
 import io.iohk.atala.prism.crypto.MerkleTree
 
 val hash1 = SHA256Digest.compute(Array(0.toByte))
 val hash2 = SHA256Digest.compute(Array(1.toByte))
 
-val (root, List(proof1, proof2)) = MerkleTree.generateProofs(NonEmptyList.of(hash1, hash2))
+val (root, List(proof1, proof2)) = MerkleTree.generateProofs(List(hash1, hash2))
 
 MerkleTree.verifyProof(root, proof1)
 MerkleTree.verifyProof(root, proof2)

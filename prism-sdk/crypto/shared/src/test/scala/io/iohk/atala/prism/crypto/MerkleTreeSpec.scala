@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.crypto
 
-import cats.data.NonEmptyList
 import org.scalacheck.{Gen, Shrink}
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -13,12 +12,12 @@ class MerkleTreeSpec extends AnyWordSpec {
 
   val hashGen: Gen[SHA256Digest] =
     Gen.asciiStr.map(str => SHA256Digest.compute(str.getBytes))
-  val hashNonEmptyListGen: Gen[NonEmptyList[SHA256Digest]] =
-    Gen.nonEmptyListOf(hashGen).map(NonEmptyList.fromListUnsafe)
+  val hashNonEmptyListGen: Gen[List[SHA256Digest]] =
+    Gen.nonEmptyListOf(hashGen)
 
   "MerkleTree" should {
     "build proofs for all supplied hashes" in {
-      forAll(hashNonEmptyListGen) { hashes: NonEmptyList[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
         val (_, proofs) = MerkleTree.generateProofs(hashes)
 
         assert(hashes.forall(h => proofs.exists(_.hash == h)))
@@ -26,7 +25,7 @@ class MerkleTreeSpec extends AnyWordSpec {
     }
 
     "build proofs of limited length" in {
-      forAll(hashNonEmptyListGen) { hashes: NonEmptyList[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
         val (_, proofs) = MerkleTree.generateProofs(hashes)
 
         val maxLength = ceil(log(hashes.length) / log(2.0)).toInt
@@ -35,7 +34,7 @@ class MerkleTreeSpec extends AnyWordSpec {
     }
 
     "build verifiable proofs" in {
-      forAll(hashNonEmptyListGen) { hashes: NonEmptyList[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
         val (root, proofs) = MerkleTree.generateProofs(hashes)
 
         for (proof <- proofs) {
@@ -65,6 +64,25 @@ class MerkleTreeSpec extends AnyWordSpec {
             MerkleTree.verifyProof(root, invalidProof3) mustBe false
           }
         }
+      }
+    }
+
+    "be resistant to second-preimage attacks" in {
+      forAll(hashNonEmptyListGen.suchThat(_.size > 1)) { hashes: List[SHA256Digest] =>
+        val (root, proofs) = MerkleTree.generateProofs(hashes)
+        val proofNumber = Gen.chooseNum[Int](0, proofs.size - 1).sample.get
+        val proof = proofs(proofNumber)
+
+        val firstSibling = proof.siblings.head
+        val newHash =
+          SHA256Digest.compute(
+            MerkleTree.NodePrefix +: (firstSibling.value ++ proof.hash.value).toArray
+          )
+        val newSiblings = proof.siblings.tail
+        val newIndex = proof.index << 1
+        val newProof = proof.copy(hash = newHash, index = newIndex, siblings = newSiblings)
+
+        MerkleTree.verifyProof(root, newProof) mustBe false
       }
     }
   }
