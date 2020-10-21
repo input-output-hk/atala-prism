@@ -11,11 +11,11 @@ import io.iohk.atala.prism.models.{
   TransactionInfo,
   TransactionStatus
 }
-import io.iohk.atala.prism.node.AtalaReferenceLedger
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
 import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
+import io.iohk.atala.prism.node.{AtalaReferenceLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -50,7 +50,7 @@ class AtalaServiceImpl(
 
   override def supportsOnChainData: Boolean = false
 
-  override def publish(obj: node_internal.AtalaObject): Future[TransactionInfo] = {
+  override def publish(obj: node_internal.AtalaObject): Future[PublicationInfo] = {
     if (obj.block.isBlockContent) {
       throw new NotImplementedError("Publishing whole objects is not implemented for Bitcoin ledger")
     } else {
@@ -58,8 +58,8 @@ class AtalaServiceImpl(
     }
   }
 
-  private def publish(ref: Array[Byte]): Future[TransactionInfo] = {
-    val opDataBytes = ATALA_HEADER ++ ref
+  private def publish(objectBytes: Array[Byte]): Future[PublicationInfo] = {
+    val opDataBytes = ATALA_HEADER ++ objectBytes
 
     OpData(opDataBytes) match {
       case Some(opData) =>
@@ -67,7 +67,10 @@ class AtalaServiceImpl(
           .sendDataTx(opData)
           .value
           .map {
-            case Right(transactionId) => TransactionInfo(transactionId, ledger)
+            case Right(transactionId) =>
+              // Assume the transaction will be successful, until `getTransactionDetails` is implemented
+              // TODO: Change status to `Pending`
+              PublicationInfo(TransactionInfo(transactionId, ledger), TransactionStatus.InLedger)
             case Left(error) =>
               logger.error(s"FATAL: Error while publishing reference: ${error}")
               throw new RuntimeException(s"FATAL: Error while publishing reference: ${error}")
@@ -82,7 +85,7 @@ class AtalaServiceImpl(
 
   override def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails] = {
     // TODO: Implement, until then we will assume everything works as expected
-    Future.successful(TransactionDetails(transactionId, TransactionStatus.InLedger))
+    Future.failed(new NotImplementedError)
   }
 
   override def deleteTransaction(transactionId: TransactionId): Future[Unit] = {

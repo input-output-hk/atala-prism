@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{AtalaReferenceLedger, objects}
+import io.iohk.atala.prism.node.{AtalaReferenceLedger, PublicationInfo, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -82,6 +82,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       ledger = Ledger.InMemory,
       block = Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
     )
+  private val dummyPublicationInfo = PublicationInfo(dummyTransactionInfo, TransactionStatus.Pending)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -92,7 +93,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
   "ObjectManagementService.publishAtalaOperation" should {
     "put block content onto the ledger when supported" in {
-      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
       val transactionInfo =
@@ -109,15 +110,15 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       verifyStorage(atalaBlock.toByteArray, expectedInStorage = false)
       verifyStorage(atalaObject.toByteArray, expectedInStorage = false)
       // Verify transaction submission
-      val transactionSubmissions = queryPendingTransactionSubmissions()
+      val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.Pending)
       transactionSubmissions.size mustBe 1
       val transactionSubmission = transactionSubmissions.head
       transactionSubmission.ledger mustBe transactionInfo.ledger
       transactionSubmission.transactionId mustBe transactionInfo.transactionId
     }
 
-    "put reference to block onto the ledger" in {
-      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+    "put reference to block onto the ledger when on-chain data not supported" in {
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(false).when(ledger).supportsOnChainData
 
       val transactionInfo =
@@ -134,7 +135,23 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       verifyStorage(atalaBlock.toByteArray, expectedInStorage = true)
       verifyStorage(atalaObject.toByteArray, expectedInStorage = true)
       // Verify transaction submission
-      val transactionSubmissions = queryPendingTransactionSubmissions()
+      val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.Pending)
+      transactionSubmissions.size mustBe 1
+      val transactionSubmission = transactionSubmissions.head
+      transactionSubmission.ledger mustBe transactionInfo.ledger
+      transactionSubmission.transactionId mustBe transactionInfo.transactionId
+    }
+
+    "record immediate in-ledger transactions" in {
+      val inLedgerPublication = dummyPublicationInfo.copy(status = TransactionStatus.InLedger)
+      doReturn(Future.successful(inLedgerPublication)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+
+      val transactionInfo =
+        objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
+
+      // Verify transaction submission
+      val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.InLedger)
       transactionSubmissions.size mustBe 1
       val transactionSubmission = transactionSubmissions.head
       transactionSubmission.ledger mustBe transactionInfo.ledger
@@ -271,7 +288,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "ignore in-ledger transactions" in {
-      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       // Publish once and update status
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
@@ -284,7 +301,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "ignore deleted transactions" in {
-      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.Deleted)
@@ -298,8 +315,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "retry old pending transactions" in {
       val dummyTransactionId2 = TransactionId.from(SHA256Digest.compute("id2".getBytes).value).value
       val dummyTransactionInfo2 = dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
+      val dummyPublicationInfo2 = dummyPublicationInfo.copy(transaction = dummyTransactionInfo2)
       // Return dummyTransactionInfo and then dummyTransactionInfo2
-      doReturn(Future.successful(dummyTransactionInfo), Future.successful(dummyTransactionInfo2))
+      doReturn(Future.successful(dummyPublicationInfo), Future.successful(dummyPublicationInfo2))
         .when(ledger)
         .publish(*)
       doReturn(Future.unit).when(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
@@ -323,7 +341,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
           ledger,
           blockProcessing
         )
-      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
@@ -336,7 +354,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "not retry in-ledger transactions" in {
-      doReturn(Future.successful(dummyTransactionInfo)).when(ledger).publish(*)
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.InLedger)
@@ -349,10 +367,12 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
   }
 
-  private def queryPendingTransactionSubmissions(): List[AtalaObjectTransactionSubmission] = {
+  private def queryTransactionSubmissions(
+      status: AtalaObjectTransactionSubmissionStatus
+  ): List[AtalaObjectTransactionSubmission] = {
     // Query into the future to return all of them
     AtalaObjectTransactionSubmissionsDAO
-      .getBy(Instant.now.plus(Duration.ofSeconds(1)), AtalaObjectTransactionSubmissionStatus.Pending)
+      .getBy(Instant.now.plus(Duration.ofSeconds(1)), status)
       .transact(database)
       .unsafeRunSync()
   }

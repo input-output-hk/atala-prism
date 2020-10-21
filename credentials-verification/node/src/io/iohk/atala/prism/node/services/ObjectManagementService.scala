@@ -147,22 +147,31 @@ class ObjectManagementService private (
   ): Future[TransactionInfo] = {
     for {
       // Publish object to the blockchain
-      transactionInfo <- atalaReferenceLedger.publish(atalaObject)
+      publication <- atalaReferenceLedger.publish(atalaObject)
       // Store transaction submission
       _ <-
         AtalaObjectTransactionSubmissionsDAO
           .insert(
             AtalaObjectTransactionSubmission(
               atalaObjectId,
-              transactionInfo.ledger,
-              transactionInfo.transactionId,
+              publication.transaction.ledger,
+              publication.transaction.transactionId,
               Instant.now,
-              AtalaObjectTransactionSubmissionStatus.Pending
+              toAtalaObjectTransactionSubmissionStatus(publication.status)
             )
           )
           .transact(xa)
           .unsafeToFuture()
-    } yield transactionInfo
+    } yield publication.transaction
+  }
+
+  private def toAtalaObjectTransactionSubmissionStatus(
+      status: TransactionStatus
+  ): AtalaObjectTransactionSubmissionStatus = {
+    status match {
+      case TransactionStatus.Pending => AtalaObjectTransactionSubmissionStatus.Pending
+      case TransactionStatus.InLedger => AtalaObjectTransactionSubmissionStatus.InLedger
+    }
   }
 
   private def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {

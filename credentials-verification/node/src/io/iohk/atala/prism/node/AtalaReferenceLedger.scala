@@ -19,19 +19,21 @@ import scala.concurrent.{ExecutionContext, Future}
 trait AtalaReferenceLedger {
   def supportsOnChainData: Boolean
 
-  def publish(obj: node_internal.AtalaObject): Future[TransactionInfo]
+  def publish(obj: node_internal.AtalaObject): Future[PublicationInfo]
 
   def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails]
 
   def deleteTransaction(transactionId: TransactionId): Future[Unit]
 }
 
+case class PublicationInfo(transaction: TransactionInfo, status: TransactionStatus)
+
 class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
     extends AtalaReferenceLedger {
 
   override def supportsOnChainData: Boolean = true
 
-  override def publish(obj: node_internal.AtalaObject): Future[TransactionInfo] = {
+  override def publish(obj: node_internal.AtalaObject): Future[PublicationInfo] = {
     for {
       objectBytes <- Future.successful(obj.toByteArray)
       // Use a hash of the bytes as their in-memory transaction ID
@@ -46,7 +48,7 @@ class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler
       _ <- onAtalaObject(
         AtalaObjectNotification(obj, transactionInfo)
       )
-    } yield transactionInfo
+    } yield PublicationInfo(transactionInfo, TransactionStatus.InLedger)
   }
 
   override def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails] = {

@@ -1,12 +1,19 @@
 package io.iohk.atala.prism.node.services
 
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionDetails, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.AtalaReferenceLedger
+import io.iohk.atala.prism.models.{
+  BlockInfo,
+  Ledger,
+  TransactionDetails,
+  TransactionId,
+  TransactionInfo,
+  TransactionStatus
+}
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
+import io.iohk.atala.prism.node.{AtalaReferenceLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.FutureEither
 import monix.execution.Scheduler
@@ -51,13 +58,13 @@ class CardanoLedgerService private[services] (
 
   override def supportsOnChainData: Boolean = false
 
-  override def publish(obj: node_internal.AtalaObject): Future[TransactionInfo] = {
+  override def publish(obj: node_internal.AtalaObject): Future[PublicationInfo] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
     cardanoClient
       .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
       .value
       .map {
-        case Right(transactionId) => TransactionInfo(transactionId, ledger)
+        case Right(transactionId) => PublicationInfo(TransactionInfo(transactionId, ledger), TransactionStatus.Pending)
         case Left(error) =>
           logger.error(s"FATAL: Error while publishing reference: $error")
           throw new RuntimeException(s"FATAL: Error while publishing reference: $error")
