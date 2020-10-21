@@ -5,10 +5,11 @@
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  background-image: url('../../images/atala-grey-bg.svg');
-  background-position: center;
+  background: #FFFAFC;
+  background-image: url('../../images/img-login.svg');
+  background-position: right;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
 
   .LangSelector {
     align-self: flex-end;
@@ -17,41 +18,58 @@
 
   .LandingCard {
     background: $white;
-    border-radius: 6px;
     padding: 2em 5em;
-    box-shadow: $shadow;
-    width: 450px;
-    height: 450px;
-    margin-left: 100px;
-    margin-top: 60px;
+    width: 40%;
+    height: 100%;
     display: flex;
     flex-flow: column;
 
-    img {
-      margin: 20px auto;
-      height: 200px;
+    .imgLogo {
+      margin: 30px auto 0 auto;
       width: 200px;
+    }
+    .loginImg{
+      margin: auto 0 0 0 ;
     }
 
     .WelcomeText {
       h3 {
-        @include secondary-text($h1, $secondary-color);
+        @include secondary-text($title, $secondary-color);
         @include letter-spacing();
         border-top: 1px solid $light-grey;
-        padding: 2em 0;
+        padding: .5em 0 .3em 0;
+        text-align: center;
+      }
+      h2{
+        @include primary-text($h2, #728099);
         text-align: center;
       }
     }
 
     .LandingOptions {
       display: flex;
+      justify-content: center;
 
       button {
-        margin-left: 1em;
-        width: 150px;
+        width: 300px;
         align-items: center;
+        margin-top: 20px;
       }
     }
+  }
+}
+
+.browserWalletOption{
+  border-top: 1px solid #D6DBE2;
+  padding: 20px 0 0 0;
+  margin-top: auto;
+  p{
+    @include primary-text($body, #728099);
+    text-align: center; 
+  }
+  a{
+    @include primary-text($body, $primary-color);
+    margin-left: 5px;
   }
 }
 

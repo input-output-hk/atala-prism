@@ -304,10 +304,27 @@
     "checkInfo": "Check the data below"
   },
   "landing": {
-    "welcome": "Welcome",
+    "welcome": "Welcome!",
+    "description":"Please log in with Atala PRISM Browser Wallet",
     "register": "Register",
+    "clickHere": "Click Here",
     "login": "Login",
+    "getWallet": "Don't yet have the Atala PRISM Browser Wallet?",
     "logoAlt": "Atala landing picture"
+  },
+  "instructions": {
+    "instructions": "Instructions",
+    "title": "How to get your PRISM Wallet",
+    "the": "The",
+    "atalaPrism": " Atala PRISM Browser Wallet ",
+    "description": "is used to manage access to the management console and sign credentials. Currently the browser wallet extension is available on ",
+    "chrome":"Chrome. ",
+    "chromeWeb":"Chrome Web Store",
+    "descriptionPartTwo":"Depending on the browser you are currently using. Please go to the relevant webstore and add the extension to your browser",
+    "comingSoon": "Comming Soon on ",
+    "register":"Already have your Atala PRISM? ",
+    "clickRegister":"Click to register",
+    "button": "Download ZIP File"
   },
   "login": {
     "welcome": {

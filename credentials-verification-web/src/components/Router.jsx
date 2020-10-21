@@ -16,6 +16,7 @@ import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
 import GroupCreationContainer from './groupCreation/GroupCreationContainer';
+import Instructions from './instructions/instructions';
 import ImportContactsContainer from './importContacts/ImportContactsContainer';
 
 const issuer = [ISSUER];
@@ -96,6 +97,12 @@ const groupCreationRoute = {
   key: 'groupsCreation',
   component: withLoggedValidation(withSideBar(GroupCreationContainer), allRoles)
 };
+const instructions = {
+  exact: true,
+  path: '/instructions',
+  key: 'instructions',
+  component: withLoggedValidation(Instructions, noRole)
+};
 const importContacts = {
   exact: true,
   path: '/contacts/import',
@@ -116,8 +123,9 @@ const routes = [
   payment,
   individualCreation,
   landingRoute,
-  dashboardRoute,
-  importContacts
+  instructions,
+  importContacts,
+  dashboardRoute
 ];
 
 const Router = () => (
