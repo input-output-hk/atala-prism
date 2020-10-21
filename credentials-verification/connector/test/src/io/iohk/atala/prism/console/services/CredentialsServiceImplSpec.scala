@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.cmanager.grpc.services
+package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
@@ -7,15 +7,13 @@ import io.circe
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
-import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs
-import io.iohk.atala.prism.cmanager.models.GenericCredential
-import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation
-import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
-import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.atala.prism.console.models.IssuerGroup
-import io.iohk.atala.prism.console.repositories.ContactsRepository
+import io.iohk.atala.prism.console.DataPreparation
+import io.iohk.atala.prism.console.DataPreparation._
+import io.iohk.atala.prism.console.grpc.ProtoCodecs
+import io.iohk.atala.prism.console.models.{GenericCredential, IssuerGroup}
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}

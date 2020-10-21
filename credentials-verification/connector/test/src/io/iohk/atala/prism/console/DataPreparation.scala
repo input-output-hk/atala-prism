@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.cmanager.repositories.common
+package io.iohk.atala.prism.console
 
 import java.time.LocalDate
 import java.util.UUID
@@ -8,18 +8,22 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType}
+import io.iohk.atala.prism.console.repositories.{daos => consoleDaos}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType, TokenString}
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
-import io.iohk.atala.prism.cmanager.models.requests.{CreateGenericCredential, CreateStudent, CreateUniversityCredential}
-import io.iohk.atala.prism.cmanager.models._
-import io.iohk.atala.prism.cmanager.repositories.{daos => cmanagerDaos}
-import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
-import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, IssuerGroupsDAO}
+import io.iohk.atala.prism.console.models.{
+  Contact,
+  CreateContact,
+  CreateGenericCredential,
+  GenericCredential,
+  Institution,
+  IssuerGroup
+}
 import io.iohk.atala.prism.models.ParticipantId
 
 object DataPreparation {
 
-  import cmanagerDaos._
+  import consoleDaos._
   import connectorDaos._
 
   def createIssuer(name: String = "Issuer", tag: String = "")(implicit database: Transactor[IO]): Institution.Id = {
@@ -31,55 +35,6 @@ object DataPreparation {
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id
-  }
-
-  def createCredential(issuedBy: Institution.Id, studentId: Student.Id, tag: String = "")(implicit
-      database: Transactor[IO]
-  ): UniversityCredential = {
-    val request = CreateUniversityCredential(
-      issuedBy = issuedBy,
-      studentId = studentId,
-      title = s"Major IN Applied Blockchain $tag".trim,
-      enrollmentDate = LocalDate.now(),
-      graduationDate = LocalDate.now().plusYears(5),
-      groupName = s"Computer Science $tag".trim
-    )
-
-    CredentialsDAO.createUniversityCredential(request).transact(database).unsafeRunSync()
-  }
-
-  def createStudent(issuer: Institution.Id, name: String, groupName: IssuerGroup.Name, tag: String = "")(implicit
-      database: Transactor[IO]
-  ): Student = createStudent(issuer, name, Some(groupName), tag)
-
-  def createStudent(issuerId: Institution.Id, name: String, groupName: Option[IssuerGroup.Name], tag: String)(implicit
-      database: Transactor[IO]
-  ): Student = {
-    val request = CreateStudent(
-      issuer = issuerId,
-      universityAssignedId = s"uid - $tag",
-      fullName = name,
-      email = "donthaveone@here.com",
-      admissionDate = LocalDate.now()
-    )
-
-    groupName match {
-      case None =>
-        StudentsDAO.createStudent(request).transact(database).unsafeRunSync()
-      case Some(name) =>
-        val group = IssuerGroupsDAO
-          .find(issuerId, name)
-          .transact(database)
-          .unsafeRunSync()
-          .getOrElse(throw new RuntimeException("Missing group"))
-
-        val query = for {
-          student <- StudentsDAO.createStudent(request)
-          _ <- IssuerGroupsDAO.addContact(group.id, Contact.Id(student.id.value))
-        } yield student
-
-        query.transact(database).unsafeRunSync()
-    }
   }
 
   def createIssuerGroup(issuerId: Institution.Id, name: IssuerGroup.Name)(implicit
@@ -141,5 +96,18 @@ object DataPreparation {
 
         query.transact(database).unsafeRunSync()
     }
+  }
+
+  def generateConnectionToken(issuerId: Institution.Id, contactId: Contact.Id, maybeToken: Option[TokenString] = None)(
+      implicit database: Transactor[IO]
+  ): TokenString = {
+    val token = maybeToken.getOrElse(TokenString.random())
+
+    val tx = for {
+      _ <- ConnectionTokensDAO.insert(ParticipantId(issuerId.value), token)
+      _ <- ContactsDAO.setConnectionToken(issuerId, contactId, token)
+    } yield token
+
+    tx.transact(database).unsafeRunSync()
   }
 }

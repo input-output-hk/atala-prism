@@ -1,26 +1,25 @@
-package io.iohk.atala.prism.cmanager.grpc.services
+package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
-import io.iohk.atala.prism.cmanager.grpc.services.codecs.ProtoCodecs._
-import io.iohk.atala.prism.cmanager.models.requests.{
+import io.iohk.atala.prism.console.grpc.ProtoCodecs._
+import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.console.models.{
+  Contact,
   CreateGenericCredential,
-  CreateUniversityCredential,
+  GenericCredential,
+  Institution,
   PublishCredential
 }
-import io.iohk.atala.prism.cmanager.models._
-import io.iohk.atala.prism.cmanager.repositories.CredentialsRepository
-import io.iohk.atala.prism.connector.Authenticator
-import io.iohk.atala.prism.console.models.{Contact, Institution}
-import io.iohk.atala.prism.console.repositories.ContactsRepository
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.ProtoCodecs
+import io.iohk.atala.prism.protos.cmanager_api._
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.{cmanager_api, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
-import io.iohk.atala.prism.protos.cmanager_api._
-import io.iohk.atala.prism.protos.{cmanager_api, node_api}
-import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,39 +34,6 @@ class CredentialsServiceImpl(
     ec: ExecutionContext
 ) extends cmanager_api.CredentialsServiceGrpc.CredentialsService {
 
-  override def createCredential(
-      request: cmanager_api.CreateCredentialRequest
-  ): Future[cmanager_api.CreateCredentialResponse] =
-    authenticatedHandler("createCredential", request) { issuerId =>
-      val studentId = Student.Id(UUID.fromString(request.studentId))
-      val model = request
-        .into[CreateUniversityCredential]
-        .withFieldConst(_.issuedBy, Institution.Id(issuerId))
-        .withFieldConst(_.studentId, studentId)
-        .enableUnsafeOption
-        .transform
-
-      credentialsRepository
-        .createUniversityCredential(model)
-        .map(universityCredentialToProto)
-        .map(cmanager_api.CreateCredentialResponse().withCredential)
-    }
-
-  override def getCredentials(
-      request: cmanager_api.GetCredentialsRequest
-  ): Future[cmanager_api.GetCredentialsResponse] =
-    authenticatedHandler("getCredentials", request) { issuerId =>
-      val lastSeenCredential =
-        Try(UUID.fromString(request.lastSeenCredentialId)).map(UniversityCredential.Id.apply).toOption
-      credentialsRepository
-        .getUniversityCredentialsBy(Institution.Id(issuerId), request.limit, lastSeenCredential)
-        .map { list =>
-          cmanager_api.GetCredentialsResponse(list.map(universityCredentialToProto))
-        }
-    }
-
-  /** Generic versions
-    */
   override def createGenericCredential(
       request: CreateGenericCredentialRequest
   ): Future[CreateGenericCredentialResponse] =

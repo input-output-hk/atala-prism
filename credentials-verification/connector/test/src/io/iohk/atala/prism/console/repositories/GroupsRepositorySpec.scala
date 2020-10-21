@@ -1,11 +1,16 @@
 package io.iohk.atala.prism.console.repositories
 
-import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
-import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
+import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.IssuerGroup
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.EitherValues._
 
-class GroupsRepositorySpec extends CManagerRepositorySpec {
+import scala.concurrent.duration._
+
+class GroupsRepositorySpec extends PostgresRepositorySpec {
+
+  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
+
   lazy val repository = new GroupsRepository(database)
 
   "create" should {

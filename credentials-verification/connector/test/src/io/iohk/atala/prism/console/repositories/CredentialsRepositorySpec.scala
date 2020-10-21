@@ -1,91 +1,33 @@
-package io.iohk.atala.prism.cmanager.repositories
+package io.iohk.atala.prism.console.repositories
 
 import java.time.LocalDate
 import java.util.UUID
 
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.models.{GenericCredential, Student}
-import io.iohk.atala.prism.cmanager.models.requests.{
+import io.circe.syntax._
+import io.iohk.atala.prism.cmanager.models.Student
+import io.iohk.atala.prism.console.DataPreparation._
+import io.iohk.atala.prism.console.models.{
   CreateGenericCredential,
-  CreateUniversityCredential,
+  GenericCredential,
+  Institution,
+  IssuerGroup,
   PublishCredential
 }
-import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
-import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
-import org.scalatest.EitherValues._
-import org.scalatest.OptionValues._
-import io.circe.syntax._
-import io.iohk.atala.prism.console.models.{Institution, IssuerGroup}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
-class CredentialsRepositorySpec extends CManagerRepositorySpec {
+import scala.concurrent.duration._
+
+class CredentialsRepositorySpec extends PostgresRepositorySpec {
+
+  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
 
   lazy val credentialsRepository = new CredentialsRepository(database)
 
-  "createUniversityCredential" should {
-    "create a new credential" in {
-      val issuerName = "Issuer-1"
-      val issuerId = createIssuer(issuerName)
-      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
-      val student = createStudent(issuerId, "Student 1", group.name)
-      val request = CreateUniversityCredential(
-        issuedBy = issuerId,
-        studentId = student.id,
-        title = "Major IN Applied Blockchain",
-        enrollmentDate = LocalDate.now(),
-        graduationDate = LocalDate.now().plusYears(5),
-        groupName = "Computer Science"
-      )
-
-      val result = credentialsRepository.createUniversityCredential(request).value.futureValue
-      val credential = result.right.value
-      credential.enrollmentDate must be(request.enrollmentDate)
-      credential.graduationDate must be(request.graduationDate)
-      credential.issuedBy must be(request.issuedBy)
-      credential.studentId must be(request.studentId)
-      credential.issuerName must be(issuerName)
-      credential.studentName must be(student.fullName)
-      credential.title must be(request.title)
-      credential.groupName must be(request.groupName)
-    }
-  }
-
-  "getUniversityCredentialsBy" should {
-    "return the first credentials" in {
-      val issuerId = createIssuer("Issuer X")
-      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
-      val student = createStudent(issuerId, "IOHK Student", group.name).id
-      val credA = createCredential(issuerId, student, "A")
-      val credB = createCredential(issuerId, student, "B")
-      createCredential(issuerId, student, "C")
-
-      val result = credentialsRepository.getUniversityCredentialsBy(issuerId, 2, None).value.futureValue.right.value
-      result.toSet must be(Set(credA, credB))
-    }
-
-    "paginate by the last seen credential" in {
-      val issuerId = createIssuer("Issuer X")
-      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
-      val student = createStudent(issuerId, "IOHK Student", group.name).id
-      createCredential(issuerId, student, "A")
-      createCredential(issuerId, student, "B")
-      val credC = createCredential(issuerId, student, "C")
-      createCredential(issuerId, student, "D")
-
-      val first = credentialsRepository.getUniversityCredentialsBy(issuerId, 2, None).value.futureValue.right.value
-      val result =
-        credentialsRepository
-          .getUniversityCredentialsBy(issuerId, 1, first.lastOption.map(_.id))
-          .value
-          .futureValue
-          .right
-          .value
-      result.toSet must be(Set(credC))
-    }
-  }
-
-  // Generic versions
   "create" should {
     "create a new credential" in {
       val issuerName = "Issuer-1"

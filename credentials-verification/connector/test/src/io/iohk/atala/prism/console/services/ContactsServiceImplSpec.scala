@@ -6,7 +6,7 @@ import java.util.UUID
 import io.circe
 import io.circe.{Json, parser}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs.toContactProto
-import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation.{createIssuer, createIssuerGroup, createContact}
+import io.iohk.atala.prism.console.DataPreparation.{createIssuer, createIssuerGroup, createContact}
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}

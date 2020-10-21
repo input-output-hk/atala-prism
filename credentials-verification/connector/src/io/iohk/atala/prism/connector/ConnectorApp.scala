@@ -3,9 +3,6 @@ package io.iohk.atala.prism.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
-import io.iohk.atala.prism.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl}
-import io.iohk.atala.prism.cmanager.repositories.{CredentialsRepository, StudentsRepository}
-import io.iohk.atala.prism.cstore.repositories.IndividualsRepository
 import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
@@ -14,9 +11,18 @@ import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository, StoredCredentialsRepository}
-import io.iohk.atala.prism.console.services.{ContactsServiceImpl, GroupsServiceImpl}
-import io.iohk.atala.prism.cstore.services.CredentialsStoreService
+import io.iohk.atala.prism.console.repositories.{
+  ContactsRepository,
+  CredentialsRepository,
+  GroupsRepository,
+  StoredCredentialsRepository
+}
+import io.iohk.atala.prism.console.services.{
+  ContactsServiceImpl,
+  CredentialsServiceImpl,
+  CredentialsStoreService,
+  GroupsServiceImpl
+}
 import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,
   EmploymentServiceGrpc,
@@ -24,7 +30,7 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   InsuranceServiceGrpc
 }
 import io.iohk.atala.prism.protos.admin_api.AdminServiceGrpc
-import io.iohk.atala.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
+import io.iohk.atala.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.console_api.ConsoleServiceGrpc
 import io.iohk.atala.prism.protos.cstore_api.CredentialsStoreServiceGrpc
@@ -109,19 +115,15 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
 
     // cmanager
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
-    val studentsRepository = new StudentsRepository(xa)(executionContext)
     val contactsRepository = new ContactsRepository(xa)(executionContext)
     val issuerGroupsRepository = new GroupsRepository(xa)(executionContext)
     val credentialsService =
       new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, node)(executionContext)
-    val studentsService =
-      new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator)(executionContext)
     val groupsService = new GroupsServiceImpl(issuerGroupsRepository, authenticator)(executionContext)
 
-    val storeIndividualsService = new IndividualsRepository(xa)(executionContext)
     val storedCredentialsService = new StoredCredentialsRepository(xa)(executionContext)
     val credentialsStoreService =
-      new CredentialsStoreService(storeIndividualsService, storedCredentialsService, contactsRepository, authenticator)(
+      new CredentialsStoreService(storedCredentialsService, authenticator)(
         executionContext
       )
     val credentialViewsService = new CredentialViewsService(authenticator)(executionContext)
@@ -151,7 +153,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .intercept(new GrpcAuthenticatorInterceptor)
       .addService(connector_api.ConnectorServiceGrpc.bindService(connectorService, executionContext))
       .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
-      .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .addService(CredentialViewsServiceGrpc.bindService(credentialViewsService, executionContext))

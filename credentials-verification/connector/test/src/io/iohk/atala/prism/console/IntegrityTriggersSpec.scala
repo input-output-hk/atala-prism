@@ -1,15 +1,19 @@
-package io.iohk.atala.prism.cmanager
+package io.iohk.atala.prism.console
 
 import java.time.LocalDate
 
-import io.circe.Json
 import doobie.implicits._
-import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
-import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation.{createIssuer, createIssuerGroup}
+import io.circe.Json
+import DataPreparation.{createIssuer, createIssuerGroup}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, IssuerGroupsDAO}
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 
-class IntegrityTriggersSpec extends CManagerRepositorySpec {
+import scala.concurrent.duration._
+
+class IntegrityTriggersSpec extends PostgresRepositorySpec {
+
+  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
 
   "contacts_per_group" should {
     "fail insertion when a subject and group do not belong to the same issuer" in {

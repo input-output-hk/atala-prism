@@ -3,13 +3,18 @@ package io.iohk.atala.prism.console.repositories
 import java.time.LocalDate
 
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.repositories.common.CManagerRepositorySpec
-import io.iohk.atala.prism.cmanager.repositories.common.DataPreparation._
+import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
-class ContactsRepositorySpec extends CManagerRepositorySpec {
+import scala.concurrent.duration._
+
+class ContactsRepositorySpec extends PostgresRepositorySpec {
+
+  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
+
   lazy val repository = new ContactsRepository(database)
 
   "create" should {

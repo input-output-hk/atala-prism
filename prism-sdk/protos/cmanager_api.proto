@@ -10,9 +10,6 @@ import "common_models.proto";
 import "node_models.proto";
 
 service CredentialsService {
-    rpc CreateCredential (CreateCredentialRequest) returns (CreateCredentialResponse) {}
-    rpc GetCredentials (GetCredentialsRequest) returns (GetCredentialsResponse) {}
-
     // Generic versions
     rpc CreateGenericCredential (CreateGenericCredentialRequest) returns (CreateGenericCredentialResponse) {}
     rpc GetGenericCredentials (GetGenericCredentialsRequest) returns (GetGenericCredentialsResponse) {}
@@ -23,16 +20,6 @@ service CredentialsService {
     rpc PublishCredential (PublishCredentialRequest) returns (PublishCredentialResponse) {}
 }
 
-service StudentsService {
-    rpc CreateStudent (CreateStudentRequest) returns (CreateStudentResponse) {}
-    rpc GetStudents (GetStudentsRequest) returns (GetStudentsResponse) {}
-    rpc GetStudent (GetStudentRequest) returns (GetStudentResponse) {}
-    rpc GetStudentCredentials (GetStudentCredentialsRequest) returns (GetStudentCredentialsResponse) {}
-
-    // Generate a connection token to get connected to a specific student
-    rpc GenerateConnectionTokenForStudent (GenerateConnectionTokenForStudentRequest) returns (GenerateConnectionTokenForStudentResponse) {}
-}
-
 service GroupsService {
     rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
     rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
@@ -40,69 +27,6 @@ service GroupsService {
     // Update an existing group by adding new contacts and removing some of the old ones
     rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse) {}
 }
-
-// The authenticated issuer is creating a credential
-message CreateCredentialRequest {
-    string studentId = 1;
-    string title = 2;
-    Date enrollmentDate = 3;
-    Date graduationDate = 4;
-    string groupName = 5;
-}
-message CreateCredentialResponse {
-    CManagerCredential credential = 1;
-}
-
-// The authenticated issuer is retrieving its issued credentials
-message GetCredentialsRequest {
-    int32 limit = 1; // the max amount of credentials to return, must be > 0
-    string lastSeenCredentialId = 2; // the last seen credential (if any), the returned credentials start after this one
-}
-message GetCredentialsResponse {
-    repeated CManagerCredential credentials = 1;
-}
-
-message CreateStudentRequest {
-    string universityAssignedId = 1;
-    string fullName = 2;
-    string email = 3;
-    Date admissionDate = 4;
-    string groupName = 5;
-}
-message CreateStudentResponse {
-    Student student = 1;
-}
-
-message GetStudentsRequest {
-    int32 limit = 1; // the max amount of students to return, must be > 0
-    string lastSeenStudentId = 2; // the last seen student (if any), the returned students start after this one
-    string groupName = 3; // if provided, get only the students that belong to this group
-}
-message GetStudentsResponse {
-    repeated Student students = 1;
-}
-
-message GetStudentRequest {
-    string studentId = 1;
-}
-message GetStudentResponse {
-    Student student = 1;
-}
-
-message GetStudentCredentialsRequest {
-    string studentId = 1;
-}
-message GetStudentCredentialsResponse {
-    repeated CManagerCredential credential = 1;
-}
-
-message GenerateConnectionTokenForStudentRequest {
-    string studentId = 1; // the student that will be linked to the token
-}
-message GenerateConnectionTokenForStudentResponse {
-    string token = 1;
-}
-
 
 // groups
 message CreateGroupRequest {

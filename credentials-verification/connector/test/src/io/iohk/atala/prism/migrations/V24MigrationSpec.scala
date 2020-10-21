@@ -7,16 +7,34 @@ import doobie.implicits.toSqlInterpolator
 import doobie.postgres.implicits.pgEnumString
 import doobie.util.invariant.InvalidEnum
 import doobie.util.Meta
+import enumeratum.{Enum, EnumEntry}
+import enumeratum.EnumEntry.UpperSnakecase
 import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.connector.model.ParticipantType
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.console.models.Contact
-import io.iohk.atala.prism.cstore.models.IndividualConnectionStatus
 import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
+// Models from the legacy cstore, used only in this test
+object LegacyModels {
+  sealed trait IndividualConnectionStatus extends EnumEntry with UpperSnakecase
+
+  object IndividualConnectionStatus extends Enum[IndividualConnectionStatus] {
+    val values = findValues
+
+    case object Created extends IndividualConnectionStatus
+    case object Invited extends IndividualConnectionStatus
+    case object Connected extends IndividualConnectionStatus
+    case object Revoked extends IndividualConnectionStatus
+  }
+}
+
 class V24MigrationSpec extends PostgresMigrationSpec("V24") with BaseDAO {
+
+  import LegacyModels._
+
   private def insertIssuer(issuerId: UUID, name: String, did: String): Unit = {
     sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo)
          |VALUES ($issuerId, ${ParticipantType.Issuer: ParticipantType}::PARTICIPANT_TYPE, $did, null, $name, '')

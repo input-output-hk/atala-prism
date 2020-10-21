@@ -5,32 +5,6 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
-enum IndividualConnectionStatus {
-    CREATED = 0;
-    INVITED = 1;
-    CONNECTED = 2;
-    REVOKED = 3;
-}
-
-message Individual {
-    string individualId = 1;
-    IndividualConnectionStatus status = 2;
-    string fullName = 3;
-    string email = 4;
-    string connectionToken = 5;
-    string connectionId = 6;
-}
-
-message VerifierHolder {
-    string holderId = 1;
-    string jsonData = 2;
-    // NOTE: as enum values need to be unique, we reuse the individual status for now, eventually,
-    // TODO: we should rename that enum.
-    IndividualConnectionStatus status = 3;
-    string connectionToken = 4;
-    string connectionId = 5;
-}
-
 message StoredSignedCredential {
     string individualId = 1;
     string encodedSignedCredential = 2;

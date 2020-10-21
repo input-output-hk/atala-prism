@@ -5,7 +5,10 @@ import java.util.UUID
 
 import enumeratum.{Enum, EnumEntry}
 import io.circe.Json
+import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
+import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 
 package object models {
   case class CreateContact(
@@ -59,5 +62,47 @@ package object models {
   object IssuerGroup {
     case class Id(value: UUID) extends AnyVal
     case class Name(value: String) extends AnyVal
+  }
+
+  case class GenericCredential(
+      credentialId: GenericCredential.Id,
+      issuedBy: Institution.Id,
+      subjectId: Contact.Id,
+      credentialData: Json,
+      groupName: String,
+      createdOn: Instant,
+      externalId: Contact.ExternalId,
+      issuerName: String,
+      subjectData: Json,
+      connectionStatus: Student.ConnectionStatus,
+      publicationData: Option[PublicationData]
+  )
+
+  case class CreateGenericCredential(
+      issuedBy: Institution.Id,
+      subjectId: Contact.Id,
+      credentialData: Json,
+      groupName: String
+  )
+
+  case class PublicationData(
+      nodeCredentialId: String, // the id assigned by the protocol
+      issuanceOperationHash: SHA256Digest, // the hex representation of the associated issuance operation hash
+      encodedSignedCredential: String, // the actual published credential
+      storedAt: Instant, // the time when the publication data was stored in the database
+      transactionId: TransactionId,
+      ledger: Ledger
+  )
+
+  case class PublishCredential(
+      credentialId: GenericCredential.Id,
+      issuanceOperationHash: SHA256Digest,
+      nodeCredentialId: String, // TODO: Move node CredentialId class to common
+      encodedSignedCredential: String,
+      transactionInfo: TransactionInfo
+  )
+
+  object GenericCredential {
+    case class Id(value: UUID) extends AnyVal
   }
 }
