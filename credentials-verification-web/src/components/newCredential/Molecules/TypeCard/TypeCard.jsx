@@ -31,7 +31,7 @@ TypeCard.propTypes = {
   credentialType: PropTypes.shape({
     name: PropTypes.string.isRequired,
     logo: PropTypes.string.isRequired,
-    sample: PropTypes.string.isRequired
+    sampleImage: PropTypes.string.isRequired
   }).isRequired,
   isSelected: PropTypes.bool.isRequired,
   onClick: PropTypes.func.isRequired

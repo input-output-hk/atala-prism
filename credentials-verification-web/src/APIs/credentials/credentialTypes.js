@@ -16,7 +16,7 @@ const governmentId = {
       type: 'string',
       validations: ['required']
     },
-    fullName: {
+    fullname: {
       type: 'string',
       validations: ['required']
     },

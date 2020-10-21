@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import _ from 'lodash';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -7,12 +8,21 @@ import { withApi } from '../providers/withApi';
 import TypeSelection from './Organism/TypeSelection/TypeSelection';
 import RecipientsSelection from './Organism/RecipientsSelection/RecipientsSelection';
 import { withRedirector } from '../providers/withRedirector';
-import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
+import {
+  HOLDER_PAGE_SIZE,
+  MAX_CONTACTS,
+  SELECT_CREDENTIAL_TYPE_STEP,
+  SELECT_RECIPIENTS_STEP,
+  IMPORT_CREDENTIAL_DATA_STEP,
+  PREVIEW_AND_SIGN_CREDENTIAL_STEP
+} from '../../helpers/constants';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers';
+import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
+import UnderContsructionMessage from '../common/Atoms/UnderContsructionMessage/UnderContsructionMessage';
 
-const NewCredentialContainer = ({ api }) => {
+const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -29,6 +39,8 @@ const NewCredentialContainer = ({ api }) => {
   const [subjectsFilter, setSubjectsFilter] = useState('');
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [hasMoreSubjects, setHasMoreSubjects] = useState(true);
+
+  const [importedData, setImportedData] = useState([]);
 
   const credentialTypes = api.credentialsManager.getCredentialTypes();
 
@@ -83,9 +95,31 @@ const NewCredentialContainer = ({ api }) => {
     if (hasMoreSubjects && filteredSubjects.length < HOLDER_PAGE_SIZE) getSubjects();
   }, [filteredSubjects]);
 
+  const handleImportedData = (dataObjects, _groups, setResults) => {
+    setImportedData(dataObjects);
+    setResults({
+      credentialDataImported: dataObjects.length,
+      continueCallback: () => goToCredentialsPreview(dataObjects)
+    });
+  };
+
+  const goToCredentialsPreview = importedCredentials => {
+    message.warn(t('newCredential.messages.noFurtherSteps'));
+    Logger.debug(importedCredentials);
+    setCurrentStep(PREVIEW_AND_SIGN_CREDENTIAL_STEP);
+  };
+
+  const getContactsFromGroups = () => {
+    const groupContactsromises = selectedGroups.map(group =>
+      api.contactsManager.getContacts(0, MAX_CONTACTS, group)
+    );
+
+    return Promise.all(groupContactsromises);
+  };
+
   const renderStep = () => {
     switch (currentStep) {
-      case 0:
+      case SELECT_CREDENTIAL_TYPE_STEP:
         return (
           <TypeSelection
             credentialTypes={credentialTypes}
@@ -93,7 +127,7 @@ const NewCredentialContainer = ({ api }) => {
             selectedType={credentialType}
           />
         );
-      case 1:
+      case SELECT_RECIPIENTS_STEP:
         return (
           <RecipientsSelection
             isIssuer={() => api.wallet.isIssuer()}
@@ -109,10 +143,26 @@ const NewCredentialContainer = ({ api }) => {
             hasMoreSubjects={hasMoreSubjects}
           />
         );
-      case 2:
-        return null; // TODO: Implement credential information import
+      case IMPORT_CREDENTIAL_DATA_STEP: {
+        return (
+          <ImportCredentialsData
+            subjects={subjects}
+            credentialType={credentialTypes[credentialType]}
+            selectedGroups={selectedGroups}
+            selectedSubjects={selectedSubjects}
+            onCancel={() => setCurrentStep(currentStep - 1)}
+            onFinish={handleImportedData}
+            getContactsFromGroups={getContactsFromGroups}
+            goToCredentialsPreview={goToCredentialsPreview}
+          />
+        );
+      }
+      case PREVIEW_AND_SIGN_CREDENTIAL_STEP:
+        // TODO: Implement credential visualisation + signing
+        return <UnderContsructionMessage goBack={redirectToCredentials} />;
       default:
-        return null; // TODO: Implement credential visualisation + signing
+        // TODO: Implement credential visualisation + signing
+        return <UnderContsructionMessage goBack={redirectToCredentials} />;
     }
   };
 

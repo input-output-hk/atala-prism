@@ -1,31 +1,48 @@
-@import '../../../css/general_styling';
+@import "../../../css/general_styling";
 
-.BulkImportContent {
+.BulkImportStepsWrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  .ContentHeader {
+    border-bottom: 1px solid $light-grey;
+    padding: 2em;
+    display: block!important;
+    h1 {
+      @include primary-text($h1, $black);
+      font-weight: bold;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+    }
+  }
+  .BulkImportContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 
-  .StepCard {
-    width: 400px;
-    height: 350px;
-    cursor: pointer;
-    margin: 0 1em;
+    .StepCard {
+      width: 400px;
+      height: 350px;
+      cursor: pointer;
+      margin: 0 1em;
+    }
+
+    .ant-col {
+      margin: 7px;
+    }
   }
 
-  .ant-col {
-    margin: 7px;
+  .FooterButton {
+    display: flex;
+    justify-content: flex-end;
   }
 
-}
-
-.FooterButton {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.StepsFooter {
-  width: 100%;
+  .StepsFooter {
+    width: 100%;
+  }
 }
 
 @media only screen and (max-width: 960px) {
@@ -33,7 +50,7 @@
     .BulkImportContent {
       flex-direction: column;
       .StepCard {
-        margin:1em;
+        margin: 1em;
       }
     }
   }

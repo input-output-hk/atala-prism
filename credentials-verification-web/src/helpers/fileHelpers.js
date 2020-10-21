@@ -1,4 +1,6 @@
 import { saveAs } from 'file-saver';
+import Papa from 'papaparse';
+import _ from 'lodash';
 import {
   ALLOWED_IMAGE_TYPES,
   MAX_FILE_SIZE,
@@ -57,13 +59,22 @@ export const downloadTemplateCsv = inputData => {
 
 const generateDefaultCsv = () => headersToCsvString(COMMON_CONTACT_HEADERS);
 
-const generateCsvFromInputData = inputData => {
-  // TODO: generate csv from contacts and credential type(s?)
+const generateCsvFromInputData = ({ contacts, credentialType }) => {
+  if (!contacts.length) {
+    return { error: 'no target subjects' };
+  }
+  const headers = ['externalid', 'fullname', ...Object.keys(credentialType.fields)];
+
+  const noRepeatedHeaders = _.uniq(headers);
+
+  const templateJSON = contacts.map(contact =>
+    noRepeatedHeaders.reduce((acc, h) => Object.assign(acc, { [h]: contact[h] }), {})
+  );
+
+  return Papa.unparse(templateJSON);
 };
 
-const getFilename = inputData => {
-  // TODO: generate filename from credential type(s?)
-};
+const getFilename = ({ credentialType }) => `${credentialType.name}.csv`;
 
 // empty csv from headers array
 const headersToCsvString = headers => headers.reduce((acc, h) => (!acc ? h : `${acc},${h}`), null);

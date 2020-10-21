@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next';
 import CompleteSpreadSheetStep from '../Molecules/Steps/CompleteSpreadSheetStep';
 import AssignToGroupsStep from '../Molecules/Steps/AssignToGroupsStep';
 import StepsFooter from '../../common/Molecules/StepFooter/StepFooter';
-import { COMPLETE_SPREADSHEET_STEP, ASSIGN_TO_GROUPS } from '../../../helpers/constants';
+import {
+  COMPLETE_SPREADSHEET_STEP,
+  ASSIGN_TO_GROUPS,
+  IMPORT_CONTACTS,
+  IMPORT_CREDENTIALS_DATA
+} from '../../../helpers/constants';
 import './_style.scss';
-
-const STEP_COUNT_WITH_GROUP_SELECTION = 2;
-const STEP_COUNT_WITHOUT_GROUP_SELECTION = 1;
 
 const BulkImportSteps = ({
   fileData,
@@ -19,7 +21,9 @@ const BulkImportSteps = ({
   setSkipGroupsAssignment,
   showGroupSelection,
   onFinish,
-  cancelImport
+  cancelImport,
+  getTargets,
+  useCase
 }) => {
   const [currentStep, setCurrentStep] = useState(COMPLETE_SPREADSHEET_STEP);
 
@@ -36,23 +40,18 @@ const BulkImportSteps = ({
 
   const disableNext = shouldDisableNext[currentStep];
 
-  const stepCount = showGroupSelection
-    ? STEP_COUNT_WITH_GROUP_SELECTION
-    : STEP_COUNT_WITHOUT_GROUP_SELECTION;
-
   return (
-    <>
-      <div className="ContentHeader">
-        <h1>{t('bulkImport.title')}</h1>
-        <p>{t('bulkImport.info')}</p>
+    <div className="BulkImportStepsWrapper">
+      <div className="ContentHeader TitleAndSubtitle">
+        <h1>{t(`${useCase}.bulkImportStep.title`)}</h1>
+        <p>{t(`${useCase}.bulkImportStep.info`)}</p>
       </div>
       <div className="BulkImportContent">
         <CompleteSpreadSheetStep
           currentStep={currentStep}
           setCurrentStep={setCurrentStep}
           setFileData={setFileData}
-          // TODO: implement passing existing contacts and a credential type
-          // inputData={{contacts: [...], credentialType: {...}}}
+          getTargets={getTargets}
         />
         {showGroupSelection && (
           <AssignToGroupsStep
@@ -68,14 +67,14 @@ const BulkImportSteps = ({
       </div>
       <StepsFooter
         currentStep={currentStep}
-        stepCount={stepCount}
+        stepCount={showGroupSelection ? 2 : 1}
         onCancel={cancelImport}
         previousStep={handlePreviousStep}
         nextStep={handleNextStep}
         disableNext={disableNext}
         onFinish={onFinish}
       />
-    </>
+    </div>
   );
 };
 
@@ -85,11 +84,11 @@ BulkImportSteps.defaultProps = {
   selectedGroups: [],
   onFinish: () => {},
   cancelImport: () => {},
-  skipGroupsAssignment: false,
-  setSkipGroupsAssignment: null
+  getTargets: null
 };
 
 BulkImportSteps.propTypes = {
+  getTargets: PropTypes.func,
   fileData: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
     errors: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.shape({ type: PropTypes.string })))
@@ -100,8 +99,9 @@ BulkImportSteps.propTypes = {
   showGroupSelection: PropTypes.bool,
   onFinish: PropTypes.func,
   cancelImport: PropTypes.func,
-  skipGroupsAssignment: PropTypes.bool,
-  setSkipGroupsAssignment: PropTypes.func
+  skipGroupsAssignment: PropTypes.bool.isRequired,
+  setSkipGroupsAssignment: PropTypes.func.isRequired,
+  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
 };
 
 export default BulkImportSteps;

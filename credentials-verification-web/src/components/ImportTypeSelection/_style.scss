@@ -1,10 +1,17 @@
 @import '../../css/general_styling';
 
-.ImportContactWrapper {
-  flex-direction: column;
+.OptionCardsContainer {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.ImportWrapper {
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  height: 90vh;
+  height: 100%;
   .ContentHeader {
     border-bottom: 1px solid $light-grey;
     padding: 2em;
@@ -17,4 +24,8 @@
       @include primary-text($body, $dark-grey);
     }
   }
+}
+
+.EmbeddedImportWrapper {
+  height: 90%;
 }

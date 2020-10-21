@@ -30,8 +30,8 @@ export const makeCancelable = promise => {
   };
 };
 
-export const retry = (fn, retriesLeft = 5, interval = 1000) => {
-  return new Promise((resolve, reject) => {
+export const retry = (fn, retriesLeft = 5, interval = 1000) =>
+  new Promise((resolve, reject) => {
     fn()
       .then(resolve)
       .catch(error => {
@@ -48,4 +48,3 @@ export const retry = (fn, retriesLeft = 5, interval = 1000) => {
         }, interval);
       });
   });
-};

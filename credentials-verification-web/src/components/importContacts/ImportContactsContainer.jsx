@@ -1,39 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { omit } from 'lodash';
-import { withApi } from '../providers/withApi';
+import ImportDataContainer from '../importContactData/ImportDataContainer';
 import { withRedirector } from '../providers/withRedirector';
-import BulkImport from '../bulkImport/BulkImport';
+import { IMPORT_CONTACTS } from '../../helpers/constants';
+import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
-import { validateContactsBulk } from '../../helpers/contactValidations';
-import { aoaToObjects } from '../../helpers/fileHelpers';
-import './_style.scss';
 import { fromMomentToProtoDateFormatter } from '../../helpers/formatters';
+import { validateContactsBulk } from '../../helpers/contactValidations';
 
-const ContactsBulkImport = ({ api, redirector: { redirectToImportContacts } }) => {
+const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) => {
   const { t } = useTranslation();
-
-  const handleUpload = (fileData, selectedGroups, setResults) => {
-    const { dataObjects, containsErrors, validationErrors } = parseFile(fileData);
-    if (containsErrors) setResults({ fileData, validationErrors });
-    else handleRequests(dataObjects, selectedGroups, setResults);
-  };
-
-  const parseFile = fileData => {
-    const inputHeaders = fileData.data[0];
-    const dataObjects = aoaToObjects(fileData.data);
-
-    const { containsErrors, validationErrors } = validateContactsBulk(dataObjects, inputHeaders);
-
-    return {
-      dataObjects,
-      containsErrors,
-      validationErrors
-    };
-  };
 
   // TODO: replace with bulk request
   const handleRequests = async (contactsData, groups, setResults) => {
@@ -67,7 +47,7 @@ const ContactsBulkImport = ({ api, redirector: { redirectToImportContacts } }) =
           api.contactsManager.createContact(
             group,
             creationDateDecorator(omit(contact, ['originalArray'])),
-            contact.externalId
+            contact.externalid
           )
         )
       )
@@ -82,17 +62,16 @@ const ContactsBulkImport = ({ api, redirector: { redirectToImportContacts } }) =
   });
 
   return (
-    <div className="BulkImportContainer">
-      <BulkImport
-        onUpload={handleUpload}
-        cancelImport={redirectToImportContacts}
-        showGroupSelection
-      />
-    </div>
+    <ImportDataContainer
+      bulkValidator={validateContactsBulk}
+      onFinish={handleRequests}
+      onCancel={redirectToContacts}
+      useCase={IMPORT_CONTACTS}
+    />
   );
 };
 
-ContactsBulkImport.propTypes = {
+ImportContactsContainer.propTypes = {
   api: PropTypes.shape({
     groupsManager: PropTypes.shape({
       getGroups: PropTypes.func.isRequired,
@@ -100,7 +79,7 @@ ContactsBulkImport.propTypes = {
     }).isRequired,
     contactsManager: PropTypes.shape({ createContact: PropTypes.func.isRequired }).isRequired
   }).isRequired,
-  redirector: PropTypes.shape({ redirectToImportContacts: PropTypes.func }).isRequired
+  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };
 
-export default withApi(withRedirector(ContactsBulkImport));
+export default withApi(withRedirector(ImportContactsContainer));

@@ -2,13 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import BulkImportErrorLog from '../Molecules/Results/BulkImportErrorLog';
 import BulkImportSuccess from '../Molecules/Results/BulkImportSuccess';
+import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../helpers/constants';
 
 const BulkImportResult = ({
   fileData,
   validationErrors,
   contactCreations,
   groupsCreations,
-  returnToUploadStep
+  returnToUploadStep,
+  credentialDataImported,
+  continueCallback,
+  useCase
 }) => {
   const errorProps = {
     fileData,
@@ -18,7 +22,10 @@ const BulkImportResult = ({
 
   const successfulUpdates = {
     contactCreations,
-    groupsCreations
+    groupsCreations,
+    credentialDataImported,
+    continueCallback,
+    useCase
   };
 
   return validationErrors ? (
@@ -32,7 +39,9 @@ BulkImportResult.defaultProps = {
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   validationErrors: null,
   contactCreations: 0,
-  groupsCreations: 0
+  groupsCreations: 0,
+  credentialDataImported: 0,
+  continueCallback: null
 };
 
 BulkImportResult.propTypes = {
@@ -43,7 +52,10 @@ BulkImportResult.propTypes = {
   ),
   contactCreations: PropTypes.number,
   groupsCreations: PropTypes.number,
-  returnToUploadStep: PropTypes.func.isRequired
+  returnToUploadStep: PropTypes.func.isRequired,
+  credentialDataImported: PropTypes.number,
+  continueCallback: PropTypes.func,
+  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
 };
 
 export default BulkImportResult;

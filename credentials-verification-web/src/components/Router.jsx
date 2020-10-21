@@ -16,9 +16,7 @@ import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
 import GroupCreationContainer from './groupCreation/GroupCreationContainer';
-import ImportContacts from './importContacts/ImportContacts';
-import ContactsBulkImport from './contactsBulkImport/ContactsBulkImport';
-import ContactsManualImport from './contactsManualImport/ContactsManualImportContainer';
+import ImportContactsContainer from './importContacts/ImportContactsContainer';
 
 const issuer = [ISSUER];
 const verifier = [VERIFIER];
@@ -102,19 +100,7 @@ const importContacts = {
   exact: true,
   path: '/contacts/import',
   key: 'contacts/import',
-  component: withLoggedValidation(withSideBar(ImportContacts), issuer)
-};
-const bulkImport = {
-  exact: true,
-  path: '/contacts/import/bulk',
-  key: 'contactsBulkImport',
-  component: withLoggedValidation(withSideBar(ContactsBulkImport), issuer)
-};
-const manualImport = {
-  exact: true,
-  path: '/contacts/import/manual',
-  key: 'manualImport',
-  component: withLoggedValidation(withSideBar(ContactsManualImport), issuer)
+  component: withLoggedValidation(withSideBar(ImportContactsContainer), issuer)
 };
 
 const routes = [
@@ -131,9 +117,7 @@ const routes = [
   individualCreation,
   landingRoute,
   dashboardRoute,
-  importContacts,
-  bulkImport,
-  manualImport
+  importContacts
 ];
 
 const Router = () => (

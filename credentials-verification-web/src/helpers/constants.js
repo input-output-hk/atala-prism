@@ -9,6 +9,8 @@ const DEFAUlT_PAGE_SIZE = 10;
 // eslint-disable-next-line camelcase
 export const HOLDER_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
+export const MAX_CONTACTS = 10000;
+// eslint-disable-next-line camelcase
 export const GROUP_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
 export const CREDENTIAL_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
@@ -91,10 +93,26 @@ export const COMPLETE_SPREADSHEET_STEP = 0;
 export const ASSIGN_TO_GROUPS = 1;
 
 // Bulk import data
-export const COMMON_CONTACT_HEADERS = ['firstName', 'lastName', 'externalId'];
+export const COMMON_CONTACT_HEADERS = ['firstName', 'lastName', 'externalid'];
 export const CONTACT_METADATA_KEYS = ['index', 'originalArray'];
 
 // Keys
 export const ENTER = 'Enter';
 export const ARROW_LEFT = 'ArrowLeft';
 export const ARROW_RIGHT = 'ArrowRight';
+
+// const Import contact cata use cases
+export const IMPORT_CONTACTS = 'importContacts';
+export const IMPORT_CREDENTIALS_DATA = 'importCredentialsData';
+
+// credentials creation steps
+export const NEW_CREDENTIALS_STEP_UNIT = 1;
+export const SELECT_CREDENTIAL_TYPE_STEP = 0;
+export const SELECT_RECIPIENTS_STEP = 1;
+export const IMPORT_CREDENTIAL_DATA_STEP = 2;
+export const PREVIEW_AND_SIGN_CREDENTIAL_STEP = 3;
+export const NEW_CREDENTIAL_STEP_COUNT = 4;
+
+// status flags
+export const FAILED = 'failed';
+export const SUCCESS = 'success';

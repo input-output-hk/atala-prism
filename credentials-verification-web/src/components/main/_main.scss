@@ -16,7 +16,7 @@
 
   .MainContent {
     display: flex;
-    height: 91%;
+    height: calc(100vh - 68px);
     border-radius: 20px 20px 0 0;
     overflow: hidden;
     .MainContainer {

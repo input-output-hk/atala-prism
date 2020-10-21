@@ -22,7 +22,8 @@
     "filterTitle": "No {{model}} match these filters"
   },
   "generic": {
-    "step": "Step {{step}}"
+    "step": "Step {{step}}",
+    "underConstruction": "Under construction"
   },
   "sidebar": {
     "itemAlt": "{{itemName}} Icon"
@@ -39,9 +40,9 @@
     "title": "Contacts",
     "status": {
       "issuer": {
-        "invitationMissing":  "Pending",
+        "invitationMissing": "Pending",
         "connectionMissing": "Invited",
-        "connectionAccepted":  "Connected",
+        "connectionAccepted": "Connected",
         "connectionRevoked": "Revoked"
       },
       "verifier": {
@@ -72,6 +73,7 @@
         "viewCredentials": "View Credentials",
         "firstName": "First Name",
         "lastName": "Last Name",
+        "fullName": "Contact Name",
         "fullname": "Contact Name",
         "externalId": "External ID",
         "creationDate": "Date Created",
@@ -81,7 +83,10 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Open on Mobile",
-      "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
+      "subtitle": [
+        "Scan with your phone’s camera",
+        "using the Atala PRISM mobile app"
+      ]
     },
     "detail": {
       "title": "Credentials List"
@@ -222,7 +227,7 @@
       "iconAlt": "Avatar",
       "noCredentials": "The student has not shared credentials yet",
       "credentialsType": {
-        "bachelorsDegree":  "Bachelor's Degree"
+        "bachelorsDegree": "Bachelor's Degree"
       }
     },
     "deletionSuccess": "The credential summary {{name}} was successfully deleted"
@@ -231,14 +236,18 @@
     "title": "New Credential",
     "subtitle": "Let's create a New Credential. Here are some key things to do.",
     "steps": {
-      "step1": "Create Credential Template",
-      "step2": "Assign Recipients Group",
-      "step3": "Check and Confirm Credential"
+      "step1": "Select Credential Template",
+      "step2": "Assign Recipients",
+      "step3": "Upload Credential Information",
+      "step4": "Check and Create Credential"
     },
     "typeSelection": "Select a type of credential",
     "targetsSelection": {
       "groups": "Select one or more groups",
       "subjects": "Select one or more subjects"
+    },
+    "bulkImport": {
+      "title": "Follow these steps to continue:"
     },
     "messages": {
       "selectTypeError": "Please select a credential type",
@@ -254,6 +263,7 @@
         "universityName": "University Name",
         "result": "Result",
         "fullName": "Full Name",
+        "fullname": "Full Name",
         "startDate": "Start Date",
         "graduationDate": "Graduation Date"
       }
@@ -451,7 +461,7 @@
   "menu": {
     "logout": "Log out"
   },
-  "loading":{
+  "loading": {
     "logoName": "Atala Logo"
   },
   "credentialDetail": {
@@ -471,6 +481,7 @@
     "missingInfo": "The full name and email of each individual is necesary to save it",
     "table": {
       "fullName": "Full Name",
+      "fullname": "Full Name",
       "email": "Email",
       "delete": "Delete Individual"
     }
@@ -487,6 +498,7 @@
       "requirement": "Add a {{requirement}}",
       "dateRequirement": "date earlied than today",
       "fullName": "Full Name",
+      "fullname": "Full Name",
       "email": "Mail account",
       "admissionDate": "Admission Date",
       "studentId": "Student Id",
@@ -497,16 +509,26 @@
     "title": "Import Contacts" ,
     "info": "Choose between this two options: Bulk Import or Mannual Import",
     "success": "Contact(s) successfully created",
-    "bulkImport": {
+    "importTypeSelection": {
+      "title": "Import Contacts",
+      "info": "Choose between this two options: Bulk Import or Mannual Import"
+    },
+    "bulkImportCard": {
       "title": "Bulk Import",
       "info": "Import all your contacts at once."
     },
-    "manualImport": {
+    "manualImportCard": {
       "title": "Import Manually",
       "info": "Complete the required information."
     },
-    "back": "Back",
-    "next": "Next"
+    "bulkImportStep": {
+      "title": "Import Contacts Bulk Import",
+      "info": "Follow this steps first upload the spreadsheet, fill it with the required information and then upload it to check the fields."
+    },
+    "buttons": {
+      "previous": "Back",
+      "next": "Next"
+    }
   },
   "bulkImport": {
     "title": "Import Contacts Bulk Import",
@@ -547,9 +569,16 @@
       "extraHeaderErrorDescriptionWithNoName": "with no name"
     },
     "importSuccess": {
-      "title": "Your file was succesfully uploaded",
-      "uploadedEntities": "Contacts Imported",
-      "continue": "Continue"
+      "importContacts": {
+        "title": "Your file was succesfully uploaded",
+        "uploadedEntities": "Contacts Imported",
+        "continue": "Continue"
+      },
+      "importCredentialsData": {
+        "title": "Your file was succesfully uploaded",
+        "uploadedEntities": "Credential Records Imported",
+        "continue": "Continue"
+      }
     },
     "success": {
       "uploadedFile": "File uploaded successfully"
@@ -605,6 +634,29 @@
     "invalidPassword": "The entered password doesn't match the wallet one",
     "noWallet": "The wallet must be running to login",
     "logout": "The logout could not be completed",
-    "spreadsheetUpload": "The spreadsheet upload failed"
+    "spreadsheetUpload": "The spreadsheet upload failed",
+    "errorImportingCredentials": "There was an error importing the credentials data"
+  },
+  "importCredentialsData": {
+    "importTypeSelection": {
+      "title": "Select an Import Method",
+      "info": "Choose between Bulk Import or Add credential information Manually"
+    },
+    "bulkImportCard": {
+      "title": "Bulk Import",
+      "info": "Import credential information from a CSV file"
+    },
+    "manualImportCard": {
+      "title": "Add Info Manually",
+      "info": "Add credential information Manually."
+    },
+    "bulkImportStep": {
+      "title": "Follow these steps to continue:",
+      "info": ""
+    },
+    "buttons": {
+      "previous": "Back",
+      "next": "Next"
+    }
   }
 }

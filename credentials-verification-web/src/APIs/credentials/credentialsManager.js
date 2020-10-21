@@ -2,6 +2,7 @@ import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_
 import Logger from '../../helpers/Logger';
 import { dayMonthYearBackendFormatter } from '../../helpers/formatters';
 import credentialTypes from './credentialTypes';
+import { FAILED, SUCCESS } from '../../helpers/constants';
 
 const { Date } = require('../../protos/common_models_pb');
 const {
@@ -68,6 +69,31 @@ async function createCredential({ title, enrollmentdate, graduationdate, groupNa
     return this.auth
       .getMetadata(createCredentialRequest)
       .then(metadata => this.client.createGenericCredential(createCredentialRequest, metadata));
+  });
+
+  return Promise.all(credentialStudentsPromises);
+}
+
+async function createBatchOfCredentials(credentialsData) {
+  Logger.info(`Creating ${credentialsData?.length} credential(s):`);
+
+  const credentialStudentsPromises = credentialsData.map(({ externalid, ...json }, index) => {
+    const createCredentialRequest = new CreateGenericCredentialRequest();
+
+    createCredentialRequest.setExternalid(externalid);
+    createCredentialRequest.setCredentialdata(JSON.stringify(json));
+
+    return this.auth
+      .getMetadata(createCredentialRequest)
+      .then(metadata => {
+        Logger.info(`${index}) externalid: ${externalid}, issuer: ${metadata.did}'`);
+        return this.client.createGenericCredential(createCredentialRequest, metadata);
+      })
+      .then(response => ({ externalid, status: SUCCESS, response }))
+      .catch(error => {
+        Logger.error(error);
+        return { externalid, status: FAILED, error };
+      });
   });
 
   return Promise.all(credentialStudentsPromises);
@@ -194,7 +220,7 @@ function populateCredential({ issuerInfo, subjectInfo, additionalInfo }) {
     issuer: issuerInfo,
     issuanceDate: dayMonthYearBackendFormatter(additionalInfo.graduationDate),
     credentialSubject: {
-      name: subjectInfo.fullname,
+      name: subjectInfo.fullName,
       degreeAwarded: 'Bachelor of Science',
       degreeResult: 'First class honors',
       graduationYear: additionalInfo.graduationDate.year
@@ -215,10 +241,10 @@ function parseAndPopulate(credentialData, studentData, did) {
     did
   };
 
-  const { fullname } = studentData;
+  const { fullName } = studentData;
 
   const subjectInfo = {
-    fullname
+    fullName
   };
 
   const additionalInfo = {
@@ -273,6 +299,7 @@ function CredentialsManager(config, auth) {
 
 CredentialsManager.prototype.getCredentials = getCredentials;
 CredentialsManager.prototype.createCredential = createCredential;
+CredentialsManager.prototype.createBatchOfCredentials = createBatchOfCredentials;
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 CredentialsManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialsManager.prototype.getContactCredentials = getContactCredentials;

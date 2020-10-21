@@ -8,13 +8,15 @@ import { downloadTemplateCsv } from '../../../../helpers/fileHelpers';
 import { COMPLETE_SPREADSHEET_STEP } from '../../../../helpers/constants';
 import './_style.scss';
 
-const CompleteSpreadSheetStep = ({ currentStep, setCurrentStep, inputData, setFileData }) => {
+const CompleteSpreadSheetStep = ({ currentStep, setCurrentStep, getTargets, setFileData }) => {
   const { t } = useTranslation();
 
   const [selectedFileList, setSelectedFileList] = useState();
 
-  const handleDownload = () => {
-    downloadTemplateCsv(inputData);
+  const handleDownload = async () => {
+    const targets = getTargets ? await getTargets() : null;
+
+    downloadTemplateCsv(targets);
   };
 
   // fileList's length is checked to avoid reading a removed file
@@ -81,13 +83,14 @@ const CompleteSpreadSheetStep = ({ currentStep, setCurrentStep, inputData, setFi
 
 CompleteSpreadSheetStep.defaultProps = {
   inputData: null,
-  setCurrentStep: undefined
+  setCurrentStep: undefined,
+  getTargets: null
 };
 
 CompleteSpreadSheetStep.propTypes = {
+  getTargets: PropTypes.func,
   currentStep: PropTypes.number.isRequired,
   setCurrentStep: PropTypes.func,
-  // inputData TBD
   inputData: PropTypes.shape({
     contacts: PropTypes.arrayOf(
       PropTypes.shape({

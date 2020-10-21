@@ -1,6 +1,6 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
-.errorLogSection{
+.errorLogSection {
   padding: 2em 3em;
   height: 100%;
   display: flex;
@@ -29,7 +29,7 @@
   .table {
     // height: 100%;
     margin: 1em 0;
-    border:1px solid #E0E0E0;
+    border: 1px solid #e0e0e0;
     border-radius: 5px;
     .ant-table-body a {
       color: $primary-color;
@@ -44,28 +44,28 @@
     .ant-tag-green {
       border-radius: 5em;
       padding: 0.1em 0.8em;
-      background: #00D793;
-      color:white;
+      background: #00d793;
+      color: white;
       font-size: 10px;
     }
     .ant-table-thead > tr > th {
       width: 300px;
-  }
-.ant-table-thead > tr > th:first-child {
-  border-radius: 5px 0 0 0;
-  width: 100px;
-}
-.ant-table-thead > tr > th:last-child {
-  border-radius: 0 5px 0 0;
-  width: 50px;
-}
-.ant-table-body {
-  padding-bottom: 0px;
-}
-.ant-table-header {
-  overflow: hidden!important;
-  height: 70px;
-}
+    }
+    .ant-table-thead > tr > th:first-child {
+      border-radius: 5px 0 0 0;
+      width: 100px;
+    }
+    .ant-table-thead > tr > th:last-child {
+      border-radius: 0 5px 0 0;
+      width: 50px;
+    }
+    .ant-table-body {
+      padding-bottom: 0px;
+    }
+    .ant-table-header {
+      overflow: hidden !important;
+      height: 70px;
+    }
   }
   .ant-pagination {
     display: none;
@@ -75,8 +75,8 @@
     justify-content: space-between;
     height: 41px;
     align-items: center;
-    padding:0 1.5em;
-    background: #F8F9F9;
+    padding: 0 1.5em;
+    background: #f8f9f9;
     .leftResults {
       width: 50%;
     }
@@ -88,20 +88,20 @@
     .usersFile {
       display: flex;
       p {
-        @include primary-text($body, #4A2DFF);
+        @include primary-text($body, #4a2dff);
         margin: 0 0 0 1em;
       }
     }
     .processedRows {
-      p{
-        margin:0;
+      p {
+        margin: 0;
         @include primary-text($body, #728099);
       }
     }
     .okRows {
       display: flex;
       p {
-        @include primary-text(body, #00D793);
+        @include primary-text(body, #00d793);
         margin: 0 0 0 1em;
       }
     }
@@ -114,30 +114,36 @@
     }
   }
 }
-.img-success{
+.img-success {
   width: 30%;
 }
-.success-container{
+.success-wrapper {
+  height: 100%;
+  flex-direction: column;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: auto;
-  h1{
-    @include secondary-text($h2, $primary-color);
-    margin-top: 20px;
-  }
-  p{
-    @include primary-text($body, $dark-grey);
-    margin-bottom: 25px;
-    margin-top: 8px;
-  }
-  h1, p{
-    width: 100%;
-    text-align: center;
+  .success-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: auto;
+    h1 {
+      @include secondary-text($h2, $primary-color);
+      margin-top: 20px;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+      margin-bottom: 25px;
+      margin-top: 8px;
+    }
+    h1,
+    p {
+      width: 100%;
+      text-align: center;
+    }
   }
 }
+
 @media only screen and (max-width: 1024px) {
-  
   .errorLogSection {
     .table {
       .result {
@@ -149,14 +155,14 @@
           width: 50%;
           display: flex;
           p {
-            @include primary-text($body, #4A2DFF);
+            @include primary-text($body, #4a2dff);
             margin: 0 0 0 1em;
           }
         }
         .processedRows {
           width: 50%;
-          p{
-            margin:0;
+          p {
+            margin: 0;
             @include primary-text($body, #728099);
           }
         }
@@ -164,7 +170,7 @@
           width: 50%;
           display: flex;
           p {
-            @include primary-text(body, #00D793);
+            @include primary-text(body, #00d793);
             margin: 0 0 0 1em;
           }
         }
@@ -182,7 +188,6 @@
 }
 
 @media only screen and (max-width: 550px) {
-  
   .errorLogSection {
     .table {
       .result {
@@ -191,14 +196,14 @@
           width: 100%;
           display: flex;
           p {
-            @include primary-text($body, #4A2DFF);
+            @include primary-text($body, #4a2dff);
             margin: 0 0 0 1em;
           }
         }
         .processedRows {
           width: 100%;
-          p{
-            margin:0;
+          p {
+            margin: 0;
             @include primary-text($body, #728099);
           }
         }
@@ -206,7 +211,7 @@
           width: 100%;
           display: flex;
           p {
-            @include primary-text(body, #00D793);
+            @include primary-text(body, #00d793);
             margin: 0 0 0 1em;
           }
         }

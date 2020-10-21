@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'antd';
+import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 import './_style.scss';
 
-const OptionCard = ({ option, isSelected, onSelect, img }) => {
+const OptionCard = ({ option, isSelected, onSelect, img, useCase }) => {
   const { t } = useTranslation();
 
   const index = {
@@ -36,8 +37,8 @@ const OptionCard = ({ option, isSelected, onSelect, img }) => {
         <img src={img} alt="" />
       </div>
       <div className="CardText">
-        <h1>{t(`importContacts.${option}.title`)}</h1>
-        <p>{t(`importContacts.${option}.info`)}</p>
+        <h1>{t(`${useCase}.${option}Card.title`)}</h1>
+        <p>{t(`${useCase}.${option}Card.info`)}</p>
       </div>
     </div>
   );
@@ -50,7 +51,8 @@ OptionCard.propTypes = {
   option: PropTypes.string.isRequired,
   isSelected: PropTypes.bool,
   onSelect: PropTypes.func.isRequired,
-  img: PropTypes.string.isRequired
+  img: PropTypes.string.isRequired,
+  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
 };
 
 export default OptionCard;

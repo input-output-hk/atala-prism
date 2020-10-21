@@ -1,13 +1,12 @@
 @import '../../css/general_styling';
 
-.BulkImportContainer {
+.ImportContactWrapper {
   flex-direction: column;
   display: flex;
   justify-content: space-between;
-  height: 100%;
+  height: 90vh;
   .ContentHeader {
     border-bottom: 1px solid $light-grey;
-    height: 15vh;
     padding: 2em;
     display: block!important;
     h1 {

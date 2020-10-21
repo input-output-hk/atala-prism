@@ -127,7 +127,7 @@ const ConnectionsTable = ({
         loading={loading}
         getMoreData={getMoreData}
         hasMore={hasMore}
-        rowKey="id"
+        rowKey="contactid"
         selectionType={
           setSelectedSubjects && {
             selectedRowKeys: selectedSubjects,

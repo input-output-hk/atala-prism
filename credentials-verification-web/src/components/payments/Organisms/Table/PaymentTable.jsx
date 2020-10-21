@@ -49,21 +49,19 @@ const getColumns = () => [
   }
 ];
 
-const PaymentTable = ({ payments, paymentCount, offset, setOffset, changeSort }) => {
-  return (
-    <div className="PaymentTable">
-      <PaginatedTable
-        columns={getColumns()}
-        data={payments}
-        current={offset + 1}
-        total={paymentCount}
-        defaultPageSize={PAYMENT_PAGE_SIZE}
-        onChange={pageToGoTo => setOffset(pageToGoTo - 1)}
-        handleSort={changeSort}
-      />
-    </div>
-  );
-};
+const PaymentTable = ({ payments, paymentCount, offset, setOffset, changeSort }) => (
+  <div className="PaymentTable">
+    <PaginatedTable
+      columns={getColumns()}
+      data={payments}
+      current={offset + 1}
+      total={paymentCount}
+      defaultPageSize={PAYMENT_PAGE_SIZE}
+      onChange={pageToGoTo => setOffset(pageToGoTo - 1)}
+      handleSort={changeSort}
+    />
+  </div>
+);
 
 PaymentTable.defaultProps = {
   payments: [],

@@ -1,13 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { withRedirector } from '../providers/withRedirector';
 import StepInfo from '../common/Molecules/StepInfo/StepInfo';
-import StepFooter from '../common/Molecules/StepFooter/StepFooter';
-
+import GenericFooter from '../common/Molecules/GenericFooter/GenericFooter';
+import {
+  NEW_CREDENTIALS_STEP_UNIT,
+  SELECT_RECIPIENTS_STEP,
+  IMPORT_CREDENTIAL_DATA_STEP,
+  NEW_CREDENTIAL_STEP_COUNT
+} from '../../helpers/constants';
 import './_style.scss';
-
-const NEW_CREDENTIAL_STEP_COUNT = 3;
 
 const NewCredential = ({
   currentStep,
@@ -15,35 +19,34 @@ const NewCredential = ({
   saveCredential,
   renderStep,
   credentialType,
-  hasSelectedRecipients
+  hasSelectedRecipients,
+  goToCredentialsPreview,
+  redirector: { redirectToCredentials }
 }) => {
   const { t } = useTranslation();
 
   const steps = [
     { stepTitle: 'newCredential.steps.step1' },
     { stepTitle: 'newCredential.steps.step2' },
-    { stepTitle: 'newCredential.steps.step3' }
+    { stepTitle: 'newCredential.steps.step3' },
+    { stepTitle: 'newCredential.steps.step4' }
   ];
 
   const goToSelectTargets = () => {
-    if (credentialType) changeStep(currentStep + 1);
+    if (credentialType) changeStep(SELECT_RECIPIENTS_STEP);
     else message.error(t('newCredential.messages.selectTypeError'));
   };
 
   const goToDataInput = () => {
-    if (hasSelectedRecipients) message.warn(t('newCredential.messages.noFurtherSteps'));
+    if (hasSelectedRecipients) changeStep(IMPORT_CREDENTIAL_DATA_STEP);
     else message.error(t('newCredential.messages.selectRecipientError'));
-  };
-
-  const goToCredentialsPreview = () => {
-    // TODO
   };
 
   const onCredentialsCreationFinish = () => {
     // TODO
   };
 
-  const goBack = () => changeStep(currentStep - 1);
+  const goBack = () => changeStep(currentStep - NEW_CREDENTIALS_STEP_UNIT);
 
   const next = [
     goToSelectTargets,
@@ -52,23 +55,25 @@ const NewCredential = ({
     onCredentialsCreationFinish
   ];
 
-  const previous = [null, goBack, goBack, goBack];
+  const previous = [redirectToCredentials, goBack, goBack, goBack];
 
   return (
     <React.Fragment>
       <div className="CredentialMainContent">
         <div className="CredentialContainerTop">
           <StepInfo title="newCredential.title" currentStep={currentStep} steps={steps} />
-          {renderStep()}
         </div>
-        <StepFooter
-          currentStep={currentStep}
-          stepCount={NEW_CREDENTIAL_STEP_COUNT}
-          previousStep={previous[currentStep]}
-          nextStep={next[currentStep]}
-          finish={saveCredential}
-          finishText="newCredential.save"
-        />
+        {renderStep()}
+        {currentStep !== IMPORT_CREDENTIAL_DATA_STEP && (
+          <GenericFooter
+            currentStep={currentStep}
+            stepCount={NEW_CREDENTIAL_STEP_COUNT}
+            previous={previous[currentStep]}
+            next={next[currentStep]}
+            finish={saveCredential}
+            finishText="newCredential.save"
+          />
+        )}
       </div>
     </React.Fragment>
   );
@@ -80,7 +85,9 @@ NewCredential.propTypes = {
   changeStep: PropTypes.func.isRequired,
   renderStep: PropTypes.func.isRequired,
   credentialType: PropTypes.string.isRequired,
-  hasSelectedRecipients: PropTypes.bool.isRequired
+  hasSelectedRecipients: PropTypes.bool.isRequired,
+  redirector: PropTypes.shape({ redirectToCredentials: PropTypes.func }).isRequired,
+  goToCredentialsPreview: PropTypes.func.isRequired
 };
 
-export default NewCredential;
+export default withRedirector(NewCredential);

@@ -41,7 +41,7 @@ async function getContacts(lastSeenContactId, limit = HOLDER_PAGE_SIZE, groupNam
   const req = new GetContactsRequest();
   req.setLimit(limit);
   req.setLastseencontactid(lastSeenContactId);
-  if (groupName) req.setGroupName(groupName);
+  if (groupName) req.setGroupname(groupName);
 
   const metadata = await this.auth.getMetadata(req);
 
