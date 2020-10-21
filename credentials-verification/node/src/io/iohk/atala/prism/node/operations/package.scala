@@ -85,6 +85,9 @@ package object operations {
 
     // Error signifying that the key used has been revoked already
     case class KeyAlreadyRevoked() extends StateError
+
+    // Error signifying that the associated batch is already revoked
+    case class BatchAlreadyRevoked(batchId: String) extends StateError
   }
 
   /** Data required to verify the correctness of the operation */

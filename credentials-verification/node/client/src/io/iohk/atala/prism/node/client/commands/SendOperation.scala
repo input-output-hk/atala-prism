@@ -28,6 +28,8 @@ case class SendOperation() extends Command {
         api.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(signedOperation))
       case Some(_: node_models.AtalaOperation.Operation.IssueCredentialBatch) =>
         api.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(signedOperation))
+      case Some(_: node_models.AtalaOperation.Operation.RevokeCredentials) =>
+        api.revokeCredentials(node_api.RevokeCredentialsRequest().withSignedOperation(signedOperation))
       case Some(_: node_models.AtalaOperation.Operation.Empty.type) | None =>
         throw new IllegalArgumentException("Operation has operation field missing!")
     }

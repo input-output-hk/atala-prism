@@ -142,7 +142,12 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
       result mustBe a[Right[_, _]]
 
       val insertedBatch =
-        CredentialBatchesDAO.find(parsedOperation.credentialBatchId).transact(database).unsafeToFuture.futureValue.value
+        CredentialBatchesDAO
+          .findBatch(parsedOperation.credentialBatchId)
+          .transact(database)
+          .unsafeToFuture
+          .futureValue
+          .value
 
       insertedBatch.batchId mustBe parsedOperation.credentialBatchId
       insertedBatch.issuerDIDSuffix mustBe parsedOperation.issuerDIDSuffix

@@ -21,6 +21,8 @@ service NodeService {
 
     rpc RevokeCredential(RevokeCredentialRequest) returns (RevokeCredentialResponse) {}
 
+    rpc RevokeCredentials(RevokeCredentialsRequest) returns (RevokeCredentialsResponse) {}
+
     rpc GetCredentialState(GetCredentialStateRequest) returns (GetCredentialStateResponse) {}
 
     rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
@@ -68,6 +70,13 @@ message RevokeCredentialRequest {
     SignedAtalaOperation signed_operation = 1;
 }
 message RevokeCredentialResponse {
+    TransactionInfo transactionInfo = 1;
+}
+
+message RevokeCredentialsRequest {
+    SignedAtalaOperation signed_operation = 1;
+}
+message RevokeCredentialsResponse {
     TransactionInfo transactionInfo = 1;
 }
 

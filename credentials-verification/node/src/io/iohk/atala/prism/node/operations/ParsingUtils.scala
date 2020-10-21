@@ -10,6 +10,7 @@ import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, Missin
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
 
+import scala.collection.breakOut
 import scala.util.Try
 
 object ParsingUtils {
@@ -74,4 +75,13 @@ object ParsingUtils {
     }
   }
 
+  def parseHashList(hashesV: ValueAtPath[Seq[ByteString]]): Either[ValidationError, List[SHA256Digest]] = {
+    hashesV.parse { hashes =>
+      Either.cond(
+        hashes.forall(_.size() == SHA256Digest.BYTE_LENGTH),
+        hashes.map(h => SHA256Digest(h.toByteArray.toVector))(breakOut),
+        s"must have ${SHA256Digest.BYTE_LENGTH} bytes"
+      )
+    }
+  }
 }

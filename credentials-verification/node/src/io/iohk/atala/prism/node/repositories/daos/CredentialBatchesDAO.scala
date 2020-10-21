@@ -1,5 +1,9 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import java.time.Instant
+
+import cats.implicits.catsStdInstancesForList
+import doobie.Update
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.CredentialBatchId
@@ -27,11 +31,56 @@ object CredentialBatchesDAO {
        """.stripMargin.update.run.map(_ => ())
   }
 
-  def find(credentialBatchId: CredentialBatchId): ConnectionIO[Option[CredentialBatchState]] = {
+  def findBatch(credentialBatchId: CredentialBatchId): ConnectionIO[Option[CredentialBatchState]] = {
     sql"""
          |SELECT batch_id, issuer_did_suffix, merkle_root, issued_on, issued_on_absn, issued_on_osn, revoked_on, revoked_on_absn, revoked_on_osn, last_operation
          |FROM credential_batches
          |WHERE batch_id = $credentialBatchId
        """.stripMargin.query[CredentialBatchState].option
+  }
+
+  def revokeEntireBatch(
+      credentialBatchId: CredentialBatchId,
+      revocationTimestamp: TimestampInfo
+  ): ConnectionIO[Boolean] = {
+    sql"""
+         |UPDATE credential_batches
+         |SET revoked_on = ${revocationTimestamp.atalaBlockTimestamp}, revoked_on_absn = ${revocationTimestamp.atalaBlockSequenceNumber}, revoked_on_osn = ${revocationTimestamp.operationSequenceNumber}
+         |WHERE batch_id = $credentialBatchId AND
+         |      revoked_on IS NULL
+       """.stripMargin.update.run.map(_ > 0)
+  }
+
+  def revokeCredentials(
+      credentialBatchId: CredentialBatchId,
+      credentials: List[SHA256Digest],
+      revocationTimestamp: TimestampInfo
+  ): ConnectionIO[Unit] = {
+    val sql =
+      """INSERT INTO revoked_credentials (batch_id, credential_id, revoked_on, revoked_on_absn, revoked_on_osn)
+        |VALUES (?, ?, ?, ?, ?)
+        |ON CONFLICT (batch_id, credential_id) DO NOTHING
+        |""".stripMargin
+    Update[(CredentialBatchId, SHA256Digest, Instant, Int, Int)](sql)
+      .updateMany(
+        credentials.map(credentialHash =>
+          (
+            credentialBatchId,
+            credentialHash,
+            revocationTimestamp.atalaBlockTimestamp,
+            revocationTimestamp.atalaBlockSequenceNumber,
+            revocationTimestamp.operationSequenceNumber
+          )
+        )
+      )
+      .map(_ => ())
+  }
+
+  // only for testing
+  def findRevokedCredentials(batchId: CredentialBatchId): ConnectionIO[List[(SHA256Digest, TimestampInfo)]] = {
+    sql"""SELECT credential_id, revoked_on, revoked_on_absn, revoked_on_osn
+         |FROM revoked_credentials
+         |WHERE batch_id = $batchId
+         |""".stripMargin.query[(SHA256Digest, TimestampInfo)].to[List]
   }
 }

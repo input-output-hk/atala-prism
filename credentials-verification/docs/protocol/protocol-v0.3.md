@@ -681,7 +681,7 @@ alias messageSigned    = decoded.operation
 alias issuerDIDSuffix  = state.credentialBatches(batchId).issuerDIDSuffix 
 
 state.credentialBatches.contains(batchId) &&
-! state.revokedCredentials.contains(batchId) && 
+state.credentialBatches(batchId).batchRevocationEvent.isEmpty && 
 state.publishedDids.contains(issuerDIDSuffix) &&
 state.publishedDids(issuerDIDSuffix).keys.contains(signingKeyId) &&
 state.publishedDids(issuerDIDSuffix).keys(signingKeyId).usage == IssuingKey &&
@@ -736,10 +736,8 @@ alias issuerDIDSuffix  = state.credentialBatches(batchId).issuerDIDSuffix
 alias credentialHashes = decoded.operation.revokeCredentials.credentialHashes
 
 state.credentialBatches.contains(batchId) &&
-( // no credential has already been revoked in that batch
-  ! state.revokedCredentials.contains(batchId) ||
-  forall c in credentialHashes : ! state.revokedCredentials(batchId).contains(c) 
-) && 
+// the batch was not already revoked
+state.credentialBatches(batchId).batchRevocationEvent.isEmpty &&  
 state.publishedDids.contains(issuerDIDSuffix) &&
 state.publishedDids(issuerDIDSuffix).keys.contains(signingKeyId) &&
 state.publishedDids(issuerDIDSuffix).keys(signingKeyId).usage == IssuingKey &&
@@ -751,7 +749,8 @@ If the above holds, then:
 
 ```
 alias batchId          = decoded.operation.revokeCredential.batchId
-alias credentialHashes = decoded.operation.revokeCredential.credentialHashes
+// we will only update the state for the credentials not already revoked
+alias credentialHashes = filterNotAlreadyRevoked(decoded.operation.revokeCredential.credentialHashes)
 alias issuerDIDSuffix  = state.credentialBatches(batchId).issuerDIDSuffix 
 
 state'.publishedDids = state.publishedDids

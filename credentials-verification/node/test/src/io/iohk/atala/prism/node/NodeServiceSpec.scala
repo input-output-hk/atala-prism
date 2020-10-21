@@ -22,6 +22,7 @@ import io.iohk.atala.prism.node.operations.{
   IssueCredentialOperationSpec,
   ParsingUtils,
   RevokeCredentialOperationSpec,
+  RevokeCredentialsOperationSpec,
   TimestampInfo,
   UpdateDIDOperationSpec
 }
@@ -335,6 +336,37 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       val error = intercept[StatusRuntimeException] {
         service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
+      }
+      error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
+    }
+  }
+
+  "NodeService.revokeCredentials" should {
+    "publish RevokeCredentials operation" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        RevokeCredentialsOperationSpec.revokeFullBatchOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
+
+      val response = service.revokeCredentials(node_api.RevokeCredentialsRequest().withSignedOperation(operation))
+
+      response.transactionInfo.value mustEqual testTransactionInfoProto
+      verify(objectManagementService).publishAtalaOperation(operation)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "return error when provided operation is invalid" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        RevokeCredentialsOperationSpec.revokeFullBatchOperation.update(_.revokeCredentials.credentialBatchId := ""),
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      val error = intercept[StatusRuntimeException] {
+        service.revokeCredentials(node_api.RevokeCredentialsRequest().withSignedOperation(operation))
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
     }

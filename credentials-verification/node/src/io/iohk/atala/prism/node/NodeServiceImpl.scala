@@ -16,7 +16,9 @@ import io.iohk.atala.prism.protos.node_api.{
   GetCredentialStateRequest,
   GetCredentialStateResponse,
   IssueCredentialBatchRequest,
-  IssueCredentialBatchResponse
+  IssueCredentialBatchResponse,
+  RevokeCredentialsRequest,
+  RevokeCredentialsResponse
 }
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -160,6 +162,17 @@ class NodeServiceImpl(
     } yield node_api
       .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.id)
       .withTransactionInfo(toTransactionInfo(transactionInfo))
+  }
+
+  override def revokeCredentials(request: RevokeCredentialsRequest): Future[RevokeCredentialsResponse] = {
+    val operationF = Future {
+      request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
+    }
+    for {
+      operation <- operationF
+      _ <- errorEitherToFuture(RevokeCredentialsOperation.validate(operation))
+      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+    } yield node_api.RevokeCredentialsResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
   }
 }
 
