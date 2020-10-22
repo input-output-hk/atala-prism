@@ -236,7 +236,8 @@ class ObjectManagementService private (
         AtalaObjectTransactionSubmissionsDAO
           .getBy(
             olderThan = Instant.now.minus(config.ledgerPendingTransactionTimeout),
-            status = AtalaObjectTransactionSubmissionStatus.Pending
+            status = AtalaObjectTransactionSubmissionStatus.Pending,
+            ledger = atalaReferenceLedger.getType
           )
           .transact(xa)
           .unsafeToFuture

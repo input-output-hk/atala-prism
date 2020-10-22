@@ -89,6 +89,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
     reset(ledger)
     reset(blockProcessing)
+
+    doReturn(Ledger.InMemory).when(ledger).getType
+    ()
   }
 
   "ObjectManagementService.publishAtalaOperation" should {
@@ -312,6 +315,19 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       verify(ledger).publish(atalaObject)
     }
 
+    "ignore other ledger's transactions" in {
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      // Simulate the service is restarted with a new ledger type
+      doReturn(Ledger.CardanoTestnet).when(ledger).getType
+
+      objectManagementService.retryOldPendingTransactions().futureValue
+
+      // It should have published only once
+      verify(ledger).publish(atalaObject)
+    }
+
     "retry old pending transactions" in {
       val dummyTransactionId2 = TransactionId.from(SHA256Digest.compute("id2".getBytes).value).value
       val dummyTransactionInfo2 = dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
@@ -372,7 +388,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   ): List[AtalaObjectTransactionSubmission] = {
     // Query into the future to return all of them
     AtalaObjectTransactionSubmissionsDAO
-      .getBy(Instant.now.plus(Duration.ofSeconds(1)), status)
+      .getBy(Instant.now.plus(Duration.ofSeconds(1)), status, ledger.getType)
       .transact(database)
       .unsafeRunSync()
   }

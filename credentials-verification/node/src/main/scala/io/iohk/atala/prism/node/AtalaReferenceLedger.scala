@@ -17,6 +17,8 @@ import io.iohk.atala.prism.protos.node_internal
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AtalaReferenceLedger {
+  def getType: Ledger
+
   def supportsOnChainData: Boolean
 
   def publish(obj: node_internal.AtalaObject): Future[PublicationInfo]
@@ -31,6 +33,8 @@ case class PublicationInfo(transaction: TransactionInfo, status: TransactionStat
 class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
     extends AtalaReferenceLedger {
 
+  override def getType: Ledger = Ledger.InMemory
+
   override def supportsOnChainData: Boolean = true
 
   override def publish(obj: node_internal.AtalaObject): Future[PublicationInfo] = {
@@ -41,7 +45,7 @@ class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler
       transactionId = TransactionId.from(hash.value).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
       transactionInfo = TransactionInfo(
         transactionId = transactionId,
-        ledger = Ledger.InMemory,
+        ledger = getType,
         // Used for informational purposes only, so fine to hard-code for testing
         block = Some(BlockInfo(number = 1, timestamp = Instant.now(), index = 1))
       )

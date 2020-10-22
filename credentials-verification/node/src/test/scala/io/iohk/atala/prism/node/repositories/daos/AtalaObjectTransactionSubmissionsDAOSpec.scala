@@ -33,7 +33,8 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
 
       AtalaObjectTransactionSubmissionsDAO.insert(submission).runSync
 
-      val retrieved = AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status).runSync
+      val retrieved =
+        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
       retrieved mustBe List(submission)
     }
 
@@ -56,7 +57,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
     "filter by submission timestamp" in {
       val status = AtalaObjectTransactionSubmissionStatus.Pending
       def getByTime(submissionTimestamp: Instant): List[AtalaObjectTransactionSubmission] = {
-        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp, status).runSync
+        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp, status, ledger).runSync
       }
       insertAtalaObject(atalaObjectId, byteContent)
       val submission = AtalaObjectTransactionSubmission(
@@ -78,7 +79,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
 
     "filter by status" in {
       def getByStatus(status: AtalaObjectTransactionSubmissionStatus): List[AtalaObjectTransactionSubmission] = {
-        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status).runSync
+        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
       }
 
       insertAtalaObject(atalaObjectId, byteContent)
@@ -103,12 +104,41 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
       getByStatus(inLedgerSubmission.status) mustBe List(inLedgerSubmission)
       getByStatus(AtalaObjectTransactionSubmissionStatus.Deleted) mustBe empty
     }
+
+    "filter by ledger" in {
+      val status = AtalaObjectTransactionSubmissionStatus.Pending
+      def getByLedger(ledger: Ledger): List[AtalaObjectTransactionSubmission] = {
+        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
+      }
+
+      insertAtalaObject(atalaObjectId, byteContent)
+      val inMemorySubmission = AtalaObjectTransactionSubmission(
+        atalaObjectId,
+        Ledger.InMemory,
+        transactionId1,
+        submissionTimestamp,
+        status
+      )
+      val cardanoTestnetSubmission = AtalaObjectTransactionSubmission(
+        atalaObjectId,
+        Ledger.CardanoTestnet,
+        transactionId2,
+        submissionTimestamp,
+        status
+      )
+      AtalaObjectTransactionSubmissionsDAO.insert(inMemorySubmission).runSync
+      AtalaObjectTransactionSubmissionsDAO.insert(cardanoTestnetSubmission).runSync
+
+      getByLedger(Ledger.InMemory) mustBe List(inMemorySubmission)
+      getByLedger(Ledger.CardanoTestnet) mustBe List(cardanoTestnetSubmission)
+      getByLedger(Ledger.BitcoinTestnet) mustBe empty
+    }
   }
 
   "updateStatus" should {
     "update the status" in {
       def getByStatus(status: AtalaObjectTransactionSubmissionStatus): List[AtalaObjectTransactionSubmission] = {
-        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status).runSync
+        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
       }
 
       insertAtalaObject(atalaObjectId, byteContent)

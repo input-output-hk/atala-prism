@@ -40,7 +40,7 @@ class AtalaServiceImpl(
 
   private val ATALA_HEADER = "ATALA://".getBytes("UTF-8")
 
-  private val ledger: Ledger = {
+  override def getType: Ledger = {
     if (network == BitcoinNetwork.Testnet) {
       Ledger.BitcoinTestnet
     } else {
@@ -70,7 +70,7 @@ class AtalaServiceImpl(
             case Right(transactionId) =>
               // Assume the transaction will be successful, until `getTransactionDetails` is implemented
               // TODO: Change status to `Pending`
-              PublicationInfo(TransactionInfo(transactionId, ledger), TransactionStatus.InLedger)
+              PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.InLedger)
             case Left(error) =>
               logger.error(s"FATAL: Error while publishing reference: ${error}")
               throw new RuntimeException(s"FATAL: Error while publishing reference: ${error}")
@@ -118,7 +118,7 @@ class AtalaServiceImpl(
           atalaObject,
           TransactionInfo(
             transactionId = tx.id,
-            ledger = ledger,
+            ledger = getType,
             block = Some(BlockInfo(number = block.header.height, timestamp = blockTimestamp, index = blockIndex))
           )
         )

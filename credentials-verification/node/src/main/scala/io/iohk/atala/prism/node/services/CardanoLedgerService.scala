@@ -45,7 +45,7 @@ class CardanoLedgerService private[services] (
   // https://github.com/input-output-hk/cardano-node/blob/1f0171d96443eaf7a77072397e790b514b670414/configuration/cardano/shelley-genesis.json#L18
   private val minUtxoDeposit = Lovelace(1000000)
 
-  private val ledger: Ledger = {
+  override def getType: Ledger = {
     if (network == CardanoNetwork.Testnet) {
       Ledger.CardanoTestnet
     } else {
@@ -64,7 +64,7 @@ class CardanoLedgerService private[services] (
       .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
       .value
       .map {
-        case Right(transactionId) => PublicationInfo(TransactionInfo(transactionId, ledger), TransactionStatus.Pending)
+        case Right(transactionId) => PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
         case Left(error) =>
           logger.error(s"FATAL: Error while publishing reference: $error")
           throw new RuntimeException(s"FATAL: Error while publishing reference: $error")
@@ -149,7 +149,7 @@ class CardanoLedgerService private[services] (
         atalaObject,
         TransactionInfo(
           transactionId = transaction.id,
-          ledger = ledger,
+          ledger = getType,
           block = Some(
             BlockInfo(number = block.header.blockNo, timestamp = block.header.time, index = transaction.blockIndex)
           )
