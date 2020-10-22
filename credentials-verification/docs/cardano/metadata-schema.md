@@ -1,4 +1,3 @@
-
 # Cardano Metadata Schema
 
 Since Shelley, Cardano provides a way to attach metadata information to a
@@ -55,3 +54,6 @@ Other schema options that were contemplated but ended up not being used:
   `version`): this becomes problematic with clashes, like `version` and `vendor`.
   - Not having string keys, only integer keys: this is just premature
   optimization, having something readable by humans is preferred.
+
+A fee analysis is [here](metadata-schema-fee.md), where schema variations are
+compared.
