@@ -5,7 +5,6 @@ import java.util.UUID
 
 import enumeratum.{Enum, EnumEntry}
 import io.circe.Json
-import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
@@ -74,7 +73,7 @@ package object models {
       externalId: Contact.ExternalId,
       issuerName: String,
       subjectData: Json,
-      connectionStatus: Student.ConnectionStatus,
+      connectionStatus: Contact.ConnectionStatus,
       publicationData: Option[PublicationData]
   )
 

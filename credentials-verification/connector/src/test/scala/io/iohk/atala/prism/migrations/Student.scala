@@ -1,8 +1,13 @@
-package io.iohk.atala.prism.cmanager.models
+package io.iohk.atala.prism.migrations
 
+import doobie.Meta
 import enumeratum.{Enum, EnumEntry}
 
+// kept for legacy models and db types
 object Student {
+  implicit val studentConnectionStatusMeta: Meta[Student.ConnectionStatus] =
+    Meta[String].timap(Student.ConnectionStatus.withNameInsensitive)(_.entryName)
+
   sealed abstract class ConnectionStatus(value: String) extends EnumEntry {
     override def entryName: String = value
   }

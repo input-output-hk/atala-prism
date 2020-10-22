@@ -5,8 +5,8 @@ import java.util.UUID
 
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.console.DataPreparation._
+import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
 import io.iohk.atala.prism.console.models.{
   CreateGenericCredential,
   GenericCredential,
@@ -55,7 +55,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       credential.subjectData must be(subject.data)
       credential.groupName must be(request.groupName)
       credential.publicationData must be(empty)
-      credential.connectionStatus must be(Student.ConnectionStatus.InvitationMissing)
+      credential.connectionStatus must be(ConnectionStatus.InvitationMissing)
     }
   }
 

@@ -3,7 +3,6 @@ package io.iohk.atala.prism.console.grpc
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.console.models
 import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
 import io.iohk.atala.prism.console.models.GenericCredential
@@ -20,16 +19,16 @@ object ProtoCodecs {
     common_models.Date(year = date.getYear, month = date.getMonthValue, day = date.getDayOfMonth)
   }
 
-  implicit val studentConnectionStatus2Proto
-      : Transformer[Student.ConnectionStatus, cmanager_models.StudentConnectionStatus] = {
-    case Student.ConnectionStatus.InvitationMissing => cmanager_models.StudentConnectionStatus.InvitationMissing
-    case Student.ConnectionStatus.ConnectionMissing => cmanager_models.StudentConnectionStatus.ConnectionMissing
-    case Student.ConnectionStatus.ConnectionAccepted => cmanager_models.StudentConnectionStatus.ConnectionAccepted
-    case Student.ConnectionStatus.ConnectionRevoked => cmanager_models.StudentConnectionStatus.ConnectionRevoked
+  implicit val connectionStatus2studentConnectionStatusProto
+      : Transformer[ConnectionStatus, cmanager_models.StudentConnectionStatus] = {
+    case ConnectionStatus.InvitationMissing => cmanager_models.StudentConnectionStatus.InvitationMissing
+    case ConnectionStatus.ConnectionMissing => cmanager_models.StudentConnectionStatus.ConnectionMissing
+    case ConnectionStatus.ConnectionAccepted => cmanager_models.StudentConnectionStatus.ConnectionAccepted
+    case ConnectionStatus.ConnectionRevoked => cmanager_models.StudentConnectionStatus.ConnectionRevoked
   }
 
   def genericCredentialToProto(credential: GenericCredential): cmanager_models.CManagerGenericCredential = {
-    val connectionStatus = studentConnectionStatus2Proto.transform(credential.connectionStatus)
+    val connectionStatus = connectionStatus2studentConnectionStatusProto.transform(credential.connectionStatus)
 
     val model = cmanager_models
       .CManagerGenericCredential()

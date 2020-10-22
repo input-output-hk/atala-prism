@@ -9,7 +9,6 @@ import doobie.util.invariant.InvalidEnum
 import doobie.util.Meta
 import enumeratum.{Enum, EnumEntry}
 import enumeratum.EnumEntry.UpperSnakecase
-import io.iohk.atala.prism.cmanager.models.Student
 import io.iohk.atala.prism.connector.model.ParticipantType
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.connector.repositories.daos._
