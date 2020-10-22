@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.crypto
 
-import io.iohk.atala.prism.crypto.ECUtils.toBigInt
+import io.iohk.atala.prism.util.BigIntOps.toBigInt
 
 /**
   * Trait that implements all shared behavior between js/EC and jvm/EC.

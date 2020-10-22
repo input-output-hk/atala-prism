@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.crypto
 
-import io.iohk.atala.prism.crypto.ECUtils.toUnsignedByteArray
+import io.iohk.atala.prism.util.BigIntOps.toUnsignedByteArray
+import io.iohk.atala.prism.util.{BigIntOps, BytesOps}
 
 case class ECKeyPair(privateKey: ECPrivateKey, publicKey: ECPublicKey)
 
@@ -8,7 +9,7 @@ trait ECKey {
   def getEncoded: Array[Byte]
 
   final def getHexEncoded: String = {
-    ECUtils.bytesToHex(getEncoded)
+    BytesOps.bytesToHex(getEncoded)
   }
 
   override def hashCode(): Int = {
@@ -25,7 +26,7 @@ trait ECKey {
 
 trait ECPrivateKey extends ECKey {
   override final def getEncoded: Array[Byte] = {
-    ECUtils.toUnsignedByteArray(getD)
+    BigIntOps.toUnsignedByteArray(getD)
   }
 
   def getD: BigInt

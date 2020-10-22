@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.crypto
 
-import io.iohk.atala.prism.crypto.ECUtils.hexToBytes
+import io.iohk.atala.prism.util.BytesOps.hexToBytes
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 

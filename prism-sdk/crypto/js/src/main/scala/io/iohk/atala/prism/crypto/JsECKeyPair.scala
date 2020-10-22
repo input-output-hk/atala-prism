@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.crypto
 
+import io.iohk.atala.prism.util.BigIntOps
 import typings.bnJs.bnJsStrings
 import typings.bnJs.mod.^
 import typings.elliptic.mod.curve.base.BasePoint
@@ -7,7 +8,7 @@ import typings.elliptic.mod.curve.base.BasePoint
 private[crypto] class JsECPrivateKey(val privateKey: ^) extends ECPrivateKey {
   override def getD: BigInt = {
     val hexEncoded = privateKey.toString_hex(bnJsStrings.hex)
-    ECUtils.toBigInt(hexEncoded)
+    BigIntOps.toBigInt(hexEncoded)
   }
 }
 
@@ -17,6 +18,6 @@ private[crypto] class JsECPublicKey(val publicKey: BasePoint) extends ECPublicKe
   }
 
   private def toBigInt(reducedBigNumber: ^): BigInt = {
-    ECUtils.toBigInt(reducedBigNumber.toString_hex(bnJsStrings.hex))
+    BigIntOps.toBigInt(reducedBigNumber.toString_hex(bnJsStrings.hex))
   }
 }

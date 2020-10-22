@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.crypto
 
 import io.iohk.atala.prism.crypto.ECConfig.CURVE_NAME
-import io.iohk.atala.prism.crypto.ECUtils.toHex
+import io.iohk.atala.prism.util.BigIntOps.toHex
+import io.iohk.atala.prism.util.{BigIntOps, BytesOps}
 import typings.bnJs.mod.^
 import typings.elliptic.AnonX
 import typings.elliptic.mod.curve.base.BasePoint
@@ -43,7 +44,7 @@ object EC extends ECTrait {
       case key: JsECPrivateKey =>
         val signature = nativeEc.sign(SHA256Digest.compute(data).hexValue, asKeyPair(key.privateKey))
         val hexSignature = signature.toDER(HEX_ENC).toString
-        ECSignature(ECUtils.toUnsignedByteArray(ECUtils.toBigInt(hexSignature)))
+        ECSignature(BigIntOps.toUnsignedByteArray(BigIntOps.toBigInt(hexSignature)))
     }
   }
 
@@ -52,7 +53,7 @@ object EC extends ECTrait {
       case key: JsECPublicKey =>
         nativeEc.verify(
           SHA256Digest.compute(data).hexValue,
-          ECUtils.bytesToHex(signature.data),
+          BytesOps.bytesToHex(signature.data),
           asKeyPair(key.publicKey)
         )
     }

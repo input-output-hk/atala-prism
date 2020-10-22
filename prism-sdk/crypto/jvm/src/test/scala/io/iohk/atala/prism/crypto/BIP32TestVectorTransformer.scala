@@ -2,6 +2,7 @@ package io.iohk.atala.prism.crypto
 
 import io.circe.JsonObject
 import io.circe.syntax._
+import io.iohk.atala.prism.util.BytesOps
 import org.bitcoinj.core.{Base58, ECKey}
 
 object BIP32TestVectorTransformer {
@@ -110,8 +111,8 @@ object BIP32TestVectorTransformer {
           // keys seem to be located in 33-bytes segment at the end, just before last 4 bytes
           val pubBytes = Base58.decode(pubkey).dropRight(4).takeRight(33)
           val pubKey = ECKey.fromPublicOnly(pubBytes)
-          val pubHex = ECUtils.bytesToHex(pubKey.decompress().getPubKey)
-          val privHex = ECUtils.bytesToHex(Base58.decode(privkey).dropRight(4).takeRight(33).dropWhile(_ == 0))
+          val pubHex = BytesOps.bytesToHex(pubKey.decompress().getPubKey)
+          val privHex = BytesOps.bytesToHex(Base58.decode(privkey).dropRight(4).takeRight(33).dropWhile(_ == 0))
 
           Array(
             path.replace("H", "'"),

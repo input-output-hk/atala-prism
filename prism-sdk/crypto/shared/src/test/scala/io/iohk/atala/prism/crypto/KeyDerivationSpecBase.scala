@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.crypto
 
+import io.iohk.atala.prism.util.BytesOps
 import org.scalacheck.Gen
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -52,7 +53,7 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
         val mnemonicCode = MnemonicCode(v.mnemonicPhrase.split(" ").toList)
         val binarySeed = keyDerivation.binarySeed(mnemonicCode, BIP39TestVectors.password)
 
-        ECUtils.bytesToHex(binarySeed.toArray) mustBe v.binarySeedHex
+        BytesOps.bytesToHex(binarySeed.toArray) mustBe v.binarySeedHex
       }
     }
 
@@ -81,16 +82,16 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
   "deriveKey" should {
     for {
       v <- BIP32TestVectors.testVectors
-      seed = ECUtils.hexToBytes(v.seedHex).toVector
+      seed = BytesOps.hexToBytes(v.seedHex).toVector
       d <- v.derivations
     } {
       s"compute keys for seed ${v.seedHex} and path ${d.path}" in {
         val path = DerivationPath(d.path)
         val key = keyDerivation.deriveKey(seed, path)
 
-        ECUtils.bytesToHex(key.privateKey.getEncoded) mustBe d.privKeyHex
+        BytesOps.bytesToHex(key.privateKey.getEncoded) mustBe d.privKeyHex
 
-        ECUtils.bytesToHex(key.publicKey.getEncoded) mustBe d.pubKeyHex
+        BytesOps.bytesToHex(key.publicKey.getEncoded) mustBe d.pubKeyHex
       }
     }
   }

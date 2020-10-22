@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.crypto
 
+import io.iohk.atala.prism.util.BytesOps
 import org.scalacheck.Gen
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -14,7 +15,7 @@ class ECUtilsSpec extends AnyWordSpec {
   "hexToBytes" should {
     "decode bytes encoded by bytesToHex" in {
       forAll { bytes: Array[Byte] =>
-        val decodedBytes = ECUtils.hexToBytes(ECUtils.bytesToHex(bytes))
+        val decodedBytes = BytesOps.hexToBytes(BytesOps.bytesToHex(bytes))
         decodedBytes must contain theSameElementsInOrderAs bytes
       }
     }
@@ -23,7 +24,7 @@ class ECUtilsSpec extends AnyWordSpec {
   "bytesToHex" should {
     "encode bytes decoded by hexToBytes" in {
       forAll(hexStringGen) { hexString =>
-        val encodedString = ECUtils.bytesToHex(ECUtils.hexToBytes(hexString))
+        val encodedString = BytesOps.bytesToHex(BytesOps.hexToBytes(hexString))
         encodedString mustBe hexString
       }
     }

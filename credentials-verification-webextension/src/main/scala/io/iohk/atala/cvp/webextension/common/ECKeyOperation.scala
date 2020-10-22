@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.common
 
 import com.google.protobuf.ByteString
-import io.circe.{Json, ParsingFailure}
+import io.circe.ParsingFailure
 import io.iohk.atala.prism.credentials.{
   CredentialsCryptoSDKImpl,
   JsonBasedUnsignedCredential,
@@ -9,6 +9,7 @@ import io.iohk.atala.prism.credentials.{
 }
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.protos.node_models._
+import io.iohk.atala.prism.util.BigIntOps
 import typings.bip32.bip32Mod.BIP32Interface
 import typings.bip32.{mod => bip32}
 import typings.node.Buffer
@@ -98,7 +99,7 @@ object ECKeyOperation {
   }
 
   private def toKeyPair(root: BIP32Interface): ECKeyPair = {
-    val privateKey = ECUtils.toBigInt(toBytes(root.privateKey.get))
+    val privateKey = BigIntOps.toBigInt(toBytes(root.privateKey.get))
     EC.toKeyPairFromPrivateKey(privateKey)
   }
 
