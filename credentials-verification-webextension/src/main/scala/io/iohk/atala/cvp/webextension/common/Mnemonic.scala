@@ -26,5 +26,7 @@ object Mnemonic {
     new Mnemonic(seed)
   }
 
-  def isValid(seed: String) = { bip39.validateMnemonic(seed) }
+  def isValid(seed: String) = {
+    bip39.validateMnemonic(seed.toLowerCase.split("\\s+").mkString(" "))
+  }
 }
