@@ -13,7 +13,7 @@ Note that we use port `5433` instead of the usual `5432` because we assume the n
 is already running and is bound to the latter. Now you are ready to run the connector:
 
 ```sh
-CONNECTOR_PSQL_HOST=localhost:5433 mill -i connector.run
+CONNECTOR_PSQL_HOST=localhost:5433 sbt connector/run
 ```
 
 
@@ -24,7 +24,7 @@ The connector comes with simple CLI client, which right now is used for testing 
 ### Register DID
 
 ```
-mill -i connector.client.run register
+sbt "connectorClient/run register"
 ```
 
 This operation will prepare a request to publish a DID to the node, which is used as an argument while registering on the connector.

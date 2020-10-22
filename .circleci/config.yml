@@ -103,7 +103,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
 
       - run:
           name: Set tag convention
@@ -131,20 +131,6 @@ jobs:
             CI=false GENERATE_SOURCEMAP=false npm run build
 
       - run:
-          name: Create node assembly
-          command: |
-            cd credentials-verification
-            mill -i node.assembly
-            cp out/node/assembly/dest/out.jar out/node/assembly/dest/node.jar
-
-      - run:
-          name: Create connector assembly
-          command: |
-            cd credentials-verification
-            mill -i connector.assembly
-            cp out/connector/assembly/dest/out.jar out/connector/assembly/dest/connector.jar
-
-      - run:
           name: Configure AWS
           command: |
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
@@ -167,14 +153,14 @@ jobs:
       - run:
           name: Build and push credentials-verification/node
           command: |
-            docker build -f credentials-verification/node/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/node:${TAG} credentials-verification/out/node/assembly/dest/
-            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/node:${TAG}
+            cd credentials-verification
+            sbt node/dockerBuildAndPush
 
       - run:
           name: Build and push credentials-verification/connector
           command: |
-            docker build -f credentials-verification/connector/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG} credentials-verification/out/connector/assembly/dest/
-            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
+            cd credentials-verification
+            sbt connector/dockerBuildAndPush
 
       - run:
           name: Build and push prism-lb-envoy
@@ -200,7 +186,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
+          key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
 
       - run:
           name: Set tag convention
@@ -239,8 +225,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
-            - cv-cache-v4-
+            - cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
+            - cv-cache-v5
 
       - install-coursier
 
@@ -265,46 +251,46 @@ jobs:
 
       - run:
           name: Compile credentials-verification components
-          command: |
-            cd credentials-verification
-            # Compile the major components with code coverage, with one retry to decrease flakiness
-            mill common.compileWithScoverage || mill common.compileWithScoverage
-            mill node.compileWithScoverage || mill node.compileWithScoverage
-            mill connector.compileWithScoverage || mill connector.compileWithScoverage
-            mill mirror.compileWithScoverage || mill mirror.compileWithScoverage
+          command: cd credentials-verification && sbt compile test:compile
 
       - run:
           name: Test credentials-verification components
-          command: |
-            cd credentials-verification
-            # Test major components with code coverage
-            mill -i common.testWithScoverage -u out/test-results
-            mill -i node.testWithScoverage -u out/test-results
-            mill -i connector.testWithScoverage -u out/test-results
-            mill -i mirror.testWithScoverage -u out/test-results
-            # Test other components
-            mill -i app.test -u out/test-results
+          command: cd credentials-verification && sbt coverage test
 
       - save_cache:
-          key: cv-cache-v4-{{ checksum "credentials-verification/build.sc" }}
           paths:
             - ~/.cache/coursier
             - ~/.ivy2
+            - ~/.m2
+          key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
 
       - run:
           name: Generate code coverage reports
-          command: cd credentials-verification && mill __.scoverageHtmlReport
+          command: cd credentials-verification && sbt coverageReport coverageAggregate
+          
+      - run:
+          name: Aggregate test reports
+          command: |
+            cd prism-sdk
+
+            # Aggregate every JVM test report under target/jvm/test-reports
+            mkdir -p target/test-reports
+            test -e common/target/test-reports && mv common/target/test-reports/* target/test-reports
+            test -e util/keyderivation/target/test-reports && mv util/keyderivation/target/test-reports/* target/test-reports
+            test -e app/target/test-reports && mv app/target/test-reports/* target/test-reports
+            test -e mirror/target/test-reports && mv mirror/target/test-reports/* target/test-reports
+            test -e node/target/test-reports && mv node/target/test-reports/* target/test-reports
+            test -e node/client/target/test-reports && mv node/client/target/test-reports/* target/test-reports
+            test -e connector/target/test-reports && mv connector/target/test-reports/* target/test-reports
+            test -e connector/client/target/test-reports && mv connector/client/target/test-reports/* target/test-reports
+            true
 
       - store_test_results:
-          path: credentials-verification/out/test-results
+          path: credentials-verification/target/test-reports
 
       # Store code coverage reports
       - store_artifacts:
-          path: credentials-verification/out/common/InternalScoverageModule/scoverage/htmlReport/dest
-      - store_artifacts:
-          path: credentials-verification/out/connector/InternalScoverageModule/scoverage/htmlReport/dest
-      - store_artifacts:
-          path: credentials-verification/out/node/InternalScoverageModule/scoverage/htmlReport/dest
+          path: credentials-verification/target/scoverage-report
 
   build-credentials-verification-landing:
     working_directory: ~/repo

@@ -27,7 +27,7 @@ Where:
 
 Now you can run the Node connecting to local Cardano:
 ```shell script
-GEUD_NODE_LEDGER="cardano" mill -i node.run
+GEUD_NODE_LEDGER="cardano" sbt node/run
 ```
 
 ## Connect to Remote Cardano
@@ -50,5 +50,5 @@ source wallet-variables.sh
 
 Now you can run the Node connecting to remote Cardano:
 ```shell script
-GEUD_NODE_LEDGER="cardano" mill -i node.run
+GEUD_NODE_LEDGER="cardano" sbt node/run
 ```

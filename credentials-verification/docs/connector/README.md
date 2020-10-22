@@ -18,9 +18,9 @@ First you need to provide database, which is easiest to do with Docker.
 docker run -it --rm -e POSTGRES_DB=connector_db -p 5432:5432 postgres
 ```
 
-Now we can start the connector itself. We're going to need [mill](https://github.com/lihaoyi/mill) for that.
+Now we can start the connector itself. We're going to need [sbt](https://www.scala-sbt.org) for that.
 ```
-mill connector.run
+sbt connector/run
 ```
 
 ## Simple issuer and student flow

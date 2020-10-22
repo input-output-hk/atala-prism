@@ -1,0 +1,7 @@
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.5.0")
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.14")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.10.0")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.15.0")
+addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.8.0")

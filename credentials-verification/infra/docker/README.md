@@ -3,7 +3,7 @@
 ## 1. Build java assemblies for the components
 To build and run CVP docker image per component one needs to follow these steps:
 1. `cd credentials-verification`
-2. `mill -i node.docker-build && mill -i connector.docker-build`
+2. `sbt node/docker && sbt connector/docker`
 
 Note, the steps above do not build an up to date copy of the credentials-verification-web front-end. It is usually
 better to run the backend components using docker-compose then run the front-end with npm configuring it to use

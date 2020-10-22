@@ -269,7 +269,7 @@ message GetBuildInfoRequest {}
 message GetBuildInfoResponse {
   string version = 1;
   string scalaVersion = 2;
-  string millVersion = 3;
+  string sbtVersion = 3;
   string buildTime = 4;
   string nodeVersion = 5;
 }

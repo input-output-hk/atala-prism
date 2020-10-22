@@ -5801,7 +5801,7 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.toObject = function(includ
   var f, obj = {
     version: jspb.Message.getFieldWithDefault(msg, 1, ""),
     scalaversion: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    millversion: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    sbtversion: jspb.Message.getFieldWithDefault(msg, 3, ""),
     buildtime: jspb.Message.getFieldWithDefault(msg, 4, ""),
     nodeversion: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
@@ -5850,7 +5850,7 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.deserializeBinaryFromReade
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.setMillversion(value);
+      msg.setSbtversion(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
@@ -5903,7 +5903,7 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.serializeBinaryToWriter = 
       f
     );
   }
-  f = message.getMillversion();
+  f = message.getSbtversion();
   if (f.length > 0) {
     writer.writeString(
       3,
@@ -5964,10 +5964,10 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.setScalaversion 
 
 
 /**
- * optional string millVersion = 3;
+ * optional string sbtVersion = 3;
  * @return {string}
  */
-proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.getMillversion = function() {
+proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.getSbtversion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -5976,7 +5976,7 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.getMillversion =
  * @param {string} value
  * @return {!proto.io.iohk.atala.prism.protos.GetBuildInfoResponse} returns this
  */
-proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.setMillversion = function(value) {
+proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.setSbtversion = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 

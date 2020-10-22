@@ -9,7 +9,7 @@ docker run -it --rm -e POSTGRES_DB=atala_mirror_db -p 5434:5432 postgres:11.5
 To create example DID, run:
 
 ```sh
-mill -i connector.client.run register
+sbt "connectorClient/run register"
 ```
 
 then update Mirror's configuration (in application.conf or env):
@@ -22,7 +22,7 @@ export ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY="<private key form the above comma
 Then run Mirror GRPC server:
 
 ```sh
-ATALA_MIRROR_PSQL_HOST=localhost:5434 mill -i mirror.run
+ATALA_MIRROR_PSQL_HOST=localhost:5434 sbt mirror/run
 ```
 
 ## Usage
@@ -41,7 +41,7 @@ grpcurl -import-path ../prism-sdk -proto protos/mirror_api.proto \
 
 * install development version of the Atala PRISM mobile app (I’ve used iOS version via TestFlight and Android Emulator)
 * install `libqrencode` for QR code generation (not required, but allows to create QR  code from the shell)
-* create DID (I’ve created one with `mill -i connector.client.run register -h develop.atalaprism.io -p 50051 -u c8834532-eade-11e9-a88d-d8f2ca059830`)
+* create DID (I’ve created one with `sbt "connectorClient/run register -h develop.atalaprism.io -p 50051 -u c8834532-eade-11e9-a88d-d8f2ca059830"`)
 * go through the demo at https://develop.atalaprism.io/credentials to obtain credentials
 
 ### Steps
@@ -57,7 +57,7 @@ export ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY="BSbQDmDAukupfCpWSqDwsPaPrQWG3tV5V
 2. Start Mirror:
 ```sh
 docker run -it --rm -e POSTGRES_DB=atala_mirror_db -p 5434:5432 postgres:11.5
-ATALA_MIRROR_PSQL_HOST=localhost:5434 mill -i mirror.run
+ATALA_MIRROR_PSQL_HOST=localhost:5434 sbt mirror/run
 ```
 
 3. Create QR code form new connection token:

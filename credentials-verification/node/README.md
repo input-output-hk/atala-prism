@@ -7,7 +7,7 @@ docker run -it --rm -e POSTGRES_DB=node_db -p 5432:5432 postgres:11.5
 
 Run the Node with the default ledger:
 ```
-mill -i node.run
+sbt node/run
 ```
 
 ## Node client
@@ -19,7 +19,7 @@ Node comes with CLI client, allowing to interact with it. Client has simple stat
 ### Create DID
 
 ```
-mill -i node.client.run create-did --generate-master-key master --generate-issuing-key issuing --generate-issuing-key another_issuing
+sbt "nodeClient/run create-did --generate-master-key master --generate-issuing-key issuing --generate-issuing-key another_issuing"
 ```
 
 Client sends operation to create a DID and saves private keys and the DID suffix, so following operations don't need to specify the DID.
@@ -32,12 +32,12 @@ There are two ways of issuing a credential
 
 1. By providing the content to be hashed
 ```
-mill -i node.client.run issue-credential --content "credential content"
+sbt "nodeClient/run issue-credential --content \"credential content\""
 ```
 
 2. By providing precomputed hash of the content:
 ```
-mill -i node.client.run issue-credential --content-hash 758b79582e7c61a0cad56bd1c522880e2dc5d2122ab19868b155a62843cc5734
+sbt "nodeClient/run issue-credential --content-hash 758b79582e7c61a0cad56bd1c522880e2dc5d2122ab19868b155a62843cc5734"
 ```
 
 Issuing a credential requires having DID and keys to it. If it has been created using the client, it should be retrieved from state storage. Otherwise you need to provide it using `--issuer` arument.
@@ -47,7 +47,7 @@ Issuing a credential requires having DID and keys to it. If it has been created 
 In order to revoke the credential you need to run the command with its id:
 
 ```
-mill -i node.client.run revoke-credential --credential 06029555d620331dedc886eb65832f959eddf359b97a82148845b5a83a81abc2
+sbt "nodeClient/run revoke-credential --credential 06029555d620331dedc886eb65832f959eddf359b97a82148845b5a83a81abc2"
 ```
 
 ## Update a DID
@@ -55,7 +55,7 @@ mill -i node.client.run revoke-credential --credential 06029555d620331dedc886eb6
 In order to update the DID use `update-did` command. Use `--generate-[usage]-key <key-id>` to add new keys and `--remove-key` to remove key from DID.
 
 ```
-mill -i node.client.run update-did --generate-authentication-key authentication --remove-key another_issuing
+sbt "nodeClient/run update-did --generate-authentication-key authentication --remove-key another_issuing"
 ```
 
 ## Resolve a DID
@@ -63,7 +63,7 @@ mill -i node.client.run update-did --generate-authentication-key authentication 
 Resolving DID is easy:
 
 ```
-mill -i node.client.run resolve did:atala:7abbb09e1f14edcfd06a59b3ce6cf82f49e0a185ca7fc4ba6a655bd3817e6185
+sbt "nodeClient/run resolve did:atala:7abbb09e1f14edcfd06a59b3ce6cf82f49e0a185ca7fc4ba6a655bd3817e6185"
 ```
 
 Please note that DID is in the form `did:atala:[did suffix]` where did suffix is the id returned by the creation operation.
