@@ -13,7 +13,7 @@ import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.node.{AtalaReferenceLedger, PublicationInfo}
+import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.FutureEither
 import monix.execution.Scheduler
@@ -35,7 +35,7 @@ class CardanoLedgerService private[services] (
     scheduler: Scheduler
 )(implicit
     ec: ExecutionContext
-) extends AtalaReferenceLedger {
+) extends AtalaLedger {
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val MAX_SYNC_BLOCKS = 100
 

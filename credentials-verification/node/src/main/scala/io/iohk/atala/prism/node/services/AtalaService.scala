@@ -15,7 +15,7 @@ import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
 import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.node.{AtalaReferenceLedger, PublicationInfo}
+import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AtalaService extends AtalaReferenceLedger {
+trait AtalaService extends AtalaLedger {
   def synchronizeBlock(blockhash: Blockhash): Result[Nothing, Unit]
 }
 

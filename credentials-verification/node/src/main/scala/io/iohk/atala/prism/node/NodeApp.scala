@@ -8,8 +8,8 @@ import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepo
 import io.iohk.atala.prism.node.services.AtalaService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.node_api._
+import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.regions.Region
@@ -77,7 +77,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       case "cardano" => initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaObject)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
-        new InMemoryAtalaReferenceLedger(onAtalaObject)
+        new InMemoryLedgerService(onAtalaObject)
     }
 
     logger.info("Creating blocks processor")

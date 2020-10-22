@@ -14,9 +14,10 @@ import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   CredentialsService,
   DIDDataService,
+  InMemoryLedgerService,
   ObjectManagementService
 }
-import io.iohk.atala.prism.node.{InMemoryAtalaReferenceLedger, NodeServiceImpl, objects}
+import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -35,7 +36,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataService: DIDDataService = _
   protected var credentialsService: CredentialsService = _
-  protected var atalaReferenceLedger: InMemoryAtalaReferenceLedger = _
+  protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
   protected var storage: objects.ObjectStorageService = _
@@ -56,7 +57,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
         .saveObject(notification)
     }
 
-    atalaReferenceLedger = new InMemoryAtalaReferenceLedger(onAtalaReference)
+    atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
     objectManagementService = ObjectManagementService(
       ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),

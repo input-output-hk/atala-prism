@@ -10,7 +10,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
-import io.iohk.atala.prism.node.AtalaReferenceLedger
+import io.iohk.atala.prism.node.AtalaLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectTransactionSubmission,
@@ -35,7 +35,7 @@ private class AtalaObjectAlreadyPublished extends Exception
 class ObjectManagementService private (
     config: Config,
     storage: ObjectStorageService,
-    atalaReferenceLedger: AtalaReferenceLedger,
+    atalaReferenceLedger: AtalaLedger,
     blockProcessing: BlockProcessingService
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
@@ -300,7 +300,7 @@ object ObjectManagementService {
   def apply(
       config: Config,
       storage: ObjectStorageService,
-      atalaReferenceLedger: AtalaReferenceLedger,
+      atalaReferenceLedger: AtalaLedger,
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
     new ObjectManagementService(config, storage, atalaReferenceLedger, blockProcessing)

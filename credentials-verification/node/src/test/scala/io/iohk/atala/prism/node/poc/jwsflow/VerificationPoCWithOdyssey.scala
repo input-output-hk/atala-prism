@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.node.NodeServiceImpl
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -15,9 +16,9 @@ import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   CredentialsService,
   DIDDataService,
+  InMemoryLedgerService,
   ObjectManagementService
 }
-import io.iohk.atala.prism.node.{InMemoryAtalaReferenceLedger, NodeServiceImpl}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -37,7 +38,7 @@ class VerificationPoCWithOdyssey extends PostgresRepositorySpec with MockitoSuga
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataService: DIDDataService = _
   protected var credentialsService: CredentialsService = _
-  protected var atalaReferenceLedger: InMemoryAtalaReferenceLedger = _
+  protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
   protected var storage: ObjectStorageService = _
@@ -58,7 +59,7 @@ class VerificationPoCWithOdyssey extends PostgresRepositorySpec with MockitoSuga
         .saveObject(notification)
     }
 
-    atalaReferenceLedger = new InMemoryAtalaReferenceLedger(onAtalaReference)
+    atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
     objectManagementService = ObjectManagementService(
       ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),

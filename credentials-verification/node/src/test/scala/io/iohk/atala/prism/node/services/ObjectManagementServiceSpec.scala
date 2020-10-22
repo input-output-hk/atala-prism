@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{AtalaReferenceLedger, PublicationInfo, objects}
+import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -63,7 +63,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
   private val storage = new objects.ObjectStorageService.InMemory
 
-  private val ledger: AtalaReferenceLedger = mock[AtalaReferenceLedger]
+  private val ledger: AtalaLedger = mock[AtalaLedger]
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
   private lazy val objectManagementService =

@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.node
+package io.iohk.atala.prism.node.services
 
 import java.time.Instant
 
@@ -12,26 +12,13 @@ import io.iohk.atala.prism.models.{
   TransactionStatus
 }
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
+import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AtalaReferenceLedger {
-  def getType: Ledger
-
-  def supportsOnChainData: Boolean
-
-  def publish(obj: node_internal.AtalaObject): Future[PublicationInfo]
-
-  def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails]
-
-  def deleteTransaction(transactionId: TransactionId): Future[Unit]
-}
-
-case class PublicationInfo(transaction: TransactionInfo, status: TransactionStatus)
-
-class InMemoryAtalaReferenceLedger(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
-    extends AtalaReferenceLedger {
+class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
+    extends AtalaLedger {
 
   override def getType: Ledger = Ledger.InMemory
 
