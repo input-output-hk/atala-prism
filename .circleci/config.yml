@@ -441,7 +441,7 @@ jobs:
           path: credentials-verification-webextension/target/test-reports
 
       - store_artifacts:
-          path: credentials-verification-webextension/target/chrome/geud-wallet.zip
+          path: credentials-verification-webextension/target/chrome/prism-wallet.zip
 
   build-prism-sdk:
     working_directory: ~/repo
