@@ -31,7 +31,6 @@ import monix.execution.Scheduler.Implicits.global
 import cats.implicits._
 import doobie.implicits._
 
-// mill -i mirror.test.single io.iohk.atala.mirror.MirrorE2eSpec
 class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpec with MirrorFixtures {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
