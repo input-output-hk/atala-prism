@@ -4,7 +4,7 @@ import java.security.{PrivateKey, PublicKey}
 import java.util.Base64
 
 import io.iohk.atala.prism.crypto.ECKeys
-import javax.xml.bind.DatatypeConverter
+import io.iohk.atala.prism.util.BytesOps
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -22,10 +22,9 @@ class ECKeysSpec extends AnyWordSpec {
     val dBytes = Base64.getUrlDecoder.decode(urlBase64EncodedD)
     val d = BigInt(1, dBytes)
     val expectedHex =
-      "3047020100301006072A8648CE3D020106052B8104000A0430302E02010104206AFC287BBC8FD01E7CC0CA7BB002E9093A029C0EA00F60ECBF96E749C5B338BDA00706052B8104000A"
+      "3047020100301006072a8648ce3d020106052b8104000a0430302e02010104206afc287bbc8fd01e7cc0ca7bb002e9093a029c0ea00f60ecbf96e749c5b338bda00706052b8104000a"
     def matchIt(privateKey: PrivateKey) = {
-      val bytes = privateKey.getEncoded
-      val hex = DatatypeConverter.printHexBinary(bytes)
+      val hex = BytesOps.bytesToHex(privateKey.getEncoded)
       hex must be(expectedHex)
     }
 
@@ -52,11 +51,10 @@ class ECKeysSpec extends AnyWordSpec {
     val x = BigInt(1, xBytes)
     val y = BigInt(1, yBytes)
     val expectedHex =
-      "3056301006072A8648CE3D020106052B8104000A03420004A2CB5054D2EFE760F77A2A1ED25B0C44D9E0EACB43AEFCCF569408DE7F140B0C066C194233A27FA38DD23278BD342098186570A9A843F3FC6DD0D7654998FCCC"
+      "3056301006072a8648ce3d020106052b8104000a03420004a2cb5054d2efe760f77a2a1ed25b0c44d9e0eacb43aefccf569408de7f140b0c066c194233a27fa38dd23278bd342098186570a9a843f3fc6dd0d7654998fccc"
 
     def matchIt(publicKey: PublicKey) = {
-      val bytes = publicKey.getEncoded
-      val hex = DatatypeConverter.printHexBinary(bytes)
+      val hex = BytesOps.bytesToHex(publicKey.getEncoded)
       hex must be(expectedHex)
     }
 

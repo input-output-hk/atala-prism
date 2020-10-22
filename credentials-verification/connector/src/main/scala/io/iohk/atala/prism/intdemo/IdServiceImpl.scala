@@ -9,13 +9,13 @@ import io.circe.Json.fromString
 import io.circe._
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
-import io.iohk.atala.prism.intdemo.IdServiceImpl._
 import io.iohk.atala.prism.connector.model.{Connection, TokenString}
+import io.iohk.atala.prism.intdemo.IdServiceImpl._
 import io.iohk.atala.prism.intdemo.html.IdCredential
-import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
-import javax.xml.bind.DatatypeConverter
+import io.iohk.atala.prism.util.BytesOps
 import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
@@ -150,7 +150,7 @@ object IdServiceImpl {
   private def generateSubjectIdNumber(seedStr: String): String = {
     val md = MessageDigest.getInstance("MD5")
     md.update(seedStr.getBytes("UTF-8"))
-    s"RL-${DatatypeConverter.printHexBinary(md.digest).toUpperCase.take(9)}"
+    s"RL-${BytesOps.bytesToHex(md.digest).toUpperCase.take(9)}"
   }
 
   private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE

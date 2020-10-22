@@ -1,8 +1,8 @@
 package io.iohk.test
 
 import io.iohk.atala.prism.crypto.{EC, ECKeys}
+import io.iohk.atala.prism.util.BytesOps
 import io.iohk.dids.DIDLoader
-import javax.xml.bind.DatatypeConverter
 
 import scala.util.{Failure, Success, Try}
 
@@ -59,7 +59,7 @@ object IssueCredential {
       |  "issuedBy": "${metadata.issuedBy}",
       |  "issuedOn": ${metadata.issuedOn},
       |  "subjectDID": "${metadata.subjectDID}",
-      |  "data": "${DatatypeConverter.printHexBinary(metadata.data.toArray)}"
+      |  "data": "${bytesToHex(metadata.data.toArray)}"
       |}
     """.stripMargin.trim
   }
@@ -69,8 +69,12 @@ object IssueCredential {
     s"""
        |{
        |  "metadata": ${encode(credential.metadata)},
-       |  "signature": "${DatatypeConverter.printHexBinary(credential.signature.toArray)}"
+       |  "signature": "${bytesToHex(credential.signature.toArray)}"
        |}
      """.stripMargin.trim
+  }
+
+  private def bytesToHex(bytes: Array[Byte]): String = {
+    BytesOps.bytesToHex(bytes).toUpperCase
   }
 }

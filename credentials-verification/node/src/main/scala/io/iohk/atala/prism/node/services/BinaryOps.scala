@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.services
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.services.models._
 import io.iohk.atala.prism.protos.node_internal._
+import io.iohk.atala.prism.util.BytesOps
 
 trait BinaryOps {
   def toBytes(tx: AtalaBlock): Array[Byte]
@@ -61,13 +62,11 @@ object DefaultBinaryOps extends BinaryOps {
   }
 
   override def extractOpReturn(asm: String): Option[Array[Byte]] = {
-    import javax.xml.bind.DatatypeConverter
-
     import scala.util.Try
     val HEAD = "OP_RETURN "
     if (asm.startsWith(HEAD)) {
       val hexData = asm.drop(HEAD.length)
-      Try(DatatypeConverter.parseHexBinary(hexData)).toOption
+      Try(BytesOps.hexToBytes(hexData.toLowerCase)).toOption
     } else {
       None
     }

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.models
 import java.util.Locale
 
 import com.typesafe.config.ConfigMemorySize
-import javax.xml.bind.DatatypeConverter
+import io.iohk.atala.prism.util.BytesOps
 
 import scala.collection.compat.immutable.ArraySeq
 import scala.util.matching.Regex
@@ -13,7 +13,7 @@ trait HashValue extends Any {
   def value: ArraySeq[Byte]
 
   override def toString: String = {
-    DatatypeConverter.printHexBinary(value.toArray).toLowerCase(Locale.ROOT)
+    BytesOps.bytesToHex(value.toArray)
   }
 }
 
