@@ -17,6 +17,7 @@ import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.util.BytesOps
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.LoggerFactory
@@ -30,7 +31,6 @@ trait AtalaService extends AtalaLedger {
 class AtalaServiceImpl(
     network: BitcoinNetwork,
     bitcoinClient: BitcoinClient,
-    binaryOps: BinaryOps,
     onAtalaObject: AtalaObjectNotificationHandler
 )(implicit
     ec: ExecutionContext
@@ -106,14 +106,14 @@ class AtalaServiceImpl(
           (tx, blockIndex) <- block.transactions.zipWithIndex
           out <- tx.vout
           _ = logger trace "VOut of a Block detected"
-          opData <- binaryOps.extractOpReturn(out.scriptPubKey.asm)
+          opData <- extractOpReturn(out.scriptPubKey.asm)
           _ = logger trace s"OP_RETURN detected in a transaction: ${out.scriptPubKey.asm}"
-          trimmed = binaryOps.trimZeros(opData)
+          trimmed = trimZeros(opData)
           if trimmed.startsWith(ATALA_HEADER)
           // this is an Atala transaction
           data = trimmed.drop(ATALA_HEADER.length)
           atalaObject <- parseAtalaObject(data)
-          _ = logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
+          _ = logger info s"New Atala transaction found in the chain: ${BytesOps.bytesToHex(data)}"
         } yield AtalaObjectNotification(
           atalaObject,
           TransactionInfo(
@@ -132,10 +132,27 @@ class AtalaServiceImpl(
       .recoverLeft(_ => ())
   }
 
+  private def extractOpReturn(asm: String): Option[Array[Byte]] = {
+    import scala.util.Try
+    val HEAD = "OP_RETURN "
+    if (asm.startsWith(HEAD)) {
+      val hexData = asm.drop(HEAD.length)
+      Try(BytesOps.hexToBytes(hexData.toLowerCase)).toOption
+    } else {
+      None
+    }
+  }
+
+  private def trimZeros(in: Array[Byte]): Array[Byte] = {
+    var first = 0
+    while (first < in.length && in(first) == 0) first += 1
+    java.util.Arrays.copyOfRange(in, first, in.length)
+  }
+
   private def parseAtalaObject(data: Array[Byte]): Option[node_internal.AtalaObject] = {
     val validateAtalaObject = node_internal.AtalaObject.validate(data)
     if (validateAtalaObject.isFailure) {
-      logger.warn(s"Could not parse Atala transaction: ${binaryOps.convertBytesToHex(data)}")
+      logger.warn(s"Could not parse Atala transaction: ${BytesOps.bytesToHex(data)}")
     }
     validateAtalaObject.toOption
   }
@@ -163,7 +180,6 @@ object AtalaService {
   )(implicit
       ec: ExecutionContext
   ): AtalaService = {
-    val binaryOps = BinaryOps()
-    new AtalaServiceImpl(network, bitcoinClient, binaryOps, onAtalaObject)
+    new AtalaServiceImpl(network, bitcoinClient, onAtalaObject)
   }
 }
