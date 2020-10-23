@@ -2,7 +2,6 @@ package io.iohk.atala.prism.credentials
 
 import java.time.Instant
 
-import cats.data.Validated.Invalid
 import io.circe.Json
 import io.iohk.atala.prism.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
 import io.iohk.atala.prism.crypto.ECTrait
@@ -10,7 +9,7 @@ import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
-abstract class CredentialVerificationSpecBase extends AnyWordSpec {
+abstract class CredentialVerificationSpecBase extends AnyWordSpec with ValidatedValues {
   implicit def ec: ECTrait
 
   private val unsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
@@ -39,12 +38,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec {
       val credentialData = CredentialData(issuedOn = now, revokedOn = Some(after))
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe false
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential) match {
-        case Invalid(e) =>
-          e.size must be(1)
-          e.toList must contain(Revoked(credentialData.revokedOn.value))
-      }
+      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      e.size must be(1)
+      e.toList must contain(Revoked(credentialData.revokedOn.value))
     }
 
     "return false when credential added before key" in {
@@ -53,12 +49,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec {
       val credentialData = CredentialData(issuedOn = before, revokedOn = None)
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe false
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential) match {
-        case Invalid(e) =>
-          e.size must be(1)
-          e.toList must contain(KeyWasNotValid(keyData.addedOn, credentialData.issuedOn))
-      }
+      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      e.size must be(1)
+      e.toList must contain(KeyWasNotValid(keyData.addedOn, credentialData.issuedOn))
     }
 
     "return false when key is revoked before credential is added" in {
@@ -67,12 +60,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec {
       val credentialData = CredentialData(issuedOn = after, revokedOn = None)
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe false
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential) match {
-        case Invalid(e) =>
-          e.size must be(1)
-          e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
-      }
+      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      e.size must be(1)
+      e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
     }
 
     "return false when signature is invalid" in {
@@ -83,12 +73,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec {
       val signedCredential =
         CredentialsCryptoSDKImpl.signCredential(unsignedCredential, ec.generateKeyPair().privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe false
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential) match {
-        case Invalid(e) =>
-          e.size must be(1)
-          e.toList must contain(InvalidSignature)
-      }
+      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      e.size must be(1)
+      e.toList must contain(InvalidSignature)
     }
 
     "return false when key was added after the credential was issued AND the credential was revoked" in {
@@ -98,13 +85,10 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec {
       val credentialData = CredentialData(issuedOn = before, revokedOn = Some(after))
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe false
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential) match {
-        case Invalid(e) =>
-          e.size must be(2)
-          e.toList must contain(KeyWasNotValid(keyData.addedOn, credentialData.issuedOn))
-          e.toList must contain(Revoked(credentialData.revokedOn.value))
-      }
+      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      e.size must be(2)
+      e.toList must contain(KeyWasNotValid(keyData.addedOn, credentialData.issuedOn))
+      e.toList must contain(Revoked(credentialData.revokedOn.value))
     }
 
     "return false when key was revoked before the credential is issued AND the credential was revoked" in {
@@ -114,13 +98,10 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec {
       val credentialData = CredentialData(issuedOn = now, revokedOn = Some(after))
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe false
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential) match {
-        case Invalid(e) =>
-          e.size must be(2)
-          e.toList must contain(Revoked(credentialData.revokedOn.value))
-          e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
-      }
+      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      e.size must be(2)
+      e.toList must contain(Revoked(credentialData.revokedOn.value))
+      e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
     }
 
     "return false when key was revoked before the credential is issued AND the credential was revoked AND the signature was invalid" in {
@@ -132,14 +113,11 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec {
       val signedCredential =
         CredentialsCryptoSDKImpl.signCredential(unsignedCredential, ec.generateKeyPair().privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe false
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential) match {
-        case Invalid(e) =>
-          e.size must be(3)
-          e.toList must contain(Revoked(credentialData.revokedOn.value))
-          e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
-          e.toList must contain(InvalidSignature)
-      }
+      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      e.size must be(3)
+      e.toList must contain(Revoked(credentialData.revokedOn.value))
+      e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
+      e.toList must contain(InvalidSignature)
     }
   }
 }
