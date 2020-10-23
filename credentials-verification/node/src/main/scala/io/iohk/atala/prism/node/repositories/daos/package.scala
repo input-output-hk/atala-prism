@@ -125,7 +125,7 @@ package object daos {
     Read[
       (
           AtalaObjectId,
-          Option[Array[Byte]],
+          Array[Byte],
           Boolean,
           Option[TransactionId],
           Option[Ledger],

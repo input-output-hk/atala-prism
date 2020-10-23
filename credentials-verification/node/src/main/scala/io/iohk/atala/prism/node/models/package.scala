@@ -3,9 +3,8 @@ package io.iohk.atala.prism.node
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.operations.TimestampInfo
 
@@ -63,8 +62,8 @@ package object models {
 
   case class AtalaObject(
       objectId: AtalaObjectId,
-      // TODO: Remove Option as it is no longer possible
-      byteContent: Option[Array[Byte]],
+      // Serialization of a io.iohk.atala.prism.protos.node_internal.AtalaObject
+      byteContent: Array[Byte],
       // Whether the object has been processed (e.g., DIDs were recognized and stored in DB)
       processed: Boolean,
       // Blockchain transaction the object was first found in

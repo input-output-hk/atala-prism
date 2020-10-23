@@ -29,7 +29,7 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
 
       val retrieved = get(objectId)
       retrieved.objectId mustBe objectId
-      retrieved.byteContent.value mustBe byteContent
+      retrieved.byteContent mustBe byteContent
       retrieved.transaction mustBe None
       retrieved.processed mustBe false
     }
@@ -46,7 +46,7 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
 
       val retrieved = get(objectId)
       retrieved.objectId mustBe objectId
-      retrieved.byteContent.value mustBe byteContent
+      retrieved.byteContent mustBe byteContent
       retrieved.transaction.value mustBe transactionInfo
       retrieved.processed mustBe false
     }
@@ -81,7 +81,7 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
       val retrieved = get(objectId)
 
       retrieved.objectId mustBe objectId
-      retrieved.byteContent.value mustBe byteContent
+      retrieved.byteContent mustBe byteContent
       retrieved.transaction mustBe None
       retrieved.processed mustBe false
     }
@@ -96,7 +96,7 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
       val retrieved = get(objectId)
 
       retrieved.objectId mustBe objectId
-      retrieved.byteContent.value mustBe byteContent
+      retrieved.byteContent mustBe byteContent
       retrieved.transaction.value mustBe transactionInfo
       retrieved.processed mustBe false
     }

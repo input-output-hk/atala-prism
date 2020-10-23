@@ -125,10 +125,7 @@ class ObjectManagementService private (
         Future.unit
       } else {
         // Store object and block in off-chain storage
-        for {
-          _ <- storage.put(blockHash.hexValue, blockBytes)
-          _ <- storage.put(objId.hexValue, objBytes)
-        } yield ()
+        storage.put(blockHash.hexValue, blockBytes)
       }
     }
 
@@ -175,19 +172,6 @@ class ObjectManagementService private (
     }
   }
 
-  private def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {
-    val byteContentFut = obj.byteContent match {
-      case Some(content) => Future.successful(content)
-      case None =>
-        val objectId = obj.objectId.hexValue
-        storage
-          .get(objectId)
-          .map(_.getOrElse(throw new RuntimeException(s"Content of object $objectId not found")))
-    }
-
-    byteContentFut.map(node_internal.AtalaObject.parseFrom)
-  }
-
   private def getBlockFromObject(obj: node_internal.AtalaObject): Future[node_internal.AtalaBlock] = {
     obj.block match {
       case node_internal.AtalaObject.Block.BlockContent(block) => Future.successful(block)
@@ -203,7 +187,7 @@ class ObjectManagementService private (
 
   private def processObject(obj: AtalaObject): Future[ConnectionIO[Boolean]] = {
     for {
-      protobufObject <- getProtobufObject(obj)
+      protobufObject <- Future.fromTry(node_internal.AtalaObject.validate(obj.byteContent))
       block <- getBlockFromObject(protobufObject)
       transactionBlock =
         obj.transaction.flatMap(_.block).getOrElse(throw new RuntimeException("AtalaObject has no transaction block"))
@@ -280,7 +264,7 @@ class ObjectManagementService private (
       maybeAtalaObject <- AtalaObjectsDAO.get(transaction.atalaObjectId).transact(xa).unsafeToFuture
       atalaObject =
         maybeAtalaObject
-          .flatMap(_.byteContent)
+          .map(_.byteContent)
           .map(node_internal.AtalaObject.validate)
           .flatMap(_.toOption)
           .getOrElse(
