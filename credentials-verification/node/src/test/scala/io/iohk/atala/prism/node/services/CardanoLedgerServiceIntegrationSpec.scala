@@ -1,5 +1,8 @@
 package io.iohk.atala.prism.node.services
 
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.node.NodeConfig
@@ -8,8 +11,8 @@ import io.iohk.atala.prism.node.cardano.models.{Address, WalletId}
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -21,6 +24,8 @@ import scala.util.Random
 class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)
+  private val RETRY_TIMEOUT = 2.minutes
+  private val RETRY_SLEEP = 10.seconds
 
   private val scheduler: TestScheduler = TestScheduler()
 
@@ -65,13 +70,12 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
         notificationHandler.receivedNotifications.map(_.atalaObject)
       }
 
-      // Wait up to a minute for the transaction to become available in cardano-node
-      var retries = 6
-      while (retries > 0 && !notifiedAtalaObjects.contains(atalaObject)) {
-        Thread.sleep(10.seconds.toMillis)
+      // Wait for the transaction to become available in cardano-node
+      val retryEndTime = Instant.now.plus(RETRY_TIMEOUT.toMillis, ChronoUnit.MILLIS)
+      while (Instant.now.isBefore(retryEndTime) && !notifiedAtalaObjects.contains(atalaObject)) {
+        Thread.sleep(RETRY_SLEEP.toMillis)
         // Sync objects
         cardanoLedgerService.syncAtalaObjects().futureValue(LONG_TIMEOUT)
-        retries -= 1
       }
 
       // Verify object has been notified
