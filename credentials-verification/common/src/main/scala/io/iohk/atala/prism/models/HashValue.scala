@@ -13,7 +13,7 @@ trait HashValue extends Any {
   def value: ArraySeq[Byte]
 
   override def toString: String = {
-    BytesOps.bytesToHex(value.toArray)
+    BytesOps.bytesToHex(value)
   }
 }
 

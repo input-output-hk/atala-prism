@@ -7,7 +7,7 @@ import io.iohk.atala.prism.util.BytesOps
 case class AtalaObjectId(value: Vector[Byte]) {
   require(value.length == SHA256Digest.BYTE_LENGTH)
 
-  def hexValue: String = BytesOps.bytesToHex(value.toArray)
+  def hexValue: String = BytesOps.bytesToHex(value)
 
   override def toString: String = s"AtalaObjectId($hexValue)"
 }

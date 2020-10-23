@@ -53,7 +53,7 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
         val mnemonicCode = MnemonicCode(v.mnemonicPhrase.split(" ").toList)
         val binarySeed = keyDerivation.binarySeed(mnemonicCode, BIP39TestVectors.password)
 
-        BytesOps.bytesToHex(binarySeed.toArray) mustBe v.binarySeedHex
+        BytesOps.bytesToHex(binarySeed) mustBe v.binarySeedHex
       }
     }
 

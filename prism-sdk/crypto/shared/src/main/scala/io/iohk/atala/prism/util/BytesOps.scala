@@ -8,8 +8,8 @@ object BytesOps {
     hexEncoded.grouped(2).toVector.map(hexToByte).toByteArray
   }
 
-  def bytesToHex(bytes: Array[Byte]): String = {
-    bytes.toVector.map(byteToHex).mkString
+  def bytesToHex(bytes: IndexedSeq[Byte]): String = {
+    bytes.map(byteToHex).mkString
   }
 
   private def byteToHex(b: Byte): String = {

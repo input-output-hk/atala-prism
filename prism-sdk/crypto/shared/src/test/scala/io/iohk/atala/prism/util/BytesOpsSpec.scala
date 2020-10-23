@@ -1,13 +1,11 @@
-package io.iohk.atala.prism.crypto
+package io.iohk.atala.prism.util
 
-import io.iohk.atala.prism.util.BytesOps
 import org.scalacheck.Gen
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
 
-class ECUtilsSpec extends AnyWordSpec {
-
+class BytesOpsSpec extends AnyWordSpec {
   val hexChars = "0123456789abcdef"
   val hexStringGen: Gen[String] =
     Gen.containerOf[Seq, Char](Gen.oneOf(hexChars)).withFilter(_.size % 2 == 0).map(_.mkString(""))
@@ -29,5 +27,4 @@ class ECUtilsSpec extends AnyWordSpec {
       }
     }
   }
-
 }
