@@ -62,7 +62,7 @@ package object models {
   }
 
   case class AtalaObject(
-      objectId: SHA256Digest,
+      objectId: AtalaObjectId,
       // TODO: Remove Option as it is no longer possible
       byteContent: Option[Array[Byte]],
       // Whether the object has been processed (e.g., DIDs were recognized and stored in DB)

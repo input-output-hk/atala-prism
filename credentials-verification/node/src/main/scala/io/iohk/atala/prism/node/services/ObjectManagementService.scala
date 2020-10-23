@@ -13,6 +13,7 @@ import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.AtalaLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
+  AtalaObjectId,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -46,10 +47,10 @@ class ObjectManagementService private (
 
   private def setObjectTransactionDetails(notification: AtalaObjectNotification): Future[Option[AtalaObject]] = {
     val objectBytes = notification.atalaObject.toByteArray
-    val hash = SHA256Digest.compute(objectBytes)
+    val objId = AtalaObjectId.of(objectBytes)
 
     val query = for {
-      existingObject <- AtalaObjectsDAO.get(hash)
+      existingObject <- AtalaObjectsDAO.get(objId)
       _ <- {
         existingObject match {
           // Object previously found in the blockchain
@@ -57,7 +58,7 @@ class ObjectManagementService private (
           // Object previously saved in DB, but not in the blockchain
           case Some(_) => connection.unit
           // Object was not in DB, save it to populate transaction data below
-          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(hash, objectBytes))
+          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objectBytes))
         }
       }
 
@@ -66,11 +67,11 @@ class ObjectManagementService private (
       )
       _ <- AtalaObjectsDAO.setTransactionInfo(
         AtalaObjectSetTransactionInfo(
-          hash,
+          objId,
           notification.transaction
         )
       )
-      obj <- AtalaObjectsDAO.get(hash)
+      obj <- AtalaObjectsDAO.get(objId)
     } yield obj
 
     query
@@ -106,14 +107,14 @@ class ObjectManagementService private (
       else Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray))
     val obj = node_internal.AtalaObject(block = objectBlock, blockOperationCount = 1)
     val objBytes = obj.toByteArray
-    val objHash = SHA256Digest.compute(objBytes)
+    val objId = AtalaObjectId.of(objBytes)
 
     val insertObject = for {
-      existingObject <- AtalaObjectsDAO.get(objHash)
+      existingObject <- AtalaObjectsDAO.get(objId)
       _ <- {
         existingObject match {
           case Some(_) => connection.raiseError(new AtalaObjectAlreadyPublished)
-          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objHash, objBytes))
+          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objBytes))
         }
       }
     } yield ()
@@ -126,7 +127,7 @@ class ObjectManagementService private (
         // Store object and block in off-chain storage
         for {
           _ <- storage.put(blockHash.hexValue, blockBytes)
-          _ <- storage.put(objHash.hexValue, objBytes)
+          _ <- storage.put(objId.hexValue, objBytes)
         } yield ()
       }
     }
@@ -137,12 +138,12 @@ class ObjectManagementService private (
       // If the ledger does not support data on-chain, then store it off-chain
       _ <- storeDataOffChain()
       // Publish object to the blockchain
-      transactionInfo <- publishAndRecordTransaction(objHash, obj)
+      transactionInfo <- publishAndRecordTransaction(objId, obj)
     } yield transactionInfo
   }
 
   private def publishAndRecordTransaction(
-      atalaObjectId: SHA256Digest,
+      atalaObjectId: AtalaObjectId,
       atalaObject: node_internal.AtalaObject
   ): Future[TransactionInfo] = {
     for {

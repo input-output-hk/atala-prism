@@ -4,13 +4,12 @@ import java.time.Instant
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 
 import scala.collection.immutable.IndexedSeq
 
 case class AtalaObjectTransactionSubmission(
-    atalaObjectId: SHA256Digest,
+    atalaObjectId: AtalaObjectId,
     ledger: Ledger,
     transactionId: TransactionId,
     submissionTimestamp: Instant,

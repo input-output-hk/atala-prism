@@ -5,7 +5,8 @@ import java.time.Instant
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.AtalaObject
+import io.iohk.atala.prism.node.models.{AtalaObject, AtalaObjectId}
+import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.OptionValues._
 
@@ -14,7 +15,7 @@ import scala.concurrent.duration._
 class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
-  private val objectId = SHA256Digest.compute("object".getBytes)
+  private val objectId = AtalaObjectId.of(node_internal.AtalaObject())
   private val byteContent = "byteContent".getBytes
   private val transactionInfo = TransactionInfo(
     transactionId = TransactionId.from(SHA256Digest.compute("transactionId".getBytes).value).value,
@@ -112,14 +113,14 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
     }
   }
 
-  private def insert(objectId: SHA256Digest, byteContent: Array[Byte]): Unit = {
+  private def insert(objectId: AtalaObjectId, byteContent: Array[Byte]): Unit = {
     AtalaObjectsDAO
       .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
       .transact(database)
       .unsafeRunSync()
   }
 
-  private def get(objectId: SHA256Digest): AtalaObject = {
+  private def get(objectId: AtalaObjectId): AtalaObject = {
     AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
   }
 }

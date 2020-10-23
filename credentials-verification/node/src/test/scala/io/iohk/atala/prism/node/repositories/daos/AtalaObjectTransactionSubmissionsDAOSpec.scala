@@ -6,7 +6,12 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus
+}
+import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.OptionValues._
 
@@ -17,7 +22,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
-  private val atalaObjectId = SHA256Digest.compute("object".getBytes)
+  private val atalaObjectId = AtalaObjectId.of(node_internal.AtalaObject())
   private val byteContent = "byteContent".getBytes
   private val ledger = Ledger.InMemory
   private val transactionId1 = TransactionId.from(SHA256Digest.compute("transactionId1".getBytes).value).value
@@ -161,7 +166,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
     }
   }
 
-  private def insertAtalaObject(objectId: SHA256Digest, byteContent: Array[Byte]): Unit = {
+  private def insertAtalaObject(objectId: AtalaObjectId, byteContent: Array[Byte]): Unit = {
     AtalaObjectsDAO
       .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
       .transact(database)

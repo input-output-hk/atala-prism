@@ -5,14 +5,15 @@ import java.time.Instant
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Meta, Put, Read, Write}
-import io.iohk.atala.prism.crypto.{EC, ECConfig, SHA256Digest}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.models.DoobieImplicits._
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
+  AtalaObjectId,
   AtalaObjectTransactionSubmissionStatus,
   CredentialId,
   DIDSuffix,
@@ -117,13 +118,13 @@ package object daos {
 
   implicit val blockhashPut: Put[Blockhash] = Put[Array[Byte]].contramap(_.value.toArray)
 
-  implicit val sha256Meta: Meta[SHA256Digest] =
-    Meta[Array[Byte]].timap(value => SHA256Digest(value.toVector))(_.value.toArray)
+  implicit val atalaObjectIdMeta: Meta[AtalaObjectId] =
+    Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(_.value.toArray)
 
   implicit val atalaObjectRead: Read[AtalaObject] = {
     Read[
       (
-          SHA256Digest,
+          AtalaObjectId,
           Option[Array[Byte]],
           Boolean,
           Option[TransactionId],

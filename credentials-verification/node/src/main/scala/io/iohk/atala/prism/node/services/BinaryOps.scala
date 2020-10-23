@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.services.models._
+import io.iohk.atala.prism.node.models.AtalaObjectId
 import io.iohk.atala.prism.protos.node_internal._
 import io.iohk.atala.prism.util.BytesOps
 
@@ -19,7 +18,7 @@ trait BinaryOps {
   final def getBytesAndId(obj: AtalaObject): (Array[Byte], AtalaObjectId) = {
     val bytes = toBytes(obj)
     val hash = genHash(bytes)
-    (bytes, AtalaObjectId(SHA256Digest(hash.toVector)))
+    (bytes, AtalaObjectId(hash.toVector))
   }
 
   final def hash(tx: AtalaBlock): Array[Byte] =

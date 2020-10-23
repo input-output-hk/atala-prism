@@ -16,6 +16,7 @@ import io.iohk.atala.prism.models.{
 }
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
+  AtalaObjectId,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -263,14 +264,14 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObject = {
-      AtalaObjectsDAO.get(getObjectId(obj)).transact(database).unsafeRunSync().value
+      AtalaObjectsDAO.get(AtalaObjectId.of(obj)).transact(database).unsafeRunSync().value
     }
   }
 
   "retryOldPendingTransactions" should {
     val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
     val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
-    val atalaObjectId = getObjectId(atalaObject)
+    val atalaObjectId = AtalaObjectId.of(atalaObject)
 
     def mockTransactionStatus(transactionId: TransactionId, status: TransactionStatus): Unit = {
       doReturn(Future.successful(TransactionDetails(transactionId, status)))
@@ -280,7 +281,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     def setAtalaObjectTransactionSubmissionStatus(
-        atalaObjectId: SHA256Digest,
+        atalaObjectId: AtalaObjectId,
         status: AtalaObjectTransactionSubmissionStatus
     ): Unit = {
       AtalaObjectTransactionSubmissionsDAO
@@ -428,9 +429,5 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         blockOperationCount = 1
       )
     }
-  }
-
-  private def getObjectId(obj: node_internal.AtalaObject): SHA256Digest = {
-    SHA256Digest.compute(obj.toByteArray)
   }
 }

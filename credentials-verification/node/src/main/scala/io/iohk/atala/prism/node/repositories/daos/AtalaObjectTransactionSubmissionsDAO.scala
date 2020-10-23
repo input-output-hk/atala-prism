@@ -4,10 +4,13 @@ import java.time.Instant
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.DoobieImplicits._
 import io.iohk.atala.prism.models.Ledger
-import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus
+}
 
 object AtalaObjectTransactionSubmissionsDAO {
   def insert(submission: AtalaObjectTransactionSubmission): ConnectionIO[Unit] = {
@@ -32,7 +35,7 @@ object AtalaObjectTransactionSubmissionsDAO {
   }
 
   def updateStatus(
-      atalaObjectId: SHA256Digest,
+      atalaObjectId: AtalaObjectId,
       status: AtalaObjectTransactionSubmissionStatus
   ): ConnectionIO[AtalaObjectTransactionSubmission] = {
     sql"""
