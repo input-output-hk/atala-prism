@@ -4,8 +4,7 @@ import java.security.PublicKey
 import java.time.Instant
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
-import io.iohk.atala.prism.crypto.ECKeys
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, JvmECPublicKey}
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
@@ -111,11 +110,9 @@ object ProtoCodecs {
     } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
   }
 
-  // TODO: Remove this once the `io.iohk.atala.prism.node.poc` package can be removed or migrated.
   def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] = {
-    for {
-      maybeX <- protoKey.keyData.ecKeyData
-      maybeY <- protoKey.keyData.ecKeyData
-    } yield ECKeys.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
+    fromProtoKey(protoKey).map {
+      case jvmECPublicKey: JvmECPublicKey => jvmECPublicKey.key
+    }
   }
 }

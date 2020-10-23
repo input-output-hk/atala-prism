@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.node.poc
 
-import java.security.PublicKey
 import java.util.Base64
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{ECKeys, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.protos.node_models
 
@@ -17,9 +16,9 @@ object EncodedSizes {
 
     val data = for {
       _ <- 1 to n
-      masterPublicKey1 = ECKeys.generateKeyPair().getPublic
-      masterPublicKey2 = ECKeys.generateKeyPair().getPublic
-      masterPublicKey3 = ECKeys.generateKeyPair().getPublic
+      masterPublicKey1 = EC.generateKeyPair().publicKey
+      masterPublicKey2 = EC.generateKeyPair().publicKey
+      masterPublicKey3 = EC.generateKeyPair().publicKey
       did = createDID(List(masterPublicKey1, masterPublicKey2, masterPublicKey3))
     } yield (did, did.length)
 
@@ -37,8 +36,8 @@ object EncodedSizes {
 
   }
 
-  def createDID(masterPublicKeys: List[PublicKey]): String = {
-    def keyElement(publicKey: PublicKey, index: Int): node_models.PublicKey =
+  def createDID(masterPublicKeys: List[ECPublicKey]): String = {
+    def keyElement(publicKey: ECPublicKey, index: Int): node_models.PublicKey =
       node_models.PublicKey(
         id = s"master$index",
         usage = node_models.KeyUsage.MASTER_KEY,
@@ -64,12 +63,12 @@ object EncodedSizes {
     s"did:prism:${didSuffix.suffix}:$encodedOperation"
   }
 
-  private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {
-    val point = ECKeys.getECPoint(key)
+  private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
+    val point = key.getCurvePoint
     node_models.ECKeyData(
-      curve = ECKeys.CURVE_NAME,
-      x = ByteString.copyFrom(point.getAffineX.toByteArray),
-      y = ByteString.copyFrom(point.getAffineY.toByteArray)
+      curve = ECConfig.CURVE_NAME,
+      x = ByteString.copyFrom(point.x.toByteArray),
+      y = ByteString.copyFrom(point.y.toByteArray)
     )
   }
 }
