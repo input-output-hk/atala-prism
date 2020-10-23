@@ -277,7 +277,6 @@ jobs:
             mkdir -p target/test-reports
             test -e common/target/test-reports && mv common/target/test-reports/* target/test-reports
             test -e util/keyderivation/target/test-reports && mv util/keyderivation/target/test-reports/* target/test-reports
-            test -e app/target/test-reports && mv app/target/test-reports/* target/test-reports
             test -e mirror/target/test-reports && mv mirror/target/test-reports/* target/test-reports
             test -e node/target/test-reports && mv node/target/test-reports/* target/test-reports
             test -e node/client/target/test-reports && mv node/client/target/test-reports/* target/test-reports

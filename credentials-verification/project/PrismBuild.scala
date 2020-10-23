@@ -73,20 +73,6 @@ object PrismBuild {
       )
       .dependsOn(cryptoLib, protosLib)
 
-  lazy val app =
-    commonProject(project in file("app"))
-      .settings(
-        name := "app",
-        mainClass in (Compile, run) := Some("io.iohk.test.IssueCredential"),
-        libraryDependencies ++=
-          Seq(
-            enumeratum,
-            osLib,
-            playJson
-          )
-      )
-      .dependsOn(common)
-
   def commonServerProject(name: String): Project =
     commonProject(Project(name, file(name)))
       .settings(
@@ -200,7 +186,6 @@ object PrismBuild {
     (project in file("."))
       .aggregate(
         common,
-        app,
         node,
         nodeClient,
         connector,
