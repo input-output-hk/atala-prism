@@ -19,16 +19,15 @@ object ProtoCodecs {
     common_models.Date(year = date.getYear, month = date.getMonthValue, day = date.getDayOfMonth)
   }
 
-  implicit val connectionStatus2studentConnectionStatusProto
-      : Transformer[ConnectionStatus, cmanager_models.StudentConnectionStatus] = {
-    case ConnectionStatus.InvitationMissing => cmanager_models.StudentConnectionStatus.InvitationMissing
-    case ConnectionStatus.ConnectionMissing => cmanager_models.StudentConnectionStatus.ConnectionMissing
-    case ConnectionStatus.ConnectionAccepted => cmanager_models.StudentConnectionStatus.ConnectionAccepted
-    case ConnectionStatus.ConnectionRevoked => cmanager_models.StudentConnectionStatus.ConnectionRevoked
+  implicit val contactConnectionStatus2Proto: Transformer[ConnectionStatus, console_models.ContactConnectionStatus] = {
+    case ConnectionStatus.InvitationMissing => console_models.ContactConnectionStatus.INVITATION_MISSING
+    case ConnectionStatus.ConnectionMissing => console_models.ContactConnectionStatus.CONNECTION_MISSING
+    case ConnectionStatus.ConnectionAccepted => console_models.ContactConnectionStatus.CONNECTION_ACCEPTED
+    case ConnectionStatus.ConnectionRevoked => console_models.ContactConnectionStatus.CONNECTION_REVOKED
   }
 
   def genericCredentialToProto(credential: GenericCredential): cmanager_models.CManagerGenericCredential = {
-    val connectionStatus = connectionStatus2studentConnectionStatusProto.transform(credential.connectionStatus)
+    val connectionStatus = contactConnectionStatus2Proto.transform(credential.connectionStatus)
 
     val model = cmanager_models
       .CManagerGenericCredential()
@@ -54,12 +53,7 @@ object ProtoCodecs {
   def toContactProto(contact: models.Contact): console_models.Contact = {
     val token = contact.connectionToken.fold("")(_.token)
     val connectionId = contact.connectionId.fold("")(_.id.toString)
-    val status = contact.connectionStatus match {
-      case ConnectionStatus.InvitationMissing => console_models.ContactConnectionStatus.INVITATION_MISSING
-      case ConnectionStatus.ConnectionMissing => console_models.ContactConnectionStatus.CONNECTION_MISSING
-      case ConnectionStatus.ConnectionAccepted => console_models.ContactConnectionStatus.CONNECTION_ACCEPTED
-      case ConnectionStatus.ConnectionRevoked => console_models.ContactConnectionStatus.CONNECTION_REVOKED
-    }
+    val status = contactConnectionStatus2Proto.transform(contact.connectionStatus)
 
     console_models
       .Contact()

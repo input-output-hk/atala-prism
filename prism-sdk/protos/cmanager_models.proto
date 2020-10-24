@@ -5,27 +5,7 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
-import "common_models.proto";
-
-enum StudentConnectionStatus {
-    InvitationMissing = 0;
-    ConnectionMissing = 1;
-    ConnectionAccepted = 2;
-    ConnectionRevoked = 3;
-}
-
-// Contact
-message IssuerContact {
-    string id = 1;
-    string jsonData = 2;
-    string groupName = 3;
-    // NOTE: as enum values need to be unique, we reuse the student status for now, eventually,
-    // TODO: we should rename that enum.
-    StudentConnectionStatus connectionStatus = 4;
-    string connectionToken = 5; // present when the status is ConnectionMissing
-    string connectionId = 6; // present when the status is ConnectionAccepted
-    string externalId = 7; // the id provided by the issuer at contact creation time
-}
+import "console_models.proto";
 
 message Group {
     string name = 1;
@@ -46,7 +26,5 @@ message CManagerGenericCredential {
     string encodedSignedCredential = 10; // the actual published credential
     uint64 publicationStoredAt = 11; // the time when the publication data was stored in the database
     string externalId = 12; // the id provided by the issuer at contact creation time
-    // NOTE: as enum values need to be unique, we reuse the student status for now, eventually,
-    // TODO: we should rename that enum.
-    StudentConnectionStatus connectionStatus = 13;
+    ContactConnectionStatus connectionStatus = 13;
 }
