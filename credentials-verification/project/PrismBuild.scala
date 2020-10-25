@@ -182,6 +182,14 @@ object PrismBuild {
       )
       .dependsOn(common % "compile->compile;test->test", credentialsLib, connectorLib)
 
+  lazy val vault =
+    commonServerProject("vault")
+      .settings(
+        name := "vault",
+        mainClass in (Compile, run) := Some("io.iohk.atala.prism.vault.VaultApp")
+      )
+      .dependsOn(common % "compile->compile;test->test")
+
   lazy val prism =
     (project in file("."))
       .aggregate(
@@ -191,6 +199,7 @@ object PrismBuild {
         connector,
         connectorClient,
         keyderivation,
-        mirror
+        mirror,
+        vault
       )
 }

@@ -7,3 +7,4 @@ lazy val connector = PrismBuild.connector
 lazy val connectorClient = PrismBuild.connectorClient
 lazy val keyderivation = PrismBuild.keyderivation
 lazy val mirror = PrismBuild.mirror
+lazy val vault = PrismBuild.vault

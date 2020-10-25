@@ -163,6 +163,12 @@ jobs:
             sbt connector/dockerBuildAndPush
 
       - run:
+          name: Build and push credentials-verification/vault
+          command: |
+            cd credentials-verification
+            sbt vault/dockerBuildAndPush
+
+      - run:
           name: Build and push prism-lb-envoy
           command: |
             cd credentials-verification/infra/docker/prism-lb-envoy
