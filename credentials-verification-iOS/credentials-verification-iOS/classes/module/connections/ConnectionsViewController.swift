@@ -213,20 +213,20 @@ class ConnectionsViewController: ListingBaseViewController {
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
 
         let confirmMessage = ConnectionConfirmViewController.makeThisView()
-        customPresentViewController(confirmMessage.presentr, viewController: confirmMessage, animated: true)
         confirmMessage.config(delegate: presenterImpl, lead: "connections_scan_qr_confirm_title".localize(),
                               title: title, logoData: logoData, placeholderNamed: "ico_placeholder_credential")
+        customPresentViewController(confirmMessage.presentr, viewController: confirmMessage, animated: true)
     }
 
     func showNewProofRequestMessage(credentials: [Credential], requiered: [String], contact: Contact,
                                     logoData: Data?) {
 
         let confirmProofRequest = ConnectionProofRequestViewController.makeThisView()
-        customPresentViewController(confirmProofRequest.presentr, viewController: confirmProofRequest,
-                                    animated: true)
         confirmProofRequest.config(delegate: presenterImpl, contact: contact, credentials: credentials,
                                    requiered: requiered, logoData: logoData,
                                    placeholderNamed: "ico_placeholder_university")
+        customPresentViewController(confirmProofRequest.presentr, viewController: confirmProofRequest,
+                                    animated: true)
     }
 
     // MARK: Delete

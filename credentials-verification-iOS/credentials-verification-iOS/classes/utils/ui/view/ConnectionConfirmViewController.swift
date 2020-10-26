@@ -18,6 +18,10 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
     @IBOutlet weak var viewBg: UIView!
 
     weak var delegate: ConnectionConfirmPresenterDelegate?
+    var lead: String?
+    var titleStr: String?
+    var logoData: Data?
+    var placeholderNamed: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +33,9 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
                                       borderWidth: 3, borderColor: UIColor.appRed.cgColor)
         buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON,
                                       borderWidth: 3, borderColor: UIColor.appRed.cgColor)
+        labelLead.text = lead
+        labelTitle.text = titleStr
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
     }
 
     static func makeThisView() -> ConnectionConfirmViewController {
@@ -61,9 +68,10 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
                 logoData: Data?, placeholderNamed: String?) {
 
         self.delegate = delegate
-        labelLead.text = lead
-        labelTitle.text = title
-        imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
+        self.lead = lead
+        self.titleStr = title
+        self.logoData = logoData
+        self.placeholderNamed = placeholderNamed
     }
 
     // MARK: Component delegates

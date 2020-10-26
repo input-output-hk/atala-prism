@@ -31,6 +31,8 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
     var credentials: [Credential] = []
     var selectedCredentials: [Credential] = []
     var requiered: [String] = []
+    var logoData: Data?
+    var placeholderNamed: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +43,16 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
         buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3,
                                       borderColor: UIColor.appRed.cgColor)
         buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
+
+        self.selectedCredentials.removeAll()
+        self.labelTitle.text = contact?.name
+        self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
+        if credentials.count > 1 {
+            tableHeightCtrt.constant = 80
+        }
+        buttonConfirm.isEnabled = false
+        buttonConfirm.backgroundColor = .appGreyMid
+        tableCredentials.reloadData()
     }
 
     static func makeThisView() -> ConnectionProofRequestViewController {
@@ -76,15 +88,8 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
         self.credentials = credentials
         self.contact = contact
         self.requiered = requiered
-        self.selectedCredentials.removeAll()
-        self.labelTitle.text = contact.name
-        self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
-        if credentials.count > 1 {
-            tableHeightCtrt.constant = 80
-        }
-        buttonConfirm.isEnabled = false
-        buttonConfirm.backgroundColor = .appGreyMid
-        tableCredentials.reloadData()
+        self.logoData = logoData
+        self.placeholderNamed = placeholderNamed
     }
 
     // MARK: Component delegates
