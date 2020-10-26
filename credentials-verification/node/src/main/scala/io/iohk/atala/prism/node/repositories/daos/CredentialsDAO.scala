@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
 import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix}

@@ -2,11 +2,10 @@ package io.iohk.atala.prism.migrations
 
 import java.util.UUID
 
-import com.github.ghik.silencer.silent
 import doobie.implicits.toSqlInterpolator
 import doobie.postgres.implicits.pgEnumString
 import doobie.util.invariant.InvalidEnum
-import doobie.util.Meta
+import doobie.Meta
 import enumeratum.{Enum, EnumEntry}
 import enumeratum.EnumEntry.UpperSnakecase
 import io.iohk.atala.prism.connector.model.ParticipantType
@@ -91,7 +90,6 @@ class V24MigrationSpec extends PostgresMigrationSpec("V24") with BaseDAO {
   }
 
   private def setHolderStatus(holderId: UUID, status: IndividualConnectionStatus): Unit = {
-    @silent("never used")
     implicit val pgPackageTypeMeta: Meta[IndividualConnectionStatus] = pgEnumString[IndividualConnectionStatus](
       "INDIVIDUAL_CONNECTION_STATUS_TYPE",
       a => IndividualConnectionStatus.withNameOption(a).getOrElse(throw InvalidEnum[IndividualConnectionStatus](a)),

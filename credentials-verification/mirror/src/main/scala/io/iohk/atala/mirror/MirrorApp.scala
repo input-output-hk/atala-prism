@@ -136,7 +136,7 @@ object MirrorApp extends TaskApp {
         transactorConfig.username,
         transactorConfig.password,
         ce, // await connection here
-        be.blockingContext // execute JDBC operations here
+        be // execute JDBC operations here
       )
     } yield xa
 

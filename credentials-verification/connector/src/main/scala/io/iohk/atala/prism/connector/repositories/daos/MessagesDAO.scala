@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.connector.repositories.daos
 
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
 

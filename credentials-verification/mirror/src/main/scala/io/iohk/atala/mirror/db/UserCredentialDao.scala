@@ -4,6 +4,7 @@ import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.UserCredential
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
 import io.iohk.atala.mirror.models.UserCredential.MessageId
 

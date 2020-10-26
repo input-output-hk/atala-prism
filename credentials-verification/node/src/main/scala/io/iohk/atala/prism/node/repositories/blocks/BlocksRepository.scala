@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories.blocks
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import doobie.util.{Get, Read}
+import doobie.{Get, Read}
 import io.iohk.atala.prism.utils.DoobieImplicits._
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherOps, FutureOptionOps}

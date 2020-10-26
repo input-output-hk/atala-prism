@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.utils
 
-import doobie.util.Meta
+import doobie.Meta
 
 import scala.collection.compat.immutable.ArraySeq
 

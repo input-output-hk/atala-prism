@@ -8,6 +8,7 @@ import doobie.Update
 import doobie.Fragments.{in, whereAnd}
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 
 object IssuerGroupsDAO {

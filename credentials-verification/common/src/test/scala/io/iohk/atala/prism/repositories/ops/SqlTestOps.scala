@@ -3,7 +3,8 @@ package io.iohk.atala.prism.repositories.ops
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import doobie.util.{Read, fragment}
+import doobie.Read
+import doobie.util.fragment
 
 object SqlTestOps {
   implicit class Implicits(val sql: fragment.Fragment) {

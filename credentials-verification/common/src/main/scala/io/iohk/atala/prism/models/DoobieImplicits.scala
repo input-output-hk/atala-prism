@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.models
 
-import doobie.util.Meta
+import doobie.Meta
 import doobie.util.invariant.InvalidEnum
 
 object DoobieImplicits {

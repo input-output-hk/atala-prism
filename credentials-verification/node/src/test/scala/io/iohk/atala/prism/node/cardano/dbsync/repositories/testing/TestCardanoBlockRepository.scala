@@ -4,6 +4,7 @@ import java.time.Instant
 
 import cats.effect.IO
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import doobie.postgres.circe.json.implicits.jsonPut
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.models._

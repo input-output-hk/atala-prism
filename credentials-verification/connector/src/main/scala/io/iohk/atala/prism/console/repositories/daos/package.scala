@@ -3,7 +3,8 @@ package io.iohk.atala.prism.console.repositories
 import java.time.Instant
 import java.util.UUID
 
-import doobie.util.{Meta, Read, Write}
+import doobie.{Meta, Read, Write}
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.console.models.{Contact, Institution, PublicationData}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.daos.BaseDAO

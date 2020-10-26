@@ -4,6 +4,7 @@ import java.util.UUID
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.console.models.{Contact, Institution, StoredSignedCredential}
 

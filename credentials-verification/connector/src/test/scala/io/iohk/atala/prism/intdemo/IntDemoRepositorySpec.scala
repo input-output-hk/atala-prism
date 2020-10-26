@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.util.concurrent.ThreadLocalRandom
 
 import doobie.implicits._
+import doobie.implicits.legacy.localdate._
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.repositories.ConnectorRepositorySpecBase
 import IntDemoRepositorySpec._

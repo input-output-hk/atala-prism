@@ -4,6 +4,7 @@ import java.time.LocalDate
 
 import cats.effect.IO
 import doobie.implicits._
+import doobie.implicits.legacy.localdate._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.intdemo.IntDemoRepository.valueOf
 import io.iohk.atala.prism.connector.model.TokenString

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.connector.repositories.daos
 import java.util.UUID
 
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest

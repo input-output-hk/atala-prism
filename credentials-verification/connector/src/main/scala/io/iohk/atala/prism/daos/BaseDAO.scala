@@ -2,7 +2,7 @@ package io.iohk.atala.prism.daos
 
 import java.util.UUID
 
-import doobie.util.{Get, Meta, Put}
+import doobie.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.console.models.{GenericCredential, IssuerGroup}

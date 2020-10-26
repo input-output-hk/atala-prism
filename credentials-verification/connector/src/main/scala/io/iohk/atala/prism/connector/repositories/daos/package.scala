@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
 import doobie.postgres.implicits._
-import doobie.util.Meta
+import doobie.Meta
 import doobie.util.invariant.InvalidEnum
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.daos.BaseDAO

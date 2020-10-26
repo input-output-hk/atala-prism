@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.repositories.migrations
 import java.time.Instant
 
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits

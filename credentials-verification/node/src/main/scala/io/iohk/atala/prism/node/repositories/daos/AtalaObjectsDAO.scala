@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.repositories.daos
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.DoobieImplicits._
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.models.{AtalaObject, AtalaObjectId}

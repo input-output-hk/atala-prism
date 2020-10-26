@@ -6,6 +6,7 @@ import java.util.UUID
 import cats.implicits._
 import doobie._
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.console.models.{
   Contact,
   CreateGenericCredential,
