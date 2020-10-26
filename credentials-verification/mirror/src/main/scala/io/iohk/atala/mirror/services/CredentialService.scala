@@ -1,19 +1,17 @@
 package io.iohk.atala.mirror.services
 
-import java.time.Instant
-
 import cats.data.Validated.{Invalid, Valid}
-import cats.data.{EitherT, NonEmptyList, ValidatedNel}
-import cats.implicits._
-import doobie.implicits._
+import cats.data.{EitherT, OptionT, ValidatedNel}
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import io.iohk.atala.mirror.NodeUtils.{fromProtoKey, fromTimestampInfoProto}
 import io.iohk.atala.mirror.Utils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
+import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, IssuersDID, MessageReceivedDate, RawCredential}
+import java.time.Instant
+
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
-import io.iohk.atala.mirror.models.UserCredential._
-import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
+import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.prism.credentials.JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
 import io.iohk.atala.prism.credentials.{
   CredentialData,
@@ -36,6 +34,9 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration.DurationInt
 import scala.util.Try
+import cats.implicits._
+import doobie.implicits._
+import io.iohk.atala.mirror.utils.ConnectionUtils
 
 class CredentialService(
     tx: Transactor[Task],
@@ -45,24 +46,8 @@ class CredentialService(
 
   private val logger = LoggerFactory.getLogger(classOf[CredentialService])
 
-  private val GET_MESSAGES_PAGINATED_LIMIT = 100
-  private val GET_MESSAGES_PAGINATED_AWAKE_DELAY = 10.seconds
-
   private val GET_CONNECTIONS_PAGINATED_LIMIT = 100
   private val GET_CONNECTIONS_PAGINATED_AWAKE_DELAY = 11.seconds
-
-  val credentialUpdatesStream: Stream[Task, Seq[ReceivedMessage]] = {
-    Stream
-      .eval(UserCredentialDao.findLastSeenMessageId.transact(tx))
-      .flatMap { lastSeenMessageId =>
-        connectorService.getMessagesPaginatedStream(
-          lastSeenMessageId,
-          GET_MESSAGES_PAGINATED_LIMIT,
-          GET_MESSAGES_PAGINATED_AWAKE_DELAY
-        )
-      }
-      .evalTap(saveMessages)
-  }
 
   /**
     * @param immediatelyRequestedCredential Request credential proof in this place is temporary and probably will be removed in the future.
@@ -111,62 +96,26 @@ class CredentialService(
       )
   }
 
-  private def saveMessages(messages: Seq[ReceivedMessage]): Task[Unit] = {
-    val connectionIds = parseConnectionIds(messages)
-
-    for {
-      connections <-
-        NonEmptyList
-          .fromList(connectionIds.toList)
-          .map(ids => ConnectionDao.findBy(ids).transact(tx))
-          .getOrElse(Task.pure(Nil))
-
-      connectionIdToTokenMap =
-        connections
-          .flatMap(connection => connection.id.map(_.uuid.toString -> connection.token))
-          .toMap
-
-      userCredentials <- Task.sequence(messages.flatMap { receivedMessage =>
-        for {
-          rawCredential <- parseCredential(receivedMessage)
-          token <- connectionIdToTokenMap.get(receivedMessage.connectionId).orElse {
-            logger.warn(
-              s"Message with id: ${receivedMessage.id} and connectionId ${receivedMessage.connectionId}" +
-                "does not have corresponding connection or connection does not have connectionId, skipping it."
-            )
-            None
-          }
-        } yield createUserCredential(receivedMessage, token, rawCredential)
-      }.toList)
-
-      _ <- UserCredentialDao.insertMany.updateMany(userCredentials).transact(tx)
-    } yield ()
+  val credentialMessageProcessor: MessageProcessor = new MessageProcessor {
+    def attemptProcessMessage(receivedMessage: ReceivedMessage): Option[Task[Unit]] = {
+      parseCredential(receivedMessage).map(rawCredential => saveMessage(receivedMessage, rawCredential))
+    }
   }
 
-  private[services] def parseConnectionIds(messages: Seq[ReceivedMessage]): Seq[ConnectionId] = {
-    messages.flatMap { receivedMessage =>
-      parseConnectionId(receivedMessage.connectionId).orElse {
-        logger.warn(
-          s"Message with id: ${receivedMessage.id} has incorrect connectionId. ${receivedMessage.connectionId} " +
-            "is not valid UUID"
-        )
-        None
-      }
-    }
+  private def saveMessage(receivedMessage: ReceivedMessage, rawCredential: RawCredential): Task[Unit] = {
+    (for {
+      connection <- OptionT(ConnectionUtils.findConnection(receivedMessage, logger).transact(tx))
+      userCredentials <- OptionT.liftF(createUserCredential(receivedMessage, connection.token, rawCredential))
+      _ <- OptionT.liftF(UserCredentialDao.insert(userCredentials).transact(tx))
+    } yield ()).value.map(_ => ())
   }
 
   private[services] def parseCredential(message: ReceivedMessage): Option[RawCredential] = {
-    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toEither match {
-      case Left(error) =>
-        logger.warn(s"Parse credential error: ${error.getMessage}")
-        None
-      case Right(credential) =>
-        Some(credential.credentialDocument).map(RawCredential)
-    }
+    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toOption
+      .map(_.credentialDocument)
+      .filter(!_.isEmpty)
+      .map(RawCredential)
   }
-
-  private[services] def parseConnectionId(connectionId: String): Option[ConnectionId] =
-    parseUUID(connectionId).map(ConnectionId)
 
   private[services] def getIssuersDid(rawCredential: RawCredential): Option[IssuersDID] = {
     val unsignedCredential: UnsignedCredential = SignedCredential.from(rawCredential.rawCredential).toOption match {
@@ -197,7 +146,7 @@ class CredentialService(
         token,
         rawCredential,
         getIssuersDid(rawCredential),
-        MessageId(receivedMessage.id),
+        ConnectorMessageId(receivedMessage.id),
         MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received)),
         credentialStatus
       )

@@ -1,21 +1,16 @@
 package io.iohk.atala.mirror.services
 
 import scala.concurrent.duration.FiniteDuration
-
 import monix.eval.Task
 import fs2.Stream
 import org.slf4j.LoggerFactory
-
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, ProofRequest}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-
 import io.iohk.atala.mirror.config.ConnectorConfig
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
-import io.iohk.atala.mirror.models.CredentialProofRequestType
-import io.iohk.atala.mirror.models.UserCredential.MessageId
-
+import io.iohk.atala.mirror.models.{ConnectorMessageId, CredentialProofRequestType}
 import io.iohk.atala.mirror.Utils.parseUUID
 
 trait ConnectorClientService {
@@ -29,12 +24,12 @@ trait ConnectorClientService {
   ): Task[SendMessageResponse]
 
   def getMessagesPaginated(
-      lastSeenMessageId: Option[MessageId],
+      lastSeenMessageId: Option[ConnectorMessageId],
       limit: Int
   ): Task[GetMessagesPaginatedResponse]
 
   def getMessagesPaginatedStream(
-      lastSeenMessageId: Option[MessageId],
+      lastSeenMessageId: Option[ConnectorMessageId],
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, Seq[ReceivedMessage]]
@@ -78,7 +73,7 @@ class ConnectorClientServiceImpl(
   }
 
   def getMessagesPaginated(
-      lastSeenMessageId: Option[MessageId],
+      lastSeenMessageId: Option[ConnectorMessageId],
       limit: Int
   ): Task[GetMessagesPaginatedResponse] = {
     val request = GetMessagesPaginatedRequest(lastSeenMessageId.map(_.messageId).getOrElse(""), limit)
@@ -87,13 +82,13 @@ class ConnectorClientServiceImpl(
   }
 
   def getMessagesPaginatedStream(
-      lastSeenMessageId: Option[MessageId],
+      lastSeenMessageId: Option[ConnectorMessageId],
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, Seq[ReceivedMessage]] = {
     val initialAwakeDelay = false
     Stream
-      .unfoldEval[Task, (Option[MessageId], Boolean), Seq[ReceivedMessage]](
+      .unfoldEval[Task, (Option[ConnectorMessageId], Boolean), Seq[ReceivedMessage]](
         (lastSeenMessageId, initialAwakeDelay)
       ) {
         case (lastSeenMessageId, shouldApplyAwakeDelay) =>
@@ -108,7 +103,7 @@ class ConnectorClientServiceImpl(
                   Some(Nil -> (lastSeenMessageId -> applyAwakeDelay))
                 case messages =>
                   val applyAwakeDelay = messages.size != limit
-                  Some(messages -> (Some(MessageId(messages.last.id)) -> applyAwakeDelay))
+                  Some(messages -> (Some(ConnectorMessageId(messages.last.id)) -> applyAwakeDelay))
               }
             } yield result
           )

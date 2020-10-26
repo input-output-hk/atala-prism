@@ -12,6 +12,7 @@ import io.iohk.atala.mirror.stubs.ConnectorClientServiceStub
 
 import scala.concurrent.duration.DurationInt
 
+// sbt "project mirror" "testOnly *services.MirrorServiceSpec"
 class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar {
 
   "create new account" in {

@@ -15,7 +15,8 @@ function verify_protos {
   trap 'rm -rf ${PROTO_DIR} && mv ${OLD_PROTO_DIR} ${PROTO_DIR}' EXIT
   # Exit if there is a diff
   if ! diff -qr ${PROTO_DIR} ${OLD_PROTO_DIR} ; then
-    echo "JavaScript proto files need to be updated, please run ${PROTO_UPDATE}"
+    echo "JavaScript proto files need to be updated, please make sure that you have correct versions of
+      protoc and grpc-web (check README.md) and run ${PROTO_UPDATE}"
     exit 1
   fi
 }

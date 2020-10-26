@@ -99,7 +99,13 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
           .flatMap(_.map(r => Task.fromFuture(connectorClientWithUserId.sendMessage(r))).toList.sequence)
 
         // Mirror: process incoming messages
-        _ <- credentialService.credentialUpdatesStream.interruptAfter(5.second).compile.drain
+        cardanoAddressService = new CardanoAddressInfoService(databaseTask)
+        connectorMessageService = new ConnectorMessagesService(
+          databaseTask,
+          connectorClientService,
+          List(credentialService.credentialMessageProcessor, cardanoAddressService.cardanoAddressInfoMessageProcessor)
+        )
+        _ <- connectorMessageService.messagesUpdatesStream.interruptAfter(5.second).compile.drain
 
         // verify result
         result <-

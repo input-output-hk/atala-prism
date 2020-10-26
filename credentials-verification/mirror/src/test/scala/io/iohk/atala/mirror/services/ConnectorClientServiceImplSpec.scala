@@ -22,6 +22,7 @@ import io.iohk.atala.mirror.MirrorFixtures
 
 import monix.execution.Scheduler.Implicits.global
 
+// sbt "project mirror" "testOnly *services.ConnectorClientServiceImplSpec"
 class ConnectorClientServiceImplSpec
     extends AnyWordSpec
     with Matchers

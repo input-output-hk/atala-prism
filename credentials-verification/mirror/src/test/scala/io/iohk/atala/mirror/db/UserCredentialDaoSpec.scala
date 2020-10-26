@@ -1,14 +1,13 @@
 package io.iohk.atala.mirror.db
 
 import scala.concurrent.duration._
-
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
-import io.iohk.atala.mirror.models.UserCredential.MessageId
 import io.iohk.atala.mirror.MirrorFixtures
-
 import doobie.implicits._
+import io.iohk.atala.mirror.models.ConnectorMessageId
 
+// sbt "project mirror" "testOnly *db.UserCredentialDaoSpec"
 class UserCredentialDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
   import ConnectionFixtures._, UserCredentialFixtures._
 
@@ -62,7 +61,7 @@ class UserCredentialDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
       } yield ()).transact(database).unsafeRunSync()
 
       // when
-      val lastSeenMessageId: Option[MessageId] =
+      val lastSeenMessageId: Option[ConnectorMessageId] =
         UserCredentialDao.findLastSeenMessageId.transact(database).unsafeRunSync()
 
       // then

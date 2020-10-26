@@ -6,6 +6,8 @@ import java.util.UUID
 import cats.effect.Sync
 import cats.implicits._
 import com.google.protobuf.ByteString
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, MirrorMessage, RegisterAddressMessage}
+import io.iohk.atala.mirror.db.CardanoAddressInfoDao
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -14,7 +16,6 @@ import io.iohk.atala.mirror.db.ConnectionDao
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
 import io.iohk.atala.mirror.models._
-import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.credentials.{
   CredentialsCryptoSDKImpl,
   JsonBasedUnsignedCredential,
@@ -24,6 +25,9 @@ import io.iohk.atala.prism.credentials.{
   UnsignedCredential
 }
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
+import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, RegistrationDate}
+import io.iohk.atala.mirror.stubs.NodeClientServiceStub
+import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
@@ -67,7 +71,7 @@ trait MirrorFixtures {
         ConnectionFixtures.connection1.token,
         RawCredential("rawCredentials1"),
         Some(IssuersDID("issuersDID1")),
-        MessageId("messageId1"),
+        ConnectorMessageId("messageId1"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
       )
@@ -77,7 +81,7 @@ trait MirrorFixtures {
         ConnectionFixtures.connection2.token,
         RawCredential("rawCredentials2"),
         None,
-        MessageId("messageId2"),
+        ConnectorMessageId("messageId2"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
       )
@@ -137,5 +141,66 @@ trait MirrorFixtures {
     def createSignedCredential(unsignedCredential: UnsignedCredential, keys: ECKeyPair): SignedCredential =
       CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)(EC)
 
+  }
+
+  object CardanoAddressInfoFixtures {
+    import ConnectionFixtures._
+
+    lazy val cardanoAddressInfo1 = CardanoAddressInfo(
+      cardanoAddress = CardanoAddress("address1"),
+      connectionToken = connection1.token,
+      registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
+      messageId = ConnectorMessageId("messageId1")
+    )
+
+    lazy val cardanoAddressInfo2 = CardanoAddressInfo(
+      cardanoAddress = CardanoAddress("address2"),
+      connectionToken = connection2.token,
+      registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
+      messageId = ConnectorMessageId("messageId2")
+    )
+
+    def insertAll[F[_]: Sync](database: Transactor[F]): F[Unit] = {
+      insertManyFixtures(
+        CardanoAddressInfoDao.insert(cardanoAddressInfo1),
+        CardanoAddressInfoDao.insert(cardanoAddressInfo2)
+      )(database)
+    }
+  }
+
+  object ConnectorMessageFixtures {
+    import ConnectionFixtures._
+    import CredentialFixtures._
+
+    lazy val credentialMessage1 = ReceivedMessage(
+      id = "id1",
+      received = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
+      connectionId = connectionId1.uuid.toString,
+      message = Credential(
+        typeId = "VerifiableCredential/RedlandIdCredential",
+        credentialDocument = signedCredential.canonicalForm
+      ).toByteString
+    )
+
+    lazy val credentialMessage2 = ReceivedMessage(
+      id = "id2",
+      received = LocalDateTime.of(2020, 6, 14, 0, 0).toEpochSecond(ZoneOffset.UTC),
+      connectionId = connectionId2.uuid.toString,
+      message = Credential(
+        typeId = "VerifiableCredential/RedlandIdCredential",
+        credentialDocument = signedCredential.canonicalForm
+      ).toByteString
+    )
+
+    val cardanoAddress1 = "cardanoAddress1"
+
+    lazy val cardanoAddressInfoMessage1 = ReceivedMessage(
+      id = "id3",
+      received = LocalDateTime.of(2020, 6, 13, 0, 0).toEpochSecond(ZoneOffset.UTC),
+      connectionId = connectionId1.uuid.toString,
+      message = AtalaMessage()
+        .withMirrorMessage(MirrorMessage().withRegisterAddressMessage(RegisterAddressMessage(cardanoAddress1)))
+        .toByteString
+    )
   }
 }

@@ -3,7 +3,6 @@ package io.iohk.atala.mirror
 import java.util.concurrent.TimeUnit
 
 import scala.concurrent.blocking
-
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import cats.effect.{Blocker, ExitCode, Resource}
@@ -19,7 +18,9 @@ import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, NodeConfig, TransactorConfig}
 import io.iohk.atala.mirror.services.{
+  CardanoAddressInfoService,
   ConnectorClientServiceImpl,
+  ConnectorMessagesService,
   CredentialService,
   MirrorService,
   NodeClientServiceImpl
@@ -73,7 +74,14 @@ object MirrorApp extends TaskApp {
       nodeService = new NodeClientServiceImpl(node, connectorConfig.authConfig)
       mirrorService = new MirrorService(tx, connectorService)
       credentialService = new CredentialService(tx, connectorService, nodeService)
+      cardanoAddressInfoService = new CardanoAddressInfoService(tx)
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
+
+      connectorMessageService = new ConnectorMessagesService(
+        tx,
+        connectorService,
+        List(credentialService.credentialMessageProcessor, cardanoAddressInfoService.cardanoAddressInfoMessageProcessor)
+      )
 
       // background streams
       _ <- Resource.liftF(
@@ -87,7 +95,7 @@ object MirrorApp extends TaskApp {
           .drain
           .start
       )
-      _ <- Resource.liftF(credentialService.credentialUpdatesStream.compile.drain.start)
+      _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       // gRPC server
       grpcServer <- createGrpcServer(

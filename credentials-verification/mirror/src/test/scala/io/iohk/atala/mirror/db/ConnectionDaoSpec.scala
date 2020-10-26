@@ -11,6 +11,7 @@ import io.iohk.atala.mirror.MirrorFixtures
 
 import doobie.implicits._
 
+// sbt "project mirror" "testOnly *db.ConnectionDaoSpec"
 class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
   import ConnectionFixtures._
 

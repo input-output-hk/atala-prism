@@ -20,6 +20,7 @@ import io.iohk.atala.mirror.services.BaseGrpcClientService.AuthHeaders
 
 import monix.execution.Scheduler.Implicits.global
 
+// sbt "project mirror" "testOnly *services.BaseGrpcClientServiceSpec"
 class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
 
   "BaseGrpcClientService" should {

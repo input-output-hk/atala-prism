@@ -1,10 +1,8 @@
 package io.iohk.atala.mirror.stubs
 
 import scala.concurrent.duration.FiniteDuration
-
 import fs2.Stream
-
-import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
+import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType}
 import io.iohk.atala.mirror.services.ConnectorClientService
 import io.iohk.atala.prism.protos.connector_api.{
   GenerateConnectionTokenResponse,
@@ -31,12 +29,12 @@ class ConnectorClientServiceStub(
   ): Task[SendMessageResponse] = Task.pure(SendMessageResponse())
 
   def getMessagesPaginated(
-      lastSeenMessageId: Option[UserCredential.MessageId],
+      lastSeenMessageId: Option[ConnectorMessageId],
       limit: Int
   ): Task[GetMessagesPaginatedResponse] = Task.pure(GetMessagesPaginatedResponse(receivedMessages))
 
   def getMessagesPaginatedStream(
-      lastSeenMessageId: Option[UserCredential.MessageId],
+      lastSeenMessageId: Option[ConnectorMessageId],
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, Seq[ReceivedMessage]] = Stream(receivedMessages)
