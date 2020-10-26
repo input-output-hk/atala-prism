@@ -9,7 +9,7 @@ Related to payments, the approach assumes we'll bill per connection, which indir
 **NOTE**: As of 02/Sep/2019, we decided to follow this approach, so, it is not a proposal anymore.
 
 ## Definitions
-- **GEUD**: The Georgia University Demo project.
+- **GEUD**: The Georgia University Degrees project.
 - **Issuer**: The actor that is interested in issuing credentials to holders (like an university).
 - **Holder**: The actor who receives and holds credentials (like a student).
 - **Verifier**: The actor who is interested in verifying credentials from holders (like an employer).
