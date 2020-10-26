@@ -56,7 +56,7 @@ import scala.util.{Failure, Success}
         "Enter your password"
       ),
       div(className := "div__field_group")(
-        label(className := "label_unlock")("Password: "),
+        label(className := "label_unlock")("Password"),
         div(className := "input__container")(
           input(
             id := "password",
@@ -81,11 +81,6 @@ import scala.util.{Failure, Success}
             unlockWallet()
           }
         )("Unlock your wallet")
-      ),
-      p(
-        className := "h4_forgot",
-        id := "h4_forgot",
-        "Forgot your password?"
       ),
       p(
         className := "h4_recover_account",

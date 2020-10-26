@@ -100,7 +100,7 @@ import scala.util.{Failure, Success}
       ),
       h4(className := "h4_register", id := "h4_register", "Wallet information"),
       div(className := "div__field_group")(
-        label(className := "_label")("Password: "),
+        label(className := "_label")("Password "),
         div(className := "input__container")(
           input(
             id := "password",
@@ -112,7 +112,7 @@ import scala.util.{Failure, Success}
           )
         ),
         div(className := "div__field_group")(
-          label(className := "_label")("Confirm password: "),
+          label(className := "_label")("Confirm password "),
           div(className := "input__container")(
             input(
               id := "password2",

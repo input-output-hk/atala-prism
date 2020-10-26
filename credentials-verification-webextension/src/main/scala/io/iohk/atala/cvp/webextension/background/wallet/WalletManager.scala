@@ -8,18 +8,23 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
-import io.iohk.atala.prism.credentials.VerificationError
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
-import io.iohk.atala.cvp.webextension.background.wallet.WalletManager.LOCAL_STORAGE_KEY
+import io.iohk.atala.cvp.webextension.background.wallet.WalletManager.{
+  AES_KEY_LENGTH,
+  AES_MODE,
+  GCM_IV_LENGTH,
+  TAG_LENGTH_BIT
+}
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.credentials.VerificationError
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
@@ -34,6 +39,12 @@ object WalletManager {
 
   val LOCAL_STORAGE_KEY = "atala-wallet-data"
   val PASSWORD_SALT = "kkmarcbr/a"
+  val AES_MODE = "AES-GCM"
+  val AES_KEY_LENGTH: Short = 256
+  // GCM MODE
+  val GCM_IV_LENGTH = 12 // Initialization Vector
+  val TAG_LENGTH_BIT: Short = 128 // Authentication Tag
+  // GCM MODE
 }
 
 case class SigningRequest(id: Int, origin: String, sessionId: String, subject: CredentialSubject)
@@ -149,23 +160,28 @@ private[background] class WalletManager(
     }
   }
 
-  def initialAesCtr: crypto.AesCtrParams = {
-    val counter = Array.tabulate[Byte](16)(i => if (i == 15) 1.toByte else 0.toByte)
-    crypto.AesCtrParams(
-      "AES-CTR",
-      counter.toTypedArray.buffer,
-      32
+  def initialAesGcm: crypto.AesGcmParams = {
+    val ivBytes = Array.ofDim[Byte](GCM_IV_LENGTH)
+    crypto.crypto.getRandomValues(ivBytes.toTypedArray)
+    //Additional data is quite interesting it is data that can be authenticated data that won't be encrypted
+    //but will be part of integrity, Hence I was thinking if we can.
+    //We can use as origin so we know the request for encryption/decryption came from the same origin
+    val additionalData = ""
+    crypto.AesGcmParams(
+      name = AES_MODE,
+      iv = ivBytes.toTypedArray.buffer,
+      additionalData = additionalData.getBytes.toTypedArray.buffer,
+      tagLength = TAG_LENGTH_BIT
     )
   }
 
   def save(key: CryptoKey, walletData: WalletData): Future[Unit] = {
     val json = walletData.asJson.noSpaces
     println(s"Serialized wallet: $json")
-
     val result = for {
       arrayBuffer <-
         crypto.crypto.subtle
-          .encrypt(initialAesCtr, key, json.getBytes.toTypedArray.buffer)
+          .encrypt(initialAesGcm, key, json.getBytes.toTypedArray.buffer)
           .toFuture
           .asInstanceOf[Future[ArrayBuffer]]
       arr = Array.ofDim[Byte](arrayBuffer.byteLength)
@@ -325,7 +341,7 @@ private[background] class WalletManager(
           .toFuture
           .asInstanceOf[Future[crypto.CryptoKey]]
 
-      aesCtr = crypto.AesDerivedKeyParams("AES-CTR", 256)
+      aesCtr = crypto.AesDerivedKeyParams(AES_MODE, AES_KEY_LENGTH)
       aesKey <-
         crypto.crypto.subtle
           .deriveKey(
@@ -399,7 +415,7 @@ private[background] class WalletManager(
             val encryptedJson = storedEncryptedJson.asInstanceOf[String]
             val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
             crypto.crypto.subtle
-              .decrypt(initialAesCtr, aesKey, encryptedBytes)
+              .decrypt(initialAesGcm, aesKey, encryptedBytes)
               .toFuture
               .asInstanceOf[Future[ArrayBuffer]]
               .map { buffer =>
