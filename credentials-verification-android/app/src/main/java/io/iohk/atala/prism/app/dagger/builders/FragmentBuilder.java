@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector;
 import io.iohk.atala.prism.app.dagger.modules.AcceptConnectionDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.ConnectionActivityModule;
 import io.iohk.atala.prism.app.dagger.modules.ConnectionsListableModule;
+import io.iohk.atala.prism.app.dagger.modules.ContactDetailFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.CredentialsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.CredentialsViewModelModule;
@@ -19,6 +20,7 @@ import io.iohk.atala.prism.app.views.fragments.AcceptConnectionDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.AddQrCodeDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.AlreadyConnectedDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.BackendIpFragment;
+import io.iohk.atala.prism.app.views.fragments.ContactDetailFragment;
 import io.iohk.atala.prism.app.views.fragments.ContactsFragment;
 import io.iohk.atala.prism.app.views.fragments.CredentialDetailFragment;
 import io.iohk.atala.prism.app.views.fragments.DeleteAllConnectionsDialogFragment;
@@ -128,4 +130,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector(modules = DeleteContactAlertDialogModule.class)
     abstract DeleteContactAlertDialogFragment deleteContactDialogFragment();
+
+    @ContributesAndroidInjector(modules = ContactDetailFragmentModule.class)
+    abstract ContactDetailFragment contributeContactDetailFragment();
 }

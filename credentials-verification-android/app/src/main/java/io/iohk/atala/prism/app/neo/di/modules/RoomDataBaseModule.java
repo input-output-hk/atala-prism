@@ -7,6 +7,7 @@ import androidx.room.Room;
 import dagger.Module;
 import dagger.Provides;
 import io.iohk.atala.prism.app.data.local.db.AppDatabase;
+import io.iohk.atala.prism.app.data.local.db.MigrationsKt;
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao;
 import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao;
 import io.iohk.atala.prism.app.utils.Constants;
@@ -27,7 +28,10 @@ public class RoomDataBaseModule {
     @Provides
     public AppDatabase provideAppDataBase() {
         return Room.databaseBuilder(context, AppDatabase.class, Constants.DB_NAME)
-                .fallbackToDestructiveMigration()
+                .addMigrations(
+                        MigrationsKt.getMIGRATION_1_2(),
+                        MigrationsKt.getMIGRATION_2_3()
+                )
                 .build();
     }
 

@@ -5,13 +5,10 @@ import android.content.Context;
 import dagger.Module;
 import dagger.Provides;
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao;
-import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao;
 import io.iohk.atala.prism.app.neo.data.AccountRecoveryRepository;
 import io.iohk.atala.prism.app.neo.data.SessionRepository;
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSourceInterface;
-import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSource;
-import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource;
@@ -58,20 +55,14 @@ public class ApplicationModule {
      * */
 
     @Provides
-    public CredentialsLocalDataSourceInterface provideCredentialsLocalDataSource(CredentialDao credentialDao) {
-        return new CredentialsLocalDataSource(credentialDao);
-    }
-
-    @Provides
     public ContactsLocalDataSourceInterface provideContactsLocalDataSource(ContactDao contactDao) {
         return new ContactsLocalDataSource(contactDao);
     }
 
     @Provides
     public AccountRecoveryRepository provideSessionLocalDataSourceInterface(SessionLocalDataSourceInterface sessionLocalDataSource,
-                                                                            CredentialsLocalDataSourceInterface credentialsLocalDataSource,
                                                                             ContactsLocalDataSourceInterface contactsLocalDataSource,
                                                                             ConnectorRemoteDataSource connectorRemoteDataSource) {
-        return new AccountRecoveryRepository(sessionLocalDataSource, credentialsLocalDataSource, contactsLocalDataSource, connectorRemoteDataSource);
+        return new AccountRecoveryRepository(sessionLocalDataSource, contactsLocalDataSource, connectorRemoteDataSource);
     }
 }

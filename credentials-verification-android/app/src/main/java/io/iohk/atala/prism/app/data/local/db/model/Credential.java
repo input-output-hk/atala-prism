@@ -1,13 +1,26 @@
 package io.iohk.atala.prism.app.data.local.db.model;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.google.protobuf.ByteString;
 
-@Entity(tableName = "credential")
-public class Credential{
+@Entity(tableName = "credentials",
+        indices = {@Index("connection_id"), @Index(value = "credential_id", unique = true)},
+        foreignKeys = {
+                @ForeignKey(
+                        entity = Contact.class,
+                        parentColumns = {"connection_id"},
+                        childColumns = {"connection_id"},
+                        onDelete = ForeignKey.CASCADE
+                )
+        }
+)
+public class Credential {
 
     @PrimaryKey(autoGenerate = true)
     public Long id;
@@ -34,11 +47,12 @@ public class Credential{
     public String credentialType;
 
     @ColumnInfo(name = "connection_id")
+    @NonNull
     public String connectionId;
-
-    public Boolean viewed = false;
 
     @ColumnInfo(name = "credentials_document")
     public String credentialDocument;
 
+    @ColumnInfo(name = "deleted", defaultValue = "false")
+    public Boolean deleted = false;
 }

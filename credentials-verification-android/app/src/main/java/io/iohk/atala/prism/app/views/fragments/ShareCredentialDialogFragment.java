@@ -25,17 +25,13 @@ import io.iohk.cvp.databinding.NeoDialogShareCredentialBinding;
 import io.iohk.atala.prism.app.neo.common.OnSelectItem;
 import io.iohk.atala.prism.app.neo.common.extensions.FragmentActivityExtensionsKt;
 import io.iohk.atala.prism.app.neo.common.model.CheckableData;
-import io.iohk.atala.prism.app.utils.CredentialParse;
 import io.iohk.atala.prism.app.viewmodel.ShareCredentialDialogViewModel;
 import io.iohk.atala.prism.app.viewmodel.ShareCredentialDialogViewModelFactory;
-import io.iohk.atala.prism.app.viewmodel.dtos.CredentialDto;
 import io.iohk.atala.prism.app.views.utils.adapters.CheckableContactRecyclerViewAdapter;
 import io.iohk.atala.prism.app.views.utils.dialogs.SuccessDialog;
 import lombok.NoArgsConstructor;
 
-import static io.iohk.atala.prism.app.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
-import static io.iohk.atala.prism.app.utils.IntentDataConstants.CREDENTIAL_ENCODED_KEY;
-import static io.iohk.atala.prism.app.utils.IntentDataConstants.CREDENTIAL_TYPE_KEY;
+import static io.iohk.atala.prism.app.utils.IntentDataConstants.CREDENTIAL_ID_KEY;
 
 @NoArgsConstructor
 public class ShareCredentialDialogFragment extends DaggerDialogFragment implements OnSelectItem<CheckableData<Contact>> {
@@ -46,8 +42,6 @@ public class ShareCredentialDialogFragment extends DaggerDialogFragment implemen
     private ShareCredentialDialogViewModel viewModel;
 
     private CheckableContactRecyclerViewAdapter adapter;
-
-    private CredentialDto credential;
 
     private NeoDialogShareCredentialBinding binding;
 
@@ -71,9 +65,8 @@ public class ShareCredentialDialogFragment extends DaggerDialogFragment implemen
         binding.setViewModel(viewModel);
         configureRecyclerView();
         try {
-            credential = CredentialParse.parse(getArguments().getString(CREDENTIAL_TYPE_KEY), getArguments().getString(CREDENTIAL_DATA_KEY));
-            String credentialIssuerId = credential.getIssuer().getId();
-            viewModel.fetchContacts(credentialIssuerId.substring(credentialIssuerId.lastIndexOf(":")), requireArguments().getByteArray(CREDENTIAL_ENCODED_KEY));
+            String credentialId = getArguments().getString(CREDENTIAL_ID_KEY);
+            viewModel.fetchData(credentialId);
         } catch (Exception e) {
             FirebaseCrashlytics.getInstance().recordException(e);
         }

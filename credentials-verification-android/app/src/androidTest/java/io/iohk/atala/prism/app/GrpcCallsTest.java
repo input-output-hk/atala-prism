@@ -1,4 +1,4 @@
-package io.iohk.atala;
+package io.iohk.atala.prism.app;
 
 import org.junit.Before;
 import org.junit.Test;

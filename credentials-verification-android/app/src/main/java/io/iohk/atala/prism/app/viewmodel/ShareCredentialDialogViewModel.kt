@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
+import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
 import io.iohk.atala.prism.app.utils.CryptoUtils
@@ -23,8 +24,6 @@ class ShareCredentialDialogViewModel(private val dataManager: DataManager) : Vie
     private val _error = MutableLiveData<EventWrapper<ErrorType>>()
 
     val error: LiveData<EventWrapper<ErrorType>> = _error
-
-    private var credentialByteString: ByteString? = null
 
     val searchText = MutableLiveData<String>("")
 
@@ -53,17 +52,18 @@ class ShareCredentialDialogViewModel(private val dataManager: DataManager) : Vie
         return@map it.find { contact -> contact.isChecked } != null
     }
 
-    // TODO - The best thing would be if you only need an id of the credential to share and from there obtain all the data from some repository but... no repository for this yet
-    fun fetchContacts(credentialToShareContactId: String, credentialByteString: ByteArray) {
-        this.credentialByteString = ByteString.copyFrom(credentialByteString)
+    private lateinit var credential: Credential
+
+    fun fetchData(credentialId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _contactsAreLoading.postValue(true)
-                val checkableContacts = dataManager.getAllContacts().filter {
-                    // TODO - move this filter to a repository
-                    // only contacts that are not issuers of the credential to share are shown
-                    it.did.isEmpty() || it.did.substring(it.did.lastIndexOf(":")) != credentialToShareContactId
-                }.map {
+                credential = dataManager.getCredentialByCredentialId(credentialId)!!
+                val contacts = dataManager.getAllContacts().filter {
+                    // you can't share to the contact who issued the current credential
+                    it.connectionId != credential.connectionId
+                }
+                val checkableContacts = contacts.map {
                     CheckableData(it)
                 }
                 _contacts.postValue(checkableContacts)
@@ -95,15 +95,18 @@ class ShareCredentialDialogViewModel(private val dataManager: DataManager) : Vie
 
     fun share() {
         viewModelScope.launch(Dispatchers.IO) {
-            val selectedContacts = filteredContacts.value?.filter { it.isChecked }
-            if (selectedContacts?.isNotEmpty() == true && credentialByteString != null) {
+            val selectedCheckableContacts = filteredContacts.value?.filter { it.isChecked }
+            if (selectedCheckableContacts?.isNotEmpty() == true) {
                 try {
+                    val credentialByteArray = ByteString.copyFrom(credential.credentialEncoded.toByteArray())
                     _credentialSharingIsInProcess.postValue(true)
                     // TODO - I think all the following logic should be in a repository
-                    val connections = selectedContacts.map {
+                    val connections = selectedCheckableContacts.map {
                         ConnectionDataDto(it.data.connectionId, dataManager.getKeyPairFromPath(it.data.keyDerivationPath))
                     }
-                    dataManager.sendMessageToMultipleConnections(connections, credentialByteString!!)
+                    dataManager.sendMessageToMultipleConnections(connections, credentialByteArray!!)
+                    val selectedContacts = selectedCheckableContacts.map { it.data }
+                    dataManager.insertShareCredentialActivityHistories(credential, selectedContacts)
                     /* TODO - When connection is created server take a few milliseconds to create all messages,
                     added a delay to avoid getting empty messages. This should be changed when server implement stream connections */
                     delay(TimeUnit.SECONDS.toMillis(1))
@@ -133,18 +136,18 @@ class ShareCredentialDialogViewModel(private val dataManager: DataManager) : Vie
             newMessage.proofRequest.typeIdsList.isEmpty()
         }
         if (credentialList.isNotEmpty()) {
-            storeCredentials(credentialList)
+            storeCredentials(contact.id, credentialList)
             updateContactLastMessageSeenId(connectionId, credentialList.last().id)
         } else {
             updateContactLastMessageSeenId(connectionId, contact.lastMessageId)
         }
     }
 
-    private suspend fun storeCredentials(credentialList: List<ReceivedMessage>) {
+    private suspend fun storeCredentials(contactId: Long, credentialList: List<ReceivedMessage>) {
         val credentialToStore = credentialList.map { receivedMessage: ReceivedMessage? ->
             return@map CredentialMapper.mapToCredential(receivedMessage)
         }.toList()
-        dataManager.saveAllCredentials(credentialToStore)
+        dataManager.insertIssuedCredentialsToAContact(contactId, credentialToStore)
     }
 
     private suspend fun updateContactLastMessageSeenId(connectionId: String, messageId: String?) {

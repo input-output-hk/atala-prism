@@ -16,10 +16,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import javax.inject.Inject;
 
+import io.iohk.atala.prism.app.neo.common.OnSelectItem;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.data.local.db.model.Contact;
 import io.iohk.cvp.databinding.FragmentContactsBinding;
-import io.iohk.atala.prism.app.neo.common.OnSelectItemAction;
 import io.iohk.atala.prism.app.utils.ActivitiesRequestCodes;
 import io.iohk.atala.prism.app.utils.IntentDataConstants;
 import io.iohk.atala.prism.app.viewmodel.ContactsViewModel;
@@ -29,7 +29,7 @@ import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator;
 import io.iohk.atala.prism.app.views.fragments.utils.RootAppBar;
 import io.iohk.atala.prism.app.views.utils.adapters.ContactsRecyclerViewAdapter;
 
-public class ContactsFragment extends CvpFragment<ContactsViewModel> implements OnSelectItemAction<Contact, ContactsRecyclerViewAdapter.Action> {
+public class ContactsFragment extends CvpFragment<ContactsViewModel> implements OnSelectItem<Contact> {
 
     @Inject
     ContactsViewModelFactory factory;
@@ -119,17 +119,8 @@ public class ContactsFragment extends CvpFragment<ContactsViewModel> implements 
     }
 
     @Override
-    public void onSelect(Contact item, @org.jetbrains.annotations.Nullable ContactsRecyclerViewAdapter.Action action) {
-        assert action != null;
-        switch (action) {
-            case ActionDelete:
-                // TODO momentary solution, the use of "safeArgs" will be implemented
-                DeleteContactAlertDialogFragment dialog = DeleteContactAlertDialogFragment.Companion.build(item.id.intValue());
-                dialog.show(requireActivity().getSupportFragmentManager(), null);
-                break;
-            case ActionDetail:
-                // this is ready to go to the detail of a contact
-                break;
-        }
+    public void onSelect(Contact item) {
+        ContactDetailFragment fragment = ContactDetailFragment.Companion.build(item.id);
+        navigator.showFragmentOnTop(requireActivity().getSupportFragmentManager(), fragment);
     }
 }

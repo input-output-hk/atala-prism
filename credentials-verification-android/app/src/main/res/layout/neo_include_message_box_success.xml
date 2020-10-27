@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+            name="text"
+            type="String" />
+
+        <variable
+            name="iconSrc"
+            type="android.graphics.drawable.Drawable" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include
+            app:textColor="@{@color/on_success}"
+            app:bgColor="@{@color/success}"
+            app:text="@{text}"
+            app:iconSrc="@{iconSrc}"
+            layout="@layout/neo_include_message_box" />
+    </FrameLayout>
+
+</layout>

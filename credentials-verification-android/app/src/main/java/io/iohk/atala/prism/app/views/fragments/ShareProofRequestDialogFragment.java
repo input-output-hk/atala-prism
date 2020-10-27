@@ -184,8 +184,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
 
     @OnClick(R.id.share_button)
     public void onConnectClick() {
-        getViewModel().sendMultipleMessage(credentialsToShare.getConnection().keyDerivationPath,
-                credentialsToShare.getConnection().connectionId, credentialsToShare.getCredentialsToShare().stream()
-                        .map(credential -> credential.credentialEncoded).collect(Collectors.toList()));
+        getViewModel().acceptProofRequest(credentialsToShare.getConnection().keyDerivationPath,
+                credentialsToShare.getConnection(), credentialsToShare.getCredentialsToShare());
     }
 }

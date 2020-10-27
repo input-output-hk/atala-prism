@@ -26,6 +26,10 @@ class DeleteContactAlertDialogViewModel(private val dataManager: DataManager) : 
 
     val dismiss: LiveData<EventWrapper<Boolean>> = _dismiss
 
+    private val _contactDeleted = MutableLiveData<EventWrapper<Boolean>>()
+
+    val contactDeleted: LiveData<EventWrapper<Boolean>> = _contactDeleted
+
 
     fun fetchContactInfo(contactId: Int) {
         _uiEnabled.value = false
@@ -42,9 +46,8 @@ class DeleteContactAlertDialogViewModel(private val dataManager: DataManager) : 
         contact.value?.let {
             _uiEnabled.value = false
             viewModelScope.launch(Dispatchers.IO) {
-                dataManager.deleteCredentialByContactId(it.connectionId)
                 dataManager.deleteContact(it)
-                _dismiss.postValue(EventWrapper(true))
+                _contactDeleted.postValue(EventWrapper(true))
             }
         }
     }

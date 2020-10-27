@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.japi.ECKeyPair
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.DbHelper
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.preferences.PreferencesHelper
@@ -17,25 +18,6 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
 
     private var mDbHelper: DbHelper = dbHelper
 
-    override suspend fun saveContact(contact: Contact): Long {
-        return mDbHelper.saveContact(contact)
-    }
-
-    override suspend fun getAllContacts(): List<Contact> {
-        return mDbHelper.getAllContacts()
-    }
-
-    override fun allContacts(): LiveData<List<Contact>> {
-        return mDbHelper.allContacts()
-    }
-
-    override suspend fun contactById(id: Int): Contact? {
-        return mDbHelper.contactById(id)
-    }
-
-    override suspend fun saveAllCredentials(credentialsList: List<Credential>) {
-        mDbHelper.saveAllCredentials(credentialsList)
-    }
 
     override suspend fun addConnection(ecKeyPair: ECKeyPair, token: String, nonce: String): AddConnectionFromTokenResponse {
         return apiHelper.addConnection(ecKeyPair, token, nonce)
@@ -85,8 +67,32 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         prefHelper.saveIndex(lastIndex)
     }
 
+    override suspend fun getAllContacts(): List<Contact> {
+        return mDbHelper.getAllContacts()
+    }
+
+    override suspend fun saveContact(contact: Contact): Long {
+        return mDbHelper.saveContact(contact)
+    }
+
+    override suspend fun removeAllLocalData() {
+        mDbHelper.removeAllLocalData()
+    }
+
+    override suspend fun getContactByConnectionId(connectionId: String): Contact? {
+        return mDbHelper.getContactByConnectionId(connectionId)
+    }
+
+    override suspend fun insertIssuedCredentialsToAContact(contactId: Long, issuedCredentials: List<Credential>) {
+        mDbHelper.insertIssuedCredentialsToAContact(contactId, issuedCredentials)
+    }
+
     override suspend fun updateContact(contact: Contact) {
         mDbHelper.updateContact(contact)
+    }
+
+    override suspend fun contactById(contactId: Int): Contact? {
+        return mDbHelper.contactById(contactId)
     }
 
     override suspend fun getAllCredentials(): List<Credential> {
@@ -97,23 +103,7 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         return mDbHelper.allCredentials()
     }
 
-    override suspend fun getContactByConnectionId(connectionId: String): Contact? {
-        return mDbHelper.getContactByConnectionId(connectionId)
-    }
-
-    override suspend fun removeAllLocalData() {
-        mDbHelper.removeAllLocalData()
-    }
-
-    override suspend fun getAllNewCredentials(): List<Credential> {
-        return mDbHelper.getAllNewCredentials()
-    }
-
-    override suspend fun updateCredential(credential: Credential) {
-        mDbHelper.updateCredential(credential)
-    }
-
-    override suspend fun getCredentialByCredentialId(credentialId: String): Credential {
+    override suspend fun getCredentialByCredentialId(credentialId: String): Credential? {
         return mDbHelper.getCredentialByCredentialId(credentialId)
     }
 
@@ -121,15 +111,27 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         mDbHelper.deleteCredential(credential)
     }
 
-    override suspend fun deleteContact(contact: Contact) {
-        mDbHelper.deleteContact(contact)
-    }
-
-    override suspend fun deleteCredentialByContactId(connectionId: String) {
-        mDbHelper.deleteCredentialByContactId(connectionId)
-    }
-
     override suspend fun getCredentialsByConnectionId(connectionId: String): List<Credential> {
         return mDbHelper.getCredentialsByConnectionId(connectionId)
+    }
+
+    override suspend fun deleteContact(contact: Contact) {
+        return mDbHelper.deleteContact(contact)
+    }
+
+    override fun allContacts(): LiveData<List<Contact>> {
+        return mDbHelper.allContacts()
+    }
+
+    override suspend fun insertShareCredentialActivityHistories(credential: Credential, contacts: List<Contact>) {
+        mDbHelper.insertShareCredentialActivityHistories(credential, contacts)
+    }
+
+    override suspend fun insertRequestedCredentialActivities(contact: Contact, credentials: List<Credential>) {
+        mDbHelper.insertRequestedCredentialActivities(contact, credentials)
+    }
+
+    override suspend fun getCredentialsActivityHistoriesByConnection(connectionId: String): List<ActivityHistoryWithCredential> {
+        return mDbHelper.getCredentialsActivityHistoriesByConnection(connectionId)
     }
 }

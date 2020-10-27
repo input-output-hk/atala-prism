@@ -2,40 +2,42 @@ package io.iohk.atala.prism.app.data.local.db.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
+import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import java.util.*
 
 @Dao
-interface CredentialDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(credential: Credential): Long
+abstract class CredentialDao : ActivityHistoryDao() {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllCredentials(credentials: List<Credential?>)
+    @Query("SELECT * FROM credentials WHERE deleted = 1 order by id asc")
+    abstract fun getAllDeletedCredentials(): List<Credential>
 
-    @Query("SELECT * FROM credential order by id asc")
-    fun getAllCredentials(): List<Credential>
+    @Query("SELECT * FROM credentials WHERE deleted = 0 order by id asc")
+    abstract fun getAllCredentials(): List<Credential>
 
-    @Query("SELECT * FROM credential order by id asc")
-    fun all(): LiveData<List<Credential>>
+    @Query("SELECT * FROM credentials WHERE deleted = 0 order by id asc")
+    abstract fun all(): LiveData<List<Credential>>
 
-    @Query("DELETE FROM credential")
-    fun removeAllData()
-
-    @Query("SELECT * FROM credential where viewed is 0 order by id asc")
-    fun getAllNewCredentials(): List<Credential>
+    @Query("SELECT * FROM credentials where credential_id = :credentialId order by id asc")
+    abstract suspend fun getCredentialByCredentialId(credentialId: String): Credential?
 
     @Update
-    suspend fun updateCredential(credential: Credential)
+    abstract suspend fun updateCredential(credential: Credential)
 
-    @Query("SELECT * FROM credential where credential_id = :credentialId order by id asc")
-    suspend fun getCredentialByCredentialId(credentialId: String): Credential
+    @Transaction
+    open suspend fun delete(credential: Credential) {
+        credential.deleted = true
+        updateCredential(credential)
+        val activityHistory = ActivityHistory(null, credential.credentialId, Date().time, ActivityHistory.Type.CredentialDeleted)
+        insertActivityHistory(activityHistory)
+    }
 
-    @Delete
-    suspend fun delete(credential: Credential)
-
-    @Query("DELETE FROM credential WHERE connection_id = :connectionId")
-    fun deleteCredentialByConnectionId(connectionId: String)
-
-    @Query("SELECT * FROM credential WHERE connection_id = :connectionId order by id asc")
-    fun getCredentialsByConnectionId(connectionId: String): List<Credential>
+    @Transaction
+    open suspend fun insertShareCredentialActivityHistories(credential: Credential, contacts: List<Contact>) {
+        val activitiesHistories = contacts.map {
+            ActivityHistory(it.connectionId, credential.credentialId, Date().time, ActivityHistory.Type.CredentialShared)
+        }
+        insertActivityHistories(activitiesHistories)
+    }
 }

@@ -24,11 +24,12 @@ class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : N
 
     private val _showErrorMessageLiveData = SingleLiveEvent<Boolean>()
 
+    // TODO This got broken, it will be fixed in the notification screen refactorization
     fun getNewCredentials() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val credentialsList = dataManager.getAllNewCredentials()
-                _credentials.postValue(AsyncTaskResult(credentialsList))
+                //val credentialsList = dataManager.getAllNewCredentials()
+                _credentials.postValue(AsyncTaskResult(listOf()))
             } catch (ex: Exception) {
                 _credentials.postValue(AsyncTaskResult(ex))
             }
@@ -50,11 +51,12 @@ class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : N
         return _credentials
     }
 
+    // TODO This got broken, it will be fixed in the notification screen refactorization
     fun setCredentialViewed(credential: Credential) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                credential.viewed = true
-                dataManager.updateCredential(credential)
+                //credential.viewed = true
+                //dataManager.updateCredential(credential)
             } catch (ex: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(ex)
             }
@@ -72,7 +74,7 @@ class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : N
     fun deleteCredential(credentialId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val credential = dataManager.getCredentialByCredentialId(credentialId)
+                val credential = dataManager.getCredentialByCredentialId(credentialId)!!
                 dataManager.deleteCredential(credential)
                 _credentialDeletedLiveData.postValue(true)
             } catch (ex: Exception) {

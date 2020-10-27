@@ -115,7 +115,7 @@ class MainViewModel @Inject constructor(private val dataManager: DataManager) : 
                     contact.lastMessageId = receivedMessage.id
                 }
                 // store credentials locally
-                dataManager.saveAllCredentials(credentialsToStore)
+                dataManager.insertIssuedCredentialsToAContact(contact.id, credentialsToStore)
                 // TODO I think we need another model to store all Proof requests locally
                 dataManager.updateContact(contact)
             }

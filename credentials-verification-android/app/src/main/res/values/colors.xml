@@ -1,37 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-  <attr name="textColorError">#FFF</attr>
-  <color name="colorPrimary">#FF2D3B</color>
-  <color name="colorPrimaryVariant">#00574B</color>
-  <color name="colorOnPrimary">#F8F9F9</color>
-  <color name="blueGrey">#A0AABB</color>
-  <color name="lightRed">#FFEAEB</color>
-  <color name="green">#1ED69E</color>
-  <color name="blue">#4A2DFF</color>
-  <color name="violet">#AF2DFF</color>
-  <color name="onSurfaceMedium">#77869E</color>
-  <color name="trasparent">#80000000</color>
+    <attr name="textColorError">#FFF</attr>
+    <color name="colorPrimary">#FF2D3B</color>
+    <color name="colorPrimaryVariant">#00574B</color>
+    <color name="colorOnPrimary">#F8F9F9</color>
+    <color name="blueGrey">#A0AABB</color>
+    <color name="lightRed">#FFEAEB</color>
+    <color name="green">#1ED69E</color>
+    <color name="blue">#4A2DFF</color>
+    <color name="violet">#AF2DFF</color>
+    <color name="onSurfaceMedium">#77869E</color>
+    <color name="trasparent">#80000000</color>
 
-  <color name="orange">#FFB954</color>
-  <color name="white">#FFFFFF</color>
-  <color name="white_70">#BEBDBD</color>
-  <color name="grey_1">#F8F9F9</color>
-  <color name="grey_2">#E5E5E5</color>
-  <color name="grey_3">#B6B6B6</color>
-  <color name="grey_4">#979797</color>
-  <color name="grey_5">#3C393A</color>
-  <color name="grey_6">#262324</color>
+    <color name="orange">#FFB954</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_70">#BEBDBD</color>
+    <color name="grey_1">#F8F9F9</color>
+    <color name="grey_2">#E5E5E5</color>
+    <color name="grey_3">#B6B6B6</color>
+    <color name="grey_4">#979797</color>
+    <color name="grey_5">#3C393A</color>
+    <color name="grey_6">#262324</color>
 
-  <color name="black">#202020</color>
+    <color name="black">#202020</color>
 
-  <color name="dark_purple">#51246C</color>
-  <color name="purple">#66268D</color>
+    <color name="dark_purple">#51246C</color>
+    <color name="purple">#66268D</color>
 
-  <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#E5E5E5</color>
-  <color name="black_effective">#2a2a2a</color>
-  <color name="atala_red_text_color">#FF2D3B</color>
-  <color name="chip_bg_color">#1AFF2D3B</color>
-  <color name="phrases_cointaner_border_color">#A0AABB</color>
-  <color name="atala_black_text_color">#000000</color>
+    <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#E5E5E5</color>
+    <color name="black_effective">#2a2a2a</color>
+    <color name="atala_red_text_color">#FF2D3B</color>
+    <color name="chip_bg_color">#1AFF2D3B</color>
+    <color name="phrases_cointaner_border_color">#A0AABB</color>
+    <color name="atala_black_text_color">#000000</color>
 
+    <color name="success">#1900D793</color>
+    <color name="on_success">#1ED69E</color>
+
+    <!-- Default colors for @layout/neo_include_message_box -->
+    <color name="message_box_default_background_color">#19A0AABB</color>
+    <color name="message_box_default_on_background_color">#77869E</color>
+
+    <color name="row_header_title_text_color">#A0AABB</color>
 </resources>

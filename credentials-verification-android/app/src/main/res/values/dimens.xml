@@ -9,4 +9,6 @@
     <dimen name="small_text">10sp</dimen>
     <dimen name="dp_0">0dp</dimen>
     <dimen name="dp_2">2dp</dimen>
+    <dimen name="divider_margin">15dp</dimen>
+    <dimen name="default_spacing">15dp</dimen>
 </resources>

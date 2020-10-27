@@ -39,6 +39,7 @@ android {
         }
     }
     sourceSets {
+        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
         main {
             proto {
                 srcDir 'src/main/proto'
@@ -183,7 +184,7 @@ dependencies {
     implementation "androidx.room:room-rxjava2:$roomVersion"
 
     implementation "androidx.room:room-ktx:$roomVersion"
-    testImplementation "androidx.room:room-testing:$roomVersion"
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
     //DB Inspector
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'

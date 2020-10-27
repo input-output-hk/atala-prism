@@ -11,7 +11,6 @@ import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWord
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWordsLength
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSourceInterface
-import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.app.utils.CryptoUtils
@@ -22,7 +21,6 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
 
 class AccountRecoveryRepository(private val sessionLocalDataSource: SessionLocalDataSourceInterface,
-                                private val credentialsLocalDataSource: CredentialsLocalDataSourceInterface,
                                 private val contactsLocalDataSource: ContactsLocalDataSourceInterface,
                                 private val connectorApi: ConnectorRemoteDataSource) {
 
@@ -36,15 +34,13 @@ class AccountRecoveryRepository(private val sessionLocalDataSource: SessionLocal
             var currentIndex = 0
             var lastIndex = 0
             var done = false
-            val loadedContacts = mutableListOf<Contact>()
-            val loadedCredentials = mutableListOf<Credential>()
+            val loadedContactsAndCredentials = mutableMapOf<Contact, List<Credential>>()
             while (!done) {
                 try {
                     val contacts = loadContactsAt(currentIndex, words)
                     contacts.forEach { (contact, ecKeyPair) ->
-                        loadedContacts.add(contact)
                         val credentials = loadCredentialsFromContact(contact, ecKeyPair)
-                        loadedCredentials.addAll(credentials)
+                        loadedContactsAndCredentials[contact] = credentials
                     }
                 } catch (ex: ExecutionException) {
                     val statusRuntimeException = ex.cause as? StatusRuntimeException ?: throw ex
@@ -59,8 +55,7 @@ class AccountRecoveryRepository(private val sessionLocalDataSource: SessionLocal
             }
             // Store all data in local
             sessionLocalDataSource.storeSessionData(words)
-            contactsLocalDataSource.storeContacts(loadedContacts)
-            credentialsLocalDataSource.storeCredentials(loadedCredentials)
+            contactsLocalDataSource.storeContactsWithIssuedCredentials(loadedContactsAndCredentials)
             sessionLocalDataSource.storeLastSyncedIndex(lastIndex)
         }
     }

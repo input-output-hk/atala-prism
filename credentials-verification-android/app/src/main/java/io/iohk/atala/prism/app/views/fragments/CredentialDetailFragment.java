@@ -95,11 +95,8 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     private ShareCredentialDialogFragment getShareFragment() {
         ShareCredentialDialogFragment fragment = new ShareCredentialDialogFragment();
         Bundle args = new Bundle();
-        args.putString(IntentDataConstants.CREDENTIAL_DATA_KEY, credential.credentialDocument);
-        args.putString(IntentDataConstants.CREDENTIAL_TYPE_KEY, credential.credentialType);
-        args.putByteArray(IntentDataConstants.CREDENTIAL_ENCODED_KEY, credential.credentialEncoded.toByteArray());
+        args.putString(IntentDataConstants.CREDENTIAL_ID_KEY, credential.credentialId);
         fragment.setArguments(args);
-
         return fragment;
     }
 

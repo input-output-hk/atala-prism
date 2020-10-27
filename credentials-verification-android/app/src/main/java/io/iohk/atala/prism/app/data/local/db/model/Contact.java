@@ -5,7 +5,7 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "contact", indices = {@Index(value = "connection_id", unique = true)})
+@Entity(tableName = "contacts", indices = {@Index(value = "connection_id", unique = true)})
 public class Contact {
 
     @PrimaryKey(autoGenerate = true)
@@ -33,4 +33,7 @@ public class Contact {
     public String keyDerivationPath;
 
     public byte[] logo;
+
+    @ColumnInfo(name = "deleted", defaultValue = "false")
+    public Boolean deleted = false;
 }

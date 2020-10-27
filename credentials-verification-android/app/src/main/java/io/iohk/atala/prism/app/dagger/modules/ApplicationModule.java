@@ -10,6 +10,7 @@ import io.iohk.atala.prism.app.data.local.AppDataManager;
 import io.iohk.atala.prism.app.data.local.db.AppDatabase;
 import io.iohk.atala.prism.app.data.local.db.AppDbHelper;
 import io.iohk.atala.prism.app.data.local.db.DbHelper;
+import io.iohk.atala.prism.app.data.local.db.MigrationsKt;
 import io.iohk.atala.prism.app.data.local.preferences.AppPreferencesHelper;
 import io.iohk.atala.prism.app.data.local.preferences.PreferencesHelper;
 import io.iohk.atala.prism.app.data.local.remote.ApiHelper;
@@ -35,7 +36,10 @@ public class ApplicationModule {
     @Singleton
     AppDatabase provideAppDatabase(PrismApplication prismApplication) {
         return Room.databaseBuilder(prismApplication.getApplicationContext(), AppDatabase.class, Constants.DB_NAME)
-                .fallbackToDestructiveMigration()
+                .addMigrations(
+                        MigrationsKt.getMIGRATION_1_2(),
+                        MigrationsKt.getMIGRATION_2_3()
+                )
                 .build();
     }
 

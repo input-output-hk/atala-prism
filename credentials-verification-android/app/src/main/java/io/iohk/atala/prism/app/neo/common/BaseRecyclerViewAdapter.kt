@@ -4,7 +4,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 
 abstract class BaseRecyclerViewAdapter<T> : RecyclerView.Adapter<BaseRecyclerViewAdapter.ViewHolder<T>>() {
-    private val items: MutableList<T> = mutableListOf()
+    protected val items: MutableList<T> = mutableListOf()
 
     override fun onBindViewHolder(holder: ViewHolder<T>, position: Int) {
         holder.beforeBind(items[position])

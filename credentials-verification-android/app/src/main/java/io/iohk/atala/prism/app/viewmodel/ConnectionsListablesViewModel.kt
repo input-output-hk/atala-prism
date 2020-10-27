@@ -3,15 +3,19 @@ package io.iohk.atala.prism.app.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.protobuf.ByteString
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
+import io.iohk.atala.prism.app.data.local.db.model.Contact
+import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.protos.AtalaMessage
 import io.iohk.atala.prism.protos.ReceivedMessage
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 import javax.inject.Inject
 
 class ConnectionsListablesViewModel() : CvpViewModel() {
@@ -34,15 +38,19 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
         return _connectionIdUpdatedLiveData
     }
 
-    fun sendMultipleMessage(path: String, connectionId: String,
-                            messages: List<ByteString>) {
+    fun acceptProofRequest(path: String, contact: Contact,
+                           credentials: List<Credential>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                dataManager.sendMultipleMessage(dataManager.getKeyPairFromPath(path), connectionId, messages)
+                val messages = credentials.stream().map {
+                    it.credentialEncoded
+                }.collect(Collectors.toList())
+                dataManager.sendMultipleMessage(dataManager.getKeyPairFromPath(path), contact.connectionId, messages)
+                dataManager.insertRequestedCredentialActivities(contact, credentials)
                 /* TODO - When connection is created server take a few milliseconds to create all messages,
                     added a delay to avoid getting empty messages. This should be changed when server implement stream connections */
                 delay(TimeUnit.SECONDS.toMillis(1))
-                updateStoredMessages(connectionId)
+                updateStoredMessages(contact.connectionId)
                 _messageSentLiveData.postValue(AsyncTaskResult(true))
             } catch (ex: Exception) {
                 _messageSentLiveData.postValue(AsyncTaskResult(ex))
@@ -58,7 +66,7 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
             newMessage.proofRequest.typeIdsList.isEmpty()
         }
         if (credentialList.isNotEmpty()) {
-            storeCredentials(credentialList)
+            storeCredentials(contact.id, credentialList)
             updateContactLastMessageSeenId(connectionId, credentialList.last().id)
         } else {
             updateContactLastMessageSeenId(connectionId, contact.lastMessageId)
@@ -77,11 +85,11 @@ class ConnectionsListablesViewModel() : CvpViewModel() {
 
     }
 
-    private suspend fun storeCredentials(credentialList: List<ReceivedMessage>) {
+    private suspend fun storeCredentials(contactId: Long, credentialList: List<ReceivedMessage>) {
         val credentialToStore = credentialList.map { receivedMessage: ReceivedMessage? ->
             return@map CredentialMapper.mapToCredential(receivedMessage)
         }.toList()
-        dataManager.saveAllCredentials(credentialToStore)
+        dataManager.insertIssuedCredentialsToAContact(contactId, credentialToStore)
     }
 
     private suspend fun updateContactLastMessageSeenId(connectionId: String, messageId: String?) {

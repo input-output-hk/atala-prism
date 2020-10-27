@@ -14,6 +14,7 @@ import io.iohk.cvp.R
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.cvp.databinding.NeoDialogDeleteContactAlertBinding
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
+import io.iohk.atala.prism.app.neo.common.OnSuccess
 import io.iohk.atala.prism.app.neo.common.SimpleTextRecyclerViewAdapter
 import io.iohk.atala.prism.app.utils.IntentDataConstants
 import io.iohk.atala.prism.app.viewmodel.DeleteContactAlertDialogViewModel
@@ -24,14 +25,17 @@ class DeleteContactAlertDialogFragment : DaggerDialogFragment() {
 
     companion object {
         // @TODO momentary solution, the use of "safeArgs" will be implemented
-        fun build(contactId: Int): DeleteContactAlertDialogFragment {
+        fun build(contactId: Int, onSuccess: OnSuccess<Boolean>? = null): DeleteContactAlertDialogFragment {
             val dialog = DeleteContactAlertDialogFragment()
+            dialog.onSuccess = onSuccess
             val args = Bundle()
             args.putInt(IntentDataConstants.CONTACT_ID_KEY, contactId)
             dialog.arguments = args
             return dialog
         }
     }
+
+    private var onSuccess: OnSuccess<Boolean>? = null
 
     @Inject
     lateinit var factory: DeleteContactAlertDialogViewModelFactory
@@ -74,6 +78,12 @@ class DeleteContactAlertDialogFragment : DaggerDialogFragment() {
         viewModel.dismiss.observe(viewLifecycleOwner, EventWrapperObserver {
             if (it) {
                 dismiss()
+            }
+        })
+        viewModel.contactDeleted.observe(viewLifecycleOwner, EventWrapperObserver {
+            if (it) {
+                dismiss()
+                onSuccess?.onSuccess(true)
             }
         })
         viewModel.credentials.observe(viewLifecycleOwner) {
