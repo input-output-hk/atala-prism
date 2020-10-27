@@ -37,7 +37,7 @@ class ContactDetailSharedViewCell: BaseTableViewCell {
 
     func config(title: String, date: Date, type: ActivityHistoryType) {
 
-        labelTitle.text = "· \(title)"
+        labelTitle.text = title
         switch type {
         case .credentialAdded:
             labelDate.text = String(format: "contacts_detail_issued_date".localize(),

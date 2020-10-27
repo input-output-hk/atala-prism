@@ -78,7 +78,7 @@
 "contacts_employment_credential"= "Employment Credential ";
 "contacts_insurance_credential"= "Insurance Credential ";
 "contacts_detail_title"= "Contact Detail";
-"contacts_detail_did"= "· DID: %@";
+"contacts_detail_did"= "DID: %@";
 "contacts_detail_date_connected"= "Connected %@";
 "contacts_detail_requested"= "REQUESTED CREDENTIALS";
 "contacts_detail_requested_date"= "Requested %@";
