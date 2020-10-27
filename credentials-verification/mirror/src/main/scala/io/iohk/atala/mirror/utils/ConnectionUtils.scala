@@ -23,7 +23,7 @@ object ConnectionUtils {
         )
         None
       }
-      .map(ConnectionDao.findBy(_))
+      .map(ConnectionDao.findByConnectionId(_))
       .getOrElse {
         logger.warn(
           s"Message with id: ${receivedMessage.id} and connectionId ${receivedMessage.connectionId}" +

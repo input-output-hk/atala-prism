@@ -2,39 +2,44 @@ package io.iohk.atala.mirror.db
 
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
-
-import io.iohk.atala.mirror.models.Connection
+import io.iohk.atala.mirror.models.{Connection, DID}
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
-
 import cats.data.NonEmptyList
 import doobie.Fragments
-
 import doobie._
 import doobie.implicits._
 import doobie.postgres.implicits._
 
 object ConnectionDao {
 
-  def findBy(token: ConnectionToken): ConnectionIO[Option[Connection]] = {
+  def findByConnectionToken(token: ConnectionToken): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state
+    | SELECT token, id, state, holder_did
     | FROM connections
     | WHERE token = $token
     """.stripMargin.query[Connection].option
   }
 
-  def findBy(id: ConnectionId): ConnectionIO[Option[Connection]] = {
+  def findByConnectionId(id: ConnectionId): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state
+    | SELECT token, id, state, holder_did
     | FROM connections
     | WHERE id = $id
+    """.stripMargin.query[Connection].option
+  }
+
+  def findByHolderDID(holderDID: DID): ConnectionIO[Option[Connection]] = {
+    sql"""
+    | SELECT token, id, state, holder_did
+    | FROM connections
+    | WHERE holder_did = $holderDID
     """.stripMargin.query[Connection].option
   }
 
   def findBy(ids: NonEmptyList[ConnectionId]): ConnectionIO[List[Connection]] = {
     val sql =
       fr"""
-      | SELECT token, id, state
+      | SELECT token, id, state, holder_did
       | FROM connections
       | WHERE
       """.stripMargin ++ Fragments.in(fr"id", ids)
@@ -68,7 +73,8 @@ object ConnectionDao {
     | UPDATE connections SET
     | id = ${connection.id},
     | state = ${connection.state}::CONNECTION_STATE,
-    | updated_at = now()
+    | updated_at = now(),
+    | holder_did = ${connection.holderDID}
     | WHERE token = ${connection.token}
     """.stripMargin.update.run
 
@@ -81,6 +87,6 @@ object ConnectionDao {
     * }}}
     */
   private def insertMany: Update[Connection] =
-    Update[Connection]("INSERT INTO connections(token, id, state) values (?, ?, ?::CONNECTION_STATE)")
+    Update[Connection]("INSERT INTO connections(token, id, state, holder_did) values (?, ?, ?::CONNECTION_STATE, ?)")
 
 }

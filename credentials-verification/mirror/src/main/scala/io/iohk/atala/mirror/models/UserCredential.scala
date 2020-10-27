@@ -4,12 +4,12 @@ import java.time.Instant
 
 import enumeratum.{DoobieEnum, Enum, EnumEntry}
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
-import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, IssuersDID, MessageReceivedDate, RawCredential}
+import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 
 case class UserCredential(
     connectionToken: ConnectionToken,
     rawCredential: RawCredential,
-    issuersDID: Option[IssuersDID],
+    issuersDID: Option[DID],
     messageId: ConnectorMessageId,
     messageReceivedDate: MessageReceivedDate,
     status: CredentialStatus
@@ -17,8 +17,6 @@ case class UserCredential(
 
 object UserCredential {
   case class RawCredential(rawCredential: String) extends AnyVal
-
-  case class IssuersDID(issuersDID: String) extends AnyVal
 
   case class MessageReceivedDate(date: Instant) extends AnyVal
 

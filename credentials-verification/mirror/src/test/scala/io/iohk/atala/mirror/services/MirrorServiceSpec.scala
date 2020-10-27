@@ -24,7 +24,7 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar {
     // when
     val connection = (for {
       response <- mirrorService.createAccount
-      connection <- ConnectionDao.findBy(ConnectionToken(token)).transact(databaseTask)
+      connection <- ConnectionDao.findByConnectionToken(ConnectionToken(token)).transact(databaseTask)
     } yield response -> connection).runSyncUnsafe(1.minute)
 
     // then
@@ -32,7 +32,8 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar {
       Connection(
         Connection.ConnectionToken(token),
         None,
-        Connection.ConnectionState.Invited
+        Connection.ConnectionState.Invited,
+        None
       )
     )
   }

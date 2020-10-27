@@ -8,7 +8,8 @@ import io.iohk.atala.mirror.models.Connection._
 case class Connection(
     token: ConnectionToken,
     id: Option[ConnectionId],
-    state: ConnectionState
+    state: ConnectionState,
+    holderDID: Option[DID]
 )
 
 object Connection {

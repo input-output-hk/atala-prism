@@ -8,6 +8,7 @@ import scala.concurrent.duration._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 import io.iohk.atala.mirror.MirrorFixtures
+import io.iohk.atala.mirror.models.DID
 
 import doobie.implicits._
 
@@ -30,7 +31,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
       (for {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.update(connectionWithNewId)
-        connection <- ConnectionDao.findBy(connection1.token)
+        connection <- ConnectionDao.findByConnectionToken(connection1.token)
       } yield connection).transact(database).unsafeRunSync() mustBe Some(connectionWithNewId)
     }
 
@@ -38,7 +39,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
       (for {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.insert(connection2)
-        connection <- ConnectionDao.findBy(connection1.token)
+        connection <- ConnectionDao.findByConnectionToken(connection1.token)
       } yield connection).transact(database).unsafeRunSync() mustBe Some(connection1)
     }
 
@@ -46,7 +47,15 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
       (for {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.insert(connection2)
-        connection <- ConnectionDao.findBy(connectionId2)
+        connection <- ConnectionDao.findByConnectionId(connectionId2)
+      } yield connection).transact(database).unsafeRunSync() mustBe Some(connection2)
+    }
+
+    "return connection by the holder did" in {
+      (for {
+        _ <- ConnectionDao.insert(connection1)
+        _ <- ConnectionDao.insert(connection2)
+        connection <- ConnectionDao.findByHolderDID(connectionHolderDid2)
       } yield connection).transact(database).unsafeRunSync() mustBe Some(connection2)
     }
 
@@ -59,8 +68,15 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
     }
 
     "return none if a token doesn't exist" in {
-      ConnectionDao.findBy(ConnectionToken("token")).transact(database).unsafeRunSync() mustBe None
-      ConnectionDao.findBy(ConnectionId(UUID.randomUUID())).transact(database).unsafeRunSync() mustBe None
+      ConnectionDao.findByConnectionToken(ConnectionToken("token")).transact(database).unsafeRunSync() mustBe None
+    }
+
+    "return none if a connection id doesn't exist" in {
+      ConnectionDao.findByConnectionId(ConnectionId(UUID.randomUUID())).transact(database).unsafeRunSync() mustBe None
+    }
+
+    "return none if a holder DID doesn't exist" in {
+      ConnectionDao.findByHolderDID(DID("non existing did")).transact(database).unsafeRunSync() mustBe None
     }
 
     "return last seen connection id" in {

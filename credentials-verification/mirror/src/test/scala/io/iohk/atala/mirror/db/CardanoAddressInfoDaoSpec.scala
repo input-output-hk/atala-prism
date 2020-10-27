@@ -42,6 +42,24 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtur
       cardanoAddressesInfo mustBe Some(cardanoAddressInfo1)
     }
 
+    "return cardano addresses by connection token and cardano network" in {
+      // given
+      (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- CardanoAddressInfoFixtures.insertAll(database)
+      } yield ()).unsafeRunSync()
+
+      // when
+      val cardanoAddressesInfo =
+        CardanoAddressInfoDao
+          .findBy(connection1.token, cardanoAddressInfo1.cardanoNetwork)
+          .transact(database)
+          .unsafeRunSync()
+
+      // then
+      cardanoAddressesInfo mustBe List(cardanoAddressInfo1)
+    }
+
     "return none if a cardano address doesn't exist" in {
       // when
       val cardanoAddressesInfo =
@@ -63,7 +81,7 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtur
         CardanoAddressInfoDao.findLastSeenMessageId.transact(database).unsafeRunSync()
 
       // then
-      lastSeenMessageId mustBe Some(cardanoAddressInfo2.messageId)
+      lastSeenMessageId mustBe Some(cardanoAddressInfo3.messageId)
     }
   }
 }

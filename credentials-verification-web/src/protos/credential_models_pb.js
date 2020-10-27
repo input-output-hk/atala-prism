@@ -2986,7 +2986,8 @@ proto.io.iohk.atala.prism.protos.RegisterAddressMessage.prototype.toObject = fun
  */
 proto.io.iohk.atala.prism.protos.RegisterAddressMessage.toObject = function(includeInstance, msg) {
   var f, obj = {
-    cardanoaddress: jspb.Message.getFieldWithDefault(msg, 1, "")
+    cardanoaddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    cardanonetwork: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -3027,6 +3028,10 @@ proto.io.iohk.atala.prism.protos.RegisterAddressMessage.deserializeBinaryFromRea
       var value = /** @type {string} */ (reader.readString());
       msg.setCardanoaddress(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCardanonetwork(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3063,6 +3068,13 @@ proto.io.iohk.atala.prism.protos.RegisterAddressMessage.serializeBinaryToWriter 
       f
     );
   }
+  f = message.getCardanonetwork();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -3081,6 +3093,24 @@ proto.io.iohk.atala.prism.protos.RegisterAddressMessage.prototype.getCardanoaddr
  */
 proto.io.iohk.atala.prism.protos.RegisterAddressMessage.prototype.setCardanoaddress = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string cardanoNetwork = 2;
+ * @return {string}
+ */
+proto.io.iohk.atala.prism.protos.RegisterAddressMessage.prototype.getCardanonetwork = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.atala.prism.protos.RegisterAddressMessage} returns this
+ */
+proto.io.iohk.atala.prism.protos.RegisterAddressMessage.prototype.setCardanonetwork = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 

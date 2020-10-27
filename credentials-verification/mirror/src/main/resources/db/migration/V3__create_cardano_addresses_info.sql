@@ -1,6 +1,7 @@
 
 CREATE TABLE cardano_addresses_info(
   address TEXT NOT NULL PRIMARY KEY,
+  network TEXT NOT NULL,
   connection_token TEXT NOT NULL,
   registration_date TIMESTAMPTZ NOT NULL,
   message_id TEXT NOT NULL,

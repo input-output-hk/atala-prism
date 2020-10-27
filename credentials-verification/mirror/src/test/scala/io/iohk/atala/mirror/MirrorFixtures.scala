@@ -25,7 +25,7 @@ import io.iohk.atala.prism.credentials.{
   UnsignedCredential
 }
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
-import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, RegistrationDate}
+import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
 import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.Credential
@@ -52,10 +52,11 @@ trait MirrorFixtures {
   object ConnectionFixtures {
     lazy val connectionId1: ConnectionId = ConnectionId(UUID.fromString("0a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
     lazy val connectionId2: ConnectionId = ConnectionId(UUID.fromString("36325aef-d937-41b2-9a6c-b654e02b273d"))
+    lazy val connectionHolderDid2 = DID("did2")
     lazy val connection1: Connection =
-      Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited)
+      Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited, None)
     lazy val connection2: Connection =
-      Connection(ConnectionToken("token2"), Some(connectionId2), ConnectionState.Invited)
+      Connection(ConnectionToken("token2"), Some(connectionId2), ConnectionState.Invited, Some(connectionHolderDid2))
 
     def insertAll[F[_]: Sync](database: Transactor[F]) = {
       insertManyFixtures(
@@ -70,7 +71,7 @@ trait MirrorFixtures {
       UserCredential(
         ConnectionFixtures.connection1.token,
         RawCredential("rawCredentials1"),
-        Some(IssuersDID("issuersDID1")),
+        Some(DID("issuersDID1")),
         ConnectorMessageId("messageId1"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
@@ -146,8 +147,12 @@ trait MirrorFixtures {
   object CardanoAddressInfoFixtures {
     import ConnectionFixtures._
 
+    lazy val cardanoNetwork1 = CardanoNetwork("network1")
+    lazy val cardanoNetwork2 = CardanoNetwork("network2")
+
     lazy val cardanoAddressInfo1 = CardanoAddressInfo(
       cardanoAddress = CardanoAddress("address1"),
+      cardanoNetwork = cardanoNetwork1,
       connectionToken = connection1.token,
       registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
       messageId = ConnectorMessageId("messageId1")
@@ -155,15 +160,25 @@ trait MirrorFixtures {
 
     lazy val cardanoAddressInfo2 = CardanoAddressInfo(
       cardanoAddress = CardanoAddress("address2"),
+      cardanoNetwork = cardanoNetwork2,
       connectionToken = connection2.token,
       registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
       messageId = ConnectorMessageId("messageId2")
     )
 
+    lazy val cardanoAddressInfo3 = CardanoAddressInfo(
+      cardanoAddress = CardanoAddress("address3"),
+      cardanoNetwork = cardanoNetwork2,
+      connectionToken = connection2.token,
+      registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 6, 0, 0).toInstant(ZoneOffset.UTC)),
+      messageId = ConnectorMessageId("messageId3")
+    )
+
     def insertAll[F[_]: Sync](database: Transactor[F]): F[Unit] = {
       insertManyFixtures(
         CardanoAddressInfoDao.insert(cardanoAddressInfo1),
-        CardanoAddressInfoDao.insert(cardanoAddressInfo2)
+        CardanoAddressInfoDao.insert(cardanoAddressInfo2),
+        CardanoAddressInfoDao.insert(cardanoAddressInfo3)
       )(database)
     }
   }

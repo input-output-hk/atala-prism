@@ -17,7 +17,7 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
         val newToken = Connection.ConnectionToken(response.token)
 
         ConnectionDao
-          .insert(Connection(newToken, None, Connection.ConnectionState.Invited))
+          .insert(Connection(newToken, None, Connection.ConnectionState.Invited, None))
           .transact(tx)
           .map(_ => CreateAccountResponse(newToken.token))
       })

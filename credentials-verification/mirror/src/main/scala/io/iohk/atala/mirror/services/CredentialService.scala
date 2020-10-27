@@ -7,10 +7,11 @@ import fs2.Stream
 import io.iohk.atala.mirror.NodeUtils.{fromProtoKey, fromTimestampInfoProto}
 import io.iohk.atala.mirror.Utils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
-import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, IssuersDID, MessageReceivedDate, RawCredential}
+import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import java.time.Instant
 
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
+import io.iohk.atala.mirror.models.DID
 import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.prism.credentials.JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
 import io.iohk.atala.prism.credentials.{
@@ -68,7 +69,8 @@ class CredentialService(
             val connection = Connection(
               token = ConnectionToken(connectionInfo.token),
               id = parseUUID(connectionInfo.connectionId).map(ConnectionId),
-              state = ConnectionState.Connected
+              state = ConnectionState.Connected,
+              holderDID = Some(DID(connectionInfo.participantDID))
             )
 
             ConnectionDao
@@ -117,7 +119,7 @@ class CredentialService(
       .map(RawCredential)
   }
 
-  private[services] def getIssuersDid(rawCredential: RawCredential): Option[IssuersDID] = {
+  private[services] def getIssuersDid(rawCredential: RawCredential): Option[DID] = {
     val unsignedCredential: UnsignedCredential = SignedCredential.from(rawCredential.rawCredential).toOption match {
       case Some(signedCredential) =>
         signedCredential.decompose[JsonBasedUnsignedCredential].credential
@@ -126,7 +128,7 @@ class CredentialService(
           .fromBytes(rawCredential.rawCredential.getBytes)
     }
 
-    unsignedCredential.issuerDID.map(IssuersDID)
+    unsignedCredential.issuerDID.map(DID)
   }
 
   private def createUserCredential(

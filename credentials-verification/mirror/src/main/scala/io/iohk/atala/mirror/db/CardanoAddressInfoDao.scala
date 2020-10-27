@@ -4,6 +4,8 @@ import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.{CardanoAddressInfo, ConnectorMessageId}
 import doobie.implicits._
+import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork}
+import io.iohk.atala.mirror.models.Connection.ConnectionToken
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
 
@@ -11,10 +13,21 @@ object CardanoAddressInfoDao {
 
   def findBy(address: CardanoAddress): ConnectionIO[Option[CardanoAddressInfo]] = {
     sql"""
-         | SELECT address, connection_token, registration_date, message_id
+         | SELECT address, network, connection_token, registration_date, message_id
          | FROM cardano_addresses_info
          | WHERE address = $address
     """.stripMargin.query[CardanoAddressInfo].option
+  }
+
+  def findBy(
+      connectionToken: ConnectionToken,
+      cardanoNetwork: CardanoNetwork
+  ): ConnectionIO[List[CardanoAddressInfo]] = {
+    sql"""
+         | SELECT address, network, connection_token, registration_date, message_id
+         | FROM cardano_addresses_info
+         | WHERE connection_token = $connectionToken AND network = $cardanoNetwork
+    """.stripMargin.query[CardanoAddressInfo].to[List]
   }
 
   val findLastSeenMessageId: ConnectionIO[Option[ConnectorMessageId]] =
@@ -31,7 +44,7 @@ object CardanoAddressInfoDao {
   val insertMany: Update[CardanoAddressInfo] =
     Update[CardanoAddressInfo](
       """INSERT INTO
-        | cardano_addresses_info(address, connection_token, registration_date, message_id)
-        | values (?, ?, ?, ?)""".stripMargin
+        | cardano_addresses_info(address, network, connection_token, registration_date, message_id)
+        | values (?, ?, ?, ?, ?)""".stripMargin
     )
 }

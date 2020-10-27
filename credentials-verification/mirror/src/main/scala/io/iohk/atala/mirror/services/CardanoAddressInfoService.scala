@@ -4,10 +4,11 @@ import java.time.Instant
 
 import cats.data.OptionT
 import doobie.util.transactor.Transactor
-import io.iohk.atala.mirror.db.CardanoAddressInfoDao
+import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
 import monix.eval.Task
 import doobie.implicits._
-import io.iohk.atala.mirror.models.{CardanoAddressInfo, ConnectorMessageId}
+import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
+import io.iohk.atala.mirror.models.{CardanoAddressInfo, Connection, ConnectorMessageId, DID}
 import io.iohk.atala.mirror.utils.ConnectionUtils
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, RegisterAddressMessage}
@@ -50,6 +51,7 @@ class CardanoAddressInfoService(tx: Transactor[Task]) {
       connection <- OptionT(ConnectionUtils.findConnection(receivedMessage, logger).transact(tx))
       cardanoAddress = CardanoAddressInfo(
         cardanoAddress = CardanoAddressInfo.CardanoAddress(addressMessage.cardanoAddress),
+        cardanoNetwork = CardanoNetwork(addressMessage.cardanoNetwork),
         connectionToken = connection.token,
         registrationDate = CardanoAddressInfo.RegistrationDate(Instant.now()),
         messageId = ConnectorMessageId(receivedMessage.id)
@@ -62,6 +64,16 @@ class CardanoAddressInfoService(tx: Transactor[Task]) {
     Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
       .flatMap(_.message.mirrorMessage)
       .flatMap(_.message.registerAddressMessage)
+  }
+
+  def findPaymentInfo(
+      did: DID,
+      cardanoNetwork: CardanoNetwork
+  ): Task[Option[(Connection, List[CardanoAddressInfo])]] = {
+    (for {
+      connection <- OptionT(ConnectionDao.findByHolderDID(did))
+      cardanoAddressesInfo <- OptionT.liftF(CardanoAddressInfoDao.findBy(connection.token, cardanoNetwork))
+    } yield (connection, cardanoAddressesInfo)).value.transact(tx)
   }
 
 }
