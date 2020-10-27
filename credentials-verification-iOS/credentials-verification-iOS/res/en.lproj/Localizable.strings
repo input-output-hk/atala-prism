@@ -68,7 +68,7 @@
 "connections_more_info" = "More Info";
 "connections_add_new" = "Add new";
 "connections_enter_code" = "Enter connection code";
-"connections_search_contacts" = "Search contacts...";
+"connections_search_contacts" = "Search contacts";
 "contacts_delete_confrimation_title" = "Are you sure?";
 "contacts_delete_confrimation_message" = "You are about to delete:";
 "contacts_delete_description" = "If you do this, the credentials below that were issued by the contact will also be deleted:";
@@ -103,7 +103,7 @@
 "credentials_detail_title_new" = "Add Credential";
 "credentials_detail_share_button" = "Share!";
 "credentials_detail_share_search_contacts" = "Search contacts";
-"credentials_detail_share_contact_name" = "Contact Name...";
+"credentials_detail_share_contact_name" = "Contact Name";
 "credentials_detail_share_success" = "Credential(s) successfully shared";
 "credentials_empty_title" = "Connect to an organization to receive your credentials";
 "credentials_empty_subtitle" = "Receive, store and share your digital credentials";
