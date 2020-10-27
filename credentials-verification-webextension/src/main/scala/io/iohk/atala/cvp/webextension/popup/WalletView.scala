@@ -60,7 +60,7 @@ import scala.util.{Failure, Success}
           props.privacyPolicyUrl,
           (view: View) => updateView(view)
         )
-      case (WalletStatus.Missing, Recover) =>
+      case (WalletStatus.Missing | WalletStatus.Locked, Recover) =>
         SlinkyRecoverWalletView(
           props.backgroundAPI,
           props.termsUrl,
@@ -75,6 +75,7 @@ import scala.util.{Failure, Success}
         SlinkyUnlockWalletView(props.backgroundAPI, (view: View) => updateView(view))
       case (WalletStatus.Unlocked, _) =>
         SlinkyMainWalletView(props.backgroundAPI, (view: View) => updateView(view))
+
       case _ =>
         SlinkyInitialWalletView(props.backgroundAPI, (view: View) => updateView(view))
     }

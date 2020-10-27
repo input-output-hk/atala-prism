@@ -274,6 +274,15 @@ select:focus {
   font-weight: bold;
 }
 
+._label_unlock {
+  position: relative;
+  z-index: 1;
+  top: 10px;
+  background-color: white;
+  padding: 0 7px;
+  color: #6c6a75;
+}
+
 /* Base for label styling */
 [type="checkbox"]:not(:checked),
 [type="checkbox"]:checked {
@@ -509,3 +518,6 @@ input:focus {
   opacity: 0.5;
   background: #CCC;
 }
+
+p.button:hover { cursor: pointer; }
+p.padding  { padding:0; margin:0;}
