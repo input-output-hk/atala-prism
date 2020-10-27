@@ -31,9 +31,9 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
       )
     },
     {
-      key: 'fullname',
-      render: ({ fullname }) => (
-        <CellRenderer title="fullname" value={fullname} componentName="contacts" />
+      key: 'contactName',
+      render: ({ contactName }) => (
+        <CellRenderer title="contactName" value={contactName} componentName="contacts" />
       )
     },
     {

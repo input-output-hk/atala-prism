@@ -1,19 +1,20 @@
 import _ from 'lodash';
-import { COMMON_CONTACT_HEADERS } from './constants';
 
 // Contact's bulk-import validations
-export const validateContactsBulk = (contacts, inputHeaders) => {
+export const validateContactsBulk = (contacts, inputHeaders, headersMapping) => {
   // trim last empty rows
   const trimmedContacts = trimEmptyRows(contacts);
 
   if (!trimmedContacts.length) return generateEmptyFileError();
 
-  const headerErrors = validateHeaders(inputHeaders);
+  const expectedHeaders = headersMapping.map(h => h.translation);
+
+  const headerErrors = validateHeaders(inputHeaders, expectedHeaders);
   let contactDataErrors = [];
 
   // validate contacts data only if headers are valid
   if (!arrayContainsErrors(headerErrors)) {
-    contactDataErrors = validateContactsData(trimmedContacts);
+    contactDataErrors = validateContactsData(trimmedContacts, expectedHeaders);
   }
 
   const validationErrors = [...headerErrors, ...contactDataErrors];
@@ -33,15 +34,17 @@ const trimEmptyRows = contacts => {
 
 const isEmptyRow = ({ originalArray }) => originalArray.every(field => !field);
 
-const validateContactsData = contacts =>
-  contacts.map((contact, index) => contactDataValidation({ ...contact, index }));
+const validateContactsData = (contacts, expectedHeaders) =>
+  contacts.map((contact, index) => contactDataValidation({ ...contact, index }, expectedHeaders));
 
-const validateHeaders = inputHeaders => {
+const validateHeaders = (inputHeaders, expectedHeaders) => {
   const trimmedHeaders = trimLastEmptyElements(inputHeaders);
 
-  return _.eq(trimmedHeaders, COMMON_CONTACT_HEADERS)
+  const headerErrors = _.isEqual(trimmedHeaders, expectedHeaders)
     ? [[]]
-    : [generateInvalidHeadersError(trimmedHeaders)];
+    : [generateInvalidHeadersError(trimmedHeaders, expectedHeaders)];
+
+  return headerErrors;
 };
 
 const trimLastEmptyElements = array => {
@@ -50,19 +53,21 @@ const trimLastEmptyElements = array => {
 };
 
 // validate that parsed-csv contains correct contact data
-const contactDataValidation = (contact, headers = COMMON_CONTACT_HEADERS) => {
+const contactDataValidation = (contact, expectedHeaders) => {
   if (isEmptyRow(contact)) return generateEmptyRowError(contact.index);
 
-  const requiredFieldsErrors = validateRequiredFields(contact, headers);
-  const extraFieldsErrors = validateNoExtraFields(contact, headers);
+  const requiredFieldsErrors = validateRequiredFields(contact, expectedHeaders);
+  const extraFieldsErrors = validateNoExtraFields(contact, expectedHeaders);
 
   return [...requiredFieldsErrors, ...extraFieldsErrors];
 };
 
 // validate that each contact contains required data
-const validateRequiredFields = (contact, headers) =>
-  headers
-    .map(header => (contact[header] ? null : generateRequiredFieldError(contact, header)))
+const validateRequiredFields = (contact, expectedHeaders) =>
+  expectedHeaders
+    .map(header =>
+      contact[header] ? null : generateRequiredFieldError(contact, header, expectedHeaders)
+    )
     .filter(Boolean);
 
 // validate that each contact doesn't contain excess data
@@ -99,26 +104,26 @@ const generateEmptyRowError = row => [
   }
 ];
 
-const generateInvalidHeadersError = inputHeaders =>
+const generateInvalidHeadersError = (inputHeaders, expectedHeaders) =>
   inputHeaders
     .map((inputHeader, idx) =>
-      COMMON_CONTACT_HEADERS.includes(inputHeader)
-        ? validateHeaderPosition(inputHeader, idx)
+      expectedHeaders.includes(inputHeader)
+        ? validateHeaderPosition(inputHeader, idx, expectedHeaders)
         : generateExcessHeaderError(inputHeader, idx)
     )
     .filter(Boolean);
 
-const validateHeaderPosition = (inputHeader, idx) =>
-  COMMON_CONTACT_HEADERS[idx] !== inputHeader
-    ? generateHeaderPositionError(inputHeader, idx)
+const validateHeaderPosition = (inputHeader, idx, expectedHeaders) =>
+  expectedHeaders[idx] !== inputHeader
+    ? generateHeaderPositionError(inputHeader, idx, expectedHeaders)
     : null;
 
-const generateHeaderPositionError = (inputHeader, idx) => ({
+const generateHeaderPositionError = (inputHeader, idx, expectedHeaders) => ({
   error: 'invalidHeaderPosition',
   row: { index: -1 },
   col: {
     index: idx,
-    expectedIndex: COMMON_CONTACT_HEADERS.indexOf(inputHeader),
+    expectedIndex: expectedHeaders.indexOf(inputHeader),
     name: inputHeader
   }
 });
@@ -129,10 +134,10 @@ const generateExcessHeaderError = (inputHeaders, idx) => ({
   col: { index: idx, name: inputHeaders }
 });
 
-const generateRequiredFieldError = (contact, header) => ({
+const generateRequiredFieldError = (contact, header, expectedHeaders) => ({
   error: 'required',
   row: { index: contact.index },
-  col: { index: COMMON_CONTACT_HEADERS.indexOf(header), name: header }
+  col: { index: expectedHeaders.indexOf(header), name: header }
 });
 
 const generateExtraFieldsErrors = (rowIdx, data, lastValidIndex) =>
@@ -150,3 +155,13 @@ const generateExtraFieldsErrors = (rowIdx, data, lastValidIndex) =>
     .filter(Boolean);
 
 const arrayContainsErrors = validationsArray => validationsArray.some(array => array.length);
+
+// un-translate headers to the original object keys
+export const translateBackSpreadsheetNamesToContactKeys = (contactsData, headersMapping) =>
+  contactsData.map(contact => renameProperties(contact, headersMapping));
+
+const renameProperties = (contact, headersMapping) =>
+  headersMapping.reduce(
+    (acc, { key, translation }) => Object.assign(acc, { [key]: contact[translation] }),
+    {}
+  );

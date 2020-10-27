@@ -1,5 +1,8 @@
-import { aoaToObjects } from '../helpers/fileHelpers';
-import { validateContactsBulk } from '../helpers/contactValidations';
+import { arrayOfArraysToObjects } from '../helpers/fileHelpers';
+import {
+  translateBackSpreadsheetNamesToContactKeys,
+  validateContactsBulk
+} from '../helpers/contactValidations';
 import {
   validContacts,
   invalidHeadersOrder,
@@ -9,80 +12,131 @@ import {
   emptyData,
   emptyFile
 } from './__mocks__/contactsMockData';
+import { mockHeadersMapping } from './__mocks__/mockHelpers';
 
 it('validates contacts bulk import w/good data', () => {
   const testInput = validContacts.inputAoA;
 
-  const parsedAoA = aoaToObjects(testInput);
-  const { containsErrors, validationErrors } = validateContactsBulk(parsedAoA, testInput[0]);
-
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const { containsErrors, validationErrors } = validateContactsBulk(
+    parsedAoA,
+    testInput[0],
+    mockHeadersMapping
+  );
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
   expect(containsErrors).toEqual(false);
   expect(validationErrors.length).toEqual(testInput.length);
-  expect(parsedAoA).toEqual(validContacts.expectedParse);
+  expect(translatedBackContacts).toEqual(validContacts.expectedParse);
 });
 
 it('validates contacts bulk import validation w/extra headers', () => {
   const testInput = extraHeaders.inputAoA;
 
-  const parsedAoA = aoaToObjects(testInput);
-  const { containsErrors, validationErrors } = validateContactsBulk(parsedAoA, testInput[0]);
-
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const { containsErrors, validationErrors } = validateContactsBulk(
+    parsedAoA,
+    testInput[0],
+    mockHeadersMapping
+  );
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
   expect(containsErrors).toEqual(true);
   expect(validationErrors).toEqual(extraHeaders.expectedErrors);
-  expect(parsedAoA).toEqual(extraHeaders.expectedParse);
+  expect(translatedBackContacts).toEqual(extraHeaders.expectedParse);
 });
 
 it('validates contacts bulk import validation w/invalid headers order', () => {
   const testInput = invalidHeadersOrder.inputAoA;
 
-  const parsedAoA = aoaToObjects(testInput);
-  const { containsErrors, validationErrors } = validateContactsBulk(parsedAoA, testInput[0]);
-
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const { containsErrors, validationErrors } = validateContactsBulk(
+    parsedAoA,
+    testInput[0],
+    mockHeadersMapping
+  );
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
   expect(containsErrors).toEqual(true);
   expect(validationErrors).toEqual(invalidHeadersOrder.expectedErrors);
-  expect(parsedAoA).toEqual(invalidHeadersOrder.expectedParse);
+  expect(translatedBackContacts).toEqual(invalidHeadersOrder.expectedParse);
 });
 
 it('validates contacts bulk import validation w/invalid contact data', () => {
   const testInput = invalidContactData.inputAoA;
 
-  const parsedAoA = aoaToObjects(testInput);
-  const { containsErrors, validationErrors } = validateContactsBulk(parsedAoA, testInput[0]);
-
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const { containsErrors, validationErrors } = validateContactsBulk(
+    parsedAoA,
+    testInput[0],
+    mockHeadersMapping
+  );
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
   expect(containsErrors).toEqual(true);
   expect(validationErrors).toEqual(invalidContactData.expectedErrors);
-  expect(parsedAoA).toEqual(invalidContactData.expectedParse);
+  expect(translatedBackContacts).toEqual(invalidContactData.expectedParse);
 });
 
 it('validates contacts bulk import validation w/empty rows', () => {
   const testInput = emptyRows.inputAoA;
 
-  const parsedAoA = aoaToObjects(testInput);
-  const { containsErrors, validationErrors } = validateContactsBulk(parsedAoA, testInput[0]);
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const { containsErrors, validationErrors } = validateContactsBulk(
+    parsedAoA,
+    testInput[0],
+    mockHeadersMapping
+  );
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
 
   expect(containsErrors).toEqual(true);
   expect(validationErrors).toEqual(emptyRows.expectedErrors);
-  expect(parsedAoA).toEqual(emptyRows.expectedParse);
+  expect(translatedBackContacts).toEqual(emptyRows.expectedParse);
 });
 
 it('validates contacts bulk import validation w/empty file', () => {
   const testInput = emptyFile.inputAoA;
 
-  const parsedAoA = aoaToObjects(testInput);
-  const { containsErrors, validationErrors } = validateContactsBulk(parsedAoA, testInput[0]);
-
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const { containsErrors, validationErrors } = validateContactsBulk(
+    parsedAoA,
+    testInput[0],
+    mockHeadersMapping
+  );
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
   expect(containsErrors).toEqual(true);
   expect(validationErrors).toEqual(emptyFile.expectedErrors);
-  expect(parsedAoA).toEqual(emptyFile.expectedParse);
+  expect(translatedBackContacts).toEqual(emptyFile.expectedParse);
 });
 
 it('validates contacts bulk import validation w/empty data', () => {
   const testInput = emptyData.inputAoA;
 
-  const parsedAoA = aoaToObjects(testInput);
-  const { containsErrors, validationErrors } = validateContactsBulk(parsedAoA, testInput[0]);
-
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const { containsErrors, validationErrors } = validateContactsBulk(
+    parsedAoA,
+    testInput[0],
+    mockHeadersMapping
+  );
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
   expect(containsErrors).toEqual(true);
   expect(validationErrors).toEqual(emptyData.expectedErrors);
-  expect(parsedAoA).toEqual(emptyData.expectedParse);
+  expect(translatedBackContacts).toEqual(emptyData.expectedParse);
 });

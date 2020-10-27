@@ -51,19 +51,19 @@ const fileToFileReader = (file, type) =>
 export const imageToFileReader = image => fileToFileReader(image, IMAGE);
 export const excelToFileReader = excel => fileToFileReader(excel, EXCEL);
 
-export const downloadTemplateCsv = inputData => {
-  const csvData = inputData ? generateCsvFromInputData(inputData) : generateDefaultCsv();
+export const downloadTemplateCsv = (inputData, headers) => {
+  const csvData = inputData ? generateCsvFromInputData(inputData) : generateDefaultCsv(headers);
   const filename = inputData ? getFilename(inputData) : 'template.csv';
   downloadCsvFile(filename, csvData);
 };
 
-const generateDefaultCsv = () => headersToCsvString(COMMON_CONTACT_HEADERS);
+const generateDefaultCsv = headers => headersToCsvString(headers);
 
 const generateCsvFromInputData = ({ contacts, credentialType }) => {
   if (!contacts.length) {
     return { error: 'no target subjects' };
   }
-  const headers = ['externalid', 'fullname', ...Object.keys(credentialType.fields)];
+  const headers = [...COMMON_CONTACT_HEADERS, ...Object.keys(credentialType.fields)];
 
   const noRepeatedHeaders = _.uniq(headers);
 
@@ -85,17 +85,18 @@ const downloadCsvFile = (filename, data) => {
 };
 
 // remove óíúáé, blank spaces, etc from keys
-const getKeysFromAoA = aoa =>
-  aoa[0].map(key =>
+const getKeysFromArrayOfArrays = arrayOfArrays =>
+  arrayOfArrays[0].map(key =>
     key
       .replace(/ /g, ' ')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
   );
 
-export const aoaToObjects = aoa => {
-  const keys = getKeysFromAoA(aoa);
-  const values = aoa.slice(1);
+// take an array of arrays and turn it into an array of objects
+export const arrayOfArraysToObjects = arrayOfArrays => {
+  const keys = getKeysFromArrayOfArrays(arrayOfArrays);
+  const values = arrayOfArrays.slice(1);
 
   return values.map(array =>
     array.reduce((acc, value, idx) => Object.assign(acc, { [keys[idx]]: value }), {

@@ -4,7 +4,14 @@ import BulkImportResult from './Organisms/BulkImportResults';
 import BulkImportSteps from './Organisms/BulkImportSteps';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 
-const BulkImport = ({ onUpload, cancelImport, showGroupSelection, getTargets, useCase }) => {
+const BulkImport = ({
+  onUpload,
+  cancelImport,
+  showGroupSelection,
+  getTargets,
+  useCase,
+  headersMapping
+}) => {
   const [fileData, setFileData] = useState();
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [skipGroupsAssignment, setSkipGroupsAssignment] = useState();
@@ -21,7 +28,8 @@ const BulkImport = ({ onUpload, cancelImport, showGroupSelection, getTargets, us
     onFinish: () => onUpload(fileData, skipGroupsAssignment ? [] : selectedGroups, setResults),
     cancelImport,
     getTargets,
-    useCase
+    useCase,
+    headersMapping
   };
 
   const handleReturnToUploadStep = () => {
@@ -53,7 +61,10 @@ BulkImport.propTypes = {
   onUpload: PropTypes.func.isRequired,
   cancelImport: PropTypes.func,
   showGroupSelection: PropTypes.bool,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
+  headersMapping: PropTypes.arrayOf(
+    PropTypes.shape({ key: PropTypes.string, translation: PropTypes.string })
+  ).isRequired
 };
 
 export default BulkImport;

@@ -34,6 +34,9 @@ const ImportCredentialsData = ({
     };
   };
 
+  // TODO: to be implemented along with credentials data validation
+  const headersMapping = [];
+
   return (
     <ImportDataContainer
       getTargets={getTargetsData}
@@ -41,6 +44,7 @@ const ImportCredentialsData = ({
       onFinish={onFinish}
       onCancel={onCancel}
       useCase={IMPORT_CREDENTIALS_DATA}
+      headersMapping={headersMapping}
     />
   );
 };

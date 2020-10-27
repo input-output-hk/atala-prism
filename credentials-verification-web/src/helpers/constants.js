@@ -92,8 +92,13 @@ export const MANUAL_IMPORT = 'manualImport';
 export const COMPLETE_SPREADSHEET_STEP = 0;
 export const ASSIGN_TO_GROUPS = 1;
 
+// Entities keys
+export const CONTACT_NAME_KEY = 'contactName';
+export const EXTERNAL_ID_KEY = 'externalId';
+export const GROUP_NAME_KEY = 'name';
+
 // Bulk import data
-export const COMMON_CONTACT_HEADERS = ['firstName', 'lastName', 'externalid'];
+export const COMMON_CONTACT_HEADERS = [CONTACT_NAME_KEY, EXTERNAL_ID_KEY];
 export const CONTACT_METADATA_KEYS = ['index', 'originalArray'];
 
 // Keys

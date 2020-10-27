@@ -6,20 +6,35 @@ import { useTranslation } from 'react-i18next';
 import { omit } from 'lodash';
 import ImportDataContainer from '../importContactData/ImportDataContainer';
 import { withRedirector } from '../providers/withRedirector';
-import { IMPORT_CONTACTS } from '../../helpers/constants';
+import { COMMON_CONTACT_HEADERS, IMPORT_CONTACTS } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
+import {
+  translateBackSpreadsheetNamesToContactKeys,
+  validateContactsBulk
+} from '../../helpers/contactValidations';
 import { fromMomentToProtoDateFormatter } from '../../helpers/formatters';
-import { validateContactsBulk } from '../../helpers/contactValidations';
+
+import './_style.scss';
 
 const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) => {
   const { t } = useTranslation();
 
+  const headersMapping = COMMON_CONTACT_HEADERS.map(headerKey => ({
+    key: headerKey,
+    translation: t(`contacts.table.columns.${headerKey}`)
+  }));
+
   // TODO: replace with bulk request
   const handleRequests = async (contactsData, groups, setResults) => {
     try {
+      const translatedContacts = translateBackSpreadsheetNamesToContactKeys(
+        contactsData,
+        headersMapping
+      );
+
       const groupCreations = await createNewGroups(groups);
-      const contactCreations = await createNewContacts(contactsData, groups);
+      const contactCreations = await createNewContacts(translatedContacts, groups);
 
       message.success(t('importContacts.success'));
       setResults({
@@ -47,7 +62,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
           api.contactsManager.createContact(
             group,
             creationDateDecorator(omit(contact, ['originalArray'])),
-            contact.externalid
+            contact.externalId
           )
         )
       )
@@ -67,6 +82,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
       onFinish={handleRequests}
       onCancel={redirectToContacts}
       useCase={IMPORT_CONTACTS}
+      headersMapping={headersMapping}
     />
   );
 };

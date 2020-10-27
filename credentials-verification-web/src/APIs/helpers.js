@@ -26,8 +26,8 @@ export function genericCredentialToStudentCredential(credential) {
   };
 }
 
-export const parseName = ({ fullname = '', firstName = '', lastName = '', midNames = '' }) =>
-  fullname ? deconstructFullName(fullname) : constructFullName(firstName, midNames, lastName);
+export const parseName = ({ contactName = '', firstName = '', lastName = '', midNames = '' }) =>
+  contactName ? deconstructFullName(contactName) : constructFullName(firstName, midNames, lastName);
 
 export const deconstructFullName = fullnameInput => {
   const wordSeparator = '@';
@@ -40,14 +40,14 @@ export const deconstructFullName = fullnameInput => {
   const firstName = joinedFirstName.split(wordSeparator).join(' ');
   const midNames = joinedMidNames.split(wordSeparator).join(' ');
   const lastName = joinedLastName.split(wordSeparator).join(' ');
-  const fullname = inputAsString.split(wordSeparator).join(' ');
+  const contactName = inputAsString.split(wordSeparator).join(' ');
 
-  return { firstName, midNames, lastName, fullname };
+  return { firstName, midNames, lastName, contactName };
 };
 
 export const constructFullName = (firstName, midNames, lastName) => ({
   firstName,
   midNames,
   lastName,
-  fullname: [firstName, midNames, lastName].filter(Boolean).join(' ')
+  contactName: [firstName, midNames, lastName].filter(Boolean).join(' ')
 });

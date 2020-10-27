@@ -23,7 +23,8 @@ const BulkImportSteps = ({
   onFinish,
   cancelImport,
   getTargets,
-  useCase
+  useCase,
+  headersMapping
 }) => {
   const [currentStep, setCurrentStep] = useState(COMPLETE_SPREADSHEET_STEP);
 
@@ -52,6 +53,7 @@ const BulkImportSteps = ({
           setCurrentStep={setCurrentStep}
           setFileData={setFileData}
           getTargets={getTargets}
+          headersMapping={headersMapping}
         />
         {showGroupSelection && (
           <AssignToGroupsStep
@@ -101,7 +103,10 @@ BulkImportSteps.propTypes = {
   cancelImport: PropTypes.func,
   skipGroupsAssignment: PropTypes.bool.isRequired,
   setSkipGroupsAssignment: PropTypes.func.isRequired,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
+  headersMapping: PropTypes.arrayOf(
+    PropTypes.shape({ key: PropTypes.string, translation: PropTypes.string })
+  ).isRequired
 };
 
 export default BulkImportSteps;

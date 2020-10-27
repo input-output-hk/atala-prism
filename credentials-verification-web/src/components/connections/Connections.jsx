@@ -50,12 +50,12 @@ const Connections = ({
   };
 
   const viewConnection = connection => {
-    const { creationDate, avatar, createdat, fullname, connectionid } = connection;
+    const { creationDate, avatar, createdat, contactName, connectionid } = connection;
 
     getContactCredentials(connectionid)
       .then(transactions => {
         const formattedHolder = {
-          user: { icon: avatar, name: fullname, date: createdat },
+          user: { icon: avatar, name: contactName, date: createdat },
           transactions,
           date: creationDate
         };

@@ -75,6 +75,7 @@
         "lastName": "Last Name",
         "fullName": "Contact Name",
         "fullname": "Contact Name",
+        "contactName": "Contact Name",
         "externalId": "External ID",
         "creationDate": "Date Created",
         "credentials": "Credentials"

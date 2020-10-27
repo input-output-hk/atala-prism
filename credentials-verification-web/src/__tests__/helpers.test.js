@@ -1,12 +1,19 @@
-import { aoaToObjects } from '../helpers/fileHelpers';
+import { translateBackSpreadsheetNamesToContactKeys } from '../helpers/contactValidations';
+import { arrayOfArraysToObjects } from '../helpers/fileHelpers';
 import { validContacts, invalidHeaderNames } from './__mocks__/contactsMockData';
+import { mockHeadersMapping } from './__mocks__/mockHelpers';
 
 it('parses array of arrays to an object', () => {
   const testInput = validContacts.inputAoA;
   const expectedOutput = validContacts.expectedParse;
 
-  const parsedAoA = aoaToObjects(testInput);
-  expect(parsedAoA).toEqual(expectedOutput);
+  const parsedAoA = arrayOfArraysToObjects(testInput);
+  const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
+    parsedAoA,
+    mockHeadersMapping
+  );
+
+  expect(translatedBackContacts).toEqual(expectedOutput);
 });
 
 it('parses array of arrays with invalid keys to an object', () => {
@@ -15,6 +22,6 @@ it('parses array of arrays with invalid keys to an object', () => {
   const testInput = invalidHeaderNames.inputAoA;
   const expectedOutput = invalidHeaderNames.expectedParse;
 
-  const parsedAoA = aoaToObjects(testInput);
+  const parsedAoA = arrayOfArraysToObjects(testInput);
   expect(parsedAoA).toEqual(expectedOutput);
 });

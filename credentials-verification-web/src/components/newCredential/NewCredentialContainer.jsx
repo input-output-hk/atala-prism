@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import _ from 'lodash';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -14,7 +13,9 @@ import {
   SELECT_CREDENTIAL_TYPE_STEP,
   SELECT_RECIPIENTS_STEP,
   IMPORT_CREDENTIAL_DATA_STEP,
-  PREVIEW_AND_SIGN_CREDENTIAL_STEP
+  PREVIEW_AND_SIGN_CREDENTIAL_STEP,
+  CONTACT_NAME_KEY,
+  GROUP_NAME_KEY
 } from '../../helpers/constants';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import Logger from '../../helpers/Logger';
@@ -77,8 +78,10 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     if (!subjects.length) getSubjects();
   });
 
-  const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, 'name'));
-  const filterSubjects = filter => setFilteredSubjects(filterBy(subjects, filter, 'fullname'));
+  const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
+
+  const filterSubjects = filter =>
+    setFilteredSubjects(filterBy(subjects, filter, CONTACT_NAME_KEY));
 
   const filterBy = (toFilter, filter, key) =>
     toFilter.filter(({ [key]: name }) => name.toLowerCase().includes(filter.toLowerCase()));
