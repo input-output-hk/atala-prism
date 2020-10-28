@@ -1,0 +1,132 @@
+@import '../../css/general_styling';
+
+.contactDetail {
+  display: flex;
+  flex-direction: column;
+  height: 92vh;
+  .headerSection {
+    padding: 1em 3em;
+    height: 15vh;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $light-grey;
+  }
+  .header {
+    display: flex;
+    background-color: #f8f9f9;
+    border-radius: 6px;
+    padding: 1em;
+    .img {
+      margin-right: 1em;
+    }
+    .title {
+      margin-right: 50px;
+      p {
+        @include primary-text($label, $dark-grey);
+        margin: 0;
+      }
+      span {
+        @include primary-text($label, $secondary-color);
+        font-weight: bold;
+      }
+    }
+  }
+  .subtitle {
+    @include primary-text($body, $dark-grey);
+    margin: 20px 0 10px 0;
+  }
+  .detailSection {
+    display: flex;
+    padding: 0 3em;
+    height: 100%;
+    h3 {
+      @include primary-text($h3, #303034);
+      margin-bottom: 20px;
+    }
+    .CredentialInfo {
+      padding: 2em 3em;
+      margin: 2em 0;
+      width: 500px;
+      h3 {
+        @include primary-text($h3, $black);
+      }
+      p {
+        @include primary-text($body, $dark-grey);
+        margin: 20px 0;
+      }
+      .credentialInfoContainer {
+        display: flex;
+        align-items: center;
+        margin: 2em 0;
+        .img {
+          margin-right: 1em;
+        }
+        .title {
+          margin-right: 50px;
+          p {
+            margin: 0;
+            @include primary-text($label, $dark-grey);
+          }
+          span {
+            margin: 0;
+            @include secondary-text($label, #303034);
+          }
+        }
+      }
+    }
+  }
+  .buttonSection {
+    padding: 2em 3em;
+    background: $light-grey;
+  }
+}
+
+.credentialDetailsContainer {
+  display: flex;
+  p {
+    margin: 0px;
+  }
+}
+.CredentialTitleContainer {
+  display: flex;
+  span {
+    cursor: pointer;
+  }
+  @include primary-text($h3, #303034);
+  span:first-child {
+    margin-right: 20px;
+  }
+}
+
+@media only screen and (max-width: 1184px) {
+  .contactDetail .detailSection {
+    .detailBox {
+      margin: 0;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .contactDetail {
+    .detailSection {
+      flex-direction: column;
+      .CredentialInfo {
+        margin: 0;
+        padding: 2em;
+      }
+      .detailBox {
+        margin: 2em auto;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  .contactDetail {
+    .detailSection {
+      .CredentialInfo {
+        padding: 2em 0;
+      }
+    }
+  }
+}

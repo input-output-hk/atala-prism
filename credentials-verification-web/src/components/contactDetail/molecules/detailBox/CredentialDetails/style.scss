@@ -1,0 +1,22 @@
+
+.credentialDetailContainer{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.0523656);
+    border-radius: 6px;
+    padding: 1em;
+}
+
+.credentialDataContainer{
+    display: flex;
+    align-items: center;
+    img{
+        margin-right: 15px;
+    }
+}
+.credentialData{
+    p{
+        margin: 0px!important
+    }
+}

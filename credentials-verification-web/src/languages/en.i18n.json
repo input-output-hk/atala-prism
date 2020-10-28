@@ -84,13 +84,20 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Open on Mobile",
-      "subtitle": [
-        "Scan with your phone’s camera",
-        "using the Atala PRISM mobile app"
-      ]
+      "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
     },
     "detail": {
-      "title": "Credentials List"
+      "title": "Credentials List",
+      "dataTitle": "Group Name",
+      "contacts": "Contacts",
+      "credIssued": "Credential Issued ",
+      "credReceived": "Credential Received",
+      "detailSection": {
+        "title": "Contact Detail",
+        "subtitle": "General Information",
+        "groupsSubtitle": "View the credentials that you have sent to the contact.",
+        "credentialSubtitle": "These are all the groups this contact is in."
+      }
     }
   },
   "groups": {
@@ -184,7 +191,8 @@
       "notarizationTitle": "Blockchain Notarization",
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
-      "downloadButton": "Download Credential"
+      "downloadButton": "Download Credential",
+      "dateCreated": "Date Created"
     },
     "type": {
       "governmentId": "Government ID",
@@ -524,7 +532,7 @@
     }
   },
   "importContacts": {
-    "title": "Import Contacts" ,
+    "title": "Import Contacts",
     "info": "Choose between this two options: Bulk Import or Mannual Import",
     "success": "Contact(s) successfully created",
     "importTypeSelection": {

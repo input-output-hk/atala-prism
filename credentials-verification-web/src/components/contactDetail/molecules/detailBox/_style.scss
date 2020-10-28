@@ -1,0 +1,18 @@
+@import '../../../../css/general_styling';
+
+.detailBox {
+    margin:0;
+    width: 457px;
+   
+    .infoRow {
+        height: 250px;
+        overflow-y: scroll;
+    }
+}
+
+
+@media only screen and (max-width: 400px) {
+    .detailBox{
+        width: 300px;
+    }
+}
