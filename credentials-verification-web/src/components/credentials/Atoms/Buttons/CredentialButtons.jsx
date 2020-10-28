@@ -12,7 +12,7 @@ const CredentialsButtons = ({ redirector: { redirectToNewCredential } }) => {
     <div className="ControlButtons">
       <CustomButton
         buttonProps={{
-          className: 'theme-outline',
+          className: 'buttonCredential theme-outline',
           onClick: redirectToNewCredential
         }}
         buttonText={t('credentials.actions.createCredential')}

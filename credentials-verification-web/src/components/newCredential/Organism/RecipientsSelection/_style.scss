@@ -1,5 +1,57 @@
 @import '../../../../css/general_styling';
 
 .RecipientsSelection {
-
+  .ant-tabs-nav-wrap,
+  .selectionGroups {
+    margin: 1em 3em;
+  }
+  .ant-tabs-nav .ant-tabs-tab {
+    @include primary-text($h3, #a0aabb);
+    font-weight: 800;
+  }
+  .ant-tabs-nav .ant-tabs-tab-active {
+    @include primary-text($h3, $black);
+    font-weight: 800;
+  }
+  .selectionGroups {
+    width: 20%;
+  }
+  .selectionGroups {
+    .ant-input:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656)
+    }
+    .ant-input:hover {
+        border-color: $primary-color;
+      }
+  }
+  .ant-tabs-ink-bar {
+    background-color: $primary-color;
+  }
+  .ant-tabs-nav .ant-tabs-tab:active {
+    color: $primary-color;
+  }
+  .ant-tabs-tab:hover {
+    color: $primary-color;
+  }
+  .selectGroupSubtitle {
+    margin: 0 3em;
+    span {
+      @include body-text($h3, #728099, 400);
+    }
+  }
+  .selectGroupCheckbox {
+    margin-right: 3em;
+    span {
+      @include primary-text($body, $black);
+    }
+  }
+  .selectionGroupsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .groupsTableContainer {
+    margin: 0em 3em;
+  }
 }

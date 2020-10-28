@@ -39,12 +39,17 @@ const BulkImportSteps = ({
     [ASSIGN_TO_GROUPS]: !skipGroupsAssignment && !selectedGroups.length
   };
 
+  const showStepNumber = {
+    [IMPORT_CONTACTS]: true,
+    [IMPORT_CREDENTIALS_DATA]: false
+  };
+
   const disableNext = shouldDisableNext[currentStep];
 
   return (
     <div className="BulkImportStepsWrapper">
       <div className="ContentHeader TitleAndSubtitle">
-        <h1>{t(`${useCase}.bulkImportStep.title`)}</h1>
+        <h3>{t(`${useCase}.bulkImportStep.title`)}</h3>
         <p>{t(`${useCase}.bulkImportStep.info`)}</p>
       </div>
       <div className="BulkImportContent">
@@ -53,6 +58,7 @@ const BulkImportSteps = ({
           setCurrentStep={setCurrentStep}
           setFileData={setFileData}
           getTargets={getTargets}
+          showStepNumber={showStepNumber[useCase]}
           headersMapping={headersMapping}
         />
         {showGroupSelection && (

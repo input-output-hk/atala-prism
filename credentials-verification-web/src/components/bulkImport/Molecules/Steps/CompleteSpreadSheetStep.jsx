@@ -13,6 +13,7 @@ const CompleteSpreadSheetStep = ({
   setCurrentStep,
   getTargets,
   setFileData,
+  showStepNumber,
   headersMapping
 }) => {
   const { t } = useTranslation();
@@ -83,7 +84,8 @@ const CompleteSpreadSheetStep = ({
         </Upload>
       </>
     ),
-    setCurrentStep
+    setCurrentStep,
+    showStepNumber
   };
 
   return <GenericStep {...props} />;
@@ -92,7 +94,8 @@ const CompleteSpreadSheetStep = ({
 CompleteSpreadSheetStep.defaultProps = {
   inputData: null,
   setCurrentStep: undefined,
-  getTargets: null
+  getTargets: null,
+  showStepNumber: true
 };
 
 CompleteSpreadSheetStep.propTypes = {
@@ -107,6 +110,7 @@ CompleteSpreadSheetStep.propTypes = {
     )
   }),
   setFileData: PropTypes.func.isRequired,
+  showStepNumber: PropTypes.bool,
   headersMapping: PropTypes.arrayOf(
     PropTypes.shape({ key: PropTypes.string, translation: PropTypes.string })
   ).isRequired

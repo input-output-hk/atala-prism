@@ -6,6 +6,8 @@ import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
 const createSteps = count => {
+  if (count <= 1) return [];
+
   const steps = [];
   for (let i = 0; i < count; i++) steps.push(<Steps.Step key={i} />);
 

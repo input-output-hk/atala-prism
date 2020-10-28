@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Col, Tabs, Input, Icon } from 'antd';
+import { Col, Tabs, Input, Icon, Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import './_style.scss';
 import GroupsTable from '../../../groups/Organisms/Tables/GroupsTable';
 import ConnectionsTable from '../../../connections/Organisms/table/ConnectionsTable';
+
+function onChange(e) {
+  // TODO: handle ignore contacts selection checkbox
+}
 
 const { TabPane } = Tabs;
 
@@ -35,25 +39,50 @@ const RecipientsSelection = ({
     <Col type="flex" className="RecipientsSelection">
       <Tabs defaultActiveKey="groups" onChange={setActiveKey}>
         <TabPane key={GROUPS_KEY} tab={t('newCredential.targetsSelection.groups')}>
-          <Input
-            placeholder={t('groups.filters.search')}
-            prefix={<Icon type="search" />}
-            onChange={({ target: { value } }) => setGroupsFilter(value)}
-          />
-          {activeKey === GROUPS_KEY && (
-            <GroupsTable
-              groups={groups}
-              selectedGroups={selectedGroups}
-              setSelectedGroups={setSelectedGroups}
+          <div className="selectGroupSubtitle">
+            <span>{t('newCredential.targetsSelection.selectGroup')}</span>
+          </div>
+          <div className="selectionGroupsContainer">
+            <Input
+              className="selectionGroups"
+              placeholder={t('groups.filters.search')}
+              prefix={<Icon type="search" />}
+              onChange={({ target: { value } }) => setGroupsFilter(value)}
             />
+            <div className="selectGroupCheckbox">
+              <Checkbox onChange={onChange}>
+                {t('newCredential.targetsSelection.checkbox')}
+              </Checkbox>
+            </div>
+          </div>
+
+          {activeKey === GROUPS_KEY && (
+            <div className="groupsTableContainer">
+              <GroupsTable
+                groups={groups}
+                selectedGroups={selectedGroups}
+                setSelectedGroups={setSelectedGroups}
+              />
+            </div>
           )}
         </TabPane>
         <TabPane key={SUBJECTS_KEY} tab={t('newCredential.targetsSelection.subjects')}>
-          <Input
-            placeholder={t('groups.filters.search')}
-            prefix={<Icon type="search" />}
-            onChange={({ target: { value } }) => setSubjectsFilter(value)}
-          />
+          <div className="selectGroupSubtitle">
+            <span>{t('newCredential.targetsSelection.selectGroup')}</span>
+          </div>
+          <div className="selectionGroupsContainer">
+            <Input
+              className="selectionGroups"
+              placeholder={t('groups.filters.search')}
+              prefix={<Icon type="search" />}
+              onChange={({ target: { value } }) => setSubjectsFilter(value)}
+            />
+            <div className="selectGroupCheckbox">
+              <Checkbox onChange={onChange}>
+                {t('newCredential.targetsSelection.checkbox')}
+              </Checkbox>
+            </div>
+          </div>
           {activeKey === SUBJECTS_KEY && (
             <ConnectionsTable
               isIssuer={isIssuer}

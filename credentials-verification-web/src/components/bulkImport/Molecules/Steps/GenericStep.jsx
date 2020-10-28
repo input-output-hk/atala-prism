@@ -4,7 +4,16 @@ import { Avatar } from 'antd';
 import { ARROW_LEFT, ARROW_RIGHT } from '../../../../helpers/constants';
 import './_style.scss';
 
-const GenericStep = ({ step, currentStep, title, info, actions, setCurrentStep, disabled }) => {
+const GenericStep = ({
+  step,
+  currentStep,
+  title,
+  info,
+  actions,
+  setCurrentStep,
+  disabled,
+  showStepNumber
+}) => {
   const isSelected = step === currentStep;
 
   const className = `StepCard 
@@ -22,7 +31,7 @@ const GenericStep = ({ step, currentStep, title, info, actions, setCurrentStep, 
       role="button"
       tabIndex={step}
     >
-      <Avatar>{isSelected && step + 1}</Avatar>
+      {showStepNumber && <Avatar>{isSelected && step + 1}</Avatar>}
       <div className="CardText">
         <h1>{title}</h1>
         <p>{info}</p>
@@ -37,7 +46,8 @@ GenericStep.defaultProps = {
   info: '',
   actions: null,
   setCurrentStep: undefined,
-  disabled: false
+  disabled: false,
+  showStepNumber: true
 };
 
 GenericStep.propTypes = {
@@ -47,7 +57,8 @@ GenericStep.propTypes = {
   info: PropTypes.string,
   actions: PropTypes.element,
   setCurrentStep: PropTypes.func,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  showStepNumber: PropTypes.bool
 };
 
 export default GenericStep;

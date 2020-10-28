@@ -9,12 +9,12 @@
     border-bottom: 1px solid $light-grey;
     padding: 2em;
     display: block!important;
-    h1 {
-      @include primary-text($h1, $black);
+    h3 {
+      @include primary-text($h3, $black);
       font-weight: bold;
     }
     p {
-      @include primary-text($body, $dark-grey);
+      @include primary-text($body, #7F92A6);
     }
   }
   .BulkImportContent {
@@ -24,8 +24,8 @@
     width: 100%;
 
     .StepCard {
-      width: 400px;
-      height: 350px;
+      width: 540px;
+      height: 255px;
       cursor: pointer;
       margin: 0 1em;
     }

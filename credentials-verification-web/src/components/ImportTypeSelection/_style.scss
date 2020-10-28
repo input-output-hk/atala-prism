@@ -14,14 +14,14 @@
   height: 100%;
   .ContentHeader {
     border-bottom: 1px solid $light-grey;
-    padding: 2em;
+    padding: 3em;
     display: block!important;
-    h1 {
-      @include primary-text($h1, $black);
+    h2 {
+      @include primary-text($h2, $black);
       font-weight: bold;
     }
     p {
-      @include primary-text($body, $dark-grey);
+      @include primary-text($h3, $dark-grey);
     }
   }
 }

@@ -8,6 +8,11 @@ import './_style.scss';
 const OptionCard = ({ option, isSelected, onSelect, img, useCase }) => {
   const { t } = useTranslation();
 
+  const optionCardClass = {
+    [IMPORT_CONTACTS]: 'ImportContactOptionCard',
+    [IMPORT_CREDENTIALS_DATA]: 'ImportCredentialsOptionCard'
+  };
+
   const index = {
     bulkImport: 0,
     manualImport: 1
@@ -20,7 +25,9 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase }) => {
 
   return (
     <div
-      className={`OptionCard ${isSelected ? 'Selected' : 'NotSelected'}`}
+      className={`OptionCard ${optionCardClass[useCase]} ${
+        isSelected ? 'Selected' : 'NotSelected'
+      }`}
       onClick={() => onSelect(option)}
       onKeyUp={handleKeyUp}
       role="button"

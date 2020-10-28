@@ -76,7 +76,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   useEffect(() => {
     if (!groups.length) getGroups();
     if (!subjects.length) getSubjects();
-  });
+  }, []);
 
   const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
 

@@ -1,15 +1,22 @@
 @import '../../../../css/general_styling';
 
+.ImportCredentialsOptionCard{
+  width: 300px;
+  height: 268px;
+}
+.ImportContactOptionCard{
+  width: 300px;
+  height: 268px;
+}
+
 .OptionCard {
-  width: 400px;
-  height: 350px;
   cursor: pointer;
   text-align: center;
   margin: 0 1em;  
   background-color: white;
   position: relative;
   justify-content: center;
-  padding: 2em 2em 5em 2em;
+  padding: 2em 2em 4em 2em;
   border-radius: 10px;
   box-shadow: $shadow;
 

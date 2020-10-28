@@ -252,8 +252,10 @@
     },
     "typeSelection": "Select a type of credential",
     "targetsSelection": {
-      "groups": "Select one or more groups",
-      "subjects": "Select one or more subjects"
+      "groups": "Select a group",
+      "subjects": "Select contacts",
+      "selectGroup":"Select a group or select individual contacts to issue credentials",
+      "checkbox":"Do not select any group or contact"
     },
     "bulkImport": {
       "title": "Follow these steps to continue:"
@@ -561,7 +563,7 @@
     "info": "Follow this steps first upload the spreadsheet, fill it with the required information and then upload it to check the fields.",
     "completeSpreadsheet": {
       "title": "Complete Spreadsheet",
-      "info": "First download the spreadsheet, complete with the required information and upload the document.",
+      "info": "Credential template process: first download template .csv file, then enter credential information and finally Re-upload .csv file.",
       "downloadText": "Download",
       "uploadText": "Upload"
     },
