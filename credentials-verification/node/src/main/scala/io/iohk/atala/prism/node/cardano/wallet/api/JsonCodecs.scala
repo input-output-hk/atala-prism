@@ -5,7 +5,7 @@ import io.circe.generic.semiauto._
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.{Address, Lovelace, _}
 import io.iohk.atala.prism.node.cardano.modeltags
-import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.CardanoWalletError
+import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, EstimatedFee}
 import shapeless.tag
 import shapeless.tag.@@
 
@@ -60,5 +60,12 @@ private[api] object JsonCodecs {
       transactionId <- cursor.downField("id").as[TransactionId]
       status <- cursor.downField("status").as[TransactionStatus]
     } yield TransactionDetails(transactionId, status)
+  }
+
+  implicit val estimatedFeeDecoder: Decoder[EstimatedFee] = (cursor: HCursor) => {
+    for {
+      min <- cursor.downField("estimated_min").as[Lovelace]
+      max <- cursor.downField("estimated_max").as[Lovelace]
+    } yield EstimatedFee(min, max)
   }
 }

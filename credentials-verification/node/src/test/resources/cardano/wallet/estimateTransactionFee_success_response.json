@@ -1,0 +1,10 @@
+{
+  "estimated_min": {
+    "quantity": 133713,
+    "unit": "lovelace"
+  },
+  "estimated_max": {
+    "quantity": 1000000,
+    "unit": "lovelace"
+  }
+}

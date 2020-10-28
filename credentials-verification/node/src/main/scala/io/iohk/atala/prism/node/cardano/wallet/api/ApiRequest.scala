@@ -16,6 +16,16 @@ private sealed abstract class ApiRequest(val path: String, val httpMethod: Metho
 
 private[api] object ApiRequest {
 
+  final case class EstimateTransactionFee(
+      walletId: WalletId,
+      payments: List[Payment],
+      metadata: Option[TransactionMetadata]
+  ) extends ApiRequest(s"v2/wallets/$walletId/payment-fees", Method.POST) {
+    override def requestBody: Option[Json] = {
+      Some(Json.fromFields(asJsonFields("payments" -> payments) ++ asJsonField(metadata)))
+    }
+  }
+
   final case class PostTransaction(
       walletId: WalletId,
       payments: List[Payment],
@@ -23,9 +33,7 @@ private[api] object ApiRequest {
       passphrase: String
   ) extends ApiRequest(s"v2/wallets/$walletId/transactions", Method.POST) {
     override def requestBody: Option[Json] = {
-      val metadataFields = metadata.map(_.json).fold(Array[(String, Json)]())(meta => Array(("metadata", meta)))
-      val fields = Array[(String, Json)](("payments", payments), ("passphrase", passphrase)) ++ metadataFields
-      Some(Json.obj(fields.toIndexedSeq: _*))
+      Some(Json.fromFields(asJsonFields("payments" -> payments, "passphrase" -> passphrase) ++ asJsonField(metadata)))
     }
   }
 
@@ -37,5 +45,13 @@ private[api] object ApiRequest {
   final case class DeleteTransaction(walletId: WalletId, transactionId: TransactionId)
       extends ApiRequest(s"v2/wallets/$walletId/transactions/$transactionId", Method.DELETE) {
     override def requestBody: Option[Json] = None
+  }
+
+  private def asJsonFields(fields: (String, Json)*): Array[(String, Json)] = {
+    Array(fields: _*)
+  }
+
+  private def asJsonField(metadata: Option[TransactionMetadata]): Array[(String, Json)] = {
+    metadata.map(_.json).fold(Array[(String, Json)]())(meta => Array(("metadata", meta)))
   }
 }

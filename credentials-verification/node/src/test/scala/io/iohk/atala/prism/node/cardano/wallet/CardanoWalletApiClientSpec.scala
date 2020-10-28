@@ -4,7 +4,7 @@ import cats.scalatest.EitherMatchers._
 import io.circe.Json
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse}
+import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, EstimatedFee}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -22,6 +22,46 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
   implicit def ec: ExecutionContext = ExecutionContext.global
 
   private val walletId = WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
+
+  "estimateTransactionFee" should {
+    val payment = Payment(
+      Address(
+        "2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb"
+      ),
+      Lovelace(42000000)
+    )
+    val metadata = TransactionMetadata(Json.obj("0" -> Json.fromString("0x1234567890abcdef")))
+    val expectedPath = s"v2/wallets/$walletId/payment-fees"
+    val expectedJsonRequest = readResource("estimateTransactionFee_request.json")
+
+    "estimate the fee of a transaction" in {
+      val client =
+        FakeCardanoWalletApiClient.Success(
+          expectedPath,
+          expectedJsonRequest,
+          readResource("estimateTransactionFee_success_response.json")
+        )
+
+      val estimatedFee =
+        client.estimateTransactionFee(walletId, List(payment), Some(metadata)).value.futureValue.toOption.value
+
+      estimatedFee must be(EstimatedFee(min = Lovelace(133713), max = Lovelace(1000000)))
+    }
+
+    "fail on server error" in {
+      val client =
+        FakeCardanoWalletApiClient.Fail(
+          expectedPath,
+          expectedJsonRequest,
+          "not_found",
+          "Bad request"
+        )
+
+      val error = client.estimateTransactionFee(walletId, List(payment), Some(metadata)).value.futureValue.left.value
+
+      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+    }
+  }
 
   "postTransaction" should {
     val payment = Payment(

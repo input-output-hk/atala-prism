@@ -7,9 +7,19 @@ import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
-import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, Result}
+import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{
+  CardanoWalletError,
+  ErrorResponse,
+  EstimatedFee,
+  Result
+}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient._
-import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{DeleteTransaction, GetTransaction, PostTransaction}
+import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{
+  DeleteTransaction,
+  GetTransaction,
+  PostTransaction,
+  EstimateTransactionFee
+}
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
 import io.iohk.atala.prism.utils.FutureEither._
 
@@ -22,6 +32,13 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
     backend: SttpBackend[Future, Nothing],
     ec: ExecutionContext
 ) extends CardanoWalletApiClient { self =>
+  override def estimateTransactionFee(
+      walletId: WalletId,
+      payments: List[Payment],
+      metadata: Option[TransactionMetadata]
+  ): Result[EstimatedFee] = {
+    EstimateTransactionFee(walletId, payments, metadata).run
+  }
 
   override def postTransaction(
       walletId: WalletId,

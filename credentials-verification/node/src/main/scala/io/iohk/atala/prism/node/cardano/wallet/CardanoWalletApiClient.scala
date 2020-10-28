@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
-import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
+import io.iohk.atala.prism.node.cardano.models.{Lovelace, Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import io.iohk.atala.prism.utils.FutureEither
 
@@ -18,6 +18,17 @@ import scala.concurrent.ExecutionContext
   */
 trait CardanoWalletApiClient {
   import CardanoWalletApiClient._
+
+  /**
+    * Estimate the fee for the given transaction details.
+    *
+    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransactionFee
+    */
+  def estimateTransactionFee(
+      walletId: WalletId,
+      payments: List[Payment],
+      metadata: Option[TransactionMetadata]
+  ): Result[EstimatedFee]
 
   /**
     * Post a new transaction and return its ID.
@@ -61,4 +72,6 @@ object CardanoWalletApiClient {
 
   final case class CardanoWalletError(code: String, message: String)
   final case class ErrorResponse(requestPath: String, error: CardanoWalletError)
+
+  case class EstimatedFee(min: Lovelace, max: Lovelace)
 }
