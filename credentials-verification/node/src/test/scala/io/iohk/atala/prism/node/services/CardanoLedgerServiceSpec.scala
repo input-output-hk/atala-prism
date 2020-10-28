@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import com.google.protobuf.ByteString
+import io.circe.Json
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -13,6 +14,7 @@ import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
+import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
@@ -22,6 +24,7 @@ import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificat
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.util.BytesOps
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 
@@ -161,7 +164,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
           TestCardanoBlockRepository.randomTransactionId(),
           block.header.hash,
           blockIndex,
-          Some(AtalaObjectMetadata.toTransactionMetadata(atalaObject))
+          Some(toTransactionMetadata(atalaObject))
         )
         TestCardanoBlockRepository.insertTransaction(transaction, blockIndex)
 
@@ -174,6 +177,24 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
           )
         )
       }
+    }
+
+    // AtalaObjectMetadata.toTransactionMetadata cannot be used as the format received by cardano-db-sync is not
+    // compatible
+    def toTransactionMetadata(atalaObject: node_internal.AtalaObject): TransactionMetadata = {
+      TransactionMetadata(
+        Json.obj(
+          METADATA_PRISM_INDEX.toString -> Json.obj(
+            "v" -> Json.fromInt(1),
+            "c" -> Json.arr(
+              atalaObject.toByteArray
+                .grouped(64)
+                .map(bytes => Json.obj("hex" -> Json.fromString(BytesOps.bytesToHex(bytes.toIndexedSeq))))
+                .toSeq: _*
+            )
+          )
+        )
+      )
     }
 
     "sync Atala objects in confirmed blocks" in {

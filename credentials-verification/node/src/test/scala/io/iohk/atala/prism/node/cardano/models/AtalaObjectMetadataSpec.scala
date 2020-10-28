@@ -1,28 +1,83 @@
 package io.iohk.atala.prism.node.cardano.models
 
-import io.circe.Json
-import io.iohk.atala.prism.protos.node_internal
-import org.scalatest.matchers.must.Matchers._
+import com.google.protobuf.ByteString
+import io.circe.{Json, parser}
+import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
+import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
 class AtalaObjectMetadataSpec extends AnyWordSpec {
   private val atalaObject = node_internal
     .AtalaObject()
-    .withBlock(node_internal.AtalaObject.Block.BlockContent(node_internal.AtalaBlock().withVersion("1")))
+    .withBlock(
+      node_internal.AtalaObject.Block
+        .BlockContent(
+          node_internal.AtalaBlock(
+            version = "1",
+            operations = List(
+              node_models.SignedAtalaOperation(
+                signedWith = "master0",
+                signature = ByteString.copyFrom("Fake signature bytes".getBytes),
+                operation = Some(
+                  node_models.AtalaOperation(operation =
+                    node_models.AtalaOperation.Operation
+                      .CreateDid(
+                        node_models.CreateDIDOperation(didData =
+                          Some(
+                            node_models.DIDData(
+                              id = "master-did",
+                              publicKeys =
+                                List(node_models.PublicKey(id = "master0", usage = node_models.KeyUsage.MASTER_KEY))
+                            )
+                          )
+                        )
+                      )
+                  )
+                )
+              )
+            )
+          )
+        )
+    )
+  require(
+    atalaObject.toByteArray.length > 64,
+    "A big object (> 64 bytes) is needed to test proper wrapping of byte strings"
+  )
+
+  private val atalaObjectByteStrings = List(
+    "22430a0131123e0a076d617374657230121446616b65207369676e61747572652062797465731a1d0a1b0a190a0a6d61737465722d646964120b0a076d617374",
+    "6572301001"
+  )
 
   "fromTransactionMetadata" should {
-
     "succeed when valid" in {
-      val metadata = AtalaObjectMetadata.toTransactionMetadata(atalaObject)
-
-      val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
+      val result = AtalaObjectMetadata.fromTransactionMetadata(
+        TransactionMetadata(
+          parseJson(
+            s"""{
+             |  "21325" : {
+             |    "v" : 1,
+             |    "c" : [
+             |      {
+             |        "hex": "${atalaObjectByteStrings(0)}"
+             |      },
+             |      {
+             |        "hex": "${atalaObjectByteStrings(1)}"
+             |      }
+             |    ]
+             |  }
+             |}""".stripMargin
+          )
+        )
+      )
 
       result.value must be(atalaObject)
     }
 
     "fail when index is invalid" in {
-      val metadata = TransactionMetadata(Json.obj("wrong" -> Json.obj()))
+      val metadata = TransactionMetadata(parseJson("""{ "1": 2 }""".stripMargin))
 
       val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
 
@@ -31,10 +86,11 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
 
     "fail when version is invalid" in {
       val metadata = TransactionMetadata(
-        Json.obj(
-          AtalaObjectMetadata.METADATA_PRISM_INDEX.toString -> Json
-            .obj(AtalaObjectMetadata.VERSION_KEY -> Json.fromInt(1337))
-        )
+        parseJson(s"""{
+            |"$METADATA_PRISM_INDEX": {
+            |  "v": 1337
+            |}
+            |}""".stripMargin)
       )
 
       val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
@@ -44,10 +100,11 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
 
     "fail when content does not exist" in {
       val metadata = TransactionMetadata(
-        Json.obj(
-          AtalaObjectMetadata.METADATA_PRISM_INDEX.toString -> Json
-            .obj(AtalaObjectMetadata.VERSION_KEY -> Json.fromInt(AtalaObjectMetadata.METADATA_VERSION))
-        )
+        parseJson(s"""{
+                     |"$METADATA_PRISM_INDEX": {
+                     |  "v": 1
+                     |}
+                     |}""".stripMargin)
       )
 
       val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
@@ -57,13 +114,12 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
 
     "fail when content is of wrong type" in {
       val metadata = TransactionMetadata(
-        Json.obj(
-          AtalaObjectMetadata.METADATA_PRISM_INDEX.toString -> Json
-            .obj(
-              AtalaObjectMetadata.VERSION_KEY -> Json.fromInt(AtalaObjectMetadata.METADATA_VERSION),
-              AtalaObjectMetadata.CONTENT_KEY -> Json.fromString("Other data")
-            )
-        )
+        parseJson(s"""{
+                     |"$METADATA_PRISM_INDEX": {
+                     |  "v": 1,
+                     |  "c": "Other data"
+                     |}
+                     |}""".stripMargin)
       )
 
       val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
@@ -73,13 +129,14 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
 
     "fail when content is not a valid AtalaObject" in {
       val metadata = TransactionMetadata(
-        Json.obj(
-          AtalaObjectMetadata.METADATA_PRISM_INDEX.toString -> Json
-            .obj(
-              AtalaObjectMetadata.VERSION_KEY -> Json.fromInt(AtalaObjectMetadata.METADATA_VERSION),
-              AtalaObjectMetadata.CONTENT_KEY -> Json.arr(Json.fromInt(1), Json.fromInt(2), Json.fromInt(3))
-            )
-        )
+        parseJson(s"""{
+                     |"$METADATA_PRISM_INDEX": {
+                     |  "v": 1,
+                     |  "c": [
+                     |    "0x${atalaObjectByteStrings.head}"
+                     |  ]
+                     |}
+                     |}""".stripMargin)
       )
 
       val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
@@ -92,18 +149,21 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
     "generate correct metadata" in {
       val metadata = AtalaObjectMetadata.toTransactionMetadata(atalaObject)
 
-      metadata.json.spaces2 must be("""{
+      metadata.json.spaces2 must be(
+        s"""{
           |  "21325" : {
-          |    "version" : 1,
-          |    "content" : [
-          |      34,
-          |      3,
-          |      10,
-          |      1,
-          |      49
+          |    "v" : 1,
+          |    "c" : [
+          |      "0x${atalaObjectByteStrings(0)}",
+          |      "0x${atalaObjectByteStrings(1)}"
           |    ]
           |  }
-          |}""".stripMargin)
+          |}""".stripMargin
+      )
     }
+  }
+
+  private def parseJson(json: String): Json = {
+    parser.parse(json).toOption.value
   }
 }

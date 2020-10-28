@@ -63,7 +63,8 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
         .withBlock(
           node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(random32Bytes()))
         )
-      cardanoLedgerService.publish(atalaObject).futureValue(LONG_TIMEOUT)
+      val transaction = cardanoLedgerService.publish(atalaObject).futureValue(LONG_TIMEOUT).transaction
+      println(s"AtalaObject published in transaction ${transaction.transactionId} on ${transaction.ledger}")
 
       def notifiedAtalaObjects: Seq[node_internal.AtalaObject] = {
         notificationHandler.receivedNotifications.map(_.atalaObject).toSeq

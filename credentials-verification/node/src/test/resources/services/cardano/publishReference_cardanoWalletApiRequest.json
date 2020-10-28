@@ -11,8 +11,10 @@
   "passphrase": "Secure Passphrase",
   "metadata": {
     "21325": {
-      "version": 1,
-      "content": [34, 3, 10, 1, 49]
+      "v": 1,
+      "c": [
+        "0x22030a0131"
+      ]
     }
   }
 }
