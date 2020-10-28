@@ -138,6 +138,14 @@ object SdkBuild {
       )
       .dependsOn(prismIdentity)
 
+  lazy val mirror =
+    commonProject(crossProject(JSPlatform, JVMPlatform) in file("mirror"))
+      .settings(name := "prism-mirror")
+      .jvmSettings(
+        libraryDependencies ++= (bouncyDependencies ++ spongyDependencies).map(_ % "provided")
+      )
+      .dependsOn(prismIdentity)
+
   lazy val prismDocs =
     project
       .in(file("docs"))
@@ -184,6 +192,7 @@ object SdkBuild {
         prismProtos,
         prismIdentity,
         prismCredentials,
-        prismConnector
+        prismConnector,
+        mirror
       )
 }
