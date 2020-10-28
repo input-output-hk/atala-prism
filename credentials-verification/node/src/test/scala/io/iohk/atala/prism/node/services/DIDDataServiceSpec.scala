@@ -5,7 +5,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
@@ -19,7 +19,7 @@ class DIDDataServiceSpec extends PostgresRepositorySpec {
 
   "DIDDataServiceSpec.findByDID" should {
     "retrieve DID document from database" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val result = parsedOperation
         .applyState()

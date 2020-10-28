@@ -7,8 +7,6 @@ import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
 
-import scala.language.implicitConversions
-
 private sealed abstract class ApiRequest(val path: String, val httpMethod: Method) extends Product with Serializable {
   def requestBody: Option[Json]
 
@@ -27,7 +25,7 @@ private[api] object ApiRequest {
     override def requestBody: Option[Json] = {
       val metadataFields = metadata.map(_.json).fold(Array[(String, Json)]())(meta => Array(("metadata", meta)))
       val fields = Array[(String, Json)](("payments", payments), ("passphrase", passphrase)) ++ metadataFields
-      Some(Json.obj(fields: _*))
+      Some(Json.obj(fields.toIndexedSeq: _*))
     }
   }
 

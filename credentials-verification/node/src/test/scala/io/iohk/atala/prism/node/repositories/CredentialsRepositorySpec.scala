@@ -6,6 +6,7 @@ import io.iohk.atala.prism.node.models.DIDData
 import io.iohk.atala.prism.node.operations.TimestampInfo
 import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO.CreateCredentialData
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
 
@@ -35,7 +36,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
           createCredentialData
         )
         credential <- credentialsRepository.find(credentialId)
-      } yield credential).value.futureValue.right.value
+      } yield credential).value.futureValue.toOption.value
 
       result.credentialId mustBe credentialId
       result.issuerDIDSuffix mustBe didSuffix
@@ -61,7 +62,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(credentialId, revocationDate)
         credential <- credentialsRepository.find(credentialId)
-      } yield (revocation, credential)).value.futureValue.right.value
+      } yield (revocation, credential)).value.futureValue.toOption.value
 
       revocation mustBe true
       credential.revokedOn mustBe Some(revocationDate)
@@ -74,7 +75,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
         _ <- didDataRepository.create(didData, TimestampInfo.dummyTime)
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(otherCredentialId, revocationDate)
-      } yield revocation).value.futureValue.right.value
+      } yield revocation).value.futureValue.toOption.value
 
       result mustBe false
     }

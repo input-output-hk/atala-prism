@@ -13,7 +13,7 @@ package object daos {
 
   private[daos] implicit val blockHashGet: Get[BlockHash] = Get[Array[Byte]].tmap { bytes =>
     BlockHash
-      .from(bytes)
+      .from(bytes.toIndexedSeq)
       .getOrElse(throw new RuntimeException("Corrupted block hash"))
   }
 

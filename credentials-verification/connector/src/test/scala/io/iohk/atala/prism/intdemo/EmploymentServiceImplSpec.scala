@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import io.circe.parser.parse
 import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
 import Testing._
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -23,7 +23,7 @@ class EmploymentServiceImplSpec extends AnyFlatSpec {
     credential.typeId shouldBe "VerifiableCredential/AtalaEmploymentCredential"
 
     // Verify JSON document
-    val document = parse(credential.credentialDocument).right.value.hcursor
+    val document = parse(credential.credentialDocument).toOption.value.hcursor
     val issuanceDate = LocalDate.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(document.jsonStr("issuanceDate")))
     val employmentStartDate = DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate.minusMonths(1))
     val today = LocalDate.now().atStartOfDay().toLocalDate

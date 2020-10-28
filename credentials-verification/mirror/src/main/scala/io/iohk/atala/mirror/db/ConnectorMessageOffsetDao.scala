@@ -2,7 +2,6 @@ package io.iohk.atala.mirror.db
 
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.ConnectorMessageId
-import doobie._
 import doobie.implicits._
 
 object ConnectorMessageOffsetDao {

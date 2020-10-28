@@ -6,7 +6,6 @@ import io.iohk.atala.mirror.models.{Connection, DID}
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 import cats.data.NonEmptyList
 import doobie.Fragments
-import doobie._
 import doobie.implicits._
 import doobie.postgres.implicits._
 

@@ -102,17 +102,18 @@ object BIP32TestVectorTransformer {
 
   def main(args: Array[String]): Unit = {
 
-    val originalTestVectors = io.circe.parser.parse(source).right.get.as[Array[JsonObject]].right.get
+    val originalTestVectors = io.circe.parser.parse(source).toOption.get.as[Array[JsonObject]].toOption.get
 
     val modifiedVectors = for (originalVector <- originalTestVectors) yield {
-      val originalDerivations = originalVector("derivations").get.as[Array[Array[String]]].right.get
+      val originalDerivations = originalVector("derivations").get.as[Array[Array[String]]].toOption.get
       val modifiedDerivations = originalDerivations.map {
         case Array(path, pubkey, privkey) =>
           // keys seem to be located in 33-bytes segment at the end, just before last 4 bytes
           val pubBytes = Base58.decode(pubkey).dropRight(4).takeRight(33)
           val pubKey = BitcoinECKey.fromPublicOnly(pubBytes)
-          val pubHex = BytesOps.bytesToHex(pubKey.decompress().getPubKey)
-          val privHex = BytesOps.bytesToHex(Base58.decode(privkey).dropRight(4).takeRight(33).dropWhile(_ == 0))
+          val pubHex = BytesOps.bytesToHex(pubKey.decompress().getPubKey.toIndexedSeq)
+          val privHex =
+            BytesOps.bytesToHex(Base58.decode(privkey).dropRight(4).takeRight(33).dropWhile(_ == 0).toIndexedSeq)
 
           Array(
             path.replace("H", "'"),

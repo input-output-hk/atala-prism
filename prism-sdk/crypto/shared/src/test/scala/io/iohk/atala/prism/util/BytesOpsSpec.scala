@@ -13,7 +13,7 @@ class BytesOpsSpec extends AnyWordSpec {
   "hexToBytes" should {
     "decode bytes encoded by bytesToHex" in {
       forAll { bytes: Array[Byte] =>
-        val decodedBytes = BytesOps.hexToBytes(BytesOps.bytesToHex(bytes))
+        val decodedBytes = BytesOps.hexToBytes(BytesOps.bytesToHex(bytes.toIndexedSeq))
         decodedBytes must contain theSameElementsInOrderAs bytes
       }
     }
@@ -22,7 +22,7 @@ class BytesOpsSpec extends AnyWordSpec {
   "bytesToHex" should {
     "encode bytes decoded by hexToBytes" in {
       forAll(hexStringGen) { hexString =>
-        val encodedString = BytesOps.bytesToHex(BytesOps.hexToBytes(hexString))
+        val encodedString = BytesOps.bytesToHex(BytesOps.hexToBytes(hexString).toIndexedSeq)
         encodedString mustBe hexString
       }
     }

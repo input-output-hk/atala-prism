@@ -22,7 +22,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     CredentialsDAO
       .create(data)
       .transact(xa)
-      .unsafeToFuture
+      .unsafeToFuture()
       .map(Right(_))
       .toFutureEither
   }

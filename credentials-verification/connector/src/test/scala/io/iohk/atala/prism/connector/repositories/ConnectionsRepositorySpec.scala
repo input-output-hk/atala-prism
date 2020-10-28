@@ -9,10 +9,9 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
-import scala.language.higherKinds
 
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
@@ -39,7 +38,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
       val result = connectionsRepository.getTokenInfo(token).value.futureValue
-      result.right.value mustBe ParticipantInfo(
+      result.toOption.value mustBe ParticipantInfo(
         issuerId,
         ParticipantType.Issuer,
         None,
@@ -61,7 +60,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
       val result = connectionsRepository.addConnectionFromToken(token, publicKey).value.futureValue
-      val connectionId = result.right.value._2.id
+      val connectionId = result.toOption.value._2.id
 
       sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1
       //verify that instantiated_at field is set correctly, to avoid conversion or timezone errors
@@ -87,7 +86,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       )
 
       val result = connectionsRepository.getConnectionsPaginated(verifierId, 10, Option.empty).value.futureValue
-      result.right.value.map(_.id).toSet must matchTo(connections.toSet)
+      result.toOption.value.map(_.id).toSet must matchTo(connections.toSet)
     }
 
     // creates connections (initiator -> acceptor):
@@ -119,7 +118,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         .getConnectionsPaginated(verifierId, 20, Option.empty)
         .value
         .futureValue
-        .right
+        .toOption
         .value
         .map(_.id)
 
@@ -127,11 +126,11 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val nextTenExpected = all.drop(10).take(10)
 
       val firstTenResult = connectionsRepository.getConnectionsPaginated(verifierId, 10, Option.empty).value.futureValue
-      firstTenResult.right.value.map(_.id) must matchTo(firstTenExpected)
+      firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
 
       val nextTenResult =
         connectionsRepository.getConnectionsPaginated(verifierId, 10, Some(firstTenExpected.last)).value.futureValue
-      nextTenResult.right.value.map(_.id) must matchTo(nextTenExpected)
+      nextTenResult.toOption.value.map(_.id) must matchTo(nextTenExpected)
     }
   }
 
@@ -142,7 +141,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val token = createToken(h1)
       val connectionId: ConnectionId = createConnection(h1, h2, token)
 
-      val connection: Connection = connectionsRepository.getConnectionByToken(token).value.futureValue.right.value.get
+      val connection: Connection =
+        connectionsRepository.getConnectionByToken(token).value.futureValue.toOption.value.get
 
       connection.connectionId mustBe connectionId
       connection.connectionToken mustBe token

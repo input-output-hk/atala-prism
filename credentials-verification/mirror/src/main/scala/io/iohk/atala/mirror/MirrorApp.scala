@@ -161,6 +161,7 @@ object MirrorApp extends TaskApp {
           .dataSource(dataSource)
           .load()
           .migrate()
+          .migrationsExecuted
       )
     )
 

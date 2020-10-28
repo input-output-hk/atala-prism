@@ -10,6 +10,7 @@ import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 import org.scalatest.Inside._
 
 import scala.concurrent.duration._
@@ -25,7 +26,7 @@ object IssueCredentialOperationSpec {
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
   lazy val issuerOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
   lazy val issuer = issuerOperation.id
   val content = ""
   val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes).toVector).value
@@ -118,14 +119,14 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
   "IssueCredentialOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
       didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
         .transact(database)
         .value
         .unsafeRunSync()
-        .right
+        .toOption
         .value
 
       key mustBe issuingKeys.publicKey
@@ -136,7 +137,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
   "IssueCredentialOperation.applyState" should {
     "create the credential information in the database" in {
       didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -150,7 +151,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -166,7 +167,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
     "return error when the credential already exists in the db" in {
       didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       // first insertion
       parsedOperation

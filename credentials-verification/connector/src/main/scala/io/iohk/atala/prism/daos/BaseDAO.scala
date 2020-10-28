@@ -11,7 +11,7 @@ import io.iohk.atala.prism.models.ParticipantId
 
 trait BaseDAO {
   implicit val uuidMeta: Meta[UUID] = doobie.postgres.implicits.UuidType
-  implicit val bigIntMeta: Meta[BigInt] = implicitly[Meta[BigDecimal]].timap(_.toBigInt())(BigDecimal.apply)
+  implicit val bigIntMeta: Meta[BigInt] = implicitly[Meta[BigDecimal]].timap(_.toBigInt)(BigDecimal.apply)
   implicit val participantIdMeta: Meta[ParticipantId] = uuidMeta.timap(ParticipantId.apply)(_.uuid)
   implicit val connectionIdMeta: Meta[ConnectionId] = uuidMeta.timap(ConnectionId.apply)(_.id)
   implicit val groupNameMeta: Meta[IssuerGroup.Name] = Meta[String].timap(IssuerGroup.Name.apply)(_.value)

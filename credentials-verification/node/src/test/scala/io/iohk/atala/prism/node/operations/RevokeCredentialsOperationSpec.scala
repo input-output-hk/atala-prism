@@ -10,9 +10,9 @@ import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import org.scalatest.EitherValues._
 import org.scalatest.Inside._
-import org.scalatest.OptionValues.convertOptionToValuable
+import org.scalatest.OptionValues._
+import org.scalatest.EitherValues._
 
 import scala.concurrent.duration._
 
@@ -27,9 +27,12 @@ object RevokeCredentialsOperationSpec {
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
   lazy val issuerCreateDIDOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
   lazy val credentialIssueBatchOperation =
-    IssueCredentialBatchOperation.parse(IssueCredentialBatchOperationSpec.exampleOperation, dummyTimestamp).right.value
+    IssueCredentialBatchOperation
+      .parse(IssueCredentialBatchOperationSpec.exampleOperation, dummyTimestamp)
+      .toOption
+      .value
 
   lazy val issuerDIDSuffix = issuerCreateDIDOperation.id
   lazy val credentialBatchId = credentialIssueBatchOperation.credentialBatchId
@@ -140,14 +143,14 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       issuerCreateDIDOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, dummyTimestamp).right.value
+      val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, dummyTimestamp).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
         .transact(database)
         .value
         .unsafeRunSync()
-        .right
+        .toOption
         .value
 
       key mustBe issuingKeys.publicKey
@@ -160,9 +163,9 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       issuerCreateDIDOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, revocationDate).right.value
+      val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, revocationDate).toOption.value
 
-      parsedOperation.applyState().transact(database).value.unsafeRunSync().right.value
+      parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
       val credentialBatch =
         CredentialBatchesDAO
@@ -178,9 +181,9 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       issuerCreateDIDOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, revocationDate).right.value
+      val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, revocationDate).toOption.value
 
-      parsedOperation.applyState().transact(database).value.unsafeRunSync().right.value
+      parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
       val credentialBatch =
         CredentialBatchesDAO
@@ -201,9 +204,9 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
       val parsedOperation =
-        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, revocationDate).right.value
+        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, revocationDate).toOption.value
 
-      parsedOperation.applyState().transact(database).value.unsafeRunSync().right.value
+      parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
       val credentialsRevoked =
         CredentialBatchesDAO
@@ -232,9 +235,9 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
       val parsedRevokeBatchOperation =
-        RevokeCredentialsOperation.parse(revokeFullBatchOperation, revocationDate).right.value
+        RevokeCredentialsOperation.parse(revokeFullBatchOperation, revocationDate).toOption.value
 
-      parsedRevokeBatchOperation.applyState().value.transact(database).unsafeRunSync().right.value
+      parsedRevokeBatchOperation.applyState().value.transact(database).unsafeRunSync().toOption.value
 
       val credentialBatch =
         CredentialBatchesDAO
@@ -246,7 +249,7 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       credentialBatch.revokedOn mustBe Some(revocationDate)
 
       val parsedOperation =
-        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, dummyTimestamp).right.value
+        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, dummyTimestamp).toOption.value
 
       // sanity check
       parsedOperation.credentialBatchId mustBe parsedRevokeBatchOperation.credentialBatchId
@@ -279,9 +282,9 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
       val parsedFirstOperation =
-        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, revocationDate).right.value
+        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, revocationDate).toOption.value
 
-      parsedFirstOperation.applyState().value.transact(database).unsafeRunSync().right.value
+      parsedFirstOperation.applyState().value.transact(database).unsafeRunSync().toOption.value
 
       val credentialsRevoked =
         CredentialBatchesDAO
@@ -295,12 +298,12 @@ class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
       revokedAt mustBe revocationDate
 
       val parsedOSecondperation =
-        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, dummyTimestamp).right.value
+        RevokeCredentialsOperation.parse(revokeSpecificCredentialsOperation, dummyTimestamp).toOption.value
 
       // sanity check
       parsedOSecondperation.credentialBatchId mustBe parsedFirstOperation.credentialBatchId
 
-      parsedOSecondperation.applyState().transact(database).value.unsafeRunSync().right.value
+      parsedOSecondperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
       val credentialsRevokedAfter =
         CredentialBatchesDAO

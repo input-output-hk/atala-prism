@@ -77,7 +77,7 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
       .key(keyPrefix + id)
       .build()
 
-    val promise = Promise[Option[Array[Byte]]]
+    val promise = Promise[Option[Array[Byte]]]()
 
     client
       .getObject(request, new ByteArrayAsyncResponseTransformer[GetObjectResponse]())

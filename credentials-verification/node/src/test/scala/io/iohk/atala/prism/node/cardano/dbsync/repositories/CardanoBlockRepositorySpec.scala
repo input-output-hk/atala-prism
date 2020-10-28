@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories
 
+import cats.scalatest.EitherMatchers._
 import io.circe.Json
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong
 
@@ -26,8 +26,7 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getFullBlock(toFindBlock.header.blockNo).value.futureValue
 
-      val block = result.right.value
-      block must be(toFindBlock)
+      result must beRight(toFindBlock)
     }
 
     "return transactions without metadata" in {
@@ -45,7 +44,7 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getFullBlock(block.header.blockNo).value.futureValue
 
-      result.right.value.transactions.last must be(transaction)
+      result.map(_.transactions.last) must beRight(transaction)
     }
 
     "return transactions without non-PRISM metadata" in {
@@ -63,7 +62,7 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getFullBlock(block.header.blockNo).value.futureValue
 
-      result.right.value.transactions.last must equal(transactionWithoutMetadata)
+      result.map(_.transactions.last) must beRight(transactionWithoutMetadata)
     }
 
     "return transactions with PRISM metadata" in {
@@ -86,7 +85,7 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getFullBlock(block.header.blockNo).value.futureValue
 
-      result.right.value.transactions.last must be(transaction)
+      result.map(_.transactions.last) must beRight(transaction)
     }
 
     "return NotFound when the block is not found" in {
@@ -95,8 +94,7 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getFullBlock(blockNo).value.futureValue
 
-      val error = result.left.value
-      error must be(BlockError.NotFound(blockNo))
+      result must beLeft(BlockError.NotFound(blockNo))
     }
 
     "return NotFound for the genesis block" in {
@@ -106,8 +104,7 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getFullBlock(blockNo).value.futureValue
 
-      val error = result.left.value
-      error must be(BlockError.NotFound(blockNo))
+      result must beLeft(BlockError.NotFound(blockNo))
     }
   }
 
@@ -119,8 +116,7 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getLatestBlock().value.futureValue
 
-      val block = result.right.value
-      block must be(latestBlock)
+      result must beRight(latestBlock)
     }
 
     "return NoneAvailable when only the genesis block exist" in {
@@ -129,15 +125,13 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
 
       val result = blockRepository.getLatestBlock().value.futureValue
 
-      val error = result.left.value
-      error must be(BlockError.NoneAvailable)
+      result must beLeft(BlockError.NoneAvailable)
     }
 
     "return NoneAvailable when there are no blocks" in {
       val result = blockRepository.getLatestBlock().value.futureValue
 
-      val error = result.left.value
-      error must be(BlockError.NoneAvailable)
+      result must beLeft(BlockError.NoneAvailable)
     }
   }
 }

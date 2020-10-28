@@ -5,15 +5,15 @@ import java.util
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.Configuration
 import org.flywaydb.core.api.resolver.{Context, ResolvedMigration}
-import org.flywaydb.core.internal.database.DatabaseFactory
+import org.flywaydb.core.api.ResourceProvider
 import org.flywaydb.core.internal.jdbc.JdbcConnectionFactory
+import org.flywaydb.core.internal.parser.ParsingContext
 import org.flywaydb.core.internal.resolver.sql.SqlMigrationResolver
-import org.flywaydb.core.internal.resource.ResourceProvider
-import org.flywaydb.core.internal.scanner.Scanner
+import org.flywaydb.core.internal.scanner.{LocationScannerCache, ResourceNameCache, Scanner}
 import org.flywaydb.core.internal.sqlscript.{SqlScriptExecutorFactory, SqlScriptFactory}
 import org.slf4j.LoggerFactory
 
-import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+import scala.jdk.CollectionConverters._
 
 /**
   * This a helper to allow testing a specific sql migration by using flyway.
@@ -97,14 +97,21 @@ object PostgresMigrationSpec {
       .skipDefaultResolvers(true)
 
     val resourceProvider = new Scanner(
+      classOf[Any],
       java.util.Arrays.asList(flywayConfig.getLocations: _*),
       flywayConfig.getClassLoader,
-      flywayConfig.getEncoding
+      flywayConfig.getEncoding,
+      false,
+      new ResourceNameCache(),
+      new LocationScannerCache()
     )
 
-    val jdbcConnectionFactory = new JdbcConnectionFactory(flywayConfig.getDataSource, flywayConfig.getConnectRetries)
-    val sqlScriptExecutorFactory = DatabaseFactory.createSqlScriptExecutorFactory(jdbcConnectionFactory)
-    val sqlScriptFactory = DatabaseFactory.createSqlScriptFactory(jdbcConnectionFactory, flywayConfig)
+    val jdbcConnectionFactory =
+      new JdbcConnectionFactory(flywayConfig.getDataSource, flywayConfig.getConnectRetries, null)
+    val databaseType = jdbcConnectionFactory.getDatabaseType
+    val sqlScriptExecutorFactory =
+      databaseType.createSqlScriptExecutorFactory(jdbcConnectionFactory, null, null)
+    val sqlScriptFactory = databaseType.createSqlScriptFactory(flywayConfig, new ParsingContext())
 
     val customResolver = new CustomResolver(
       resourceProvider,
@@ -119,6 +126,7 @@ object PostgresMigrationSpec {
       .resolvers(customResolver)
       .load()
       .migrate()
+      .migrationsExecuted
   }
 
   class CustomResolver(
@@ -128,7 +136,13 @@ object PostgresMigrationSpec {
       configuration: Configuration,
       targetPrefixScript: String,
       targetPrefixScriptExcluded: Boolean
-  ) extends SqlMigrationResolver(resourceProvider, sqlScriptExecutorFactory, sqlScriptFactory, configuration) {
+  ) extends SqlMigrationResolver(
+        resourceProvider,
+        sqlScriptExecutorFactory,
+        sqlScriptFactory,
+        configuration,
+        new ParsingContext
+      ) {
 
     private val logger = LoggerFactory.getLogger(this.getClass)
 

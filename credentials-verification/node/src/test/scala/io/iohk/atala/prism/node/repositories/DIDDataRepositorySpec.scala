@@ -6,6 +6,7 @@ import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.TimestampInfo
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
 
@@ -52,7 +53,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
       val result = (for {
         _ <- didDataRepository.create(didData, dummyTimestamp)
         did <- didDataRepository.findByDidSuffix(didSuffix)
-      } yield did).value.futureValue.right.value
+      } yield did).value.futureValue.toOption.value
 
       result.didSuffix mustBe didSuffix
     }
@@ -70,7 +71,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
       val result = (for {
         _ <- didDataRepository.create(didData, dummyTimestamp)
         key <- didDataRepository.findKey(didSuffix, "issuing")
-      } yield key).value.futureValue.right.value
+      } yield key).value.futureValue.toOption.value
 
       DIDPublicKey(result.didSuffix, result.keyId, result.keyUsage, result.key) mustBe keys.tail.head
       result.addedOn mustBe dummyTimestamp

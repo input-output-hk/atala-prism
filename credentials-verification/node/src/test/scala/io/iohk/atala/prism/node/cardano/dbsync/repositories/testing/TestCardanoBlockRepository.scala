@@ -135,10 +135,10 @@ object TestCardanoBlockRepository {
   }
 
   private def randomBlockHash(): BlockHash = {
-    BlockHash.from(random32Bytes()).get
+    BlockHash.from(random32Bytes().toIndexedSeq).get
   }
 
   def randomTransactionId(): TransactionId = {
-    TransactionId.from(random32Bytes()).get
+    TransactionId.from(random32Bytes().toIndexedSeq).get
   }
 }

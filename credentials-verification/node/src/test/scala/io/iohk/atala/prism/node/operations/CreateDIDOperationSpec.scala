@@ -8,6 +8,7 @@ import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.node_models
+import org.scalatest.OptionValues._
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 
@@ -168,13 +169,13 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
   "CreateDIDOperation.getCorrectnessData" should {
     "provide the key to be used for signing" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("master")
         .transact(database)
         .value
         .unsafeRunSync()
-        .right
+        .toOption
         .value
 
       key mustBe masterKeys.publicKey
@@ -184,7 +185,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
   "CreateDIDOperation.applyState" should {
     "create the DID information in the database" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -197,7 +198,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       didDataRepository.findByDidSuffix(parsedOperation.id).value.futureValue mustBe a[Right[_, _]]
 
       for (key <- parsedOperation.keys) {
-        val keyState = didDataRepository.findKey(parsedOperation.id, key.keyId).value.futureValue.right.value
+        val keyState = didDataRepository.findKey(parsedOperation.id, key.keyId).value.futureValue.toOption.value
         DIDPublicKey(keyState.didSuffix, keyState.keyId, keyState.keyUsage, keyState.key) mustBe key
         keyState.addedOn mustBe dummyTimestamp
         keyState.revokedOn mustBe None
@@ -205,7 +206,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when given DID already exists" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       didDataRepository
         .create(DIDData(parsedOperation.id, Nil, parsedOperation.digest), dummyTimestamp)

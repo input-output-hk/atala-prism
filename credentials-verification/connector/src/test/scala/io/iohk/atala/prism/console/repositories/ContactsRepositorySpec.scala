@@ -6,7 +6,6 @@ import io.circe.Json
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
@@ -31,14 +30,14 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       val request = CreateContact(issuer, externalId, json)
 
       val result = repository.create(request, Some(group.name)).value.futureValue
-      val subject = result.right.value
+      val subject = result.toOption.value
       subject.data must be(json)
       subject.externalId must be(externalId)
       subject.connectionToken must be(empty)
       subject.connectionId must be(empty)
 
       // we check that the subject was added to the intended group
-      val subjectsInGroupList = repository.getBy(issuer, None, Some(group.name), 10).value.futureValue.right.value
+      val subjectsInGroupList = repository.getBy(issuer, None, Some(group.name), 10).value.futureValue.toOption.value
       subjectsInGroupList.size must be(1)
       subjectsInGroupList.headOption.value must be(subject)
     }
@@ -55,14 +54,14 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       val request = CreateContact(issuer, externalId, json)
 
       val result = repository.create(request, None).value.futureValue
-      val subject = result.right.value
+      val subject = result.toOption.value
       subject.data must be(json)
       subject.externalId must be(externalId)
       subject.connectionToken must be(empty)
       subject.connectionId must be(empty)
 
       // we check that the subject was added
-      val maybeSubject = repository.find(issuer, subject.contactId).value.futureValue.right.value.value
+      val maybeSubject = repository.find(issuer, subject.contactId).value.futureValue.toOption.value.value
       maybeSubject must be(subject)
     }
 
@@ -82,7 +81,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       )
 
       // we check that the subject was not created
-      val subjectsList = repository.getBy(issuerId, None, None, 1).value.futureValue.right.value
+      val subjectsList = repository.getBy(issuerId, None, None, 1).value.futureValue.toOption.value
       subjectsList must be(empty)
     }
 
@@ -102,7 +101,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
         repository.create(request, Some(group.name)).value.futureValue
       )
       // no subject should be created
-      val createdSubjects = repository.getBy(issuerId, None, None, 10).value.futureValue.right.value
+      val createdSubjects = repository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
       createdSubjects must be(empty)
     }
 
@@ -118,7 +117,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       )
       val request = CreateContact(issuerId, externalId, json)
 
-      val initialResponse = repository.create(request, Some(group.name)).value.futureValue.right.value
+      val initialResponse = repository.create(request, Some(group.name)).value.futureValue.toOption.value
 
       val secondJson = Json.obj(
         "universityId" -> Json.fromString("uid"),
@@ -133,7 +132,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
         repository.create(secondRequest, Some(group.name)).value.futureValue
       )
 
-      val subjectsStored = repository.getBy(issuerId, None, None, 10).value.futureValue.right.value
+      val subjectsStored = repository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
 
       // only one subject must be inserted correctly
       subjectsStored.size must be(1)
@@ -153,7 +152,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       val subjectA = createContact(issuerId, "Alice", groupName)
       createContact(issuerId, "Bob", groupName)
 
-      val result = repository.find(issuerId, subjectA.contactId).value.futureValue.right.value
+      val result = repository.find(issuerId, subjectA.contactId).value.futureValue.toOption.value
       result.value must be(subjectA)
     }
 
@@ -165,7 +164,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       val subjectA = createContact(issuerXId, "Alice", groupNameA)
       createContact(issuerYId, "Bob", groupNameB)
 
-      val result = repository.find(issuerYId, subjectA.contactId).value.futureValue.right.value
+      val result = repository.find(issuerYId, subjectA.contactId).value.futureValue.toOption.value
       result must be(empty)
     }
   }
@@ -176,7 +175,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       val subjectA = createContact(issuerId, "Alice", None, "subject-1")
       createContact(issuerId, "Bob", None, "subject-2")
 
-      val result = repository.find(issuerId, subjectA.externalId).value.futureValue.right.value
+      val result = repository.find(issuerId, subjectA.externalId).value.futureValue.toOption.value
       result.value must be(subjectA)
     }
 
@@ -188,7 +187,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       val subjectA = createContact(issuerXId, "Alice", groupNameA)
       createContact(issuerYId, "Bob", groupNameB)
 
-      val result = repository.find(issuerYId, subjectA.externalId).value.futureValue.right.value
+      val result = repository.find(issuerYId, subjectA.externalId).value.futureValue.toOption.value
       result must be(empty)
     }
   }
@@ -204,7 +203,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       createContact(issuerId, "Charles", groupNameC)
       createContact(issuerId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(issuerId, None, None, 2).value.futureValue.right.value
+      val result = repository.getBy(issuerId, None, None, 2).value.futureValue.toOption.value
       result must be(List(subjectA, subjectB))
     }
 
@@ -218,7 +217,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       createContact(issuerId, "Charles", groupNameC)
       val subjectA2 = createContact(issuerId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(issuerId, None, Some(groupNameA), 2).value.futureValue.right.value
+      val result = repository.getBy(issuerId, None, Some(groupNameA), 2).value.futureValue.toOption.value
       result must be(List(subjectA, subjectA2))
     }
 
@@ -232,7 +231,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       val subjectC = createContact(issuerId, "Charles", groupNameC)
       createContact(issuerId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(issuerId, Some(subjectB.contactId), None, 1).value.futureValue.right.value
+      val result = repository.getBy(issuerId, Some(subjectB.contactId), None, 1).value.futureValue.toOption.value
       result must be(List(subjectC))
     }
 
@@ -250,7 +249,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
         .getBy(issuerId, Some(subjectA.contactId), Some(groupNameA), 1)
         .value
         .futureValue
-        .right
+        .toOption
         .value
       result must be(List(subjectA2))
     }
@@ -266,9 +265,9 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
 
       val subject = createContact(issuerId, subjectName, groupName)
       val result = repository.generateToken(Institution.Id(issuerId.value), subject.contactId).value.futureValue
-      val token = result.right.value
+      val token = result.toOption.value
 
-      val updatedSubject = repository.find(issuerId, subject.contactId).value.futureValue.right.value.value
+      val updatedSubject = repository.find(issuerId, subject.contactId).value.futureValue.toOption.value.value
       updatedSubject.contactId must be(subject.contactId)
       updatedSubject.data must be(subject.data)
       updatedSubject.createdAt must be(subject.createdAt)

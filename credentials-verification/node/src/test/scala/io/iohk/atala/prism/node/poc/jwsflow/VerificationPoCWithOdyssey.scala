@@ -24,7 +24,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
@@ -142,7 +142,7 @@ class VerificationPoCWithOdyssey extends PostgresRepositorySpec with MockitoSuga
       val credentialToSign =
         GenericCredentialsSDKWithOdyssey.buildGenericCredential(
           did,
-          io.circe.parser.parse(credentialData).right.value
+          io.circe.parser.parse(credentialData).toOption.value
         )
 
       // 5. she signs it with the wallet

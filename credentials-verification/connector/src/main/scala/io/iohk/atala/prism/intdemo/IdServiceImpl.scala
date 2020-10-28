@@ -150,7 +150,7 @@ object IdServiceImpl {
   private def generateSubjectIdNumber(seedStr: String): String = {
     val md = MessageDigest.getInstance("MD5")
     md.update(seedStr.getBytes("UTF-8"))
-    s"RL-${BytesOps.bytesToHex(md.digest).toUpperCase.take(9)}"
+    s"RL-${BytesOps.bytesToHex(md.digest.toIndexedSeq).toUpperCase.take(9)}"
   }
 
   private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE

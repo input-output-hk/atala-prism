@@ -6,6 +6,7 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
 
@@ -26,7 +27,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .futureValue
 
       val result = participantsRepository.findBy(did).value.futureValue
-      result.right.value must be(info)
+      result.toOption.value must be(info)
     }
 
     "return no participant on unknown did" in {

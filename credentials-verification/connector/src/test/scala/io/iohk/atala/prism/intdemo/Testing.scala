@@ -34,7 +34,7 @@ private[intdemo] object Testing {
     * @param cursor an HCursor
     */
   implicit class CirceFieldAccess(cursor: HCursor) {
-    import org.scalatest.EitherValues._
+    import org.scalatest.OptionValues._
     def jsonStr(dotName: String): String = jsonVal[String](dotName)
     def jsonArr(dotName: String): List[String] = jsonVal[List[String]](dotName)
     def jsonNum[T: Numeric: Decoder](dotName: String): T = jsonVal[T](dotName)
@@ -44,7 +44,7 @@ private[intdemo] object Testing {
       def loop(l: List[String], ac: ACursor): T = {
         l match {
           case Nil =>
-            ac.as[T].right.value
+            ac.as[T].toOption.value
           case h :: _ =>
             loop(l.tail, ac.downField(h))
         }

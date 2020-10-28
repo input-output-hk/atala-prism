@@ -8,10 +8,9 @@ import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
-import scala.language.higherKinds
 
 class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
@@ -26,14 +25,14 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val message = "hello".getBytes
 
       val result = messagesRepository.insertMessage(issuer, connection, message).value.futureValue
-      val messageId = result.right.value
+      val messageId = result.toOption.value
 
       val (sender, recipient, content) =
         sql"""
              |SELECT sender, recipient, content
              |FROM messages
              |WHERE id = $messageId
-           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]
+           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
 
       sender mustBe issuer
       recipient mustBe holder
@@ -47,14 +46,14 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val message = "hello".getBytes
 
       val result = messagesRepository.insertMessage(holder, connection, message).value.futureValue
-      val messageId = result.right.value
+      val messageId = result.toOption.value
 
       val (sender, recipient, content) =
         sql"""
              |SELECT sender, recipient, content
              |FROM messages
              |WHERE id = $messageId
-           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]
+           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
 
       sender mustBe holder
       recipient mustBe issuer
@@ -91,7 +90,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         .getMessagesPaginated(holder, 20, Option.empty)
         .value
         .futureValue
-        .right
+        .toOption
         .value
         .map(_.id)
 
@@ -99,11 +98,11 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val nextTenExpected = all.slice(10, 20)
 
       val firstTenResult = messagesRepository.getMessagesPaginated(holder, 10, Option.empty).value.futureValue
-      firstTenResult.right.value.map(_.id) must matchTo(firstTenExpected)
+      firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
 
       val nextTenResult =
         messagesRepository.getMessagesPaginated(holder, 10, Some(firstTenExpected.last)).value.futureValue
-      nextTenResult.right.value.map(_.id) must matchTo(nextTenExpected)
+      nextTenResult.toOption.value.map(_.id) must matchTo(nextTenExpected)
     }
   }
 }

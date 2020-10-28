@@ -21,6 +21,7 @@ import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsig
 import io.iohk.atala.prism.crypto.{EC, ECTrait}
 import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
 import org.mockito.scalatest.MockitoSugar
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationInt
 
@@ -216,7 +217,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       val result: Either[String, ValidatedNel[VerificationError, Unit]] =
         credentialService.verifyCredential(signedCredential.canonicalForm).runSyncUnsafe()
       result mustBe a[Right[_, _]]
-      result.right.get.isValid mustBe true
+      result.toOption.value.isValid mustBe true
     }
 
     "return error when credential cannot be verified" in {
@@ -243,7 +244,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       val result: Either[String, ValidatedNel[VerificationError, Unit]] =
         credentialService.verifyCredential(credentialSignedWithWrongKey.canonicalForm).runSyncUnsafe()
       result mustBe a[Right[_, _]]
-      result.right.get.isValid mustBe false
+      result.toOption.value.isValid mustBe false
     }
   }
 

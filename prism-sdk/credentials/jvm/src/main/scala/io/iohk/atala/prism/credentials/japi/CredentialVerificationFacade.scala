@@ -44,7 +44,7 @@ class CredentialVerificationFacade(implicit val ec: ECTrait) extends CredentialV
       )
     )
 
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     verificationResult match {
       case Valid(isValid) => new VerificationResult(List[JvmVerificationError]().asJava)

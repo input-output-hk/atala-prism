@@ -225,7 +225,7 @@ class ObjectManagementService private (
             ledger = atalaReferenceLedger.getType
           )
           .transact(xa)
-          .unsafeToFuture
+          .unsafeToFuture()
       // Process each pending transaction
       _ <- Future.traverse(pendingTransactions) { retryTransactionIfPending }
     } yield ()
@@ -261,7 +261,7 @@ class ObjectManagementService private (
           .transact(xa)
           .unsafeToFuture()
       // Retrieve and parse object from the DB
-      maybeAtalaObject <- AtalaObjectsDAO.get(transaction.atalaObjectId).transact(xa).unsafeToFuture
+      maybeAtalaObject <- AtalaObjectsDAO.get(transaction.atalaObjectId).transact(xa).unsafeToFuture()
       atalaObject =
         maybeAtalaObject
           .map(_.byteContent)

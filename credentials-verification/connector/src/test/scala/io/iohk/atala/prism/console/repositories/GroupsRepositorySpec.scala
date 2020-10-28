@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.console.repositories
 
+import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.IssuerGroup
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import org.scalatest.EitherValues._
 
 import scala.concurrent.duration._
 
@@ -49,7 +49,7 @@ class GroupsRepositorySpec extends PostgresRepositorySpec {
       createIssuerGroup(issuerId2, IssuerGroup.Name("Other"))
 
       val result = repository.getBy(issuerId1).value.futureValue
-      result.right.value must be(groups)
+      result must beRight(groups)
     }
   }
 }

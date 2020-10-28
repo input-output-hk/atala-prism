@@ -2,36 +2,37 @@ import sbt._
 
 object versions {
   val awsSdk = "2.11.8"
-  val bitcoinLib = "0.16-SNAPSHOT"
+  val bitcoinLib = "0.18"
   val bouncycastle = "1.62"
-  val braintree = "2.106.0"
-  val chimney = "0.3.3"
-  val circe = "0.12.2"
-  val circeOptics = "0.12.0"
-  val diffx = "0.3.3"
+  val braintree = "3.2.0"
+  val catsScalatest = "3.0.5"
+  val chimney = "0.6.0"
+  val circe = "0.13.0"
+  val circeOptics = "0.13.0"
+  val diffx = "0.3.29"
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
   val doobie = "0.9.2"
   val enumeratum = "1.6.0"
-  val flyway = "6.0.2"
-  val grpc = "1.28.1"
+  val flyway = "7.0.0"
+  val grpc = "1.33.0"
   val logback = "1.2.3"
   val mockito = "1.16.0"
-  val monix = "3.0.0"
-  val monocle = "2.0.0"
+  val monix = "3.2.2"
+  val monocle = "2.1.0"
   val odyssey = "0.1.5"
-  val osLib = "0.2.7"
-  val playJson = "2.7.3"
-  val postgresql = "42.2.6"
+  val osLib = "0.7.1"
+  val playJson = "2.9.1"
+  val postgresql = "42.2.18"
   val scalatest = "3.2.2"
   val scalatestplus = s"$scalatest.0"
-  val scalapb = "0.9.6"
+  val scalapb = "0.10.8"
   val scopt = "4.0.0-RC2"
-  val silencer = "1.6.0"
-  val slf4j = "1.7.25"
-  val sttp = "1.6.6"
+  val silencer = "1.7.1"
+  val slf4j = "1.7.30"
+  val sttp = "1.7.2"
   val twirl = "1.5.0"
-  val typesafeConfig = "1.3.4"
+  val typesafeConfig = "1.4.1"
 }
 
 object Dependencies {
@@ -73,6 +74,7 @@ object Dependencies {
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig
 
   // Test dependencies
+  val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
   val diffx = "com.softwaremill.diffx" %% "diffx-scalatest" % versions.diffx % Test
   val dockerClient = "com.spotify" % "docker-client" % versions.dockerClient % Test
   val dockerTestkitScalatest = "com.whisk" %% "docker-testkit-scalatest" % versions.dockerTestkit % Test
@@ -96,7 +98,7 @@ object Dependencies {
   val logbackDependencies = Seq(logbackCore, logbackClassic)
   val mockitoDependencies = Seq(mockito, mockitoScalatest)
   val monocleDependencies = Seq(monocleCore, monocleGeneric, monocleMacro)
-  val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus)
+  val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
   val silencerDependencies = Seq(silencer, silencerPlugin)
   val sttpDependencies = Seq(sttpCore, sttpFuture)
 }

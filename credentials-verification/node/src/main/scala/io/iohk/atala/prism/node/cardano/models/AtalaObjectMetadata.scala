@@ -42,7 +42,7 @@ object AtalaObjectMetadata {
       Json.obj(
         METADATA_PRISM_INDEX.toString -> Json.obj(
           VERSION_KEY -> Json.fromInt(METADATA_VERSION),
-          CONTENT_KEY -> Json.arr(atalaObject.toByteArray.map(byte => Json.fromInt(byte.toInt)): _*)
+          CONTENT_KEY -> Json.arr(atalaObject.toByteArray.map(byte => Json.fromInt(byte.toInt)).toIndexedSeq: _*)
         )
       )
     )

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node
 import java.time.{LocalDateTime, ZoneOffset}
 import java.util.concurrent.TimeUnit
 
+import cats.scalatest.EitherMatchers._
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
@@ -40,7 +41,6 @@ import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBu
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
@@ -119,7 +119,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       ProtoCodecs.fromTimestampInfoProto(publicKey.addedOn.value) mustBe dummyTime
       publicKey.revokedOn mustBe empty
 
-      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe key.key
+      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(key.key)
     }
 
     "return DID document for an unpublished DID" in {
@@ -137,7 +137,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       publicKey.addedOn mustBe empty
       publicKey.revokedOn mustBe empty
 
-      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe masterKey
+      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(masterKey)
     }
 
     "return DID document for a long form DID after it was published" in {
@@ -165,13 +165,13 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
       ProtoCodecs.fromTimestampInfoProto(publicKey1.addedOn.value) mustBe dummyTime
       publicKey1.revokedOn mustBe empty
-      ParsingUtils.parseECKey(ValueAtPath(publicKey1.getEcKeyData, Path.root)).right.value mustBe masterKey
+      ParsingUtils.parseECKey(ValueAtPath(publicKey1.getEcKeyData, Path.root)) must beRight(masterKey)
 
       val publicKey2 = document.publicKeys.find(_.id == "issuance0").value
       publicKey2.usage mustBe node_models.KeyUsage.ISSUING_KEY
       ProtoCodecs.fromTimestampInfoProto(publicKey2.addedOn.value) mustBe dummyTime
       publicKey2.revokedOn mustBe empty
-      ParsingUtils.parseECKey(ValueAtPath(publicKey2.getEcKeyData, Path.root)).right.value mustBe issuingKey
+      ParsingUtils.parseECKey(ValueAtPath(publicKey2.getEcKeyData, Path.root)) must beRight(issuingKey)
     }
   }
 
@@ -381,7 +381,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       // This changes greatly, so just test something was set
       buildInfo.version must not be empty
-      buildInfo.scalaVersion mustBe "2.12.10"
+      buildInfo.scalaVersion mustBe "2.13.3"
       buildInfo.sbtVersion mustBe "1.3.8"
       // Give it enough time between build creation and test
       val buildTime = LocalDateTime.parse(buildInfo.buildTime)

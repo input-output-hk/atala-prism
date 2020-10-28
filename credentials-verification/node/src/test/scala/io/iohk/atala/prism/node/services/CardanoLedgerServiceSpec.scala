@@ -23,7 +23,6 @@ import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaO
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.schedulers.TestScheduler
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
@@ -262,7 +261,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
 
       // Append a new block
       val lastBlock =
-        cardanoBlockRepository.getFullBlock(totalBlockCount).value.futureValue.right.value
+        cardanoBlockRepository.getFullBlock(totalBlockCount).value.futureValue.toOption.value
       TestCardanoBlockRepository.insertBlock(TestCardanoBlockRepository.createNextRandomBlock(Some(lastBlock)))
 
       // Test #2: all objects are now synced

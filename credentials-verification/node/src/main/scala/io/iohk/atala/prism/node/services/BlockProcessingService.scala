@@ -13,8 +13,7 @@ import io.iohk.atala.prism.node.operations.path.Path
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 
-import scala.collection.generic.CanBuildFrom
-import scala.language.higherKinds
+import scala.collection.BuildFrom
 
 trait BlockProcessingService {
 
@@ -63,12 +62,13 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     * @tparam M the input sequence type
     * @return Left with underlying L type containing first error occured, Right with M[R] underlying type if there are no errors
     */
-  private def eitherTraverse[A, L, R, M[X] <: TraversableOnce[X]](
+  private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
       in: M[A]
-  )(f: A => Either[L, R])(implicit cbf: CanBuildFrom[M[A], R, M[R]]): Either[L, M[R]] = {
-    val builder = cbf(in)
+  )(f: A => Either[L, R])(implicit cbf: BuildFrom[M[A], R, M[R]]): Either[L, M[R]] = {
+    val builder = cbf.newBuilder(in)
 
-    in.foldLeft(Either.right[L, builder.type](builder)) { (eitherBuilder, el) =>
+    in.iterator
+      .foldLeft(Either.right[L, builder.type](builder)) { (eitherBuilder, el) =>
         for {
           b <- eitherBuilder
           elResult <- f(el)

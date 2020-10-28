@@ -6,7 +6,6 @@ import io.iohk.atala.prism.node.bitcoin.models._
 import io.circe.{Json, Encoder}
 import io.circe.syntax._
 import JsonCodecs._
-import scala.language.implicitConversions
 
 private[rpc] sealed abstract class RpcMethod(val name: String) extends Product with Serializable {
   def toJsonString: String = {

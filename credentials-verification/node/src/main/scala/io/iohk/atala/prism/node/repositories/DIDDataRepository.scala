@@ -50,7 +50,7 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     query
       .transact(xa)
       .value
-      .unsafeToFuture
+      .unsafeToFuture()
       .toFutureEither
   }
 

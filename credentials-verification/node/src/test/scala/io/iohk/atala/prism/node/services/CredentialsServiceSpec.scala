@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.errors.NodeError
@@ -62,8 +63,7 @@ class CredentialsServiceSpec extends AnyWordSpec with must.Matchers with ScalaFu
 
       doReturn(success).when(credentialsRepository).find(credentialId)
 
-      val result = credentialsService.getCredentialState(credentialId).value.futureValue.right.value
-      result must be(credState)
+      credentialsService.getCredentialState(credentialId).value.futureValue must beRight(credState)
     }
   }
 }

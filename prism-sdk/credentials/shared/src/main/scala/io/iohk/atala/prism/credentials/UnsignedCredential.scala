@@ -22,7 +22,7 @@ class JsonBasedUnsignedCredential private (credentialBytes: Array[Byte]) extends
       |""".stripMargin
   )
 
-  lazy val json: Json = jsonEither.right.get
+  lazy val json: Json = jsonEither.toOption.get
 
   lazy val bytes: Array[Byte] = credentialBytes
 

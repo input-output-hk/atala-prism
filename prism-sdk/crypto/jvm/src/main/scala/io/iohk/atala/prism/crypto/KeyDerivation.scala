@@ -7,7 +7,7 @@ import io.iohk.atala.prism.util.ArrayOps._
 import org.bitcoinj.crypto.{ChildNumber, DeterministicKey, HDKeyDerivation, MnemonicCode => JMnemonicCode}
 import org.bitcoinj.wallet.DeterministicSeed
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class GenericKeyDerivation(ec: GenericEC) extends KeyDerivationTrait {
 

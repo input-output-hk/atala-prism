@@ -17,7 +17,6 @@ import io.iohk.atala.prism.console.models.{
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
@@ -47,7 +46,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       )
 
       val result = credentialsRepository.create(request).value.futureValue
-      val credential = result.right.value
+      val credential = result.toOption.value
       credential.credentialData must be(request.credentialData)
       credential.issuedBy must be(request.issuedBy)
       credential.subjectId must be(request.subjectId)
@@ -66,7 +65,8 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val subjectId = createContact(issuerId, "IOHK Student 2", group.name).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
 
-      val returnedCredential = credentialsRepository.getBy(credential.credentialId).value.futureValue.right.value.value
+      val returnedCredential =
+        credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
 
       returnedCredential must be(credential)
     }
@@ -74,7 +74,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
     "return no credential when not found" in {
       val credentialId = GenericCredential.Id(UUID.randomUUID())
 
-      val credential = credentialsRepository.getBy(credentialId).value.futureValue.right.value
+      val credential = credentialsRepository.getBy(credentialId).value.futureValue.toOption.value
 
       credential must be(None)
     }
@@ -89,7 +89,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val credB = createGenericCredential(issuerId, subject, "B")
       createGenericCredential(issuerId, subject, "C")
 
-      val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.right.value
+      val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
       result.toSet must be(Set(credA, credB))
     }
 
@@ -102,13 +102,13 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val credC = createGenericCredential(issuerId, subject, "C")
       createGenericCredential(issuerId, subject, "D")
 
-      val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.right.value
+      val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
       val result =
         credentialsRepository
           .getBy(issuerId, 1, first.lastOption.map(_.credentialId))
           .value
           .futureValue
-          .right
+          .toOption
           .value
       result.toSet must be(Set(credC))
     }
@@ -126,7 +126,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val cred2 = createGenericCredential(issuerId, subjectId1, "D")
       createGenericCredential(issuerId, subjectId2, "E")
 
-      val result = credentialsRepository.getBy(issuerId, subjectId1).value.futureValue.right.value
+      val result = credentialsRepository.getBy(issuerId, subjectId1).value.futureValue.toOption.value
       result must be(List(cred1, cred2))
     }
 
@@ -135,7 +135,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val subjectId = createContact(issuerId, "IOHK Student", group.name).contactId
 
-      val result = credentialsRepository.getBy(issuerId, subjectId).value.futureValue.right.value
+      val result = credentialsRepository.getBy(issuerId, subjectId).value.futureValue.toOption.value
       result must be(empty)
     }
   }
@@ -166,10 +166,10 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
         .value
         .futureValue
 
-      inserted.right.value must be(1)
+      inserted.toOption.value must be(1)
 
       val credentialList =
-        credentialsRepository.getBy(issuerId, subjectId).value.futureValue.right.value
+        credentialsRepository.getBy(issuerId, subjectId).value.futureValue.toOption.value
 
       credentialList.length must be(1)
 
@@ -210,7 +210,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       )
 
       val credentialList =
-        credentialsRepository.getBy(issuerId, 10, None).value.futureValue.right.value
+        credentialsRepository.getBy(issuerId, 10, None).value.futureValue.toOption.value
 
       credentialList must be(empty)
     }
@@ -243,7 +243,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       )
 
       val credentialList =
-        credentialsRepository.getBy(issuerId, subjectId).value.futureValue.right.value
+        credentialsRepository.getBy(issuerId, subjectId).value.futureValue.toOption.value
 
       credentialList.length must be(1)
 

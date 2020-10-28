@@ -53,7 +53,7 @@ object EC extends ECTrait {
       case key: JsECPublicKey =>
         nativeEc.verify(
           SHA256Digest.compute(data).hexValue,
-          BytesOps.bytesToHex(signature.data),
+          BytesOps.bytesToHex(signature.data.toIndexedSeq),
           asKeyPair(key.publicKey)
         )
     }

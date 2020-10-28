@@ -2,7 +2,6 @@ package io.iohk.atala.prism.node.repositories.blocks
 
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
@@ -28,7 +27,7 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
       val block = randomBlock()
       blocksRepository.create(block).value.futureValue
       val result = blocksRepository.find(block.hash).value.futureValue
-      result.right.value must be(block)
+      result.toOption.value must be(block)
     }
   }
 
@@ -39,7 +38,7 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
       List(a, b).foreach(blocksRepository.create(_).value.futureValue)
 
       val result = blocksRepository.getLatest.value.futureValue
-      result.right.value must be(b)
+      result.toOption.value must be(b)
     }
   }
 
@@ -50,15 +49,15 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
       List(a, b).foreach(blocksRepository.create(_).value.futureValue)
 
       val result = blocksRepository.removeLatest().value.futureValue
-      result.right.value must be(b)
+      result.toOption.value must be(b)
       blocksRepository.find(b.hash).value.futureValue must be(Left(BlockError.NotFound(b.hash)))
-      blocksRepository.getLatest.value.futureValue.right.value must be(a)
+      blocksRepository.getLatest.value.futureValue.toOption.value must be(a)
     }
   }
 
   def randomBlock(): BlockHeader = {
     val bytes = Array.ofDim[Byte](32)
     Random.nextBytes(bytes)
-    BlockHeader(Blockhash.from(bytes).value, Random.nextInt(100), Random.nextLong(), None)
+    BlockHeader(Blockhash.from(bytes.toIndexedSeq).value, Random.nextInt(100), Random.nextLong(), None)
   }
 }

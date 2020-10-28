@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.crypto.japi;
 
-import scala.collection.JavaConverters;
+import io.iohk.atala.prism.compat.AsJavaConverter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,8 +52,12 @@ public class DerivationPath {
     public static DerivationPath parse(String path) {
         ArrayList<DerivationAxis> _axes = new ArrayList<>();
 
-        for (io.iohk.atala.prism.crypto.DerivationAxis scalaAxis : JavaConverters.asJavaIterable(
-                io.iohk.atala.prism.crypto.DerivationPath.apply(path).axes().toIterable())) {
+        Iterable<io.iohk.atala.prism.crypto.DerivationAxis> iterable =
+            AsJavaConverter.asJavaIterable(
+                io.iohk.atala.prism.crypto.DerivationPath.apply(path).axes().toIterable()
+            );
+        
+        for (io.iohk.atala.prism.crypto.DerivationAxis scalaAxis : iterable) {
             _axes.add(DerivationAxis.raw(scalaAxis.i()));
         }
 

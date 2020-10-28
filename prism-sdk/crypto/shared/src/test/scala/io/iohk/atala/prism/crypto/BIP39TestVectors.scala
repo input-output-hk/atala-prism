@@ -161,10 +161,11 @@ object BIP39TestVectors {
       |}
       |""".stripMargin
 
-  val testVectors = io.circe.parser.parse(source).right.get.\\("english").head.as[Array[Array[String]]].right.get.map {
-    case Array(seedHex, mnemonic, binarySeedHex, encodedKeyHex) =>
-      TestVector(seedHex, mnemonic, binarySeedHex, encodedKeyHex)
-  }
+  val testVectors =
+    io.circe.parser.parse(source).toOption.get.\\("english").head.as[Array[Array[String]]].toOption.get.map {
+      case Array(seedHex, mnemonic, binarySeedHex, encodedKeyHex) =>
+        TestVector(seedHex, mnemonic, binarySeedHex, encodedKeyHex)
+    }
   val password = "TREZOR"
 
 }

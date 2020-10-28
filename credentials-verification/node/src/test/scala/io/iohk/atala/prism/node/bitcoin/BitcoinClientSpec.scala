@@ -1,12 +1,10 @@
 package io.iohk.atala.prism.node.bitcoin
 
-import scala.language.higherKinds
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import com.softwaremill.sttp.testing.SttpBackendStub
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.bitcoin
 import io.iohk.atala.prism.node.bitcoin.models._
-import org.scalatest.EitherValues._
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.OptionValues._
 import org.scalatest.wordspec.AnyWordSpec
@@ -33,7 +31,7 @@ class BitcoinClientSpec extends AnyWordSpec with ScalaFutures {
         )
       )
       val client = newClient(response)
-      val result = client.getBlock(blockhash).value.futureValue.right.value
+      val result = client.getBlock(blockhash).value.futureValue.toOption.value
       result must matchTo(expected)
     }
   }
@@ -112,8 +110,8 @@ class BitcoinClientSpec extends AnyWordSpec with ScalaFutures {
         )
       )
       val client = newClient(response)
-      val result = client.getFullBlock(blockhash).value.futureValue.right.value
-      result must matchTo(expected)
+      val result = client.getFullBlock(blockhash).value.futureValue.toOption.value
+      result must be(expected)
     }
   }
 

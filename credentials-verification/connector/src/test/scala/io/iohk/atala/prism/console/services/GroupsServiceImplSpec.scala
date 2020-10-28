@@ -14,7 +14,6 @@ import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.cmanager_api
 import org.mockito.MockitoSugar._
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationDouble
@@ -54,7 +53,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
         val _ = serviceStub.createGroup(request)
 
         // the new group needs to exist
-        val groups = issuerGroupsRepository.getBy(issuerId).value.futureValue.right.value
+        val groups = issuerGroupsRepository.getBy(issuerId).value.futureValue.toOption.value
         groups must contain(newGroup)
       }
     }
@@ -66,7 +65,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
       val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
       groups.foreach { group =>
-        issuerGroupsRepository.create(issuerId, group).value.futureValue.right.value
+        issuerGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
       }
 
       usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
@@ -88,7 +87,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.right.value.id.value.toString
+        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.value.toString
       }
       val contact = createRandomContact(issuerId)
 
@@ -115,7 +114,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.right.value.id.value.toString
+        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.value.toString
       }
       val contact1 = createRandomContact(issuerId, Some(group1Name))
       val contact2 = createRandomContact(issuerId, Some(group2Name))
@@ -146,7 +145,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.right.value.id.value.toString
+        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.value.toString
       }
       val contact1 = createRandomContact(issuerId, Some(group1Name))
       val contact2 = createRandomContact(issuerId)
@@ -185,7 +184,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       val issuerId2 = createIssuer()
 
       val group1Id =
-        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.right.value.id.value.toString
+        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.value.toString
       val contact = createRandomContact(issuerId2)
 
       usingApiAs(ParticipantId(issuerId2.value)) { serviceStub =>
@@ -203,7 +202,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       val issuerId2 = createIssuer()
 
       val group1Id =
-        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.right.value.id.value.toString
+        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.value.toString
       val contact = createRandomContact(issuerId2)
 
       usingApiAs(ParticipantId(issuerId1.value)) { serviceStub =>
@@ -222,11 +221,11 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       maybeGroupName: Option[IssuerGroup.Name] = None
   ): Contact = {
     val contactData = CreateContact(issuer, Contact.ExternalId.random(), Json.Null)
-    contactsRepository.create(contactData, maybeGroupName).value.futureValue.right.value
+    contactsRepository.create(contactData, maybeGroupName).value.futureValue.toOption.value
   }
 
   private def listContacts(issuer: Institution.Id, groupName: IssuerGroup.Name): List[Contact] =
-    issuerGroupsRepository.listContacts(issuer, groupName).value.futureValue.right.value
+    issuerGroupsRepository.listContacts(issuer, groupName).value.futureValue.toOption.value
 
   private def createIssuer(): Institution.Id = {
     val id = UUID.randomUUID()

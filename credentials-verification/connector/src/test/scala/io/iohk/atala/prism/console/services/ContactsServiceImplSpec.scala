@@ -16,7 +16,6 @@ import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.mockito.MockitoSugar._
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationDouble
@@ -70,11 +69,11 @@ class ContactsServiceImplSpec extends RpcSpecBase {
           )
 
         val response = serviceStub.createContact(request).contact.value
-        parser.parse(response.jsonData).right.value must be(json)
+        parser.parse(response.jsonData).toOption.value must be(json)
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.getBy(issuerId, None, Some(group.name), 10).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, Some(group.name), 10).value.futureValue.toOption.value
         result.size must be(1)
         val storedContact = result.headOption.value
         toContactProto(storedContact).copy(jsonData = "") must be(response.copy(jsonData = ""))
@@ -103,11 +102,11 @@ class ContactsServiceImplSpec extends RpcSpecBase {
 
         val response = serviceStub.createContact(request).contact.value
         val contactId = Contact.Id(UUID.fromString(response.contactId))
-        parser.parse(response.jsonData).right.value must be(json)
+        parser.parse(response.jsonData).toOption.value must be(json)
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(issuerId, contactId).value.futureValue.right.value
+        val result = contactsRepository.find(issuerId, contactId).value.futureValue.toOption.value
         val storedContact = result.value
         toContactProto(storedContact).copy(jsonData = "") must be(response.copy(jsonData = ""))
         storedContact.data must be(json)
@@ -139,7 +138,7 @@ class ContactsServiceImplSpec extends RpcSpecBase {
         )
 
         // the contact must not be added
-        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
         result must be(empty)
       }
     }
@@ -168,7 +167,7 @@ class ContactsServiceImplSpec extends RpcSpecBase {
         )
 
         // the new contact should not exist
-        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
         result must be(empty)
       }
     }
@@ -210,7 +209,7 @@ class ContactsServiceImplSpec extends RpcSpecBase {
         )
 
         // the contact needs to exist as originally inserted
-        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.right.value
+        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
         result.size must be(1)
 
         val storedContact = result.head
@@ -222,7 +221,7 @@ class ContactsServiceImplSpec extends RpcSpecBase {
   }
 
   private def cleanContactData(c: console_models.Contact): console_models.Contact = c.copy(jsonData = "")
-  private def contactJsonData(c: console_models.Contact): Json = circe.parser.parse(c.jsonData).right.value
+  private def contactJsonData(c: console_models.Contact): Json = circe.parser.parse(c.jsonData).toOption.value
 
   "getContacts" should {
     "return the first contacts" in {
@@ -386,7 +385,7 @@ class ContactsServiceImplSpec extends RpcSpecBase {
         val token = TokenString(response.token)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(issuerId, contact.contactId).value.futureValue.right.value
+        val result = contactsRepository.find(issuerId, contact.contactId).value.futureValue.toOption.value
         val storedContact = result.value
         storedContact.contactId must be(contact.contactId)
         storedContact.data must be(contact.data)

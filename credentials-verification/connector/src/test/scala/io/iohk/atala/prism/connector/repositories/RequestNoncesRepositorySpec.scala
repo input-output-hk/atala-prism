@@ -4,7 +4,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.model.{ParticipantType, RequestNonce}
 import io.iohk.atala.prism.connector.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.models.ParticipantId
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
 
@@ -21,7 +21,7 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
 
       available(participantId, nonce) must be(true)
       val result = requestNoncesRepository.burn(participantId, nonce).value.futureValue
-      result.right.value must be(())
+      result.toOption.value must be(())
 
       available(participantId, nonce) must be(false)
     }
@@ -42,7 +42,7 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
       requestNoncesRepository.burn(participantId, nonce).value.futureValue
 
       val result = requestNoncesRepository.burn(participantId2, nonce).value.futureValue
-      result.right.value must be(())
+      result.toOption.value must be(())
 
       available(participantId, nonce) must be(false)
       available(participantId2, nonce) must be(false)

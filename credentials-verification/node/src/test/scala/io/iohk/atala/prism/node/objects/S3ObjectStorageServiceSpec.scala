@@ -5,7 +5,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{DeleteObjectRequest, ListObjectsV2Request, S3Object}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class S3ObjectStorageServiceSpec
     extends ObjectStorageServiceSpecBase("S3ObjectStorageServiceSpec")
@@ -34,7 +34,7 @@ class S3ObjectStorageServiceSpec
   private def cleanBucket(): Unit = {
     assert(KEY_PREFIX.nonEmpty) // avoid cleaning all the data in the bucket
 
-    def objectsStream(request: ListObjectsV2Request): Stream[S3Object] = {
+    def objectsStream(request: ListObjectsV2Request): LazyList[S3Object] = {
       val response = testClient.listObjectsV2(request)
       def tail =
         if (response.isTruncated) {
@@ -44,9 +44,9 @@ class S3ObjectStorageServiceSpec
             .continuationToken(response.nextContinuationToken())
             .build()
           objectsStream(nextRequest)
-        } else Stream.empty
+        } else LazyList.empty
 
-      response.contents().asScala.toStream #::: tail
+      response.contents().asScala.to(LazyList) ++ tail
     }
 
     val firstListRequest = ListObjectsV2Request.builder().bucket(AWS_BUCKET).prefix(KEY_PREFIX).build()

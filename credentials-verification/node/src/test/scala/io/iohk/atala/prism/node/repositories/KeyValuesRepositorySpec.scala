@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.repositories
 
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
 
@@ -19,7 +19,7 @@ class KeyValuesRepositorySpec extends PostgresRepositorySpec {
       val expectedKeyValue = KeyValue(KEY, Some(VALUE))
       keyValuesRepository.upsert(expectedKeyValue).value.futureValue
 
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.right.value
+      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
 
       keyValue must be(expectedKeyValue)
     }
@@ -29,7 +29,7 @@ class KeyValuesRepositorySpec extends PostgresRepositorySpec {
       val expectedKeyValue = KeyValue(KEY, Some(VALUE))
       keyValuesRepository.upsert(expectedKeyValue).value.futureValue
 
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.right.value
+      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
 
       keyValue must be(expectedKeyValue)
     }
@@ -39,13 +39,13 @@ class KeyValuesRepositorySpec extends PostgresRepositorySpec {
       val expectedKeyValue = KeyValue(KEY, None)
       keyValuesRepository.upsert(expectedKeyValue).value.futureValue
 
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.right.value
+      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
 
       keyValue must be(expectedKeyValue)
     }
 
     "return no value when it does not exist" in {
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.right.value
+      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
 
       keyValue must be(KeyValue(KEY, None))
     }

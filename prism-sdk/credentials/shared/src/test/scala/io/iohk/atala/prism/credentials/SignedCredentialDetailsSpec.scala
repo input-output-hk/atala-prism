@@ -22,7 +22,7 @@ class SignedCredentialDetailsSpec extends AnyWordSpec {
   "compute" should {
     "return the proper details" in {
       val result = SignedCredentialDetails.compute(signedCredential.canonicalForm)
-      val details = result.right.value
+      val details = result.toOption.get
       details.credential must be(signedCredential)
       details.issuanceKeyId must be(unsignedCredential.issuanceKeyId.value)
       details.issuerDID must be(unsignedCredential.issuerDID.value)

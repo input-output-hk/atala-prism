@@ -11,14 +11,15 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 
 name := "prism-wallet"
 version := "0.1"
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.3"
 scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-language:existentials",
   "-Xlint",
   "-deprecation",
   //"-Xfatal-warnings",
-  "-feature"
+  "-feature",
+  "-Ymacro-annotations"
 )
 
 enablePlugins(ChromeSbtPlugin, BuildInfoPlugin, ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin)
@@ -118,8 +119,8 @@ val scalaDomVersion = "1.0.0"
 val scalaJsChromeVersion = "0.7.0"
 val enumeratumVersion = "1.6.1"
 val scalaJsJavaTimeVersion = "1.0.0"
-val slinkyVersion = "0.6.5"
-val slinkyIjextVerion = "0.6.5+15-fa93d141"
+val slinkyVersion = "0.6.6"
+val slinkyIjextVerion = "0.6.6"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaDomVersion
 libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % scalaJsChromeVersion
@@ -188,7 +189,3 @@ jsEnv in Test := {
     .setHeadless(true)
   new SeleniumJSEnv(capabilities)
 }
-
-addCompilerPlugin(
-  "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full
-)

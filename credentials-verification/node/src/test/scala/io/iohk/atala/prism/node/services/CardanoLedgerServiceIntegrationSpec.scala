@@ -14,7 +14,6 @@ import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificat
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.schedulers.TestScheduler
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 
@@ -55,7 +54,7 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
       )
 
       // Avoid syncing pre-existing blocks
-      val latestBlock = cardanoClient.getLatestBlock().value.futureValue(LONG_TIMEOUT).right.value
+      val latestBlock = cardanoClient.getLatestBlock().value.futureValue(LONG_TIMEOUT).toOption.value
       keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(latestBlock.header.blockNo)).futureValue
 
       // Publish random object
@@ -67,7 +66,7 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
       cardanoLedgerService.publish(atalaObject).futureValue(LONG_TIMEOUT)
 
       def notifiedAtalaObjects: Seq[node_internal.AtalaObject] = {
-        notificationHandler.receivedNotifications.map(_.atalaObject)
+        notificationHandler.receivedNotifications.map(_.atalaObject).toSeq
       }
 
       // Wait for the transaction to become available in cardano-node

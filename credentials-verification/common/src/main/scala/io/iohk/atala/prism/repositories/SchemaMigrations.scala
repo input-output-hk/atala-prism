@@ -14,5 +14,6 @@ object SchemaMigrations {
       )
       .load()
       .migrate()
+      .migrationsExecuted
   }
 }

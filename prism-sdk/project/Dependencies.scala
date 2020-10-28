@@ -8,7 +8,7 @@ object Dependencies {
   val circeVersion = "0.13.0"
   val scalajsTimeVersion = "1.0.0"
   val spongycastleVersion = "1.58.0.0"
-  val scalatestVersion = "3.1.2"
+  val scalatestVersion = "3.2.2"
   val scalatestplusVersion = s"$scalatestVersion.0"
 
   val bitcoinj = "org.bitcoinj" % "bitcoinj-core" % bitcoinjVersion

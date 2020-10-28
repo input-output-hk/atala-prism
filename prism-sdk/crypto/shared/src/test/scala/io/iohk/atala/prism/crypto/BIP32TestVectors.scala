@@ -100,11 +100,11 @@ object BIP32TestVectors {
       |]
       |""".stripMargin
 
-  val testVectors = io.circe.parser.parse(source).right.get.as[Array[JsonObject]].right.get.map { vector =>
-    val derivations = vector("derivations").get.as[Array[Array[String]]].right.get.map {
+  val testVectors = io.circe.parser.parse(source).toOption.get.as[Array[JsonObject]].toOption.get.map { vector =>
+    val derivations = vector("derivations").get.as[Array[Array[String]]].toOption.get.map {
       case Array(path, pub, priv) => Derivation(path, pub, priv)
     }
-    val seed = vector("seed").get.as[String].right.get
+    val seed = vector("seed").get.as[String].toOption.get
     TestVector(seed, derivations.toList)
   }
 }

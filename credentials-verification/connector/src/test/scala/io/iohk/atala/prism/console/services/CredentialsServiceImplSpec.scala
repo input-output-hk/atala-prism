@@ -21,7 +21,6 @@ import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
 import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
 import io.iohk.atala.prism.protos.{cmanager_api, common_models, node_api, node_models}
 import org.mockito.MockitoSugar
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
@@ -85,7 +84,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         response.credentialData must be(request.credentialData)
         response.issuerName must be(issuerName)
         response.groupName must be(issuerGroup.name.value)
-        io.circe.parser.parse(response.contactData).right.value must be(subject.data)
+        io.circe.parser.parse(response.contactData).toOption.value must be(subject.data)
         response.nodeCredentialId must be(empty)
         response.issuanceOperationHash must be(empty)
         response.encodedSignedCredential must be(empty)
@@ -214,7 +213,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verify(nodeMock).issueCredential(nodeRequest)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
 
         credentialList.length must be(1)
 
@@ -266,7 +265,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
 
         credentialList.length must be(1)
 
@@ -309,7 +308,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, 10, None).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, 10, None).value.futureValue.toOption.value
 
         credentialList must be(empty)
       }
@@ -350,7 +349,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
 
         credentialList.length must be(1)
 
@@ -395,7 +394,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.right.value
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
 
         credentialList.length must be(1)
 
@@ -434,7 +433,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   private def cleanCredentialData(gc: CManagerGenericCredential): CManagerGenericCredential =
     gc.copy(credentialData = "", contactData = "")
   private def credentialJsonData(gc: CManagerGenericCredential): (Json, Json) =
-    (circe.parser.parse(gc.credentialData).right.value, circe.parser.parse(gc.contactData).right.value)
+    (circe.parser.parse(gc.credentialData).toOption.value, circe.parser.parse(gc.contactData).toOption.value)
 
   "getContactCredentials" should {
     "return contact's credentials" in {

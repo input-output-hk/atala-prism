@@ -8,7 +8,6 @@ import io.iohk.atala.prism.console.repositories.GroupsRepository
 import io.iohk.atala.prism.protos.{cmanager_api, cmanager_models}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.collection.breakOut
 
 class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator: Authenticator)(implicit
     ec: ExecutionContext
@@ -56,8 +55,8 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
         .updateGroup(
           issuerId,
           IssuerGroup.Id(UUID.fromString(request.groupId)),
-          request.contactIdsToAdd.map(id => Contact.Id(UUID.fromString(id)))(breakOut),
-          request.contactIdsToRemove.map(id => Contact.Id(UUID.fromString(id)))(breakOut)
+          request.contactIdsToAdd.map(id => Contact.Id(UUID.fromString(id))).to(List),
+          request.contactIdsToRemove.map(id => Contact.Id(UUID.fromString(id))).to(List)
         )
         .value
         .map {

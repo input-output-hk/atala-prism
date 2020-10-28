@@ -6,7 +6,7 @@ orbs:
 parameters:
   scala-version:
     type: string
-    default: "2.12"
+    default: "2.13"
   scala-mill-docker-image:
     type: string
     default: "inputoutput/scala-mill:2.12.10-1.3.8-0.6.2-0.12.25"
@@ -369,7 +369,7 @@ jobs:
       - install-sbt
       - run:
           name: Assembly Prism Crypto
-          command: cd prism-sdk && sbt prismCryptoJVM/assembly
+          command: cd prism-sdk && sbt +prismCryptoJVM/assembly
       - run:
           name: Run Lint Tests
           command: cd credentials-verification-android && ./gradlew lint test
@@ -390,6 +390,8 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/openjdk:8-jdk-node-browsers
+    environment:
+      SBT_OPTS: -Xmx2048m
     steps:
       - checkout
 

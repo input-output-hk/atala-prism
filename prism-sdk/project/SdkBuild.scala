@@ -16,12 +16,16 @@ import scoverage.ScoverageKeys._
 import Dependencies._
 
 object SdkBuild {
+  val scala212 = "2.12.10"
+  val scala213 = "2.13.3"
+  val supportedScalaVersions = List(scala212, scala213)
+
   def commonProject(project: CrossProject): CrossProject =
     project
       .settings(
         organization := "io.iohk",
         organizationName := "Input Output HK",
-        scalaVersion := "2.12.10",
+        scalaVersion := "2.13.3",
         scalacOptions ++= Seq(
           "-language:implicitConversions",
           "-language:existentials",
@@ -49,6 +53,7 @@ object SdkBuild {
         libraryDependencies ++= circeDependencies.value
       )
       .jvmSettings(
+        crossScalaVersions := supportedScalaVersions,
         Test / fork := true, // Avoid classloader issues during testing with `sbt ~test`
         assemblyJarName in assembly := "prism-crypto.jar",
         // In order to use this library in Android, we need to bundle it with the scala stdlib
@@ -56,7 +61,10 @@ object SdkBuild {
         //
         // Also, we need to keep bouncycaste and spongycastle (Android).
         libraryDependencies ++= (bouncyDependencies ++ spongyDependencies).map(_ % "provided"),
-        libraryDependencies += bitcoinj % "provided"
+        libraryDependencies ++= Seq(
+          bitcoinj % "provided",
+          "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0"
+        )
       )
       .jsSettings(
         libraryDependencies += scalajsTime.value,
@@ -76,6 +84,7 @@ object SdkBuild {
         PB.protoSources in Compile := Seq(
           (baseDirectory in ThisBuild).value / "protos"
         ),
+        scalacOptions ~= (_ :+ "-Wconf:src=.*scalapb/.*:silent"),
         libraryDependencies += "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion
       )
       .jvmSettings(
@@ -120,6 +129,7 @@ object SdkBuild {
     project
       .in(file("prism-docs"))
       .settings(
+        scalaVersion := "2.13.3",
         mdocVariables := Map(
           "VERSION" -> version.value
         ),
@@ -136,7 +146,10 @@ object SdkBuild {
 
   lazy val sdk =
     commonProject(crossProject(JSPlatform, JVMPlatform) in file("."))
-      .settings(name := "sdk")
+      .settings(
+        name := "sdk",
+        crossScalaVersions := Nil
+      )
       .aggregate(
         prismCrypto,
         prismProtos,

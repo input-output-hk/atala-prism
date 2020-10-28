@@ -22,7 +22,7 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
     sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo) VALUES
           (${ParticipantId.random()}, $tpe, $did, $publicKey, $name, $logo)
           RETURNING id"""
-      .runUnique[ParticipantId]
+      .runUnique[ParticipantId]()
   }
 
   protected def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None): ParticipantId = {

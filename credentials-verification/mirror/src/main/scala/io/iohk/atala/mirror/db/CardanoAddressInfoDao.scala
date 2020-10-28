@@ -4,7 +4,7 @@ import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.{CardanoAddressInfo, ConnectorMessageId}
 import doobie.implicits._
-import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork}
+import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress

@@ -113,7 +113,7 @@ class AtalaServiceImpl(
           // this is an Atala transaction
           data = trimmed.drop(ATALA_HEADER.length)
           atalaObject <- parseAtalaObject(data)
-          _ = logger info s"New Atala transaction found in the chain: ${BytesOps.bytesToHex(data)}"
+          _ = logger info s"New Atala transaction found in the chain: ${BytesOps.bytesToHex(data.toIndexedSeq)}"
         } yield AtalaObjectNotification(
           atalaObject,
           TransactionInfo(
@@ -152,7 +152,7 @@ class AtalaServiceImpl(
   private def parseAtalaObject(data: Array[Byte]): Option[node_internal.AtalaObject] = {
     val validateAtalaObject = node_internal.AtalaObject.validate(data)
     if (validateAtalaObject.isFailure) {
-      logger.warn(s"Could not parse Atala transaction: ${BytesOps.bytesToHex(data)}")
+      logger.warn(s"Could not parse Atala transaction: ${BytesOps.bytesToHex(data.toIndexedSeq)}")
     }
     validateAtalaObject.toOption
   }

@@ -19,12 +19,13 @@ object PrismBuild {
       .settings(
         organization := "io.iohk",
         organizationName := "Input Output HK",
-        scalaVersion := "2.12.10",
+        scalaVersion := "2.13.3",
         scalacOptions ~= (options =>
           options.filterNot(
             Set(
               "-Xlint:package-object-classes",
               "-Ypartial-unification",
+              "-Wdead-code",
               "-Ywarn-dead-code"
             )
           ) :+ "-P:silencer:checkUnused"
@@ -148,7 +149,7 @@ object PrismBuild {
       .settings(
         name := "connector",
         mainClass in (Compile, run) := Some("io.iohk.atala.prism.connector.ConnectorApp"),
-        scalacOptions ~= (_ :+ "-P:silencer:pathFilters=.*target/scala-2.12/twirl/.*"),
+        scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
         libraryDependencies ++= Seq(braintree, twirlApi)
       )
       .dependsOn(common % "compile->compile;test->test", connectorLib)

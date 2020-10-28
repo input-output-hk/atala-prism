@@ -26,7 +26,7 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
         // This changes greatly, so just test something was set
         buildInfo.version must not be empty
-        buildInfo.scalaVersion mustBe "2.12.10"
+        buildInfo.scalaVersion mustBe "2.13.3"
         buildInfo.sbtVersion mustBe "1.3.8"
         // Give it enough time between build creation and test
         val buildTime = LocalDateTime.parse(buildInfo.buildTime)

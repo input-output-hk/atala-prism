@@ -7,12 +7,12 @@ libraryDependencies += "org.scala-js" %% "scalajs-env-selenium" % "1.0.0"
 
 addSbtPlugin("org.scalablytyped.converter" % "sbt-converter" % "1.0.0-beta12")
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.0.1")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.3.0")
 
 addSbtPlugin("com.alexitc" % "sbt-chrome-plugin" % "0.7.0")
 
-addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.10.0")
 
-addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.17.0")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.20.0")
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.3.4")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.2")

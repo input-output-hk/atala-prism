@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
+import cats.scalatest.EitherMatchers._
 import io.circe.Json
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models._
@@ -43,9 +44,9 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
         )
 
       val transaction =
-        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue.right.value
+        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue
 
-      transaction must be(
+      transaction must beRight(
         TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
       )
     }
@@ -74,9 +75,9 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       val client =
         FakeCardanoWalletApiClient.Success(expectedPath, "", readResource("getTransaction_success_response.json"))
 
-      val transactionDetails = client.getTransaction(walletId, transactionId).value.futureValue.right.value
+      val transactionDetails = client.getTransaction(walletId, transactionId).value.futureValue
 
-      transactionDetails must be(TransactionDetails(transactionId, TransactionStatus.InLedger))
+      transactionDetails must beRight(TransactionDetails(transactionId, TransactionStatus.InLedger))
     }
 
     "fail on server error" in {
@@ -101,7 +102,7 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
     "delete a transaction" in {
       val client = FakeCardanoWalletApiClient.Success(expectedPath, "", "")
 
-      client.deleteTransaction(walletId, transactionId).value.futureValue.right.value
+      client.deleteTransaction(walletId, transactionId).value.futureValue
     }
 
     "fail on server error" in {

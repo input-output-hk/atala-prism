@@ -26,7 +26,7 @@ object IssueCredentialBatchOperationSpec {
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
   lazy val issuerCreateDIDOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
   lazy val issuerDIDSuffix = issuerCreateDIDOperation.id
   val content = ""
   val mockMerkleRoot = MerkleRoot(SHA256Digest.compute(content.getBytes))
@@ -110,14 +110,14 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
         .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyTimestamp)
         .value
         .futureValue
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
         .transact(database)
         .value
         .unsafeRunSync()
-        .right
+        .toOption
         .value
 
       key mustBe issuingKeys.publicKey
@@ -131,7 +131,7 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
         .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyTimestamp)
         .value
         .futureValue
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -145,7 +145,7 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
         CredentialBatchesDAO
           .findBatch(parsedOperation.credentialBatchId)
           .transact(database)
-          .unsafeToFuture
+          .unsafeToFuture()
           .futureValue
           .value
 
@@ -158,7 +158,7 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -177,7 +177,7 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
         .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyTimestamp)
         .value
         .futureValue
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       // first insertion
       val resultAttempt1 = parsedOperation

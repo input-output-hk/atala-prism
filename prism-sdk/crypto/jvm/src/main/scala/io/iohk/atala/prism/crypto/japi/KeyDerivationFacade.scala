@@ -2,11 +2,11 @@ package io.iohk.atala.prism.crypto.japi
 
 import io.iohk.atala.prism.util.ArrayOps._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class ExtendedKeyFacade(key: io.iohk.atala.prism.crypto.ExtendedKey) extends ExtendedKey {
   override def getPath(): DerivationPath = {
-    new DerivationPath(seqAsJavaList(key.path.axes.map(axis => DerivationAxis.raw(axis.i))))
+    new DerivationPath(key.path.axes.map(axis => DerivationAxis.raw(axis.i)).asJava)
   }
 
   override def getPublic(): ECPublicKey = {

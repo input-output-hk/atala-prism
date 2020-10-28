@@ -8,7 +8,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.node_models
-import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 import org.scalatest.Inside._
 
 import scala.concurrent.duration._
@@ -24,9 +24,9 @@ object RevokeCredentialOperationSpec {
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
   lazy val issuerOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
   lazy val credentialIssueOperation =
-    IssueCredentialOperation.parse(IssueCredentialOperationSpec.exampleOperation, dummyTimestamp).right.value
+    IssueCredentialOperation.parse(IssueCredentialOperationSpec.exampleOperation, dummyTimestamp).toOption.value
 
   lazy val issuer = issuerOperation.id
   lazy val credentialId = credentialIssueOperation.credentialId
@@ -110,14 +110,14 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
       issuerOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
+      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
         .transact(database)
         .value
         .unsafeRunSync()
-        .right
+        .toOption
         .value
 
       key mustBe issuingKeys.publicKey
@@ -130,15 +130,15 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
       issuerOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation, revocationDate).right.value
+      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation, revocationDate).toOption.value
 
-      parsedOperation.applyState().transact(database).value.unsafeRunSync().right.value
+      parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
       val credential = credentialsRepository
         .find(credentialId)
         .value
         .futureValue
-        .right
+        .toOption
         .value
 
       credential.revokedOn mustBe Some(revocationDate)

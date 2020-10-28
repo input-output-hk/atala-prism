@@ -9,7 +9,7 @@ trait ECKey {
   def getEncoded: Array[Byte]
 
   final def getHexEncoded: String = {
-    BytesOps.bytesToHex(getEncoded)
+    BytesOps.bytesToHex(getEncoded.toIndexedSeq)
   }
 
   override def hashCode(): Int = {
@@ -18,7 +18,7 @@ trait ECKey {
 
   override def equals(o: Any): Boolean = {
     o match {
-      case other: ECKey => getEncoded.deep == other.getEncoded.deep
+      case other: ECKey => getEncoded.toVector == other.getEncoded.toVector
       case _ => false
     }
   }

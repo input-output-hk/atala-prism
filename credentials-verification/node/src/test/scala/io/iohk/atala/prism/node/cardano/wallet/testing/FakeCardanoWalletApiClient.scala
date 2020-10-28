@@ -5,7 +5,6 @@ import com.softwaremill.sttp.testing.SttpBackendStub
 import io.circe.parser.parse
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.ExecutionContext
@@ -82,7 +81,7 @@ object FakeCardanoWalletApiClient {
   }
 
   private def sameJson(a: String, b: String): Boolean = {
-    a == b || parse(a).right.value == parse(b).right.value
+    a == b || parse(a).toOption.get == parse(b).toOption.get
   }
 
   private def createJsonErrorResponse(errorCode: String, message: String): String = {
