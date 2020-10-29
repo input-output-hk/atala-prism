@@ -33,14 +33,14 @@ trait HashValueFrom[A] {
           .map { hex =>
             Integer.parseInt(hex, 16).asInstanceOf[Byte]
           }
-        Some(constructor(ArraySeq.unsafeWrapArray(bytes.toArray)))
+        Some(constructor(ArraySeq.from(bytes)))
       case _ => None
     }
   }
 
-  def from(bytes: Seq[Byte]): Option[A] = {
-    if (bytes.length == config.size.toBytes) {
-      Some(constructor(ArraySeq.unsafeWrapArray(bytes.toArray)))
+  def from(bytes: Iterable[Byte]): Option[A] = {
+    if (bytes.size == config.size.toBytes) {
+      Some(constructor(ArraySeq.from(bytes)))
     } else {
       None
     }

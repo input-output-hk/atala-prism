@@ -6,7 +6,7 @@ import doobie.util.invariant.InvalidEnum
 object DoobieImplicits {
   implicit val transactionIdMeta: Meta[TransactionId] =
     Meta[Array[Byte]].timap(b =>
-      TransactionId.from(b.toIndexedSeq).getOrElse(throw new IllegalArgumentException("Unexpected TransactionId"))
+      TransactionId.from(b).getOrElse(throw new IllegalArgumentException("Unexpected TransactionId"))
     )(_.value.toArray)
 
   implicit val ledgerMeta: Meta[Ledger] =

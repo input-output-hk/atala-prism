@@ -89,9 +89,9 @@ abstract class KeyDerivationSpecBase(val keyDerivation: KeyDerivationTrait) exte
         val path = DerivationPath(d.path)
         val key = keyDerivation.deriveKey(seed, path)
 
-        BytesOps.bytesToHex(key.privateKey.getEncoded.toIndexedSeq) mustBe d.privKeyHex
+        BytesOps.bytesToHex(key.privateKey.getEncoded) mustBe d.privKeyHex
 
-        BytesOps.bytesToHex(key.publicKey.getEncoded.toIndexedSeq) mustBe d.pubKeyHex
+        BytesOps.bytesToHex(key.publicKey.getEncoded) mustBe d.pubKeyHex
       }
     }
   }

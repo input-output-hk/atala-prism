@@ -301,7 +301,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       (createConnection(recipientId, holder), holder)
     }
 
-    val connections = (acceptedConnections ++ initiatedConnections).toIndexedSeq
+    val connections = (acceptedConnections ++ initiatedConnections)
 
     for (i <- 1 to 30) yield {
       val (connection, sender) = connections((i - 1) % connections.size)

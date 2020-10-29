@@ -111,9 +111,8 @@ object BIP32TestVectorTransformer {
           // keys seem to be located in 33-bytes segment at the end, just before last 4 bytes
           val pubBytes = Base58.decode(pubkey).dropRight(4).takeRight(33)
           val pubKey = BitcoinECKey.fromPublicOnly(pubBytes)
-          val pubHex = BytesOps.bytesToHex(pubKey.decompress().getPubKey.toIndexedSeq)
-          val privHex =
-            BytesOps.bytesToHex(Base58.decode(privkey).dropRight(4).takeRight(33).dropWhile(_ == 0).toIndexedSeq)
+          val pubHex = BytesOps.bytesToHex(pubKey.decompress().getPubKey)
+          val privHex = BytesOps.bytesToHex(Base58.decode(privkey).dropRight(4).takeRight(33).dropWhile(_ == 0))
 
           Array(
             path.replace("H", "'"),

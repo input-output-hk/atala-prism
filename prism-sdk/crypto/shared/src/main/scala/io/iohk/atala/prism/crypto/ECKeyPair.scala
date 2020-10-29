@@ -9,7 +9,7 @@ trait ECKey {
   def getEncoded: Array[Byte]
 
   final def getHexEncoded: String = {
-    BytesOps.bytesToHex(getEncoded.toIndexedSeq)
+    BytesOps.bytesToHex(getEncoded)
   }
 
   override def hashCode(): Int = {

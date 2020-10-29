@@ -77,6 +77,6 @@ object AtalaObjectMetadata {
   }
 
   private def toByteString(bytes: Array[Byte]): String = {
-    BYTE_STRING_PREFIX + BytesOps.bytesToHex(bytes.toIndexedSeq)
+    BYTE_STRING_PREFIX + BytesOps.bytesToHex(bytes)
   }
 }
