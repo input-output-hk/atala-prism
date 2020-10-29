@@ -3,9 +3,10 @@
 .CredentialMainContent {
   display: flex;
   flex-flow: column;
+  justify-content: space-between;
+  height: 100%;
 
   .CredentialContainerTop {
-    height: 88%;
 
     &::-webkit-scrollbar {
       width: 6px;
