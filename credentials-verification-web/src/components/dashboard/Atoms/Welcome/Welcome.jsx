@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import welcomeImage from '../../../../images/DashboardWelcome.svg';
+import welcomeImage from '../../../../images/welcome-img.png';
 import { getThemeByRole } from '../../../../helpers/themeHelper';
 
 import './_style.scss';
@@ -16,6 +16,10 @@ const Welcome = ({ name, importantInfo }) => {
     <div className={`WelcomeContainer ${theme.class()}`}>
       <div className="WelcomeText">
         <h2 className={theme.class()}>{t('dashboard.welcome.title')}</h2>
+        <p className={theme.class()}>
+          {t('dashboard.welcome.paragraph')}
+          <strong>{t('dashboard.welcome.atalaPrism')}</strong>
+        </p>
       </div>
       <div className="WelcomeImg">
         <img src={welcomeImage} alt={t('dashboard.welcome.image')} />
