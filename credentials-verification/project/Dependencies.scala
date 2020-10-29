@@ -33,6 +33,7 @@ object versions {
   val sttp = "1.7.2"
   val twirl = "1.5.0"
   val typesafeConfig = "1.4.1"
+  val http4s = "0.21.7"
 }
 
 object Dependencies {
@@ -72,6 +73,10 @@ object Dependencies {
   val sttpFuture = "com.softwaremill.sttp" %% "async-http-client-backend-future" % versions.sttp
   val twirlApi = "com.typesafe.play" %% "twirl-api" % versions.twirl
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig
+  val http4sCirce = "org.http4s" %% "http4s-circe" % versions.http4s
+  val http4sDsl = "org.http4s" %% "http4s-dsl" % versions.http4s
+  val http4sBlazeServer = "org.http4s" %% "http4s-blaze-server" % versions.http4s
+  val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % versions.http4s
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -101,4 +106,5 @@ object Dependencies {
   val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
   val silencerDependencies = Seq(silencer, silencerPlugin)
   val sttpDependencies = Seq(sttpCore, sttpFuture)
+  val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
 }

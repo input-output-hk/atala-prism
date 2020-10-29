@@ -17,6 +17,8 @@ import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, NodeConfig, TransactorConfig}
+import io.iohk.atala.mirror.http.ApiServer
+import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
 import io.iohk.atala.mirror.services.{
   CardanoAddressInfoService,
   ConnectorClientServiceImpl,
@@ -35,22 +37,26 @@ object MirrorApp extends TaskApp {
   /**
     * Run the Mirror application.
     */
-  override def run(args: List[String]): Task[ExitCode] =
-    app.use { grpcServer =>
+  override def run(args: List[String]): Task[ExitCode] = {
+    //for some unknown reasons, incorrect class loader is used during execution
+    //of Resource "for comprehension".
+    val classLoader = Thread.currentThread().getContextClassLoader
+    app(classLoader).use { grpcServer =>
       logger.info("Starting GRPC server")
       grpcServer.start
       Task.never // run server forever
     }
+  }
 
   /**
     * This is an entry point for the Mirror application.
     * The resource contains a GRPC [[Server]] instance, that isn't started.
     */
-  val app: Resource[Task, Server] =
+  def app(classLoader: ClassLoader): Resource[Task, Server] =
     for {
       globalConfig <- Resource.liftF(Task {
         logger.info("Loading config")
-        ConfigFactory.load()
+        ConfigFactory.load(classLoader)
       })
 
       // configs
@@ -61,7 +67,7 @@ object MirrorApp extends TaskApp {
 
       // db
       tx <- createTransactor(transactorConfig)
-      _ <- Resource.liftF(runMigrations(tx))
+      _ <- Resource.liftF(runMigrations(tx, classLoader))
 
       // connector
       connector <- Resource.pure(createConnector(connectorConfig))
@@ -102,6 +108,10 @@ object MirrorApp extends TaskApp {
         mirrorConfig,
         MirrorServiceGrpc.bindService(mirrorGrpcService, scheduler)
       )
+
+      paymentsEndpoint = new PaymentEndpoints(cardanoAddressInfoService, mirrorConfig.httpConfig)
+      apiServer = new ApiServer(paymentsEndpoint, mirrorConfig.httpConfig)
+      _ <- apiServer.payIdServer.resource
     } yield grpcServer
 
   /**
@@ -112,7 +122,7 @@ object MirrorApp extends TaskApp {
     *     then force quit the server.
     */
   def createGrpcServer(mirrorConfig: MirrorConfig, services: ServerServiceDefinition*): Resource[Task, Server] = {
-    val builder = ServerBuilder.forPort(mirrorConfig.port)
+    val builder = ServerBuilder.forPort(mirrorConfig.grpcConfig.port)
 
     builder.addService(
       ProtoReflectionService.newInstance()
@@ -153,11 +163,11 @@ object MirrorApp extends TaskApp {
     *
     * @return number of applied migrations
     */
-  def runMigrations(transactor: HikariTransactor[Task]): Task[Int] =
+  def runMigrations(transactor: HikariTransactor[Task], classLoader: ClassLoader): Task[Int] =
     transactor.configure(dataSource =>
       Task(
         Flyway
-          .configure()
+          .configure(classLoader)
           .dataSource(dataSource)
           .load()
           .migrate()

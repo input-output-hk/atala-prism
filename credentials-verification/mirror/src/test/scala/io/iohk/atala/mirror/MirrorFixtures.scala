@@ -147,8 +147,8 @@ trait MirrorFixtures {
   object CardanoAddressInfoFixtures {
     import ConnectionFixtures._
 
-    lazy val cardanoNetwork1 = CardanoNetwork("network1")
-    lazy val cardanoNetwork2 = CardanoNetwork("network2")
+    lazy val cardanoNetwork1 = CardanoNetwork("mainnet")
+    lazy val cardanoNetwork2 = CardanoNetwork("testnet")
 
     lazy val cardanoAddressInfo1 = CardanoAddressInfo(
       cardanoAddress = CardanoAddress("address1"),

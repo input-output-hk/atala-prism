@@ -179,7 +179,8 @@ object PrismBuild {
     commonServerProject("mirror")
       .settings(
         name := "mirror",
-        mainClass in (Compile, run) := Some("io.iohk.atala.mirror.MirrorApp")
+        mainClass in (Compile, run) := Some("io.iohk.atala.mirror.MirrorApp"),
+        libraryDependencies ++= http4sDependencies
       )
       .dependsOn(common % "compile->compile;test->test", credentialsLib, connectorLib)
 
