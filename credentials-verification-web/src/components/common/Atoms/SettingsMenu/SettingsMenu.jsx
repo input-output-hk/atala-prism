@@ -12,7 +12,7 @@ const menu = (handleLogout, logoutText) => (
       <CustomButton
         buttonProps={{
           onClick: handleLogout,
-          theme: ''
+          className: 'theme-primary'
         }}
         buttonText={logoutText}
       />
@@ -25,7 +25,11 @@ const SettingsMenu = ({ logout }) => {
 
   return (
     <Col className="SettingsMenu RightSide" xs={2} sm={2} md={2} lg={2}>
-      <Dropdown overlay={menu(logout, t('menu.logout'))} trigger={['click']}>
+      <Dropdown
+        className="logoutDropdown"
+        overlay={menu(logout, t('menu.logout'))}
+        trigger={['click']}
+      >
         <div className="ant-dropdown-link">
           <Icon type="down" />
         </div>
