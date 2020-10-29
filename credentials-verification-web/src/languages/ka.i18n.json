@@ -84,10 +84,7 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Open on Mobile",
-      "subtitle": [
-        "Scan with your phone’s camera",
-        "using the Atala PRISM mobile app"
-      ]
+      "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
     },
     "detail": {
       "title": "Credentials List"
@@ -249,6 +246,11 @@
     },
     "bulkImport": {
       "title": "Follow these steps to continue:"
+    },
+    "credentialsPreview": {
+      "title": "Recipients",
+      "subtitle": "Review the information below and correct any errors",
+      "displayedCredential": "{{current}} of {{outOf}}"
     },
     "messages": {
       "selectTypeError": "Please select a credential type",
@@ -507,7 +509,7 @@
     }
   },
   "importContacts": {
-    "title": "Import Contacts" ,
+    "title": "Import Contacts",
     "info": "Choose between this two options: Bulk Import or Mannual Import",
     "success": "Contact(s) successfully created",
     "importTypeSelection": {

@@ -8,6 +8,7 @@ import proofOfEmploymentSample from '../../images/proof-of-employment-sample.svg
 import healthInsuranceSample from '../../images/health-insurance-sample.svg';
 
 const governmentId = {
+  id: 1,
   name: 'credentials.type.governmentId',
   logo: governmentIdLogo,
   sampleImage: governmentIdSample,
@@ -32,10 +33,17 @@ const governmentId = {
       type: 'file',
       validations: ['required']
     }
+  },
+  placeholders: {
+    idNumber: '{{credentialSubject.identityNumber}}',
+    fullname: '{{credentialSubject.name}}',
+    dateOfBirth: '{{credentialSubject.dateOfBirth}}',
+    expirationDate: '{{expiryDate}}'
   }
 };
 
 const educational = {
+  id: 2,
   name: 'credentials.type.educational',
   logo: educationalLogo,
   sampleImage: educationalSample,
@@ -60,10 +68,18 @@ const educational = {
       type: 'date',
       validations: ['required', 'pastDate']
     }
+  },
+  placeholders: {
+    degree: '{{credentialSubject.degreeAwarded}}',
+    award: '{{credentialSubject.degreeResult}}',
+    startDate: '{{credentialSubject.startDate}}',
+    graduationDate: '{{issuanceDate}}',
+    fullname: '{{credentialSubject.name}}'
   }
 };
 
 const proofOfEmployment = {
+  id: 3,
   name: 'credentials.type.proofOfEmployment',
   logo: proofOfEmploymentLogo,
   sampleImage: proofOfEmploymentSample,
@@ -80,10 +96,17 @@ const proofOfEmployment = {
       type: 'date',
       validations: ['required', 'pastDate']
     }
+  },
+  placeholders: {
+    adress: '{{issuer.address}}',
+    status: '{{employmentStatus}}',
+    startDate: '{{employmentStartDate}}',
+    fullname: '{{credentialSubject.name}}'
   }
 };
 
 const healthIsurance = {
+  id: 4,
   name: 'credentials.type.healthInsurance',
   logo: healthInsuranceLogo,
   sampleImage: healthInsuranceSample,
@@ -100,6 +123,12 @@ const healthIsurance = {
       type: 'date',
       validations: ['required', 'futureDate']
     }
+  },
+  placeholders: {
+    class: '{{productClass}}',
+    policyNumber: '{{policyNumber}}',
+    endDate: '{{expiryDate}}',
+    fullname: '{{credentialSubject.name}}'
   }
 };
 

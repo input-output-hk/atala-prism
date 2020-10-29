@@ -6,6 +6,7 @@ import NewCredential from './NewCredential';
 import { withApi } from '../providers/withApi';
 import TypeSelection from './Organism/TypeSelection/TypeSelection';
 import RecipientsSelection from './Organism/RecipientsSelection/RecipientsSelection';
+import CredentialsPreview from './Organism/CredentialsPreview/CredentialsPreview';
 import { withRedirector } from '../providers/withRedirector';
 import {
   HOLDER_PAGE_SIZE,
@@ -21,12 +22,11 @@ import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
-import UnderContsructionMessage from '../common/Atoms/UnderContsructionMessage/UnderContsructionMessage';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(SELECT_CREDENTIAL_TYPE_STEP);
 
   const [credentialType, setCredentialType] = useState();
 
@@ -42,6 +42,17 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [hasMoreSubjects, setHasMoreSubjects] = useState(true);
 
   const [importedData, setImportedData] = useState([]);
+
+  const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
+
+  const getCredentialViewTemplates = () =>
+    api.credentialsViewManager
+      .getCredentialViewTemplates()
+      .then(setCredentialViewTemplates)
+      .catch(error => {
+        Logger.error('[NewCredentailContainer.getCredentialViewTemplates] Error: ', error);
+        message.error(t('errors.errorGettingCredentialViewTemplates'));
+      });
 
   const credentialTypes = api.credentialsManager.getCredentialTypes();
 
@@ -76,6 +87,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   useEffect(() => {
     if (!groups.length) getGroups();
     if (!subjects.length) getSubjects();
+    if (!credentialViewTemplates.length) getCredentialViewTemplates();
   }, []);
 
   const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
@@ -102,15 +114,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     setImportedData(dataObjects);
     setResults({
       credentialDataImported: dataObjects.length,
-      continueCallback: () => goToCredentialsPreview(dataObjects)
+      continueCallback: () => goToCredentialsPreview()
     });
   };
 
-  const goToCredentialsPreview = importedCredentials => {
-    message.warn(t('newCredential.messages.noFurtherSteps'));
-    Logger.debug(importedCredentials);
-    setCurrentStep(PREVIEW_AND_SIGN_CREDENTIAL_STEP);
-  };
+  const goToCredentialsPreview = () => setCurrentStep(PREVIEW_AND_SIGN_CREDENTIAL_STEP);
 
   const getContactsFromGroups = () => {
     const groupContactsromises = selectedGroups.map(group =>
@@ -161,11 +169,18 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         );
       }
       case PREVIEW_AND_SIGN_CREDENTIAL_STEP:
-        // TODO: Implement credential visualisation + signing
-        return <UnderContsructionMessage goBack={redirectToCredentials} />;
       default:
-        // TODO: Implement credential visualisation + signing
-        return <UnderContsructionMessage goBack={redirectToCredentials} />;
+        return (
+          <CredentialsPreview
+            credentialsData={importedData}
+            groups={groups.filter(({ name }) => selectedGroups.includes(name))}
+            subjects={subjects.filter(({ contactid }) => selectedSubjects.includes(contactid))}
+            credentialViewTemplate={credentialViewTemplates.find(
+              template => template.id === credentialTypes[credentialType].id
+            )}
+            credentialPlaceholders={credentialTypes[credentialType].placeholders}
+          />
+        );
     }
   };
 
@@ -189,6 +204,8 @@ NewCredentialContainer.propTypes = {
       getCredentialTypes: PropTypes.func,
       createCredential: PropTypes.func
     }).isRequired,
+    credentialsViewManager: PropTypes.shape({ getCredentialViewTemplates: PropTypes.func })
+      .isRequired,
     contactsManager: PropTypes.shape({
       getContacts: PropTypes.func
     }),

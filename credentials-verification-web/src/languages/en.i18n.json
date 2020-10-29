@@ -260,6 +260,11 @@
     "bulkImport": {
       "title": "Follow these steps to continue:"
     },
+    "credentialsPreview": {
+      "title": "Recipients",
+      "subtitle": "Review the information below and correct any errors",
+      "displayedCredential": "{{current}} of {{outOf}}"
+    },
     "messages": {
       "selectTypeError": "Please select a credential type",
       "selectRecipientError": "Please select a recipient",
@@ -316,7 +321,7 @@
   },
   "landing": {
     "welcome": "Welcome!",
-    "description":"Please log in with Atala PRISM Browser Wallet",
+    "description": "Please log in with Atala PRISM Browser Wallet",
     "register": "Register",
     "clickHere": "Click Here",
     "login": "Login",
@@ -329,12 +334,12 @@
     "the": "The",
     "atalaPrism": " Atala PRISM Browser Wallet ",
     "description": "is used to manage access to the management console and sign credentials. Currently the browser wallet extension is available on ",
-    "chrome":"Chrome. ",
-    "chromeWeb":"Chrome Web Store",
-    "descriptionPartTwo":"Depending on the browser you are currently using. Please go to the relevant webstore and add the extension to your browser",
+    "chrome": "Chrome. ",
+    "chromeWeb": "Chrome Web Store",
+    "descriptionPartTwo": "Depending on the browser you are currently using. Please go to the relevant webstore and add the extension to your browser",
     "comingSoon": "Comming Soon on ",
-    "register":"Already have your Atala PRISM? ",
-    "clickRegister":"Click to register",
+    "register": "Already have your Atala PRISM? ",
+    "clickRegister": "Click to register",
     "button": "Download ZIP File"
   },
   "login": {

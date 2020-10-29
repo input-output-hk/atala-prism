@@ -36,6 +36,7 @@
     "react-scripts": "3.3.1",
     "react-spinners": "0.6.1",
     "react-tooltip": "3.11.2",
+    "sanitize-html": "2.1.1",
     "urlsafe-base64": "1.0.0",
     "uuid": "7.0.3"
   },

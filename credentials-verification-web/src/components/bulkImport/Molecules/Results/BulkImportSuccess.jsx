@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withRedirector } from '../../../providers/withRedirector';
-import img from '../../../../images/success.svg';
+import img from '../../../../images/success-img.png';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 
 const BulkImportSuccess = ({
@@ -33,7 +33,7 @@ const BulkImportSuccess = ({
         <p>
           {`${successAmount[useCase]} ${t(`bulkImport.importSuccess.${useCase}.uploadedEntities`)}`}
         </p>
-        <Button onClick={continueFn[useCase]}>
+        <Button className="theme-secondary" onClick={continueFn[useCase]}>
           {t(`bulkImport.importSuccess.${useCase}.continue`)}
         </Button>
       </div>

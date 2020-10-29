@@ -6,6 +6,7 @@ import CredentialsManager from './credentials/credentialsManager';
 import ContactsManager from './contacts/contactsManager';
 import GroupsManager from './credentials/groupsManager';
 import Admin from './admin/admin';
+import CredentialsViewManager from './credentials/credentialsViewManager';
 
 export { mockApi };
 
@@ -29,6 +30,7 @@ function Api(configuration, authenticator) {
   this.groupsManager = new GroupsManager(this.configuration, this.authenticator);
   this.connector = new Connector(this.configuration, this.authenticator);
   this.credentialsManager = new CredentialsManager(this.configuration, this.authenticator);
+  this.credentialsViewManager = new CredentialsViewManager(this.configuration, this.authenticator);
 }
 
 export default Api;

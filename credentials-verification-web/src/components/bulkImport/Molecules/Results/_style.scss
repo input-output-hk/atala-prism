@@ -126,8 +126,9 @@
     flex-wrap: wrap;
     justify-content: center;
     margin: auto;
+    margin-top: 10%;
     h1 {
-      @include secondary-text($h2, $primary-color);
+      @include secondary-text($h2, #00D793);
       margin-top: 20px;
     }
     p {
