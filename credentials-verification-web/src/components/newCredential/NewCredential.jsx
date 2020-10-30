@@ -14,6 +14,7 @@ import {
 import './_style.scss';
 
 const NewCredential = ({
+  isLoading,
   currentStep,
   changeStep,
   saveCredential,
@@ -21,6 +22,7 @@ const NewCredential = ({
   credentialType,
   hasSelectedRecipients,
   goToCredentialsPreview,
+  onSuccess,
   redirector: { redirectToCredentials }
 }) => {
   const { t } = useTranslation();
@@ -42,18 +44,9 @@ const NewCredential = ({
     else message.error(t('newCredential.messages.selectRecipientError'));
   };
 
-  const onCredentialsCreationFinish = () => {
-    // TODO
-  };
-
   const goBack = () => changeStep(currentStep - NEW_CREDENTIALS_STEP_UNIT);
 
-  const next = [
-    goToSelectTargets,
-    goToDataInput,
-    goToCredentialsPreview,
-    onCredentialsCreationFinish
-  ];
+  const next = [goToSelectTargets, goToDataInput, goToCredentialsPreview, onSuccess];
 
   const previous = [redirectToCredentials, goBack, goBack, goBack];
 
@@ -72,6 +65,8 @@ const NewCredential = ({
             next={next[currentStep]}
             finish={saveCredential}
             finishText="newCredential.save"
+            disableNext={isLoading}
+            disablePrev={isLoading || !currentStep}
           />
         )}
       </div>
@@ -79,7 +74,12 @@ const NewCredential = ({
   );
 };
 
+NewCredential.defaultProps = {
+  isLoading: false
+};
+
 NewCredential.propTypes = {
+  isLoading: PropTypes.bool,
   currentStep: PropTypes.number.isRequired,
   saveCredential: PropTypes.func.isRequired,
   changeStep: PropTypes.func.isRequired,
@@ -87,7 +87,8 @@ NewCredential.propTypes = {
   credentialType: PropTypes.string.isRequired,
   hasSelectedRecipients: PropTypes.bool.isRequired,
   redirector: PropTypes.shape({ redirectToCredentials: PropTypes.func }).isRequired,
-  goToCredentialsPreview: PropTypes.func.isRequired
+  goToCredentialsPreview: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired
 };
 
 export default withRedirector(NewCredential);

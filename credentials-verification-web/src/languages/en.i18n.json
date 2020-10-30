@@ -256,8 +256,8 @@
     "targetsSelection": {
       "groups": "Select a group",
       "subjects": "Select contacts",
-      "selectGroup":"Select a group or select individual contacts to issue credentials",
-      "checkbox":"Do not select any group or contact"
+      "selectGroup": "Select a group or select individual contacts to issue credentials",
+      "checkbox": "Do not select any group or contact"
     },
     "bulkImport": {
       "title": "Follow these steps to continue:"
@@ -270,7 +270,9 @@
     "messages": {
       "selectTypeError": "Please select a credential type",
       "selectRecipientError": "Please select a recipient",
-      "noFurtherSteps": "Further steps are not implemented yet"
+      "noFurtherSteps": "Further steps are not implemented yet",
+      "creationSuccess": "Successfully created {{amount}} credential(s)",
+      "creationError": "{{amount}} credential(s) could not be created"
     },
     "table": {
       "columns": {

@@ -4,7 +4,6 @@ import { dayMonthYearBackendFormatter } from '../../helpers/formatters';
 import credentialTypes from './credentialTypes';
 import { FAILED, SUCCESS } from '../../helpers/constants';
 
-const { Date } = require('../../protos/common_models_pb');
 const {
   GetGenericCredentialsRequest,
   CreateGenericCredentialRequest,
@@ -12,12 +11,8 @@ const {
 } = require('../../protos/cmanager_api_pb');
 const {
   Credential,
-  IssuerData,
-  SubjectData,
-  PersonalId,
   AtalaMessage,
-  IssuerSentCredential,
-  Signer
+  IssuerSentCredential
 } = require('../../protos/credential_models_pb');
 
 async function getCredentials(limit, lastSeenCredentialId = null) {
@@ -32,10 +27,10 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
   const credentialsList = result.getCredentialsList().map(cred => {
     const credentialData = JSON.parse(cred.getCredentialdata());
-    const subjectId = cred.getSubjectid();
+    const subjectId = cred.getContactid();
     const groupname = cred.getGroupname();
     const id = cred.getCredentialid();
-    const subjectData = JSON.parse(cred.getSubjectdata());
+    const subjectData = JSON.parse(cred.getContactdata());
     return Object.assign({ id, subjectId, groupname, subjectData }, credentialData);
   });
 
@@ -77,139 +72,29 @@ async function createCredential({ title, enrollmentdate, graduationdate, groupNa
 async function createBatchOfCredentials(credentialsData) {
   Logger.info(`Creating ${credentialsData?.length} credential(s):`);
 
-  const credentialStudentsPromises = credentialsData.map(({ externalid, ...json }, index) => {
-    const createCredentialRequest = new CreateGenericCredentialRequest();
+  const credentialStudentsPromises = credentialsData.map(
+    ({ externalid, contactid, ...json }, index) => {
+      const createCredentialRequest = new CreateGenericCredentialRequest();
 
-    createCredentialRequest.setExternalid(externalid);
-    createCredentialRequest.setCredentialdata(JSON.stringify(json));
+      createCredentialRequest.setContactid(contactid);
+      createCredentialRequest.setExternalid(externalid);
+      createCredentialRequest.setCredentialdata(JSON.stringify(json));
 
-    return this.auth
-      .getMetadata(createCredentialRequest)
-      .then(metadata => {
-        Logger.info(`${index}) externalid: ${externalid}, issuer: ${metadata.did}'`);
-        return this.client.createGenericCredential(createCredentialRequest, metadata);
-      })
-      .then(response => ({ externalid, status: SUCCESS, response }))
-      .catch(error => {
-        Logger.error(error);
-        return { externalid, status: FAILED, error };
-      });
-  });
+      return this.auth
+        .getMetadata(createCredentialRequest)
+        .then(metadata => {
+          Logger.info(`${index}) externalid: ${externalid}, issuer: ${metadata.did}'`);
+          return this.client.createGenericCredential(createCredentialRequest, metadata);
+        })
+        .then(response => ({ externalid, status: SUCCESS, response }))
+        .catch(error => {
+          Logger.error(error);
+          return { externalid, status: FAILED, error };
+        });
+    }
+  );
 
   return Promise.all(credentialStudentsPromises);
-}
-
-const IssuerTypes = {
-  UNIVERSITY: 0,
-  SCHOOL: 1
-};
-
-function translateIssuerType(type) {
-  return IssuerTypes[type];
-}
-
-function populateIssuer({ type = 'UNIVERSITY', legalName = 'Free University Tbilisi', name, did }) {
-  const issuerData = new IssuerData();
-
-  issuerData.setIssuertype(translateIssuerType(type));
-  issuerData.setIssuerlegalname(legalName);
-  issuerData.setAcademicauthority(name);
-  issuerData.setDid(did);
-
-  return issuerData;
-}
-
-const DocType = {
-  NationalIdCard: 0,
-  Passporrt: 1
-};
-
-function translateDocType(type) {
-  return DocType[type];
-}
-
-function populateDate({ year = 1999, month = 5, day = 5 }) {
-  const date = new Date();
-
-  date.setYear(year);
-  date.setMonth(month);
-  date.setDay(day);
-
-  return date;
-}
-
-function populatePersonalId({ id = '12345678', type = 'NationalIdCard' }) {
-  const personalId = new PersonalId();
-
-  personalId.setId(id);
-  personalId.setDocumenttype(translateDocType(type));
-
-  return personalId;
-}
-
-function populateSubject({ names, surnames, birthDate = {}, idInfo = {} }) {
-  const subjectData = new SubjectData();
-
-  const dateOfBirth = populateDate(birthDate);
-  subjectData.setDateofbirth(dateOfBirth);
-
-  const personalId = populatePersonalId(idInfo);
-  subjectData.setIddocument(personalId);
-
-  subjectData.setNamesList(names);
-  subjectData.setSurnamesList(surnames);
-
-  return subjectData;
-}
-
-function populateSigner({ names, surnames, role, did, title }) {
-  const signer = Signer();
-
-  signer.setNames(names);
-  signer.setSurnames(surnames);
-  signer.setRole(role);
-  signer.setDid(did);
-  signer.setTittle(title);
-
-  return signer;
-}
-
-function populateSigners(signerArray = []) {
-  return signerArray.map(populateSigner);
-}
-
-function setAdditionalInfo(
-  credential,
-  {
-    grantingDecision = 'Placeholder Title',
-    degree,
-    speciality = '',
-    issueNumber,
-    registrationNumber = '',
-    decisionNumber = '',
-    description = ''
-  }
-) {
-  credential.setGrantingdecision(grantingDecision);
-  credential.setDegreeawarded(degree);
-  credential.setAdditionalspeciality(speciality);
-  credential.setIssuenumber(issueNumber);
-  credential.setRegistrationnumber(registrationNumber);
-  credential.setDecisionnumber(decisionNumber);
-  // TODO Clarify
-  credential.setYearcompletedbystudent('');
-  credential.setDescription(description);
-}
-
-function setDates(
-  credential,
-  { issuedOn = {}, expiresOn = {}, admissionDate, graduationDate, attainmentDate = {} }
-) {
-  credential.setIssuedon(populateDate(issuedOn));
-  credential.setExpireson(populateDate(expiresOn));
-  credential.setAdmissiondate(populateDate(admissionDate));
-  credential.setGraduationdate(populateDate(graduationDate));
-  credential.setAttainmentdate(populateDate(attainmentDate));
 }
 
 function populateCredential({ issuerInfo, subjectInfo, additionalInfo }) {

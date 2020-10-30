@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/withApi';
 import TypeSelection from './Organism/TypeSelection/TypeSelection';
@@ -16,7 +17,10 @@ import {
   IMPORT_CREDENTIAL_DATA_STEP,
   PREVIEW_AND_SIGN_CREDENTIAL_STEP,
   CONTACT_NAME_KEY,
-  GROUP_NAME_KEY
+  GROUP_NAME_KEY,
+  SUCCESS,
+  FAILED,
+  CONNECTION_STATUSES
 } from '../../helpers/constants';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import Logger from '../../helpers/Logger';
@@ -27,6 +31,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(SELECT_CREDENTIAL_TYPE_STEP);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [credentialType, setCredentialType] = useState();
 
@@ -128,6 +133,45 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     return Promise.all(groupContactsromises);
   };
 
+  const signCredentials = async () => {
+    try {
+      setIsLoading(true);
+      const credentialsData = importedData.map(data => {
+        const { contactid } = subjects.find(({ externalId }) => externalId === data.externalId);
+        return Object.assign(_.omit(data, 'originalArray'), { credentialType, contactid });
+      });
+      const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
+        credentialsData
+      );
+      Logger.debug('Created credentials:', createCredentialsResponse);
+
+      const failedCredentials = createCredentialsResponse.filter(({ status }) => status === FAILED);
+      if (failedCredentials.length)
+        message.error(
+          t('newCredential.messages.creationError', { amount: failedCredentials.length })
+        );
+
+      const credentials = createCredentialsResponse
+        .filter(({ status }) => status === SUCCESS)
+        .map(({ response }) => response.getGenericcredential().toObject())
+        .filter(
+          ({ connectionstatus }) => connectionstatus === CONNECTION_STATUSES.connectionAccepted
+        );
+
+      await api.wallet.signCredentials(credentials);
+
+      Logger.info('Successfully created the credential(s)');
+      message.success(
+        t('newCredential.messages.creationSuccess', { amount: credentialsData.length })
+      );
+      redirectToCredentials();
+    } catch (error) {
+      setIsLoading(false);
+      Logger.error(error);
+      message.error(t('errors.errorSaving', { model: t('credentials.title') }));
+    }
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case SELECT_CREDENTIAL_TYPE_STEP:
@@ -193,6 +237,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       renderStep={renderStep}
       credentialType={credentialType}
       hasSelectedRecipients={hasSelectedRecipients}
+      onSuccess={signCredentials}
+      isLoading={isLoading}
     />
   );
 };
@@ -202,14 +248,14 @@ NewCredentialContainer.propTypes = {
     groupsManager: PropTypes.shape({ getGroups: PropTypes.func }),
     credentialsManager: PropTypes.shape({
       getCredentialTypes: PropTypes.func,
-      createCredential: PropTypes.func
+      createBatchOfCredentials: PropTypes.func
     }).isRequired,
     credentialsViewManager: PropTypes.shape({ getCredentialViewTemplates: PropTypes.func })
       .isRequired,
     contactsManager: PropTypes.shape({
       getContacts: PropTypes.func
     }),
-    wallet: PropTypes.shape({ isIssuer: PropTypes.func })
+    wallet: PropTypes.shape({ isIssuer: PropTypes.func, signCredentials: PropTypes.func })
   }).isRequired,
   redirector: PropTypes.shape({
     redirectToCredentials: PropTypes.func

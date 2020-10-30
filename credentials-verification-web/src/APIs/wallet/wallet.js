@@ -109,6 +109,18 @@ async function signMessage(unsignedRequest) {
   return window.prism.signConnectorRequest(sessionId, requestBytes);
 }
 
+async function signCredentials(unsignedCredentials) {
+  const { sessionId } = this.session;
+  const signRequests = unsignedCredentials.map(unsignedCredential => {
+    const payload = {
+      id: unsignedCredential.credentialid,
+      properties: JSON.parse(unsignedCredential.credentialdata)
+    };
+    return window.prism.requestSignature(sessionId, JSON.stringify(payload));
+  });
+  return Promise.all(signRequests);
+}
+
 function Wallet(config) {
   this.config = config;
   this.session = defaultSessionState;
@@ -132,5 +144,6 @@ Wallet.prototype.isIssuer = isIssuer;
 Wallet.prototype.isVerifier = isVerifier;
 Wallet.prototype.getNonce = getNonce;
 Wallet.prototype.signMessage = signMessage;
+Wallet.prototype.signCredentials = signCredentials;
 
 export default Wallet;
