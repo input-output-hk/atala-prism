@@ -1,17 +1,5 @@
-# Atala PRISM SDK
-
-This project is a compilation of cross-compiled Scala/Scala.js SDK modules.
-
-## Usage
-
-A fat JAR of a specific module can be created by either using `assembly` (if you only care about Scala 2.13 artefact) or `+assembly` (if you want both Scala 2.12 and 2.13 artefacts) SBT task.
-
-For example, in order to create a cross-compiled prism-crypto fat JAR, run the following command in project root:
-```
-$ sbt +prismCryptoJVM/assembly
-```
-
-You can find the resulting fat JARs in `crypto/jvm/target/scala-2.12/prism-crypto.jar` and `crypto/jvm/target/scala-2.13/prism-crypto.jar`.
+# PRISM
+This is the server side from the PRISM project.
 
 ## Troubleshooting
 If you get errors while the project gets imported by IntelliJ, try running IntelliJ from the terminal:, when dealing with scalajs, npm is required, sometimes IntelliJ fails to get the proper `PATH`:
@@ -24,4 +12,3 @@ This occurs commonly when dealing with scalajs, because npm is required, and, so
 ```
 [error] (ProjectRef(uri("file:/home/dell/iohk/repo/cardano-enterprise/prism-sdk/"), "sdkJS") / ssExtractDependencies) java.io.IOException: Cannot run program "npm" (in directory "/home/dell/iohk/repo/cardano-enterprise/prism-sdk/js/target/scala-2.13/scalajs-bundler/main"): error=2, No such file or directory
 ```
-

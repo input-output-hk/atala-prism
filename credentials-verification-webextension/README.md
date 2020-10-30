@@ -70,3 +70,16 @@ A boundary is whatever interacts directly with JavaScript, like the browser APIs
 - When the background receives requests from other components, it gets a message that is serialized and deserialized by the browser, in order to support strongly typed models, the app encodes these models to a JSON string, the browser knows how to deal with strings but it doesn't know what to do with Scala objects.
 - When the storage needs to persist data, the app encodes the Scala objects to a JSON string, which is what the browser understands.
 - When there is a need to interact with JavaScript APIs (like external libraries), you'll need to write a [facade](src/main/scala/io/iohk/atala/cvp/webextension/facades) unless there is one available, this facade will deal with primitive types only (strings, ints, etc).
+
+## Troubleshooting
+If you get errors while the project gets imported by IntelliJ, try running IntelliJ from the terminal:, when dealing with scalajs, npm is required, sometimes IntelliJ fails to get the proper `PATH`:
+- `./bin/idea.sh` from the IntelliJ directory, for Linux.
+- `open -a "IntelliJ IDEA"` or `open -a "IntelliJ IDEA CE"` for Mac.
+
+
+This occurs commonly when dealing with scalajs, because npm is required, and, sometimes IntelliJ fails to get the proper `PATH`, example error log:
+
+```
+[error] (ProjectRef(uri("file:/home/dell/iohk/repo/cardano-enterprise/prism-sdk/"), "sdkJS") / ssExtractDependencies) java.io.IOException: Cannot run program "npm" (in directory "/home/dell/iohk/repo/cardano-enterprise/prism-sdk/js/target/scala-2.13/scalajs-bundler/main"): error=2, No such file or directory
+```
+
