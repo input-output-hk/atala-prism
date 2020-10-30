@@ -23,6 +23,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   private val atalaObjectId = AtalaObjectId.of(node_internal.AtalaObject())
+  private val atalaObjectId2 = AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = 2))
   private val byteContent = "byteContent".getBytes
   private val ledger = Ledger.InMemory
   private val transactionId1 = TransactionId.from(SHA256Digest.compute("transactionId1".getBytes).value).value
@@ -55,6 +56,99 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
       assertThrows[Exception] {
         AtalaObjectTransactionSubmissionsDAO.insert(submission).runSync
       }
+    }
+  }
+
+  "AtalaObjectTransactionSubmissionsDAO.getLatest" should {
+    "return the latest submission of a transaction ID and ledger pair" in {
+      def insertSubmission(
+          status: AtalaObjectTransactionSubmissionStatus,
+          transactionId: TransactionId,
+          timestamp: Instant
+      ): AtalaObjectTransactionSubmission = {
+        AtalaObjectTransactionSubmissionsDAO
+          .insert(AtalaObjectTransactionSubmission(atalaObjectId, ledger, transactionId, timestamp, status))
+          .runSync
+      }
+      insertAtalaObject(atalaObjectId, byteContent)
+      val start = Instant.now
+      insertSubmission(AtalaObjectTransactionSubmissionStatus.Deleted, transactionId1, start)
+      val submission2 = insertSubmission(
+        AtalaObjectTransactionSubmissionStatus.InLedger,
+        transactionId2,
+        start.plus(Duration.ofSeconds(2))
+      )
+
+      val latest1 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId1).runSync.value
+      val latest2 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId2).runSync.value
+
+      // Both transaction IDs should return the same latest submission
+      latest1 mustBe submission2
+      latest2 mustBe submission2
+    }
+
+    "filter out other object IDs" in {
+      def insertSubmission(
+          atalaObjectId: AtalaObjectId,
+          transactionId: TransactionId
+      ): AtalaObjectTransactionSubmission = {
+        AtalaObjectTransactionSubmissionsDAO
+          .insert(
+            AtalaObjectTransactionSubmission(
+              atalaObjectId,
+              ledger,
+              transactionId,
+              Instant.now,
+              AtalaObjectTransactionSubmissionStatus.Pending
+            )
+          )
+          .runSync
+      }
+      insertAtalaObject(atalaObjectId, byteContent)
+      insertAtalaObject(atalaObjectId2, byteContent)
+      val submission1 = insertSubmission(atalaObjectId, transactionId1)
+      val submission2 = insertSubmission(atalaObjectId2, transactionId2)
+
+      val latest1 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId1).runSync.value
+      val latest2 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId2).runSync.value
+
+      latest1 mustBe submission1
+      latest2 mustBe submission2
+    }
+
+    "filter out other ledgers" in {
+      def insertSubmission(
+          ledger: Ledger,
+          transactionId: TransactionId
+      ): AtalaObjectTransactionSubmission = {
+        AtalaObjectTransactionSubmissionsDAO
+          .insert(
+            AtalaObjectTransactionSubmission(
+              atalaObjectId,
+              ledger,
+              transactionId,
+              Instant.now,
+              AtalaObjectTransactionSubmissionStatus.Pending
+            )
+          )
+          .runSync
+      }
+      insertAtalaObject(atalaObjectId, byteContent)
+      val inMemorySubmission = insertSubmission(Ledger.InMemory, transactionId1)
+      val cardanoSubmission = insertSubmission(Ledger.CardanoTestnet, transactionId2)
+
+      val inMemoryLatest = AtalaObjectTransactionSubmissionsDAO.getLatest(Ledger.InMemory, transactionId1).runSync.value
+      val cardanoLatest =
+        AtalaObjectTransactionSubmissionsDAO.getLatest(Ledger.CardanoTestnet, transactionId2).runSync.value
+
+      inMemoryLatest mustBe inMemorySubmission
+      cardanoLatest mustBe cardanoSubmission
+    }
+
+    "return None when not found" in {
+      val latest = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId1).runSync
+
+      latest mustBe None
     }
   }
 

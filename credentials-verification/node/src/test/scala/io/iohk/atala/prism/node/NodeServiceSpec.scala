@@ -8,8 +8,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
@@ -29,16 +29,25 @@ import io.iohk.atala.prism.node.operations.{
 }
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.services.ObjectManagementService.{
+  AtalaObjectTransactionInfo,
+  AtalaObjectTransactionStatus
+}
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceSpec,
   CredentialsService,
   DIDDataService,
   ObjectManagementService
 }
+import io.iohk.atala.prism.protos.node_api.{
+  GetCredentialStateRequest,
+  GetNodeBuildInfoRequest,
+  GetTransactionStatusRequest,
+  GetTransactionStatusResponse
+}
+import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetNodeBuildInfoRequest}
-import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
@@ -454,5 +463,43 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       response.publicationDate must be(Some(timestampInfoProto))
       response.revocationDate must be(empty)
     }
+  }
+
+  "NodeService.getTransactionStatus" should {
+    "return the latest transaction and status" in {
+      // Use a different transaction as the original one in the request was retried
+      val testTransactionInfo2 =
+        TransactionInfo(TransactionId.from(SHA256Digest.compute("test2".getBytes()).value).value, Ledger.InMemory)
+      doReturn(
+        Future.successful(Some(AtalaObjectTransactionInfo(testTransactionInfo2, AtalaObjectTransactionStatus.Pending)))
+      ).when(objectManagementService).getLatestTransactionAndStatus(*)
+
+      val response =
+        service.getTransactionStatus(GetTransactionStatusRequest().withTransactionInfo(testTransactionInfoProto))
+
+      response must be(
+        GetTransactionStatusResponse()
+          .withTransactionInfo(
+            common_models
+              .TransactionInfo()
+              .withTransactionId(testTransactionInfo2.transactionId.toString)
+              .withLedger(common_models.Ledger.IN_MEMORY)
+          )
+          .withStatus(common_models.TransactionStatus.PENDING)
+      )
+    }
+  }
+
+  "return the same transaction and UNKNOWN status when unknown" in {
+    doReturn(Future.successful(None)).when(objectManagementService).getLatestTransactionAndStatus(*)
+
+    val response =
+      service.getTransactionStatus(GetTransactionStatusRequest().withTransactionInfo(testTransactionInfoProto))
+
+    response must be(
+      GetTransactionStatusResponse()
+        .withTransactionInfo(testTransactionInfoProto)
+        .withStatus(common_models.TransactionStatus.UNKNOWN)
+    )
   }
 }

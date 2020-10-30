@@ -8,6 +8,8 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import enumeratum.EnumEntry.Snakecase
+import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.AtalaLedger
@@ -20,7 +22,11 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
-import io.iohk.atala.prism.node.services.ObjectManagementService.Config
+import io.iohk.atala.prism.node.services.ObjectManagementService.{
+  AtalaObjectTransactionInfo,
+  AtalaObjectTransactionStatus,
+  Config
+}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -274,6 +280,53 @@ class ObjectManagementService private (
       _ <- publishAndRecordTransaction(transaction.atalaObjectId, atalaObject)
     } yield ()
   }
+
+  def getLatestTransactionAndStatus(transaction: TransactionInfo): Future[Option[AtalaObjectTransactionInfo]] = {
+    for {
+      maybeLatestSubmission <-
+        AtalaObjectTransactionSubmissionsDAO
+          .getLatest(transaction.ledger, transaction.transactionId)
+          .transact(xa)
+          .unsafeToFuture()
+      maybeTransactionAndStatus <- getLatestTransactionAndStatus(maybeLatestSubmission)
+    } yield maybeTransactionAndStatus
+  }
+
+  private def getLatestTransactionAndStatus(
+      maybeLatestSubmission: Option[AtalaObjectTransactionSubmission]
+  ): Future[Option[AtalaObjectTransactionInfo]] = {
+    maybeLatestSubmission match {
+      case Some(latestSubmission) =>
+        for {
+          maybeAtalaObject <-
+            AtalaObjectsDAO
+              .get(latestSubmission.atalaObjectId)
+              .transact(xa)
+              .unsafeToFuture()
+          // This is not expected to fail because if a submission exists, the object must too
+          atalaObject = maybeAtalaObject.getOrElse(
+            throw new RuntimeException(s"AtalaObject ${latestSubmission.atalaObjectId} not found")
+          )
+        } yield {
+          // The transaction in the AtalaObject has higher priority because it comes from the ledger
+          val latestTransaction =
+            atalaObject.transaction.getOrElse(TransactionInfo(latestSubmission.transactionId, latestSubmission.ledger))
+          if (atalaObject.processed) {
+            Some(AtalaObjectTransactionInfo(latestTransaction, AtalaObjectTransactionStatus.Confirmed))
+          } else {
+            val status = latestSubmission.status match {
+              case AtalaObjectTransactionSubmissionStatus.InLedger => AtalaObjectTransactionStatus.InLedger
+              // Default to `Pending` in case it's transitioning from `Deleted` (i.e., the transaction is being retried)
+              case AtalaObjectTransactionSubmissionStatus.Pending | AtalaObjectTransactionSubmissionStatus.Deleted =>
+                AtalaObjectTransactionStatus.Pending
+            }
+            Some(AtalaObjectTransactionInfo(latestTransaction, status))
+          }
+        }
+
+      case None => Future.successful(None)
+    }
+  }
 }
 
 object ObjectManagementService {
@@ -281,6 +334,17 @@ object ObjectManagementService {
       ledgerPendingTransactionTimeout: Duration,
       ledgerPendingTransactionSyncDelay: FiniteDuration = 20.seconds
   )
+
+  sealed trait AtalaObjectTransactionStatus extends EnumEntry with Snakecase
+  object AtalaObjectTransactionStatus extends Enum[AtalaObjectTransactionStatus] {
+    val values: IndexedSeq[AtalaObjectTransactionStatus] = findValues
+
+    case object Pending extends AtalaObjectTransactionStatus
+    case object InLedger extends AtalaObjectTransactionStatus
+    case object Confirmed extends AtalaObjectTransactionStatus
+  }
+
+  case class AtalaObjectTransactionInfo(transaction: TransactionInfo, status: AtalaObjectTransactionStatus)
 
   def apply(
       config: Config,

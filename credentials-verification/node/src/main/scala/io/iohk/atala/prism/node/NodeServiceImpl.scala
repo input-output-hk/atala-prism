@@ -8,18 +8,20 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.operations._
+import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
-import io.iohk.atala.prism.utils.syntax._
-import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_api.{
   GetCredentialStateRequest,
   GetCredentialStateResponse,
+  GetTransactionStatusRequest,
+  GetTransactionStatusResponse,
   IssueCredentialBatchRequest,
   IssueCredentialBatchResponse,
   RevokeCredentialsRequest,
   RevokeCredentialsResponse
 }
+import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.utils.syntax._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -123,6 +125,36 @@ class NodeServiceImpl(
         case Left(err: NodeError) => throw err.toStatus.asRuntimeException()
         case Right(credentialState) => ProtoCodecs.toCredentialStateResponseProto(credentialState)
       }
+    }
+  }
+
+  override def getTransactionStatus(request: GetTransactionStatusRequest): Future[GetTransactionStatusResponse] = {
+    val transactionF = Future {
+      request.transactionInfo
+        .map(fromTransactionInfo)
+        .getOrElse(throw new RuntimeException("transaction_info is missing"))
+    }
+
+    for {
+      transaction <- transactionF
+      latestTransactionAndStatus <- objectManagement.getLatestTransactionAndStatus(transaction)
+      latestTransaction = latestTransactionAndStatus.map(_.transaction).getOrElse(transaction)
+      status =
+        latestTransactionAndStatus
+          .map(_.status)
+          .map(toTransactionStatus)
+          .getOrElse(common_models.TransactionStatus.UNKNOWN)
+    } yield node_api
+      .GetTransactionStatusResponse()
+      .withTransactionInfo(toTransactionInfo(latestTransaction))
+      .withStatus(status)
+  }
+
+  private def toTransactionStatus(status: AtalaObjectTransactionStatus): common_models.TransactionStatus = {
+    status match {
+      case AtalaObjectTransactionStatus.InLedger => common_models.TransactionStatus.IN_LEDGER
+      case AtalaObjectTransactionStatus.Pending => common_models.TransactionStatus.PENDING
+      case AtalaObjectTransactionStatus.Confirmed => common_models.TransactionStatus.CONFIRMED
     }
   }
 

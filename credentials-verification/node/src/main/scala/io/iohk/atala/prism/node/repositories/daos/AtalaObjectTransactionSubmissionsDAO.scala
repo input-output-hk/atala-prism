@@ -6,7 +6,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.DoobieImplicits._
-import io.iohk.atala.prism.models.Ledger
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectTransactionSubmission,
@@ -14,13 +14,32 @@ import io.iohk.atala.prism.node.models.{
 }
 
 object AtalaObjectTransactionSubmissionsDAO {
-  def insert(submission: AtalaObjectTransactionSubmission): ConnectionIO[Unit] = {
+  def insert(submission: AtalaObjectTransactionSubmission): ConnectionIO[AtalaObjectTransactionSubmission] = {
     sql"""
          |INSERT INTO atala_object_tx_submissions
          |    (atala_object_id, ledger, transaction_id, submission_timestamp, status)
          |VALUES (${submission.atalaObjectId}, ${submission.ledger}, ${submission.transactionId},
          |        ${submission.submissionTimestamp}, ${submission.status})
-       """.stripMargin.update.run.map(_ => ())
+         |RETURNING atala_object_id, ledger, transaction_id, submission_timestamp, status
+       """.stripMargin.query[AtalaObjectTransactionSubmission].unique
+  }
+
+  def getLatest(
+      ledger: Ledger,
+      transactionId: TransactionId
+  ): ConnectionIO[Option[AtalaObjectTransactionSubmission]] = {
+    sql"""
+         |SELECT atala_object_id, ledger, transaction_id, submission_timestamp, status
+         |FROM atala_object_tx_submissions
+         |WHERE atala_object_id = (
+         |  SELECT atala_object_id
+         |    FROM atala_object_tx_submissions
+         |    WHERE ledger = $ledger
+         |      AND transaction_id = $transactionId)
+         |  AND ledger = $ledger
+         |ORDER BY submission_timestamp DESC
+         |LIMIT 1
+       """.stripMargin.query[AtalaObjectTransactionSubmission].option
   }
 
   def getBy(

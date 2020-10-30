@@ -25,6 +25,8 @@ service NodeService {
 
     rpc GetCredentialState(GetCredentialStateRequest) returns (GetCredentialStateResponse) {}
 
+    rpc GetTransactionStatus(GetTransactionStatusRequest) returns (GetTransactionStatusResponse) {}
+
     rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
 }
 
@@ -98,4 +100,13 @@ message GetCredentialStateResponse {
     string issuerDID = 1; // did used to sign the IssueCredential operation
     TimestampInfo publicationDate = 2; // If present: underlying blockchain timestamp that refers to the transaction that                                // contains the IssueCredential operation associated to the credential
     TimestampInfo revocationDate = 3;  // If present: underlying blockchain timestamp that refers to the transaction that RevokeCredential operation associated to the credential
+}
+
+message GetTransactionStatusRequest {
+    TransactionInfo transactionInfo = 1;
+}
+
+message GetTransactionStatusResponse {
+    TransactionInfo transactionInfo = 1;
+    TransactionStatus status = 2;
 }
