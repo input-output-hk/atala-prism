@@ -1,11 +1,10 @@
 package io.iohk.atala.prism.connector
 
 import java.time.{LocalDateTime, ZoneOffset}
-import java.util.UUID
 
 import io.grpc.{Status, StatusRuntimeException}
+import io.iohk.atala.prism.connector.util.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
@@ -39,23 +38,18 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
   "getCurrentUser" should {
     def prepareSignedRequest() = {
       val keys = EC.generateKeyPair()
-      val privateKey = keys.privateKey
+      val did = generateDid(keys.publicKey)
       val request = connector_api.GetCurrentUserRequest()
-      val requestNonce = UUID.randomUUID().toString.getBytes.toVector
-      val signature = EC.sign(
-        SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray,
-        privateKey
-      )
-      (requestNonce, signature, keys.publicKey, request)
+      (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
     }
 
     "return the verifier details" in {
-      val (requestNonce, signature, publicKey, request) = prepareSignedRequest()
+      val (publicKey, rpcRequest) = prepareSignedRequest()
       val name = "Verifier"
-      val _ = createVerifier(name, Some(publicKey))
+      val _ = createVerifier(name, Some(publicKey), Some(rpcRequest.did))
 
-      usingApiAs(requestNonce, signature, publicKey) { blockingStub =>
-        val response = blockingStub.getCurrentUser(request)
+      usingApiAs(rpcRequest) { blockingStub =>
+        val response = blockingStub.getCurrentUser(rpcRequest.request)
         response.logo.toByteArray mustNot be(empty)
         response.name must be(name)
         response.role must be(connector_api.GetCurrentUserResponse.Role.verifier)
@@ -63,13 +57,13 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
     }
 
     "return the issuer details" in {
-      val (requestNonce, signature, publicKey, request) = prepareSignedRequest()
+      val (publicKey, rpcRequest) = prepareSignedRequest()
 
       val name = "Issuer"
-      val _ = createIssuer(name, Some(publicKey))
+      val _ = createIssuer(name, Some(publicKey), Some(rpcRequest.did))
 
-      usingApiAs(requestNonce, signature, publicKey) { blockingStub =>
-        val response = blockingStub.getCurrentUser(request)
+      usingApiAs(rpcRequest) { blockingStub =>
+        val response = blockingStub.getCurrentUser(rpcRequest.request)
         response.logo.toByteArray mustNot be(empty)
         response.name must be(name)
         response.role must be(connector_api.GetCurrentUserResponse.Role.issuer)
@@ -77,11 +71,11 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
     }
 
     "fail on unknown user" in {
-      val (requestNonce, signature, publicKey, request) = prepareSignedRequest()
+      val (_, rpcRequest) = prepareSignedRequest()
 
-      usingApiAs(requestNonce, signature, publicKey) { blockingStub =>
+      usingApiAs(rpcRequest) { blockingStub =>
         val ex = intercept[StatusRuntimeException] {
-          blockingStub.getCurrentUser(request)
+          blockingStub.getCurrentUser(rpcRequest.request)
         }
         ex.getStatus.getCode must be(Status.UNKNOWN.getCode)
       }

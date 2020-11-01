@@ -42,28 +42,6 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   "authenticated" should {
     val requestAuthenticator = new RequestAuthenticator(EC)
 
-    "accept the legacy authentication" in {
-      val header = GrpcAuthenticationHeader.Legacy(ParticipantId.random())
-      val authenticator = buildAuthenticator(getHeader = () => Some(header))
-
-      val result = authenticator.authenticated("test", request) { _ =>
-        Future.successful(response)
-      }
-      result.futureValue must be(response)
-    }
-
-    "reject wrong legacy authentication" in {
-      val authenticator = buildAuthenticator(getHeader = () => None)
-
-      intercept[RuntimeException] {
-        authenticator
-          .authenticated("test", request) { _ =>
-            Future.successful(response)
-          }
-          .futureValue
-      }
-    }
-
     "accept the public key authentication" in {
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)

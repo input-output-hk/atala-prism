@@ -1,13 +1,10 @@
 package io.iohk.atala.prism.grpc
 
-import java.util.{Base64, UUID}
+import java.util.Base64
 
-import io.grpc.{Context, Metadata, Status, StatusRuntimeException}
+import io.grpc.{Context, Metadata}
 import io.iohk.atala.prism.crypto.{EC, ECSignature}
 import io.iohk.atala.prism.connector.model.RequestNonce
-import io.iohk.atala.prism.models.ParticipantId
-
-import scala.util.Try
 
 private[grpc] object GrpcAuthenticationContext {
   // Extension methods to deal with gRPC Metadata in the Scala way
@@ -40,9 +37,6 @@ private[grpc] object GrpcAuthenticationContext {
     }
   }
 
-  // legacy authentication
-  val UserIdKeys: GrpcMetadataContextKeys[ParticipantId] = GrpcMetadataContextKeys("userId")
-
   // public key authentication
   val SignatureKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("signature")
   val PublicKeyKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("publicKey")
@@ -55,36 +49,6 @@ private[grpc] object GrpcAuthenticationContext {
   // used to prevent request replay attacks, this is a byte array to not worry about custom encoding
   // on different languages, like a string.
   val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("requestNonce")
-
-  private def unauthenticatedError(keys: GrpcMetadataContextKeys[_]): StatusRuntimeException = {
-    Status.UNAUTHENTICATED
-      .withDescription(s"${keys.metadata.name()} header missing or invalid")
-      .asRuntimeException()
-  }
-
-  def participantId(): ParticipantId = {
-    Option(UserIdKeys.context.get())
-      .getOrElse(throw unauthenticatedError(UserIdKeys))
-  }
-
-  def getLegacyAuthenticationContext(headers: Metadata): Option[Context] = {
-    headers
-      .getOpt(UserIdKeys)
-      .flatMap { userIdStr =>
-        Try {
-          new ParticipantId(UUID.fromString(userIdStr))
-        }.toOption
-      }
-      .map { participantId =>
-        Context.current().addValue(UserIdKeys, participantId)
-      }
-  }
-
-  def parseLegacyAuthenticationContext(ctx: Context): Option[GrpcAuthenticationHeader.Legacy] = {
-    ctx
-      .getOpt(UserIdKeys)
-      .map(GrpcAuthenticationHeader.Legacy.apply)
-  }
 
   def getPublicKeySignatureContext(headers: Metadata): Option[Context] = {
     (headers.getOpt(RequestNonceKeys), headers.getOpt(SignatureKeys), headers.getOpt(PublicKeyKeys)) match {

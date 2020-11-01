@@ -17,6 +17,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   ParticipantsDAO
 }
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.atala.prism.connector.util.SignedRpcRequest
 import io.iohk.atala.prism.grpc.{
   GrpcAuthenticationHeader,
   GrpcAuthenticationHeaderParser,
@@ -33,13 +34,15 @@ import scalapb.GeneratedMessage
 import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
-  def apply[T](participantId: ParticipantId)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T
+  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: String, keyId: String)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], keys: ECKeyPair, request: GeneratedMessage)(f: STUB => T): T = {
     val payload = SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray
     val signature = EC.sign(payload.array, keys.privateKey)
     apply(requestNonce, signature, keys.publicKey)(f)
   }
+  def apply[T, R <: GeneratedMessage](rpcRequest: SignedRpcRequest[R])(f: STUB => T): T =
+    apply(rpcRequest.nonce, rpcRequest.signature, rpcRequest.did, rpcRequest.keyId)(f)
   def unlogged[T](f: STUB => T): T
 }
 
@@ -85,7 +88,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         f(blockingStub)
       }
 
-      override def apply[T](id: ParticipantId)(f: STUB => T): T = {
+      private def apply[T](metadata: Metadata)(f: STUB => T): T = {
         val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
           override def applyRequestMetadata(
               requestInfo: CallCredentials.RequestInfo,
@@ -93,7 +96,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
               applier: CallCredentials.MetadataApplier
           ): Unit = {
             appExecutor.execute { () =>
-              applier.apply(GrpcAuthenticationHeader.Legacy(id).toMetadata)
+              applier.apply(metadata)
             }
           }
 
@@ -103,35 +106,30 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         val blockingStub = stubFactory(channelHandle, callOptions)
         f(blockingStub)
       }
+
       override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(
           f: STUB => T
       ): T = {
+        apply(
+          GrpcAuthenticationHeader
+            .PublicKeyBased(model.RequestNonce(requestNonce), publicKey, signature)
+            .toMetadata
+        )(f)
+      }
 
-        val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
-          override def applyRequestMetadata(
-              requestInfo: CallCredentials.RequestInfo,
-              appExecutor: Executor,
-              applier: CallCredentials.MetadataApplier
-          ): Unit = {
-            appExecutor.execute { () =>
-              applier.apply(
-                GrpcAuthenticationHeader
-                  .PublicKeyBased(model.RequestNonce(requestNonce), publicKey, signature)
-                  .toMetadata
-              )
-            }
-          }
-
-          override def thisUsesUnstableApi(): Unit = ()
-        })
-
-        val blockingStub = stubFactory(channelHandle, callOptions)
-        f(blockingStub)
+      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: String, keyId: String)(
+          f: STUB => T
+      ): T = {
+        apply(
+          GrpcAuthenticationHeader
+            .DIDBased(model.RequestNonce(requestNonce), did, keyId, signature)
+            .toMetadata
+        )(f)
       }
     }
 }
 
-class ConnectorRpcSpecBase extends RpcSpecBase {
+class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
@@ -203,8 +201,12 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     id
   }
 
-  protected def createHolder(name: String, publicKey: Option[ECPublicKey] = None): ParticipantId = {
-    createParticipant(name, ParticipantType.Holder, publicKey = publicKey)
+  protected def createHolder(
+      name: String,
+      publicKey: Option[ECPublicKey] = None,
+      did: Option[String] = None
+  ): ParticipantId = {
+    createParticipant(name, ParticipantType.Holder, publicKey = publicKey, did = did)
   }
 
   protected def createIssuer(

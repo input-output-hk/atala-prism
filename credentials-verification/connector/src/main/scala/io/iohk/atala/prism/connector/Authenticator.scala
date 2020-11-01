@@ -118,7 +118,6 @@ class SignedRequestsAuthenticator(
       executionContext: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
     authenticationHeader match {
-      case GrpcAuthenticationHeader.Legacy(userId) => Future.successful(Right(userId)).toFutureEither
       case h: GrpcAuthenticationHeader.PublicKeyBased => authenticate(request, h)
       case h: GrpcAuthenticationHeader.DIDBased => authenticate(request, h)
     }

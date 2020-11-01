@@ -2,15 +2,17 @@ package io.iohk.atala.prism.cviews
 
 import io.grpc.ServerServiceDefinition
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.util.SignedRpcRequest
+import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.console.DataPreparation
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
 import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
 import org.mockito.MockitoSugar._
 
-class CredentialViewsServiceSpec extends RpcSpecBase {
+class CredentialViewsServiceSpec extends RpcSpecBase with DIDGenerator {
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val usingApiAs = usingApiAsConstructor(
     new CredentialViewsServiceGrpc.CredentialViewsServiceBlockingStub(_, _)
@@ -18,7 +20,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase {
 
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,
     requestNoncesRepository,
@@ -31,9 +33,13 @@ class CredentialViewsServiceSpec extends RpcSpecBase {
 
   "getCredentialViewTemplates" should {
     "return the predefined templates" in {
-      val issuerId = DataPreparation.createIssuer("Great Issuer")
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val _ = DataPreparation.createIssuer("Great Issuer", publicKey = Some(publicKey), did = Some(did))
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, GetCurrentUserRequest())
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
+      usingApiAs(rpcRequest) { serviceStub =>
         val response = serviceStub.getCredentialViewTemplates(GetCredentialViewTemplatesRequest())
 
         val templates = response.templates

@@ -11,7 +11,6 @@ trait GrpcAuthenticationHeaderParser {
     GrpcAuthenticationContext
       .parseDIDAuthenticationHeader(ctx)
       .orElse(GrpcAuthenticationContext.parsePublicKeyAuthenticationHeader(ctx))
-      .orElse(GrpcAuthenticationContext.parseLegacyAuthenticationContext(ctx))
   }
 }
 

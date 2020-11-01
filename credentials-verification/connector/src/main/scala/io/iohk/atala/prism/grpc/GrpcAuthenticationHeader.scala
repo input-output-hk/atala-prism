@@ -5,7 +5,6 @@ import java.util.Base64
 import io.grpc.Metadata
 import io.iohk.atala.prism.crypto.{ECPublicKey, ECSignature}
 import io.iohk.atala.prism.connector.model.RequestNonce
-import io.iohk.atala.prism.models.ParticipantId
 
 sealed trait GrpcAuthenticationHeader {
   import GrpcAuthenticationContext._
@@ -13,9 +12,6 @@ sealed trait GrpcAuthenticationHeader {
   def toMetadata: Metadata = {
     val metadata = new Metadata()
     this match {
-      case GrpcAuthenticationHeader.Legacy(userId) =>
-        metadata.put(UserIdKeys.metadata, userId.uuid.toString)
-
       case GrpcAuthenticationHeader.PublicKeyBased(requestNonce, publicKey, signature) =>
         val publicKeyStr = Base64.getUrlEncoder.encodeToString(publicKey.getEncoded)
         val signatureStr = Base64.getUrlEncoder.encodeToString(signature.data)
@@ -39,7 +35,6 @@ sealed trait GrpcAuthenticationHeader {
 
 object GrpcAuthenticationHeader {
 
-  final case class Legacy(userId: ParticipantId) extends GrpcAuthenticationHeader
   final case class PublicKeyBased(requestNonce: RequestNonce, publicKey: ECPublicKey, signature: ECSignature)
       extends GrpcAuthenticationHeader
   final case class DIDBased(requestNonce: RequestNonce, did: String, keyId: String, signature: ECSignature)

@@ -5,13 +5,15 @@ import java.util.UUID
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model.{ConnectionId, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.util.SignedRpcRequest
+import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, StoredCredentialsDAO}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.cstore_api
@@ -20,7 +22,7 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
-class CredentialsStoreServiceSpec extends RpcSpecBase {
+class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
 
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
@@ -33,7 +35,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   lazy val storedCredentials = new StoredCredentialsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,
@@ -71,21 +73,36 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     ()
   }
 
+  def updateDid(participantId: ParticipantId, did: String): doobie.ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE participants
+         |SET did = $did
+         |WHERE id = $participantId
+       """.stripMargin.update.run.map(_ => ())
+  }
+
   "storeCredential" should {
     "store credential in the database" in {
-      usingApiAs(verifierId) { serviceStub =>
-        val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId
-        val connectionToken = DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
-        val mockConnectionId = ConnectionId(UUID.randomUUID())
-        ContactsDAO
-          .setConnectionAsAccepted(Institution.Id(verifierId.uuid), connectionToken, mockConnectionId)
-          .transact(database)
-          .unsafeToFuture()
-          .futureValue
+      lazy val keyPair = EC.generateKeyPair()
+      lazy val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-        val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
-        val request =
-          cstore_api.StoreCredentialRequest(mockConnectionId.id.toString, encodedSignedCredential)
+      val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId
+      val connectionToken = DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
+      val mockConnectionId = ConnectionId(UUID.randomUUID())
+      ContactsDAO
+        .setConnectionAsAccepted(Institution.Id(verifierId.uuid), connectionToken, mockConnectionId)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val request =
+        cstore_api.StoreCredentialRequest(mockConnectionId.id.toString, encodedSignedCredential)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
         serviceStub.storeCredential(request)
 
         val credential = StoredCredentialsDAO
@@ -103,26 +120,33 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
 
   "getCredentialsFor" should {
     "get credentials for individual" in {
-      usingApiAs(verifierId) { serviceStub =>
-        val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId
+      lazy val keyPair = EC.generateKeyPair()
+      lazy val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-        val connectionToken =
-          DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
-        val mockConnectionId = ConnectionId(UUID.randomUUID())
-        ContactsDAO
-          .setConnectionAsAccepted(Institution.Id(verifierId.uuid), connectionToken, mockConnectionId)
-          .transact(database)
-          .unsafeToFuture()
-          .futureValue
+      val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId
 
-        val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val connectionToken =
+        DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
+      val mockConnectionId = ConnectionId(UUID.randomUUID())
+      ContactsDAO
+        .setConnectionAsAccepted(Institution.Id(verifierId.uuid), connectionToken, mockConnectionId)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
 
-        serviceStub.storeCredential(
-          cstore_api.StoreCredentialRequest(mockConnectionId.id.toString, encodedSignedCredential)
-        )
+      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val storeRequest = cstore_api.StoreCredentialRequest(mockConnectionId.id.toString, encodedSignedCredential)
+      val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
+      usingApiAs(rpcStoreRequest) { serviceStub =>
+        serviceStub.storeCredential(storeRequest)
+      }
 
-        val request = cstore_api.GetStoredCredentialsForRequest(contactId.value.toString)
-        val response = serviceStub.getStoredCredentialsFor(request)
+      val getStoredRequest = cstore_api.GetStoredCredentialsForRequest(contactId.value.toString)
+      val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
+      usingApiAs(rpcGetStoreRequest) { serviceStub =>
+        val response = serviceStub.getStoredCredentialsFor(getStoredRequest)
 
         response.credentials.size mustBe 1
         val credential = response.credentials.head

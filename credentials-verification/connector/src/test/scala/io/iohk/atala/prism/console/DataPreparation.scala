@@ -19,6 +19,7 @@ import io.iohk.atala.prism.console.models.{
   Institution,
   IssuerGroup
 }
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.models.ParticipantId
 
 object DataPreparation {
@@ -26,12 +27,44 @@ object DataPreparation {
   import consoleDaos._
   import connectorDaos._
 
-  def createIssuer(name: String = "Issuer", tag: String = "")(implicit database: Transactor[IO]): Institution.Id = {
+  def createIssuer(
+      name: String = "Issuer",
+      tag: String = "",
+      publicKey: Option[ECPublicKey] = None,
+      did: Option[String] = None
+  )(implicit
+      database: Transactor[IO]
+  ): Institution.Id = {
     val id = Institution.Id(UUID.randomUUID())
-    val did = s"did:geud:issuer-x$tag"
+    val didValue = did.getOrElse(s"did:geud:issuer-x$tag")
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
     val participant =
-      ParticipantInfo(ParticipantId(id.value), ParticipantType.Issuer, None, name, Option(did), None, None, None)
+      ParticipantInfo(
+        ParticipantId(id.value),
+        ParticipantType.Issuer,
+        publicKey,
+        name,
+        Option(didValue),
+        None,
+        None,
+        None
+      )
+    ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
+
+    id
+  }
+
+  def createVerifier(
+      id: ParticipantId = ParticipantId.random(),
+      name: String = "Verifier",
+      tag: String = "",
+      publicKey: Option[ECPublicKey] = None
+  )(implicit
+      database: Transactor[IO]
+  ): ParticipantId = {
+    val did = s"did:geud:issuer-x$tag"
+    val participant =
+      ParticipantInfo(id, ParticipantType.Verifier, publicKey, name, Option(did), None, None, None)
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id

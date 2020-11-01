@@ -2,23 +2,27 @@ package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
+import cats.effect.IO
+import doobie.util.transactor.Transactor
+import doobie.implicits._
 import io.circe.Json
-import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
-import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
+import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.util.SignedRpcRequest
+import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.cmanager_api
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationDouble
 
-class GroupsServiceImplSpec extends RpcSpecBase {
+class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
@@ -28,7 +32,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val contactsRepository = new ContactsRepository(database)
-  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new SignedRequestsAuthenticator(
       participantsRepository,
@@ -45,11 +49,15 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
   "createGroup" should {
     "create a group" in {
-      val issuerId = createIssuer()
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(publicKey, did)
+      val newGroup = IssuerGroup.Name("IOHK University")
+      val request = cmanager_api.CreateGroupRequest(newGroup.value)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val newGroup = IssuerGroup.Name("IOHK University")
-        val request = cmanager_api.CreateGroupRequest(newGroup.value)
+      usingApiAs(rpcRequest) { serviceStub =>
         val _ = serviceStub.createGroup(request)
 
         // the new group needs to exist
@@ -61,15 +69,20 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
   "getGroups" should {
     "return available groups" in {
-      val issuerId = createIssuer()
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(publicKey, did)
 
       val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
       groups.foreach { group =>
         issuerGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
       }
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request = cmanager_api.GetGroupsRequest()
+      val request = cmanager_api.GetGroupsRequest()
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
         val result = serviceStub.getGroups(request)
         result.groups.map(_.name).map(IssuerGroup.Name.apply) must be(groups)
       }
@@ -83,7 +96,10 @@ class GroupsServiceImplSpec extends RpcSpecBase {
     val group2Name = IssuerGroup.Name(group2)
 
     "be able to add new contacts" in {
-      val issuerId = createIssuer()
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(publicKey, did)
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
@@ -91,26 +107,33 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       }
       val contact = createRandomContact(issuerId)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request1 =
-          cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
-        serviceStub.updateGroup(request1)
+      val request1 =
+        cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+      val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
 
+      usingApiAs(rpcRequest1) { serviceStub =>
+        serviceStub.updateGroup(request1)
         listContacts(issuerId, group1Name) must be(List(contact))
         listContacts(issuerId, group2Name) must be(List())
+      }
 
-        // Adding the same contact twice should have no effect
-        val request2 =
-          cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+      // Adding the same contact twice should have no effect
+      val request2 =
+        cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+      val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
+
+      usingApiAs(rpcRequest2) { serviceStub =>
         serviceStub.updateGroup(request2)
-
         listContacts(issuerId, group1Name) must be(List(contact))
         listContacts(issuerId, group2Name) must be(List())
       }
     }
 
     "be able to remove contacts" in {
-      val issuerId = createIssuer()
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(publicKey, did)
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
@@ -122,17 +145,23 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       listContacts(issuerId, group1Name) must be(List(contact1))
       listContacts(issuerId, group2Name) must be(List(contact2))
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request1 =
-          cmanager_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.value.toString))
+      val request1 =
+        cmanager_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.value.toString))
+      val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
+
+      usingApiAs(rpcRequest1) { serviceStub =>
         serviceStub.updateGroup(request1)
 
         listContacts(issuerId, group1Name) must be(List())
         listContacts(issuerId, group2Name) must be(List(contact2))
+      }
 
-        // Removing the same contact twice should have no effect
-        val request2 =
-          cmanager_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.value.toString))
+      // Removing the same contact twice should have no effect
+      val request2 =
+        cmanager_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.value.toString))
+      val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
+
+      usingApiAs(rpcRequest2) { serviceStub =>
         serviceStub.updateGroup(request2)
 
         listContacts(issuerId, group1Name) must be(List())
@@ -141,7 +170,10 @@ class GroupsServiceImplSpec extends RpcSpecBase {
     }
 
     "be able to add and remove at the same time" in {
-      val issuerId = createIssuer()
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(publicKey, did)
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
@@ -153,25 +185,31 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       listContacts(issuerId, group1Name) must be(List(contact1))
       listContacts(issuerId, group2Name) must be(List())
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request1 =
-          cmanager_api.UpdateGroupRequest(
-            group1Id,
-            Seq(contact2.contactId.value.toString),
-            Seq(contact1.contactId.value.toString)
-          )
+      val request1 =
+        cmanager_api.UpdateGroupRequest(
+          group1Id,
+          Seq(contact2.contactId.value.toString),
+          Seq(contact1.contactId.value.toString)
+        )
+      val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
+
+      usingApiAs(rpcRequest1) { serviceStub =>
         serviceStub.updateGroup(request1)
 
         listContacts(issuerId, group1Name) must be(List(contact2))
         listContacts(issuerId, group2Name) must be(List())
+      }
 
-        // Adding and removing the same contact at the same time should have no effect
-        val request2 =
-          cmanager_api.UpdateGroupRequest(
-            group1Id,
-            Seq(contact1.contactId.value.toString),
-            Seq(contact1.contactId.value.toString)
-          )
+      // Adding and removing the same contact at the same time should have no effect
+      val request2 =
+        cmanager_api.UpdateGroupRequest(
+          group1Id,
+          Seq(contact1.contactId.value.toString),
+          Seq(contact1.contactId.value.toString)
+        )
+      val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
+
+      usingApiAs(rpcRequest2) { serviceStub =>
         serviceStub.updateGroup(request2)
 
         listContacts(issuerId, group1Name) must be(List(contact2))
@@ -180,17 +218,24 @@ class GroupsServiceImplSpec extends RpcSpecBase {
     }
 
     "reject requests with non-matching group issuer" in {
-      val issuerId1 = createIssuer()
-      val issuerId2 = createIssuer()
+      val keyPair1 = EC.generateKeyPair()
+      val publicKey1 = keyPair1.publicKey
+      val did1 = generateDid(publicKey1)
+      val issuerId1 = createIssuer(publicKey1, did1)
+      val keyPair2 = EC.generateKeyPair()
+      val publicKey2 = keyPair2.publicKey
+      val did2 = generateDid(publicKey2)
+      val issuerId2 = createIssuer(publicKey2, did2)
 
       val group1Id =
         issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.value.toString
       val contact = createRandomContact(issuerId2)
 
-      usingApiAs(ParticipantId(issuerId2.value)) { serviceStub =>
-        val request =
-          cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+      val request =
+        cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+      val rpcRequest = SignedRpcRequest.generate(keyPair2, did2, request)
 
+      usingApiAs(rpcRequest) { serviceStub =>
         intercept[RuntimeException](
           serviceStub.updateGroup(request)
         )
@@ -198,17 +243,24 @@ class GroupsServiceImplSpec extends RpcSpecBase {
     }
 
     "reject requests with non-matching contact issuer" in {
-      val issuerId1 = createIssuer()
-      val issuerId2 = createIssuer()
+      val keyPair1 = EC.generateKeyPair()
+      val publicKey1 = keyPair1.publicKey
+      val did1 = generateDid(publicKey1)
+      val issuerId1 = createIssuer(publicKey1, did1)
+      val keyPair2 = EC.generateKeyPair()
+      val publicKey2 = keyPair2.publicKey
+      val did2 = generateDid(publicKey2)
+      val issuerId2 = createIssuer(publicKey2, did2)
 
       val group1Id =
         issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.value.toString
       val contact = createRandomContact(issuerId2)
 
-      usingApiAs(ParticipantId(issuerId1.value)) { serviceStub =>
-        val request =
-          cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+      val request =
+        cmanager_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+      val rpcRequest = SignedRpcRequest.generate(keyPair1, did1, request)
 
+      usingApiAs(rpcRequest) { serviceStub =>
         intercept[RuntimeException](
           serviceStub.updateGroup(request)
         )
@@ -227,24 +279,26 @@ class GroupsServiceImplSpec extends RpcSpecBase {
   private def listContacts(issuer: Institution.Id, groupName: IssuerGroup.Name): List[Contact] =
     issuerGroupsRepository.listContacts(issuer, groupName).value.futureValue.toOption.value
 
-  private def createIssuer(): Institution.Id = {
+  private def createIssuer(publicKey: ECPublicKey, did: String)(implicit
+      database: Transactor[IO]
+  ): Institution.Id = {
     val id = UUID.randomUUID()
-    val mockDID = "did:prims:test"
-    val mockTransactionInfo =
-      TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
-    participantsRepository
-      .create(
-        CreateParticipantRequest(
-          ParticipantId(id),
-          ParticipantType.Issuer,
-          "",
-          mockDID,
-          ParticipantLogo(Vector()),
-          mockTransactionInfo
-        )
+    val mockTransactionId =
+      TransactionId.from(SHA256Digest.compute("id".getBytes).value).value
+
+    val participant =
+      ParticipantInfo(
+        ParticipantId(id),
+        ParticipantType.Issuer,
+        Some(publicKey),
+        "",
+        Some(did),
+        Some(ParticipantLogo(Vector())),
+        Some(mockTransactionId),
+        None
       )
-      .value
-      .futureValue
+    ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
+
     Institution.Id(id)
   }
 }

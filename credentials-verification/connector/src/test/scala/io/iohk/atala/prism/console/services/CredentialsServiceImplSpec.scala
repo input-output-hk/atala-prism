@@ -8,15 +8,16 @@ import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.util.SignedRpcRequest
+import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{GenericCredential, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
 import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
 import io.iohk.atala.prism.protos.{cmanager_api, common_models, node_api, node_models}
@@ -25,7 +26,7 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 
-class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
+class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDGenerator {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
@@ -34,7 +35,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   private lazy val contactsRepository = new ContactsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new SignedRequestsAuthenticator(
     participantsRepository,
     requestNoncesRepository,
@@ -59,23 +60,26 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   "createGenericCredential" should {
     "create a generic credential" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val credentialData = Json.obj(
-          "claim1" -> "claim 1".asJson,
-          "claim2" -> "claim 2".asJson,
-          "claim3" -> "claim 3".asJson
-        )
+      val credentialData = Json.obj(
+        "claim1" -> "claim 1".asJson,
+        "claim2" -> "claim 2".asJson,
+        "claim3" -> "claim 3".asJson
+      )
+      val request = cmanager_api.CreateGenericCredentialRequest(
+        contactId = subject.contactId.value.toString,
+        credentialData = credentialData.noSpaces,
+        groupName = issuerGroup.name.value
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-        val request = cmanager_api.CreateGenericCredentialRequest(
-          contactId = subject.contactId.value.toString,
-          credentialData = credentialData.noSpaces,
-          groupName = issuerGroup.name.value
-        )
-
+      usingApiAs(rpcRequest) { serviceStub =>
         val response = serviceStub.createGenericCredential(request).genericCredential.value
 
         response.credentialId mustNot be(empty)
@@ -95,23 +99,26 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
     "create a generic credential given a extrenal subject id" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val credentialData = Json.obj(
-          "claim1" -> "claim 1".asJson,
-          "claim2" -> "claim 2".asJson,
-          "claim3" -> "claim 3".asJson
-        )
+      val credentialData = Json.obj(
+        "claim1" -> "claim 1".asJson,
+        "claim2" -> "claim 2".asJson,
+        "claim3" -> "claim 3".asJson
+      )
+      val request = cmanager_api.CreateGenericCredentialRequest(
+        credentialData = credentialData.noSpaces,
+        groupName = issuerGroup.name.value,
+        externalId = subject.externalId.value
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-        val request = cmanager_api.CreateGenericCredentialRequest(
-          credentialData = credentialData.noSpaces,
-          groupName = issuerGroup.name.value,
-          externalId = subject.externalId.value
-        )
-
+      usingApiAs(rpcRequest) { serviceStub =>
         serviceStub.createGenericCredential(request).genericCredential.value
         succeed
       }
@@ -121,7 +128,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   "getGenericCredentials" should {
     "retrieve correct credentials" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val credential1 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -132,32 +142,37 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val credentlal2Proto = ProtoCodecs.genericCredentialToProto(credential2)
       val credentlal3Proto = ProtoCodecs.genericCredentialToProto(credential3)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val requestFirst = cmanager_api.GetGenericCredentialsRequest(
-          limit = 1
-        )
+      val requestFirst = cmanager_api.GetGenericCredentialsRequest(
+        limit = 1
+      )
+      val rpcRequestFirst = SignedRpcRequest.generate(keyPair, did, requestFirst)
 
+      usingApiAs(rpcRequestFirst) { serviceStub =>
         val response = serviceStub.getGenericCredentials(requestFirst).credentials
         response.size must be(1)
         val retrievedCred = response.headOption.value
         retrievedCred must be(credentlal1Proto)
         retrievedCred mustNot be(credentlal2Proto)
         retrievedCred mustNot be(credentlal3Proto)
+      }
 
-        val requestMoreThanExistent = cmanager_api.GetGenericCredentialsRequest(
-          limit = 4
-        )
-
+      val requestMoreThanExistent = cmanager_api.GetGenericCredentialsRequest(
+        limit = 4
+      )
+      val rpcRequestMoreThanExistent = SignedRpcRequest.generate(keyPair, did, requestMoreThanExistent)
+      usingApiAs(rpcRequestMoreThanExistent) { serviceStub =>
         val allCredentials = serviceStub.getGenericCredentials(requestMoreThanExistent).credentials
         allCredentials.size must be(3)
 
         allCredentials.toSet must be(Set(credentlal1Proto, credentlal2Proto, credentlal3Proto))
+      }
 
-        val requestLastTwo = cmanager_api.GetGenericCredentialsRequest(
-          limit = 2,
-          lastSeenCredentialId = credential1.credentialId.value.toString
-        )
-
+      val requestLastTwo = cmanager_api.GetGenericCredentialsRequest(
+        limit = 2,
+        lastSeenCredentialId = credential1.credentialId.value.toString
+      )
+      val rpcRequestLastTwo = SignedRpcRequest.generate(keyPair, did, requestLastTwo)
+      usingApiAs(rpcRequestLastTwo) { serviceStub =>
         val lastTwoCredentials = serviceStub.getGenericCredentials(requestLastTwo).credentials
         lastTwoCredentials.size must be(2)
 
@@ -169,7 +184,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
   "publishCredential" should {
     "forward request to node and store data in database" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -199,15 +217,16 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       ).when(nodeMock)
         .issueCredential(nodeRequest)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request = cmanager_api
-          .PublishCredentialRequest()
-          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
-          .withIssueCredentialOperation(issuanceOp)
-          .withEncodedSignedCredential(mockEncodedSignedCredential)
-          .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+      val request = cmanager_api
+        .PublishCredentialRequest()
+        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withIssueCredentialOperation(issuanceOp)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withNodeCredentialId(mockNodeCredentialId)
+        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
+      usingApiAs(rpcRequest) { serviceStub =>
         serviceStub.publishCredential(request)
 
         verify(nodeMock).issueCredential(nodeRequest)
@@ -232,7 +251,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
     "fail if issuer is trying to publish a credential he didn't create" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -247,22 +269,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         mockDIDSuffix
       )
 
-      val wrongIssuerId = UUID.randomUUID()
+      val request = cmanager_api
+        .PublishCredentialRequest()
+        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withIssueCredentialOperation(issuanceOp)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withNodeCredentialId(mockNodeCredentialId)
+        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+      val wrongRpcRequest = SignedRpcRequest.generate(EC.generateKeyPair(), did, request)
 
-      usingApiAs(ParticipantId(wrongIssuerId)) { serviceStub =>
-        val request = cmanager_api
-          .PublishCredentialRequest()
-          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
-          .withIssueCredentialOperation(issuanceOp)
-          .withEncodedSignedCredential(mockEncodedSignedCredential)
-          .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-
+      usingApiAs(wrongRpcRequest) { serviceStub =>
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
-
-        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -278,7 +297,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
     "fail if issuer is trying to publish a credential that does not exist in the db" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
 
       val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -291,21 +313,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       )
 
       val unknownCredentialId = GenericCredential.Id(UUID.randomUUID())
+      val request = cmanager_api
+        .PublishCredentialRequest()
+        .withCmanagerCredentialId(unknownCredentialId.value.toString)
+        .withIssueCredentialOperation(issuanceOp)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withNodeCredentialId(mockNodeCredentialId)
+        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request = cmanager_api
-          .PublishCredentialRequest()
-          .withCmanagerCredentialId(unknownCredentialId.value.toString)
-          .withIssueCredentialOperation(issuanceOp)
-          .withEncodedSignedCredential(mockEncodedSignedCredential)
-          .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-
+      usingApiAs(rpcRequest) { serviceStub =>
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
-
-        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, 10, None).value.futureValue.toOption.value
@@ -316,7 +336,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
     "fail if operation hash does not match the protocol credential id" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -331,22 +354,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         mockDIDSuffix
       )
 
-      val wrongIssuerId = UUID.randomUUID()
+      val request = cmanager_api
+        .PublishCredentialRequest()
+        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withIssueCredentialOperation(issuanceOp)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withNodeCredentialId(mockIncorrectNodeCredentialId)
+        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+      val wrongRpcRequest = SignedRpcRequest.generate(EC.generateKeyPair(), did, request)
 
-      usingApiAs(ParticipantId(wrongIssuerId)) { serviceStub =>
-        val request = cmanager_api
-          .PublishCredentialRequest()
-          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
-          .withIssueCredentialOperation(issuanceOp)
-          .withEncodedSignedCredential(mockEncodedSignedCredential)
-          .withNodeCredentialId(mockIncorrectNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-
+      usingApiAs(wrongRpcRequest) { serviceStub =>
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
-
-        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -362,7 +382,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
     "fail if issuer is trying to publish an empty encoded signed credential" in {
       val issuerName = "Issuer 1"
-      val issuerId = DataPreparation.createIssuer(issuerName)
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -377,21 +400,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
         SHA256Digest.compute(mockEmptyEncodedSignedCredential.getBytes()),
         mockDIDSuffix
       )
+      val request = cmanager_api
+        .PublishCredentialRequest()
+        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withIssueCredentialOperation(issuanceOp)
+        .withEncodedSignedCredential(mockEmptyEncodedSignedCredential)
+        .withNodeCredentialId(mockNodeCredentialId)
+        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request = cmanager_api
-          .PublishCredentialRequest()
-          .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
-          .withIssueCredentialOperation(issuanceOp)
-          .withEncodedSignedCredential(mockEmptyEncodedSignedCredential)
-          .withNodeCredentialId(mockNodeCredentialId)
-          .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-
+      usingApiAs(rpcRequest) { serviceStub =>
         intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
-
-        verifyNoMoreInteractions(nodeMock)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -437,7 +458,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
 
   "getContactCredentials" should {
     "return contact's credentials" in {
-      val issuerId = createIssuer("Issuer X")
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val contactId1 = createContact(issuerId, "IOHK Student", group.name).contactId
       val contactId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
@@ -447,11 +471,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
       val cred2 = createGenericCredential(issuerId, contactId1, "D")
       createGenericCredential(issuerId, contactId2, "E")
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request = cmanager_api.GetContactCredentialsRequest(
-          contactId = contactId1.value.toString
-        )
+      val request = cmanager_api.GetContactCredentialsRequest(
+        contactId = contactId1.value.toString
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
+      usingApiAs(rpcRequest) { serviceStub =>
         val response = serviceStub.getContactCredentials(request)
         val returnedCredentials = response.genericCredentials.toList
         val cleanCredentials = returnedCredentials map cleanCredentialData
@@ -470,15 +495,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar {
     }
 
     "return empty list of credentials when not present" in {
-      val issuerId = createIssuer("Issuer X")
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val contactId = createContact(issuerId, "IOHK Student", group.name).contactId
 
-      usingApiAs(ParticipantId(issuerId.value)) { serviceStub =>
-        val request = cmanager_api.GetContactCredentialsRequest(
-          contactId = contactId.value.toString
-        )
+      val request = cmanager_api.GetContactCredentialsRequest(
+        contactId = contactId.value.toString
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
+      usingApiAs(rpcRequest) { serviceStub =>
         val response = serviceStub.getContactCredentials(request)
         response.genericCredentials must be(empty)
       }
