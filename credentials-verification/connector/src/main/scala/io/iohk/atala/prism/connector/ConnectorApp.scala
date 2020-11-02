@@ -4,7 +4,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.atala.prism.cviews.CredentialViewsService
-import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.atala.prism.intdemo._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
@@ -85,7 +85,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val participantsRepository = new ParticipantsRepository(xa)(executionContext)
 
     // authenticator
-    val authenticator = new SignedRequestsAuthenticator(
+    val authenticator = new ConnectorAuthenticator(
       participantsRepository,
       requestNoncesRepository,
       node,

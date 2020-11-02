@@ -5,16 +5,17 @@ import java.util.UUID
 
 import io.circe
 import io.circe.{Json, parser}
+import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.console.grpc.ProtoCodecs.toContactProto
 import io.iohk.atala.prism.console.DataPreparation.{createContact, createIssuer, createIssuerGroup}
 import io.iohk.atala.prism.connector.model.TokenString
-import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
 import io.iohk.atala.prism.console.models.{Contact, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
@@ -31,7 +32,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private lazy val contactsRepository = new ContactsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  private lazy val authenticator = new SignedRequestsAuthenticator(
+  private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
     requestNoncesRepository,
     nodeMock,

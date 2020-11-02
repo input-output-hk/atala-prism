@@ -31,21 +31,28 @@ object DID {
     val longFormRegex: Regex = "^did:prism:[0-9a-f]{64}:[A-Za-z0-9_-]+[=]*$".r
     val shortFormRegex: Regex = "^did:prism:[0-9a-f]{64}$".r
 
+    sealed trait DIDFormatError
+    sealed trait DIDLongFormError extends DIDFormatError
+    case object CanonicalSuffixMatchStateError extends DIDLongFormError
+    case object InvalidAtalaOperationError extends DIDLongFormError
+
     case class Canonical(suffix: String) extends DIDFormat
     case class LongForm(stateHash: String, encodedState: String) extends DIDFormat {
-      def validate: Option[ValidatedLongForm] = {
+      def validate: Either[DIDLongFormError, ValidatedLongForm] = {
         val atalaOperationBytes = Base64.getUrlDecoder.decode(encodedState)
         if (stateHash == SHA256Digest.compute(atalaOperationBytes).hexValue) {
           node_models.AtalaOperation
             .validate(atalaOperationBytes)
             .toOption
+            .toRight(InvalidAtalaOperationError)
             .map(ValidatedLongForm(stateHash, encodedState, _))
         } else {
-          None
+          Left(CanonicalSuffixMatchStateError)
         }
       }
 
-      def getInitialState: Option[node_models.AtalaOperation] = validate.map(_.initialState)
+      def getInitialState: Either[DIDLongFormError, node_models.AtalaOperation] =
+        validate.map(_.initialState)
     }
     case object Unknown extends DIDFormat
   }

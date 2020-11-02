@@ -7,16 +7,17 @@ import io.circe
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
+import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
-import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{GenericCredential, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
 import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
@@ -36,7 +37,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  private lazy val authenticator = new SignedRequestsAuthenticator(
+  private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
     requestNoncesRepository,
     nodeMock,

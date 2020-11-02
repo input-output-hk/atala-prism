@@ -2,8 +2,8 @@ package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.grpc.ProtoCodecs._
-import io.iohk.atala.prism.connector.Authenticator
 import io.iohk.atala.prism.console.models.{
   Contact,
   CreateGenericCredential,
@@ -28,7 +28,7 @@ import scala.util.Try
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
     contactsRepository: ContactsRepository,
-    authenticator: Authenticator,
+    authenticator: ConnectorAuthenticator,
     nodeService: NodeServiceGrpc.NodeService
 )(implicit
     ec: ExecutionContext

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
-import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
@@ -26,7 +26,7 @@ import scala.util.Try
 
 class ContactsServiceImpl(
     contactsRepository: ContactsRepository,
-    authenticator: Authenticator
+    authenticator: ConnectorAuthenticator
 )(implicit
     ec: ExecutionContext
 ) extends console_api.ConsoleServiceGrpc.ConsoleService

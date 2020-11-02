@@ -1,10 +1,10 @@
-package io.iohk.atala.prism.connector.util
+package io.iohk.atala.prism.auth
 
 import java.util.UUID
 
-import io.iohk.atala.prism.connector.model
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECSignature}
-import io.iohk.atala.prism.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.auth
+import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import scalapb.GeneratedMessage
 
 final case class SignedRpcRequest[R <: GeneratedMessage](
@@ -24,7 +24,7 @@ object SignedRpcRequest {
     val privateKey = keyPair.privateKey
     val requestNonce = UUID.randomUUID().toString.getBytes.toVector
     val signature = EC.sign(
-      SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray,
+      SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
       privateKey
     )
     SignedRpcRequest(

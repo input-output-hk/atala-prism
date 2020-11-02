@@ -3,18 +3,19 @@ package io.iohk.atala.prism.console.services
 import java.util.UUID
 
 import doobie.implicits._
+import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.model.{ConnectionId, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
-import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, StoredCredentialsDAO}
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.cstore_api
 import org.mockito.MockitoSugar._
@@ -37,7 +38,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val authenticator = new SignedRequestsAuthenticator(
+  private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
     requestNoncesRepository,
     nodeMock,

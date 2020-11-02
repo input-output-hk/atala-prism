@@ -25,7 +25,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
       DID.createUnpublishedDID(masterKey) mustBe expectedDID
 
       DID.getFormat(expectedDID) match {
-        case longForm @ DIDFormat.LongForm(_, _) => longForm.validate.isEmpty mustBe false
+        case longForm @ DIDFormat.LongForm(_, _) => longForm.validate.isLeft mustBe false
         case _ => fail("unexpected format for long DID")
       }
     }
@@ -118,7 +118,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
 
       getFormat(long) match {
         case validated @ DIDFormat.LongForm(_, _) =>
-          validated.validate.value.initialState mustBe expectedInitialState
+          validated.validate.toOption.value.initialState mustBe expectedInitialState
         case _ => fail("Long form DID with unexpected format")
       }
     }

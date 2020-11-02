@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.connector.repositories
 
 import doobie.implicits._
-import io.iohk.atala.prism.connector.model.{ParticipantType, RequestNonce}
+import io.iohk.atala.prism.auth.model.RequestNonce
+import io.iohk.atala.prism.connector.model.ParticipantType
 import io.iohk.atala.prism.connector.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.OptionValues._

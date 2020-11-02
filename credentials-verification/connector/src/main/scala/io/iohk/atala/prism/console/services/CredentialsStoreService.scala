@@ -2,7 +2,7 @@ package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
-import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.console.models.{Contact, Institution}
@@ -17,7 +17,7 @@ import scala.util.Try
 
 class CredentialsStoreService(
     storedCredentials: StoredCredentialsRepository,
-    authenticator: Authenticator
+    authenticator: ConnectorAuthenticator
 )(implicit
     ec: ExecutionContext
 ) extends cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreService

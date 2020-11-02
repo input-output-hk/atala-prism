@@ -64,6 +64,7 @@ object PrismBuild {
           doobieDependencies ++
             dockerDependencies ++
             bouncyDependencies ++
+            grpcDependencies ++
             Seq(
               diffx,
               enumeratum,
@@ -72,7 +73,7 @@ object PrismBuild {
               typesafeConfig
             )
       )
-      .dependsOn(cryptoLib, protosLib)
+      .dependsOn(cryptoLib, protosLib, credentialsLib)
 
   def commonServerProject(name: String): Project =
     commonProject(Project(name, file(name)))
@@ -134,7 +135,7 @@ object PrismBuild {
         mainClass in (Compile, run) := Some("io.iohk.atala.prism.node.NodeApp"),
         libraryDependencies ++= Seq(awsSdk, osLib)
       )
-      .dependsOn(common % "compile->compile;test->test", credentialsLib, connectorLib)
+      .dependsOn(common % "compile->compile;test->test", connectorLib)
 
   lazy val nodeClient =
     commonProject(project in file("node") / "client")
@@ -182,7 +183,7 @@ object PrismBuild {
         mainClass in (Compile, run) := Some("io.iohk.atala.mirror.MirrorApp"),
         libraryDependencies ++= http4sDependencies
       )
-      .dependsOn(common % "compile->compile;test->test", credentialsLib, connectorLib)
+      .dependsOn(common % "compile->compile;test->test", connectorLib)
 
   lazy val vault =
     commonServerProject("vault")

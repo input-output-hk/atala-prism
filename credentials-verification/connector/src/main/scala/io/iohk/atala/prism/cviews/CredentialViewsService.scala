@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.cviews
 
 import io.circe.Json
-import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.intdemo.html.{HealthCredential, IdCredential, ProofOfEmployment, UniversityDegree}
 import io.iohk.atala.prism.utils.FutureEither
@@ -13,7 +13,7 @@ import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CredentialViewsService(authenticator: Authenticator)(implicit ec: ExecutionContext)
+class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec: ExecutionContext)
     extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService {
   override def getCredentialViewTemplates(
       request: GetCredentialViewTemplatesRequest

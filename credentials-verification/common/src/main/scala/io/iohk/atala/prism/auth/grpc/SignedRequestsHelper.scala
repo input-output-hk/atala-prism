@@ -1,6 +1,6 @@
-package io.iohk.atala.prism.grpc
+package io.iohk.atala.prism.auth.grpc
 
-import io.iohk.atala.prism.connector.model.RequestNonce
+import io.iohk.atala.prism.auth.model.RequestNonce
 
 object SignedRequestsHelper {
   def merge(requestNonce: RequestNonce, request: Array[Byte]): Vector[Byte] = {

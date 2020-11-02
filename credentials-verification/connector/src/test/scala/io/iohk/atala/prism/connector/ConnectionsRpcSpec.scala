@@ -10,8 +10,9 @@ import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.connector.model.ParticipantType.Holder
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
-import io.iohk.atala.prism.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.auth
+import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
@@ -197,7 +198,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         EC.sign(
-          SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray,
+          SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
           privateKey
         )
 

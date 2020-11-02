@@ -2,14 +2,14 @@ package io.iohk.atala.prism.console.services
 
 import java.util.UUID
 
-import io.iohk.atala.prism.connector.Authenticator
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.GroupsRepository
 import io.iohk.atala.prism.protos.{cmanager_api, cmanager_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator: Authenticator)(implicit
+class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator: ConnectorAuthenticator)(implicit
     ec: ExecutionContext
 ) extends cmanager_api.GroupsServiceGrpc.GroupsService {
 

@@ -6,15 +6,16 @@ import cats.effect.IO
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.circe.Json
+import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
-import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository}
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
-import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.cmanager_api
 import org.mockito.MockitoSugar._
@@ -34,7 +35,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private lazy val contactsRepository = new ContactsRepository(database)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
-    new SignedRequestsAuthenticator(
+    new ConnectorAuthenticator(
       participantsRepository,
       requestNoncesRepository,
       nodeMock,

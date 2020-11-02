@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.grpc
+package io.iohk.atala.prism.auth.grpc
 
 import io.grpc.{Context, Metadata}
 

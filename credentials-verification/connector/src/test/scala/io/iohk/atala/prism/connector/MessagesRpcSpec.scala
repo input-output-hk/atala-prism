@@ -7,8 +7,9 @@ import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
-import io.iohk.atala.prism.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.auth
+import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.protos.connector_api
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
@@ -60,7 +61,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         EC.sign(
-          SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray,
+          SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
           privateKey
         )
       val issuerId = createIssuer("Issuer", Some(keys.publicKey), Some(did))

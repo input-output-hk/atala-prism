@@ -1,12 +1,9 @@
 package io.iohk.atala.prism.connector
 
 import java.time.Instant
-import java.util.concurrent.{Executor, TimeUnit}
 
 import doobie.implicits._
-import io.grpc._
-import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
@@ -17,117 +14,13 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   ParticipantsDAO
 }
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
-import io.iohk.atala.prism.grpc.{
-  GrpcAuthenticationHeader,
-  GrpcAuthenticationHeaderParser,
-  GrpcAuthenticatorInterceptor,
-  SignedRequestsHelper
-}
+import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.protos.connector_api
 import org.mockito.MockitoSugar._
-import org.scalatest.BeforeAndAfterEach
-import scalapb.GeneratedMessage
 
 import scala.concurrent.duration.DurationLong
-
-trait ApiTestHelper[STUB] {
-  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T
-  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: String, keyId: String)(f: STUB => T): T
-  def apply[T](requestNonce: Vector[Byte], keys: ECKeyPair, request: GeneratedMessage)(f: STUB => T): T = {
-    val payload = SignedRequestsHelper.merge(model.RequestNonce(requestNonce), request.toByteArray).toArray
-    val signature = EC.sign(payload.array, keys.privateKey)
-    apply(requestNonce, signature, keys.publicKey)(f)
-  }
-  def apply[T, R <: GeneratedMessage](rpcRequest: SignedRpcRequest[R])(f: STUB => T): T =
-    apply(rpcRequest.nonce, rpcRequest.signature, rpcRequest.did, rpcRequest.keyId)(f)
-  def unlogged[T](f: STUB => T): T
-}
-
-abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
-
-  protected var serverName: String = _
-  protected var serverHandle: Server = _
-  protected var channelHandle: ManagedChannel = _
-
-  def services: Seq[ServerServiceDefinition]
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-
-    serverName = InProcessServerBuilder.generateName()
-
-    val serverBuilderWithoutServices = InProcessServerBuilder
-      .forName(serverName)
-      .directExecutor()
-      .intercept(new GrpcAuthenticatorInterceptor)
-
-    val serverBuilder = services.foldLeft(serverBuilderWithoutServices) { (builder, service) =>
-      builder.addService(service)
-    }
-
-    serverHandle = serverBuilder.build().start()
-
-    channelHandle = InProcessChannelBuilder.forName(serverName).directExecutor().build()
-  }
-
-  override def afterEach(): Unit = {
-    channelHandle.shutdown()
-    channelHandle.awaitTermination(10, TimeUnit.SECONDS)
-    serverHandle.shutdown()
-    serverHandle.awaitTermination()
-    super.afterEach()
-  }
-
-  def usingApiAsConstructor[STUB](stubFactory: (ManagedChannel, CallOptions) => STUB): ApiTestHelper[STUB] =
-    new ApiTestHelper[STUB] {
-      override def unlogged[T](f: STUB => T): T = {
-        val blockingStub = stubFactory(channelHandle, CallOptions.DEFAULT)
-        f(blockingStub)
-      }
-
-      private def apply[T](metadata: Metadata)(f: STUB => T): T = {
-        val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
-          override def applyRequestMetadata(
-              requestInfo: CallCredentials.RequestInfo,
-              appExecutor: Executor,
-              applier: CallCredentials.MetadataApplier
-          ): Unit = {
-            appExecutor.execute { () =>
-              applier.apply(metadata)
-            }
-          }
-
-          override def thisUsesUnstableApi(): Unit = ()
-        })
-
-        val blockingStub = stubFactory(channelHandle, callOptions)
-        f(blockingStub)
-      }
-
-      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(
-          f: STUB => T
-      ): T = {
-        apply(
-          GrpcAuthenticationHeader
-            .PublicKeyBased(model.RequestNonce(requestNonce), publicKey, signature)
-            .toMetadata
-        )(f)
-      }
-
-      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: String, keyId: String)(
-          f: STUB => T
-      ): T = {
-        apply(
-          GrpcAuthenticationHeader
-            .DIDBased(model.RequestNonce(requestNonce), did, keyId, signature)
-            .toMetadata
-        )(f)
-      }
-    }
-}
 
 class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   implicit val executionContext = scala.concurrent.ExecutionContext.global
@@ -159,7 +52,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
-    new SignedRequestsAuthenticator(
+    new ConnectorAuthenticator(
       participantsRepository,
       requestNoncesRepository,
       nodeMock,

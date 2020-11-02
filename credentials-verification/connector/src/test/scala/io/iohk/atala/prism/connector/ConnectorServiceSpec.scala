@@ -3,8 +3,8 @@ package io.iohk.atala.prism.connector
 import java.time.{LocalDateTime, ZoneOffset}
 
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._

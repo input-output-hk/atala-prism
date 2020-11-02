@@ -5,7 +5,7 @@ import java.util.UUID
 import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
-import io.iohk.atala.prism.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
 import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
@@ -17,6 +17,7 @@ import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, PaymentsRepository}
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.atala.prism.BuildInfo
+import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
 import org.slf4j.{Logger, LoggerFactory}
@@ -31,7 +32,7 @@ class ConnectorService(
     registrationService: RegistrationService,
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
-    authenticator: AuthenticatorWithGrpcHeaderParser,
+    authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     nodeService: NodeServiceGrpc.NodeService,
     participantsRepository: ParticipantsRepository,
     // TODO: remove this flag when mobile clients implement signatures

@@ -45,7 +45,7 @@ class NodeServiceImpl(
       case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
         // we first check that the encoded initial state matches the corresponding hash
         longForm.validate
-          .fold(failWith(s"Invalid long form DID: ${request.did}")) { validatedLongForm =>
+          .map { validatedLongForm =>
             // validation succeeded, we check if the DID was published
             resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = request.did) orElse { _ =>
               // if it was not published, we return the encoded initial state
@@ -57,6 +57,7 @@ class NodeServiceImpl(
               )
             }
           }
+          .getOrElse(failWith(s"Invalid long form DID: ${request.did}"))
       case DID.DIDFormat.Unknown =>
         failWith(s"DID format not supported: ${request.did}")
     }

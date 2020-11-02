@@ -1,12 +1,13 @@
 package io.iohk.atala.prism.cviews
 
 import io.grpc.ServerServiceDefinition
+import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.util.SignedRpcRequest
-import io.iohk.atala.prism.connector.{DIDGenerator, RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
 import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
@@ -21,7 +22,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDGenerator {
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  private lazy val authenticator = new SignedRequestsAuthenticator(
+  private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
     requestNoncesRepository,
     nodeMock,
