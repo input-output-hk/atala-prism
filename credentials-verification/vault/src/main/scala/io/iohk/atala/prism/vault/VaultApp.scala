@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.vault
 
 import com.typesafe.config.{Config, ConfigFactory}
-import io.grpc.{Server, ServerBuilder}
+import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.vault_api
-import io.iohk.atala.prism.vault.repositories.PayloadsRepository
+import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultServiceImpl
 import org.slf4j.LoggerFactory
 
@@ -37,9 +39,29 @@ class VaultApp(executionContext: ExecutionContext) {
     logger.info("Connecting to the database")
     val xa = TransactorFactory(databaseConfig)
 
-    val payloadsRepository = new PayloadsRepository(xa)(executionContext)
+    // Node client
+    val nodeChannel = ManagedChannelBuilder
+      .forAddress(
+        globalConfig.getConfig("node").getString("host"),
+        globalConfig.getConfig("node").getInt("port")
+      )
+      .usePlaintext()
+      .build()
+    val node = NodeServiceGrpc.stub(nodeChannel)
 
-    val encryptedDataVaultService = new EncryptedDataVaultServiceImpl(payloadsRepository)(executionContext)
+    // Vault repositories
+    val payloadsRepository = new PayloadsRepository(xa)(executionContext)
+    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
+
+    val authenticator = new VaultAuthenticator(
+      requestNoncesRepository,
+      node,
+      GrpcAuthenticationHeaderParser
+    )
+
+    val encryptedDataVaultService = new EncryptedDataVaultServiceImpl(payloadsRepository, authenticator)(
+      executionContext
+    )
 
     logger.info("Starting server")
     server = ServerBuilder

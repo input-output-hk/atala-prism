@@ -7,7 +7,11 @@ package io.iohk.atala.prism.protos;
 
 service EncryptedDataVaultService {
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+    rpc AuthHealthCheck(AuthHealthCheckRequest) returns (AuthHealthCheckResponse) {}
 }
 
 message HealthCheckRequest {}
 message HealthCheckResponse {}
+
+message AuthHealthCheckRequest {}
+message AuthHealthCheckResponse {}

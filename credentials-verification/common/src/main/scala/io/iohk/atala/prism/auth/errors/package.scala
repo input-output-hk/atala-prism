@@ -41,6 +41,12 @@ package object errors {
     }
   }
 
+  final case class UnsupportedAuthMethod() extends AuthError {
+    override def toStatus: Status = {
+      Status.UNAUTHENTICATED.withDescription("Unsupported auth method")
+    }
+  }
+
   final case class UnexpectedError(status: Status) extends AuthError {
     override def toStatus: Status = status
   }

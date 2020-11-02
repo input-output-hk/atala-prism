@@ -117,7 +117,9 @@ object DID {
     val operationBytes = atalaOp.toByteArray
     val operationHash = SHA256Digest.compute(operationBytes)
     val didCanonicalSuffix = operationHash.hexValue
-    val encodedOperation = Base64.getUrlEncoder.encodeToString(operationBytes)
+    // DID method-specific id must consist out of alpha-digit characters plus '.', '-' and '_'.
+    // Hence we are using URL-safe Base64 encoder without padding (i.e. no trailing '='s).
+    val encodedOperation = Base64.getUrlEncoder.withoutPadding().encodeToString(operationBytes)
     buildPrismDID(didCanonicalSuffix, encodedOperation)
   }
 
