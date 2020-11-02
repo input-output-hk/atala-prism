@@ -201,6 +201,12 @@
       "educational": "Educational Credential",
       "proofOfEmployment": "Proof of Employment",
       "healthInsurance": "Health Insurance"
+    },
+    "sentCredentialModal":{
+      "title": "You are about to send",
+      "credentials":"credentials",
+      "cantSendText":"cannot be sent because their connections are pending and/or the credentials have not been signed.",
+      "confirm":"Confirm"
     }
   },
   "credentialSummary": {

@@ -1,0 +1,34 @@
+@import '../../../../css/general_styling';
+
+.SentModalContainer {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  padding: 2em;
+
+  img {
+    width: 180px;
+    margin-bottom: 1.5em;
+  }
+
+  h3 {
+    @include secondary-text($h3, $primary-color);
+    word-spacing: -4px;
+  }
+
+  p {
+    @include primary-text($body, $secondary-color);
+    margin-bottom: 1em;
+    word-spacing: -4px;
+  }
+}
+
+.FooterButtonsSent {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+  button {
+    width: 150px;
+    margin: 0 0.5em;
+  }
+}

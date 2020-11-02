@@ -87,7 +87,17 @@
       "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
     },
     "detail": {
-      "title": "Credentials List"
+      "title": "Credentials List",
+      "dataTitle": "Group Name",
+      "contacts": "Contacts",
+      "credIssued": "Credential Issued ",
+      "credReceived": "Credential Received",
+      "detailSection": {
+        "title": "Contact Detail",
+        "subtitle": "General Information",
+        "groupsSubtitle": "View the credentials that you have sent to the contact.",
+        "credentialSubtitle": "These are all the groups this contact is in."
+      }
     }
   },
   "groups": {
@@ -181,13 +191,20 @@
       "notarizationTitle": "Blockchain Notarization",
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
-      "downloadButton": "Download Credential"
+      "downloadButton": "Download Credential",
+      "dateCreated": "Date Created"
     },
     "type": {
       "governmentId": "Government ID",
       "educational": "Educational Credential",
       "proofOfEmployment": "Proof of Employment",
       "healthInsurance": "Health Insurance"
+    },
+    "sentCredentialModal":{
+      "title": "You are about to send",
+      "credentials":"credentials",
+      "cantSendText":"cannot be sent because their connections are pending and/or the credentials have not been signed.",
+      "confirm":"Confirm"
     }
   },
   "credentialSummary": {
@@ -241,8 +258,10 @@
     },
     "typeSelection": "Select a type of credential",
     "targetsSelection": {
-      "groups": "Select one or more groups",
-      "subjects": "Select one or more subjects"
+      "groups": "Select a group",
+      "subjects": "Select contacts",
+      "selectGroup":"Select a group or select individual contacts to issue credentials",
+      "checkbox":"Do not select any group or contact"
     },
     "bulkImport": {
       "title": "Follow these steps to continue:"
@@ -309,10 +328,27 @@
     "checkInfo": "Check the data below"
   },
   "landing": {
-    "welcome": "Welcome",
+    "welcome": "Welcome!",
+    "description":"Please log in with Atala PRISM Browser Wallet",
     "register": "Register",
+    "clickHere": "Click Here",
     "login": "Login",
+    "getWallet": "Don't yet have the Atala PRISM Browser Wallet?",
     "logoAlt": "Atala landing picture"
+  },
+  "instructions": {
+    "instructions": "Instructions",
+    "title": "How to get your PRISM Wallet",
+    "the": "The",
+    "atalaPrism": " Atala PRISM Browser Wallet ",
+    "description": "is used to manage access to the management console and sign credentials. Currently the browser wallet extension is available on ",
+    "chrome":"Chrome. ",
+    "chromeWeb":"Chrome Web Store",
+    "descriptionPartTwo":"Depending on the browser you are currently using. Please go to the relevant webstore and add the extension to your browser",
+    "comingSoon": "Comming Soon on ",
+    "register":"Already have your Atala PRISM? ",
+    "clickRegister":"Click to register",
+    "button": "Download ZIP File"
   },
   "login": {
     "welcome": {
@@ -540,7 +576,7 @@
     "info": "Follow this steps first upload the spreadsheet, fill it with the required information and then upload it to check the fields.",
     "completeSpreadsheet": {
       "title": "Complete Spreadsheet",
-      "info": "First download the spreadsheet, complete with the required information and upload the document.",
+      "info": "Credential template process: first download template .csv file, then enter credential information and finally Re-upload .csv file.",
       "downloadText": "Download",
       "uploadText": "Upload"
     },
