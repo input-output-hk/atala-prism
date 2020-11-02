@@ -11,7 +11,7 @@ import slinky.web.html._
 @react class SlinkyInitialWalletView extends StatelessComponent {
   case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
 
-  override def render: ReactElement = {
+  override def render(): ReactElement = {
     div(className := "container")(
       div(
         className := "title_container",

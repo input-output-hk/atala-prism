@@ -12,7 +12,7 @@ import slinky.web.html._
 
   case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
 
-  override def render: ReactElement = {
+  override def render(): ReactElement = {
     div(id := "welcomeRecoveryScreen")(
       div(className := "welcome_img")(
         img(src := "/assets/images/unlock.png")

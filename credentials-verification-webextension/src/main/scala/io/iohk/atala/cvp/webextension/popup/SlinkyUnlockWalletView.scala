@@ -28,7 +28,7 @@ import scala.util.{Failure, Success}
     State("", "")
   }
 
-  override def render: ReactElement = {
+  override def render(): ReactElement = {
 
     div(id := "unlockScreen")(
       div(

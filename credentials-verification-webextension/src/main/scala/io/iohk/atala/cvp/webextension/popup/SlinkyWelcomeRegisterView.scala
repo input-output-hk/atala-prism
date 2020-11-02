@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   case class Props(backgroundAPI: BackgroundAPI, blockchainExplorerUrl: String, switchToView: View => Unit)
   case class State(mayBeTransactionId: Option[String])
 
-  override def render: ReactElement = {
+  override def render(): ReactElement = {
     div(id := "welcomeRegisterScreen")(
       div(className := "welcome_img")(
         img(src := "/assets/images/Done.png")

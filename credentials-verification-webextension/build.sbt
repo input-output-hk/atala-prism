@@ -109,7 +109,6 @@ buildInfoKeys ++= Seq[BuildInfoKey](
   "activeTabContextScripts" -> manifestActiveTabContextScripts
 )
 
-stFlavour := Slinky
 // dependencies
 val circe = "0.13.0"
 val grpcWebVersion = "0.3.0"
@@ -140,6 +139,8 @@ libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % slinkyIjextVerion //
 // Test
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 
+stFlavour := Flavour.Slinky
+
 // js
 npmDependencies in Compile ++= Seq(
   "uuid" -> "3.1.0",
@@ -152,7 +153,9 @@ npmDependencies in Compile ++= Seq(
   "react-dom" -> "16.12.0",
   "dompurify" -> "2.0.3",
   "@types/dompurify" -> "2.0.3",
-  "@material-ui/core" -> "3.9.4"
+  "@material-ui/core" -> "3.9.4",
+  "@material-ui/icons" -> "3.0.2",
+  "@material-ui/styles" -> "3.0.0-alpha.10"
 )
 
 // Internal libraries

@@ -5,15 +5,16 @@ import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.Role
 import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.popup.models.View
-import io.iohk.atala.cvp.webextension.popup.models.View.Register
+import io.iohk.atala.cvp.webextension.popup.models.View.{Default, Register}
 import org.scalajs.dom.raw.{File, FileReader, HTMLInputElement}
 import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 import typings.materialUiCore.PartialClassNameMapCircul
-import typings.materialUiCore.components.CircularProgress
 import typings.materialUiCore.materialUiCoreStrings.indeterminate
+import typings.materialUiCore.{components => mui}
+import typings.materialUiIcons.{components => muiIcons}
 import typings.std.console
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -77,7 +78,7 @@ import scala.util.{Failure, Success}
     setState(_.copy(privacyPolicy = newValue))
   }
 
-  override def render: ReactElement = {
+  override def render(): ReactElement = {
 
     def enableButton = {
       if (state.tandc && state.privacyPolicy && !state.isLoading) {
@@ -88,6 +89,7 @@ import scala.util.{Failure, Success}
     }
 
     div(id := "registrationScreen")(
+      mui.IconButton(onClick = _ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
       h3(className := "h3_register", id := "h3_register", "Wallet registration"),
       div(className := "div__field_group")(
         h4(className := "h4_register")("Save your recovery phrase"),
@@ -212,7 +214,7 @@ import scala.util.{Failure, Success}
             }
           )("Register"),
           if (state.isLoading) {
-            CircularProgress(
+            mui.CircularProgress(
               variant = indeterminate,
               size = 26,
               classes = PartialClassNameMapCircul(root = "progress_bar")

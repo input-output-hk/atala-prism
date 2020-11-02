@@ -36,7 +36,7 @@ import typings.dompurify.mod.{^ => dompurify}
       .textContent
   }
 
-  override def render: ReactElement = {
+  override def render(): ReactElement = {
     val cancelButton = div(className := "btn_cancel", id := "btn_cancel")("Cancel")
 
     if (state.requests.nonEmpty) {
