@@ -58,4 +58,15 @@ object ArrayOps {
       dest
     }
   }
+
+  implicit class SeqStringArrayOps(seq: Seq[String]) {
+    def toStringArray: Array[String] = {
+      val arr = new Array[String](seq.size)
+
+      for ((b, i) <- seq.zipWithIndex) {
+        arr(i) = b
+      }
+      arr
+    }
+  }
 }

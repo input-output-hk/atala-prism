@@ -6,7 +6,7 @@ import cats.data._
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 
-object VerifiableCredential {
+object PrismCredentialVerification {
 
   import VerificationError._
 

@@ -24,7 +24,7 @@ import io.iohk.atala.prism.credentials.{
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.crypto.japi.ECPublicKeyFacade
 
-class CredentialVerificationFacade(implicit val ec: ECTrait) extends CredentialVerification {
+private[japi] class CredentialVerificationFacade(implicit val ec: ECTrait) extends CredentialVerification {
 
   override def verifyCredential(
       keyData: KeyData,

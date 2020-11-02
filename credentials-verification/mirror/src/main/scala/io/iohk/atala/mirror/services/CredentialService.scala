@@ -16,7 +16,12 @@ import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
-import io.iohk.atala.prism.credentials.{CredentialData, SlayerCredentialId, VerifiableCredential, VerificationError}
+import io.iohk.atala.prism.credentials.{
+  CredentialData,
+  PrismCredentialVerification,
+  SlayerCredentialId,
+  VerificationError
+}
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
@@ -169,7 +174,7 @@ class CredentialService(
       issuanceKeyId <- EitherT.fromOption[Task](credential.content.issuanceKeyId, "Empty issuanceKeyId")
       keyData <- NodeUtils.getKeyData(issuerDid, issuanceKeyId, nodeService)
       credentialData <- getCredentialData(SlayerCredentialId.compute(credential.hash, issuerDid))
-    } yield VerifiableCredential.verify(keyData, credentialData, credential)).value
+    } yield PrismCredentialVerification.verify(keyData, credentialData, credential)).value
   }
 
   private[services] def getCredentialData(id: SlayerCredentialId): EitherT[Task, String, CredentialData] = {

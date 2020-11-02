@@ -6,7 +6,7 @@ import io.iohk.atala.prism.crypto.{ECSignature, ECPrivateKey, ECPublicKey}
 
 package object credentials {
 
-  type ECCredential[+C] = Credential[C, ECSignature, ECPrivateKey, ECPublicKey]
+  type ECCredential[+C] = VerifiableCredential[C, ECSignature, ECPrivateKey, ECPublicKey]
 
   object errors {
     sealed trait Error extends Exception

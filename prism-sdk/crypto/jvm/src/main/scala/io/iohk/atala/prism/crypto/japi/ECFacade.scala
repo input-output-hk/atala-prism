@@ -2,7 +2,7 @@ package io.iohk.atala.prism.crypto.japi
 
 import java.math.BigInteger
 
-import io.iohk.atala.prism.crypto.GenericEC
+import io.iohk.atala.prism.crypto.{ECTrait, GenericEC}
 
 class ECFacade(val ec: GenericEC) extends EC {
 
@@ -99,4 +99,8 @@ class ECFacade(val ec: GenericEC) extends EC {
       signature.asInstanceOf[ECSignatureFacade].signature
     )
   }
+}
+
+object ECFacade {
+  def unwrap(ec: EC): ECTrait = ec.asInstanceOf[ECFacade].ec
 }
