@@ -8,6 +8,8 @@ import io.iohk.atala.prism.protos.node_models
 
 import scala.util.matching.Regex
 
+final case class DID(value: String) extends AnyVal
+
 object DID {
   val prismPrefix: String = "did:prism:"
   def buildPrismDID(stateHash: String, maybeEncodedState: Option[String] = None): String = {

@@ -5,13 +5,33 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+import "vault_models.proto";
+
 service EncryptedDataVaultService {
+    // Checks if the service is healthy
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
-    rpc AuthHealthCheck(AuthHealthCheckRequest) returns (AuthHealthCheckResponse) {}
+    // Stores a given encrypted payload, associating it with the authenticated user. A unique ID is returned.
+    rpc StoreData (StoreDataRequest) returns (StoreDataResponse) {}
+    // Retrieves all encrypted payloads stored by the authenticated user, paginated and sorted by insertion order.
+    rpc GetPaginatedData (GetPaginatedDataRequest) returns (GetPaginatedDataResponse) {}
 }
 
 message HealthCheckRequest {}
 message HealthCheckResponse {}
 
-message AuthHealthCheckRequest {}
-message AuthHealthCheckResponse {}
+message StoreDataRequest {
+    bytes payload = 1;
+}
+
+message StoreDataResponse {
+    string payloadId = 1;
+}
+
+message GetPaginatedDataRequest {
+    string lastSeenId = 1; // returned payloads will have been created after the last seen payload (optional field)
+    int32 limit = 2; // maximum number of payloads to return; must be > 0
+}
+
+message GetPaginatedDataResponse {
+    repeated Payload payloads = 1;
+}
