@@ -8,24 +8,18 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.console.repositories.{daos => consoleDaos}
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType, TokenString}
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
-import io.iohk.atala.prism.console.models.{
-  Contact,
-  CreateContact,
-  CreateGenericCredential,
-  GenericCredential,
-  Institution,
-  IssuerGroup
-}
+import io.iohk.atala.prism.console.models._
+import io.iohk.atala.prism.console.repositories.{daos => consoleDaos}
 import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.migrations.Student.ConnectionStatus
 import io.iohk.atala.prism.models.ParticipantId
 
 object DataPreparation {
 
-  import consoleDaos._
   import connectorDaos._
+  import consoleDaos._
 
   def createIssuer(
       name: String = "Issuer",
@@ -142,5 +136,18 @@ object DataPreparation {
     } yield token
 
     tx.transact(database).unsafeRunSync()
+  }
+
+  // the difference from the ContactsDAO method is that this one doesn't set a connection id
+  def acceptConnection(issuerId: Institution.Id, token: TokenString)(implicit database: Transactor[IO]): Unit = {
+    sql"""
+         |UPDATE contacts
+         |SET connection_status = ${ConnectionStatus.ConnectionAccepted: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
+         |WHERE connection_token = $token AND
+         |      created_by = $issuerId
+         |""".stripMargin.update.run
+      .map(_ => ())
+      .transact(database)
+      .unsafeRunSync()
   }
 }

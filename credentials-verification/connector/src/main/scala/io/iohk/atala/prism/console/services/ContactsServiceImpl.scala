@@ -6,18 +6,9 @@ import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
-import io.iohk.atala.prism.console.repositories.ContactsRepository
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, StatisticsRepository}
 import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.protos.console_api.{
-  CreateContactRequest,
-  CreateContactResponse,
-  GenerateConnectionTokenForContactRequest,
-  GenerateConnectionTokenForContactResponse,
-  GetContactRequest,
-  GetContactResponse,
-  GetContactsRequest,
-  GetContactsResponse
-}
+import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -26,6 +17,7 @@ import scala.util.Try
 
 class ContactsServiceImpl(
     contactsRepository: ContactsRepository,
+    statisticsRepository: StatisticsRepository,
     authenticator: ConnectorAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -156,6 +148,31 @@ class ContactsServiceImpl(
     }
 
     authenticator.authenticated("generateConnectionTokenForSubject", request) { participantId =>
+      f(Institution.Id(participantId.uuid))
+    }
+  }
+
+  override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] = {
+    def f(institutionId: Institution.Id): Future[GetStatisticsResponse] = {
+      implicit val loggingContext: LoggingContext =
+        LoggingContext("request" -> request, "institutionId" -> institutionId)
+
+      for {
+        response <-
+          statisticsRepository
+            .query(institutionId)
+            .map { stats =>
+              stats
+                .into[GetStatisticsResponse]
+                .withFieldConst(_.numberOfCredentialsInDraft, stats.numberOfCredentialsInDraft)
+                .transform
+            }
+            .wrapExceptions
+            .flatten
+      } yield response
+    }
+
+    authenticator.authenticated("getStatistics", request) { participantId =>
       f(Institution.Id(participantId.uuid))
     }
   }

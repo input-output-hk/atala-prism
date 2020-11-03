@@ -104,4 +104,16 @@ package object models {
   object GenericCredential {
     case class Id(value: UUID) extends AnyVal
   }
+
+  case class Statistics(
+      numberOfContacts: Int,
+      numberOfContactsPendingConnection: Int,
+      numberOfContactsConnected: Int,
+      numberOfGroups: Int,
+      numberOfCredentials: Int,
+      numberOfCredentialsPublished: Int,
+      numberOfCredentialsReceived: Int
+  ) {
+    def numberOfCredentialsInDraft: Int = numberOfCredentials - numberOfCredentialsPublished
+  }
 }

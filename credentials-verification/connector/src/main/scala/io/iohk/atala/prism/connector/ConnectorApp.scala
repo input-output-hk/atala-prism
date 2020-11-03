@@ -15,6 +15,7 @@ import io.iohk.atala.prism.console.repositories.{
   ContactsRepository,
   CredentialsRepository,
   GroupsRepository,
+  StatisticsRepository,
   StoredCredentialsRepository
 }
 import io.iohk.atala.prism.console.services.{
@@ -111,6 +112,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     )
 
     // cmanager
+    val statisticsRepository = new StatisticsRepository(xa)
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val contactsRepository = new ContactsRepository(xa)(executionContext)
     val issuerGroupsRepository = new GroupsRepository(xa)(executionContext)
@@ -142,7 +144,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
 
     // console (unified backend) services
-    val consoleService = new ContactsServiceImpl(contactsRepository, authenticator)(executionContext)
+    val consoleService = new ContactsServiceImpl(contactsRepository, statisticsRepository, authenticator)(
+      executionContext
+    )
 
     logger.info("Starting server")
     server = ServerBuilder

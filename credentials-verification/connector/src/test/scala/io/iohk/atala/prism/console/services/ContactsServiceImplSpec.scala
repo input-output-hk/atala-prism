@@ -13,7 +13,7 @@ import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.console.models.{Contact, IssuerGroup}
-import io.iohk.atala.prism.console.repositories.ContactsRepository
+import io.iohk.atala.prism.console.repositories.{ContactsRepository, StatisticsRepository}
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.protos.{console_api, console_models}
@@ -30,6 +30,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val contactsRepository = new ContactsRepository(database)
+  private lazy val statisticsRepository = new StatisticsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new ConnectorAuthenticator(
@@ -43,7 +44,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
     Seq(
       console_api.ConsoleServiceGrpc
         .bindService(
-          new ContactsServiceImpl(contactsRepository, authenticator),
+          new ContactsServiceImpl(contactsRepository, statisticsRepository, authenticator),
           executionContext
         )
     )
@@ -429,6 +430,33 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         storedContact.connectionStatus must be(Contact.ConnectionStatus.ConnectionMissing)
         storedContact.connectionToken.value must be(token)
         storedContact.connectionId must be(contact.connectionId)
+      }
+    }
+  }
+
+  "getStatistics" should {
+    "work" in {
+      val issuerName = "tokenizer"
+      val groupName = IssuerGroup.Name("Grp 1")
+      val contactName = "Contact 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      createIssuerGroup(issuerId, groupName)
+      val _ = createContact(issuerId, contactName, groupName)
+      val request = console_api.GetStatisticsRequest()
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.getStatistics(request)
+        response.numberOfContacts must be(1)
+        response.numberOfContactsConnected must be(0)
+        response.numberOfContactsPendingConnection must be(0)
+        response.numberOfGroups must be(1)
+        response.numberOfCredentialsInDraft must be(0)
+        response.numberOfCredentialsPublished must be(0)
+        response.numberOfCredentialsReceived must be(0)
       }
     }
   }

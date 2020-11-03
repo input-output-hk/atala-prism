@@ -12,6 +12,18 @@ service ConsoleService {
   rpc GetContacts (GetContactsRequest) returns (GetContactsResponse) {}
   rpc GetContact (GetContactRequest) returns (GetContactResponse) {}
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
+  rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
+}
+
+message GetStatisticsRequest {}
+message GetStatisticsResponse {
+  int32 numberOfContacts = 1; // total number of contacts for the authenticated user
+  int32 numberOfContactsPendingConnection = 2; // total number of contacts where they haven't accepted the connection
+  int32 numberOfContactsConnected = 3; // total number of contacts where they accepted the connection
+  int32 numberOfGroups = 4; // total number of groups created
+  int32 numberOfCredentialsInDraft = 5; // total number of credentials that aren't published to the blockchain yet
+  int32 numberOfCredentialsPublished = 6; // total number of credentials published to the blockchain
+  int32 numberOfCredentialsReceived = 7; // total number of credentials received from contacts
 }
 
 message CreateContactRequest {

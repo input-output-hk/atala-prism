@@ -393,5 +393,85 @@ proto.io.iohk.atala.prism.protos.ConsoleServicePromiseClient.prototype.generateC
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.atala.prism.protos.GetStatisticsRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetStatisticsResponse>}
+ */
+const methodDescriptor_ConsoleService_GetStatistics = new grpc.web.MethodDescriptor(
+  '/io.iohk.atala.prism.protos.ConsoleService/GetStatistics',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.atala.prism.protos.GetStatisticsRequest,
+  proto.io.iohk.atala.prism.protos.GetStatisticsResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.GetStatisticsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.GetStatisticsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.atala.prism.protos.GetStatisticsRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetStatisticsResponse>}
+ */
+const methodInfo_ConsoleService_GetStatistics = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.atala.prism.protos.GetStatisticsResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.GetStatisticsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.GetStatisticsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.GetStatisticsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.GetStatisticsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetStatisticsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.atala.prism.protos.ConsoleServiceClient.prototype.getStatistics =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ConsoleService/GetStatistics',
+      request,
+      metadata || {},
+      methodDescriptor_ConsoleService_GetStatistics,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.GetStatisticsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.GetStatisticsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.atala.prism.protos.ConsoleServicePromiseClient.prototype.getStatistics =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ConsoleService/GetStatistics',
+      request,
+      metadata || {},
+      methodDescriptor_ConsoleService_GetStatistics);
+};
+
+
 module.exports = proto.io.iohk.atala.prism.protos;
 
