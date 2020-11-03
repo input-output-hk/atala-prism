@@ -78,7 +78,6 @@ export const LOADING = 'LOADING';
 export const UNLOCKED = 'UNLOCKED';
 export const LOCKED = 'LOCKED';
 export const MISSING_WALLET_ERROR = Error('errors.walletNotRunning');
-export const WALLET_NOT_LOGGED_ERROR = Error('errors.walletNotLogged');
 export const WALLET_NOT_REGISTERED_ERROR = Error('errors.walletNotRegistered');
 
 // Connection status

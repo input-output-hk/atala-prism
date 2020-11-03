@@ -9,8 +9,7 @@ import {
   BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS,
   VERIFIER,
   ISSUER,
-  MISSING_WALLET_ERROR,
-  WALLET_NOT_LOGGED_ERROR
+  MISSING_WALLET_ERROR
 } from '../../helpers/constants';
 
 function getSessionFromExtension({ timeout = BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } = {}) {
@@ -39,10 +38,10 @@ function getSessionRequest() {
         if (isValidSession(session)) {
           const newSessionState = this.setSessionState(session);
           resolve({ sessionData: newSessionState, error: null });
-        } else resolve({ error: WALLET_NOT_LOGGED_ERROR });
+        } else resolve({ error: MISSING_WALLET_ERROR });
       })
       .catch(error => {
-        resolve({ error: WALLET_NOT_LOGGED_ERROR });
+        resolve({ error: MISSING_WALLET_ERROR });
       });
   });
 }
@@ -63,10 +62,10 @@ function verifyRegistration() {
       .then(session => {
         if (isValidSession(session)) {
           resolve();
-        } else reject(WALLET_NOT_LOGGED_ERROR);
+        } else reject(MISSING_WALLET_ERROR);
       })
       .catch(error => {
-        reject(WALLET_NOT_LOGGED_ERROR);
+        reject(MISSING_WALLET_ERROR);
       });
   });
 }
