@@ -153,10 +153,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
       const credentials = createCredentialsResponse
         .filter(({ status }) => status === SUCCESS)
-        .map(({ response }) => response.getGenericcredential().toObject())
-        .filter(
-          ({ connectionstatus }) => connectionstatus === CONNECTION_STATUSES.connectionAccepted
-        );
+        .map(({ response }) => response.getGenericcredential().toObject());
 
       await api.wallet.signCredentials(credentials);
 
