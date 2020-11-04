@@ -11,76 +11,87 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/text_view_title"
+        <ScrollView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingBottom="50dp"
+            android:clipToPadding="false"
+            app:layout_constraintBottom_toTopOf="@+id/accept_button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:text="@string/wallet_setup_activity_title"
-            android:textAlignment="textStart"
-            android:textColor="@color/black"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_height="0dp">
 
-        <TextView
-            android:id="@+id/text_view_subtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/seed_phrase_description"
-            android:textAlignment="textStart"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_view_title" />
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-        <GridView
-            android:id="@+id/grid_view_seed_phrase"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="@color/white"
-            android:clickable="false"
-            android:contextClickable="false"
-            android:foregroundGravity="center"
-            android:gravity="center"
-            android:horizontalSpacing="2dp"
-            android:numColumns="3"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:verticalSpacing="2dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_view_subtitle" />
+                <TextView
+                    android:paddingStart="24dp"
+                    android:paddingEnd="24dp"
+                    android:id="@+id/text_view_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="48dp"
+                    android:text="@string/wallet_setup_activity_title"
+                    android:textAlignment="textStart"
+                    android:textColor="@color/black"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
 
+                <TextView
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:id="@+id/text_view_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/seed_phrase_description"
+                    android:textAlignment="textStart" />
 
-        <TextView
-            android:id="@+id/text_view_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/seed_phrase_explanation"
-            android:textAlignment="textStart"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/grid_view_seed_phrase" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:id="@+id/recycler_view_seed_phrase"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@color/white"
+                    android:clickable="false"
+                    android:contextClickable="false"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp" />
 
-        <include
-            checked="@={viewModel.mnemonicListAccepted}"
-            layout="@layout/neo_include_checkbox_with_description"
-            text="@{@string/seed_phrase_acceptance}"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_view_description" />
+                <TextView
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:id="@+id/text_view_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/seed_phrase_explanation"
+                    android:textAlignment="textStart" />
+
+                <include
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    checked="@={viewModel.mnemonicListAccepted}"
+                    layout="@layout/neo_include_checkbox_with_description"
+                    text="@{@string/seed_phrase_acceptance}"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
 
         <Button
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:id="@+id/accept_button"
             android:layout_width="0dp"
             android:layout_height="64dp"

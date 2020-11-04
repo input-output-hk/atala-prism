@@ -92,6 +92,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="@string/home"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:textAlignment="center"
                 android:textColor="@color/blueGrey"
                 android:textSize="12sp"
@@ -100,6 +102,8 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
             <TextView
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:id="@+id/profile_menu_item_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -115,6 +119,8 @@
 
 
             <TextView
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:id="@+id/connections_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -128,6 +134,8 @@
                 app:layout_constraintTop_toBottomOf="@+id/stub_menu_item" />
 
             <TextView
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:id="@+id/wallet_menu_item_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -142,6 +150,8 @@
                 app:layout_constraintTop_toBottomOf="@+id/profile_menu_item" />
 
             <TextView
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:id="@+id/settings_menu_item_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.analytics.FirebaseAnalytics
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoFragmentWalletSetupBinding
@@ -21,9 +22,7 @@ class WalletSetupFragment : Fragment() {
 
     private lateinit var binding: NeoFragmentWalletSetupBinding
 
-    private val mnemonicAdapter: MnemonicAdapter by lazy {
-        MnemonicAdapter(requireContext(), R.layout.neo_row_mnemonic_word, R.id.text_view_seed)
-    }
+    private val mnemonicAdapter: MnemonicAdapter by lazy { MnemonicAdapter() }
 
     private val firebaseAnalytics: FirebaseAnalytics by lazy {
         FirebaseAnalytics.getInstance(requireContext())
@@ -33,8 +32,11 @@ class WalletSetupFragment : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_wallet_setup, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
-        // configure words grid adapter
-        binding.gridViewSeedPhrase.adapter = mnemonicAdapter
+        // configure words recyclerView adapter
+
+        val layoutManager = GridLayoutManager(requireContext(), 3)
+        binding.recyclerViewSeedPhrase.layoutManager = layoutManager
+        binding.recyclerViewSeedPhrase.adapter = mnemonicAdapter
         setObservers()
         return binding.root
     }
@@ -44,6 +46,7 @@ class WalletSetupFragment : Fragment() {
             // update words adapter
             mnemonicAdapter.clear()
             mnemonicAdapter.addAll(it)
+            mnemonicAdapter.notifyDataSetChanged()
         })
         viewModel.shouldGoToNextScreen.observe(viewLifecycleOwner, EventWrapperObserver { list ->
             firebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE_CONTINUE, null)
