@@ -47,14 +47,13 @@
             app:layout_constraintBottom_toTopOf="@+id/restoreAccountBtn"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="9dp"
             android:text="@string/create_account"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             app:cornerRadius="32dp" />
 
         <Button
-            iohk:visible="@{viewModel.step == (viewModel.TOTAL_STEPS - 1)}"
             android:id="@+id/restoreAccountBtn"
             android:layout_width="0dp"
             android:layout_height="56dp"
