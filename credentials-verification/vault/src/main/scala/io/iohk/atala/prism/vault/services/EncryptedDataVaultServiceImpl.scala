@@ -4,6 +4,7 @@ import java.util.UUID
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.ErrorSupport
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.protos.vault_models
@@ -32,8 +33,15 @@ class EncryptedDataVaultServiceImpl(
   override def storeData(request: vault_api.StoreDataRequest): Future[vault_api.StoreDataResponse] = {
     def f(did: DID): Future[vault_api.StoreDataResponse] = {
       payloadsRepository
-        .create(CreatePayload(did, request.payload.toByteArray.toVector))
-        .successMap(payload => vault_api.StoreDataResponse(payload.id.value.toString))
+        .create(
+          CreatePayload(
+            Payload.ExternalId(UUID.fromString(request.externalId)),
+            SHA256Digest(request.payloadHash.toByteArray.toVector),
+            did,
+            request.payload.toByteArray.toVector
+          )
+        )
+        .successMap(payload => vault_api.StoreDataResponse(payloadId = payload.id.value.toString))
     }
 
     authenticator.authenticated("storeData", request) { did =>
@@ -64,6 +72,7 @@ class EncryptedDataVaultServiceImpl(
             payloads.map(p =>
               vault_models.Payload(
                 id = p.id.value.toString,
+                hash = ByteString.copyFrom(p.hash.value.toArray),
                 content = ByteString.copyFrom(p.content.toArray),
                 createdAt = p.createdAt.toEpochMilli
               )

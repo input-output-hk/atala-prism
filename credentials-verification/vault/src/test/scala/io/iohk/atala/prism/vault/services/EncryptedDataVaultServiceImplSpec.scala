@@ -2,7 +2,7 @@ package io.iohk.atala.prism.vault.services
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.Base64
+import java.util.{Base64, UUID}
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
@@ -12,10 +12,26 @@ import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation.UpdateDid
 import io.iohk.atala.prism.protos.node_models.UpdateDIDOperation
+import io.iohk.atala.prism.protos.vault_api.StoreDataRequest
 import io.iohk.atala.prism.vault.VaultRpcSpecBase
 import org.scalatest.OptionValues
 
 class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValues {
+  private def createRequest(externalId: UUID, payload: String): StoreDataRequest = {
+    val payloadBytes = payload.getBytes()
+    val hash = SHA256Digest.compute(payloadBytes).value.toArray
+    vault_api.StoreDataRequest(
+      externalId = externalId.toString,
+      payloadHash = ByteString.copyFrom(hash),
+      payload = ByteString.copyFrom(payloadBytes)
+    )
+  }
+
+  private def createRequest(payload: String): StoreDataRequest = {
+    val externalId = UUID.randomUUID()
+    createRequest(externalId, payload)
+  }
+
   "health check" should {
     "respond" in {
       val response = vaultService.healthCheck(vault_api.HealthCheckRequest()).futureValue
@@ -27,12 +43,13 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
     "create a payload" in {
       val keys = EC.generateKeyPair()
       val did = DID.createUnpublishedDID(keys.publicKey)
-      val payload = "encrypted_data".getBytes()
-      val request = vault_api.StoreDataRequest(ByteString.copyFrom(payload))
+      val payload = "encrypted_data"
+      val request = createRequest(payload)
       val rpcRequest = SignedRpcRequest.generate(keys, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
         val responsePayloadId = serviceStub.storeData(request).payloadId
+
         val storedPayloads =
           payloadsRepository.getByPaginated(DID(did), None, 10).value.futureValue.toOption.value
 
@@ -45,22 +62,73 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
         assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
       }
     }
+
+    "be idempotent on the exact same request" in {
+      val keys = EC.generateKeyPair()
+      val did = DID.createUnpublishedDID(keys.publicKey)
+      val payload = "encrypted_data"
+      val request = createRequest(payload)
+      val rpcRequest1 = SignedRpcRequest.generate(keys, did, request)
+      val rpcRequest2 = SignedRpcRequest.generate(keys, did, request)
+
+      val id1 = usingApiAs(rpcRequest1) { serviceStub =>
+        serviceStub.storeData(request).payloadId
+      }
+
+      val id2 = usingApiAs(rpcRequest2) { serviceStub =>
+        serviceStub.storeData(request).payloadId
+      }
+
+      id1 must be(id2)
+
+      val storedPayloads =
+        payloadsRepository.getByPaginated(DID(did), None, 10).value.futureValue.toOption.value
+
+      // There must only be one payload stored
+      storedPayloads.size must be(1)
+      val storedPayload = storedPayloads.head
+
+      storedPayload.id.value.toString must be(id1)
+      storedPayload.did must be(DID(did))
+      storedPayload.content must be(payload.toVector)
+      assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
+    }
+
+    "fail on the multiple different requests with the same id" in {
+      val keys = EC.generateKeyPair()
+      val did = DID.createUnpublishedDID(keys.publicKey)
+      val externalId = UUID.randomUUID()
+      val request1 = createRequest(externalId, "encrypted_data_1")
+      val rpcRequest1 = SignedRpcRequest.generate(keys, did, request1)
+      val request2 = createRequest(externalId, "encrypted_data_2")
+      val rpcRequest2 = SignedRpcRequest.generate(keys, did, request2)
+
+      usingApiAs(rpcRequest1) { serviceStub =>
+        serviceStub.storeData(request1)
+      }
+
+      usingApiAs(rpcRequest2) { serviceStub =>
+        intercept[RuntimeException] {
+          serviceStub.storeData(request2)
+        }
+      }
+    }
   }
 
   "get" should {
     "return all created payloads" in {
       val keys = EC.generateKeyPair()
       val did = DID.createUnpublishedDID(keys.publicKey)
-      val payload1 = "encrypted_data_1".getBytes()
-      val request1 = vault_api.StoreDataRequest(ByteString.copyFrom(payload1))
+      val payload1 = "encrypted_data_1"
+      val request1 = createRequest(payload1)
       val rpcRequest1 = SignedRpcRequest.generate(keys, did, request1)
 
       val id1 = usingApiAs(rpcRequest1) { serviceStub =>
         serviceStub.storeData(request1).payloadId
       }
 
-      val payload2 = "encrypted_data_2".getBytes()
-      val request2 = vault_api.StoreDataRequest(ByteString.copyFrom(payload2))
+      val payload2 = "encrypted_data_1"
+      val request2 = createRequest(payload2)
       val rpcRequest2 = SignedRpcRequest.generate(keys, did, request2)
       val id2 = usingApiAs(rpcRequest2) { serviceStub =>
         serviceStub.storeData(request2).payloadId

@@ -7,6 +7,7 @@ package io.iohk.atala.prism.protos;
 
 message Payload {
     string id = 1; // unique uuid identifying the payload
-    bytes content = 2; // content of the payload encrypted by the user
-    int64 createdAt = 3; // timestamp of when the payload was registered by the vault
+    bytes hash = 2; // content hash
+    bytes content = 3; // content of the payload encrypted by the user
+    int64 createdAt = 4; // timestamp of when the payload was registered by the vault
 }

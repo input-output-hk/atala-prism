@@ -10,7 +10,7 @@ import "vault_models.proto";
 service EncryptedDataVaultService {
     // Checks if the service is healthy
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
-    // Stores a given encrypted payload, associating it with the authenticated user. A unique ID is returned.
+    // Stores a given encrypted payload, associating it with the authenticated user.
     rpc StoreData (StoreDataRequest) returns (StoreDataResponse) {}
     // Retrieves all encrypted payloads stored by the authenticated user, paginated and sorted by insertion order.
     rpc GetPaginatedData (GetPaginatedDataRequest) returns (GetPaginatedDataResponse) {}
@@ -20,11 +20,14 @@ message HealthCheckRequest {}
 message HealthCheckResponse {}
 
 message StoreDataRequest {
-    bytes payload = 1;
+    string externalId = 1; // client-generated UUID; should be unique for semantically different requests 
+    bytes payloadHash = 2; // content hash
+    bytes payload = 3; // content of the payload encrypted by the user
 }
 
 message StoreDataResponse {
-    string payloadId = 1;
+    string payloadId = 1; // server-generated UUID representing the actual id of the payload;
+                          // it is different from the client-supplied externalId
 }
 
 message GetPaginatedDataRequest {

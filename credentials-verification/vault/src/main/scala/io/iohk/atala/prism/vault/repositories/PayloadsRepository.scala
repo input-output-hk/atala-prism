@@ -23,11 +23,11 @@ class PayloadsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def getByPaginated(
       did: DID,
-      lastSeenCreationOrder: Option[Payload.Id],
+      lastSeenIdOpt: Option[Payload.Id],
       limit: Int
   ): FutureEither[Nothing, List[Payload]] = {
     PayloadsDAO
-      .getByPaginated(did, lastSeenCreationOrder, limit)
+      .getByPaginated(did, lastSeenIdOpt, limit)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
