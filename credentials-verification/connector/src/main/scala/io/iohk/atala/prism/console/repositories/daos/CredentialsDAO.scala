@@ -49,7 +49,8 @@ object CredentialsDAO {
          |)
          |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
          |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
+         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
+         |       pc.transaction_id, pc.ledger
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.subject_id = contacts.contact_id)
@@ -78,7 +79,8 @@ object CredentialsDAO {
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
              |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
+             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
+             |       pc.transaction_id, pc.ledger
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.subject_id = contacts.contact_id)
@@ -97,7 +99,8 @@ object CredentialsDAO {
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
              |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at
+             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
+             |       pc.transaction_id, pc.ledger
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.subject_id = contacts.contact_id)

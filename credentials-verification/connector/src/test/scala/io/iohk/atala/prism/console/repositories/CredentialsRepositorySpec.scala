@@ -71,6 +71,17 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       returnedCredential must be(credential)
     }
 
+    "return a credential with publication data" in {
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subjectId = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+      publish(issuerId, credential.credentialId)
+
+      credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
+      succeed
+    }
+
     "return no credential when not found" in {
       val credentialId = GenericCredential.Id(UUID.randomUUID())
 
@@ -93,6 +104,20 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       result.toSet must be(Set(credA, credB))
     }
 
+    "return the first credentials involving a published one" in {
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subject = createContact(issuerId, "IOHK Student", group.name).contactId
+      val credA = createGenericCredential(issuerId, subject, "A")
+      val credB = createGenericCredential(issuerId, subject, "B")
+      createGenericCredential(issuerId, subject, "C")
+      publish(issuerId, credA.credentialId)
+      credentialsRepository.getBy(credA.credentialId)
+
+      val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
+      result.map(_.credentialId).toSet must be(Set(credA.credentialId, credB.credentialId))
+    }
+
     "paginate by the last seen credential" in {
       val issuerId = createIssuer("Issuer X")
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
@@ -112,6 +137,27 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
           .value
       result.toSet must be(Set(credC))
     }
+
+    "paginate by the last seen credential including a published one" in {
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subject = createContact(issuerId, "IOHK Student", group.name).contactId
+      createGenericCredential(issuerId, subject, "A")
+      createGenericCredential(issuerId, subject, "B")
+      val credC = createGenericCredential(issuerId, subject, "C")
+      publish(issuerId, credC.credentialId)
+      createGenericCredential(issuerId, subject, "D")
+
+      val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
+      val result =
+        credentialsRepository
+          .getBy(issuerId, 1, first.lastOption.map(_.credentialId))
+          .value
+          .futureValue
+          .toOption
+          .value
+      result.map(_.credentialId).toSet must be(Set(credC.credentialId))
+    }
   }
 
   "getBy" should {
@@ -128,6 +174,22 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
 
       val result = credentialsRepository.getBy(issuerId, subjectId1).value.futureValue.toOption.value
       result must be(List(cred1, cred2))
+    }
+
+    "return subject's credentials including a published one" in {
+      val issuerId = createIssuer("Issuer X")
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subjectId1 = createContact(issuerId, "IOHK Student", group.name).contactId
+      val subjectId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      createGenericCredential(issuerId, subjectId2, "A")
+      val cred1 = createGenericCredential(issuerId, subjectId1, "B")
+      createGenericCredential(issuerId, subjectId2, "C")
+      val cred2 = createGenericCredential(issuerId, subjectId1, "D")
+      createGenericCredential(issuerId, subjectId2, "E")
+      publish(issuerId, cred1.credentialId)
+
+      val result = credentialsRepository.getBy(issuerId, subjectId1).value.futureValue.toOption.value
+      result.map(_.credentialId) must be(List(cred1.credentialId, cred2.credentialId))
     }
 
     "return empty list of credentials when not present" in {
@@ -252,5 +314,25 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       updatedCredential must be(originalCredential)
       updatedCredential.publicationData must be(empty)
     }
+  }
+
+  private def publish(issuerId: Institution.Id, id: GenericCredential.Id): Unit = {
+    val _ = credentialsRepository
+      .storePublicationData(
+        issuerId,
+        PublishCredential(
+          id,
+          SHA256Digest.compute("test".getBytes),
+          "mockNodeCredentialId",
+          "mockEncodedSignedCredential",
+          TransactionInfo(
+            TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+            Ledger.InMemory,
+            None
+          )
+        )
+      )
+      .value
+      .futureValue
   }
 }
