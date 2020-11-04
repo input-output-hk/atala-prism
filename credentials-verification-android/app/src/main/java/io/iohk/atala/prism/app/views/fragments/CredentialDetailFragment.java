@@ -69,6 +69,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
             shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
             shareCredentialMenuItem.setVisible(true);
         }
+        menu.findItem(R.id.action_credential_history).setVisible(true);
         MenuItem deleteCredentialMenuItem = menu.findItem(R.id.action_delete_credential);
         deleteCredentialMenuItem.setVisible(true);
     }
@@ -86,6 +87,10 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
             case R.id.action_delete_credential:
                 navigator.showDialogFragment(
                         requireActivity().getSupportFragmentManager(), getDeleteCredentialFragment(), null);
+            case R.id.action_credential_history:
+                CredentialHistoryFragment fragment = CredentialHistoryFragment.Companion.build(credential.credentialId);
+                navigator.showFragmentOnTop(
+                        requireActivity().getSupportFragmentManager(), fragment);
                 return true;
         }
 

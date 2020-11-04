@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.app.data.local.db
 
 import androidx.lifecycle.LiveData
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
@@ -23,4 +24,5 @@ interface DbHelper {
     suspend fun insertShareCredentialActivityHistories(credential: Credential, contacts: List<Contact>)
     suspend fun insertRequestedCredentialActivities(contact: Contact, credentials: List<Credential>)
     suspend fun getCredentialsActivityHistoriesByConnection(connectionId: String): List<ActivityHistoryWithCredential>
+    suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact>
 }

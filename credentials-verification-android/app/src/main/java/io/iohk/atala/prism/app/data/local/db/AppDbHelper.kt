@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.app.data.local.db
 
 import androidx.lifecycle.LiveData
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
@@ -76,5 +77,9 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
 
     override suspend fun getCredentialsActivityHistoriesByConnection(connectionId: String): List<ActivityHistoryWithCredential> {
         return mAppDatabase.contactDao().getCredentialsActivityHistoriesByConnection(connectionId)
+    }
+
+    override suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> {
+        return mAppDatabase.credentialDao().getContactsActivityHistoriesByCredentialId(credentialId)
     }
 }

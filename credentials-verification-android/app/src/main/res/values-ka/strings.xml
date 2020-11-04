@@ -16,6 +16,11 @@
     <string name="credential_detail_employed_title">Proof of Employment</string>
     <string name="credential_detail_insurance_title">Health Insurance</string>
 
+    <string name="credential_history_government_title">Government ID History</string>
+    <string name="credential_history_degree_title">University Degree History</string>
+    <string name="credential_history_employed_title">Proof of Employment History</string>
+    <string name="credential_history_insurance_title">Health Insurance History</string>
+
     <string name="credential_government_type_title">\n• ID Credential </string>
     <string name="credential_degree_type_title">\n• University Credential </string>
     <string name="credential_employed_type_title">\n• Employment Credential </string>
@@ -255,5 +260,7 @@
     <string name="requested_credentials">REQUESTED CREDENTIALS</string>
     <string name="issued_credentials">ISSUED CREDENTIALS</string>
     <string name="shared_credentials">SHARED CREDENTIALS</string>
+    <string name="shared_with">SHARED WITH</string>
+    <string name="requested_by">REQUESTED BY</string>
 
 </resources>

@@ -88,6 +88,13 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
         });
     }
 
+    protected void setActionBarTitle(int title) {
+        Optional<ActionBar> supportActionBar = activity().map(AppCompatActivity::getSupportActionBar);
+        supportActionBar.ifPresent(actionBar -> {
+            actionBar.setTitle(title);
+        });
+    }
+
     public Optional<AppCompatActivity> activity() {
         return Optional.ofNullable(getActivity())
                 .map(fragmentActivity -> (AppCompatActivity) fragmentActivity);

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.app.data.local.db.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import java.util.*
@@ -40,4 +41,13 @@ abstract class CredentialDao : ActivityHistoryDao() {
         }
         insertActivityHistories(activitiesHistories)
     }
+
+    /**
+     * Find all [ActivityHistory]´s related to a [Credential]  and that these are related to a [Contact] in other words find all issued, shared and requested activities of a [Credential]
+     *
+     * @param credentialId [String] of the Credential
+     * @return a [List] of [ActivityHistoryWithContact]
+     */
+    @Query("SELECT * FROM activityHistories WHERE credential_id = :credentialId AND connection_id IS NOT NULL ORDER BY date asc, id")
+    abstract suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact>
 }

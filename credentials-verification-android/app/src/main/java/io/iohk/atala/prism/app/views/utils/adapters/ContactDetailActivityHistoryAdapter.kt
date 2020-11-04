@@ -67,7 +67,7 @@ class ContactDetailActivityHistoryAdapter(val context: Context) : BaseRecyclerVi
             }
             if (sharedHistory.isNotEmpty()) {
                 items.add(sharedHeader)
-                items.addAll(issuedHistory)
+                items.addAll(sharedHistory)
             }
             clear()
             addAll(items)

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:iohk="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="contact"
+            type="io.iohk.atala.prism.app.data.local.db.model.Contact" />
+
+        <variable
+            name="formattedDate"
+            type="String" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/materialCardView"
+        android:layout_marginTop="18dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="@dimen/card_corner_radius"
+        app:cardElevation="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="12dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:scaleType="fitXY"
+                iohk:imageInBytes="@{contact.logo}"
+                iohk:failImage="@{@drawable/ic_conection_list}"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_conection_list"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="17dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:id="@+id/name_text_view"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="@{contact.name}"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <LinearLayout
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:tint="@color/onSurfaceMedium"
+                        android:src="@drawable/ic_clock"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp" />
+
+                    <TextView
+                        android:ellipsize="end"
+                        android:id="@+id/date_text_view"
+                        android:textColor="@color/onSurfaceMedium"
+                        android:textSize="10sp"
+                        android:text="@{@string/shared(formattedDate)}"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</layout>
