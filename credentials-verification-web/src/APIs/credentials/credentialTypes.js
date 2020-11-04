@@ -74,7 +74,7 @@ const educational = {
     award: '{{credentialSubject.degreeResult}}',
     startDate: '{{credentialSubject.startDate}}',
     graduationDate: '{{issuanceDate}}',
-    fullname: '{{credentialSubject.name}}'
+    contactName: '{{credentialSubject.name}}'
   }
 };
 
@@ -101,7 +101,7 @@ const proofOfEmployment = {
     adress: '{{issuer.address}}',
     status: '{{employmentStatus}}',
     startDate: '{{employmentStartDate}}',
-    fullname: '{{credentialSubject.name}}'
+    contactName: '{{credentialSubject.name}}'
   }
 };
 
@@ -128,7 +128,7 @@ const healthIsurance = {
     class: '{{productClass}}',
     policyNumber: '{{policyNumber}}',
     endDate: '{{expiryDate}}',
-    fullname: '{{credentialSubject.name}}'
+    contactName: '{{credentialSubject.name}}'
   }
 };
 
