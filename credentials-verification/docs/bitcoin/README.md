@@ -6,7 +6,9 @@ Each participant will be responsible for managing and storing their secret keys 
 
 Related to payments, the approach assumes we'll bill per connection, which indirectly correlates to issuing and verifying a credential, the drawback is that an issuer could issue several credentials to the same person but that shouldn't be a problem.
 
-**NOTE**: As of 02/Sep/2019, we decided to follow this approach, so, it is not a proposal anymore.
+**NOTE [2019-09-02]**: We decided to follow this approach, so it is not a proposal anymore.
+
+**NOTE [2020-11-03]**: You may also want to check some [newer](../new-diagrams/README.md) [diagrams](../misc/wmc/prism_architecture.png).
 
 ## Definitions
 - **GEUD**: The Georgia University Degrees project.
