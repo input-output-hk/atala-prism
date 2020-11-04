@@ -9,6 +9,9 @@ import "console_models.proto";
 
 message Group {
     string name = 1;
+    string id = 2; // the unique id for the group
+    uint64 createdAt = 3; // the time when the group was created
+    int32 numberOfContacts = 4; // the number of contacts associated with the group
 }
 
 // Generic version of cmanager credentials

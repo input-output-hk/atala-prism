@@ -79,14 +79,14 @@ object ContactsDAO {
                |  FROM contacts
                |  WHERE contact_id = $lastSeen
                |)
-               |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+               |SELECT contact_id, external_id, contact_data, contacts.created_at, connection_status, connection_token, connection_id
                |FROM CTE CROSS JOIN contacts
                |     JOIN contacts_per_group USING (contact_id)
                |     JOIN issuer_groups g USING (group_id)
                |WHERE contacts.created_by = $institutionId AND
-               |      (created_at > last_seen_time OR (created_at = last_seen_time AND contact_id > $lastSeen)) AND
+               |      (contacts.created_at > last_seen_time OR (contacts.created_at = last_seen_time AND contact_id > $lastSeen)) AND
                |      g.name = $group
-               |ORDER BY created_at ASC, contact_id
+               |ORDER BY contacts.created_at ASC, contact_id
                |LIMIT $limit
                |""".stripMargin
       case (Some(lastSeen), None) =>
@@ -105,13 +105,13 @@ object ContactsDAO {
                |""".stripMargin
       case (None, Some(group)) =>
         sql"""
-               |SELECT contact_id, external_id, contact_data, created_at, connection_status, connection_token, connection_id
+               |SELECT contact_id, external_id, contact_data, contacts.created_at, connection_status, connection_token, connection_id
                |FROM contacts
                |     JOIN contacts_per_group USING (contact_id)
                |     JOIN issuer_groups g USING (group_id)
                |WHERE contacts.created_by = $institutionId AND
                |      g.name = $group
-               |ORDER BY created_at ASC, contact_id
+               |ORDER BY contacts.created_at ASC, contact_id
                |LIMIT $limit
                |""".stripMargin
       case (None, None) =>

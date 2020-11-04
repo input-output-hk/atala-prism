@@ -91,7 +91,10 @@ proto.io.iohk.atala.prism.protos.Group.prototype.toObject = function(opt_include
  */
 proto.io.iohk.atala.prism.protos.Group.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    createdat: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    numberofcontacts: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -132,6 +135,18 @@ proto.io.iohk.atala.prism.protos.Group.deserializeBinaryFromReader = function(ms
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setCreatedat(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setNumberofcontacts(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -168,6 +183,27 @@ proto.io.iohk.atala.prism.protos.Group.serializeBinaryToWriter = function(messag
       f
     );
   }
+  f = message.getId();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getCreatedat();
+  if (f !== 0) {
+    writer.writeUint64(
+      3,
+      f
+    );
+  }
+  f = message.getNumberofcontacts();
+  if (f !== 0) {
+    writer.writeInt32(
+      4,
+      f
+    );
+  }
 };
 
 
@@ -186,6 +222,60 @@ proto.io.iohk.atala.prism.protos.Group.prototype.getName = function() {
  */
 proto.io.iohk.atala.prism.protos.Group.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string id = 2;
+ * @return {string}
+ */
+proto.io.iohk.atala.prism.protos.Group.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.atala.prism.protos.Group} returns this
+ */
+proto.io.iohk.atala.prism.protos.Group.prototype.setId = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional uint64 createdAt = 3;
+ * @return {number}
+ */
+proto.io.iohk.atala.prism.protos.Group.prototype.getCreatedat = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.atala.prism.protos.Group} returns this
+ */
+proto.io.iohk.atala.prism.protos.Group.prototype.setCreatedat = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional int32 numberOfContacts = 4;
+ * @return {number}
+ */
+proto.io.iohk.atala.prism.protos.Group.prototype.getNumberofcontacts = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.atala.prism.protos.Group} returns this
+ */
+proto.io.iohk.atala.prism.protos.Group.prototype.setNumberofcontacts = function(value) {
+  return jspb.Message.setProto3IntField(this, 4, value);
 };
 
 

@@ -6,6 +6,7 @@ import io.iohk.atala.prism.console.models.IssuerGroup
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 
 import scala.concurrent.duration._
+import org.scalatest.OptionValues._
 
 class GroupsRepositorySpec extends PostgresRepositorySpec {
 
@@ -48,8 +49,21 @@ class GroupsRepositorySpec extends PostgresRepositorySpec {
       val issuerId2 = createIssuer("Issuer 2", "b")
       createIssuerGroup(issuerId2, IssuerGroup.Name("Other"))
 
-      val result = repository.getBy(issuerId1).value.futureValue
-      result must beRight(groups)
+      val result = repository.getBy(issuerId1).value.futureValue.toOption.value
+      result.map(_.value.name) must be(groups)
+    }
+
+    "includes the contact count" in {
+      val groups = List("Group 1", "Group 2").map(IssuerGroup.Name.apply)
+      val issuerId = createIssuer("Issuer-1", "a")
+      createIssuerGroup(issuerId, groups(0))
+      createIssuerGroup(issuerId, groups(1))
+      createContact(issuerId, "test-contact-1", groups(0))
+      createContact(issuerId, "test-contact-2", groups(0))
+      createContact(issuerId, "test-contact-3", groups(1))
+
+      val result = repository.getBy(issuerId).value.futureValue
+      result.map(_.map(_.numberOfContacts)) must beRight(List(2, 1))
     }
   }
 }

@@ -38,7 +38,14 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
         .value
         .map {
           case Right(x) =>
-            val groups = x.map(g => cmanager_models.Group(g.value))
+            val groups = x.map { g =>
+              cmanager_models
+                .Group()
+                .withId(g.value.id.value.toString)
+                .withCreatedAt(g.value.createdAt.getEpochSecond)
+                .withName(g.value.name.value)
+                .withNumberOfContacts(g.numberOfContacts)
+            }
             cmanager_api.GetGroupsResponse(groups)
           case Left(e) => throw new RuntimeException(s"FAILED: $e")
         }

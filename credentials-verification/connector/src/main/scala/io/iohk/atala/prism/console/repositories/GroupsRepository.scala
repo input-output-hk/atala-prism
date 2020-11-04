@@ -24,7 +24,7 @@ class GroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def getBy(issuer: Institution.Id): FutureEither[Nothing, List[IssuerGroup.Name]] = {
+  def getBy(issuer: Institution.Id): FutureEither[Nothing, List[IssuerGroup.WithContactCount]] = {
     IssuerGroupsDAO
       .getBy(issuer)
       .transact(xa)

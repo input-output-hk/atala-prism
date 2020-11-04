@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.console.repositories.daos
 
+import java.time.Instant
 import java.util.UUID
 
 import cats.data.NonEmptyList
@@ -15,24 +16,29 @@ object IssuerGroupsDAO {
 
   def create(issuerId: Institution.Id, name: IssuerGroup.Name): ConnectionIO[IssuerGroup] = {
     val groupId = IssuerGroup.Id(UUID.randomUUID())
+    val now = Instant.now()
     sql"""
-         |INSERT INTO issuer_groups (group_id, issuer_id, name)
-         |VALUES ($groupId, $issuerId, $name)
-       """.stripMargin.update.run.map(_ => IssuerGroup(groupId, name, issuerId))
+         |INSERT INTO issuer_groups (group_id, issuer_id, name, created_at)
+         |VALUES ($groupId, $issuerId, $name, $now)
+       """.stripMargin.update.run.map(_ => IssuerGroup(groupId, name, issuerId, now))
   }
 
-  def getBy(issuer: Institution.Id): ConnectionIO[List[IssuerGroup.Name]] = {
+  def getBy(issuer: Institution.Id): ConnectionIO[List[IssuerGroup.WithContactCount]] = {
     sql"""
-         |SELECT name
-         |FROM issuer_groups
+         |SELECT group_id, name, issuer_id, created_at, (
+         |  SELECT COUNT(*)
+         |  FROM contacts_per_group
+         |  WHERE group_id = g.group_id
+         |) AS number_of_contacts
+         |FROM issuer_groups g
          |WHERE issuer_id = $issuer
          |ORDER BY name
-       """.stripMargin.query[IssuerGroup.Name].to[List]
+       """.stripMargin.query[IssuerGroup.WithContactCount].to[List]
   }
 
   def find(groupId: IssuerGroup.Id): ConnectionIO[Option[IssuerGroup]] = {
     sql"""
-         |SELECT group_id, name, issuer_id
+         |SELECT group_id, name, issuer_id, created_at
          |FROM issuer_groups
          |WHERE group_id = $groupId
          |""".stripMargin.query[IssuerGroup].option
@@ -40,7 +46,7 @@ object IssuerGroupsDAO {
 
   def find(issuer: Institution.Id, name: IssuerGroup.Name): ConnectionIO[Option[IssuerGroup]] = {
     sql"""
-         |SELECT group_id, name, issuer_id
+         |SELECT group_id, name, issuer_id, created_at
          |FROM issuer_groups
          |WHERE issuer_id = $issuer AND
          |      name = $name

@@ -3,11 +3,12 @@ package io.iohk.atala.prism.console.services
 import java.util.UUID
 
 import cats.effect.IO
-import doobie.util.transactor.Transactor
 import doobie.implicits._
+import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.iohk.atala.prism.RpcSpecBase
 import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
@@ -15,7 +16,6 @@ import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository}
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.cmanager_api
 import org.mockito.MockitoSugar._
@@ -63,7 +63,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
         // the new group needs to exist
         val groups = issuerGroupsRepository.getBy(issuerId).value.futureValue.toOption.value
-        groups must contain(newGroup)
+        groups.map(_.value.name) must contain(newGroup)
       }
     }
   }
@@ -86,6 +86,30 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       usingApiAs(rpcRequest) { serviceStub =>
         val result = serviceStub.getGroups(request)
         result.groups.map(_.name).map(IssuerGroup.Name.apply) must be(groups)
+      }
+    }
+
+    "return the contact count on each group" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(publicKey, did)
+
+      val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
+      groups.foreach { group =>
+        issuerGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
+      }
+      createRandomContact(issuerId, Some(groups(0)))
+      createRandomContact(issuerId, Some(groups(0)))
+      createRandomContact(issuerId, Some(groups(1)))
+
+      val request = cmanager_api.GetGroupsRequest()
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val result = serviceStub.getGroups(request).groups
+
+        result.map(_.numberOfContacts) must be(List(2, 1))
       }
     }
   }

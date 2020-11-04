@@ -1,18 +1,19 @@
 package io.iohk.atala.prism.migrations
 
+import java.time.Instant
 import java.util.UUID
 
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.PostgresMigrationSpec
+import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
 object DataHelper {
   def createParticipant(
@@ -44,7 +45,7 @@ object DataHelper {
     sql"""INSERT INTO issuer_groups (group_id,issuer_id,name)
          |VALUES ($groupId, ${issuer.uuid}, $name)
          |""".stripMargin.runUpdate()
-    IssuerGroup(IssuerGroup.Id(groupId), IssuerGroup.Name(name), Institution.Id(issuer.uuid))
+    IssuerGroup(IssuerGroup.Id(groupId), IssuerGroup.Name(name), Institution.Id(issuer.uuid), Instant.now)
   }
 
   def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None)(implicit
