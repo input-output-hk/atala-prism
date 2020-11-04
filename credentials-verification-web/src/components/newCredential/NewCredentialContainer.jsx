@@ -22,7 +22,6 @@ import {
   FAILED,
   CONNECTION_STATUSES
 } from '../../helpers/constants';
-import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
@@ -44,7 +43,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [subjectsFilter, setSubjectsFilter] = useState('');
   const [filteredSubjects, setFilteredSubjects] = useState([]);
-  const [hasMoreSubjects, setHasMoreSubjects] = useState(true);
 
   const [importedData, setImportedData] = useState([]);
 
@@ -70,23 +68,16 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         message.error(t('errors.errorGettingHolders'));
       });
 
-  const getSubjects = () => {
-    const { contactid: lastId } = getLastArrayElementOrEmpty(subjects);
+  const getSubjects = async () => {
+    try {
+      const allContacts = await api.contactsManager.getContacts(null, MAX_CONTACTS);
+      const allContactsMapped = allContacts.map(contactMapper);
 
-    return api.contactsManager
-      .getContacts(lastId, HOLDER_PAGE_SIZE)
-      .then(connections => {
-        if (connections.length < HOLDER_PAGE_SIZE) setHasMoreSubjects(false);
-
-        const subjectsWithKey = connections.map(contactMapper);
-
-        const updatedSubjects = subjects.concat(subjectsWithKey);
-        setSubjects(updatedSubjects);
-      })
-      .catch(error => {
-        Logger.error('[NewCredentailContainer.getSubjects] Error while getting connections', error);
-        message.error(t('errors.errorGetting', { model: 'Holders' }));
-      });
+      setSubjects(allContactsMapped);
+    } catch (error) {
+      Logger.error('[NewCredentailContainer.getSubjects] Error while getting connections', error);
+      message.error(t('errors.errorGetting', { model: 'Holders' }));
+    }
   };
 
   useEffect(() => {
@@ -111,10 +102,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     filterSubjects(subjectsFilter);
   }, [subjectsFilter, subjects]);
 
-  useEffect(() => {
-    if (hasMoreSubjects && filteredSubjects.length < HOLDER_PAGE_SIZE) getSubjects();
-  }, [filteredSubjects]);
-
   const handleImportedData = (dataObjects, _groups, setResults) => {
     setImportedData(dataObjects);
     setResults({
@@ -137,7 +124,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     try {
       setIsLoading(true);
       const credentialsData = importedData.map(data => {
-        const { contactid } = subjects.find(({ externalId }) => externalId === data.externalId);
+        const { contactid } = subjects.find(({ externalid }) => externalid === data.externalId);
         return Object.assign(_.omit(data, 'originalArray'), { credentialType, contactid });
       });
       const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
@@ -192,7 +179,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
             selectedSubjects={selectedSubjects}
             setSubjectsFilter={setSubjectsFilter}
             getSubjects={getSubjects}
-            hasMoreSubjects={hasMoreSubjects}
           />
         );
       case IMPORT_CREDENTIAL_DATA_STEP: {

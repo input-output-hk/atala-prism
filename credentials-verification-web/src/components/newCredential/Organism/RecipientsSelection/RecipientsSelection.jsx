@@ -26,8 +26,7 @@ const RecipientsSelection = ({
   selectedSubjects,
   setSelectedSubjects,
   setSubjectsFilter,
-  getSubjects,
-  hasMoreSubjects
+  getSubjects
 }) => {
   const { t } = useTranslation();
 
@@ -90,7 +89,6 @@ const RecipientsSelection = ({
               selectedSubjects={selectedSubjects}
               setSelectedSubjects={setSelectedSubjects}
               handleHoldersRequest={getSubjects}
-              hasMore={hasMoreSubjects}
             />
           )}
         </TabPane>
@@ -111,8 +109,7 @@ RecipientsSelection.propTypes = {
   selectedSubjects: PropTypes.arrayOf(PropTypes.string).isRequired,
   setSelectedSubjects: PropTypes.func.isRequired,
   setSubjectsFilter: PropTypes.func.isRequired,
-  getSubjects: PropTypes.func.isRequired,
-  hasMoreSubjects: PropTypes.bool.isRequired
+  getSubjects: PropTypes.func.isRequired
 };
 
 export default RecipientsSelection;
