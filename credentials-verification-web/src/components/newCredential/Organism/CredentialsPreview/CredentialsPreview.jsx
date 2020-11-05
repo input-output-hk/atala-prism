@@ -6,22 +6,12 @@ import CredentialsViewer from '../../Molecules/CredentialsViewer/CredentialsView
 
 import './_style.scss';
 
-const CredentialsPreview = ({
-  credentialViewTemplate,
-  groups,
-  subjects,
-  credentialsData,
-  credentialPlaceholders
-}) => {
+const CredentialsPreview = ({ credentialViews, groups, subjects }) => {
   const { t } = useTranslation();
 
   return (
     <div className="CredentialsPreview">
-      <CredentialsViewer
-        credentialViewTemplate={credentialViewTemplate}
-        credentialsData={credentialsData}
-        credentialPlaceholders={credentialPlaceholders}
-      />
+      <CredentialsViewer credentialViews={credentialViews} />
       <div className="Divider" />
       <div className="RecipientsContainer">
         <h3>{t('newCredential.credentialsPreview.title')}</h3>
@@ -33,14 +23,7 @@ const CredentialsPreview = ({
 };
 
 CredentialsPreview.propTypes = {
-  credentialViewTemplate: PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-    encodedlogoimage: PropTypes.string,
-    logoimagemimetype: PropTypes.string,
-    htmltemplate: PropTypes.string
-  }).isRequired,
-  credentialPlaceholders: PropTypes.objectOf(PropTypes.string).isRequired,
+  credentialViews: PropTypes.arrayOf(PropTypes.string).isRequired,
   groups: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
   subjects: PropTypes.arrayOf(
     PropTypes.shape({
@@ -53,8 +36,7 @@ CredentialsPreview.propTypes = {
         year: PropTypes.number
       })
     })
-  ).isRequired,
-  credentialsData: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.string)).isRequired
+  ).isRequired
 };
 
 export default CredentialsPreview;

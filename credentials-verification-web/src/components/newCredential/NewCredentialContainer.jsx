@@ -10,7 +10,6 @@ import RecipientsSelection from './Organism/RecipientsSelection/RecipientsSelect
 import CredentialsPreview from './Organism/CredentialsPreview/CredentialsPreview';
 import { withRedirector } from '../providers/withRedirector';
 import {
-  HOLDER_PAGE_SIZE,
   MAX_CONTACTS,
   SELECT_CREDENTIAL_TYPE_STEP,
   SELECT_RECIPIENTS_STEP,
@@ -19,15 +18,17 @@ import {
   CONTACT_NAME_KEY,
   GROUP_NAME_KEY,
   SUCCESS,
-  FAILED,
-  CONNECTION_STATUSES
+  FAILED
 } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
+import { useSession } from '../providers/SessionContext';
+import { fillHTMLCredential } from '../../helpers/credentialView';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
+  const { session } = useSession();
 
   const [currentStep, setCurrentStep] = useState(SELECT_CREDENTIAL_TYPE_STEP);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +48,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [importedData, setImportedData] = useState([]);
 
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
+  const [credentialViews, setCredentialViews] = useState([]);
 
   const getCredentialViewTemplates = () =>
     api.credentialsViewManager
@@ -106,11 +108,25 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     setImportedData(dataObjects);
     setResults({
       credentialDataImported: dataObjects.length,
-      continueCallback: () => goToCredentialsPreview()
+      continueCallback: () => goToCredentialsPreview(dataObjects)
     });
   };
 
-  const goToCredentialsPreview = () => setCurrentStep(PREVIEW_AND_SIGN_CREDENTIAL_STEP);
+  const goToCredentialsPreview = credentialsData => {
+    const { htmltemplate } = credentialViewTemplates.find(
+      template => template.id === credentialTypes[credentialType].id
+    );
+    const htmlCredentials = credentialsData.map(credentialData =>
+      fillHTMLCredential(
+        htmltemplate,
+        credentialTypes[credentialType].placeholders,
+        credentialData,
+        session.organisationName
+      )
+    );
+    setCredentialViews(htmlCredentials);
+    setCurrentStep(PREVIEW_AND_SIGN_CREDENTIAL_STEP);
+  };
 
   const getContactsFromGroups = () => {
     const groupContactsromises = selectedGroups.map(group =>
@@ -123,9 +139,10 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const signCredentials = async () => {
     try {
       setIsLoading(true);
-      const credentialsData = importedData.map(data => {
-        const { contactid } = subjects.find(({ externalid }) => externalid === data.externalId);
-        return Object.assign(_.omit(data, 'originalArray'), { credentialType, contactid });
+      const credentialsData = importedData.map((data, index) => {
+        const { contactid } = subjects.find(({ externalid }) => externalid === data.externalid);
+        const html = _.escape(credentialViews[index]);
+        return Object.assign(_.omit(data, 'originalArray'), { credentialType, contactid, html });
       });
       const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
         credentialsData
@@ -199,13 +216,9 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       default:
         return (
           <CredentialsPreview
-            credentialsData={importedData}
             groups={groups.filter(({ name }) => selectedGroups.includes(name))}
             subjects={subjects.filter(({ contactid }) => selectedSubjects.includes(contactid))}
-            credentialViewTemplate={credentialViewTemplates.find(
-              template => template.id === credentialTypes[credentialType].id
-            )}
-            credentialPlaceholders={credentialTypes[credentialType].placeholders}
+            credentialViews={credentialViews}
           />
         );
     }
