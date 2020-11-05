@@ -23,5 +23,4 @@ public class CredentialParse {
         dto.setCredentialType(credentialType);
         return dto;
     }
-
 }

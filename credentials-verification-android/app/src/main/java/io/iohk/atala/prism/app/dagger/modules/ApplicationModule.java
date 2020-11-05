@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.app.dagger.modules;
 
-import androidx.room.Room;
+import android.content.res.Resources;
 
+import androidx.room.Room;
 
 import io.iohk.atala.prism.app.core.PrismApplication;
 import io.iohk.atala.prism.app.data.DataManager;
@@ -41,6 +42,16 @@ public class ApplicationModule {
                         MigrationsKt.getMIGRATION_2_3()
                 )
                 .build();
+    }
+
+    /*
+     * TODO this is just to help handle legacy code which is used to locally compute the name of the credentials based on the type of credential
+     *  when there is a proper way to get that data from the backend this should be removed, this is directly related to the dependencies that
+     *  the [MyCredentialsViewModel] class needs
+     * */
+    @Provides
+    Resources provideResources(PrismApplication prismApplication) {
+        return prismApplication.getApplicationContext().getResources();
     }
 
     @Provides

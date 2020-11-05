@@ -83,7 +83,7 @@ public class DeleteCredentialDialogFragment extends CvpDialogFragment<Credential
         credentialId = getArguments().getString(CREDENTIAL_ID_KEY);
 
         CredentialDto credential = CredentialParse.parse(getArguments().getString(CREDENTIAL_TYPE_KEY), getArguments().getString(CREDENTIAL_DATA_KEY));
-        credentialText.setText(credential.getTitle());
+        credentialText.setText(CredentialUtil.getNameResource(credential.getCredentialType()));
         credentialText.setTextColor(getResources().getColor(R.color.black, null));
         credentialLogo.setImageDrawable(CredentialUtil.getLogo(credential.getCredentialType(), getContext()));
 

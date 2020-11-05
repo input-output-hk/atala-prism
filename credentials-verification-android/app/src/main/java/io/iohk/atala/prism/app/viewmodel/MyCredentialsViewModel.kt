@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.app.viewmodel
 
+import android.content.res.Resources
 import androidx.lifecycle.*
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.views.fragments.CredentialUtil
 
-class MyCredentialsViewModel(private val dataManager: DataManager) : ViewModel() {
+class MyCredentialsViewModel(private val dataManager: DataManager, private val resources: Resources) : ViewModel() {
 
     val searchText = MutableLiveData<String>("")
 
@@ -29,7 +31,8 @@ class MyCredentialsViewModel(private val dataManager: DataManager) : ViewModel()
         var result = _credentials.value ?: listOf()
         if (searchText.value?.isNotBlank() == true) {
             result = result.filter { credential ->
-                credential.issuerName.contains(searchText.value!!, ignoreCase = true)
+                val credentialName = resources.getString(CredentialUtil.getNameResource(credential))
+                credential.issuerName.contains(searchText.value!!, ignoreCase = true) || credentialName.contains(searchText.value!!, ignoreCase = true)
             }.toList()
         }
         return result
@@ -45,8 +48,8 @@ class MyCredentialsViewModel(private val dataManager: DataManager) : ViewModel()
 /**
  * Factory for [MyCredentialsViewModel].
  * */
-class MyCredentialsViewModelFactory(private val dataManager: DataManager) : ViewModelProvider.Factory {
+class MyCredentialsViewModelFactory(private val dataManager: DataManager, private val resources: Resources) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return modelClass.getConstructor(DataManager::class.java).newInstance(dataManager)
+        return MyCredentialsViewModel(dataManager, resources) as T
     }
 }

@@ -9,18 +9,22 @@ import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.enums.CredentialType;
 import io.iohk.atala.prism.app.data.local.db.model.Credential;
 
+/**
+ * TODO this is just to help handle legacy code which is used to locally compute the name and icon of the credentials based on the type of credential
+ * when there is a proper way to get that data from the backend this should be removed,
+ */
 public class CredentialUtil {
     public static String getType(Credential acceptedCredential, Context context) {
         Optional<CredentialType> credentialTypeOptional = CredentialType.getByValue(acceptedCredential.credentialType);
         if (credentialTypeOptional.isPresent()) {
-            switch (credentialTypeOptional.get().getId()) {
-                case 1:
+            switch (credentialTypeOptional.get()) {
+                case ID_CREDENTIAL:
                     return context.getResources().getString(R.string.credential_government_type_title);
-                case 2:
+                case DEGREE_CREDENTIAL:
                     return context.getResources().getString(R.string.credential_degree_type_title);
-                case 3:
+                case EMPLOYMENT_CREDENTIAL:
                     return context.getResources().getString(R.string.credential_employed_type_title);
-                case 4:
+                case INSURANCE_CREDENTIAL:
                     return context.getResources().getString(R.string.credential_insurance_type_title);
                 default:
                     return "";
@@ -29,28 +33,36 @@ public class CredentialUtil {
         return "";
     }
 
-    public static String getTitle(Credential credential, Context context) {
-        Optional<CredentialType> credentialTypeOptional = CredentialType.getByValue(credential.credentialType);
+    public static String getName(Credential credential, Context context) {
+        return context.getResources().getString(getNameResource(credential));
+    }
+
+    public static Integer getNameResource(Credential credential) {
+        return getNameResource(credential.credentialType);
+    }
+
+    public static Integer getNameResource(String credentialType) {
+        Optional<CredentialType> credentialTypeOptional = CredentialType.getByValue(credentialType);
         if (credentialTypeOptional.isPresent()) {
-            switch (credentialTypeOptional.get().getId()) {
-                case 1:
-                    return context.getResources().getString(R.string.credential_detail_government_title);
-                case 2:
-                    return context.getResources().getString(R.string.credential_detail_degree_title);
-                case 3:
-                    return context.getResources().getString(R.string.credential_detail_employed_title);
-                case 4:
-                    return context.getResources().getString(R.string.credential_detail_insurance_title);
+            switch (credentialTypeOptional.get()) {
+                case ID_CREDENTIAL:
+                    return R.string.credential_government_name;
+                case DEGREE_CREDENTIAL:
+                    return R.string.credential_degree_name;
+                case EMPLOYMENT_CREDENTIAL:
+                    return R.string.credential_employment_name;
+                case INSURANCE_CREDENTIAL:
+                    return R.string.credential_insurance_name;
                 default:
-                    return "";
+                    return 0;
             }
         }
-        return "";
+        return 0;
     }
 
     public static Drawable getLogo(String credentialType, Context context) {
         switch (CredentialType.getByValue(credentialType).get()) {
-            case REDLAND_CREDENTIAL:
+            case ID_CREDENTIAL:
                 return context.getResources().getDrawable(R.drawable.ic_id_government, null);
             case DEGREE_CREDENTIAL:
                 return context.getResources().getDrawable(R.drawable.ic_id_university, null);

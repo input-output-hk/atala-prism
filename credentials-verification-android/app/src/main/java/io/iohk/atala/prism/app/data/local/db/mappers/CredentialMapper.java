@@ -15,8 +15,7 @@ public class CredentialMapper {
         io.iohk.atala.prism.app.data.local.db.model.Credential credentialModel = new io.iohk.atala.prism.app.data.local.db.model.Credential();
         try {
 
-            Credential credential = AtalaMessage.parseFrom(receivedMessage.getMessage())
-                    .getIssuerSentCredential().getCredential();
+            Credential credential = AtalaMessage.parseFrom(receivedMessage.getMessage()).getIssuerSentCredential().getCredential();
 
             CredentialDto credentialDto = CredentialParse.parse(credential);
 

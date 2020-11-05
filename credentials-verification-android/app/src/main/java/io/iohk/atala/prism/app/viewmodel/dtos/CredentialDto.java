@@ -42,16 +42,4 @@ public class CredentialDto {
 
     @Getter
     private CredentialIssuer issuer;
-
-    public int getTitle() {
-        if (credentialType.equals(CredentialType.REDLAND_CREDENTIAL.getValue())) {
-            return R.string.credential_detail_government_title;
-        } else if (credentialType.equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
-            return R.string.credential_detail_degree_title;
-        } else if (credentialType.equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
-            return R.string.credential_detail_employed_title;
-        } else {
-            return R.string.credential_detail_insurance_title;
-        }
-    }
 }

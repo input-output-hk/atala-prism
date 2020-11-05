@@ -84,9 +84,9 @@ class CredentialHistoryFragment : CvpFragment<CredentialHistoryViewModel>(), OnS
     private fun setObservers() {
         viewModel.credential.observe(viewLifecycleOwner) {
             // TODO this is a hack to support the behavior of [CvpFragment] and the current custom navigation system, when we migrate to a native Android navigation and [CvpFragment] inheritance is removed this has to be deleted
-            titleResource = getCredentialTitleResource(it)
+            titleResource = CredentialUtil.getNameResource(it)
             setActionBarTitle(titleResource)
-            binding.credentialLogo.setImageResource(getCredentialIconResource(it))
+            binding.credentialLogo.setImageDrawable(CredentialUtil.getLogo(it.credentialType, requireContext()))
         }
         viewModel.activityHistories.observe(viewLifecycleOwner) {
             activitiesHistoriesAdapter.updateAllContent(it)
@@ -102,28 +102,6 @@ class CredentialHistoryFragment : CvpFragment<CredentialHistoryViewModel>(), OnS
         item.contact?.let {
             val fragment = ContactDetailFragment.build(it.id)
             navigator.showFragmentOnTop(requireActivity().supportFragmentManager, fragment)
-        }
-    }
-
-    // TODO This is logic inherited from old code we need to check if this logic is correct
-    private fun getCredentialIconResource(credential: Credential): Int {
-        return when (credential.credentialType) {
-            CredentialType.REDLAND_CREDENTIAL.value -> R.drawable.ic_id_government
-            CredentialType.DEGREE_CREDENTIAL.value -> R.drawable.ic_id_university
-            CredentialType.EMPLOYMENT_CREDENTIAL.value -> R.drawable.ic_id_proof
-            //Certificate Of Insurance 
-            else -> R.drawable.ic_id_insurance
-        }
-    }
-
-    // TODO This is logic inherited from old code we need to check if this logic is correct
-    private fun getCredentialTitleResource(credential: Credential): Int {
-        return when (credential.credentialType) {
-            CredentialType.REDLAND_CREDENTIAL.value -> R.string.credential_history_government_title
-            CredentialType.DEGREE_CREDENTIAL.value -> R.string.credential_history_degree_title
-            CredentialType.EMPLOYMENT_CREDENTIAL.value -> R.string.credential_history_employed_title
-            //Certificate Of Insurance
-            else -> R.string.credential_history_insurance_title
         }
     }
 }

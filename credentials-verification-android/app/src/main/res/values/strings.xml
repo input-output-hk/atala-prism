@@ -11,16 +11,6 @@
     <string name="seed_phrase_verification_activity_title">Verify Seed Phrase</string>
     <string name="qr_scanner_activity_title">Scan QR</string>
 
-    <string name="credential_detail_government_title">Government ID</string>
-    <string name="credential_detail_degree_title">University Degree</string>
-    <string name="credential_detail_employed_title">Proof of Employment</string>
-    <string name="credential_detail_insurance_title">Health Insurance</string>
-
-    <string name="credential_history_government_title">Government ID History</string>
-    <string name="credential_history_degree_title">University Degree History</string>
-    <string name="credential_history_employed_title">Proof of Employment History</string>
-    <string name="credential_history_insurance_title">Health Insurance History</string>
-
     <string name="credential_government_type_title">\n• ID Credential </string>
     <string name="credential_degree_type_title">\n• University Credential </string>
     <string name="credential_employed_type_title">\n• Employment Credential </string>
@@ -30,7 +20,6 @@
     <string name="account_creation">Account Creation</string>
     <string name="terms_and_conditions_description">Please indicate that you have read and agree to the Terms and Conditions and the Privacy Policy Agreement</string>
     <string name="privacy_policies_agreement">Privacy Policy Agreement</string>
-
 
     <!-- About -->
     <string name="about_title">About us</string>
@@ -249,7 +238,7 @@
     <string name="contact_delete_action_description">If you do this, the credentials below that were issued by the contact will also be deleted:</string>
     <string name="words_were_invalid_try_again">Words were invalid. Please try again.</string>
     <string name="search_contacts">Search Contacts</string>
-    <string name="contact_name">Contact Name...</string>
+    <string name="contact_name">Contact Name</string>
     <string name="no_results_found">No results found</string>
     <string name="error_loading_contacts">There was an error loading the contacts</string>
     <string name="search_credentials">Search Credentials</string>

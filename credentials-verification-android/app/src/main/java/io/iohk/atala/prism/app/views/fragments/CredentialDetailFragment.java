@@ -57,7 +57,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
         setHasOptionsMenu(true);
 
         if (credentialDto != null) {
-            return new StackedAppBar(credentialDto.getTitle());
+            return new StackedAppBar(CredentialUtil.getNameResource(credentialDto.getCredentialType()));
         }
         return new StackedAppBar(R.string.education);
     }

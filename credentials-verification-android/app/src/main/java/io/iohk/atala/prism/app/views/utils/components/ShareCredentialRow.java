@@ -34,7 +34,7 @@ public class ShareCredentialRow extends ConstraintLayout {
     private void init() {
         inflate(getContext(), R.layout.row_share_credential, this);
         ButterKnife.bind(this);
-        name.setText(CredentialUtil.getTitle(credential, fragment.getContext()));
+        name.setText(CredentialUtil.getName(credential, fragment.getContext()));
 
         credentialCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

@@ -8,6 +8,7 @@ import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
+import io.iohk.atala.prism.app.views.fragments.CredentialUtil
 import io.iohk.cvp.databinding.RowHeaderBinding
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.RowCredentialActivityHistoryBinding
@@ -112,11 +113,11 @@ class ContactDetailActivityHistoryAdapter(val context: Context) : BaseRecyclerVi
 
     private class ActivityHistoryViewHolder(val binding: RowCredentialActivityHistoryBinding) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
         override fun bind(data: ViewType) {
-            (data as? ViewType.ActivityHistory)?.activityHistoryWithCredential?.let {
+            (data as? ViewType.ActivityHistory)?.activityHistoryWithCredential?.let { activityHistory ->
                 val ctx = binding.root.context
-                binding.issuerName = it.credential?.issuerName
-                val formattedDate = dateFormatDDMMYYYY.format(it.activityHistory.date)
-                val dateText = when (it.activityHistory.type) {
+                binding.credentialName = if (activityHistory.credential == null) "" else CredentialUtil.getName(activityHistory.credential!!, ctx)
+                val formattedDate = dateFormatDDMMYYYY.format(activityHistory.activityHistory.date)
+                val dateText = when (activityHistory.activityHistory.type) {
                     ActivityHistory.Type.CredentialShared -> ctx.getString(R.string.shared, formattedDate)
                     ActivityHistory.Type.CredentialRequested -> ctx.getString(R.string.requested, formattedDate)
                     else -> ctx.getString(R.string.issued, formattedDate)
