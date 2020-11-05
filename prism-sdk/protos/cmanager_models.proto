@@ -30,4 +30,5 @@ message CManagerGenericCredential {
     uint64 publicationStoredAt = 11; // the time when the publication data was stored in the database
     string externalId = 12; // the id provided by the issuer at contact creation time
     ContactConnectionStatus connectionStatus = 13;
+    uint64 sharedAt = 14; // the last time when the credential was sent to the related contact
 }

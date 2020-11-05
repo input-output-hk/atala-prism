@@ -316,6 +316,68 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
     }
   }
 
+  "markAsShared" should {
+    "work" in {
+      val issuerId = createIssuer("Issuer X")
+      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+      publish(issuerId, credential.credentialId)
+      credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
+
+      val result = credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
+      result.sharedAt mustNot be(empty)
+    }
+
+    "set a new date even if the credential was shared before" in {
+      val issuerId = createIssuer("Issuer X")
+      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+      publish(issuerId, credential.credentialId)
+      credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
+      val result1 = credentialsRepository
+        .getBy(credential.credentialId)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .value
+        .sharedAt
+        .value
+
+      credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
+      val result2 = credentialsRepository
+        .getBy(credential.credentialId)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .value
+        .sharedAt
+        .value
+      (result2.compareTo(result1) > 0) must be(true)
+    }
+
+    "fail when the credential hasn't been published" in {
+      val issuerId = createIssuer("Issuer X")
+      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+      assertThrows[Exception] {
+        credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
+      }
+    }
+
+    "fail when the credential doesn't belong to the given issuer" in {
+      val issuerId = createIssuer("Issuer X")
+      val issuerId2 = createIssuer("Issuer Y")
+      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val credential = createGenericCredential(issuerId, subjectId, "A")
+      publish(issuerId, credential.credentialId)
+      assertThrows[Exception] {
+        credentialsRepository.markAsShared(issuerId2, credential.credentialId).value.futureValue.toOption.value
+      }
+    }
+  }
+
   private def publish(issuerId: Institution.Id, id: GenericCredential.Id): Unit = {
     val _ = credentialsRepository
       .storePublicationData(

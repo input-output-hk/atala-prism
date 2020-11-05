@@ -323,7 +323,8 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.toObject = function(i
     encodedsignedcredential: jspb.Message.getFieldWithDefault(msg, 10, ""),
     publicationstoredat: jspb.Message.getFieldWithDefault(msg, 11, 0),
     externalid: jspb.Message.getFieldWithDefault(msg, 12, ""),
-    connectionstatus: jspb.Message.getFieldWithDefault(msg, 13, 0)
+    connectionstatus: jspb.Message.getFieldWithDefault(msg, 13, 0),
+    sharedat: jspb.Message.getFieldWithDefault(msg, 14, 0)
   };
 
   if (includeInstance) {
@@ -411,6 +412,10 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.deserializeBinaryFrom
     case 13:
       var value = /** @type {!proto.io.iohk.atala.prism.protos.ContactConnectionStatus} */ (reader.readEnum());
       msg.setConnectionstatus(value);
+      break;
+    case 14:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setSharedat(value);
       break;
     default:
       reader.skipField();
@@ -529,6 +534,13 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.serializeBinaryToWrit
   if (f !== 0.0) {
     writer.writeEnum(
       13,
+      f
+    );
+  }
+  f = message.getSharedat();
+  if (f !== 0) {
+    writer.writeUint64(
+      14,
       f
     );
   }
@@ -790,6 +802,24 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.getConnecti
  */
 proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.setConnectionstatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 13, value);
+};
+
+
+/**
+ * optional uint64 sharedAt = 14;
+ * @return {number}
+ */
+proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.getSharedat = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.setSharedat = function(value) {
+  return jspb.Message.setProto3IntField(this, 14, value);
 };
 
 

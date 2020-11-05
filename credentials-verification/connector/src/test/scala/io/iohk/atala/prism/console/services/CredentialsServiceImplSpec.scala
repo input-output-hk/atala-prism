@@ -9,16 +9,16 @@ import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
 import io.iohk.atala.prism.RpcSpecBase
 import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
-import io.iohk.atala.prism.console.models.{GenericCredential, IssuerGroup}
+import io.iohk.atala.prism.console.models.{GenericCredential, Institution, IssuerGroup, PublishCredential}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
 import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
 import io.iohk.atala.prism.protos.{cmanager_api, common_models, node_api, node_models}
@@ -513,5 +513,46 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         response.genericCredentials must be(empty)
       }
     }
+  }
+
+  "shareCredential" should {
+    "work" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val contactId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val credentialId = createGenericCredential(issuerId, contactId, "A").credentialId
+      publish(issuerId, credentialId)
+
+      val request = cmanager_api.ShareCredentialRequest(
+        cmanagerCredentialId = credentialId.value.toString
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        serviceStub.shareCredential(request)
+      }
+    }
+  }
+
+  private def publish(issuerId: Institution.Id, id: GenericCredential.Id): Unit = {
+    val _ = credentialsRepository
+      .storePublicationData(
+        issuerId,
+        PublishCredential(
+          id,
+          SHA256Digest.compute("test".getBytes),
+          "mockNodeCredentialId",
+          "mockEncodedSignedCredential",
+          TransactionInfo(
+            TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+            Ledger.InMemory,
+            None
+          )
+        )
+      )
+      .value
+      .futureValue
   }
 }

@@ -18,6 +18,12 @@ service CredentialsService {
 
     // Publish an encoded signed credential into the blockchain
     rpc PublishCredential (PublishCredentialRequest) returns (PublishCredentialResponse) {}
+
+    // Marks a credential as shared
+    //
+    // NOTE: This doesn't send the actual credential to the related contact, but is supposed to be
+    //       invoked everytime such credential is sent.
+    rpc ShareCredential (ShareCredentialRequest) returns (ShareCredentialResponse) {}
 }
 
 service GroupsService {
@@ -82,6 +88,12 @@ message PublishCredentialRequest {
 message PublishCredentialResponse {
     TransactionInfo transactionInfo = 1;
 }
+
+message ShareCredentialRequest {
+    string cmanagerCredentialId = 2; // cmanager internal credential id
+}
+
+message ShareCredentialResponse {}
 
 message GetContactCredentialsRequest {
     string contactId = 1;

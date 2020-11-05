@@ -196,4 +196,33 @@ class CredentialsServiceImpl(
       f(Institution.Id(participantId.uuid))
     }
   }
+
+  override def shareCredential(request: ShareCredentialRequest): Future[ShareCredentialResponse] = {
+    def f(institutionId: Institution.Id): Future[ShareCredentialResponse] = {
+      val credentialIdF = Future.fromTry {
+        Try {
+          GenericCredential.Id(UUID.fromString(request.cmanagerCredentialId))
+        }
+      }
+
+      for {
+        credentialId <- credentialIdF
+        response <-
+          credentialsRepository
+            .markAsShared(institutionId, credentialId)
+            .map { _ =>
+              cmanager_api.ShareCredentialResponse()
+            }
+            .value
+            .map {
+              case Right(x) => x
+              case Left(e) => throw new RuntimeException(s"FAILED: $e")
+            }
+      } yield response
+    }
+
+    authenticator.authenticated("shareCredential", request) { participantId =>
+      f(Institution.Id(participantId.uuid))
+    }
+  }
 }

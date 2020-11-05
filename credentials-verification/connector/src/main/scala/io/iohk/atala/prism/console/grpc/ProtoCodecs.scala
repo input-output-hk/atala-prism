@@ -40,6 +40,7 @@ object ProtoCodecs {
       .withContactData(credential.subjectData.noSpaces)
       .withExternalId(credential.externalId.value)
       .withConnectionStatus(connectionStatus)
+      .withSharedAt(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
 
     credential.publicationData.fold(model) { data =>
       model

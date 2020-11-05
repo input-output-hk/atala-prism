@@ -80,7 +80,8 @@ package object models {
       issuerName: String,
       subjectData: Json,
       connectionStatus: Contact.ConnectionStatus,
-      publicationData: Option[PublicationData]
+      publicationData: Option[PublicationData],
+      sharedAt: Option[Instant]
   )
 
   case class CreateGenericCredential(

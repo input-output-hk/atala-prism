@@ -398,6 +398,86 @@ proto.io.iohk.atala.prism.protos.CredentialsServicePromiseClient.prototype.publi
 
 
 /**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.atala.prism.protos.ShareCredentialRequest,
+ *   !proto.io.iohk.atala.prism.protos.ShareCredentialResponse>}
+ */
+const methodDescriptor_CredentialsService_ShareCredential = new grpc.web.MethodDescriptor(
+  '/io.iohk.atala.prism.protos.CredentialsService/ShareCredential',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.atala.prism.protos.ShareCredentialRequest,
+  proto.io.iohk.atala.prism.protos.ShareCredentialResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.ShareCredentialRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.ShareCredentialResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.atala.prism.protos.ShareCredentialRequest,
+ *   !proto.io.iohk.atala.prism.protos.ShareCredentialResponse>}
+ */
+const methodInfo_CredentialsService_ShareCredential = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.atala.prism.protos.ShareCredentialResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.ShareCredentialRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.ShareCredentialResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.ShareCredentialRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.ShareCredentialResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.ShareCredentialResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.atala.prism.protos.CredentialsServiceClient.prototype.shareCredential =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.CredentialsService/ShareCredential',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_ShareCredential,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.ShareCredentialRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.ShareCredentialResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.atala.prism.protos.CredentialsServicePromiseClient.prototype.shareCredential =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.CredentialsService/ShareCredential',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_ShareCredential);
+};
+
+
+/**
  * @param {string} hostname
  * @param {?Object} credentials
  * @param {?Object} options

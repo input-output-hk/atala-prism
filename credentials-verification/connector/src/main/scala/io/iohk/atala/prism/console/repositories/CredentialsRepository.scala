@@ -3,13 +3,7 @@ package io.iohk.atala.prism.console.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.console.models.{
-  Contact,
-  CreateGenericCredential,
-  GenericCredential,
-  Institution,
-  PublishCredential
-}
+import io.iohk.atala.prism.console.models._
 import io.iohk.atala.prism.console.repositories.daos.CredentialsDAO
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -61,6 +55,15 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def storePublicationData(issuerId: Institution.Id, credentialData: PublishCredential): FutureEither[Nothing, Int] = {
     CredentialsDAO
       .storePublicationData(issuerId, credentialData)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def markAsShared(issuerId: Institution.Id, credentialId: GenericCredential.Id): FutureEither[Nothing, Unit] = {
+    CredentialsDAO
+      .markAsShared(issuerId, credentialId)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
