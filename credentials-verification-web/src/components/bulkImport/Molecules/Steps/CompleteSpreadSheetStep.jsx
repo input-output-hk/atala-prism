@@ -23,9 +23,7 @@ const CompleteSpreadSheetStep = ({
   const handleDownload = async () => {
     const targets = getTargets ? await getTargets() : null;
 
-    const translatedHeaders = headersMapping.map(h => h.translation);
-
-    downloadTemplateCsv(targets, translatedHeaders);
+    downloadTemplateCsv(targets, headersMapping);
   };
 
   // fileList's length is checked to avoid reading a removed file
@@ -105,7 +103,7 @@ CompleteSpreadSheetStep.propTypes = {
   inputData: PropTypes.shape({
     contacts: PropTypes.arrayOf(
       PropTypes.shape({
-        externalId: PropTypes.string
+        externalid: PropTypes.string
       })
     )
   }),

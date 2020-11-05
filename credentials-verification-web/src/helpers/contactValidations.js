@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { isEmptyRow, trimEmptyRows } from './fileHelpers';
 
 // Contact's bulk-import validations
 export const validateContactsBulk = (contacts, inputHeaders, headersMapping) => {
@@ -24,15 +25,6 @@ export const validateContactsBulk = (contacts, inputHeaders, headersMapping) => 
     containsErrors: arrayContainsErrors(validationErrors)
   };
 };
-
-const trimEmptyRows = contacts => {
-  if (!contacts?.length) return [];
-  return isEmptyRow(contacts[contacts.length - 1])
-    ? trimEmptyRows(contacts.slice(0, contacts.length - 1))
-    : contacts;
-};
-
-const isEmptyRow = ({ originalArray }) => originalArray.every(field => !field);
 
 const validateContactsData = (contacts, expectedHeaders) =>
   contacts.map((contact, index) => contactDataValidation({ ...contact, index }, expectedHeaders));

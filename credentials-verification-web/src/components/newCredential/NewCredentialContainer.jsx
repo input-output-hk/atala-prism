@@ -104,7 +104,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     filterSubjects(subjectsFilter);
   }, [subjectsFilter, subjects]);
 
-  const handleImportedData = (dataObjects, _groups, setResults) => {
+  const handleImportedData = (dataObjects, setResults) => {
     setImportedData(dataObjects);
     setResults({
       credentialDataImported: dataObjects.length,

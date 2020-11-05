@@ -12,28 +12,33 @@ const governmentId = {
   name: 'credentials.type.governmentId',
   logo: governmentIdLogo,
   sampleImage: governmentIdSample,
-  fields: {
-    idNumber: {
+  fields: [
+    {
+      key: 'idNumber',
       type: 'string',
       validations: ['required']
     },
-    fullname: {
+    {
+      key: 'fullname',
       type: 'string',
       validations: ['required']
     },
-    dateOfBirth: {
+    {
+      key: 'dateOfBirth',
       type: 'date',
       validations: ['required', 'pastDate']
     },
-    expirationDate: {
+    {
+      key: 'expirationDate',
       type: 'date',
       validations: ['required', 'futureDate']
     },
-    photo: {
+    {
+      key: 'photo',
       type: 'file',
-      validations: ['required']
+      validations: []
     }
-  },
+  ],
   placeholders: {
     idNumber: '{{credentialSubject.identityNumber}}',
     fullname: '{{credentialSubject.name}}',
@@ -47,28 +52,33 @@ const educational = {
   name: 'credentials.type.educational',
   logo: educationalLogo,
   sampleImage: educationalSample,
-  fields: {
-    degree: {
+  fields: [
+    {
+      key: 'degree',
       type: 'string',
       validations: ['required']
     },
-    award: {
+    {
+      key: 'award',
       type: 'string',
       validations: ['required']
     },
-    studentId: {
+    {
+      key: 'studentId',
       type: 'string',
       validations: ['required']
     },
-    startDate: {
+    {
+      key: 'startDate',
       type: 'date',
       validations: ['required', 'pastDate']
     },
-    graduationDate: {
+    {
+      key: 'graduationDate',
       type: 'date',
       validations: ['required', 'pastDate']
     }
-  },
+  ],
   placeholders: {
     degree: '{{credentialSubject.degreeAwarded}}',
     award: '{{credentialSubject.degreeResult}}',
@@ -83,20 +93,23 @@ const proofOfEmployment = {
   name: 'credentials.type.proofOfEmployment',
   logo: proofOfEmploymentLogo,
   sampleImage: proofOfEmploymentSample,
-  fields: {
-    adress: {
+  fields: [
+    {
+      key: 'adress',
       type: 'string',
       validations: ['required']
     },
-    status: {
+    {
+      key: 'status',
       type: 'string',
       validations: ['required']
     },
-    startDate: {
+    {
+      key: 'startDate',
       type: 'date',
       validations: ['required', 'pastDate']
     }
-  },
+  ],
   placeholders: {
     adress: '{{issuer.address}}',
     status: '{{employmentStatus}}',
@@ -110,20 +123,23 @@ const healthIsurance = {
   name: 'credentials.type.healthInsurance',
   logo: healthInsuranceLogo,
   sampleImage: healthInsuranceSample,
-  fields: {
-    class: {
+  fields: [
+    {
+      key: 'class',
       type: 'string',
       validations: ['required']
     },
-    policyNumber: {
+    {
+      key: 'policyNumber',
       type: 'string',
       validations: ['required']
     },
-    endDate: {
+    {
+      key: 'endDate',
       type: 'date',
       validations: ['required', 'futureDate']
     }
-  },
+  ],
   placeholders: {
     class: '{{productClass}}',
     policyNumber: '{{policyNumber}}',

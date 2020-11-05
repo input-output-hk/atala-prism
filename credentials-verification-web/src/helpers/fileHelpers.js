@@ -9,7 +9,7 @@ import {
   INVALID_TYPE,
   IMAGE,
   EXCEL,
-  COMMON_CONTACT_HEADERS
+  COMMON_CREDENTIALS_HEADERS
 } from './constants';
 
 const isInvalidFile = size => (size > MAX_FILE_SIZE ? TOO_LARGE : null);
@@ -51,24 +51,19 @@ const fileToFileReader = (file, type) =>
 export const imageToFileReader = image => fileToFileReader(image, IMAGE);
 export const excelToFileReader = excel => fileToFileReader(excel, EXCEL);
 
-export const downloadTemplateCsv = (inputData, headers) => {
-  const csvData = inputData ? generateCsvFromInputData(inputData) : generateDefaultCsv(headers);
+export const downloadTemplateCsv = (inputData, headersMapping) => {
+  const csvData = inputData
+    ? generateCsvFromInputData(inputData, headersMapping)
+    : generateDefaultCsv(headersMapping.map(h => h.translation));
   const filename = inputData ? getFilename(inputData) : 'template.csv';
   downloadCsvFile(filename, csvData);
 };
 
 const generateDefaultCsv = headers => headersToCsvString(headers);
 
-const generateCsvFromInputData = ({ contacts, credentialType }) => {
-  if (!contacts.length) {
-    return { error: 'no target subjects' };
-  }
-  const headers = [...COMMON_CONTACT_HEADERS, ...Object.keys(credentialType.fields)];
-
-  const noRepeatedHeaders = _.uniq(headers);
-
-  const templateJSON = contacts.map(contact =>
-    noRepeatedHeaders.reduce((acc, h) => Object.assign(acc, { [h]: contact[h] }), {})
+const generateCsvFromInputData = ({ contacts }, headersMapping) => {
+  const templateJSON = [...contacts].map(contact =>
+    headersMapping.reduce((acc, h) => Object.assign(acc, { [h.translation]: contact[h.key] }), {})
   );
 
   return Papa.unparse(templateJSON);
@@ -114,3 +109,12 @@ export const getColName = col => {
 // +1 because row numeration starts from 1 (instead of 0)
 // +1 because of headers row
 export const getRowNumber = rowIndex => rowIndex + 1 + 1;
+
+export const trimEmptyRows = contacts => {
+  if (!contacts?.length) return [];
+  return isEmptyRow(contacts[contacts.length - 1])
+    ? trimEmptyRows(contacts.slice(0, contacts.length - 1))
+    : contacts;
+};
+
+export const isEmptyRow = ({ originalArray }) => originalArray.every(field => !field);

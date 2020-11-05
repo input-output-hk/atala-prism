@@ -62,7 +62,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
           api.contactsManager.createContact(
             group,
             creationDateDecorator(omit(contact, ['originalArray'])),
-            contact.externalId
+            contact.externalid
           )
         )
       )

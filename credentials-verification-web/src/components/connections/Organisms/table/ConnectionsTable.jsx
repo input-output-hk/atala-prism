@@ -37,9 +37,9 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
       )
     },
     {
-      key: 'externalId',
-      render: ({ externalId }) => (
-        <CellRenderer title="externalId" value={externalId} componentName="contacts" />
+      key: 'externalid',
+      render: ({ externalid }) => (
+        <CellRenderer title="externalid" value={externalid} componentName="contacts" />
       )
     }
   ];

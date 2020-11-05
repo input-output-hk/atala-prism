@@ -49,7 +49,7 @@ const BulkImportErrorLog = ({ fileData: { fileObj }, validationErrors, returnToU
     key: idx,
     celNumber: getCellNumber(invalidRow.row.index, invalidRow.col.index),
     errorDescription: t(`bulkImport.errorLog.errors.${invalidRow.error}`, {
-      headerName: t(`contacts.table.columns.${invalidRow.col.name}`),
+      headerName: invalidRow.col.name,
       fieldContent: invalidRow.col.content,
       expectedHeaderPosition: getColName(invalidRow.col.expectedIndex),
       headerNameErrorDescription: invalidRow.col.name

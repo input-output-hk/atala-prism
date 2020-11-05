@@ -93,13 +93,13 @@ export const ASSIGN_TO_GROUPS = 1;
 
 // Entities keys
 export const CONTACT_NAME_KEY = 'contactName';
-export const EXTERNAL_ID_KEY = 'externalId';
+export const EXTERNAL_ID_KEY = 'externalid';
 export const GROUP_NAME_KEY = 'name';
 
 // Bulk import data
 export const COMMON_CONTACT_HEADERS = [CONTACT_NAME_KEY, EXTERNAL_ID_KEY];
 export const CONTACT_METADATA_KEYS = ['index', 'originalArray'];
-
+export const COMMON_CREDENTIALS_HEADERS = [EXTERNAL_ID_KEY, CONTACT_NAME_KEY];
 // Keys
 export const ENTER = 'Enter';
 export const ARROW_LEFT = 'ArrowLeft';
@@ -120,3 +120,6 @@ export const NEW_CREDENTIAL_STEP_COUNT = 4;
 // status flags
 export const FAILED = 'failed';
 export const SUCCESS = 'success';
+
+// this format also allows: 'DD/MM/YYYY', 'DD-MM-YY' and 'DD/MM/YY'
+export const DEFAULT_DATE_FORMAT = 'DD-MM-YYYY';

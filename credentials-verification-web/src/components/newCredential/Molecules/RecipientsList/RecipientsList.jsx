@@ -34,9 +34,9 @@ const RecipientsList = ({ recipients }) => (
           )
         },
         {
-          render: ({ externalId }) =>
-            externalId && (
-              <CellRenderer title="externalId" value={externalId} componentName="contacts" />
+          render: ({ externalid }) =>
+            externalid && (
+              <CellRenderer title="externalid" value={externalid} componentName="contacts" />
             )
         },
         {
@@ -62,7 +62,7 @@ RecipientsList.propTypes = {
       PropTypes.shape({
         contactid: PropTypes.string,
         contactName: PropTypes.string,
-        externalId: PropTypes.string,
+        externalid: PropTypes.string,
         creationDate: PropTypes.shape({
           day: PropTypes.number,
           month: PropTypes.number,

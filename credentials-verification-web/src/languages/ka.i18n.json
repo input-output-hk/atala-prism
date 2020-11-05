@@ -73,12 +73,26 @@
         "viewCredentials": "View Credentials",
         "firstName": "First Name",
         "lastName": "Last Name",
-        "fullName": "Contact Name",
-        "fullname": "Contact Name",
+        "fullName": "Full Name",
+        "fullname": "Full Name",
         "contactName": "Contact Name",
-        "externalId": "External ID",
+        "externalid": "External ID",
         "creationDate": "Date Created",
-        "credentials": "Credentials"
+        "credentials": "Credentials",
+        "idNumber": "ID Number",
+        "dateOfBirth": "Date Of Birth",
+        "expirationDate": "Expiration Date",
+        "photo": "Photo",
+        "degree": "Degree",
+        "award": "Award",
+        "studentId": "Student Id",
+        "startDate": "Start Date",
+        "graduationDate": "Graduation Date",
+        "adress": "Adress",
+        "status": "Status",
+        "class": "Class",
+        "policyNumber": "Policy Number",
+        "endDate": "End Date"
       }
     },
     "inviteSuccessfull": "The Holder has been successfully invited",
@@ -604,7 +618,10 @@
         "emptyRow": "Row contains no values",
         "invalidHeaderPosition": "Expected [ {{headerName}} ] header to be in column {{expectedHeaderPosition}}",
         "excessHeader": "Invalid header {{headerNameErrorDescription}}",
-        "extraField": "Extra field containing [ {{fieldContent}} ]"
+        "extraField": "Extra field containing [ {{fieldContent}} ]",
+        "dateFormat": "Date format is incorrect",
+        "notAFutureDate": "Date must be a future date",
+        "notAPastDate": "Date must be a past date"
       },
       "extraHeaderErrorDescriptionWithName": "named: [ {{headerName}} ]",
       "extraHeaderErrorDescriptionWithNoName": "with no name"

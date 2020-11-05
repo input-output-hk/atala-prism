@@ -1,7 +1,7 @@
 import { translateBackSpreadsheetNamesToContactKeys } from '../helpers/contactValidations';
 import { arrayOfArraysToObjects } from '../helpers/fileHelpers';
-import { validContacts, invalidHeaderNames } from './__mocks__/contactsMockData';
-import { mockHeadersMapping } from './__mocks__/mockHelpers';
+import { validContacts, invalidHeaderNames } from './__mocks__/mockContactsData';
+import { mockContactHeadersMapping } from './__mocks__/mockHelpers';
 
 it('parses array of arrays to an object', () => {
   const testInput = validContacts.inputAoA;
@@ -10,7 +10,7 @@ it('parses array of arrays to an object', () => {
   const parsedAoA = arrayOfArraysToObjects(testInput);
   const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
     parsedAoA,
-    mockHeadersMapping
+    mockContactHeadersMapping
   );
 
   expect(translatedBackContacts).toEqual(expectedOutput);
