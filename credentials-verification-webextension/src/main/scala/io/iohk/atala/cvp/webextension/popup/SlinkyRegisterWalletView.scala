@@ -11,11 +11,11 @@ import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
-import typings.materialUiCore.PartialClassNameMapCircul
+import typings.materialUiCore.anon.PartialClassNameMapCircul
 import typings.materialUiCore.materialUiCoreStrings.indeterminate
 import typings.materialUiCore.{components => mui}
 import typings.materialUiIcons.{components => muiIcons}
-import typings.std.console
+import typings.std.global.console
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
@@ -89,7 +89,7 @@ import scala.util.{Failure, Success}
     }
 
     div(id := "registrationScreen")(
-      mui.IconButton(onClick = _ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
+      mui.IconButton.onClick(_ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
       h3(className := "h3_register", id := "h3_register", "Wallet registration"),
       div(className := "div__field_group")(
         h4(className := "h4_register")("Save your recovery phrase"),
@@ -214,11 +214,10 @@ import scala.util.{Failure, Success}
             }
           )("Register"),
           if (state.isLoading) {
-            mui.CircularProgress(
-              variant = indeterminate,
-              size = 26,
-              classes = PartialClassNameMapCircul(root = "progress_bar")
-            )()
+            mui.CircularProgress
+              .variant(indeterminate)
+              .size(26)
+              .classes(PartialClassNameMapCircul().setRoot("progress_bar"))
           } else {
             div()
           }

@@ -4,7 +4,7 @@ import io.iohk.atala.prism.crypto.ECConfig.CURVE_NAME
 import io.iohk.atala.prism.util.BigIntOps.toHex
 import io.iohk.atala.prism.util.{BigIntOps, BytesOps}
 import typings.bnJs.mod.^
-import typings.elliptic.AnonX
+import typings.elliptic.anon.X
 import typings.elliptic.mod.curve.base.BasePoint
 import typings.elliptic.mod.ec
 import typings.elliptic.mod.ec.KeyPair
@@ -30,7 +30,7 @@ object EC extends ECTrait {
   override def toPublicKey(x: BigInt, y: BigInt): ECPublicKey = {
     new JsECPublicKey(
       nativeEc
-        .keyFromPublic(AnonX(x = toHex(x), y = toHex(y)))
+        .keyFromPublic(X(x = toHex(x), y = toHex(y)))
         .getPublic()
     )
   }

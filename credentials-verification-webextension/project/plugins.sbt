@@ -5,7 +5,7 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 // Required before "sbt-scalajs"
 libraryDependencies += "org.scala-js" %% "scalajs-env-selenium" % "1.0.0"
 
-addSbtPlugin("org.scalablytyped.converter" % "sbt-converter" % "1.0.0-beta12")
+addSbtPlugin("org.scalablytyped.converter" % "sbt-converter" % "1.0.0-beta28")
 
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.3.0")
 

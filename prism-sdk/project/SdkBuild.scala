@@ -2,7 +2,9 @@ import com.typesafe.sbt.GitVersioning
 import mdoc.MdocPlugin
 import mdoc.MdocPlugin.autoImport._
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
+import org.scalablytyped.converter.plugin.ScalablyTypedConverterGenSourcePlugin.autoImport._
 import org.scalablytyped.converter.plugin.ScalablyTypedConverterPlugin
+import org.scalablytyped.converter.plugin.ScalablyTypedPluginBase.autoImport._
 import sbt._
 import sbt.Keys._
 import sbtassembly.AssemblyPlugin.autoImport._
@@ -36,14 +38,16 @@ object SdkBuild {
         ),
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         libraryDependencies ++= scalatestDependencies.value,
-        coverageScalacPluginVersion := "1.4.1"
+        coverageScalacPluginVersion := "1.4.1",
+        test in assembly := {}
       )
       .enablePlugins(GitVersioning)
       .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
       .jsSettings(
         assembleArtifact in packageBin := false,
         // Scoverage has not been released for ScalaJS 1.x: https://github.com/scoverage/scalac-scoverage-plugin/issues/290
-        coverageEnabled := false
+        coverageEnabled := false,
+        stUseScalaJsDom := true
       )
 
   lazy val prismCrypto =

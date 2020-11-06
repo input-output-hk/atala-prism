@@ -391,7 +391,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       // This changes greatly, so just test something was set
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.13.3"
-      buildInfo.sbtVersion mustBe "1.3.8"
+      buildInfo.sbtVersion mustBe "1.4.2"
       // Give it enough time between build creation and test
       val buildTime = LocalDateTime.parse(buildInfo.buildTime)
       buildTime.compareTo(aMonthAgo) must be > 0

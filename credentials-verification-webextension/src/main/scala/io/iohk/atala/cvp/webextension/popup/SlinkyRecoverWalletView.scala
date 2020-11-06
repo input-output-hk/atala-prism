@@ -59,7 +59,7 @@ import scala.util.{Failure, Success}
   override def render(): ReactElement = {
 
     div(id := "recoveryScreen")(
-      mui.IconButton(onClick = _ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
+      mui.IconButton.onClick(_ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
       h3(className := "h3_recover")("Recover your wallet"),
       div(className := "div__field_group")(
         h4(className := "h4_recover", id := "h4_recover", "Type your recovery phrase"),

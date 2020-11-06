@@ -4,9 +4,10 @@ import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.activetab.ActiveTabConfig
 import io.iohk.atala.cvp.webextension.background.Runner
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
-import org.scalajs.dom.html
+import org.scalajs.dom.{Element, document}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
-import typings.std.{HTMLInputElement, document}
+import typings.std.HTMLInputElement
+
 import scala.concurrent.ExecutionContextExecutor
 import scala.scalajs.concurrent.JSExecutionContext
 import scala.scalajs.js
@@ -50,7 +51,7 @@ trait WalletDomSpec extends Suite with BeforeAndAfterAll with BeforeAndAfterEach
   /**
     * Creates the HTML to be tested.
     */
-  protected def createHtmlUnderTest(): html.Element = {
+  protected def createHtmlUnderTest(): Element = {
     document.createElement("div")
   }
 

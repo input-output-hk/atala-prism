@@ -143,20 +143,26 @@ stFlavour := Flavour.Slinky
 
 // js
 npmDependencies in Compile ++= Seq(
-  "uuid" -> "3.1.0",
   "bip39" -> "3.0.2",
   "bip32" -> "2.0.5",
   "grpc-web" -> "1.0.7",
-  "bitcoinjs-lib" -> "5.1.8",
-  "@types/node" -> "14.0.0",
   "react" -> "16.12.0",
   "react-dom" -> "16.12.0",
   "dompurify" -> "2.0.3",
   "@types/dompurify" -> "2.0.3",
   "@material-ui/core" -> "3.9.4",
-  "@material-ui/icons" -> "3.0.2",
-  "@material-ui/styles" -> "3.0.0-alpha.10"
+  "@material-ui/icons" -> "3.0.2"
 )
+
+stIgnore := List(
+  "chromedriver",
+  "grpc-web",
+  "react-dom"
+)
+
+// Scalablytyped compilation optimization
+Compile / stMinimize := Selection.All
+stUseScalaJsDom := true
 
 // Internal libraries
 lazy val cryptoLib = ProjectRef(file("../prism-sdk"), "prismCryptoJS")
