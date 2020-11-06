@@ -5,12 +5,11 @@ import java.time.Instant
 import doobie.{Get, Read}
 import doobie.implicits.legacy.instant._
 import io.circe.Json
+import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction, TransactionMetadata}
 
-package object daos {
-  import io.iohk.atala.prism.models.DoobieImplicits._
-
+package object daos extends BaseDAO {
   private[daos] implicit val blockHashGet: Get[BlockHash] = Get[Array[Byte]].tmap { bytes =>
     BlockHash
       .from(bytes)

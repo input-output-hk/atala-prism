@@ -8,7 +8,7 @@ import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
-import io.iohk.atala.prism.models.DoobieImplicits._
+import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState

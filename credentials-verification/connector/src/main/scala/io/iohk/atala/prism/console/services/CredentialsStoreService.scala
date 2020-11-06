@@ -3,11 +3,12 @@ package io.iohk.atala.prism.console.services
 import java.util.UUID
 
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
+import io.iohk.atala.prism.connector.errors.ConnectorErrorSupport
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.console.models.{Contact, Institution}
 import io.iohk.atala.prism.console.repositories.daos.StoredCredentialsDAO.StoredSignedCredentialData
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
+import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.{cstore_api, cstore_models}
 import org.slf4j.{Logger, LoggerFactory}
@@ -21,7 +22,7 @@ class CredentialsStoreService(
 )(implicit
     ec: ExecutionContext
 ) extends cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreService
-    with ErrorSupport {
+    with ConnectorErrorSupport {
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

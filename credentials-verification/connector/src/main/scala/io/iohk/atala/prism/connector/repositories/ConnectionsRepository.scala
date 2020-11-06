@@ -13,6 +13,7 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
+import io.iohk.atala.prism.errors.LoggingContext
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -45,7 +46,7 @@ trait ConnectionsRepository {
 object ConnectionsRepository {
   class PostgresImpl(xa: Transactor[IO])(implicit ec: ExecutionContext)
       extends ConnectionsRepository
-      with ErrorSupport {
+      with ConnectorErrorSupport {
     val logger: Logger = LoggerFactory.getLogger(getClass)
 
     override def insertToken(initiator: ParticipantId, token: TokenString): FutureEither[Nothing, TokenString] = {

@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.connector
+package io.iohk.atala.prism
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.{ECConfig, ECPublicKey, SHA256Digest}

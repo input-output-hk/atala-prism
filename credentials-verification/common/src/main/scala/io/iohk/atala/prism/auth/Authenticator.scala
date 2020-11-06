@@ -7,8 +7,8 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.auth.errors.{
   AuthError,
+  AuthErrorSupport,
   CanonicalSuffixMatchStateError,
-  ErrorSupport,
   InvalidAtalaOperationError,
   NoCreateDidOperationError,
   SignatureVerificationError,
@@ -48,7 +48,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     override val grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
 ) extends AuthenticatorWithGrpcHeaderParser[Id]
-    with ErrorSupport {
+    with AuthErrorSupport {
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

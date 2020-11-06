@@ -14,7 +14,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   ParticipantsDAO
 }
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
+import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.connector_api

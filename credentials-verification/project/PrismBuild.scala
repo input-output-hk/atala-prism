@@ -65,6 +65,7 @@ object PrismBuild {
             dockerDependencies ++
             bouncyDependencies ++
             grpcDependencies ++
+            mockitoDependencies ++
             Seq(
               diffx,
               enumeratum,
@@ -112,7 +113,7 @@ object PrismBuild {
           ),
         libraryDependencies ++= circeDependencies ++ doobieDependencies ++
           grpcDependencies ++ logbackDependencies ++
-          sttpDependencies ++ mockitoDependencies ++
+          sttpDependencies ++
           Seq(
             chimney,
             enumeratum,

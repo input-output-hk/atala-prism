@@ -18,6 +18,7 @@ import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, Payme
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
+import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
 import org.slf4j.{Logger, LoggerFactory}
@@ -40,7 +41,7 @@ class ConnectorService(
 )(implicit
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
-    with ErrorSupport {
+    with ConnectorErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

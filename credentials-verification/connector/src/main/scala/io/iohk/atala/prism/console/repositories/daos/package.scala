@@ -11,8 +11,6 @@ import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 
 package object daos extends BaseDAO {
-  import io.iohk.atala.prism.models.DoobieImplicits._
-
   implicit val publicationDataWrite: Write[PublicationData] =
     Write[(String, SHA256Digest, String, Instant, TransactionId, Ledger)].contramap(pc =>
       (

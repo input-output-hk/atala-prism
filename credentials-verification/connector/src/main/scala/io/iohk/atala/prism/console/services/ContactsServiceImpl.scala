@@ -3,10 +3,11 @@ package io.iohk.atala.prism.console.services
 import java.util.UUID
 
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
+import io.iohk.atala.prism.connector.errors.ConnectorErrorSupport
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, StatisticsRepository}
+import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
@@ -23,7 +24,7 @@ class ContactsServiceImpl(
 )(implicit
     ec: ExecutionContext
 ) extends console_api.ConsoleServiceGrpc.ConsoleService
-    with ErrorSupport {
+    with ConnectorErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

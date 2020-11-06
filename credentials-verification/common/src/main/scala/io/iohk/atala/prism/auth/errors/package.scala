@@ -1,15 +1,10 @@
 package io.iohk.atala.prism.auth
 
 import io.grpc.Status
-import io.iohk.atala.prism.utils.FutureEither
-import org.slf4j.Logger
-
-import scala.concurrent.{ExecutionContext, Future}
+import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 
 package object errors {
-  sealed trait AuthError {
-    def toStatus: Status
-  }
+  sealed trait AuthError extends PrismError
 
   final case class SignatureVerificationError() extends AuthError {
     override def toStatus: Status = {
@@ -51,16 +46,9 @@ package object errors {
     override def toStatus: Status = status
   }
 
-  trait ErrorSupport {
-    def logger: Logger
-
-    implicit class FutureEitherErrorOps[T](v: FutureEither[AuthError, T]) {
-      def successMap[U](f: T => U)(implicit ec: ExecutionContext): Future[U] = {
-        v.value.flatMap {
-          case Left(err: AuthError) => Future.failed(err.toStatus.asRuntimeException())
-          case Right(vv) => Future.successful(f(vv))
-        }
-      }
+  final case class InternalServerError(cause: Throwable) extends AuthError with PrismServerError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
     }
   }
 }

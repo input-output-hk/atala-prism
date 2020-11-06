@@ -3,13 +3,13 @@ package io.iohk.atala.prism.console.services
 import java.util.UUID
 
 import doobie.implicits._
-import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.model.{ConnectionId, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository

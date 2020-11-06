@@ -4,7 +4,6 @@ import cats.data.OptionT
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, TokenString}
-import io.iohk.atala.prism.models.DoobieImplicits._
 import io.iohk.atala.prism.models.ParticipantId
 
 object ParticipantsDAO {

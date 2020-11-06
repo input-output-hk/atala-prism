@@ -6,13 +6,13 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
-import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository}
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}

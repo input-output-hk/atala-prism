@@ -6,14 +6,15 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
-import io.iohk.atala.prism.connector.errors.{ConnectorError, ErrorSupport, InvalidArgumentError, LoggingContext}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, InvalidArgumentError}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
+import io.iohk.atala.prism.errors.LoggingContext
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
-class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) extends ErrorSupport {
+class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) extends ConnectorErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 

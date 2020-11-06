@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.cviews
 
 import io.grpc.ServerServiceDefinition
-import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser

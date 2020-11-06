@@ -7,11 +7,11 @@ import io.circe
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.ServerServiceDefinition
-import io.iohk.atala.prism.RpcSpecBase
+import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DIDGenerator}
+import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs

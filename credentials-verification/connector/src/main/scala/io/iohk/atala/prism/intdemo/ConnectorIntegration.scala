@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
-import io.iohk.atala.prism.connector.errors.{ConnectorError, ErrorSupport}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.models.ParticipantId
@@ -38,7 +38,7 @@ object ConnectorIntegration {
   class ConnectorIntegrationImpl(connectionsService: ConnectionsService, messagesService: MessagesService)(implicit
       ec: ExecutionContext
   ) extends ConnectorIntegration
-      with ErrorSupport {
+      with ConnectorErrorSupport {
 
     import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
     import io.iohk.atala.prism.models.ParticipantId

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.vault.services
 import java.util.UUID
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.auth.errors.ErrorSupport
+import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -22,7 +22,7 @@ class EncryptedDataVaultServiceImpl(
 )(implicit
     ec: ExecutionContext
 ) extends vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultService
-    with ErrorSupport {
+    with AuthErrorSupport {
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def healthCheck(

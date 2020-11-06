@@ -16,8 +16,6 @@ import io.iohk.atala.prism.console.models.{
 }
 
 object CredentialsDAO {
-  import io.iohk.atala.prism.models.DoobieImplicits._
-
   def create(data: CreateGenericCredential): doobie.ConnectionIO[GenericCredential] = {
     val id = GenericCredential.Id(UUID.randomUUID())
     val createdOn = Instant.now()
