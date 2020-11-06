@@ -279,7 +279,7 @@ jobs:
       - run:
           name: Generate code coverage reports
           command: cd credentials-verification && sbt coverageReport coverageAggregate
-          
+
       - run:
           name: Aggregate test reports
           command: |
@@ -468,11 +468,11 @@ jobs:
       - halt-step-if-not-changed:
           directories: "prism-sdk"
 
-      # Download and cache dependencies	
+      # Download and cache dependencies
       - restore_cache:
           keys:
             - prism-sdk-cache-{{ checksum "prism-sdk/build.sbt" }}-{{ checksum "prism-sdk/project/SdkBuild.scala" }}-{{ checksum "prism-sdk/project/Dependencies.scala" }}-{{ checksum "prism-sdk/project/plugins.sbt" }}-{{ checksum "prism-sdk/project/protoc.sbt" }}
-            # fallback to using the latest cache if no exact match is found	
+            # fallback to using the latest cache if no exact match is found
             - prism-sdk-cache-
 
       - install-coursier
@@ -480,13 +480,13 @@ jobs:
       - install-scalafmt
 
       - scalafmt-test
-        
+
       - run:
           name: Compile SDK and its tests
           command: |
             cd prism-sdk
             sbt compile test:compile
-            
+
       - save_cache:
           paths:
             - ~/.cache/coursier
@@ -529,7 +529,7 @@ jobs:
       - store_test_results:
           path: prism-sdk/target/js/test-reports
 
-      # Store code coverage reports	
+      # Store code coverage reports
       - store_artifacts:
           path: prism-sdk/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
 
@@ -541,6 +541,48 @@ jobs:
       - store_artifacts:
           path: prism-sdk/prism-docs/target/mdoc
 
+      # persist docs so that another job can deploy it
+      - persist_to_workspace:
+          root: prism-sdk/prism-docs/target
+          paths:
+            - mdoc
+
+  build-prism-sdk-proto-docs:
+    working_directory: ~/repo
+    docker:
+      - image: pseudomuto/protoc-gen-doc:1.3.2
+
+    steps:
+      - checkout
+
+      # this is for the public api, hence, the admin/intdemo APIs are removed
+      - run:
+          name: Move the protos to the proper folder
+          command: mv prism-sdk/protos protos && rm -rf protos/admin_api.proto protos/intdemo
+
+      # apparently, the argument to set the destination folder doesn't work
+      - run:
+          name: Generate docs
+          command: /entrypoint.sh --doc_opt=markdown,docs.md
+
+      - run:
+          name: Store docs
+          command: mkdir grpc-docs && mv /out/docs.md grpc-docs/
+
+      # required to persist data, otherwise, we get this error: x509: certificate signed by unknown authority
+      - run:
+          name: Install the ca-certificates
+          command: apt-get update && apt-get install -y ca-certificates
+
+      # persist docs so that another job can deploy it
+      - persist_to_workspace:
+          root: grpc-docs
+          paths:
+            - docs.md
+
+      - store_artifacts:
+          path: ./grpc-docs
+
 workflows:
   version: 2.1
   build-and-deploy:
@@ -551,6 +593,7 @@ workflows:
       - build-credentials-verification-web
       - build-credentials-verification-webextension
       - build-prism-sdk
+      - build-prism-sdk-proto-docs
       - deploy-ecr-images:
           filters:
             branches:
