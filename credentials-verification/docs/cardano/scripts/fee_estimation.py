@@ -89,8 +89,10 @@ def average_estimate_fee(schema, payloads):
 
 
 def compare_schemas(payloads, comparison_title=None):
-    v1_fee = average_estimate_fee(schema_v1, payloads)
-    v2_fee = average_estimate_fee(schema_v2, payloads)
+    #v1_fee = average_estimate_fee(schema_v1, payloads)
+    #v2_fee = average_estimate_fee(schema_v2, payloads)
+    v1_fee = 1
+    v2_fee = 1
     v3_fee = average_estimate_fee(schema_v3, payloads)
 
     if comparison_title is None:
@@ -105,12 +107,14 @@ def compare_schemas(payloads, comparison_title=None):
 # Analyze a real createDID operation
 real_payload = [10, 32, 84, 10, 3, -104, -95, 115, -36, 71, 94, -84, 30, 111, -4, 89, -112, -70, -68, -42, -91, 40, 66,
                 -113, -121, 97, 82, -42, -127, -54, -44, 105, -69, 65]
-compare_schemas([real_payload], comparison_title=f'Fee of a real payload of {len(real_payload)} bytes')
+# compare_schemas([real_payload], comparison_title=f'Fee of a real payload of {len(real_payload)} bytes')
 
 # Analyze several possible transaction sizes with random metadata
 # `8000` was found empirically
 max_metadata_size = MAX_TX_SIZE - 8000
-sizes = [100, 500, 1000, max_metadata_size]
+# sizes = [100, 500, 1000, max_metadata_size]
+# sizes = [199, 200, 201, 202, 262, 263, 264, 265, 266, 267]
+sizes = [195, 260]
 for size in sizes:
     payloads = [random_bytes(size) for _ in range(SAMPLE_RUNS)]
     compare_schemas(payloads)
