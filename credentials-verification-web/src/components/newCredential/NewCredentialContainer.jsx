@@ -16,6 +16,7 @@ import {
   IMPORT_CREDENTIAL_DATA_STEP,
   PREVIEW_AND_SIGN_CREDENTIAL_STEP,
   CONTACT_NAME_KEY,
+  EXTERNAL_ID_KEY,
   GROUP_NAME_KEY,
   SUCCESS,
   FAILED
@@ -23,6 +24,7 @@ import {
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
+import { filterByManyFields } from '../../helpers/filterHelpers';
 import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 
@@ -91,7 +93,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
 
   const filterSubjects = filter =>
-    setFilteredSubjects(filterBy(subjects, filter, CONTACT_NAME_KEY));
+    setFilteredSubjects(filterByManyFields(subjects, filter, [CONTACT_NAME_KEY, EXTERNAL_ID_KEY]));
 
   const filterBy = (toFilter, filter, key) =>
     toFilter.filter(({ [key]: name }) => name.toLowerCase().includes(filter.toLowerCase()));
