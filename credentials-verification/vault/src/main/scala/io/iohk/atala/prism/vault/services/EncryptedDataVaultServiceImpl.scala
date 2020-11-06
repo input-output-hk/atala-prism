@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.ErrorSupport
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.protos.vault_models
 import io.iohk.atala.prism.vault.VaultAuthenticator
@@ -25,9 +26,9 @@ class EncryptedDataVaultServiceImpl(
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def healthCheck(
-      request: vault_api.HealthCheckRequest
-  ): Future[vault_api.HealthCheckResponse] = {
-    Future(vault_api.HealthCheckResponse())
+      request: HealthCheckRequest
+  ): Future[HealthCheckResponse] = {
+    Future(HealthCheckResponse())
   }
 
   override def storeData(request: vault_api.StoreDataRequest): Future[vault_api.StoreDataResponse] = {

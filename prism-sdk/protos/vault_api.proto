@@ -6,6 +6,7 @@ option java_package = "io.iohk.atala.prism.protos";
 package io.iohk.atala.prism.protos;
 
 import "vault_models.proto";
+import "common_models.proto";
 
 service EncryptedDataVaultService {
     // Checks if the service is healthy
@@ -15,9 +16,6 @@ service EncryptedDataVaultService {
     // Retrieves all encrypted payloads stored by the authenticated user, paginated and sorted by insertion order.
     rpc GetPaginatedData (GetPaginatedDataRequest) returns (GetPaginatedDataResponse) {}
 }
-
-message HealthCheckRequest {}
-message HealthCheckResponse {}
 
 message StoreDataRequest {
     string externalId = 1; // client-generated UUID; should be unique for semantically different requests 

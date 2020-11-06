@@ -6,8 +6,11 @@ option java_package = "io.iohk.atala.prism.protos";
 package io.iohk.atala.prism.protos;
 
 import "console_models.proto";
+import "common_models.proto";
 
 service ConsoleService {
+  // Checks if the service is healthy
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
   rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
   rpc GetContacts (GetContactsRequest) returns (GetContactsResponse) {}
   rpc GetContact (GetContactRequest) returns (GetContactResponse) {}

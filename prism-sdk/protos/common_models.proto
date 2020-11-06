@@ -5,6 +5,9 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+message HealthCheckRequest {}
+message HealthCheckResponse {}
+
 message Date {
     int32 year = 1; // positive value
     int32 month = 2; // value in the [1, 12] interval

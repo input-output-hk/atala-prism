@@ -8,7 +8,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.{EC, ECSignature, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.vault_api
+import io.iohk.atala.prism.protos.{common_models, vault_api}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation.UpdateDid
 import io.iohk.atala.prism.protos.node_models.UpdateDIDOperation
@@ -34,8 +34,8 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
 
   "health check" should {
     "respond" in {
-      val response = vaultService.healthCheck(vault_api.HealthCheckRequest()).futureValue
-      response must be(vault_api.HealthCheckResponse())
+      val response = vaultService.healthCheck(common_models.HealthCheckRequest()).futureValue
+      response must be(common_models.HealthCheckResponse())
     }
   }
 

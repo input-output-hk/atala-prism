@@ -7,6 +7,7 @@ import io.iohk.atala.prism.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, StatisticsRepository}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
@@ -25,6 +26,9 @@ class ContactsServiceImpl(
     with ErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
+    Future.successful(HealthCheckResponse())
 
   override def createContact(request: CreateContactRequest): Future[CreateContactResponse] = {
     def f(institutionId: Institution.Id): Future[CreateContactResponse] = {

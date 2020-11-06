@@ -8,3 +8,4 @@ lazy val connectorClient = PrismBuild.connectorClient
 lazy val keyderivation = PrismBuild.keyderivation
 lazy val mirror = PrismBuild.mirror
 lazy val vault = PrismBuild.vault
+lazy val managementConsole = PrismBuild.managementConsole

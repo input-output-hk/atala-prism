@@ -14,6 +14,8 @@ grpc.web = require('grpc-web');
 
 
 var console_models_pb = require('./console_models_pb.js')
+
+var common_models_pb = require('./common_models_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};
@@ -70,6 +72,86 @@ proto.io.iohk.atala.prism.protos.ConsoleServicePromiseClient =
    */
   this.hostname_ = hostname;
 
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.atala.prism.protos.HealthCheckRequest,
+ *   !proto.io.iohk.atala.prism.protos.HealthCheckResponse>}
+ */
+const methodDescriptor_ConsoleService_HealthCheck = new grpc.web.MethodDescriptor(
+  '/io.iohk.atala.prism.protos.ConsoleService/HealthCheck',
+  grpc.web.MethodType.UNARY,
+  common_models_pb.HealthCheckRequest,
+  common_models_pb.HealthCheckResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.HealthCheckRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  common_models_pb.HealthCheckResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.atala.prism.protos.HealthCheckRequest,
+ *   !proto.io.iohk.atala.prism.protos.HealthCheckResponse>}
+ */
+const methodInfo_ConsoleService_HealthCheck = new grpc.web.AbstractClientBase.MethodInfo(
+  common_models_pb.HealthCheckResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.HealthCheckRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  common_models_pb.HealthCheckResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.HealthCheckRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.HealthCheckResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.HealthCheckResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.atala.prism.protos.ConsoleServiceClient.prototype.healthCheck =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ConsoleService/HealthCheck',
+      request,
+      metadata || {},
+      methodDescriptor_ConsoleService_HealthCheck,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.HealthCheckRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.HealthCheckResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.atala.prism.protos.ConsoleServicePromiseClient.prototype.healthCheck =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ConsoleService/HealthCheck',
+      request,
+      metadata || {},
+      methodDescriptor_ConsoleService_HealthCheck);
 };
 
 

@@ -193,6 +193,14 @@ object PrismBuild {
       )
       .dependsOn(common % "compile->compile;test->test")
 
+  lazy val managementConsole =
+    commonServerProject("management-console")
+      .settings(
+        name := "management-console",
+        mainClass in (Compile, run) := Some("io.iohk.atala.prism.management.console.ManagementConsoleApp")
+      )
+      .dependsOn(common % "compile->compile;test->test")
+
   lazy val prism =
     (project in file("."))
       .aggregate(
@@ -203,6 +211,7 @@ object PrismBuild {
         connectorClient,
         keyderivation,
         mirror,
-        vault
+        vault,
+        managementConsole
       )
 }
