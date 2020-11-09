@@ -22,7 +22,7 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec with MirrorFixt
       val connectorClientService =
         new ConnectorClientServiceStub(receivedMessages = Seq(cardanoAddressInfoMessage1, credentialMessage1))
 
-      val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask)
+      val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig)
       val connectorMessagesService = new ConnectorMessagesService(
         databaseTask,
         connectorClientService,

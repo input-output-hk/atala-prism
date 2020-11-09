@@ -1,15 +1,13 @@
 package io.iohk.atala.mirror.http.endpoints
 
 import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.config.HttpConfig
-import io.iohk.atala.mirror.http.models.payid.AddressDetails.CryptoAddressDetails
-import io.iohk.atala.mirror.http.models.payid.PaymentInformation
+import io.iohk.atala.mirror.models.payid.AddressDetails.CryptoAddressDetails
 import io.iohk.atala.mirror.services.CardanoAddressInfoService
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
 import org.http4s._
 import org.http4s.implicits._
-import io.iohk.atala.mirror.http.models.payid._
+import io.iohk.atala.mirror.models.payid._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 
 // sbt "project mirror" "testOnly *endpoints.PaymentEndpointsSpec"
@@ -73,9 +71,8 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
   }
 
   trait PaymentEndpointsFixtures {
-    val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask)
-    val httpConfig = HttpConfig(8080, "localhost")
-    val paymentEndpoints = new PaymentEndpoints(cardanoAddressInfoService, httpConfig)
+    val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig)
+    val paymentEndpoints = new PaymentEndpoints(cardanoAddressInfoService, mirrorConfig.httpConfig)
     val service = paymentEndpoints.service.orNotFound
 
     val payIdHeader = Header("PayId-Version", "1.0")

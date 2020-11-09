@@ -1,19 +1,21 @@
 package io.iohk.atala.mirror.services
 
 import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.db.CardanoAddressInfoDao
+import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, PayIdMessageDao}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.mockito.scalatest.MockitoSugar
 import monix.execution.Scheduler.Implicits.global
 import doobie.implicits._
-import io.iohk.atala.mirror.models.DID
+import io.iohk.atala.mirror.models.{ConnectorMessageId, DID}
 
 import scala.concurrent.duration.DurationInt
+import io.circe.parser._
+import io.iohk.atala.mirror.models.payid.PaymentInformation
 
 // sbt "project mirror" "testOnly *services.CardanoAddressInfoServiceSpec"
 class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
-  import ConnectorMessageFixtures._, ConnectionFixtures._, CardanoAddressInfoFixtures._
+  import ConnectorMessageFixtures._, ConnectionFixtures._, CardanoAddressInfoFixtures._, PayIdFixtures._
 
   "cardanoAddressesMessageProcessor" should {
     "upsert cardano address" in new CardanoAddressInfoServiceFixtures {
@@ -22,7 +24,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val cardanoAddressInfoOption = (for {
-        _ <- messageProcessor.attemptProcessMessage(cardanoAddressInfoMessage1).get
+        _ <- cardanoAddressMessageProcessor.attemptProcessMessage(cardanoAddressInfoMessage1).get
         cardanoAddress <- CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddress1)).transact(databaseTask)
       } yield cardanoAddress).runSyncUnsafe(1.minute)
 
@@ -31,7 +33,82 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
     }
 
     "return None if ReceivedMessage is not CardanoAddressMessage" in new CardanoAddressInfoServiceFixtures {
-      messageProcessor.attemptProcessMessage(credentialMessage1) mustBe None
+      cardanoAddressMessageProcessor.attemptProcessMessage(credentialMessage1) mustBe None
+    }
+  }
+
+  "payIdMessageProcessor" should {
+    "upsert cardano address" in new CardanoAddressInfoServiceFixtures {
+      // given
+      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+
+      // when
+      val (cardanoAddressInfoOption, payIdMessageOption) = (for {
+        _ <- paymentInformationMessageProcessor.attemptProcessMessage(paymentInformationMessage1).get
+        cardanoAddressInfoOption <-
+          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
+        payIdMessageOption <-
+          PayIdMessageDao.findBy(ConnectorMessageId(paymentInformationMessage1.id)).transact(databaseTask)
+      } yield (cardanoAddressInfoOption, payIdMessageOption)).runSyncUnsafe(1.minute)
+
+      // then
+      cardanoAddressInfoOption.map(_.cardanoAddress) mustBe Some(CardanoAddress(cardanoAddressPayId1))
+      payIdMessageOption
+        .map(_.rawPaymentInformation.raw)
+        .flatMap(rawPaymentInformation => parse(rawPaymentInformation).toOption)
+        .flatMap(_.as[PaymentInformation].toOption) mustBe Some(paymentInformation1)
+    }
+
+    "do not upsert cardano address if holder did is incorrect" in new CardanoAddressInfoServiceFixtures {
+      // given
+      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+
+      val paymentInformationWithWrongHolder =
+        paymentInformation1.copy(payId = Some("wrongHolderDid" + "$" + mirrorConfig.httpConfig.payIdHostAddress))
+
+      val messageWithWrongHolder =
+        paymentInformationMessage1.copy(message = paymentInformationToAtalaMessage(paymentInformationWithWrongHolder))
+
+      // when
+      val (cardanoAddressInfoOption, payIdMessageOption) = (for {
+        _ <- paymentInformationMessageProcessor.attemptProcessMessage(messageWithWrongHolder).get
+        cardanoAddressInfoOption <-
+          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
+        payIdMessageOption <-
+          PayIdMessageDao.findBy(ConnectorMessageId(paymentInformationMessage1.id)).transact(databaseTask)
+      } yield (cardanoAddressInfoOption, payIdMessageOption)).runSyncUnsafe(1.minute)
+
+      // then
+      cardanoAddressInfoOption mustBe None
+      payIdMessageOption mustBe None
+    }
+
+    "do not upsert cardano address if host network is incorrect" in new CardanoAddressInfoServiceFixtures {
+      // given
+      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+
+      val paymentInformationWithWrongNetwork =
+        paymentInformation1.copy(payId = Some(connectionHolderDid2.value + "$" + "wrongNetwork"))
+
+      val messageWithWrongNetwork =
+        paymentInformationMessage1.copy(message = paymentInformationToAtalaMessage(paymentInformationWithWrongNetwork))
+
+      // when
+      val (cardanoAddressInfoOption, payIdMessageOption) = (for {
+        _ <- paymentInformationMessageProcessor.attemptProcessMessage(messageWithWrongNetwork).get
+        cardanoAddressInfoOption <-
+          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
+        payIdMessageOption <-
+          PayIdMessageDao.findBy(ConnectorMessageId(paymentInformationMessage1.id)).transact(databaseTask)
+      } yield (cardanoAddressInfoOption, payIdMessageOption)).runSyncUnsafe(1.minute)
+
+      // then
+      cardanoAddressInfoOption mustBe None
+      payIdMessageOption mustBe None
+    }
+
+    "return None if ReceivedMessage is not PaymentInformationMessage" in new CardanoAddressInfoServiceFixtures {
+      cardanoAddressMessageProcessor.attemptProcessMessage(credentialMessage1) mustBe None
     }
   }
 
@@ -67,7 +144,8 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
   }
 
   trait CardanoAddressInfoServiceFixtures {
-    val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask)
-    val messageProcessor = cardanoAddressInfoService.cardanoAddressInfoMessageProcessor
+    val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig)
+    val cardanoAddressMessageProcessor = cardanoAddressInfoService.cardanoAddressInfoMessageProcessor
+    val paymentInformationMessageProcessor = cardanoAddressInfoService.payIdMessageProcessor
   }
 }

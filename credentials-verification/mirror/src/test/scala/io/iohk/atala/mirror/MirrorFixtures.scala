@@ -26,14 +26,26 @@ import io.iohk.atala.prism.credentials.{
 }
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
+import io.iohk.atala.mirror.models.payid.{
+  Address,
+  AddressDetails,
+  AddressDetailsType,
+  PaymentInformation,
+  VerifiedAddress
+}
 import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
+import io.iohk.atala.prism.protos.credential_models
+import io.circe.syntax._
+import io.iohk.atala.mirror.config.{GrpcConfig, HttpConfig, MirrorConfig}
 
 trait MirrorFixtures {
+
+  lazy val mirrorConfig: MirrorConfig = MirrorConfig(GrpcConfig(50057), HttpConfig(8080, "localhost"))
 
   /**
     * Helper method to insert multiple records into the database.
@@ -217,5 +229,45 @@ trait MirrorFixtures {
         .withMirrorMessage(MirrorMessage().withRegisterAddressMessage(RegisterAddressMessage(cardanoAddress1)))
         .toByteString
     )
+  }
+
+  object PayIdFixtures {
+    import ConnectionFixtures._
+
+    val cardanoAddressPayId1 = "cardanoAddressPayId1"
+
+    lazy val paymentInformation1 = PaymentInformation(
+      addresses = List.empty,
+      verifiedAddresses = List(
+        VerifiedAddress(
+          payload = Address(
+            paymentNetwork = "cardano",
+            environment = Some("testnet"),
+            addressDetailsType = AddressDetailsType.CryptoAddress,
+            addressDetails = AddressDetails.CryptoAddressDetails(
+              address = cardanoAddressPayId1,
+              tag = None
+            )
+          ).asJson.toString(),
+          signatures = List.empty
+        )
+      ),
+      payId = Some(connectionHolderDid2.value + "$" + mirrorConfig.httpConfig.payIdHostAddress),
+      memo = None
+    )
+
+    lazy val paymentInformationMessage1 = ReceivedMessage(
+      id = "id1",
+      received = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
+      connectionId = connectionId2.uuid.toString,
+      message = paymentInformationToAtalaMessage(paymentInformation1)
+    )
+
+    def paymentInformationToAtalaMessage(paymentInformation: PaymentInformation): ByteString =
+      AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage().withPayIdMessage(credential_models.PayIdMessage(paymentInformation.asJson.toString()))
+        )
+        .toByteString
   }
 }

@@ -1,13 +1,14 @@
-package io.iohk.atala.mirror.http.models.payid
+package io.iohk.atala.mirror.models.payid
 
+import cats.syntax.functor._
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
 import io.circe.syntax._
-import cats.syntax.functor._
 
 case class PaymentInformation(
     addresses: List[Address],
+    verifiedAddresses: List[VerifiedAddress],
     payId: Option[String],
     memo: Option[String]
 )
@@ -75,4 +76,27 @@ case class Address(
 object Address {
   implicit val addressEncoder: Encoder[Address] = deriveEncoder[Address]
   implicit val addressDecoder: Decoder[Address] = deriveDecoder[Address]
+}
+
+case class VerifiedAddressSignature(
+    name: String,
+    `protected`: String,
+    signature: String
+)
+
+object VerifiedAddressSignature {
+  implicit val verifiedAddressSignatureEncoder: Encoder[VerifiedAddressSignature] =
+    deriveEncoder[VerifiedAddressSignature]
+  implicit val verifiedAddressSignatureDecoder: Decoder[VerifiedAddressSignature] =
+    deriveDecoder[VerifiedAddressSignature]
+}
+
+case class VerifiedAddress(
+    payload: String,
+    signatures: List[VerifiedAddressSignature]
+)
+
+object VerifiedAddress {
+  implicit val verifiedAddressEncoder: Encoder[VerifiedAddress] = deriveEncoder[VerifiedAddress]
+  implicit val verifiedAddressDecoder: Decoder[VerifiedAddress] = deriveDecoder[VerifiedAddress]
 }
