@@ -1,24 +1,21 @@
-FROM openjdk:8u181
+FROM openjdk:8u272
 
 # Env variables
-ENV SCALA_VERSION=2.12.10
-ENV SBT_VERSION=1.3.8
-ENV MILL_VERSION=0.6.2
+ENV SCALA_2_12_VERSION=2.12.10
+ENV SCALA_2_13_VERSION=2.13.3
+ENV SBT_VERSION=1.4.2
 ENV TERRAFORM_VERSION=0.12.25
 ENV NODE_VERSION=10.16.3
 
 # Define working directory
 WORKDIR /root
 
-# Scala expects this file
-RUN touch /usr/lib/jvm/java-8-openjdk-amd64/release
-
-# Install Scala
+# Install Scala 2.13
 ## Piping curl directly in tar
 RUN \
-  curl -fsL https://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz | tar xfz - -C /root/ && \
+  curl -fsL https://downloads.typesafe.com/scala/$SCALA_2_13_VERSION/scala-$SCALA_2_13_VERSION.tgz | tar xfz - -C /root/ && \
   echo >> /root/.bashrc && \
-  echo "export PATH=~/scala-$SCALA_VERSION/bin:$PATH" >> /root/.bashrc
+  echo "export PATH=~/scala-$SCALA_2_13_VERSION/bin:$PATH" >> /root/.bashrc
 
 # Install sbt
 RUN \
@@ -26,13 +23,25 @@ RUN \
   dpkg -i sbt-$SBT_VERSION.deb && \
   sbt --sbt-version $SBT_VERSION clean
 
-# Install mill
+# Prepare sbt for Scala 2.12 (warm cache)
 RUN \
-  curl -L -o /usr/local/bin/mill https://github.com/lihaoyi/mill/releases/download/$MILL_VERSION/$MILL_VERSION && \
-  chmod +x /usr/local/bin/mill && \
-  touch build.sc && \
-  mill -i resolve _ && \
-  rm build.sc
+  sbt sbtVersion && \
+  mkdir -p project && \
+  echo "scalaVersion := \"${SCALA_2_12_VERSION}\"" > build.sbt && \
+  echo "sbt.version=${SBT_VERSION}" > project/build.properties && \
+  echo "case object Temp" > Temp.scala && \
+  sbt compile && \
+  rm -r project build.sbt Temp.scala target
+
+# Prepare sbt for Scala 2.13 (warm cache)
+RUN \
+  sbt sbtVersion && \
+  mkdir -p project && \
+  echo "scalaVersion := \"${SCALA_2_13_VERSION}\"" > build.sbt && \
+  echo "sbt.version=${SBT_VERSION}" > project/build.properties && \
+  echo "case object Temp" > Temp.scala && \
+  sbt compile && \
+  rm -r project build.sbt Temp.scala target
 
 # Install awscli
 RUN \
