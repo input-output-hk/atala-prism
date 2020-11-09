@@ -14,8 +14,7 @@ class SlayerCredentialId private (val string: String)
 
 object SlayerCredentialId {
 
-  def compute(credential: SignedCredential, did: String): SlayerCredentialId = {
-    val credentialHash = CredentialsCryptoSDKImpl.hash(credential)
+  def compute(credentialHash: SHA256Digest, did: String): SlayerCredentialId = {
     val credentialData = node_models.CredentialData(
       issuer = DID.stripPrismPrefix(did),
       contentHash = ByteString.copyFrom(credentialHash.value.toArray)
@@ -34,4 +33,8 @@ object SlayerCredentialId {
 
     new SlayerCredentialId(string)
   }
+
+  def compute(credential: SignedCredential, did: String): SlayerCredentialId =
+    compute(CredentialsCryptoSDKImpl.hash(credential), did)
+
 }

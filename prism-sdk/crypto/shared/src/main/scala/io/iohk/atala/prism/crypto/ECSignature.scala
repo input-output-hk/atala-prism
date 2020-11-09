@@ -8,4 +8,16 @@ case class ECSignature(data: Array[Byte]) {
   }
 
   override def toString: String = s"ECSignature($getHexEncoded)"
+
+  /**
+    * Allow comparing [[ECSignature]] by converting data to [[IndexedSeq]].
+    */
+  override def equals(arg: Any) = {
+    arg match {
+      case ECSignature(d) => data.toIndexedSeq == d.toIndexedSeq
+      case _ => false
+    }
+  }
+
+  override def hashCode = data.toIndexedSeq.hashCode
 }

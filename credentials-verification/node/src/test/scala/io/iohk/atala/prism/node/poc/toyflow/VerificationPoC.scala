@@ -5,8 +5,8 @@ import java.util.concurrent.TimeUnit
 
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
-import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, SignedCredential}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
@@ -27,7 +27,10 @@ import org.scalatest.BeforeAndAfterEach
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 
+import io.iohk.atala.prism.credentials.json.implicits._
+
 class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with BeforeAndAfterEach {
+  implicit val ecTrait = EC
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   protected var serverName: String = _
@@ -146,8 +149,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
 
       // 6. she issues the credential through the cmanager
       // we create the issuance operation
-      val hash = CredentialsCryptoSDKImpl.hash(signedCredential)
-      val issueCredentialOp = NodeSDK.buildIssueCredentialOp(hash, didSuffix)
+      val issueCredentialOp = NodeSDK.buildIssueCredentialOp(signedCredential.hash, didSuffix)
       val calculatedCredentialId = NodeSDK.computeCredId(issueCredentialOp)
       val signedIssueCredentialOp = wallet.signOperation(issueCredentialOp, issuanceKeyId, didSuffix)
 
@@ -160,7 +162,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
 
       // ... later ...
       // 8. a verifier receives the credential through the connector
-      val verifyMe = SignedCredential.from(connector.receivedCredential()).get
+      val verifyMe = JsonBasedCredential.unsafeFromString(connector.receivedCredential())
 
       // 9. he gives the signed credential to the wallet to verify it
       //    and the wallet queries the node and verify stuff and succeeds

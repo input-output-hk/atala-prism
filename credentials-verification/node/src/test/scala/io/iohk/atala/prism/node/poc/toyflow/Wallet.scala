@@ -1,14 +1,8 @@
 package io.iohk.atala.prism.node.poc.toyflow
 
-import java.nio.charset.StandardCharsets
-
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.credentials.{
-  CredentialsCryptoSDKImpl,
-  JsonBasedUnsignedCredential,
-  SignedCredential,
-  UnsignedCredentialBuilder
-}
+import io.iohk.atala.prism.credentials.CredentialContent
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.DIDSuffix
@@ -16,9 +10,11 @@ import io.iohk.atala.prism.node.poc.NodeSDK
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 
+import io.iohk.atala.prism.credentials.json.implicits._
+
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
-  private val cryptoSDK = CredentialsCryptoSDKImpl
+  implicit val ec = EC
 
   val masterKeyPair = EC.generateKeyPair()
   val masterPrivateKey = masterKeyPair.privateKey
@@ -85,27 +81,19 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       credential: String,
       keyId: String,
       didSuffix: DIDSuffix
-  ): SignedCredential = {
+  ): JsonBasedCredential[CredentialContent[Nothing]] = {
     val privateKey = dids(didSuffix)(keyId)
-    val credentialBytes = credential.getBytes(StandardCharsets.UTF_8)
-    cryptoSDK.signCredential(
-      UnsignedCredentialBuilder[JsonBasedUnsignedCredential].fromBytes(credentialBytes),
-      privateKey
-    )(EC)
+    JsonBasedCredential.unsafeFromString(credential).sign(privateKey)
   }
 
-  def verifyCredential(signedCredential: SignedCredential): Boolean = {
-    // get credential hash and compute id
-    val concreteRepresentation = signedCredential.credential.value
-
+  def verifyCredential(credential: JsonBasedCredential[CredentialContent[Nothing]]): Boolean = {
     // extract user DIDSuffix and keyId from credential
-    val issuerDID = GenericCredentialsSDK.getIssuerDID(concreteRepresentation)
-    val issuerDIDSuffix = GenericCredentialsSDK.getIssuerDIDSufix(concreteRepresentation)
-    val issuanceKeyId = GenericCredentialsSDK.getKeyId(concreteRepresentation)
+    val issuerDID = GenericCredentialsSDK.getIssuerDID(credential.canonicalForm)
+    val issuerDIDSuffix = GenericCredentialsSDK.getIssuerDIDSufix(credential.canonicalForm)
+    val issuanceKeyId = GenericCredentialsSDK.getKeyId(credential.canonicalForm)
 
     // request credential state to the node
-    val hash = cryptoSDK.hash(signedCredential)
-    val issuanceOperation = NodeSDK.buildIssueCredentialOp(hash, issuerDIDSuffix)
+    val issuanceOperation = NodeSDK.buildIssueCredentialOp(credential.hash, issuerDIDSuffix)
     val credentialId = NodeSDK.computeCredId(issuanceOperation)
 
     val credentialState = node.getCredentialState(
@@ -154,7 +142,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       credentialIssuanceDate.occurredBefore(issuanceKeyRevokedOn.value)
     ) &&
     // the signature is valid
-    cryptoSDK.verifyCredentialSignature(signedCredential, issuancekey.value)(EC)
+    credential.isValidSignature(issuancekey.value)
   }
 
   private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {

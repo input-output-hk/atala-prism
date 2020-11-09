@@ -1,49 +1,49 @@
 package io.iohk.atala.mirror.services
 
-import cats.data.Validated.{Invalid, Valid}
+import java.time.Instant
+
+import scala.concurrent.duration.DurationInt
+import scala.util.Try
+
 import cats.data.{EitherT, OptionT, ValidatedNel}
+import cats.data.Validated.{Invalid, Valid}
 import doobie.util.transactor.Transactor
 import fs2.Stream
+import monix.eval.Task
+import org.slf4j.LoggerFactory
+
 import io.iohk.atala.mirror.NodeUtils.{fromProtoKey, fromTimestampInfoProto}
 import io.iohk.atala.mirror.Utils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
-import java.time.Instant
-
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.DID
 import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
-import io.iohk.atala.prism.credentials.JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
 import io.iohk.atala.prism.credentials.{
   CredentialData,
-  CredentialVerification,
-  JsonBasedUnsignedCredential,
   KeyData,
-  SignedCredential,
-  SignedCredentialDetails,
   SlayerCredentialId,
-  UnsignedCredential,
-  UnsignedCredentialBuilder,
-  VerificationError
+  VerificationError,
+  VerifiableCredential
 }
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
-import monix.eval.Task
-import org.slf4j.LoggerFactory
+import io.iohk.atala.mirror.utils.ConnectionUtils
 
-import scala.concurrent.duration.DurationInt
-import scala.util.Try
 import cats.implicits._
 import doobie.implicits._
-import io.iohk.atala.mirror.utils.ConnectionUtils
+import io.iohk.atala.prism.credentials.json.implicits._
 
 class CredentialService(
     tx: Transactor[Task],
     connectorService: ConnectorClientService,
     nodeService: NodeClientService
 ) {
+
+  implicit val ec = EC
 
   private val logger = LoggerFactory.getLogger(classOf[CredentialService])
 
@@ -120,15 +120,11 @@ class CredentialService(
   }
 
   private[services] def getIssuersDid(rawCredential: RawCredential): Option[DID] = {
-    val unsignedCredential: UnsignedCredential = SignedCredential.from(rawCredential.rawCredential).toOption match {
-      case Some(signedCredential) =>
-        signedCredential.decompose[JsonBasedUnsignedCredential].credential
-      case None =>
-        UnsignedCredentialBuilder[JsonBasedUnsignedCredential]
-          .fromBytes(rawCredential.rawCredential.getBytes)
-    }
-
-    unsignedCredential.issuerDID.map(DID)
+    JsonBasedCredential
+      .fromString(rawCredential.rawCredential)
+      .toOption
+      .flatMap(_.content.issuerDid)
+      .map(DID)
   }
 
   private def createUserCredential(
@@ -172,10 +168,13 @@ class CredentialService(
       signedCredentialStringRepresentation: String
   ): Task[Either[String, ValidatedNel[VerificationError, Unit]]] = {
     (for {
-      data <- SignedCredentialDetails.compute(signedCredentialStringRepresentation).leftMap(_.msg).toEitherT[Task]
-      keyData <- getKeyData(issuerDID = data.issuerDID, issuanceKeyId = data.issuanceKeyId)
-      credentialData <- getCredentialData(data.slayerCredentialId)
-    } yield CredentialVerification.verifyCredential(keyData, credentialData, data.credential)(EC)).value
+      credential <-
+        JsonBasedCredential.fromString(signedCredentialStringRepresentation).left.map(_.message).toEitherT[Task]
+      issuerDid <- EitherT.fromOption[Task](credential.content.issuerDid, "Empty issuerDID")
+      issuanceKeyId <- EitherT.fromOption[Task](credential.content.issuanceKeyId, "Empty issuanceKeyId")
+      keyData <- getKeyData(issuerDid, issuanceKeyId)
+      credentialData <- getCredentialData(SlayerCredentialId.compute(credential.hash, issuerDid))
+    } yield VerifiableCredential.verify(keyData, credentialData, credential)).value
   }
 
   private[services] def getKeyData(issuerDID: String, issuanceKeyId: String): EitherT[Task, String, KeyData] = {
