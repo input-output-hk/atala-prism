@@ -12,7 +12,9 @@
   "commonWords": {
     "and": "and",
     "is": "is",
-    "are": "are"
+    "are": "are",
+    "from": "From",
+    "to": "To"
   },
   "emptyComponent": {
     "photoAlt": "No {{model}}",
@@ -206,7 +208,15 @@
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential",
-      "dateCreated": "Date Created"
+      "dateCreated": "Date Created",
+      "validity": "Validity: ",
+      "valid": "Valid",
+      "source": "Source:",
+      "integrity": "Integrity: ",
+      "hashedFile": "Hashed File",
+      "fileHash": "File Hash",
+      "transactionTimestamp": "Transaction Timestamp: ",
+      "viewCardanoExplorer": "View in Cardano Explorer"
     },
     "type": {
       "governmentId": "Government ID",
@@ -214,11 +224,11 @@
       "proofOfEmployment": "Proof of Employment",
       "healthInsurance": "Health Insurance"
     },
-    "sentCredentialModal":{
+    "sentCredentialModal": {
       "title": "You are about to send",
-      "credentials":"credentials",
-      "cantSendText":"cannot be sent because their connections are pending and/or the credentials have not been signed.",
-      "confirm":"Confirm"
+      "credentials": "credentials",
+      "cantSendText": "cannot be sent because their connections are pending and/or the credentials have not been signed.",
+      "confirm": "Confirm"
     }
   },
   "credentialSummary": {
@@ -274,8 +284,8 @@
     "targetsSelection": {
       "groups": "Select a group",
       "subjects": "Select contacts",
-      "selectGroup":"Select a group or select individual contacts to issue credentials",
-      "checkbox":"Do not select any group or contact"
+      "selectGroup": "Select a group or select individual contacts to issue credentials",
+      "checkbox": "Do not select any group or contact"
     },
     "bulkImport": {
       "title": "Follow these steps to continue:"
@@ -343,7 +353,7 @@
   },
   "landing": {
     "welcome": "Welcome!",
-    "description":"Please log in with Atala PRISM Browser Wallet",
+    "description": "Please log in with Atala PRISM Browser Wallet",
     "register": "Register",
     "clickHere": "Click Here",
     "login": "Login",
@@ -356,12 +366,12 @@
     "the": "The",
     "atalaPrism": " Atala PRISM Browser Wallet ",
     "description": "is used to manage access to the management console and sign credentials. Currently the browser wallet extension is available on ",
-    "chrome":"Chrome. ",
-    "chromeWeb":"Chrome Web Store",
-    "descriptionPartTwo":"Depending on the browser you are currently using. Please go to the relevant webstore and add the extension to your browser",
+    "chrome": "Chrome. ",
+    "chromeWeb": "Chrome Web Store",
+    "descriptionPartTwo": "Depending on the browser you are currently using. Please go to the relevant webstore and add the extension to your browser",
     "comingSoon": "Comming Soon on ",
-    "register":"Already have your Atala PRISM? ",
-    "clickRegister":"Click to register",
+    "register": "Already have your Atala PRISM? ",
+    "clickRegister": "Click to register",
     "button": "Download ZIP File"
   },
   "login": {
@@ -450,10 +460,14 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "titleBottom": "Analytics",
+    "subtitle": "Specify a date range to refine the data to a specific period.",
     "welcome": {
       "title": "Welcome back!",
       "image": "Welcome",
-      "subtitle": "This is a placeholder with info that is important for the logged user."
+      "subtitle": "This is a placeholder with info that is important for the logged user.",
+      "paragraph": "View key data to help better understand usage of ",
+      "atalaPrism": "Atala Prism."
     },
     "bundle": {
       "noBundle": "No bundle yet",

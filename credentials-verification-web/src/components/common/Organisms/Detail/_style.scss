@@ -44,12 +44,11 @@
     }
   }
 }
-.DrawerCredentialData{
-  .CredentialTemplate{
-
+.DrawerCredentialData {
+  .CredentialTemplate {
     margin-bottom: 1em;
   }
-  .Footer{
+  .Footer {
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -67,39 +66,178 @@
   @include primary-text($body, $black);
 }
 
-.CredentialDetailContainer{
+.CredentialDetailContainer {
+  display: flex;
+  flex-direction: column;
+
+  .CredentialDetailButtons {
     display: flex;
-    flex-direction: column;
-
-    .CredentialDetailButtons{
-      display: flex;
-      justify-content: space-between;
-      .ant-btn{
-        width: 48%;
-      }
+    justify-content: space-between;
+    .ant-btn {
+      width: 48%;
     }
+  }
 
-    .CredentialTemplate{
-      width: 100%;
+  .CredentialTemplate {
+    width: 100%;
+    margin-bottom: 1em;
+  }
+
+  .BlockchainLog {
+    border-top: 1px solid #e8e8e8;
+    margin-top: 2em;
+    padding-top: 2em;
+    h3 {
+      @include secondary-text($h3, $primary-color);
+    }
+    span {
+      @include primary-text(11px, $grey);
+    }
+    p {
+      @include body-text($body, $black, 400);
       margin-bottom: 1em;
+      &.TxHash {
+        text-decoration: underline;
+      }
     }
+  }
+}
 
-    .BlockchainLog{
-      border-top: 1px solid #e8e8e8;
-      margin-top: 2em;
-      padding-top: 2em;
-      h3{
-        @include secondary-text($h3, $primary-color);
-      }
-      span{
-        @include primary-text(11px, $grey);
-      }
-      p{
-        @include body-text($body, $black, 400);
-        margin-bottom: 1em;
-        &.TxHash{
-          text-decoration: underline;
-        }
-      }
+.credentialDetailDrawer {
+  .ant-tabs-nav .ant-tabs-tab {
+    @include primary-text($body, #d8d8d8);
+  }
+  .ant-tabs-nav .ant-tabs-tab-active {
+    color: $primary-color;
+  }
+  .ant-tabs-ink-bar {
+    background-color: $primary-color;
+  }
+  .ant-tabs-nav .ant-tabs-tab:hover {
+    background-color: transparent;
+  }
+  .ant-drawer-title {
+    @include primary-text($h2, $secondary-color);
+  }
+  .ant-drawer-header {
+    border-bottom: none;
+  }
+  .ant-drawer-body {
+    padding-top: 0;
+  }
+}
+
+.CredentialStatusCard {
+  margin-top: 20px;
+  .ant-card-bordered {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+  .ant-card-head {
+    background-color: #f2f2f2;
+  }
+  .ant-card-head-title {
+    @include primary-text($h2, $secondary-color);
+    font-weight: 700;
+  }
+  .ValidityButton {
+    border: 1px solid #40eaea;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    img {
+      margin-right: 5px;
     }
+    span {
+      @include body-text($label, #40eaea, bold);
+      margin-right: 3px;
+    }
+    p {
+      @include body-text($label, #40eaea, 400);
+    }
+  }
+
+  .credentialStatusContent {
+    display: flex;
+    h5 {
+      @include body-text($label, $secondary-color, 400);
+    }
+    span {
+      @include body-text($label, $secondary-color, bold);
+      margin-right: 3px;
+    }
+    p {
+      @include body-text($label, $secondary-color, 400);
+    }
+  }
+  .credentialStatusContent:first-child {
+    margin-bottom: 5px;
+  }
+  .hashedFileContainerText {
+    margin-left: 15px;
+    span {
+      @include body-text($label, #728099, 400);
+    }
+    p {
+      @include body-text($label, $secondary-color, 600);
+    }
+  }
+  .hashedFileContainer {
+    display: flex;
+    background-color: #f8f9f9;
+    border-radius: 6px;
+    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+  .FilesContainer {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #f8f9f9;
+    border-radius: 6px;
+    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .moreButton {
+    border: none;
+    background-color: white;
+    width: 30px;
+    color: grey;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    span {
+      @include body-text($label, grey, 400);
+      padding-bottom: 7px;
+    }
+  }
+  .dataFilesContainer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+  }
+}
+
+.mt {
+  margin-top: 20px;
+}
+
+.cardanoContainer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+  span {
+    margin-left: 15px !important;
+    @include body-text($label, $secondary-color, 600);
+  }
 }

@@ -208,7 +208,15 @@
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential",
-      "dateCreated": "Date Created"
+      "dateCreated": "Date Created",
+      "validity":"Validity: ",
+      "valid":"Valid",
+      "source":"Source:",
+      "integrity":"Integrity: ",
+      "hashedFile":"Hashed File",
+      "fileHash":"File Hash",
+      "transactionTimestamp":"Transaction Timestamp: ",
+      "viewCardanoExplorer":"View in Cardano Explorer"
     },
     "type": {
       "governmentId": "Government ID",
