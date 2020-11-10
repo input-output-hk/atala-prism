@@ -513,8 +513,12 @@ jobs:
             - site
 
       - run:
-          name: Run unit tests
-          command: cd prism-sdk && sbt coverage test
+          name: Run JS unit tests
+          command: cd prism-sdk && sbt coverage sdkJS/test
+
+      - run:
+          name: Run JVM unit tests
+          command: cd prism-sdk && sbt coverage sdkJVM/test
 
       - run:
           name: Generate code coverage reports
