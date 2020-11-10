@@ -1,13 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Input } from 'antd';
+import { Input, Checkbox } from 'antd';
 import { noEmptyInput } from '../../helpers/formRules';
 import CustomForm from '../common/Organisms/Forms/CustomForm';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
+
+import ContactDataContainer from './contactDataContainer';
+
+const { Search } = Input;
+
+const onSearch = value => console.log(value);
+function Change(e) {
+  console.log(`checked = ${e.target.checked}`);
+}
 
 const i18nPrefix = 'groupCreation.form.';
 
@@ -19,7 +28,7 @@ const getInput = (key, initialValue, t, onChange) => ({
   label: t(`${i18nPrefix}${key}`),
   key,
   className: '',
-  input: <Input onChange={onChange} />
+  input: <Input onChange={Change} />
 });
 
 const GroupForm = React.forwardRef(({ updateForm, groupName }, ref) => {
@@ -38,15 +47,36 @@ const GroupCreation = ({ createGroup, formRef, updateForm, formValues }) => {
     <div className="Wrapper">
       <div className="Header">
         <h1>{t('groupCreation.title')}</h1>
+        <h3 className="groupsSubtitle">{t('groupCreation.subtitle')}</h3>
       </div>
       <div className="GroupCreationContent">
         <div className="box">
-          <h3>Write a group name</h3>
+          <h3>Group name</h3>
           <GroupForm ref={formRef} updateForm={updateForm} formValues={formValues} />
-          <CustomButton
-            buttonProps={{ className: 'theme-outline', onClick: () => createGroup(groupName) }}
-            buttonText={t('groupCreation.form.buttonText')}
-          />
+          <h3>Add contacts</h3>
+          <div className="groupsCheckboxContainer">
+            <div className="groupsCheckbox">
+              <Checkbox onChange={Change}>Select All</Checkbox>
+            </div>
+            <Search
+              className="searchInput"
+              placeholder="Search"
+              onSearch={onSearch}
+              style={{ width: 200 }}
+            />
+          </div>
+          <div className="addContactsContainer">
+            <ContactDataContainer name="Anna Rodriguez" date="2020/05/15" id="00000000" />
+            <ContactDataContainer name="Anna Rodriguez" date="2020/05/15" id="00000000" />
+            <ContactDataContainer name="Anna Rodriguez" date="2020/05/15" id="00000000" />
+            <ContactDataContainer name="Anna Rodriguez" date="2020/05/15" id="00000000" />
+          </div>
+          <div className="groupsButtonContainer">
+            <CustomButton
+              buttonProps={{ className: 'theme-primary', onClick: () => createGroup(groupName) }}
+              buttonText={t('groupCreation.form.buttonText')}
+            />
+          </div>
         </div>
       </div>
     </div>

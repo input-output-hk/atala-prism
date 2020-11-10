@@ -1,38 +1,78 @@
 @import '../../css/general_styling';
 
 .GroupCreationContent {
-  width: 25%;
-  border-left: 1px solid $medium-grey;
-  margin-left: 1em;
+  width: 100%;
   padding-top: 0.5em;
   margin-top: 1em;
 
   .box {
-    margin: 1.15em;
     padding-bottom: 1em;
 
     .ant-form {
       margin-bottom: 2em;
+      width: 30%;
     }
   }
-
+  .groupsCheckboxContainer{
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .groupsCheckbox{
+    margin-right: 20px;
+    span{
+      @include body-text($body, $secondary-color, 400);
+    }
+  }
+  .searchInput{
+    .ant-input:focus{
+      border-color: $primary-color!important;
+      box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2)
+    }
+    .ant-input:hover{
+      border-color: $primary-color!important;
+    }
+  }
+  .groupsButtonContainer{
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+  }
   h3 {
     @include secondary-text($h3, $secondary-color);
     font-variant: normal;
     font-feature-settings: normal;
     margin-bottom: 1em;
     position: relative;
-    &::before {
-      content: '';
-      width: 10px;
-      display: block;
-      height: 10px;
-      border-radius: 50px;
-      top: 0.3em;
-      position: absolute;
-      left: -1.4em;
-      background: white;
-      border: 1px solid $medium-grey;
+  
+  }
+}
+
+.groupsSubtitle{
+  @include primary-text($h3, #728099);
+}
+.addContactsContainer{
+  height: 30vh;
+  overflow-y: auto;
+  .textContactData{
+    margin-right: 40px;
+    h4{
+      @include primary-text($body, #728099);
+    }
+    span{
+      @include primary-text($body, $secondary-color);
     }
   }
+  .imgContactData{
+    margin-right: 30px;
+  }
+.contactsDataGroups{
+  display: flex;
+  align-items: center;
+  background-color: #F8F9F9;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 10px;
+}
 }

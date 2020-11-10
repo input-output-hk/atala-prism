@@ -660,7 +660,8 @@
     }
   },
   "groupCreation": {
-    "title": "Create Group",
+    "title": "Create New Group",
+    "subtitle": "Type in a group name and select contacts to add to that group.",
     "form": {
       "buttonText": "Save",
       "groupName": "Name"
