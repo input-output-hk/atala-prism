@@ -56,7 +56,7 @@ class CardanoLedgerService private[services] (
   // Schedule the initial sync
   scheduleSync(30.seconds)
 
-  override def supportsOnChainData: Boolean = false
+  override def supportsOnChainData: Boolean = true
 
   override def publish(obj: node_internal.AtalaObject): Future[PublicationInfo] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
