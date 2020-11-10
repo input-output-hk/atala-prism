@@ -468,6 +468,13 @@ jobs:
       - halt-step-if-not-changed:
           directories: "prism-sdk"
 
+      - attach_workspace:
+          at: ./workspace
+
+      - run:
+          name: Grab the grpc docs
+          command: cp ./workspace/grpc-api.md prism-sdk/docs/src/main/paradox
+
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -493,6 +500,17 @@ jobs:
             - ~/.ivy2
             - ~/.m2
           key: prism-sdk-cache-{{ checksum "prism-sdk/build.sbt" }}-{{ checksum "prism-sdk/project/SdkBuild.scala" }}-{{ checksum "prism-sdk/project/Dependencies.scala" }}-{{ checksum "prism-sdk/project/plugins.sbt" }}-{{ checksum "prism-sdk/project/protoc.sbt" }}
+
+      # generating docs takes a short time, if this fails, it makes no sense to run the tests
+      - run:
+          name: Generate documentation
+          command: cd prism-sdk && sbt prismDocs/makeSite
+
+      # persist docs so that another job can deploy it
+      - persist_to_workspace:
+          root: prism-sdk/docs/target
+          paths:
+            - site
 
       - run:
           name: Run unit tests
@@ -533,20 +551,6 @@ jobs:
       - store_artifacts:
           path: prism-sdk/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
 
-      - run:
-          name: Generate documentation
-          command: cd prism-sdk && sbt prismDocs/mdoc
-
-      # Store generated documentation
-      - store_artifacts:
-          path: prism-sdk/prism-docs/target/mdoc
-
-      # persist docs so that another job can deploy it
-      - persist_to_workspace:
-          root: prism-sdk/prism-docs/target
-          paths:
-            - mdoc
-
   build-prism-sdk-proto-docs:
     working_directory: ~/repo
     docker:
@@ -567,7 +571,12 @@ jobs:
 
       - run:
           name: Store docs
-          command: mkdir grpc-docs && mv /out/docs.md grpc-docs/
+          command: mkdir grpc-docs && mv /out/docs.md grpc-docs/grpc-api.md
+
+      # Update the document title
+      - run:
+          name: Store docs
+          command: sed -i "1s/.*/# Grpc API reference/" grpc-docs/grpc-api.md
 
       # required to persist data, otherwise, we get this error: x509: certificate signed by unknown authority
       - run:
@@ -578,7 +587,7 @@ jobs:
       - persist_to_workspace:
           root: grpc-docs
           paths:
-            - docs.md
+            - grpc-api.md
 
       - store_artifacts:
           path: ./grpc-docs
@@ -587,7 +596,10 @@ workflows:
   version: 2.1
   build-and-deploy:
     jobs:
-      - build-prism-sdk
+      - build-prism-sdk-proto-docs
+      - build-prism-sdk:
+          requires:
+            - build-prism-sdk-proto-docs
       - build-credentials-verification:
           requires:
             - build-prism-sdk
@@ -601,9 +613,6 @@ workflows:
           requires:
             - build-credentials-verification
       - build-credentials-verification-webextension:
-          requires:
-            - build-credentials-verification
-      - build-prism-sdk-proto-docs:
           requires:
             - build-credentials-verification
 

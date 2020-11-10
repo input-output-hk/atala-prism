@@ -13,6 +13,25 @@ $ sbt +prismCryptoJVM/assembly
 
 You can find the resulting fat JARs in `crypto/jvm/target/scala-2.12/prism-crypto.jar` and `crypto/jvm/target/scala-2.13/prism-crypto.jar`.
 
+## Docs
+
+## Grpc API
+First of all, make sure to generate the docs for our grpc API, which is done by running this command:
+
+```shell script
+docker run --rm \
+  -v $(pwd)/docs/src/main/paradox:/out \
+  -v $(pwd)/protos:/protos \
+  pseudomuto/protoc-gen-doc --doc_opt=markdown,grpc-api.md
+
+sed -i "1s/.*/# Grpc API reference/" docs/src/main/paradox/grpc-api.md
+```
+
+Then, you can proceed to generate the website.
+
+## Website
+The [docs](docs) are type-checked by [mdoc](https://github.com/olafurpg/mdoc), and compiled to a website by [paradox](https://github.com/lightbend/paradox) and [sbt-site](https://github.com/sbt/sbt-site), while updating them, run `sbt prismDocs/previewSite` to launch the preview at [localhost:4000](localhost:4000).
+
 ## Troubleshooting
 If you get errors while the project gets imported by IntelliJ, try running IntelliJ from the terminal:, when dealing with scalajs, npm is required, sometimes IntelliJ fails to get the proper `PATH`:
 - `./bin/idea.sh` from the IntelliJ directory, for Linux.

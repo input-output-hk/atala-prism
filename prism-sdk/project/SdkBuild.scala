@@ -1,7 +1,14 @@
 import com.typesafe.sbt.GitVersioning
+import com.typesafe.sbt.GitPlugin.autoImport._
 import mdoc.MdocPlugin
 import mdoc.MdocPlugin.autoImport._
+import com.lightbend.paradox.sbt.ParadoxPlugin
+import com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
+import com.typesafe.sbt.site.paradox.ParadoxSitePlugin
+import com.typesafe.sbt.site.paradox.ParadoxSitePlugin.autoImport._
+import com.typesafe.sbt.site.SitePlugin.autoImport._
+import com.typesafe.sbt.site.SitePreviewPlugin.autoImport._
 import org.scalablytyped.converter.plugin.ScalablyTypedConverterGenSourcePlugin.autoImport._
 import org.scalablytyped.converter.plugin.ScalablyTypedConverterPlugin
 import org.scalablytyped.converter.plugin.ScalablyTypedPluginBase.autoImport._
@@ -39,7 +46,9 @@ object SdkBuild {
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         libraryDependencies ++= scalatestDependencies.value,
         coverageScalacPluginVersion := "1.4.1",
-        test in assembly := {}
+        test in assembly := {},
+        // use short hashes while versioning
+        git.formattedShaVersion := git.gitHeadCommit.value map { sha => sha.take(8) }
       )
       .enablePlugins(GitVersioning)
       .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
@@ -131,12 +140,28 @@ object SdkBuild {
 
   lazy val prismDocs =
     project
-      .in(file("prism-docs"))
+      .in(file("docs"))
       .settings(
         scalaVersion := "2.13.3",
         mdocVariables := Map(
           "VERSION" -> version.value
         ),
+        // This is required to easily define custom templates for paradox, which fixes the source url
+        mdocIn := (baseDirectory.value) / "src" / "main" / "paradox",
+        // paradox handles this
+        mdocExtraArguments := Seq("--no-link-hygiene"),
+        // Pre-process the files with mdoc, then, process them with paradox
+        Compile / paradox / sourceDirectory := mdocOut.value,
+        makeSite := makeSite.dependsOn(mdoc.toTask("")).value,
+        paradoxTheme := Some(builtinParadoxTheme("generic")),
+        paradoxProperties ++= Map(
+          "project.description" -> "The official documentation for the Atala PRISM SDK"
+          // TODO: Set the proper url once we start deploying this website to the public
+//          "project.url" -> "https://developer.lightbend.com/docs/paradox/current/",
+//          "canonical.base_url" -> "https://developer.lightbend.com/docs/paradox/current/"
+        ),
+        paradoxGroups := Map("Language" -> Seq("Scala", "Java", "JavaScript")),
+        previewLaunchBrowser := false,
         libraryDependencies ++= bouncyDependencies :+ bitcoinj
       )
       .dependsOn(
@@ -146,7 +171,7 @@ object SdkBuild {
         prismCredentials.jvm,
         prismConnector.jvm
       )
-      .enablePlugins(MdocPlugin)
+      .enablePlugins(MdocPlugin, ParadoxPlugin, ParadoxSitePlugin)
 
   lazy val sdk =
     commonProject(crossProject(JSPlatform, JVMPlatform) in file("."))
