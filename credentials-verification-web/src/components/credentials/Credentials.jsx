@@ -8,7 +8,7 @@ import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryDetail';
 import noCredentialsPicture from '../../images/noCredentials.svg';
 import CredentialButtons from './Atoms/Buttons/CredentialButtons';
-import { subjectShape } from '../../helpers/propShapes';
+import { contactShape } from '../../helpers/propShapes';
 import { shortBackendDateFormatter } from '../../helpers/formatters';
 
 import './_style.scss';
@@ -82,7 +82,7 @@ Credentials.defaultProps = {
 Credentials.propTypes = {
   fetchCredentials: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
-    subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
+    subjects: PropTypes.arrayOf(PropTypes.shape(contactShape)),
     credentials: PropTypes.arrayOf(PropTypes.shape())
   }).isRequired,
   filterProps: PropTypes.shape({

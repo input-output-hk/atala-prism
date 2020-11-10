@@ -41,18 +41,10 @@
   "contacts": {
     "title": "Contacts",
     "status": {
-      "issuer": {
-        "invitationMissing": "Pending",
-        "connectionMissing": "Invited",
-        "connectionAccepted": "Connected",
-        "connectionRevoked": "Revoked"
-      },
-      "verifier": {
-        "created": "Pending",
-        "invited": "Invited",
-        "connected": "Connected",
-        "revoked": "Revoked"
-      }
+      "invitationMissing": "Pending connection",
+      "connectionMissing": "Pending connection",
+      "connectionAccepted": "Connected",
+      "connectionRevoked": "Connection revoked"
     },
     "filters": {
       "identityNumber": "Identity Number",
@@ -69,9 +61,10 @@
         "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
         "email": "Email",
-        "invite": "Invite",
+        "invite": "QR Code",
         "delete": "Delete",
         "view": "View",
+        "edit": "Edit",
         "viewCredentials": "View Credentials",
         "firstName": "First Name",
         "lastName": "Last Name",
@@ -80,7 +73,9 @@
         "contactName": "Contact Name",
         "externalid": "External ID",
         "creationDate": "Date Created",
-        "credentials": "Credentials",
+        "issuedCredentials": "Credentials Issued",
+        "recievedCredentials": "Credentials Recieved",
+        "contactStatus": "Contact Status",
         "idNumber": "ID Number",
         "dateOfBirth": "Date Of Birth",
         "expirationDate": "Expiration Date",

@@ -9,6 +9,8 @@ const DEFAUlT_PAGE_SIZE = 10;
 // eslint-disable-next-line camelcase
 export const HOLDER_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
+export const CONTACT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
+// eslint-disable-next-line camelcase
 export const MAX_CONTACTS = 10000;
 // eslint-disable-next-line camelcase
 export const GROUP_PAGE_SIZE = DEFAUlT_PAGE_SIZE;

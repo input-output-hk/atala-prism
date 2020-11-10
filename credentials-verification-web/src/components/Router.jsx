@@ -37,7 +37,7 @@ const contacts = {
   exact: true,
   path: '/contacts',
   key: '/contacts',
-  component: withLoggedValidation(withSideBar(Contacts), allRoles)
+  component: withLoggedValidation(withSideBar(Contacts), issuer)
 };
 const groups = {
   exact: true,

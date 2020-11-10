@@ -201,20 +201,6 @@
     align-items: center;
     margin-top: 20px;
   }
-  .moreButton {
-    border: none;
-    background-color: white;
-    width: 30px;
-    color: grey;
-    height: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    span {
-      @include body-text($label, grey, 400);
-      padding-bottom: 7px;
-    }
-  }
   .dataFilesContainer {
     display: flex;
     justify-content: space-between;
@@ -239,5 +225,20 @@
   span {
     margin-left: 15px !important;
     @include body-text($label, $secondary-color, 600);
+  }
+}
+
+.moreButton {
+  border: none;
+  background-color: white;
+  width: 30px;
+  color: grey;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  span {
+    @include body-text($label, grey, 400);
+    padding-bottom: 7px;
   }
 }

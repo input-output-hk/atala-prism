@@ -4,7 +4,7 @@ import { message } from 'antd';
 import PropTypes from 'prop-types';
 import Connections from './Connections';
 import Logger from '../../helpers/Logger';
-import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
+import { CONTACT_PAGE_SIZE } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import { contactMapper } from '../../APIs/helpers';
@@ -12,24 +12,14 @@ import { contactMapper } from '../../APIs/helpers';
 const ConnectionsContainer = ({ api }) => {
   const { t } = useTranslation();
 
-  const [subjects, setSubjects] = useState([]);
-  const [filteredSubjects, setFilteredSubjects] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [filteredContacts, setFilteredContacts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
 
-  const isIssuer = () => api.wallet.isIssuer();
-
-  const getConnections = ({
-    pageSize,
-    lastId,
-    _name,
-    _status,
-    _email,
-    isRefresh,
-    oldConnections = []
-  }) =>
+  const getContacts = ({ pageSize, lastId, _name, _status, _email, isRefresh, oldContacts = [] }) =>
     (hasMore || isRefresh ? api.contactsManager.getContacts(lastId, pageSize) : Promise.resolve([]))
-      .then(connections => {
-        if (connections.length < HOLDER_PAGE_SIZE) {
+      .then(recievedContacts => {
+        if (recievedContacts.length < CONTACT_PAGE_SIZE) {
           setHasMore(false);
         } else {
           Logger.warn(
@@ -37,11 +27,11 @@ const ConnectionsContainer = ({ api }) => {
           );
         }
 
-        const connectionsWithKey = connections.map(contactMapper);
+        const contactsWithKey = recievedContacts.map(contactMapper);
 
-        const updatedConnections = oldConnections.concat(connectionsWithKey);
+        const updatedContacts = oldContacts.concat(contactsWithKey);
 
-        const filteredConnections = updatedConnections.filter(it => {
+        const filteredRecievedContacts = updatedContacts.filter(it => {
           const caseInsensitiveMatch = (str1 = '', str2 = '') =>
             str1.toLowerCase().includes(str2.toLowerCase());
 
@@ -53,40 +43,40 @@ const ConnectionsContainer = ({ api }) => {
           return matchesStatus && matchesName && matchesEmail;
         });
 
-        setSubjects(updatedConnections);
-        setFilteredSubjects(filteredConnections);
+        setContacts(updatedContacts);
+        setFilteredContacts(filteredRecievedContacts);
       })
       .catch(error => {
-        Logger.error('[Connections.getConnections] Error while getting connections', error);
-        message.error(t('errors.errorGetting', { model: 'Holders' }));
+        Logger.error('[Connections.getContacts] Error while getting connections', error);
+        message.error(t('errors.errorGetting', { model: 'Contacts' }));
       });
 
-  const refreshConnections = () => getConnections({ pageSize: subjects.length, isRefresh: true });
+  const refreshContacts = () => getContacts({ pageSize: contacts.length, isRefresh: true });
 
-  const handleHoldersRequest = (_name, _email, _status) => {
-    const { contactid } = getLastArrayElementOrEmpty(subjects);
+  const handleContactsRequest = (_name, _email, _status) => {
+    const { contactid } = getLastArrayElementOrEmpty(contacts);
 
-    return getConnections({
-      pageSize: HOLDER_PAGE_SIZE,
+    return getContacts({
+      pageSize: CONTACT_PAGE_SIZE,
       lastId: contactid,
       _name,
       _status,
       _email,
-      oldConnections: subjects
+      oldContacts: contacts
     });
   };
 
-  const inviteHolder = studentId => api.contactsManager.generateConnectionToken(studentId);
+  const inviteContact = contactId => api.contactsManager.generateConnectionToken(contactId);
 
   useEffect(() => {
-    if (!subjects.length) handleHoldersRequest();
+    if (!contacts.length) handleContactsRequest();
   }, []);
 
   // Wrapper to preserve 'this' context
   const getCredentials = connectionId => api.connector.getMessagesForConnection(connectionId);
 
   const tableProps = {
-    subjects: filteredSubjects,
+    contacts: filteredContacts,
     hasMore,
     getCredentials
   };
@@ -94,10 +84,9 @@ const ConnectionsContainer = ({ api }) => {
   return (
     <Connections
       tableProps={tableProps}
-      handleHoldersRequest={handleHoldersRequest}
-      inviteHolder={inviteHolder}
-      isIssuer={isIssuer}
-      refreshConnections={refreshConnections}
+      handleContactsRequest={handleContactsRequest}
+      inviteContact={inviteContact}
+      refreshContacts={refreshContacts}
     />
   );
 };

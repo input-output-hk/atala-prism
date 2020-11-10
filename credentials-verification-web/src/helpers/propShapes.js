@@ -5,7 +5,7 @@ import { CONNECTION_STATUSES } from './constants';
 export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
 export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
 
-export const subjectShape = {
+export const contactShape = {
   avatar: string,
   name: string,
   identityNumber: number,

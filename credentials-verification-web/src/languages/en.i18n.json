@@ -41,18 +41,10 @@
   "contacts": {
     "title": "Contacts",
     "status": {
-      "issuer": {
-        "invitationMissing": "Pending",
-        "connectionMissing": "Invited",
-        "connectionAccepted": "Connected",
-        "connectionRevoked": "Revoked"
-      },
-      "verifier": {
-        "created": "Pending",
-        "invited": "Invited",
-        "connected": "Connected",
-        "revoked": "Revoked"
-      }
+      "invitationMissing": "Pending connection",
+      "connectionMissing": "Pending connection",
+      "connectionAccepted": "Connected",
+      "connectionRevoked": "Connection revoked"
     },
     "filters": {
       "identityNumber": "Identity Number",
@@ -69,9 +61,10 @@
         "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
         "email": "Email",
-        "invite": "Invite",
+        "invite": "QR Code",
         "delete": "Delete",
         "view": "View",
+        "edit": "Edit",
         "viewCredentials": "View Credentials",
         "firstName": "First Name",
         "lastName": "Last Name",
@@ -80,7 +73,9 @@
         "contactName": "Contact Name",
         "externalid": "External ID",
         "creationDate": "Date Created",
-        "credentials": "Credentials",
+        "issuedCredentials": "Credentials Issued",
+        "recievedCredentials": "Credentials Recieved",
+        "contactStatus": "Contact Status",
         "idNumber": "ID Number",
         "dateOfBirth": "Date Of Birth",
         "expirationDate": "Expiration Date",
@@ -209,14 +204,14 @@
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential",
       "dateCreated": "Date Created",
-      "validity":"Validity: ",
-      "valid":"Valid",
-      "source":"Source:",
-      "integrity":"Integrity: ",
-      "hashedFile":"Hashed File",
-      "fileHash":"File Hash",
-      "transactionTimestamp":"Transaction Timestamp: ",
-      "viewCardanoExplorer":"View in Cardano Explorer"
+      "validity": "Validity: ",
+      "valid": "Valid",
+      "source": "Source:",
+      "integrity": "Integrity: ",
+      "hashedFile": "Hashed File",
+      "fileHash": "File Hash",
+      "transactionTimestamp": "Transaction Timestamp: ",
+      "viewCardanoExplorer": "View in Cardano Explorer"
     },
     "type": {
       "governmentId": "Government ID",
@@ -224,11 +219,11 @@
       "proofOfEmployment": "Proof of Employment",
       "healthInsurance": "Health Insurance"
     },
-    "sentCredentialModal":{
+    "sentCredentialModal": {
       "title": "You are about to send",
-      "credentials":"credentials",
-      "cantSendText":"cannot be sent because their connections are pending and/or the credentials have not been signed.",
-      "confirm":"Confirm"
+      "credentials": "credentials",
+      "cantSendText": "cannot be sent because their connections are pending and/or the credentials have not been signed.",
+      "confirm": "Confirm"
     }
   },
   "credentialSummary": {

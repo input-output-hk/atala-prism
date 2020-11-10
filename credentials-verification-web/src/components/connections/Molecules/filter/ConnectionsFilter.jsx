@@ -6,7 +6,7 @@ import { PENDING_CONNECTION, CONNECTED, INDIVIDUAL_STATUSES } from '../../../../
 
 import './_style.scss';
 
-const ConnectionsFilter = ({ fetchConnections }) => {
+const ConnectionsFilter = ({ fetchContacts }) => {
   const { t } = useTranslation();
 
   const [name, setName] = useState('');
@@ -14,7 +14,7 @@ const ConnectionsFilter = ({ fetchConnections }) => {
   const [status, setStatus] = useState(t(''));
 
   useEffect(() => {
-    fetchConnections(name, email, status);
+    fetchContacts(name, email, status);
   }, [name, email, status]);
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
@@ -33,6 +33,7 @@ const ConnectionsFilter = ({ fetchConnections }) => {
             onChange={({ target: { value } }) => setName(value)}
             allowClear
             value={name}
+            disabled
           />
         </Col>
         <Col span={8}>
@@ -42,10 +43,11 @@ const ConnectionsFilter = ({ fetchConnections }) => {
             onChange={({ target: { value } }) => setEmail(value)}
             allowClear
             value={email}
+            disabled
           />
         </Col>
         <Col span={8}>
-          <Select value={status} onChange={setStatus}>
+          <Select value={status} onChange={setStatus} disabled>
             <Select.Option value="">{t('contacts.filters.status')}</Select.Option>
             {statuses.map(statusType => (
               <Select.Option key={statusType} value={statusesValues[statusType]}>
@@ -60,7 +62,7 @@ const ConnectionsFilter = ({ fetchConnections }) => {
 };
 
 ConnectionsFilter.propTypes = {
-  fetchConnections: PropTypes.func.isRequired
+  fetchContacts: PropTypes.func.isRequired
 };
 
 export default ConnectionsFilter;

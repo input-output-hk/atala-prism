@@ -1,35 +1,27 @@
 @import '../../../../css/general_styling';
 
+.Title {
+  @include body-text($label, $dark-grey, 400);
+  line-height: 13px;
+}
+
 .Label {
   border-radius: 4px;
   text-align: center;
   padding: 3px 6px;
   width: max-content;
+
   p {
     @include secondary-text($label, $white);
   }
 
-  &.invitationMissing {
-    background: $grey;
-  }
-
-  &.created {
-    background: $grey;
-  }
-
-  &.connectionMissing {
-    background: $dark-grey;
-  }
-
+  &.invitationMissing,
+  &.connectionMissing,
   &.connectionRevoked {
-    background: $primary-color-darker;
+    background: #feaa91;
   }
 
   &.connectionAccepted {
-    background: $success-color;
-  }
-
-  &.connected {
-    background: $success-color;
+    background: #00d793;
   }
 }

@@ -5,42 +5,36 @@ import PropTypes from 'prop-types';
 import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
 import ConnectionsTable from './Organisms/table/ConnectionsTable';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
-import noConnections from '../../images/noConnections.svg';
+import noContacts from '../../images/noConnections.svg';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
 import { drawerWidth } from '../../helpers/constants';
 import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
-import { subjectShape } from '../../helpers/propShapes';
+import { contactShape } from '../../helpers/propShapes';
 
 import './_style.scss';
 import { withRedirector } from '../providers/withRedirector';
 
-const Connections = ({
-  tableProps,
-  inviteHolder,
-  isIssuer,
-  handleHoldersRequest,
-  refreshConnections
-}) => {
+const Connections = ({ tableProps, inviteContact, handleContactsRequest, refreshContacts }) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
   const [QRModalIsOpen, showQRModal] = useState(false);
-  const [currentConnection, setCurrentConnection] = useState({});
+  const [currentContact, setCurrentContact] = useState({});
   const [showDrawer, setShowDrawer] = useState();
 
   useEffect(() => {
-    if (!showDrawer) setCurrentConnection({});
+    if (!showDrawer) setCurrentContact({});
   }, [showDrawer]);
 
-  const inviteHolderAndShowQR = async holderId => {
-    const token = await inviteHolder(holderId);
+  const inviteContactAndShowQR = async contactId => {
+    const token = await inviteContact(contactId);
     setConnectionToken(token);
     showQRModal(true);
   };
 
   const emptyProps = {
-    photoSrc: noConnections,
+    photoSrc: noContacts,
     model: t('contacts.title')
   };
 
@@ -49,18 +43,18 @@ const Connections = ({
     return getCredentials(connectionId);
   };
 
-  const viewConnection = connection => {
-    const { creationDate, avatar, createdat, contactName, connectionid } = connection;
+  const viewContactDetail = contact => {
+    const { creationDate, avatar, createdat, contactName, connectionid } = contact;
 
     getContactCredentials(connectionid)
       .then(transactions => {
-        const formattedHolder = {
+        const formattedContact = {
           user: { icon: avatar, name: contactName, date: createdat },
           transactions,
           date: creationDate
         };
 
-        setCurrentConnection(formattedHolder);
+        setCurrentContact(formattedContact);
         setShowDrawer(true);
       })
       .catch(() => message.error(t('errors.errorGetting', { model: 'Credentials' })));
@@ -68,7 +62,7 @@ const Connections = ({
 
   const onQRClosed = () => {
     showQRModal(false);
-    refreshConnections();
+    refreshContacts();
   };
 
   return (
@@ -81,19 +75,18 @@ const Connections = ({
         width={drawerWidth}
         destroyOnClose
       >
-        {showDrawer && <CredentialListDetail {...currentConnection} />}
+        {showDrawer && <CredentialListDetail {...currentContact} />}
       </Drawer>
       <div className="ContentHeader">
         <h1>{t('contacts.title')}</h1>
-        <AddUserButtons isIssuer={isIssuer} />
+        <AddUserButtons />
       </div>
-      <ConnectionsFilter fetchConnections={handleHoldersRequest} />
-      {tableProps.subjects.length ? (
+      <ConnectionsFilter fetchContacts={handleContactsRequest} />
+      {tableProps.contacts.length ? (
         <ConnectionsTable
-          inviteHolder={inviteHolderAndShowQR}
-          isIssuer={isIssuer}
-          viewConnectionDetail={viewConnection}
-          handleHoldersRequest={handleHoldersRequest}
+          inviteContact={inviteContactAndShowQR}
+          viewContactDetail={viewContactDetail}
+          handleContactsRequest={handleContactsRequest}
           {...tableProps}
         />
       ) : (
@@ -110,15 +103,14 @@ const Connections = ({
 };
 
 Connections.propTypes = {
-  handleHoldersRequest: PropTypes.func.isRequired,
+  handleContactsRequest: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
-    subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
+    contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
     getCredentials: PropTypes.func.isRequired,
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
-  inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired,
-  refreshConnections: PropTypes.func.isRequired
+  inviteContact: PropTypes.func.isRequired,
+  refreshContacts: PropTypes.func.isRequired
 };
 
 export default withRedirector(Connections);
