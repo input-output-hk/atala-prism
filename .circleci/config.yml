@@ -587,13 +587,26 @@ workflows:
   version: 2.1
   build-and-deploy:
     jobs:
-      - build-credentials-verification
-      - build-credentials-verification-android
-      - build-credentials-verification-landing
-      - build-credentials-verification-web
-      - build-credentials-verification-webextension
       - build-prism-sdk
-      - build-prism-sdk-proto-docs
+      - build-credentials-verification:
+          requires:
+            - build-prism-sdk
+      - build-credentials-verification-android:
+          requires:
+            - build-credentials-verification
+      - build-credentials-verification-landing:
+          requires:
+            - build-credentials-verification
+      - build-credentials-verification-web:
+          requires:
+            - build-credentials-verification
+      - build-credentials-verification-webextension:
+          requires:
+            - build-credentials-verification
+      - build-prism-sdk-proto-docs:
+          requires:
+            - build-credentials-verification
+
       - deploy-ecr-images:
           filters:
             branches:
@@ -605,6 +618,7 @@ workflows:
           requires:
             - build-credentials-verification-web
             - build-credentials-verification
+
       - rebuild-prism-env:
           intdemo-enabled: true
           geud-enabled: true
