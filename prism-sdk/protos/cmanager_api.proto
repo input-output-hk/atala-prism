@@ -38,7 +38,9 @@ service GroupsService {
 message CreateGroupRequest {
     string name = 1;
 }
-message CreateGroupResponse {}
+message CreateGroupResponse {
+    Group group = 1; // the group created and its associated details
+}
 
 message GetGroupsRequest {}
 message GetGroupsResponse {

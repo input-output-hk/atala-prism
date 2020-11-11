@@ -20,7 +20,17 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
         .create(issuerId, IssuerGroup.Name(request.name))
         .value
         .map {
-          case Right(_) => cmanager_api.CreateGroupResponse()
+          case Right(g) =>
+            cmanager_api
+              .CreateGroupResponse()
+              .withGroup(
+                cmanager_models
+                  .Group()
+                  .withId(g.id.value.toString)
+                  .withCreatedAt(g.createdAt.getEpochSecond)
+                  .withName(g.name.value)
+                  .withNumberOfContacts(0) // creating a group adds no contacts
+              )
           case Left(e) => throw new RuntimeException(s"FAILED: $e")
         }
     }

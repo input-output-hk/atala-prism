@@ -533,7 +533,7 @@ proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.toObject = functi
  */
 proto.io.iohk.atala.prism.protos.CreateGroupResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    group: (f = msg.getGroup()) && cmanager_models_pb.Group.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -570,6 +570,11 @@ proto.io.iohk.atala.prism.protos.CreateGroupResponse.deserializeBinaryFromReader
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = new cmanager_models_pb.Group;
+      reader.readMessage(value,cmanager_models_pb.Group.deserializeBinaryFromReader);
+      msg.setGroup(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -599,6 +604,51 @@ proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.serializeBinary =
  */
 proto.io.iohk.atala.prism.protos.CreateGroupResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getGroup();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      cmanager_models_pb.Group.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional Group group = 1;
+ * @return {?proto.io.iohk.atala.prism.protos.Group}
+ */
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.getGroup = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.Group} */ (
+    jspb.Message.getWrapperField(this, cmanager_models_pb.Group, 1));
+};
+
+
+/**
+ * @param {?proto.io.iohk.atala.prism.protos.Group|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGroupResponse} returns this
+*/
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.setGroup = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.atala.prism.protos.CreateGroupResponse} returns this
+ */
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.clearGroup = function() {
+  return this.setGroup(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.io.iohk.atala.prism.protos.CreateGroupResponse.prototype.hasGroup = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 

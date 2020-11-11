@@ -60,7 +60,13 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
-        val _ = serviceStub.createGroup(request)
+        val response = serviceStub.createGroup(request)
+
+        // the data is included
+        response.group.value.name must be(newGroup.value)
+        response.group.value.id mustNot be(empty)
+        response.group.value.createdAt > 0 must be(true)
+        response.group.value.numberOfContacts must be(0)
 
         // the new group needs to exist
         val groups = issuerGroupsRepository.getBy(issuerId).value.futureValue.toOption.value
