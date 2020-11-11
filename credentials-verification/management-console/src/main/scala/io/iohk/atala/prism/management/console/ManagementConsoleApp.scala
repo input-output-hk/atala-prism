@@ -1,11 +1,17 @@
 package io.iohk.atala.prism.management.console
 
 import com.typesafe.config.{Config, ConfigFactory}
-import io.grpc.{Server, ServerBuilder}
-import io.iohk.atala.prism.management.console.repositories.ContactsRepository
+import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.management.console.repositories.{
+  ContactsRepository,
+  ParticipantsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.atala.prism.management.console.services.ConsoleServiceImpl
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -37,10 +43,29 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     logger.info("Connecting to the database")
     val xa = TransactorFactory(databaseConfig)
 
+    // node client
+    val nodeChannel = ManagedChannelBuilder
+      .forAddress(
+        globalConfig.getConfig("node").getString("host"),
+        globalConfig.getConfig("node").getInt("port")
+      )
+      .usePlaintext()
+      .build()
+    val node = NodeServiceGrpc.stub(nodeChannel)
+
     // Vault repositories
     val contactsRepository = new ContactsRepository(xa)(executionContext)
+    val participantsRepository = new ParticipantsRepository(xa)(executionContext)
+    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
 
-    val consoleService = new ConsoleServiceImpl(contactsRepository)(
+    val authenticator = new ManagementConsoleAuthenticator(
+      participantsRepository,
+      requestNoncesRepository,
+      node,
+      GrpcAuthenticationHeaderParser
+    )
+
+    val consoleService = new ConsoleServiceImpl(contactsRepository, authenticator)(
       executionContext
     )
 
