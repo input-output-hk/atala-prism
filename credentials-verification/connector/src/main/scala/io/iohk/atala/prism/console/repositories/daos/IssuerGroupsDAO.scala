@@ -36,6 +36,19 @@ object IssuerGroupsDAO {
        """.stripMargin.query[IssuerGroup.WithContactCount].to[List]
   }
 
+  def getBy(issuer: Institution.Id, contactId: Contact.Id): ConnectionIO[List[IssuerGroup.WithContactCount]] = {
+    sql"""
+         |SELECT group_id, name, issuer_id, created_at, (
+         |  SELECT COUNT(*)
+         |  FROM contacts_per_group
+         |  WHERE group_id = g.group_id
+         |) AS number_of_contacts
+         |FROM issuer_groups g join contacts_per_group cg USING (group_id)
+         |WHERE issuer_id = $issuer AND contact_id = $contactId
+         |ORDER BY name
+       """.stripMargin.query[IssuerGroup.WithContactCount].to[List]
+  }
+
   def find(groupId: IssuerGroup.Id): ConnectionIO[Option[IssuerGroup]] = {
     sql"""
          |SELECT group_id, name, issuer_id, created_at

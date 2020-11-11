@@ -684,7 +684,7 @@ proto.io.iohk.atala.prism.protos.GetGroupsRequest.prototype.toObject = function(
  */
 proto.io.iohk.atala.prism.protos.GetGroupsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    contactid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -721,6 +721,10 @@ proto.io.iohk.atala.prism.protos.GetGroupsRequest.deserializeBinaryFromReader = 
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setContactid(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -750,6 +754,31 @@ proto.io.iohk.atala.prism.protos.GetGroupsRequest.prototype.serializeBinary = fu
  */
 proto.io.iohk.atala.prism.protos.GetGroupsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getContactid();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string contactId = 1;
+ * @return {string}
+ */
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.prototype.getContactid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.atala.prism.protos.GetGroupsRequest} returns this
+ */
+proto.io.iohk.atala.prism.protos.GetGroupsRequest.prototype.setContactid = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 

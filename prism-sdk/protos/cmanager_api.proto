@@ -42,7 +42,9 @@ message CreateGroupResponse {
     Group group = 1; // the group created and its associated details
 }
 
-message GetGroupsRequest {}
+message GetGroupsRequest {
+    string contactId = 1; // optional, when provided, only groups related to the given contact are included
+}
 message GetGroupsResponse {
     repeated Group groups = 1;
 }

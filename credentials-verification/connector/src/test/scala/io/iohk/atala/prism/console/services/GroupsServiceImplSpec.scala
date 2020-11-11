@@ -69,7 +69,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         response.group.value.numberOfContacts must be(0)
 
         // the new group needs to exist
-        val groups = issuerGroupsRepository.getBy(issuerId).value.futureValue.toOption.value
+        val groups = issuerGroupsRepository.getBy(issuerId, None).value.futureValue.toOption.value
         groups.map(_.value.name) must contain(newGroup)
       }
     }
@@ -117,6 +117,51 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         val result = serviceStub.getGroups(request).groups
 
         result.map(_.numberOfContacts) must be(List(2, 1))
+      }
+    }
+
+    "allows filtering by contact" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createIssuer(publicKey, did)
+
+      val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
+      groups.foreach { group =>
+        issuerGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
+      }
+      createRandomContact(issuerId, Some(groups(0)))
+      val contact = createRandomContact(issuerId, Some(groups(0)))
+      createRandomContact(issuerId, Some(groups(1)))
+
+      val request = cmanager_api.GetGroupsRequest().withContactId(contact.contactId.value.toString)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val result = serviceStub.getGroups(request).groups
+        result.size must be(1)
+
+        val resultGroup = result.head
+        resultGroup.id mustNot be(empty)
+        resultGroup.createdAt > 0 must be(true)
+        resultGroup.name must be(groups(0).value)
+        resultGroup.numberOfContacts must be(2)
+      }
+    }
+
+    "fails to filter by contact when the value is invalid" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val _ = createIssuer(publicKey, did)
+
+      val request = cmanager_api.GetGroupsRequest().withContactId("xyz")
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        assertThrows[RuntimeException] {
+          serviceStub.getGroups(request)
+        }
       }
     }
   }

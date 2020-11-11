@@ -24,10 +24,16 @@ class GroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def getBy(issuer: Institution.Id): FutureEither[Nothing, List[IssuerGroup.WithContactCount]] = {
-    IssuerGroupsDAO
-      .getBy(issuer)
-      .transact(xa)
+  def getBy(
+      issuer: Institution.Id,
+      filterByContact: Option[Contact.Id]
+  ): FutureEither[Nothing, List[IssuerGroup.WithContactCount]] = {
+    val tx = filterByContact match {
+      case Some(contactId) => IssuerGroupsDAO.getBy(issuer, contactId)
+      case None => IssuerGroupsDAO.getBy(issuer)
+    }
+
+    tx.transact(xa)
       .unsafeToFuture()
       .map(Right(_))
       .toFutureEither

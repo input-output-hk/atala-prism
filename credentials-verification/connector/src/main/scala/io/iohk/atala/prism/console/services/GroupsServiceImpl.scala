@@ -6,8 +6,10 @@ import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.GroupsRepository
 import io.iohk.atala.prism.protos.{cmanager_api, cmanager_models}
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Try}
 
 class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator: ConnectorAuthenticator)(implicit
     ec: ExecutionContext
@@ -43,26 +45,36 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
   override def getGroups(request: cmanager_api.GetGroupsRequest): Future[cmanager_api.GetGroupsResponse] = {
 
     def f(issuerId: Institution.Id) = {
-      issuerGroupsRepository
-        .getBy(issuerId)
-        .value
-        .map {
-          case Right(x) =>
-            val groups = x.map { g =>
-              cmanager_models
-                .Group()
-                .withId(g.value.id.value.toString)
-                .withCreatedAt(g.value.createdAt.getEpochSecond)
-                .withName(g.value.name.value)
-                .withNumberOfContacts(g.numberOfContacts)
-            }
-            cmanager_api.GetGroupsResponse(groups)
-          case Left(e) => throw new RuntimeException(s"FAILED: $e")
+      lazy val contactIdT = if (request.contactId.nonEmpty) {
+        Try(UUID.fromString(request.contactId))
+          .orElse(Failure(new RuntimeException("The provided contactId is invalid")))
+          .map(Contact.Id.apply)
+          .map(Option.apply)
+          .map(Right(_))
+      } else Try(Right(None))
+
+      for {
+        contactIdMaybe <- Future.fromTry(contactIdT).toFutureEither
+        groups <- issuerGroupsRepository.getBy(issuerId, contactIdMaybe)
+      } yield {
+        val proto = groups.map { g =>
+          cmanager_models
+            .Group()
+            .withId(g.value.id.value.toString)
+            .withCreatedAt(g.value.createdAt.getEpochSecond)
+            .withName(g.value.name.value)
+            .withNumberOfContacts(g.numberOfContacts)
         }
+        cmanager_api.GetGroupsResponse(proto)
+      }
     }
 
     authenticator.authenticated("getGroups", request) { participantId =>
-      f(Institution.Id(participantId.uuid))
+      f(Institution.Id(participantId.uuid)).value
+        .map {
+          case Right(value) => value
+          case Left(_) => throw new RuntimeException("Unknown error while retrieving groups")
+        }
     }
   }
 

@@ -4,9 +4,9 @@ import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.IssuerGroup
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
-import org.scalatest.OptionValues._
 
 class GroupsRepositorySpec extends PostgresRepositorySpec {
 
@@ -49,7 +49,7 @@ class GroupsRepositorySpec extends PostgresRepositorySpec {
       val issuerId2 = createIssuer("Issuer 2", "b")
       createIssuerGroup(issuerId2, IssuerGroup.Name("Other"))
 
-      val result = repository.getBy(issuerId1).value.futureValue.toOption.value
+      val result = repository.getBy(issuerId1, None).value.futureValue.toOption.value
       result.map(_.value.name) must be(groups)
     }
 
@@ -62,8 +62,24 @@ class GroupsRepositorySpec extends PostgresRepositorySpec {
       createContact(issuerId, "test-contact-2", groups(0))
       createContact(issuerId, "test-contact-3", groups(1))
 
-      val result = repository.getBy(issuerId).value.futureValue
+      val result = repository.getBy(issuerId, None).value.futureValue
       result.map(_.map(_.numberOfContacts)) must beRight(List(2, 1))
+    }
+
+    "allows filtering by contact" in {
+      val groups = List("Group 1", "Group 2").map(IssuerGroup.Name.apply)
+      val issuerId = createIssuer("Issuer-1", "a")
+      groups.foreach { g => createIssuerGroup(issuerId, g) }
+      createContact(issuerId, "test-contact-1", groups(0))
+      val contact = createContact(issuerId, "test-contact-2", groups(0))
+      createContact(issuerId, "test-contact-3", groups(1))
+
+      val result = repository.getBy(issuerId, Some(contact.contactId)).value.futureValue.toOption.value
+      result.size must be(1)
+
+      val resultGroup = result.head
+      resultGroup.value.name must be(groups(0))
+      resultGroup.numberOfContacts must be(2)
     }
   }
 }
