@@ -29,6 +29,6 @@ class VaultAuthenticator(
   ): FutureEither[AuthError, DID] =
     Future(Left(UnsupportedAuthMethod())).toFutureEither
 
-  override def findByDid(did: String)(implicit ec: ExecutionContext): FutureEither[AuthError, DID] =
-    Future.successful(Right(DID(did))).toFutureEither
+  override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, DID] =
+    Future.successful(Right(did)).toFutureEither
 }

@@ -1,9 +1,10 @@
 package io.iohk.atala.mirror.models
 
 import java.util.UUID
-import enumeratum.{DoobieEnum, Enum, EnumEntry}
 
+import enumeratum.{DoobieEnum, Enum, EnumEntry}
 import io.iohk.atala.mirror.models.Connection._
+import io.iohk.atala.prism.identity.DID
 
 case class Connection(
     token: ConnectionToken,

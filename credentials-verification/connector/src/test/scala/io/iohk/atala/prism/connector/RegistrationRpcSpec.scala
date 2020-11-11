@@ -5,6 +5,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.protos.node_api.CreateDIDResponse
 import io.iohk.atala.prism.protos.{common_models, connector_api, node_models}
@@ -19,7 +20,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
   "registerDID" should {
     "work" in {
       usingApiAs.unlogged { blockingStub =>
-        val expectedDID = "did:prism:test"
+        val expectedDID = DID("did:prism:test")
         val name = "iohk"
         val logo = "none".getBytes()
         val transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value
@@ -42,7 +43,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         val response = blockingStub.registerDID(request)
 
         // returns the did
-        response.did must be(expectedDID)
+        response.did must be(expectedDID.value)
 
         // the participant gets stored
         val result = ParticipantsDAO

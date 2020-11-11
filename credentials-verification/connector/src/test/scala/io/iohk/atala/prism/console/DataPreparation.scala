@@ -13,6 +13,7 @@ import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
 import io.iohk.atala.prism.console.models._
 import io.iohk.atala.prism.console.repositories.{daos => consoleDaos}
 import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.migrations.Student.ConnectionStatus
 import io.iohk.atala.prism.models.ParticipantId
 
@@ -25,12 +26,12 @@ object DataPreparation {
       name: String = "Issuer",
       tag: String = "",
       publicKey: Option[ECPublicKey] = None,
-      did: Option[String] = None
+      did: Option[DID] = None
   )(implicit
       database: Transactor[IO]
   ): Institution.Id = {
     val id = Institution.Id(UUID.randomUUID())
-    val didValue = did.getOrElse(s"did:geud:issuer-x$tag")
+    val didValue = did.getOrElse(DID(s"did:geud:issuer-x$tag"))
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
     val participant =
       ParticipantInfo(
@@ -56,7 +57,7 @@ object DataPreparation {
   )(implicit
       database: Transactor[IO]
   ): ParticipantId = {
-    val did = s"did:geud:issuer-x$tag"
+    val did = DID(s"did:geud:issuer-x$tag")
     val participant =
       ParticipantInfo(id, ParticipantType.Verifier, publicKey, name, Option(did), None, None, None)
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()

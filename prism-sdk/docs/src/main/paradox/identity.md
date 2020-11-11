@@ -27,11 +27,11 @@ val long = DID.buildPrismDID(stateHash, encodedState)
 
 You can also check if a given DID is of a specific form or even parse their form:
 ```scala mdoc
-DID.isCanonicalForm(canonical)
-DID.isLongForm(long)
+canonical.isCanonicalForm
+long.isLongForm
 
-DID.getFormat(canonical)
-DID.getFormat(long)
+canonical.getFormat
+long.getFormat
 ```
 
 Finally, it is possible to create a simple DID consisting of a single master key:

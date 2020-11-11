@@ -4,6 +4,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -18,7 +19,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
   "getParticipant by did" should {
     "get a participant" in {
       val id = ParticipantId.random()
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(did), None, None, None)
       ParticipantsDAO
         .insert(info)
@@ -31,7 +32,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
     }
 
     "return no participant on unknown did" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       ParticipantsDAO
         .insert(
           ParticipantInfo(
@@ -39,7 +40,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
             ParticipantType.Issuer,
             None,
             "issuer",
-            Some(did + "x"),
+            Some(DID(did.value + "x")),
             None,
             None,
             None
@@ -50,7 +51,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .futureValue
 
       val result = participantsRepository.findBy(did).value.futureValue
-      result.left.value must be(UnknownValueError("did", did))
+      result.left.value must be(UnknownValueError("did", did.value))
     }
   }
 }

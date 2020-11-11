@@ -10,6 +10,7 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.protos.node_api._
@@ -126,7 +127,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "accept the DID authentication" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -135,7 +136,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
-            id = did,
+            id = did.value,
             publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
           )
         )
@@ -157,7 +158,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong DID authentication" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       // The request is signed with a different key
@@ -168,7 +169,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
-            id = did,
+            id = did.value,
             publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
           )
         )
@@ -191,7 +192,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong nonce in DID authentication" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -200,7 +201,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
-            id = did,
+            id = did.value,
             publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
           )
         )
@@ -224,13 +225,13 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in our database" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
 
       val participantsRepository = mock[ParticipantsRepository]
-      participantsRepository.findBy(any[String]).returns {
+      participantsRepository.findBy(any[DID]).returns {
         Future.successful(Left(UnknownValueError("did", "not found"))).toFutureEither
       }
 
@@ -263,7 +264,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in the node" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -286,7 +287,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the key doesn't belong to the did" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -295,7 +296,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
-            id = did,
+            id = did.value,
             publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
           )
         )
@@ -318,7 +319,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the nonce is reused" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -327,7 +328,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .GetDidDocumentResponse()
         .withDocument(
           node_models.DIDData(
-            id = did,
+            id = did.value,
             publicKeys = List(createNodePublicKey(keyId, keys.publicKey))
           )
         )
@@ -379,7 +380,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
   ): ConnectorAuthenticator = {
     val participantsRepository = mock[ParticipantsRepository]
-    participantsRepository.findBy(any[String]).returns {
+    participantsRepository.findBy(any[DID]).returns {
       getuserId() match {
         case Some(userId) =>
           Future.successful(Right(dummyParticipantInfo(userId))).toFutureEither

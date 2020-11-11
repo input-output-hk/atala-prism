@@ -8,6 +8,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
@@ -17,7 +18,7 @@ import io.iohk.atala.prism.protos.console_api
 class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
   def createIssuer(
       name: String,
-      did: String
+      did: DID
   )(implicit
       database: Transactor[IO]
   ): ParticipantId = {

@@ -10,10 +10,11 @@ import scalapb.GeneratedMessage
 import java.util.concurrent.{Executor, TimeUnit}
 
 import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.identity.DID
 
 trait ApiTestHelper[STUB] {
   def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T
-  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: String, keyId: String)(f: STUB => T): T
+  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: DID, keyId: String)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], keys: ECKeyPair, request: GeneratedMessage)(f: STUB => T): T = {
     val payload = SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray
     val signature = EC.sign(payload.array, keys.privateKey)
@@ -95,7 +96,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         )(f)
       }
 
-      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: String, keyId: String)(
+      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: DID, keyId: String)(
           f: STUB => T
       ): T = {
         apply(

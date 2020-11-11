@@ -10,6 +10,7 @@ import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories.{ConnectionsRepository, PaymentsRepository}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
@@ -78,8 +79,8 @@ class ConnectionsService(
       connectionId: ConnectionId,
       userId: ParticipantId
   ): FutureEither[ConnectorError, Seq[(String, ECPublicKey)]] = {
-    def getDidCommunicationKeys(did: String): FutureEither[ConnectorError, Seq[(String, ECPublicKey)]] = {
-      val request = node_api.GetDidDocumentRequest(did = did)
+    def getDidCommunicationKeys(did: DID): FutureEither[ConnectorError, Seq[(String, ECPublicKey)]] = {
+      val request = node_api.GetDidDocumentRequest(did = did.value)
       val result = for {
         response <- nodeService.getDidDocument(request)
         allKeys = response.document.map(_.publicKeys).getOrElse(Seq.empty)

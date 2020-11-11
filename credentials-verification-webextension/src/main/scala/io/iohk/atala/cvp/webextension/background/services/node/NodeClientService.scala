@@ -11,6 +11,7 @@ import io.iohk.atala.prism.credentials.{
   VerificationError
 }
 import io.iohk.atala.prism.crypto.{EC, ECTrait}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.{GetCredentialStateRequest, GetDidDocumentRequest}
 import scalapb.grpc.Channels
@@ -40,9 +41,9 @@ class NodeClientService(url: String) {
     } yield CredentialVerification.verifyCredential(keyData, credentialData, data.credential)
   }
 
-  private def getKeyData(issuerDID: String, issuanceKeyId: String)(implicit ec: ExecutionContext): Future[KeyData] = {
+  private def getKeyData(issuerDID: DID, issuanceKeyId: String)(implicit ec: ExecutionContext): Future[KeyData] = {
     for {
-      response <- nodeServiceApi.getDidDocument(GetDidDocumentRequest().withDid(issuerDID))
+      response <- nodeServiceApi.getDidDocument(GetDidDocumentRequest().withDid(issuerDID.value))
       didDocument = response.document getOrElse (throw new Exception(s"DID Data not found for DID $issuerDID"))
       issuingKeyProto = didDocument.publicKeys.find(_.id == issuanceKeyId) getOrElse (throw new Exception(
         s"KeyId not found: $issuanceKeyId"

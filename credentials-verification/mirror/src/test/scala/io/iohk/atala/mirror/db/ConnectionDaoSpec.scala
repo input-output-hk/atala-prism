@@ -8,9 +8,8 @@ import scala.concurrent.duration._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.models.DID
-
 import doobie.implicits._
+import io.iohk.atala.prism.identity.DID
 
 // sbt "project mirror" "testOnly *db.ConnectionDaoSpec"
 class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
@@ -55,7 +54,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
       (for {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.insert(connection2)
-        connection <- ConnectionDao.findByHolderDID(connectionHolderDid2)
+        connection <- ConnectionDao.findByHolderDID(DID(connectionHolderDid2.value))
       } yield connection).transact(database).unsafeRunSync() mustBe Some(connection2)
     }
 

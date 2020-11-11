@@ -5,6 +5,7 @@ import java.time.Instant
 import doobie.ConnectionIO
 import doobie.implicits.toSqlInterpolator
 import doobie.implicits.legacy.instant._
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
 
 object ParticipantsDAO {
@@ -25,7 +26,7 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
-  def findByDID(did: String): ConnectionIO[Option[ParticipantInfo]] = {
+  def findByDID(did: DID): ConnectionIO[Option[ParticipantInfo]] = {
     sql"""
          |SELECT participant_id, name, did, logo, created_at
          |FROM participants

@@ -9,6 +9,7 @@ import org.scalatest.EitherValues
 
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential.JsonFields
 import io.iohk.atala.prism.credentials.CredentialContent
+import io.iohk.atala.prism.identity.DID
 
 import io.iohk.atala.prism.credentials.json.implicits._
 
@@ -23,7 +24,7 @@ class JsonBasedCredentialContentSpec extends AnyWordSpec with Matchers with Eith
       json.as[CredentialContent[Nothing]] mustBe Right(
         CredentialContent(
           credentialType = Nil,
-          issuerDid = Some("did"),
+          issuerDid = Some(DID("did")),
           issuanceKeyId = None,
           issuanceDate = None,
           expiryDate = None,
@@ -43,7 +44,7 @@ class JsonBasedCredentialContentSpec extends AnyWordSpec with Matchers with Eith
       json.as[CredentialContent[Nothing]] mustBe Right(
         CredentialContent(
           credentialType = Nil,
-          issuerDid = Some("did"),
+          issuerDid = Some(DID("did")),
           issuanceKeyId = None,
           issuanceDate = None,
           expiryDate = None,

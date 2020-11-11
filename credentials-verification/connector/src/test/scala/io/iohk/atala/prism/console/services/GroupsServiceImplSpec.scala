@@ -16,6 +16,7 @@ import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository}
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.cmanager_api
 import org.mockito.MockitoSugar._
@@ -304,7 +305,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private def listContacts(issuer: Institution.Id, groupName: IssuerGroup.Name): List[Contact] =
     issuerGroupsRepository.listContacts(issuer, groupName).value.futureValue.toOption.value
 
-  private def createIssuer(publicKey: ECPublicKey, did: String)(implicit
+  private def createIssuer(publicKey: ECPublicKey, did: DID)(implicit
       database: Transactor[IO]
   ): Institution.Id = {
     val id = UUID.randomUUID()

@@ -2,17 +2,14 @@ package io.iohk.atala.mirror
 
 import scala.concurrent.duration._
 import scala.util.Try
-
 import monix.eval.Task
 import com.google.protobuf.ByteString
 import io.grpc.{ManagedChannelBuilder, Metadata}
 import io.grpc.stub.{AbstractStub, MetadataUtils}
 import org.slf4j.LoggerFactory
-
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.node_models._
@@ -20,16 +17,15 @@ import io.iohk.atala.prism.protos.credential_models._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-
 import io.iohk.atala.mirror.services._
 import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.mirror.config._
 import io.iohk.atala.mirror.db.UserCredentialDao
-import io.iohk.atala.mirror.models.{CredentialProofRequestType, Connection, UserCredential}
-
+import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
 import monix.execution.Scheduler.Implicits.global
 import cats.implicits._
 import doobie.implicits._
+import io.iohk.atala.prism.identity.DID
 
 class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpec with MirrorFixtures {
 
@@ -46,7 +42,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         connectorStub <- Task(createConnector("localhost", 50051))
 
         // Mirror: create new DID
-        did <- Task.fromFuture(connectorStub.registerDID(createDid)).map(_.did)
+        did <- Task.fromFuture(connectorStub.registerDID(createDid)).map(response => DID(response.did))
         _ = logger.info(s"DID: $did")
 
         // create services
@@ -120,7 +116,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
 
     val keyId = "master"
 
-    def signedCredential(did: String) =
+    def signedCredential(did: DID) =
       CredentialFixtures.createSignedCredential(
         CredentialFixtures.createUnsignedCredential(
           keyId,
@@ -177,7 +173,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         .withRole(RegisterDIDRequest.Role.issuer)
     }
 
-    def createConnectorConfig(did: String) = {
+    def createConnectorConfig(did: DID) = {
       ConnectorConfig(
         host = "localhost",
         port = 50051,

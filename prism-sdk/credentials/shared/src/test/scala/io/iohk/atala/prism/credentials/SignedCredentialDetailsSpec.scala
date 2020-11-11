@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.credentials
 
 import io.circe.Json
+import io.iohk.atala.prism.identity.DID
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import org.scalatest.matchers.must.Matchers._
@@ -9,7 +10,7 @@ import org.scalatest.wordspec.AnyWordSpec
 class SignedCredentialDetailsSpec extends AnyWordSpec {
 
   private val unsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-    issuerDID = "did:prism:123456678abcdefg",
+    issuerDID = DID("did:prism:123456678abcdefg"),
     issuanceKeyId = "Issuance-0",
     claims = Json.obj()
   )

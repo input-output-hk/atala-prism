@@ -108,8 +108,9 @@ private[grpc] object GrpcAuthenticationContext {
 
   def parseDIDAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.DIDBased] = {
     (ctx.getOpt(RequestNonceKeys), ctx.getOpt(DidKeys), ctx.getOpt(DidKeyIdKeys), ctx.getOpt(DidSignatureKeys)) match {
-      case (Some(requestNonce), Some(did), Some(keyId), Some(signature)) =>
-        DID.getFormat(did) match {
+      case (Some(requestNonce), Some(didRaw), Some(keyId), Some(signature)) =>
+        val did = DID(didRaw)
+        did.getFormat match {
           case _: DIDFormat.Canonical =>
             Some(
               GrpcAuthenticationHeader.PublishedDIDBased(

@@ -6,6 +6,7 @@ import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
@@ -30,6 +31,6 @@ class ConnectorAuthenticator(
   )(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository.findBy(publicKey).map(_.id).mapLeft(e => UnexpectedError(e.toStatus))
 
-  override def findByDid(did: String)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository.findBy(did).map(_.id).mapLeft(e => UnexpectedError(e.toStatus))
 }

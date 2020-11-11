@@ -25,6 +25,7 @@ import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
@@ -81,7 +82,7 @@ case class WalletData(
     keys: Map[String, String],
     mnemonic: Mnemonic,
     organisationName: String,
-    did: String,
+    did: DID,
     transactionId: Option[String] = None,
     role: Role,
     logo: Array[Byte]
@@ -370,7 +371,7 @@ private[background] class WalletManager(
         Map.empty,
         mnemonic,
         organisationName,
-        response.did,
+        DID(response.did),
         response.transactionInfo.map(_.transactionId),
         role,
         logo

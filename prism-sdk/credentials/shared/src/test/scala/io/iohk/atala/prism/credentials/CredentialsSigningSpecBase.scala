@@ -2,6 +2,7 @@ package io.iohk.atala.prism.credentials
 
 import io.circe.Json
 import io.iohk.atala.prism.crypto.ECTrait
+import io.iohk.atala.prism.identity.DID
 import org.scalatest.TryValues._
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -12,7 +13,7 @@ abstract class CredentialsSigningSpecBase extends AnyWordSpec {
   import JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
 
   private val TEST_UNSIGNED_CREDENTIAL =
-    UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom("", "", Json.obj())
+    UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(DID(""), "", Json.obj())
 
   "CredentialsSigning.signCredential and CredentialsSigning.verifyCredentialSignature" should {
     "verify as valid a properly signed credential" in {

@@ -51,13 +51,13 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
         val responsePayloadId = serviceStub.storeData(request).payloadId
 
         val storedPayloads =
-          payloadsRepository.getByPaginated(DID(did), None, 10).value.futureValue.toOption.value
+          payloadsRepository.getByPaginated(did, None, 10).value.futureValue.toOption.value
 
         storedPayloads.size must be(1)
         val storedPayload = storedPayloads.head
 
         storedPayload.id.value.toString must be(responsePayloadId)
-        storedPayload.did must be(DID(did))
+        storedPayload.did must be(did)
         storedPayload.content must be(payload.toVector)
         assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
       }
@@ -82,14 +82,14 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
       id1 must be(id2)
 
       val storedPayloads =
-        payloadsRepository.getByPaginated(DID(did), None, 10).value.futureValue.toOption.value
+        payloadsRepository.getByPaginated(did, None, 10).value.futureValue.toOption.value
 
       // There must only be one payload stored
       storedPayloads.size must be(1)
       val storedPayload = storedPayloads.head
 
       storedPayload.id.value.toString must be(id1)
-      storedPayload.did must be(DID(did))
+      storedPayload.did must be(did)
       storedPayload.content must be(payload.toVector)
       assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
     }
@@ -192,8 +192,8 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
       val did1 = DID.createUnpublishedDID(keys1.publicKey)
       val did2 = DID.createUnpublishedDID(keys2.publicKey)
       val fakeDid = DID.buildPrismDID(
-        DID.getCanonicalSuffix(did1).get,
-        DID.stripPrismPrefix(did2).dropWhile(_ != ':').tail
+        did1.getCanonicalSuffix.get,
+        did2.stripPrismPrefix.dropWhile(_ != ':').tail
       )
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys1, fakeDid, request)

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.identity
 
 import io.iohk.atala.prism.crypto.ECTrait
-import io.iohk.atala.prism.identity.DID.{DIDFormat, getFormat, publicKeyToProto}
+import io.iohk.atala.prism.identity.DID.{DIDFormat, publicKeyToProto}
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
@@ -19,12 +19,13 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
       val masterKey = ec.toPublicKey(xBytes, yBytes)
 
       // The expected resulting DID
-      val expectedDID =
+      val expectedDID = DID(
         "did:prism:0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77:CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
+      )
 
       DID.createUnpublishedDID(masterKey) mustBe expectedDID
 
-      DID.getFormat(expectedDID) match {
+      expectedDID.getFormat match {
         case longForm @ DIDFormat.LongForm(_, _) => longForm.validate.isLeft mustBe false
         case _ => fail("unexpected format for long DID")
       }
@@ -34,57 +35,57 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     val encodedStateUsed =
       "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
 
-    val short = s"did:prism:$canonicalSuffix"
-    val long = s"did:prism:$canonicalSuffix:$encodedStateUsed"
-    val wrong = "did:prism:wrong"
-    val nonPrismDID = "did:other:wrong"
+    val short = DID(s"did:prism:$canonicalSuffix")
+    val long = DID(s"did:prism:$canonicalSuffix:$encodedStateUsed")
+    val wrong = DID("did:prism:wrong")
+    val nonPrismDID = DID("did:other:wrong")
 
     "get the correct canonical suffix" in {
-      DID.getCanonicalSuffix(short).value mustBe canonicalSuffix
-      DID.getCanonicalSuffix(long).value mustBe canonicalSuffix
-      DID.getCanonicalSuffix(wrong) mustBe None
+      short.getCanonicalSuffix.value mustBe canonicalSuffix
+      long.getCanonicalSuffix.value mustBe canonicalSuffix
+      wrong.getCanonicalSuffix mustBe None
     }
 
     "tell if the DID is in canonical form" in {
-      DID.isCanonicalForm(short) mustBe true
-      DID.isCanonicalForm(long) mustBe false
-      DID.isCanonicalForm(wrong) mustBe false
+      short.isCanonicalForm mustBe true
+      long.isCanonicalForm mustBe false
+      wrong.isCanonicalForm mustBe false
     }
 
     "tell if the DID is in long form" in {
-      DID.isLongForm(short) mustBe false
-      DID.isLongForm(long) mustBe true
-      DID.isLongForm(wrong) mustBe false
+      short.isLongForm mustBe false
+      long.isLongForm mustBe true
+      wrong.isLongForm mustBe false
     }
 
     "get the correct format" in {
-      DID.getFormat(short) match {
+      short.getFormat match {
         case DID.DIDFormat.Canonical(suffix) =>
           suffix mustBe canonicalSuffix
         case _ => fail("unexpected format for canonical DID")
       }
-      DID.getFormat(long) match {
+      long.getFormat match {
         case DID.DIDFormat.LongForm(stateHash, encodedState) =>
           stateHash mustBe canonicalSuffix
           encodedState mustBe encodedStateUsed
         case _ => fail("unexpected format for long DID")
       }
-      DID.getFormat(wrong) match {
+      wrong.getFormat match {
         case DID.DIDFormat.Unknown => // do nothing, the test would fail on the other cases
         case _ => fail("unexpected format for unknown DID")
       }
     }
 
     "properly obtain the DID suffix" in {
-      DID.getSuffix(short).value mustBe canonicalSuffix
-      DID.getSuffix(long).value mustBe s"$canonicalSuffix:$encodedStateUsed"
-      DID.getSuffix(wrong) mustBe None
+      short.getSuffix.value mustBe canonicalSuffix
+      long.getSuffix.value mustBe s"$canonicalSuffix:$encodedStateUsed"
+      wrong.getSuffix mustBe None
     }
 
     "properly strip the PRISM DID preffix" in {
-      DID.stripPrismPrefix(short) mustBe canonicalSuffix
-      DID.stripPrismPrefix(long) mustBe s"$canonicalSuffix:$encodedStateUsed"
-      DID.stripPrismPrefix(nonPrismDID) mustBe nonPrismDID
+      short.stripPrismPrefix mustBe canonicalSuffix
+      long.stripPrismPrefix mustBe s"$canonicalSuffix:$encodedStateUsed"
+      nonPrismDID.stripPrismPrefix mustBe nonPrismDID.value
     }
 
     "properly validate a long form DID" in {
@@ -116,7 +117,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
           )
         )
 
-      getFormat(long) match {
+      long.getFormat match {
         case validated @ DIDFormat.LongForm(_, _) =>
           validated.validate.toOption.value.initialState mustBe expectedInitialState
         case _ => fail("Long form DID with unexpected format")
@@ -126,15 +127,15 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
 
   "stripPrismPrefix" should {
     "strip the did:prism: prefix" in {
-      val input = "did:prism:aabbccddee"
+      val input = DID("did:prism:aabbccddee")
       val expected = "aabbccddee"
-      DID.stripPrismPrefix(input) mustBe expected
+      input.stripPrismPrefix mustBe expected
     }
 
     "don't do anything if the exact prefix is not present" in {
-      val input = "did:prism-aabbccddee"
+      val input = DID("did:prism-aabbccddee")
       val expected = "did:prism-aabbccddee"
-      DID.stripPrismPrefix(input) mustBe expected
+      input.stripPrismPrefix mustBe expected
     }
   }
 }

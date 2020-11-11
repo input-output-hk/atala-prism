@@ -34,6 +34,7 @@ import io.iohk.atala.mirror.models.payid.{
   VerifiedAddress
 }
 import io.iohk.atala.mirror.stubs.NodeClientServiceStub
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
@@ -68,7 +69,12 @@ trait MirrorFixtures {
     lazy val connection1: Connection =
       Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited, None)
     lazy val connection2: Connection =
-      Connection(ConnectionToken("token2"), Some(connectionId2), ConnectionState.Invited, Some(connectionHolderDid2))
+      Connection(
+        ConnectionToken("token2"),
+        Some(connectionId2),
+        ConnectionState.Invited,
+        Some(DID(connectionHolderDid2.value))
+      )
 
     def insertAll[F[_]: Sync](database: Transactor[F]) = {
       insertManyFixtures(
@@ -103,7 +109,7 @@ trait MirrorFixtures {
   object CredentialFixtures {
 
     val issuanceKeyId = "Issuance-0"
-    val issuerDID = "did:prism:123456678abcdefg"
+    val issuerDID = DID("did:prism:123456678abcdefg")
 
     val unsignedCredential: UnsignedCredential = createUnsignedCredential(issuanceKeyId, issuerDID)
 
@@ -124,7 +130,7 @@ trait MirrorFixtures {
     val didData: DIDData = DIDData("", Seq(publicKey))
     val getCredentialStateResponse: GetCredentialStateResponse =
       GetCredentialStateResponse(
-        issuerDID = unsignedCredential.issuerDID.get,
+        issuerDID = unsignedCredential.issuerDID.get.value,
         publicationDate = Some(NodeUtils.toInfoProto(credentialIssueDate)),
         revocationDate = None
       )
@@ -144,7 +150,7 @@ trait MirrorFixtures {
       Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = json).toByteString
     }
 
-    def createUnsignedCredential(issuanceKeyId: String, issuerDID: String): UnsignedCredential =
+    def createUnsignedCredential(issuanceKeyId: String, issuerDID: DID): UnsignedCredential =
       JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
         issuerDID = issuerDID,
         issuanceKeyId = issuanceKeyId,

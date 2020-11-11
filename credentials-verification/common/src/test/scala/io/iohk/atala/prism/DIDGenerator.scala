@@ -23,7 +23,7 @@ trait DIDGenerator {
     )
   }
 
-  def generateDid(masterPublicKey: ECPublicKey): String = {
+  def generateDid(masterPublicKey: ECPublicKey): DID = {
     val publicKey = node_models.PublicKey(
       id = s"master0",
       usage = node_models.KeyUsage.MASTER_KEY,
@@ -46,7 +46,7 @@ trait DIDGenerator {
     val didCanonicalSuffix = operationHash.hexValue
     val did = DID.buildPrismDID(didCanonicalSuffix, None)
 
-    nodeMock.getDidDocument(GetDidDocumentRequest(did)).returns {
+    nodeMock.getDidDocument(GetDidDocumentRequest(did.value)).returns {
       Future.successful(
         GetDidDocumentResponse(
           document = Some(DIDData(id = didCanonicalSuffix, publicKeys = Seq(publicKey)))

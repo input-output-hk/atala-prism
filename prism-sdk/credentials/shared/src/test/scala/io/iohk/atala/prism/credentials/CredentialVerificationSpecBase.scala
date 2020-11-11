@@ -5,6 +5,7 @@ import java.time.Instant
 import io.circe.Json
 import io.iohk.atala.prism.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
 import io.iohk.atala.prism.crypto.ECTrait
+import io.iohk.atala.prism.identity.DID
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -13,7 +14,7 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
   implicit def ec: ECTrait
 
   private val unsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-    issuerDID = "did:prism:123456678abcdefg",
+    issuerDID = DID("did:prism:123456678abcdefg"),
     issuanceKeyId = "Issuance-0",
     claims = Json.obj()
   )

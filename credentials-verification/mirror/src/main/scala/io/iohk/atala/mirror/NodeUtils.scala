@@ -5,6 +5,7 @@ import java.time.Instant
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.AtalaOperation
 
@@ -44,7 +45,7 @@ object NodeUtils {
 
   def computeNodeCredentialId(
       credentialHash: SHA256Digest,
-      did: String
+      did: DID
   ): String = {
     SHA256Digest
       .compute(
@@ -55,7 +56,7 @@ object NodeUtils {
 
   def issueCredentialOperation(
       credentialHash: SHA256Digest,
-      did: String
+      did: DID
   ): AtalaOperation = {
     node_models
       .AtalaOperation(
@@ -63,7 +64,7 @@ object NodeUtils {
           node_models.IssueCredentialOperation(
             credentialData = Some(
               node_models.CredentialData(
-                issuer = stripDidPrefix(did),
+                issuer = did.stripPrismPrefix,
                 contentHash = ByteString.copyFrom(credentialHash.value.toArray)
               )
             )
@@ -71,6 +72,4 @@ object NodeUtils {
         )
       )
   }
-
-  def stripDidPrefix(did: String): String = did.stripPrefix("did:prism:")
 }

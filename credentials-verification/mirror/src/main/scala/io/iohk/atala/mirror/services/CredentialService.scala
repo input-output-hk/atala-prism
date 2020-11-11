@@ -4,27 +4,24 @@ import java.time.Instant
 
 import scala.concurrent.duration.DurationInt
 import scala.util.Try
-
 import cats.data.{EitherT, OptionT, ValidatedNel}
 import cats.data.Validated.{Invalid, Valid}
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import monix.eval.Task
 import org.slf4j.LoggerFactory
-
 import io.iohk.atala.mirror.NodeUtils.{fromProtoKey, fromTimestampInfoProto}
 import io.iohk.atala.mirror.Utils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
-import io.iohk.atala.mirror.models.DID
 import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.prism.credentials.{
   CredentialData,
   KeyData,
   SlayerCredentialId,
-  VerificationError,
-  VerifiableCredential
+  VerifiableCredential,
+  VerificationError
 }
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.EC
@@ -32,10 +29,10 @@ import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
 import io.iohk.atala.mirror.utils.ConnectionUtils
-
 import cats.implicits._
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.json.implicits._
+import io.iohk.atala.prism.identity.DID
 
 class CredentialService(
     tx: Transactor[Task],
@@ -124,7 +121,7 @@ class CredentialService(
       .fromString(rawCredential.rawCredential)
       .toOption
       .flatMap(_.content.issuerDid)
-      .map(DID)
+      .map(did => DID(did.value))
   }
 
   private def createUserCredential(
@@ -177,7 +174,7 @@ class CredentialService(
     } yield VerifiableCredential.verify(keyData, credentialData, credential)).value
   }
 
-  private[services] def getKeyData(issuerDID: String, issuanceKeyId: String): EitherT[Task, String, KeyData] = {
+  private[services] def getKeyData(issuerDID: DID, issuanceKeyId: String): EitherT[Task, String, KeyData] = {
     for {
       didData <- EitherT(nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID $issuerDID")))
 

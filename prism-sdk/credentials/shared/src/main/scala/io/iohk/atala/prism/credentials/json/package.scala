@@ -4,6 +4,7 @@ import java.util.Base64
 import java.time.LocalDate
 
 import io.circe.{Decoder, HCursor}
+import io.iohk.atala.prism.identity.DID
 
 package object json {
 
@@ -59,6 +60,7 @@ package object json {
         c.get[String](Issuer.name)
           .left
           .flatMap(_ => c.downField(Issuer.name).get[String](IssuerDid.name))
+          .map(DID.apply)
       val issuanceKeyId = c.get[String](IssuanceKeyId.name)
       val issuanceDate = c.get[LocalDate](IssuanceDate.name)
       val expiryDate = c.get[LocalDate](ExpiryDate.name)

@@ -5,12 +5,13 @@ import java.util.UUID
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECSignature}
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.identity.DID
 import scalapb.GeneratedMessage
 
 final case class SignedRpcRequest[R <: GeneratedMessage](
     nonce: Vector[Byte],
     signature: ECSignature,
-    did: String,
+    did: DID,
     keyId: String,
     request: R
 )
@@ -18,7 +19,7 @@ final case class SignedRpcRequest[R <: GeneratedMessage](
 object SignedRpcRequest {
   def generate[R <: GeneratedMessage](
       keyPair: ECKeyPair,
-      did: String,
+      did: DID,
       request: R
   ): SignedRpcRequest[R] = {
     val privateKey = keyPair.privateKey

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.credentials
 
 import io.circe.Json
 import io.iohk.atala.prism.crypto.ECTrait
+import io.iohk.atala.prism.identity.DID
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -13,7 +14,7 @@ abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSp
   private val signedCredential1 =
     CredentialsCryptoSDKImpl.signCredential(
       JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-        issuerDID = "did:prism:123456678abcdefg",
+        issuerDID = DID("did:prism:123456678abcdefg"),
         issuanceKeyId = "Issuance-0",
         claims = Json.obj()
       ),
@@ -23,7 +24,7 @@ abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSp
   private val signedCredential2 =
     CredentialsCryptoSDKImpl.signCredential(
       JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-        issuerDID = "did:prism:123456678abcdefg",
+        issuerDID = DID("did:prism:123456678abcdefg"),
         issuanceKeyId = "Issuance-0",
         claims = Json.obj()
       ),
@@ -33,7 +34,7 @@ abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSp
   private val signedCredential3 =
     CredentialsCryptoSDKImpl.signCredential(
       JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-        issuerDID = "did:prism:123456678abcdefg",
+        issuerDID = DID("did:prism:123456678abcdefg"),
         issuanceKeyId = "Issuance-0",
         claims = Json.obj()
       ),

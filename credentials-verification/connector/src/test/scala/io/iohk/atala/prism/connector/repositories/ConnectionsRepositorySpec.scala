@@ -7,6 +7,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.OptionValues._
@@ -43,7 +44,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         ParticipantType.Issuer,
         None,
         "Issuer",
-        Some("did:test:issuer"),
+        Some(DID("did:test:issuer")),
         None,
         None,
         None

@@ -13,6 +13,7 @@ import io.iohk.atala.prism.credentials.{
 }
 import io.iohk.atala.prism.crypto.japi.{CryptoProvider, EC, ECPrivateKey, ECPrivateKeyFacade}
 import io.iohk.atala.prism.crypto.{AndroidEC, ECTrait, ECPrivateKey => JvmECPrivateKey}
+import io.iohk.atala.prism.identity.DID
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -37,7 +38,7 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
     val credentialVerification = CredentialVerification.getInstance(Provider.ANDROID)
 
     val unsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-      issuerDID = "did:prism:123456678abcdefg",
+      issuerDID = DID("did:prism:123456678abcdefg"),
       issuanceKeyId = "Issuance-0",
       claims = Json.obj()
     )

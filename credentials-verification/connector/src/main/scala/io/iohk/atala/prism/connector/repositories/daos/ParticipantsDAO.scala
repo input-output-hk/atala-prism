@@ -4,6 +4,7 @@ import cats.data.OptionT
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, TokenString}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 
 object ParticipantsDAO {
@@ -54,7 +55,7 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
     }
 
-  def findByDID(did: String): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+  def findByDID(did: DID): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
          |SELECT id, tpe, public_key, name, did, logo, transaction_id, ledger

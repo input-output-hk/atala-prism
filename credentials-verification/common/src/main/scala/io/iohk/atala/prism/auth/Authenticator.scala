@@ -65,7 +65,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   /**
     * Finds a user associated with the given DID
     */
-  def findByDid(did: String)(implicit ec: ExecutionContext): FutureEither[AuthError, Id]
+  def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, Id]
 
   private def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](
       methodName: String,
@@ -186,7 +186,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
       didDocumentResponse <-
         nodeClient
-          .getDidDocument(node_api.GetDidDocumentRequest(authenticationHeader.did))
+          .getDidDocument(node_api.GetDidDocumentRequest(authenticationHeader.did.value))
           .map(Right(_))
           .toFutureEither
 
@@ -207,7 +207,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.UnpublishedDIDBased)(
       implicit ec: ExecutionContext
   ): FutureEither[AuthError, Id] = {
-    DID.getFormat(authenticationHeader.did) match {
+    authenticationHeader.did.getFormat match {
       case longFormDid: DIDFormat.LongForm =>
         longFormDid.validate match {
           case Left(DIDFormat.CanonicalSuffixMatchStateError) =>

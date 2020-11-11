@@ -122,7 +122,7 @@ class ConnectorService(
             creator = Some(participantInfo.toProto),
             creatorName = participantInfo.name,
             creatorLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
-            creatorDID = participantInfo.did.getOrElse("")
+            creatorDID = participantInfo.did.map(_.value).getOrElse("")
           )
         }
     }
@@ -267,7 +267,7 @@ class ConnectorService(
               case Right(x) => x
             }
       } yield connector_api
-        .RegisterDIDResponse(did = result.did)
+        .RegisterDIDResponse(did = result.did.value)
         .withTransactionInfo(ProtoCodecs.toTransactionInfo(result.transactionInfo))
     }
   }

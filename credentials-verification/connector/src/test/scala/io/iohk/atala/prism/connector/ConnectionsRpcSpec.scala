@@ -13,6 +13,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, Con
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
@@ -277,7 +278,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       )
 
       val did = generateDid(holderKey.publicKey)
-      val issuerId = createIssuer("Issuer", publicKey = Some(issuerAuthKey.publicKey), did = Some("did:prism:issuer"))
+      val issuerId =
+        createIssuer("Issuer", publicKey = Some(issuerAuthKey.publicKey), did = Some(DID("did:prism:issuer")))
       val holderId = createHolder("Holder", publicKey = Some(holderKey.publicKey), did = Some(did))
       val connectionId = createConnection(issuerId, holderId)
 

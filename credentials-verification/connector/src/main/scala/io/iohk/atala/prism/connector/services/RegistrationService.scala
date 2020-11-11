@@ -2,6 +2,7 @@ package io.iohk.atala.prism.connector.services
 
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs, TransactionInfo}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -29,7 +30,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
           .createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
           .map(Right(_))
           .toFutureEither
-      did = s"did:prism:${createDIDResponse.id}"
+      did = DID(s"did:prism:${createDIDResponse.id}")
       transactionInfo = ProtoCodecs.fromTransactionInfo(
         createDIDResponse.transactionInfo.getOrElse(throw new RuntimeException("DID created has no transaction info"))
       )
@@ -51,5 +52,5 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
 }
 
 object RegistrationService {
-  case class RegistrationResult(id: ParticipantId, did: String, transactionInfo: TransactionInfo)
+  case class RegistrationResult(id: ParticipantId, did: DID, transactionInfo: TransactionInfo)
 }

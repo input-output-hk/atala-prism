@@ -16,6 +16,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.connector_api
 import org.mockito.MockitoSugar._
@@ -80,7 +81,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
       tpe: ParticipantType,
       logo: Option[ParticipantLogo] = None,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[String] = None,
+      did: Option[DID] = None,
       transactionId: Option[TransactionId] = None,
       ledger: Option[Ledger] = None
   ): ParticipantId = {
@@ -97,7 +98,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   protected def createHolder(
       name: String,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[String] = None
+      did: Option[DID] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Holder, publicKey = publicKey, did = did)
   }
@@ -105,7 +106,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   protected def createIssuer(
       name: String,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[String] = None
+      did: Option[DID] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))), publicKey, did)
   }
@@ -113,7 +114,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   protected def createVerifier(
       name: String,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[String] = None
+      did: Option[DID] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))), publicKey, did)
   }

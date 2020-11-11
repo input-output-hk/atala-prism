@@ -38,20 +38,21 @@ class NodeServiceImpl(
 
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
     implicit val didService: DIDDataService = didDataService
+    val did = DID(request.did)
 
-    DID.getFormat(request.did) match {
+    did.getFormat match {
       case DID.DIDFormat.Canonical(_) =>
-        resolve(request.did) orElse (err => Future.failed(err.toStatus.asRuntimeException()))
+        resolve(did) orElse (err => Future.failed(err.toStatus.asRuntimeException()))
       case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
         // we first check that the encoded initial state matches the corresponding hash
         longForm.validate
           .map { validatedLongForm =>
             // validation succeeded, we check if the DID was published
-            resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = request.did) orElse { _ =>
+            resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = did) orElse { _ =>
               // if it was not published, we return the encoded initial state
               succeedWith(
                 ProtoCodecs.atalaOperationToDIDDataProto(
-                  DID.stripPrismPrefix(request.did),
+                  did.stripPrismPrefix,
                   validatedLongForm.initialState
                 )
               )
@@ -216,22 +217,22 @@ object NodeServiceImpl {
 
   def failWith(msg: String): Future[node_api.GetDidDocumentResponse] = Future.failed(new RuntimeException(msg))
 
-  private case class OrElse(did: String, state: Future[Either[NodeError, models.nodeState.DIDDataState]]) {
+  private case class OrElse(did: DID, state: Future[Either[NodeError, models.nodeState.DIDDataState]]) {
     def orElse(
         ifFailed: NodeError => Future[node_api.GetDidDocumentResponse]
     )(implicit ec: ExecutionContext): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(st) =>
-          succeedWith(ProtoCodecs.toDIDDataProto(DID.stripPrismPrefix(did), st))
+          succeedWith(ProtoCodecs.toDIDDataProto(did.stripPrismPrefix, st))
         case Left(err: NodeError) => ifFailed(err)
       }
   }
 
-  private def resolve(did: String, butShowInDIDDocument: String)(implicit didDataService: DIDDataService): OrElse = {
+  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit didDataService: DIDDataService): OrElse = {
     OrElse(butShowInDIDDocument, didDataService.findByDID(did).value)
   }
 
-  private def resolve(did: String)(implicit didDataService: DIDDataService): OrElse = {
+  private def resolve(did: DID)(implicit didDataService: DIDDataService): OrElse = {
     OrElse(did, didDataService.findByDID(did).value)
   }
 }

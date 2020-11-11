@@ -16,6 +16,7 @@ import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, StoredCredentialsDAO}
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.cstore_api
 import org.mockito.MockitoSugar._
@@ -64,7 +65,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
           verifierId,
           ParticipantType.Verifier,
           "Verifier",
-          "did:prism:test",
+          DID("did:prism:test"),
           ParticipantLogo(Vector()),
           TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
         )
@@ -74,7 +75,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
     ()
   }
 
-  def updateDid(participantId: ParticipantId, did: String): doobie.ConnectionIO[Unit] = {
+  def updateDid(participantId: ParticipantId, did: DID): doobie.ConnectionIO[Unit] = {
     sql"""
          |UPDATE participants
          |SET did = $did

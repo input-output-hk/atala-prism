@@ -135,9 +135,9 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
       val longFormDID = DID.createUnpublishedDID(masterKey)
 
-      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID))
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
       val document = response.document.value
-      document.id mustBe longFormDID.stripPrefix("did:prism:")
+      document.id mustBe longFormDID.stripPrismPrefix
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
@@ -155,7 +155,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val longFormDID = DID.createUnpublishedDID(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(DID.getCanonicalSuffix(longFormDID).value)
+      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value)
       val didSuffix = DIDSuffix(didDigest)
       val dummyTime = TimestampInfo.dummyTime
       DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
@@ -165,9 +165,9 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       PublicKeysDAO.insert(key2, dummyTime).transact(database).unsafeRunSync()
 
       // we now resolve the long form DID
-      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID))
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
       val document = response.document.value
-      document.id mustBe longFormDID.stripPrefix("did:prism:")
+      document.id mustBe longFormDID.stripPrismPrefix
       document.publicKeys.size mustBe 2
 
       val publicKey1 = document.publicKeys.find(_.id == "master0").value

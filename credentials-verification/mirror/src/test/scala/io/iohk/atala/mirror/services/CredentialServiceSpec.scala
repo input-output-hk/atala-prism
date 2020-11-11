@@ -11,7 +11,6 @@ import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMess
 import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
-import io.iohk.atala.mirror.models.DID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.prism.credentials._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
@@ -20,6 +19,7 @@ import io.circe.Json
 import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential}
 import io.iohk.atala.prism.crypto.{EC, ECTrait}
 import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
+import io.iohk.atala.prism.identity.DID
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
 
@@ -189,7 +189,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
     "parse signed credential" in new ConnectionServiceFixtures {
       val keyPair = EC.generateKeyPair()
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(
-        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom("did:prism:id", "", Json.obj()),
+        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(DID("did:prism:id"), "", Json.obj()),
         keyPair.privateKey
       )(EC)
 

@@ -11,10 +11,10 @@ import io.iohk.atala.prism.node.repositories.DIDDataRepository
 
 class DIDDataService(didDataRepository: DIDDataRepository) {
 
-  def findByDID(did: String): FutureEither[errors.NodeError, DIDDataState] = {
-    DID.getCanonicalSuffix(did) match {
+  def findByDID(did: DID): FutureEither[errors.NodeError, DIDDataState] = {
+    did.getCanonicalSuffix match {
       case Some(didSuffix) => didDataRepository.findByDidSuffix(DIDSuffix(didSuffix))
-      case _ => Left(UnknownValueError("didSuffix", did)).toFutureEither
+      case _ => Left(UnknownValueError("didSuffix", did.value)).toFutureEither
     }
   }
 }

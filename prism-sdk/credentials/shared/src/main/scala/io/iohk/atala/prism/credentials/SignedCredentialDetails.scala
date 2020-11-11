@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.credentials
 
+import io.iohk.atala.prism.identity.DID
+
 import scala.util.{Failure, Success, Try}
 
 class SignedCredentialDetails private (
     val credential: SignedCredential,
-    val issuerDID: String,
+    val issuerDID: DID,
     val issuanceKeyId: String,
     val slayerCredentialId: SlayerCredentialId
 )

@@ -4,6 +4,7 @@ import cats.effect.IO
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.errors.LoggingContext
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.errors.{
   ManagementConsoleError,
   ManagementConsoleErrorSupport,
@@ -55,14 +56,14 @@ class ParticipantsRepository(xa: Transactor[IO])(implicit
       .toFutureEither
   }
 
-  def findBy(did: String): FutureEither[ManagementConsoleError, ParticipantInfo] = {
+  def findBy(did: DID): FutureEither[ManagementConsoleError, ParticipantInfo] = {
     implicit val loggingContext = LoggingContext("did" -> did)
 
     ParticipantsDAO
       .findByDID(did)
       .map(
         _.toRight(
-          UnknownValueError("did", did).logWarn
+          UnknownValueError("did", did.value).logWarn
         )
       )
       .transact(xa)
@@ -75,7 +76,7 @@ object ParticipantsRepository {
   final case class CreateParticipantRequest(
       id: ParticipantId,
       name: String,
-      did: String,
+      did: DID,
       logo: ParticipantLogo
   )
 }

@@ -8,6 +8,7 @@ import io.iohk.atala.prism.credentials.{
   UnsignedCredentialBuilder
 }
 import io.iohk.atala.prism.crypto._
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.util.BigIntOps
 import typings.bip32.bip32Mod.BIP32Interface
@@ -22,11 +23,11 @@ object ECKeyOperation {
   // https://github.com/input-output-hk/atala/blob/develop/credentials-verification/docs/protocol/key-derivation.md
   private val firstMasterChild = "m/0'/0'/0'"
 
-  def didFromMasterKey(ecKeyPair: ECKeyPair): String = {
+  def didFromMasterKey(ecKeyPair: ECKeyPair): DID = {
     val atalaOperation = createDIDAtalaOperation(ecKeyPair)
     val didSuffix = SHA256Digest.compute(atalaOperation.toByteArray).hexValue
     val did = s"did:prism:$didSuffix"
-    did
+    DID(did)
   }
 
   def createDIDAtalaOperation(ecKeyPair: ECKeyPair): AtalaOperation = {
@@ -39,7 +40,7 @@ object ECKeyOperation {
   }
 
   def issuerOperation(
-      issuerDID: String,
+      issuerDID: DID,
       signingKeyId: String,
       signingKey: ECKeyPair,
       claimsString: String
@@ -53,7 +54,7 @@ object ECKeyOperation {
         )
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCreedential, signingKey.privateKey)
       val contentHash = ByteString.copyFrom(CredentialsCryptoSDKImpl.hash(signedCredential).value.toArray)
-      val credentialData = CredentialData(issuer = issuerDID.stripPrefix("did:prism:"), contentHash = contentHash)
+      val credentialData = CredentialData(issuer = issuerDID.stripPrismPrefix, contentHash = contentHash)
       val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
       (
         AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation)),

@@ -1,15 +1,14 @@
 package io.iohk.atala.mirror.services
 
 import scala.concurrent.Future
-
 import io.grpc.Metadata
 import io.grpc.stub.{AbstractStub, MetadataUtils}
 import scalapb.GeneratedMessage
 import monix.eval.Task
-
 import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.mirror.services.BaseGrpcClientService.{DidBasedAuthConfig, AuthHeaders}
+import io.iohk.atala.mirror.services.BaseGrpcClientService.{AuthHeaders, DidBasedAuthConfig}
+import io.iohk.atala.prism.identity.DID
 
 /**
   * Abstract service which provides support for DID based authentication for gRPC
@@ -43,7 +42,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
     )
 
     createMetadataHeaders(
-      AuthHeaders.DID -> authConfig.did,
+      AuthHeaders.DID -> authConfig.did.value,
       AuthHeaders.DID_KEY_ID -> authConfig.didKeyId,
       AuthHeaders.DID_SIGNATURE -> signature.encodedSignature,
       AuthHeaders.REQUEST_NONCE -> signature.encodedRequestNonce
@@ -70,7 +69,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
 object BaseGrpcClientService {
 
   case class DidBasedAuthConfig(
-      did: String,
+      did: DID,
       didKeyId: String,
       didKeyPair: ECKeyPair
   )

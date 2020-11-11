@@ -7,11 +7,12 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.mockito.scalatest.MockitoSugar
 import monix.execution.Scheduler.Implicits.global
 import doobie.implicits._
-import io.iohk.atala.mirror.models.{ConnectorMessageId, DID}
+import io.iohk.atala.mirror.models.ConnectorMessageId
 
 import scala.concurrent.duration.DurationInt
 import io.circe.parser._
 import io.iohk.atala.mirror.models.payid.PaymentInformation
+import io.iohk.atala.prism.identity.DID
 
 // sbt "project mirror" "testOnly *services.CardanoAddressInfoServiceSpec"
 class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
@@ -121,7 +122,9 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       } yield ()).unsafeRunSync()
 
       // when
-      val paymentInfo = cardanoAddressInfoService.findPaymentInfo(connectionHolderDid2, cardanoNetwork2).runSyncUnsafe()
+      val paymentInfo = cardanoAddressInfoService
+        .findPaymentInfo(DID(connectionHolderDid2.value), cardanoNetwork2)
+        .runSyncUnsafe()
 
       // then
       paymentInfo mustBe Some((connection2, List(cardanoAddressInfo2, cardanoAddressInfo3)))

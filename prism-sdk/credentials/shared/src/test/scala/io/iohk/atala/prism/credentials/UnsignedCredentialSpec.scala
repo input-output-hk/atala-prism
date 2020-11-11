@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.credentials
 
 import io.circe.Json
+import io.iohk.atala.prism.identity.DID
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.OptionValues._
@@ -9,7 +10,7 @@ abstract class UnsignedCredentialSpec[A: UnsignedCredentialBuilder] extends AnyW
 
   private val builder = UnsignedCredentialBuilder[A]
 
-  private val mockIssuerDID = "did:prism:123456678abcdefg"
+  private val mockIssuerDID = DID("did:prism:123456678abcdefg")
   private val mockIssuanceKeyid = "Issuance-0"
   private val mockClaims = Json.obj()
 

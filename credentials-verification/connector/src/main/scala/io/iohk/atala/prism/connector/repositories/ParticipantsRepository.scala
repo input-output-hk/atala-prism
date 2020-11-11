@@ -10,6 +10,7 @@ import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, 
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.errors.LoggingContext
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionInfo}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -75,13 +76,13 @@ class ParticipantsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) 
       .toFutureEither
   }
 
-  def findBy(did: String): FutureEither[ConnectorError, ParticipantInfo] = {
+  def findBy(did: DID): FutureEither[ConnectorError, ParticipantInfo] = {
     implicit val loggingContext = LoggingContext("did" -> did)
 
     ParticipantsDAO
       .findByDID(did)
       .toRight(
-        UnknownValueError("did", did).logWarn
+        UnknownValueError("did", did.value).logWarn
       )
       .transact(xa)
       .value
@@ -96,7 +97,7 @@ object ParticipantsRepository {
       id: ParticipantId,
       tpe: ParticipantType,
       name: String,
-      did: String,
+      did: DID,
       logo: ParticipantLogo,
       transactionInfo: TransactionInfo
   )

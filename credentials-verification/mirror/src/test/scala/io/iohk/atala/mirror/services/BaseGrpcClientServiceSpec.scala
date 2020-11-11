@@ -2,22 +2,19 @@ package io.iohk.atala.mirror.services
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-
 import scalapb.{GeneratedMessage, GeneratedMessageCompanion}
 import scalapb.descriptors.{FieldDescriptor, PValue}
 import com.google.protobuf.CodedOutputStream
 import io.grpc.{CallOptions, Channel, Metadata}
 import io.grpc.inprocess.InProcessChannelBuilder
 import io.grpc.stub.AbstractStub
-
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
-import org.mockito.{MockitoSugar, ArgumentMatchersSugar}
-
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPrivateKey}
 import io.iohk.atala.prism.connector.{RequestAuthenticator, SignedConnectorRequest}
 import io.iohk.atala.mirror.services.BaseGrpcClientService.AuthHeaders
-
+import io.iohk.atala.prism.identity.DID
 import monix.execution.Scheduler.Implicits.global
 
 // sbt "project mirror" "testOnly *services.BaseGrpcClientServiceSpec"
@@ -54,7 +51,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
 
   trait GrpcClientStubs {
     val authConfig = BaseGrpcClientService.DidBasedAuthConfig(
-      did = "did",
+      did = DID("did"),
       didKeyId = "didKeyId",
       didKeyPair = mock[ECKeyPair]
     )

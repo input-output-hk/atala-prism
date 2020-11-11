@@ -2,12 +2,13 @@ package io.iohk.atala.mirror.db
 
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.mirror.models.{Connection, DID}
+import io.iohk.atala.mirror.models.Connection
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
 import cats.data.NonEmptyList
 import doobie.Fragments
 import doobie.implicits._
 import doobie.postgres.implicits._
+import io.iohk.atala.prism.identity.DID
 
 object ConnectionDao {
 

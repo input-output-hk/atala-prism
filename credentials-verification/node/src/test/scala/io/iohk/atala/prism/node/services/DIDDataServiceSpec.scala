@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import doobie.implicits._
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, TimestampInfo}
@@ -29,12 +30,12 @@ class DIDDataServiceSpec extends PostgresRepositorySpec {
         .futureValue
       result mustBe a[Right[_, _]]
 
-      val did = s"did:prism:${parsedOperation.id.suffix}"
+      val did = DID(s"did:prism:${parsedOperation.id.suffix}")
       didDataService.findByDID(did).value.futureValue mustBe a[Right[_, _]]
     }
 
     "return error when did is in invalid format" in {
-      val did = s"did:prism:1111111111111111"
+      val did = DID(s"did:prism:1111111111111111")
       didDataService.findByDID(did).value.futureValue mustBe a[Left[UnknownValueError, _]]
     }
 

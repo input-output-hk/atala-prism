@@ -2,7 +2,7 @@ package io.iohk.atala.mirror.http.endpoints
 
 import io.iohk.atala.mirror.models.payid.AddressDetails.CryptoAddressDetails
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
-import io.iohk.atala.mirror.models.{CardanoAddressInfo, DID}
+import io.iohk.atala.mirror.models.CardanoAddressInfo
 import io.iohk.atala.mirror.services.CardanoAddressInfoService
 import monix.eval.Task
 import org.http4s.{Headers, HttpRoutes}
@@ -12,6 +12,7 @@ import org.http4s.circe._
 import io.circe.syntax._
 import io.iohk.atala.mirror.config.HttpConfig
 import io.iohk.atala.mirror.models.payid._
+import io.iohk.atala.prism.identity.DID
 
 class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, httpConfig: HttpConfig)
     extends Http4sDsl[Task] {

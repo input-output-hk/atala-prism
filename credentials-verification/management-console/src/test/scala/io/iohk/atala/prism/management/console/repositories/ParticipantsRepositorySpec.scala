@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import doobie.implicits._
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.errors.UnknownValueError
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
@@ -18,7 +19,7 @@ class ParticipantsRepositorySpec extends PostgresRepositorySpec {
   "getParticipant by did" should {
     "get a participant" in {
       val id = ParticipantId.random()
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       val info = ParticipantInfo(id, "issuer", did, None)
       ParticipantsDAO
         .insert(info)
@@ -31,13 +32,13 @@ class ParticipantsRepositorySpec extends PostgresRepositorySpec {
     }
 
     "return no participant on unknown did" in {
-      val did = "did:prism:test"
+      val did = DID("did:prism:test")
       ParticipantsDAO
         .insert(
           ParticipantInfo(
             ParticipantId.random(),
             "issuer",
-            did + "x",
+            DID(did.value + "x"),
             None
           )
         )
@@ -46,7 +47,7 @@ class ParticipantsRepositorySpec extends PostgresRepositorySpec {
         .futureValue
 
       val result = participantsRepository.findBy(did).value.futureValue
-      result.left.value must be(UnknownValueError("did", did))
+      result.left.value must be(UnknownValueError("did", did.value))
     }
   }
 }

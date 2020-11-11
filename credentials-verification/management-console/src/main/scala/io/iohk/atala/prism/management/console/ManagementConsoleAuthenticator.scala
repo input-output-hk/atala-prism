@@ -6,6 +6,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models.ParticipantId
 import io.iohk.atala.prism.management.console.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.protos.node_api
@@ -31,6 +32,6 @@ class ManagementConsoleAuthenticator(
   ): FutureEither[AuthError, ParticipantId] =
     Future.successful(UnsupportedAuthMethod().asLeft[ParticipantId]).toFutureEither
 
-  override def findByDid(did: String)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository.findBy(did).map(_.id).mapLeft(e => UnexpectedError(e.toStatus))
 }

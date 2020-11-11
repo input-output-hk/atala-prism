@@ -3,9 +3,9 @@ package io.iohk.atala.mirror.config
 import java.util.Base64
 
 import com.typesafe.config.Config
-
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
+import io.iohk.atala.prism.identity.DID
 
 case class ConnectorConfig(host: String, port: Int, authConfig: DidBasedAuthConfig)
 
@@ -17,7 +17,7 @@ object ConnectorConfig {
     val host = config.getString("host")
     val port = config.getInt("port")
 
-    val did = config.getString("did")
+    val did = DID(config.getString("did"))
     val didKeyId = config.getString("did-key-id")
     val didPrivateKey = config.getString("did-private-key")
 

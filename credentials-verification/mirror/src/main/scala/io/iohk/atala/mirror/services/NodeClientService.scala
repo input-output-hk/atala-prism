@@ -2,16 +2,16 @@ package io.iohk.atala.mirror.services
 
 import monix.eval.Task
 import com.google.protobuf.ByteString
-
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
+import io.iohk.atala.prism.identity.DID
 
 trait NodeClientService {
 
-  def getDidDocument(did: String): Task[Option[DIDData]]
+  def getDidDocument(did: DID): Task[Option[DIDData]]
 
   def getCredentialState(credentialId: String): Task[GetCredentialStateResponse]
 
@@ -22,8 +22,8 @@ trait NodeClientService {
 class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: DidBasedAuthConfig)
     extends NodeClientService {
 
-  def getDidDocument(did: String): Task[Option[DIDData]] =
-    Task.fromFuture(node.getDidDocument(GetDidDocumentRequest(did))).map(_.document)
+  def getDidDocument(did: DID): Task[Option[DIDData]] =
+    Task.fromFuture(node.getDidDocument(GetDidDocumentRequest(did.value))).map(_.document)
 
   def getCredentialState(credentialId: String): Task[GetCredentialStateResponse] =
     Task.fromFuture(node.getCredentialState(GetCredentialStateRequest(credentialId)))

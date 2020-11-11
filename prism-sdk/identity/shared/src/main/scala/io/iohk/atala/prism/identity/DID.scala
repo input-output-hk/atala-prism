@@ -8,19 +8,60 @@ import io.iohk.atala.prism.protos.node_models
 
 import scala.util.matching.Regex
 
-final case class DID(value: String) extends AnyVal
+final case class DID(value: String) extends AnyVal {
+  import DID._
 
-object DID {
-  val prismPrefix: String = "did:prism:"
-  def buildPrismDID(stateHash: String, maybeEncodedState: Option[String] = None): String = {
-    maybeEncodedState match {
-      case None => s"$prismPrefix$stateHash"
-      case Some(encodedState) => s"$prismPrefix${buildSuffix(stateHash, encodedState)}"
+  def isLongForm: Boolean = {
+    DIDFormat.longFormRegex.findFirstMatchIn(value).nonEmpty
+  }
+
+  def isCanonicalForm: Boolean = {
+    DIDFormat.shortFormRegex.findFirstMatchIn(value).nonEmpty
+  }
+
+  def getFormat: DIDFormat = {
+    if (isLongForm) {
+      DIDFormat.LongForm(
+        stripPrismPrefix.takeWhile(_ != ':'),
+        stripPrismPrefix.dropWhile(_ != ':').tail
+      )
+    } else if (isCanonicalForm) {
+      DIDFormat.Canonical(stripPrismPrefix.takeWhile(_ != ':'))
+    } else {
+      DIDFormat.Unknown
     }
   }
 
-  def buildPrismDID(stateHash: String, encodedState: String): String =
-    s"$prismPrefix${buildSuffix(stateHash, encodedState)}"
+  def stripPrismPrefix: String = value.stripPrefix(prismPrefix)
+
+  def getSuffix: Option[String] = {
+    getFormat match {
+      case DIDFormat.Canonical(suffix) => Some(suffix)
+      case DIDFormat.LongForm(stateHash, encodedState) => Some(buildSuffix(stateHash, encodedState))
+      case DIDFormat.Unknown => None
+    }
+  }
+
+  def getCanonicalSuffix: Option[String] = {
+    getFormat match {
+      case DIDFormat.Canonical(suffix) => Some(suffix)
+      case DIDFormat.LongForm(stateHash, _) => Some(stateHash)
+      case DIDFormat.Unknown => None
+    }
+  }
+}
+
+object DID {
+  val prismPrefix: String = "did:prism:"
+  def buildPrismDID(stateHash: String, maybeEncodedState: Option[String] = None): DID = {
+    maybeEncodedState match {
+      case None => DID(s"$prismPrefix$stateHash")
+      case Some(encodedState) => DID(s"$prismPrefix${buildSuffix(stateHash, encodedState)}")
+    }
+  }
+
+  def buildPrismDID(stateHash: String, encodedState: String): DID =
+    DID(s"$prismPrefix${buildSuffix(stateHash, encodedState)}")
 
   private def buildSuffix(stateHash: String, encodedState: String): String = s"$stateHash:$encodedState"
 
@@ -59,46 +100,7 @@ object DID {
     case object Unknown extends DIDFormat
   }
 
-  def isLongForm(did: String): Boolean = {
-    DIDFormat.longFormRegex.findFirstMatchIn(did).nonEmpty
-  }
-
-  def isCanonicalForm(did: String): Boolean = {
-    DIDFormat.shortFormRegex.findFirstMatchIn(did).nonEmpty
-  }
-
-  def getFormat(did: String): DIDFormat = {
-    if (isLongForm(did)) {
-      DIDFormat.LongForm(
-        stripPrismPrefix(did).takeWhile(_ != ':'),
-        stripPrismPrefix(did).dropWhile(_ != ':').tail
-      )
-    } else if (isCanonicalForm(did)) {
-      DIDFormat.Canonical(stripPrismPrefix(did).takeWhile(_ != ':'))
-    } else {
-      DIDFormat.Unknown
-    }
-  }
-
-  def stripPrismPrefix(did: String): String = did.stripPrefix(prismPrefix)
-
-  def getSuffix(did: String): Option[String] = {
-    getFormat(did) match {
-      case DIDFormat.Canonical(suffix) => Some(suffix)
-      case DIDFormat.LongForm(stateHash, encodedState) => Some(buildSuffix(stateHash, encodedState))
-      case DIDFormat.Unknown => None
-    }
-  }
-
-  def getCanonicalSuffix(did: String): Option[String] = {
-    getFormat(did) match {
-      case DIDFormat.Canonical(suffix) => Some(suffix)
-      case DIDFormat.LongForm(stateHash, _) => Some(stateHash)
-      case DIDFormat.Unknown => None
-    }
-  }
-
-  def createUnpublishedDID(masterKey: ECPublicKey): String = {
+  def createUnpublishedDID(masterKey: ECPublicKey): DID = {
     val createDidOp = node_models.CreateDIDOperation(
       didData = Some(
         node_models.DIDData(
