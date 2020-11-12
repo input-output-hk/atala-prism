@@ -1,8 +1,3 @@
-CREATE TABLE contacts (
-    contact_id UUID NOT NULL,
-    CONSTRAINT contacts_contact_id_pk PRIMARY KEY (contact_id)
-);
-
 -- https://w3c.github.io/did-core/#did-syntax
 CREATE DOMAIN DID AS TEXT CHECK(
     VALUE ~ '^did:[a-z0-9]+:[a-zA-Z0-9._-]*(:[a-zA-Z0-9._-]*)*$'
@@ -31,3 +26,66 @@ CREATE TABLE request_nonces (
     CONSTRAINT request_nonces_pk PRIMARY KEY (request_nonce, participant_id),
     CONSTRAINT request_nonces_participant_id_fk FOREIGN KEY (participant_id) REFERENCES participants (participant_id)
 );
+
+CREATE TABLE contacts (
+    contact_id UUID NOT NULL,
+    external_id TEXT NOT NULL,
+    created_by UUID NOT NULL,
+    contact_data JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT contacts_contact_id_pk PRIMARY KEY (contact_id),
+    CONSTRAINT contacts_created_by_fk FOREIGN KEY (created_by) REFERENCES participants (participant_id),
+    CONSTRAINT contacts_external_id_non_empty_check CHECK (TRIM(external_id) <> ''::TEXT),
+    CONSTRAINT contacts_external_id_unique_per_creator UNIQUE (external_id, created_by)
+);
+
+CREATE INDEX contacts_created_by_index ON contacts USING BTREE (created_by);
+CREATE INDEX contacts_external_id_index ON contacts USING BTREE (external_id);
+CREATE INDEX contacts_contact_created_at_index ON contacts USING BTREE (created_by, created_at, contact_id);
+
+CREATE TABLE institution_groups(
+    group_id UUID NOT NULL,
+    institution_id UUID NOT NULL,
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT institution_groups_pk PRIMARY KEY (group_id),
+    CONSTRAINT institution_groups_institution_id_fk FOREIGN KEY (institution_id) REFERENCES participants (participant_id),
+    CONSTRAINT institution_groups_name_non_empty CHECK (TRIM(name) <> ''),
+    CONSTRAINT institution_groups_unique_institution_name UNIQUE (institution_id, name)
+);
+
+CREATE INDEX institution_groups_institution_id_index ON institution_groups USING BTREE (institution_id);
+
+CREATE TABLE contacts_per_group (
+    group_id UUID NOT NULL,
+    contact_id UUID NOT NULL,
+    added_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT contacts_per_group_pk PRIMARY KEY (group_id, contact_id),
+    CONSTRAINT contacts_per_group_group_id_fk FOREIGN KEY (group_id) REFERENCES institution_groups (group_id),
+    CONSTRAINT contacts_per_group_subject_id_fk FOREIGN KEY (contact_id) REFERENCES contacts (contact_id)
+);
+
+CREATE INDEX contacts_per_group_group_id_index ON contacts_per_group USING BTREE (group_id);
+CREATE INDEX contacts_per_group_contact_id_index ON contacts_per_group USING BTREE (contact_id);
+
+-- We add a constraint that relates contacts and groups tables
+-- This is,
+--  + Every contact has a unique creator associated to it
+--  + Every group also has a unique institution_id associated to it
+-- We would like to enforce that, if a contact is added to a group, then
+-- both must be associated to the same institution_id. If not, we reject the addition.
+CREATE FUNCTION contacts_per_group_fun_check()
+    RETURNS trigger AS
+$func$
+BEGIN
+    IF (SELECT created_by FROM contacts WHERE contact_id = NEW.contact_id)
+        <> (SELECT institution_id FROM institution_groups WHERE group_id = NEW.group_id) THEN
+        RAISE EXCEPTION 'The group and contact do not belong to the same institution';
+    END IF;
+    RETURN NEW;
+END
+$func$  LANGUAGE plpgsql;
+
+CREATE TRIGGER contacts_per_group_tgr
+    BEFORE INSERT ON contacts_per_group
+    FOR EACH ROW EXECUTE PROCEDURE contacts_per_group_fun_check();

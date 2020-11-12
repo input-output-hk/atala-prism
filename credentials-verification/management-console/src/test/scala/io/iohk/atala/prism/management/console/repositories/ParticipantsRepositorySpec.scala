@@ -20,7 +20,7 @@ class ParticipantsRepositorySpec extends PostgresRepositorySpec {
     "get a participant" in {
       val id = ParticipantId.random()
       val did = DID.buildPrismDID("test")
-      val info = ParticipantInfo(id, "issuer", did, None)
+      val info = ParticipantInfo(id, "test-name", did, None)
       ParticipantsDAO
         .insert(info)
         .transact(database)
@@ -37,7 +37,7 @@ class ParticipantsRepositorySpec extends PostgresRepositorySpec {
         .insert(
           ParticipantInfo(
             ParticipantId.random(),
-            "issuer",
+            "test-name",
             DID.buildPrismDID("test-x"),
             None
           )
