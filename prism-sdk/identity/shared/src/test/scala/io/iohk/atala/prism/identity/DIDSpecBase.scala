@@ -137,4 +137,22 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
       input.stripPrismPrefix mustBe expected
     }
   }
+
+  "unsafeFromString" should {
+    "succeed for valid DID" in {
+      val validDid = DID.buildPrismDID("aabbccddee")
+
+      val unsafeDid = DID.unsafeFromString(validDid.value)
+
+      unsafeDid mustBe validDid
+    }
+
+    "fail for invalid DID" in {
+      val caught =
+        intercept[IllegalArgumentException] {
+          DID.unsafeFromString("invalid-did")
+        }
+      caught.getMessage mustBe "Invalid DID invalid-did"
+    }
+  }
 }

@@ -78,7 +78,7 @@ object DID {
       None
 
   def unsafeFromString(string: String): DID =
-    fromString(string).get
+    fromString(string).getOrElse(throw new IllegalArgumentException(s"Invalid DID $string"))
 
   private def buildSuffix(stateHash: String, encodedState: String): String = s"$stateHash:$encodedState"
 
