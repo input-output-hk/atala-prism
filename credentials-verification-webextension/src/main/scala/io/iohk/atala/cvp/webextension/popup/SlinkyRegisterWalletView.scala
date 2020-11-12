@@ -88,7 +88,7 @@ import scala.util.{Failure, Success}
       }
     }
 
-    div(id := "registrationScreen")(
+    div(id := "registrationScreen", className := "status_container")(
       mui.IconButton.onClick(_ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
       h3(className := "h3_register", id := "h3_register", "Wallet registration"),
       div(className := "div__field_group")(

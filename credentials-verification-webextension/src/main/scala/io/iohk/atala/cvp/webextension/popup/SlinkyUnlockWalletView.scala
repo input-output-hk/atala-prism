@@ -6,7 +6,7 @@ import io.iohk.atala.cvp.webextension.popup.models.View.{Main, Recover}
 import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
-import slinky.web.html.{div, label, p, value, _}
+import slinky.web.html._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
@@ -30,7 +30,7 @@ import scala.util.{Failure, Success}
 
   override def render(): ReactElement = {
 
-    div(id := "unlockScreen")(
+    div(id := "unlockScreen", className := "status_container")(
       div(
         className := "div_logo",
         id := "logoPrism",
@@ -83,14 +83,18 @@ import scala.util.{Failure, Success}
           }
         )("Unlock your wallet")
       ),
-      label(className := "_label_unlock")("If you have forgotten your password, you need to recover your wallet."),
-      p(
-        className := "h4_recover_account button padding",
-        id := "h4_recover_account",
-        "Recover your wallet",
-        onClick := { () =>
-          recoverWallet()
-        }
+      div(className := "div__field_group")(
+        label(className := "forgotten-pass")("If you have forgotten your password, you need to recover your wallet.")
+      ),
+      div(className := "div__field_group")(
+        p(
+          className := "h4_recover_account button padding",
+          id := "h4_recover_account",
+          "Recover your wallet",
+          onClick := { () =>
+            recoverWallet()
+          }
+        )
       )
     )
   }

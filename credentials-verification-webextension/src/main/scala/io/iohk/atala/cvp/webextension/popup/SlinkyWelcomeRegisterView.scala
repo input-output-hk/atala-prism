@@ -3,10 +3,11 @@ package io.iohk.atala.cvp.webextension.popup
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.popup.models.View
 import io.iohk.atala.cvp.webextension.popup.models.View.Main
-import slinky.core.{Component, StatelessComponent}
+import slinky.core.Component
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @react class SlinkyWelcomeRegisterView extends Component {
@@ -20,7 +21,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   case class State(mayBeTransactionId: Option[String])
 
   override def render(): ReactElement = {
-    div(id := "welcomeRegisterScreen")(
+    div(id := "welcomeRegisterScreen", className := "status_container")(
       div(className := "welcome_img")(
         img(src := "/assets/images/Done.png")
       ),
@@ -28,7 +29,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
       div(className := "input__container"),
       div(className := "div__field_group")(
         state.mayBeTransactionId.map { id =>
-          a(href := s"${props.blockchainExplorerUrl.format(id)}", target := "_blank", className := "_label")(
+          a(
+            href := s"${props.blockchainExplorerUrl.format(id)}",
+            target := "_blank",
+            className := "link_to_blockchain"
+          )(
             "See operation on the blockchain"
           )
         }

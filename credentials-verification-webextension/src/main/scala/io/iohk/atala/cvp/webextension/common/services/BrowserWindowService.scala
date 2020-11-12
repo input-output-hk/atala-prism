@@ -41,19 +41,23 @@ class BrowserWindowService {
 
     windowId
       .map { id =>
-        chrome.windows.Windows.update(id, UpdateOptions(focused = true))
+        chrome.windows.Windows.update(id, UpdateOptions(focused = true, drawAttention = true))
       }
       .getOrElse {
-        chrome.windows.Windows.create(options).map {
-          _.map { window =>
-            windowId = window.id.toOption
-            chrome.windows.Windows.onRemoved.listen { id =>
-              if (window.id.toOption.contains(id)) windowId = None
-            }
-          }
-        }
+        createWindow(options)
       }
 
+  }
+
+  private def createWindow(options: CreateOptions)(implicit ec: ExecutionContext) = {
+    chrome.windows.Windows.create(options).map {
+      _.map { window =>
+        windowId = window.id.toOption
+        chrome.windows.Windows.onRemoved.listen { id =>
+          if (window.id.toOption.contains(id)) windowId = None
+        }
+      }
+    }
   }
 }
 

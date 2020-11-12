@@ -22,7 +22,13 @@ class Runner(
     dom.window.onload = _ => {
       ReactDOM.render(
         WalletView(backgroundAPI, blockchainExplorerUrl, termsUrl, privacyPolicyUrl),
-        dom.document.getElementById("root")
+        dom.document.getElementById("main-container")
+      )
+    }
+    dom.window.onfocus = _ => {
+      ReactDOM.render(
+        WalletView(backgroundAPI, blockchainExplorerUrl, termsUrl, privacyPolicyUrl),
+        dom.document.getElementById("main-container")
       )
     }
   }

@@ -99,7 +99,7 @@ private[background] class WalletManager(
     connectorClientService: ConnectorClientService,
     nodeClientService: NodeClientService
 )(implicit
-    ectx: ExecutionContext
+    ec: ExecutionContext
 ) {
   private val requestAuthenticator = new RequestAuthenticator(EC)
 

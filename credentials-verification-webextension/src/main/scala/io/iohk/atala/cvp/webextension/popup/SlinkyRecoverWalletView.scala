@@ -7,9 +7,10 @@ import io.iohk.atala.cvp.webextension.popup.models.View.{Default, Recover}
 import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
-import slinky.web.html.{value, _}
+import slinky.web.html._
 import typings.materialUiCore.{components => mui}
 import typings.materialUiIcons.{components => muiIcons}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
@@ -58,7 +59,7 @@ import scala.util.{Failure, Success}
 
   override def render(): ReactElement = {
 
-    div(id := "recoveryScreen")(
+    div(id := "recoveryScreen", className := "status_container_recover")(
       mui.IconButton.onClick(_ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
       h3(className := "h3_recover")("Recover your wallet"),
       div(className := "div__field_group")(

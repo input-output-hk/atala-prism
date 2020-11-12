@@ -109,7 +109,23 @@
 
 .status_container {
   margin: 5px 0 5px 0;
+  padding: 20px;
+  max-width: 375px;
 }
+
+.status_container_recover {
+  margin: 5px 0 5px 0;
+  padding: 20px;
+  max-width: 375px;
+  width: 375px;
+}
+
+.link_to_blockchain{
+  color: #6c6a75;
+  display: flex;
+  justify-content: center;
+}
+
 ._label_update {
   color: #ff2d3b;
 }
@@ -216,6 +232,9 @@
   line-height: 100%;
   margin: 0 10px 10px 0;
 }
+.span_container:nth-child(3n+3) {
+  margin: 0 0px 10px 0;
+}
 
 .words_container {
   display: flex;
@@ -283,6 +302,12 @@ select:focus {
   color: #6c6a75;
 }
 
+.forgotten-pass{
+  color: #6c6a75;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
 /* Base for label styling */
 [type="checkbox"]:not(:checked),
 [type="checkbox"]:checked {
@@ -521,3 +546,67 @@ input:focus {
 
 p.button:hover { cursor: pointer; }
 p.padding  { padding:0; margin:0;}
+
+.buttonIcon_success {
+  fill: #6FCF97 !important;
+}
+
+.button_success_mui {
+    color: #6FCF97 !important;
+    text-transform: lowercase !important;
+    background:rgba(157, 242, 191, 0.2) !important;
+    border: 1px solid #6FCF97 !important;
+    display: flex !important;
+    margin: 10px auto 0 auto !important;
+    width: 314px;
+    height: 40px;
+}
+
+.buttonIcon_fail {
+  fill: #FF2D3B !important;
+}
+
+.button_fail_mui {
+    color: #FF2D3B !important;
+    text-transform: none !important;
+    background:rgba(255, 45, 59, 0.2) !important;
+    border: 1px solid #FF2D3B !important;
+    display: flex !important;
+    margin: 10px auto 0 auto !important;
+    width: 314px;
+    height: 40px;
+}
+
+.buttons_container{
+    display: flex;
+    margin-top: 50px;
+    min-width: 240px;
+    padding: 10px 0;
+    position: relative;
+}
+
+
+.div__field_group_mui {
+    min-width: 240px;
+    padding: 10px 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.btn_sign_width{
+    width: 50%;
+}
+
+.btn_cancel_width{
+    width: 50%;
+    margin-right: 10px;
+}
+
+.div_main {
+    padding: 10px 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
