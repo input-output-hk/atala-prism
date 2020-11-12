@@ -82,4 +82,16 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
     override suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> {
         return mAppDatabase.credentialDao().getContactsActivityHistoriesByCredentialId(credentialId)
     }
+
+    override fun totalOfContacts(): LiveData<Int> {
+        return mAppDatabase.contactDao().totalOfContacts()
+    }
+
+    override fun allIssuedCredentialsNotifications(): LiveData<List<ActivityHistoryWithCredential>> {
+        return mAppDatabase.credentialDao().allIssuedCredentialsNotifications()
+    }
+
+    override suspend fun clearCredentialNotifications(credentialId: String) {
+        mAppDatabase.credentialDao().clearCredentialNotifications(credentialId)
+    }
 }

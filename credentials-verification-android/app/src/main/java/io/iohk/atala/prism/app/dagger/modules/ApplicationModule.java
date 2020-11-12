@@ -39,7 +39,8 @@ public class ApplicationModule {
         return Room.databaseBuilder(prismApplication.getApplicationContext(), AppDatabase.class, Constants.DB_NAME)
                 .addMigrations(
                         MigrationsKt.getMIGRATION_1_2(),
-                        MigrationsKt.getMIGRATION_2_3()
+                        MigrationsKt.getMIGRATION_2_3(),
+                        MigrationsKt.getMIGRATION_3_4()
                 )
                 .build();
     }

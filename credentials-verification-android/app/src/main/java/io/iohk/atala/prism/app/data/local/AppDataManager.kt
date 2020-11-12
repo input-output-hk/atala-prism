@@ -139,4 +139,16 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
     override suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> {
         return mDbHelper.getContactsActivityHistoriesByCredentialId(credentialId)
     }
+    
+    override fun totalOfContacts(): LiveData<Int> {
+        return mDbHelper.totalOfContacts()
+    }
+
+    override fun allIssuedCredentialsNotifications(): LiveData<List<ActivityHistoryWithCredential>> {
+        return mDbHelper.allIssuedCredentialsNotifications()
+    }
+
+    override suspend fun clearCredentialNotifications(credentialId: String) {
+        mDbHelper.clearCredentialNotifications(credentialId)
+    }
 }

@@ -17,49 +17,14 @@ import javax.inject.Inject
 *  and [HomeFragment] it is necessary to split this into 3 independent ViewModel´s.
 **/
 class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : NewConnectionsViewModel(dataManager) {
-
-    private val _credentials = MutableLiveData(AsyncTaskResult<List<Credential>>())
-
+    
     private val _credentialDeletedLiveData = MutableLiveData<Boolean>(false)
 
     private val _showErrorMessageLiveData = SingleLiveEvent<Boolean>()
 
-    // TODO This got broken, it will be fixed in the notification screen refactorization
-    fun getNewCredentials() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                //val credentialsList = dataManager.getAllNewCredentials()
-                _credentials.postValue(AsyncTaskResult(listOf()))
-            } catch (ex: Exception) {
-                _credentials.postValue(AsyncTaskResult(ex))
-            }
-        }
-    }
-
-    fun getAllCredentials() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val credentialsList = dataManager.getAllCredentials()
-                _credentials.postValue(AsyncTaskResult(credentialsList))
-            } catch (ex: Exception) {
-                _credentials.postValue(AsyncTaskResult(ex))
-            }
-        }
-    }
-
-    fun getCredentialLiveData(): LiveData<AsyncTaskResult<List<Credential>>> {
-        return _credentials
-    }
-
-    // TODO This got broken, it will be fixed in the notification screen refactorization
     fun setCredentialViewed(credential: Credential) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                //credential.viewed = true
-                //dataManager.updateCredential(credential)
-            } catch (ex: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(ex)
-            }
+            dataManager.clearCredentialNotifications(credential.credentialId)
         }
     }
 

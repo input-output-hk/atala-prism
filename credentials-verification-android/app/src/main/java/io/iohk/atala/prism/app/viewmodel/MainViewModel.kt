@@ -21,8 +21,6 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(private val dataManager: DataManager) : NewConnectionsViewModel(dataManager) {
 
     private val _newConnectionInfoLiveData = MutableLiveData<AsyncTaskResult<AddConnectionFromTokenResponse>>()
-    private val _hasConnectionsInitialScreenLiveData = MutableLiveData<AsyncTaskResult<Boolean>>()
-    private val _hasConnectionsMoveToContact = MutableLiveData<AsyncTaskResult<Boolean>>()
 
     fun addConnectionFromToken(token: String, nonce: String)
             : LiveData<AsyncTaskResult<AddConnectionFromTokenResponse>>? {
@@ -39,40 +37,6 @@ class MainViewModel @Inject constructor(private val dataManager: DataManager) : 
         }
         return _newConnectionInfoLiveData
     }
-
-    fun checkIfHasConnectionsInitialScreen() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                _hasConnectionsInitialScreenLiveData.postValue(getConnections())
-            } catch (ex: Exception) {
-                _hasConnectionsInitialScreenLiveData.postValue(AsyncTaskResult(ex))
-            }
-        }
-    }
-
-    fun checkIfHasConnectionsMoveToContacts() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                _hasConnectionsMoveToContact.postValue(getConnections())
-            } catch (ex: Exception) {
-                _hasConnectionsMoveToContact.postValue(AsyncTaskResult(ex))
-            }
-        }
-    }
-
-    private suspend fun getConnections(): AsyncTaskResult<Boolean> {
-        val connectionsList = dataManager.getAllContacts()
-        return AsyncTaskResult(connectionsList.isEmpty())
-    }
-
-    fun getHasConnectionsInitialScreenLiveData(): LiveData<AsyncTaskResult<Boolean>> {
-        return _hasConnectionsInitialScreenLiveData
-    }
-
-    fun getHasConnectionsMoveToContactLiveData(): LiveData<AsyncTaskResult<Boolean>> {
-        return _hasConnectionsMoveToContact
-    }
-
 
     /*
     * TODO All this below is a provisional code, it is necessary to create a data synchronization repository
@@ -110,7 +74,6 @@ class MainViewModel @Inject constructor(private val dataManager: DataManager) : 
                     } else {
                         // its a Proof request
                         atalaMessageProofRequests[atalaMessage] = Pair(contact, receivedMessage.id)
-                        //atalaMessageProofRequests.add(atalaMessage)
                     }
                     contact.lastMessageId = receivedMessage.id
                 }

@@ -25,4 +25,7 @@ interface DbHelper {
     suspend fun insertRequestedCredentialActivities(contact: Contact, credentials: List<Credential>)
     suspend fun getCredentialsActivityHistoriesByConnection(connectionId: String): List<ActivityHistoryWithCredential>
     suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact>
+    fun totalOfContacts(): LiveData<Int>
+    fun allIssuedCredentialsNotifications(): LiveData<List<ActivityHistoryWithCredential>>
+    suspend fun clearCredentialNotifications(credentialId: String)
 }

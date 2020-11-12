@@ -253,5 +253,6 @@
     <string name="shared_credentials">SHARED CREDENTIALS</string>
     <string name="shared_with">SHARED WITH</string>
     <string name="requested_by">REQUESTED BY</string>
-
+    <string name="you_dont_have_notifications_yet">You don’t have Notifications yet</string>
+    <string name="you_can_edit_your_notifications_on_settings_section">You can edit your notifications on settings section.</string>
 </resources>

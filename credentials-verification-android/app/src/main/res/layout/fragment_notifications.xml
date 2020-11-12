@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:iohk="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.viewmodel.NotificationsViewModel" />
+
+        <variable
+            name="scanQrBtnOnClick"
+            type="android.view.View.OnClickListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:background="@color/grey_1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            iohk:visible="@{viewModel.showNoConnectionsView == false &amp;&amp; viewModel.showEmptyMessage == false}"
+            android:id="@+id/title"
+            android:layout_marginTop="@dimen/activity_default_side_margin"
+            android:layout_marginHorizontal="@dimen/activity_default_side_margin"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/new_credentials_section_title"
+            android:textColor="@color/black"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="10sp"
+            android:autoSizeMaxTextSize="@dimen/titles_text_size"
+            android:maxLines="2"
+            android:textSize="@dimen/titles_text_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            iohk:visible="@{viewModel.showNoConnectionsView == false &amp;&amp; viewModel.showEmptyMessage == false}"
+            android:clipToPadding="false"
+            android:padding="@dimen/activity_default_side_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/notifications_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
+        <include
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:title="@{@string/you_dont_have_notifications_yet}"
+            app:text="@{@string/you_can_edit_your_notifications_on_settings_section}"
+            iohk:visible="@{viewModel.showNoConnectionsView == false &amp;&amp; viewModel.showEmptyMessage == true}"
+            layout="@layout/include_generic_empty_view" />
+
+        <include
+            iohk:visible="@{viewModel.showNoConnectionsView == true}"
+            app:scanQrBtnOnClick="@{scanQrBtnOnClick}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            layout="@layout/include_no_connections_view" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

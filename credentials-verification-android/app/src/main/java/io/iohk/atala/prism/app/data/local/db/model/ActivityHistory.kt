@@ -18,7 +18,8 @@ data class ActivityHistory(
         @ColumnInfo(name = "connection_id") val connectionId: String?,
         @ColumnInfo(name = "credential_id") val credentialId: String?,
         @ColumnInfo(name = "date") val date: Long,
-        @ColumnInfo(name = "type") val type: Type
+        @ColumnInfo(name = "type") val type: Type,
+        @ColumnInfo(name = "needs_to_be_notified", defaultValue = "false") var needsToBeNotified: Boolean = false
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0

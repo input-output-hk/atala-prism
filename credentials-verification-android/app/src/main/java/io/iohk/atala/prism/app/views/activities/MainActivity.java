@@ -10,7 +10,6 @@ import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -32,6 +31,7 @@ import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult;
+import io.iohk.atala.prism.app.views.fragments.NotificationsFragment;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.exception.CaseNotFoundException;
 import io.iohk.atala.prism.app.core.exception.ErrorCode;
@@ -41,8 +41,6 @@ import io.iohk.atala.prism.app.views.Preferences;
 import io.iohk.atala.prism.app.views.fragments.ContactsFragment;
 import io.iohk.atala.prism.app.views.fragments.CvpDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.CvpFragment;
-import io.iohk.atala.prism.app.views.fragments.FirstConnectionFragment;
-import io.iohk.atala.prism.app.views.fragments.HomeFragment;
 import io.iohk.atala.prism.app.views.fragments.MyCredentialsFragment;
 import io.iohk.atala.prism.app.views.fragments.ProfileFragment;
 import io.iohk.atala.prism.app.views.fragments.SettingsFragment;
@@ -67,7 +65,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     private static final String INITIAL_TRANSACTION = "initialTransaction";
 
     @Inject
-    HomeFragment homeFragment;
+    NotificationsFragment notificationsFragment;
 
     @Inject
     MyCredentialsFragment myCredentialsFragment;
@@ -129,34 +127,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     private void init() {
-        viewModel.getHasConnectionsInitialScreenLiveData().observe(this, asyncTaskResult -> {
-            if (asyncTaskResult.getError() != null) {
-                FirebaseCrashlytics.getInstance().recordException(asyncTaskResult.getError());
-                return;
-            }
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-
-            if (asyncTaskResult.getResult()) {
-                FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.notifications);
-                ft.replace(R.id.fragment_layout, f, MAIN_FRAGMENT_TAG);
-            } else {
-                ft.replace(R.id.fragment_layout, homeFragment, MAIN_FRAGMENT_TAG);
-            }
-            ft.commit();
-        });
-        viewModel.getHasConnectionsMoveToContactLiveData().observe(this, asyncTaskResult -> {
-            if (asyncTaskResult.getError() != null) {
-                FirebaseCrashlytics.getInstance().recordException(asyncTaskResult.getError());
-                return;
-            }
-
-            if (asyncTaskResult.getResult()) {
-                FirstConnectionFragment firstConnectionFragment = FirstConnectionFragment.newInstance(R.string.contacts);
-                changeFragment(firstConnectionFragment);
-            } else {
-                changeFragment(contactsFragment);
-            }
-        });
+        onNavigation(BottomAppBarOption.NOTIFICATIONS);
         // handle when exist a message with a proof requests
         viewModel.getCredentialsRequests().observe(this, credentialsRequests -> {
             if (!credentialsRequests.isEmpty()) {
@@ -165,7 +136,6 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                 getNavigator().showDialogFragment(getSupportFragmentManager(), dialog, null);
             }
         });
-        viewModel.checkIfHasConnectionsInitialScreen();
     }
 
     @Override
@@ -187,7 +157,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     public void onBackPressed() {
         Fragment currentFragment = getCurrentFragment();
 
-        if (isBottomBarOptionScreen(currentFragment) || isFirstConnetionContacts(currentFragment)) {
+        if (isBottomBarOptionScreen(currentFragment)) {
             getSupportFragmentManager().popBackStack(INITIAL_TRANSACTION, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             bottomAppBar.setItemColors(null);
             fab.setBackgroundTintList(colorRed);
@@ -199,28 +169,18 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         }
     }
 
-    private boolean isFirstConnetionContacts(Fragment currentFragment) {
-        return currentFragment instanceof FirstConnectionFragment && ((FirstConnectionFragment) currentFragment).getIdTitle() == R.string.contacts;
-    }
-
     private boolean isBottomBarOptionScreen(Fragment currentFragment) {
         return currentFragment instanceof MyCredentialsFragment || currentFragment instanceof ContactsFragment || currentFragment instanceof SettingsFragment || currentFragment instanceof ProfileFragment;
     }
 
     @Override
     public void onNavigation(BottomAppBarOption option) {
-        if (BottomAppBarOption.HOME.equals(option) || BottomAppBarOption.FIRSTCONNECTION.equals(option)) {
+        if (BottomAppBarOption.NOTIFICATIONS.equals(option)) {
             fab.setBackgroundTintList(colorRed);
         } else {
             fab.setBackgroundTintList(colorBlack);
         }
         bottomAppBar.setItemColors(option);
-
-        if (option == CONTACTS) {
-            viewModel.checkIfHasConnectionsMoveToContacts();
-            return;
-        }
-
         getFragmentToRender(option)
                 .ifPresent(cvpFragment -> {
                     changeFragment(cvpFragment);
@@ -229,28 +189,22 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     private void changeFragment(CvpFragment cvpFragment) {
         Fragment currentFragment = getCurrentFragment();
-
-        if (currentFragment instanceof ContactsFragment && cvpFragment instanceof ContactsFragment) {
-            //((ContactsFragment) currentFragment).getViewModel().getAllMessages();
-        } else {
-            String transactionTag = isInitialScreen(currentFragment) ? INITIAL_TRANSACTION : null;
-            navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG, transactionTag);
-        }
+        String transactionTag = isInitialScreen(currentFragment) ? INITIAL_TRANSACTION : null;
+        navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG, transactionTag);
     }
 
     private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
         switch (option) {
             case CREDENTIAL:
                 return Optional.of(myCredentialsFragment);
-            case HOME:
-                return Optional.of(homeFragment);
+            case NOTIFICATIONS:
+                return Optional.of(notificationsFragment);
             case SETTINGS:
                 return Optional.of(settingsFragment);
             case PROFILE:
                 return Optional.of(profileFragment);
-            case FIRSTCONNECTION:
-                FirstConnectionFragment fragment = FirstConnectionFragment.newInstance(R.string.notifications);
-                return Optional.of(fragment);
+            case CONTACTS:
+                return Optional.of(contactsFragment);
             default:
                 FirebaseCrashlytics.getInstance().recordException(new CaseNotFoundException("Couldn't find fragment for option " + option,
                         ErrorCode.STEP_NOT_FOUND));
@@ -264,7 +218,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     }
 
     private boolean isInitialScreen(Fragment currentFragment) {
-        return currentFragment instanceof HomeFragment || currentFragment instanceof FirstConnectionFragment;
+        return currentFragment instanceof NotificationsFragment;
     }
 
     @Override
@@ -307,7 +261,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     @OnClick(R.id.fab)
     public void onFabClick() {
-        onNavigation(BottomAppBarOption.HOME);
+        onNavigation(BottomAppBarOption.NOTIFICATIONS);
     }
 
     private void sendPayments(BigDecimal amount, String nonce, String connectionToken,

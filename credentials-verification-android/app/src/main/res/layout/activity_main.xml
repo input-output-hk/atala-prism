@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:src="@drawable/ic_connections_white"
+        android:src="@drawable/ic_notifications"
         app:elevation="0dp"
         app:layout_constraintBottom_toTopOf="@+id/bottom_appbar"
         app:layout_constraintEnd_toEndOf="parent"

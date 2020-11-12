@@ -54,7 +54,6 @@ class MyCredentialsFragment : CvpFragment<MyCredentialsViewModel>(), OnSelectIte
         // TODO This is logic inherited from old code we need to use the navigation components
         val credentialFragment = CredentialDetailFragment()
         credentialFragment.setCredential(item)
-        credentialFragment.setCredentialIsNew(false)
         navigator.showFragmentOnTop(
                 requireActivity().supportFragmentManager, credentialFragment)
     }

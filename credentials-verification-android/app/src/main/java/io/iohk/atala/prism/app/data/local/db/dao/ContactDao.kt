@@ -154,7 +154,7 @@ abstract class ContactDao : ActivityHistoryDao() {
         val contactId = insert(contact)
         insertCredentials(issuedCredentials)
         val activityHistories: List<ActivityHistory> = issuedCredentials.map {
-            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued)
+            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
         }
         insertActivityHistories(activityHistories)
         return contactId
@@ -177,7 +177,7 @@ abstract class ContactDao : ActivityHistoryDao() {
         }
         insertCredentials(issuedCredentials)
         val activityHistories: List<ActivityHistory> = issuedCredentials.map {
-            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued)
+            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
         }
         insertActivityHistories(activityHistories)
     }
@@ -229,4 +229,7 @@ abstract class ContactDao : ActivityHistoryDao() {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertCredentials(credentials: List<Credential>): List<Long>
+
+    @Query("SELECT COUNT(*) FROM contacts ORDER BY id")
+    abstract fun totalOfContacts(): LiveData<Int>
 }

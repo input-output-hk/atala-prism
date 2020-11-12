@@ -42,8 +42,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     private CredentialDto credentialDto;
 
-    private Boolean credentialIsNew;
-
     @BindView(R.id.web_view)
     WebView webView;
 
@@ -64,14 +62,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem shareCredentialMenuItem;
-        if (!credentialIsNew) {
-            shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
-            shareCredentialMenuItem.setVisible(true);
-        }
         menu.findItem(R.id.action_credential_history).setVisible(true);
-        MenuItem deleteCredentialMenuItem = menu.findItem(R.id.action_delete_credential);
-        deleteCredentialMenuItem.setVisible(true);
+        menu.findItem(R.id.action_share_credential).setVisible(true);
+        menu.findItem(R.id.action_delete_credential).setVisible(true);
     }
 
     @Override
@@ -154,7 +147,4 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
         this.credential = credential;
     }
 
-    public void setCredentialIsNew(Boolean credentialIsNew) {
-        this.credentialIsNew = credentialIsNew;
-    }
 }

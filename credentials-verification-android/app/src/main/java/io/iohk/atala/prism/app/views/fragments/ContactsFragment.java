@@ -66,6 +66,7 @@ public class ContactsFragment extends CvpFragment<ContactsViewModel> implements 
         binding = DataBindingUtil.inflate(inflater, getViewId(), container, false);
         binding.setLifecycleOwner(this);
         binding.setViewModel(viewModel);
+        binding.setScanQrBtnOnClick(v -> scanQr());
         configureRecyclerView();
         initObservers();
         return binding.getRoot();

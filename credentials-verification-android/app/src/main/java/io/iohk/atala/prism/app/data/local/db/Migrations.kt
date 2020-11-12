@@ -84,3 +84,13 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         database.execSQL("CREATE INDEX IF NOT EXISTS index_activityHistories_connection_id ON activityHistories (connection_id)")
     }
 }
+
+/*
+* Added "needs_to_be_notified" to activityHistories table
+* */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE activityHistories " +
+                "ADD COLUMN needs_to_be_notified INTEGER NOT NULL DEFAULT false")
+    }
+}

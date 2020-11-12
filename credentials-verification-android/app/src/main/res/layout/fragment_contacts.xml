@@ -8,19 +8,26 @@
         <variable
             name="viewModel"
             type="io.iohk.atala.prism.app.viewmodel.ContactsViewModel" />
+
+        <variable
+            name="scanQrBtnOnClick"
+            type="android.view.View.OnClickListener" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:background="@color/grey_1"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <com.google.android.material.textfield.TextInputLayout
+            iohk:visible="@{viewModel.showNoConnectionsView == false}"
             android:id="@+id/search_text_input_layout"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="40dp"
             android:layout_marginEnd="@dimen/activity_default_side_margin"
             android:layout_marginStart="@dimen/activity_default_side_margin"
             android:hint="@string/search_contacts"
-            app:layout_constraintTop_toBottomOf="@+id/label"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -36,6 +43,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <androidx.recyclerview.widget.RecyclerView
+            iohk:visible="@{viewModel.showNoConnectionsView == false}"
             android:id="@+id/contacts_recycler_view"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -55,6 +63,15 @@
             app:layout_constraintTop_toTopOf="@+id/contacts_recycler_view"
             app:layout_constraintStart_toStartOf="@+id/contacts_recycler_view"
             app:layout_constraintEnd_toEndOf="@+id/contacts_recycler_view" />
+
+        <include
+            iohk:visible="@{viewModel.showNoConnectionsView == true}"
+            app:scanQrBtnOnClick="@{scanQrBtnOnClick}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            layout="@layout/include_no_connections_view" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

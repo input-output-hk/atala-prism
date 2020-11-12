@@ -7,8 +7,8 @@ import dagger.Provides;
 import io.iohk.atala.prism.app.utils.ViewModelProviderFactory;
 import io.iohk.atala.prism.app.viewmodel.MainViewModel;
 import io.iohk.atala.prism.app.views.fragments.ContactsFragment;
-import io.iohk.atala.prism.app.views.fragments.HomeFragment;
 import io.iohk.atala.prism.app.views.fragments.MyCredentialsFragment;
+import io.iohk.atala.prism.app.views.fragments.NotificationsFragment;
 import io.iohk.atala.prism.app.views.fragments.ProfileFragment;
 import io.iohk.atala.prism.app.views.fragments.SettingsFragment;
 import io.iohk.atala.prism.app.views.fragments.WalletFragment;
@@ -17,8 +17,8 @@ import io.iohk.atala.prism.app.views.fragments.WalletFragment;
 public class MainActivityModule {
 
     @Provides
-    HomeFragment provideConnectionsFragment() {
-        return new HomeFragment();
+    NotificationsFragment provideNotificationsFragment() {
+        return new NotificationsFragment();
     }
 
     @Provides

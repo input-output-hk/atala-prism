@@ -3,13 +3,12 @@ package io.iohk.atala.prism.app.dagger.builders;
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
 import io.iohk.atala.prism.app.dagger.modules.AcceptConnectionDialogModule;
-import io.iohk.atala.prism.app.dagger.modules.ConnectionActivityModule;
 import io.iohk.atala.prism.app.dagger.modules.ConnectionsListableModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactDetailFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.CredentialHistoryFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.CredentialsFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.CredentialsViewModelModule;
+import io.iohk.atala.prism.app.dagger.modules.NotificationsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.DeleteContactAlertDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.MyCredentialsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.PaymentsModule;
@@ -28,10 +27,9 @@ import io.iohk.atala.prism.app.views.fragments.CredentialHistoryFragment;
 import io.iohk.atala.prism.app.views.fragments.DeleteAllConnectionsDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.DeleteContactAlertDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.DeleteCredentialDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.FirstConnectionFragment;
-import io.iohk.atala.prism.app.views.fragments.HomeFragment;
 import io.iohk.atala.prism.app.views.fragments.LargeDescriptionDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.MyCredentialsFragment;
+import io.iohk.atala.prism.app.views.fragments.NotificationsFragment;
 import io.iohk.atala.prism.app.views.fragments.PaymentCongratsFragment;
 import io.iohk.atala.prism.app.views.fragments.PaymentFragment;
 import io.iohk.atala.prism.app.views.fragments.PaymentHistoryFragment;
@@ -58,11 +56,8 @@ public abstract class FragmentBuilder {
     @ContributesAndroidInjector
     abstract ProfileFragment contributeProfileFragment();
 
-    @ContributesAndroidInjector(modules = ConnectionActivityModule.class)
-    abstract FirstConnectionFragment contributeConnectionFragment();
-
-    @ContributesAndroidInjector(modules = CredentialsViewModelModule.class)
-    abstract HomeFragment contributeConnectionsFragment();
+    @ContributesAndroidInjector(modules = NotificationsFragmentModule.class)
+    abstract NotificationsFragment contributeNotificationsFragment();
 
     @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
     abstract CredentialDetailFragment contributeCredentialFragment();
