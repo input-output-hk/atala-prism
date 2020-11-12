@@ -39,7 +39,10 @@ class ConsoleServiceImpl(
       }
       lazy val jsonF = Future.fromTry {
         Try {
-          io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
+          val jsonData = Option(request.jsonData).filter(_.nonEmpty).getOrElse("{}")
+          io.circe.parser
+            .parse(jsonData)
+            .getOrElse(throw new RuntimeException("Invalid jsonData: it must be a JSON string"))
         }
       }
 

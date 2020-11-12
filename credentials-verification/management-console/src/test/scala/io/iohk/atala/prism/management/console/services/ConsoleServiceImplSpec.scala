@@ -124,6 +124,32 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       }
     }
 
+    "create a contact without JSON data" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution", did)
+      val externalId = Contact.ExternalId.random()
+
+      val request = console_api
+        .CreateContactRequest(
+          externalId = externalId.value
+        )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.createContact(request).contact.value
+        val contactId = Contact.Id(UUID.fromString(response.contactId))
+        parser.parse(response.jsonData).toOption.value must be(Json.obj())
+        response.externalId must be(request.externalId)
+
+        // the new contact needs to exist
+        val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
+        val storedContact = result.value
+        toContactProto(storedContact) must be(response)
+      }
+    }
+
     "fail to create a contact and assign it to a group that does not exists" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
