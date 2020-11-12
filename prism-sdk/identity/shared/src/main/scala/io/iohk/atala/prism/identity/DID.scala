@@ -53,9 +53,9 @@ final class DID private (val value: String) extends AnyVal {
 
 object DID {
   val prismPrefix: String = "did:prism:"
-  val prismRegex: Regex = "^did:prism:[0-9a-z]+(:[A-Za-z0-9_-]+)?$".r
+  val prismRegex: Regex = "^did:prism(:[A-Za-z0-9_-]+)+$".r
   // This is the prefix we currently use in IntDemo TODO: Remove once possible
-  val testRegex: Regex = "^did:test:[0-9a-z]+(:[A-Za-z0-9_-]+)?$".r
+  val testRegex: Regex = "^did:test(:[A-Za-z0-9_-]+)+$".r
 
   private def apply(value: String): DID = new DID(value)
 

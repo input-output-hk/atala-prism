@@ -124,7 +124,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     }
 
     "be creatable from test prefix" in {
-      val rawDid = "did:test:intdemo"
+      val rawDid = "did:test:int-demo"
       val did = DID.fromString(rawDid)
       did.value.value mustBe rawDid
     }
