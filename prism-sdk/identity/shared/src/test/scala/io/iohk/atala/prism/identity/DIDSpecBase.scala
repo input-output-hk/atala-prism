@@ -122,6 +122,12 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
         case _ => fail("Long form DID with unexpected format")
       }
     }
+
+    "be creatable from test prefix" in {
+      val rawDid = "did:test:intdemo"
+      val did = DID.fromString(rawDid)
+      did.value.value mustBe rawDid
+    }
   }
 
   "stripPrismPrefix" should {
