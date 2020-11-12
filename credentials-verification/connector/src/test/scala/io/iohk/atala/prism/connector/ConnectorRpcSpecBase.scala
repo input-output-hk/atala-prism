@@ -19,6 +19,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.connector_api
+import monix.execution.schedulers.TestScheduler
 import org.mockito.MockitoSugar._
 
 import scala.concurrent.duration.DurationLong
@@ -37,9 +38,16 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
         )
     )
 
+  protected val scheduler: TestScheduler = TestScheduler()
+
   val usingApiAs: ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub] =
     usingApiAsConstructor(
       new connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
+    )
+
+  val usingAsyncApiAs: ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceStub] =
+    usingApiAsConstructor(
+      new connector_api.ConnectorServiceGrpc.ConnectorServiceStub(_, _)
     )
 
   lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
@@ -71,6 +79,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
     authenticator,
     nodeMock,
     participantsRepository,
+    scheduler,
     requireSignatureOnConnectionCreation = true
   )(
     executionContext

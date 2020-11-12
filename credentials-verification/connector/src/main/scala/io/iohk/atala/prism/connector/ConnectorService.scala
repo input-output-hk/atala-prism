@@ -4,11 +4,10 @@ import java.util.UUID
 
 import com.google.protobuf.ByteString
 import io.grpc.Context
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
+import io.grpc.stub.StreamObserver
+import io.iohk.atala.prism.BuildInfo
+import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
-import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
@@ -16,16 +15,21 @@ import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, PaymentsRepository}
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.atala.prism.BuildInfo
-import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.errors.LoggingContext
+import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
+import io.iohk.atala.prism.protos.connector_api.{GetMessageStreamRequest, GetMessageStreamResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
+import monix.execution.Scheduler
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.concurrent.duration.{Duration, FiniteDuration, _}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 class ConnectorService(
     connections: ConnectionsService,
@@ -36,6 +40,8 @@ class ConnectorService(
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     nodeService: NodeServiceGrpc.NodeService,
     participantsRepository: ParticipantsRepository,
+    scheduler: Scheduler,
+    messageStreamPeriod: FiniteDuration = 1.second,
     // TODO: remove this flag when mobile clients implement signatures
     requireSignatureOnConnectionCreation: Boolean = false
 )(implicit
@@ -322,22 +328,11 @@ class ConnectorService(
       request: connector_api.GetMessagesPaginatedRequest
   ): Future[connector_api.GetMessagesPaginatedResponse] = {
 
-    def getLastSeenMessages(userId: ParticipantId): FutureEither[ConnectorError, Seq[Message]] = {
-      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+    def getLastSeenMessages(participantId: ParticipantId): FutureEither[ConnectorError, Seq[Message]] = {
+      implicit val loggingContext = LoggingContext("request" -> request, "participantId" -> participantId)
 
-      val lastSeenMessageId = request.lastSeenMessageId match {
-        case "" => Right(None)
-        case id =>
-          Try(id)
-            .map(UUID.fromString)
-            .map(model.MessageId.apply)
-            .fold(
-              _ => Left(InvalidArgumentError("lastSeenMessageId", "valid id", id).logWarn),
-              id => Right(Some(id))
-            )
-      }
-      lastSeenMessageId.toFutureEither
-        .flatMap(idOpt => messages.getMessagesPaginated(userId, request.limit, idOpt))
+      getMessageIdField(request.lastSeenMessageId, "lastSeenMessageId").toFutureEither
+        .flatMap(idOpt => messages.getMessagesPaginated(participantId, request.limit, idOpt))
         .wrapExceptions
     }
 
@@ -351,6 +346,69 @@ class ConnectorService(
 
     authenticator.authenticated("getMessagesPaginated", request) { participantId =>
       f(participantId)
+    }
+  }
+
+  override def getMessageStream(
+      request: GetMessageStreamRequest,
+      responseObserver: StreamObserver[GetMessageStreamResponse]
+  ): Unit = {
+    val PAGE_SIZE = 100
+
+    def streamMessages(
+        participantId: ParticipantId,
+        lastSeenMessageId: Option[MessageId]
+    ): Unit = {
+      messages
+        .getMessagesPaginated(recipientId = participantId, limit = PAGE_SIZE, lastSeenMessageId = lastSeenMessageId)
+        .toFuture(e => new RuntimeException("Could not query messages", e.toStatus.asException()))
+        .onComplete {
+          case Success(messages) =>
+            // Stream all messages one by one
+            messages.foreach { message =>
+              responseObserver.onNext(connector_api.GetMessageStreamResponse(message = Some(message.toProto)))
+            }
+            val lastMessageId = messages.lastOption.map(_.id).orElse(lastSeenMessageId)
+            // Try to stream immediately again if more messages may be pending
+            val streamDuration = if (messages.size == PAGE_SIZE) Duration.Zero else messageStreamPeriod
+            scheduler.scheduleOnce(streamDuration) {
+              streamMessages(participantId, lastMessageId)
+            }
+          case Failure(exception) =>
+            logger.warn(s"Could not query messages for participant $participantId", exception)
+            responseObserver.onError(exception)
+        }
+    }
+
+    def f(participantId: ParticipantId): Future[Unit] = {
+      implicit val loggingContext = LoggingContext("request" -> request, "participantId" -> participantId)
+
+      for {
+        lastSeenMessageId <- getMessageIdField(request.lastSeenMessageId, "lastSeenMessageId").toFutureEither.flatten
+        _ = streamMessages(participantId, lastSeenMessageId)
+      } yield ()
+    }
+
+    authenticator.authenticated("getMessageStream", request) { participantId =>
+      f(participantId)
+    }
+    ()
+  }
+
+  private def getMessageIdField(
+      id: String,
+      fieldName: String
+  )(implicit lc: LoggingContext): Either[ConnectorError, Option[model.MessageId]] = {
+    id match {
+      case "" => Right(None)
+      case id =>
+        Try(id)
+          .map(UUID.fromString)
+          .map(model.MessageId.apply)
+          .fold(
+            _ => Left(InvalidArgumentError(fieldName, "valid id", id).logWarn),
+            id => Right(Some(id))
+          )
     }
   }
 

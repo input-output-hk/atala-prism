@@ -53,10 +53,15 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
   }
 
   override def afterEach(): Unit = {
+    // Gracefully shut down the channel with a 10s deadline and then force it to ensure it's released
     channelHandle.shutdown()
     channelHandle.awaitTermination(10, TimeUnit.SECONDS)
+    channelHandle.shutdownNow()
+    // Gracefully shut down the server with a 10s deadline and then force it to ensure it's released
     serverHandle.shutdown()
-    serverHandle.awaitTermination()
+    serverHandle.awaitTermination(10, TimeUnit.SECONDS)
+    serverHandle.shutdownNow()
+
     super.afterEach()
   }
 

@@ -3,11 +3,7 @@ package io.iohk.atala.prism.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
-import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
-import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
-import io.iohk.atala.prism.intdemo._
-import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
@@ -24,6 +20,9 @@ import io.iohk.atala.prism.console.services.{
   CredentialsStoreService,
   GroupsServiceImpl
 }
+import io.iohk.atala.prism.cviews.CredentialViewsService
+import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
+import io.iohk.atala.prism.intdemo._
 import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   DegreeServiceGrpc,
   EmploymentServiceGrpc,
@@ -37,6 +36,8 @@ import io.iohk.atala.prism.protos.console_api.ConsoleServiceGrpc
 import io.iohk.atala.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
+import monix.execution.Scheduler.{global => scheduler}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -106,7 +107,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       paymentsRepository,
       authenticator,
       node,
-      participantsRepository
+      participantsRepository,
+      scheduler
     )(
       executionContext
     )

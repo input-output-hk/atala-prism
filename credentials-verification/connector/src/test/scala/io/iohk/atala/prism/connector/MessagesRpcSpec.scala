@@ -4,15 +4,25 @@ import java.util.UUID
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.grpc.stub.StreamObserver
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
+import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
+import org.mockito.Mockito
+import org.mockito.MockitoSugar.{mock, verify}
+import org.mockito.captor.ArgCaptor
+import org.mockito.verification.VerificationWithTimeout
+
+import scala.concurrent.duration._
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
+  private def eventually: VerificationWithTimeout = Mockito.timeout(1000)
+
   "SendMessage" should {
     "insert message into database" in {
       val keyPair = EC.generateKeyPair()
@@ -35,12 +45,11 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
   }
 
   "GetMessagesPaginated" should {
-
     "return messages" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val verifierId = createVerifier("Issuer", Some(publicKey), Some(did))
+      val verifierId = createVerifier("Verifier", Some(publicKey), Some(did))
       val messages = createExampleMessages(verifierId)
       val request = connector_api.GetMessagesPaginatedRequest("", 10)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -125,4 +134,75 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
   }
 
+  "GetMessageStream" should {
+    val keyPair = EC.generateKeyPair()
+    val publicKey = keyPair.publicKey
+    val did = generateDid(publicKey)
+
+    def createParticipant(): ParticipantId = {
+      createVerifier("Participant", Some(publicKey), Some(did))
+    }
+
+    def generateMessageIds(participantId: ParticipantId): Seq[String] = {
+      createExampleMessages(participantId).map(_._1).map(_.id.toString)
+    }
+
+    def asMessageIds(responses: List[connector_api.GetMessageStreamResponse]): Seq[String] = {
+      responses.flatMap(_.message).map(_.id)
+    }
+
+    "return existing messages immediately" in {
+      val messageIds = generateMessageIds(createParticipant())
+      val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+
+      usingAsyncApiAs(getMessageStreamRequest) { service =>
+        val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
+        val responseCaptor = ArgCaptor[connector_api.GetMessageStreamResponse]
+
+        service.getMessageStream(getMessageStreamRequest.request, streamObserver)
+
+        verify(streamObserver, eventually.atLeast(messageIds.size)).onNext(responseCaptor.capture)
+        asMessageIds(responseCaptor.values) mustBe messageIds
+      }
+    }
+
+    "return newer messages only" in {
+      val messageIds = generateMessageIds(createParticipant())
+      val lastSeenMessageIndex = 10
+      val lastSeenMessageId = messageIds(lastSeenMessageIndex)
+      val notSeenMessages = messageIds.drop(lastSeenMessageIndex + 1)
+      val getMessageStreamRequest = SignedRpcRequest.generate(
+        keyPair,
+        did,
+        connector_api.GetMessageStreamRequest(lastSeenMessageId = lastSeenMessageId)
+      )
+
+      usingAsyncApiAs(getMessageStreamRequest) { service =>
+        val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
+        val responseCaptor = ArgCaptor[connector_api.GetMessageStreamResponse]
+
+        service.getMessageStream(getMessageStreamRequest.request, streamObserver)
+
+        verify(streamObserver, eventually.atLeast(notSeenMessages.size)).onNext(responseCaptor.capture)
+        asMessageIds(responseCaptor.values) mustBe notSeenMessages
+      }
+    }
+
+    "return new messages as they come" in {
+      val participantId = createParticipant()
+      val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+
+      usingAsyncApiAs(getMessageStreamRequest) { service =>
+        val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
+        val responseCaptor = ArgCaptor[connector_api.GetMessageStreamResponse]
+
+        service.getMessageStream(getMessageStreamRequest.request, streamObserver)
+        val messageIds = generateMessageIds(participantId)
+        scheduler.tick(1.second)
+
+        verify(streamObserver, eventually.atLeast(messageIds.size)).onNext(responseCaptor.capture)
+        asMessageIds(responseCaptor.values) mustBe messageIds
+      }
+    }
+  }
 }

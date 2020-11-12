@@ -800,6 +800,81 @@ proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getMess
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.atala.prism.protos.GetMessageStreamRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetMessageStreamResponse>}
+ */
+const methodDescriptor_ConnectorService_GetMessageStream = new grpc.web.MethodDescriptor(
+  '/io.iohk.atala.prism.protos.ConnectorService/GetMessageStream',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.io.iohk.atala.prism.protos.GetMessageStreamRequest,
+  proto.io.iohk.atala.prism.protos.GetMessageStreamResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.GetMessageStreamRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.GetMessageStreamResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.atala.prism.protos.GetMessageStreamRequest,
+ *   !proto.io.iohk.atala.prism.protos.GetMessageStreamResponse>}
+ */
+const methodInfo_ConnectorService_GetMessageStream = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.atala.prism.protos.GetMessageStreamResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.GetMessageStreamRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.GetMessageStreamResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.GetMessageStreamRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetMessageStreamResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.atala.prism.protos.ConnectorServiceClient.prototype.getMessageStream =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ConnectorService/GetMessageStream',
+      request,
+      metadata || {},
+      methodDescriptor_ConnectorService_GetMessageStream);
+};
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.GetMessageStreamRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.GetMessageStreamResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getMessageStream =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ConnectorService/GetMessageStream',
+      request,
+      metadata || {},
+      methodDescriptor_ConnectorService_GetMessageStream);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.io.iohk.atala.prism.protos.GetMessagesForConnectionRequest,
  *   !proto.io.iohk.atala.prism.protos.GetMessagesForConnectionResponse>}
  */

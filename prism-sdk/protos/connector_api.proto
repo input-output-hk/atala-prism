@@ -77,6 +77,9 @@ service ConnectorService {
   // Available to: Issuer, Holder, Validator
   rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
 
+  // Stream the messages received after the given optional message
+  rpc GetMessageStream (GetMessageStreamRequest) returns (stream GetMessageStreamResponse) {}
+
   // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
   rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
 
@@ -169,13 +172,22 @@ message GenerateConnectionTokenResponse {
 
 // Request to return messages for us after the given known message (if any)
 message GetMessagesPaginatedRequest {
-  string lastSeenMessageId = 1; // returned credentials will have been received after the given message (if any)
-  int32 limit = 2; // maximum number of credentials to return, must be > 0
+  string lastSeenMessageId = 1; // returned messages will have been received after the given message (if any)
+  int32 limit = 2; // maximum number of messages to return, must be > 0
 }
 
 // Response with messages
 message GetMessagesPaginatedResponse {
   repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+}
+
+message GetMessageStreamRequest {
+  // Last message seen by the client, so only newer messages are returned
+  string lastSeenMessageId = 1;
+}
+
+message GetMessageStreamResponse {
+  io.iohk.atala.prism.protos.ReceivedMessage message = 1;
 }
 
 message GetMessagesForConnectionRequest {

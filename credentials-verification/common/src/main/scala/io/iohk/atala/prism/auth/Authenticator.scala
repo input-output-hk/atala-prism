@@ -1,10 +1,6 @@
 package io.iohk.atala.prism.auth
 
 import io.grpc.Context
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.auth.errors.{
   AuthError,
   AuthErrorSupport,
@@ -14,11 +10,15 @@ import io.iohk.atala.prism.auth.errors.{
   SignatureVerificationError,
   UnknownPublicKeyId
 }
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.atala.prism.auth.model.RequestNonce
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.DIDFormat
 import io.iohk.atala.prism.protos.node_models.CreateDIDOperation
 import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 
@@ -29,12 +29,12 @@ import scala.util.{Failure, Success}
 trait Authenticator[Id] {
   def logger: Logger
 
-  def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](
+  def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
   )(f: Id => Future[Response])(implicit ec: ExecutionContext): Future[Response]
 
-  def public[Request <: GeneratedMessage, Response <: GeneratedMessage](
+  def public[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
   )(f: => Future[Response])(implicit ec: ExecutionContext): Future[Response]
@@ -67,15 +67,19 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     */
   def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, Id]
 
-  private def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](
+  private def withLogging[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request,
       id: Id
   )(run: => Future[Response])(implicit ec: ExecutionContext): Future[Response] =
     run.andThen {
-      case Success(response) =>
+      case Success(response: GeneratedMessage) =>
         logger.info(
           s"$methodName, id = $id, request = ${request.toProtoString}, response = ${response.toProtoString}"
+        )
+      case Success(response) =>
+        logger.info(
+          s"$methodName, id = $id, request = ${request.toProtoString}, response = $response"
         )
       case Failure(ex) =>
         logger.error(
@@ -84,16 +88,20 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         )
     }
 
-  private def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](
+  private def withLogging[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
   )(
       run: => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response] =
     run.andThen {
-      case Success(response) =>
+      case Success(response: GeneratedMessage) =>
         logger.info(
           s"$methodName, request = ${request.toProtoString}, response = ${response.toProtoString}"
+        )
+      case Success(response) =>
+        logger.info(
+          s"$methodName, request = ${request.toProtoString}, response = $response"
         )
       case Failure(ex) =>
         logger.error(
@@ -236,7 +244,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     }
   }
 
-  override def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](
+  override def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
   )(f: Id => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
@@ -266,7 +274,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     }
   }
 
-  override def public[Request <: GeneratedMessage, Response <: GeneratedMessage](
+  override def public[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
   )(f: => Future[Response])(implicit ec: ExecutionContext): Future[Response] =
