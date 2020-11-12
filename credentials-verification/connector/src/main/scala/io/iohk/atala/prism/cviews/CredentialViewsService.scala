@@ -3,13 +3,21 @@ package io.iohk.atala.prism.cviews
 import io.circe.Json
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.Institution
-import io.iohk.atala.prism.intdemo.html.{HealthCredential, IdCredential, ProofOfEmployment, UniversityDegree}
+import io.iohk.atala.prism.intdemo.html.{
+  GeorgiaEducationalDegree,
+  GeorgiaEducationalDegreeTranscript,
+  GeorgiaNationalId,
+  HealthCredential,
+  IdCredential,
+  ProofOfEmployment,
+  UniversityDegree
+}
+import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
+import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.view.HtmlViewImage
-import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
-import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,13 +52,16 @@ private object PredefinedHtmlTemplates {
   private val SVG_MIME_TYPE = "image/svg+xml"
 
   val all: Vector[cviews_models.CredentialViewTemplate] = Vector(
-    idCredential(),
-    educationalCredential(),
-    employmentCredential(),
-    insuranceCredential()
+    id(),
+    educational(),
+    employment(),
+    insurance(),
+    georgiaNationalId(),
+    georgiaEducationDegree(),
+    georgiaEducationDegreeTranscript()
   )
 
-  private def idCredential(): cviews_models.CredentialViewTemplate = {
+  private def id(): cviews_models.CredentialViewTemplate = {
     cviews_models.CredentialViewTemplate(
       id = 1,
       name = "Government ID",
@@ -70,7 +81,7 @@ private object PredefinedHtmlTemplates {
     )
   }
 
-  private def educationalCredential(): cviews_models.CredentialViewTemplate = {
+  private def educational(): cviews_models.CredentialViewTemplate = {
     cviews_models.CredentialViewTemplate(
       id = 2,
       name = "Educational Credential",
@@ -91,7 +102,7 @@ private object PredefinedHtmlTemplates {
     )
   }
 
-  private def employmentCredential(): cviews_models.CredentialViewTemplate = {
+  private def employment(): cviews_models.CredentialViewTemplate = {
     cviews_models.CredentialViewTemplate(
       id = 3,
       name = "Proof of Employment",
@@ -113,7 +124,7 @@ private object PredefinedHtmlTemplates {
     )
   }
 
-  private def insuranceCredential(): cviews_models.CredentialViewTemplate = {
+  private def insurance(): cviews_models.CredentialViewTemplate = {
     cviews_models.CredentialViewTemplate(
       id = 4,
       name = "Health Insurance",
@@ -128,6 +139,73 @@ private object PredefinedHtmlTemplates {
           "productClass" -> asStringVar("productClass"),
           "policyNumber" -> asStringVar("policyNumber"),
           "expiryDate" -> asStringVar("expiryDate")
+        )
+      ).body
+    )
+  }
+
+  private def georgiaNationalId(): cviews_models.CredentialViewTemplate = {
+    cviews_models.CredentialViewTemplate(
+      id = 5,
+      name = "Georgia National ID",
+      encodedLogoImage = HtmlViewImage.imageBase64("georgiaNationalIdIcon.svg"),
+      logoImageMimeType = SVG_MIME_TYPE,
+      htmlTemplate = GeorgiaNationalId(credential =
+        Json.obj(
+          "issuer" -> Json.obj("name" -> asStringVar("issuer.name")),
+          "credentialSubject" -> Json.obj(
+            "name" -> asStringVar("credentialSubject.name"),
+            "gender" -> asStringVar("credentialSubject.gender"),
+            "country" -> asStringVar("credentialSubject.country"),
+            "placeOfBirth" -> asStringVar("credentialSubject.placeOfBirth"),
+            "dateOfBirth" -> asStringVar("credentialSubject.dateOfBirth")
+          ),
+          "issueDate" -> asStringVar("issueDate"),
+          "cardNumber" -> asStringVar("cardNumber"),
+          "expiryDate" -> asStringVar("expiryDate"),
+          "personalNumber" -> asStringVar("personalNumber")
+        )
+      ).body
+    )
+  }
+
+  private def georgiaEducationDegree(): cviews_models.CredentialViewTemplate = {
+    cviews_models.CredentialViewTemplate(
+      id = 6,
+      name = "Georgia Educational Degree",
+      encodedLogoImage = HtmlViewImage.imageBase64("georgiaEducationalDegreeIcon.svg"),
+      logoImageMimeType = SVG_MIME_TYPE,
+      htmlTemplate = GeorgiaEducationalDegree(credential =
+        Json.obj(
+          "issuer" -> Json.obj("name" -> asStringVar("issuer.name")),
+          "credentialSubject" -> Json.obj(
+            "firstName" -> asStringVar("credentialSubject.firstName"),
+            "lastName" -> asStringVar("credentialSubject.lastName")
+          ),
+          "degreeName" -> asStringVar("degreeName"),
+          "degreeResult" -> asStringVar("degreeResult"),
+          "issueDate" -> asStringVar("issueDate")
+        )
+      ).body
+    )
+  }
+
+  private def georgiaEducationDegreeTranscript(): cviews_models.CredentialViewTemplate = {
+    cviews_models.CredentialViewTemplate(
+      id = 7,
+      name = "Georgia Educational Degree Transcript",
+      encodedLogoImage = HtmlViewImage.imageBase64("georgiaEducationalDegreeTranscriptIcon.svg"),
+      logoImageMimeType = SVG_MIME_TYPE,
+      htmlTemplate = GeorgiaEducationalDegreeTranscript(credential =
+        Json.obj(
+          "issuer" -> Json.obj("name" -> asStringVar("issuer.name")),
+          "credentialSubject" -> Json.obj(
+            "name" -> asStringVar("credentialSubject.name")
+          ),
+          "degreeName" -> asStringVar("degreeName"),
+          "issueDate" -> asStringVar("issueDate"),
+          "cumulativeScore" -> asStringVar("cumulativeScore"),
+          "coursesHtml" -> asStringVar("coursesHtml")
         )
       ).body
     )

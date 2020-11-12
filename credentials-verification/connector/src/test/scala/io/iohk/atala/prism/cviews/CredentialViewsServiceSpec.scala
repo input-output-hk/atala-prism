@@ -44,18 +44,35 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDGenerator {
         val response = serviceStub.getCredentialViewTemplates(GetCredentialViewTemplatesRequest())
 
         val templates = response.templates
-        templates.length mustBe 4
-        val expectedTemplateNames =
-          Array("Government ID", "Educational Credential", "Proof of Employment", "Health Insurance")
-        val expectedTemplateLogos = Array("icon.svg", "university.svg", "employment.svg", "health.svg")
-        val expectedTemplateViews =
-          Array(
-            "id_credential.html",
-            "educational_credential.html",
-            "employment_credential.html",
-            "health_credential.html"
-          )
-        for (i <- 0 until 4) {
+        templates.length mustBe 7
+        val expectedTemplateNames = Array(
+          "Government ID",
+          "Educational Credential",
+          "Proof of Employment",
+          "Health Insurance",
+          "Georgia National ID",
+          "Georgia Educational Degree",
+          "Georgia Educational Degree Transcript"
+        )
+        val expectedTemplateLogos = Array(
+          "icon.svg",
+          "university.svg",
+          "employment.svg",
+          "health.svg",
+          "georgiaNationalIdIcon.svg",
+          "georgiaEducationalDegreeIcon.svg",
+          "georgiaEducationalDegreeTranscriptIcon.svg"
+        )
+        val expectedTemplateViews = Array(
+          "id_credential.html",
+          "educational_credential.html",
+          "employment_credential.html",
+          "health_credential.html",
+          "georgia_national_id.html",
+          "georgia_educational_degree.html",
+          "georgia_educational_degree_transcript.html"
+        )
+        for (i <- templates.indices) {
           val template = templates(i)
           template.id mustBe i + 1
           template.name mustBe expectedTemplateNames(i)
