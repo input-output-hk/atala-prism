@@ -8,7 +8,7 @@ import io.iohk.atala.prism.protos.node_models
 
 import scala.util.matching.Regex
 
-final case class DID(value: String) extends AnyVal {
+final class DID private (val value: String) extends AnyVal {
   import DID._
 
   def isLongForm: Boolean = {
@@ -53,6 +53,10 @@ final case class DID(value: String) extends AnyVal {
 
 object DID {
   val prismPrefix: String = "did:prism:"
+  val prismRegex: Regex = "^did:prism:[0-9a-z]+(:[A-Za-z0-9_-]+)?$".r
+
+  private def apply(value: String): DID = new DID(value)
+
   def buildPrismDID(stateHash: String, maybeEncodedState: Option[String] = None): DID = {
     maybeEncodedState match {
       case None => DID(s"$prismPrefix$stateHash")
@@ -62,6 +66,15 @@ object DID {
 
   def buildPrismDID(stateHash: String, encodedState: String): DID =
     DID(s"$prismPrefix${buildSuffix(stateHash, encodedState)}")
+
+  def fromString(string: String): Option[DID] =
+    if (prismRegex.matches(string))
+      Some(DID(string))
+    else
+      None
+
+  def unsafeFromString(string: String): DID =
+    fromString(string).get
 
   private def buildSuffix(stateHash: String, encodedState: String): String = s"$stateHash:$encodedState"
 

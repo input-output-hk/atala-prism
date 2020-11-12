@@ -54,7 +54,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
       (for {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.insert(connection2)
-        connection <- ConnectionDao.findByHolderDID(DID(connectionHolderDid2.value))
+        connection <- ConnectionDao.findByHolderDID(connectionHolderDid2)
       } yield connection).transact(database).unsafeRunSync() mustBe Some(connection2)
     }
 
@@ -75,7 +75,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
     }
 
     "return none if a holder DID doesn't exist" in {
-      ConnectionDao.findByHolderDID(DID("non existing did")).transact(database).unsafeRunSync() mustBe None
+      ConnectionDao.findByHolderDID(DID.buildPrismDID("none")).transact(database).unsafeRunSync() mustBe None
     }
 
     "return last seen connection id" in {

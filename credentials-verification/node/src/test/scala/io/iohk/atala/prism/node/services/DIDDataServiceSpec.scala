@@ -30,12 +30,12 @@ class DIDDataServiceSpec extends PostgresRepositorySpec {
         .futureValue
       result mustBe a[Right[_, _]]
 
-      val did = DID(s"did:prism:${parsedOperation.id.suffix}")
+      val did = DID.buildPrismDID(parsedOperation.id.suffix)
       didDataService.findByDID(did).value.futureValue mustBe a[Right[_, _]]
     }
 
     "return error when did is in invalid format" in {
-      val did = DID(s"did:prism:1111111111111111")
+      val did = DID.buildPrismDID("1111111111111111")
       didDataService.findByDID(did).value.futureValue mustBe a[Left[UnknownValueError, _]]
     }
 

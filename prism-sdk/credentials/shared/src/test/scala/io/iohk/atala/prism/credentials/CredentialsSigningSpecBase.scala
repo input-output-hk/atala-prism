@@ -13,7 +13,7 @@ abstract class CredentialsSigningSpecBase extends AnyWordSpec {
   import JsonBasedUnsignedCredential.jsonBasedUnsignedCredential
 
   private val TEST_UNSIGNED_CREDENTIAL =
-    UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(DID(""), "", Json.obj())
+    UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(DID.buildPrismDID(""), "", Json.obj())
 
   "CredentialsSigning.signCredential and CredentialsSigning.verifyCredentialSignature" should {
     "verify as valid a properly signed credential" in {

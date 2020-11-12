@@ -109,27 +109,32 @@ private[grpc] object GrpcAuthenticationContext {
   def parseDIDAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.DIDBased] = {
     (ctx.getOpt(RequestNonceKeys), ctx.getOpt(DidKeys), ctx.getOpt(DidKeyIdKeys), ctx.getOpt(DidSignatureKeys)) match {
       case (Some(requestNonce), Some(didRaw), Some(keyId), Some(signature)) =>
-        val did = DID(didRaw)
-        did.getFormat match {
-          case _: DIDFormat.Canonical =>
-            Some(
-              GrpcAuthenticationHeader.PublishedDIDBased(
-                requestNonce = RequestNonce(requestNonce.toVector),
-                did = did,
-                keyId = keyId,
-                signature = ECSignature(signature)
-              )
-            )
-          case _: DIDFormat.LongForm =>
-            Some(
-              GrpcAuthenticationHeader.UnpublishedDIDBased(
-                requestNonce = RequestNonce(requestNonce.toVector),
-                did = did,
-                keyId = keyId,
-                signature = ECSignature(signature)
-              )
-            )
-          case DIDFormat.Unknown =>
+        val didOpt = DID.fromString(didRaw)
+        didOpt match {
+          case Some(did) =>
+            did.getFormat match {
+              case _: DIDFormat.Canonical =>
+                Some(
+                  GrpcAuthenticationHeader.PublishedDIDBased(
+                    requestNonce = RequestNonce(requestNonce.toVector),
+                    did = did,
+                    keyId = keyId,
+                    signature = ECSignature(signature)
+                  )
+                )
+              case _: DIDFormat.LongForm =>
+                Some(
+                  GrpcAuthenticationHeader.UnpublishedDIDBased(
+                    requestNonce = RequestNonce(requestNonce.toVector),
+                    did = did,
+                    keyId = keyId,
+                    signature = ECSignature(signature)
+                  )
+                )
+              case DIDFormat.Unknown =>
+                None
+            }
+          case None =>
             None
         }
       case _ => None

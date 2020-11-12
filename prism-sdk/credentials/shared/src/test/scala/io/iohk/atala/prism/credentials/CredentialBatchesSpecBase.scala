@@ -14,7 +14,7 @@ abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSp
   private val signedCredential1 =
     CredentialsCryptoSDKImpl.signCredential(
       JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-        issuerDID = DID("did:prism:123456678abcdefg"),
+        issuerDID = DID.buildPrismDID("123456678abcdefg"),
         issuanceKeyId = "Issuance-0",
         claims = Json.obj()
       ),
@@ -24,7 +24,7 @@ abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSp
   private val signedCredential2 =
     CredentialsCryptoSDKImpl.signCredential(
       JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-        issuerDID = DID("did:prism:123456678abcdefg"),
+        issuerDID = DID.buildPrismDID("123456678abcdefg"),
         issuanceKeyId = "Issuance-0",
         claims = Json.obj()
       ),
@@ -34,7 +34,7 @@ abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSp
   private val signedCredential3 =
     CredentialsCryptoSDKImpl.signCredential(
       JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-        issuerDID = DID("did:prism:123456678abcdefg"),
+        issuerDID = DID.buildPrismDID("123456678abcdefg"),
         issuanceKeyId = "Issuance-0",
         claims = Json.obj()
       ),

@@ -11,6 +11,7 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
+import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, Role, UserDetails}
 

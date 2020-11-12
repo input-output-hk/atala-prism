@@ -6,6 +6,7 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 
 trait BaseDAO {
@@ -26,6 +27,11 @@ trait BaseDAO {
 
   implicit val ledgerMeta: Meta[Ledger] =
     Meta[String].timap(b => Ledger.withNameInsensitiveOption(b).getOrElse(throw InvalidEnum[Ledger](b)))(_.entryName)
+
+  implicit val didMeta: Meta[DID] =
+    Meta[String].timap(s => {
+      DID.unsafeFromString(s)
+    })(_.value)
 }
 
 object BaseDAO extends BaseDAO

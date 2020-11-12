@@ -32,7 +32,7 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
   }
 
   val service: HttpRoutes[Task] = HttpRoutes.of[Task] {
-    case request @ GET -> Root / did =>
+    case request @ GET -> Root / didRaw =>
       val payIdHeader = request.headers.find(_.name == CaseInsensitiveString(PayIDVersionHeader))
       val cardanoNetwork = parseAcceptHeader(request.headers)
 
@@ -45,22 +45,30 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
           )
 
         case (_, Some(cardanoNetwork)) =>
-          cardanoAddressInfoService.findPaymentInfo(DID(did), cardanoNetwork).flatMap {
-            case None => NotFound()
-            case Some((_, cardanoAddresses)) => Ok(toPaymentInformation(did, cardanoAddresses, cardanoNetwork).asJson)
+          DID.fromString(didRaw) match {
+            case Some(did) =>
+              cardanoAddressInfoService.findPaymentInfo(did, cardanoNetwork).flatMap {
+                case None => NotFound()
+                case Some((_, cardanoAddresses)) =>
+                  Ok(toPaymentInformation(did, cardanoAddresses, cardanoNetwork).asJson)
+              }
+            case None =>
+              BadRequest(
+                s"$didRaw is not a valid DID"
+              )
           }
       }
   }
 
   def toPaymentInformation(
-      did: String,
+      did: DID,
       addressesInfo: List[CardanoAddressInfo],
       cardanoNetwork: CardanoNetwork
   ): PaymentInformation = {
     PaymentInformation(
       addresses = addressesInfo.map(toPayIdAddress(_, cardanoNetwork)),
       verifiedAddresses = List.empty,
-      payId = Some(did + "$" + httpConfig.payIdHostAddress),
+      payId = Some(did.value + "$" + httpConfig.payIdHostAddress),
       memo = None
     )
   }

@@ -150,7 +150,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig) {
 
   private[services] def parseDidAndHostFromPayId(payId: String): Option[(DID, String)] =
     payId.split("\\$") match {
-      case Array(did, host) => Some(DID(did) -> host)
+      case Array(didRaw, host) => DID.fromString(didRaw).map(_ -> host)
       case _ => None
     }
 

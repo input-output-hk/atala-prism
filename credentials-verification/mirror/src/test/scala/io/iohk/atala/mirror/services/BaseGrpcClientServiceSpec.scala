@@ -36,7 +36,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
 
     "sign request with did's private key" in new GrpcClientStubs {
       val metadata = new Metadata
-      metadata.put(AuthHeaders.DID, "did")
+      metadata.put(AuthHeaders.DID, DID.buildPrismDID("test").value)
       metadata.put(AuthHeaders.DID_KEY_ID, "didKeyId")
       metadata.put(AuthHeaders.DID_SIGNATURE, "c2lnbmF0dXJl")
       metadata.put(AuthHeaders.REQUEST_NONCE, "bm9uY2U=")
@@ -51,7 +51,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
 
   trait GrpcClientStubs {
     val authConfig = BaseGrpcClientService.DidBasedAuthConfig(
-      did = DID("did"),
+      did = DID.buildPrismDID("test"),
       didKeyId = "didKeyId",
       didKeyPair = mock[ECKeyPair]
     )

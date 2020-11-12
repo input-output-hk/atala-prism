@@ -19,8 +19,9 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
       val masterKey = ec.toPublicKey(xBytes, yBytes)
 
       // The expected resulting DID
-      val expectedDID = DID(
-        "did:prism:0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77:CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
+      val expectedDID = DID.buildPrismDID(
+        "0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77",
+        "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
       )
 
       DID.createUnpublishedDID(masterKey) mustBe expectedDID
@@ -35,10 +36,9 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     val encodedStateUsed =
       "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
 
-    val short = DID(s"did:prism:$canonicalSuffix")
-    val long = DID(s"did:prism:$canonicalSuffix:$encodedStateUsed")
-    val wrong = DID("did:prism:wrong")
-    val nonPrismDID = DID("did:other:wrong")
+    val short = DID.buildPrismDID(canonicalSuffix)
+    val long = DID.buildPrismDID(canonicalSuffix, encodedStateUsed)
+    val wrong = DID.buildPrismDID("wrong")
 
     "get the correct canonical suffix" in {
       short.getCanonicalSuffix.value mustBe canonicalSuffix
@@ -85,7 +85,6 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     "properly strip the PRISM DID preffix" in {
       short.stripPrismPrefix mustBe canonicalSuffix
       long.stripPrismPrefix mustBe s"$canonicalSuffix:$encodedStateUsed"
-      nonPrismDID.stripPrismPrefix mustBe nonPrismDID.value
     }
 
     "properly validate a long form DID" in {
@@ -127,14 +126,8 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
 
   "stripPrismPrefix" should {
     "strip the did:prism: prefix" in {
-      val input = DID("did:prism:aabbccddee")
+      val input = DID.buildPrismDID("aabbccddee")
       val expected = "aabbccddee"
-      input.stripPrismPrefix mustBe expected
-    }
-
-    "don't do anything if the exact prefix is not present" in {
-      val input = DID("did:prism-aabbccddee")
-      val expected = "did:prism-aabbccddee"
       input.stripPrismPrefix mustBe expected
     }
   }

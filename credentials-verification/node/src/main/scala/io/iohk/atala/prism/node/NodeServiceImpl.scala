@@ -38,29 +38,34 @@ class NodeServiceImpl(
 
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
     implicit val didService: DIDDataService = didDataService
-    val did = DID(request.did)
+    val didOpt = DID.fromString(request.did)
 
-    did.getFormat match {
-      case DID.DIDFormat.Canonical(_) =>
-        resolve(did) orElse (err => Future.failed(err.toStatus.asRuntimeException()))
-      case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
-        // we first check that the encoded initial state matches the corresponding hash
-        longForm.validate
-          .map { validatedLongForm =>
-            // validation succeeded, we check if the DID was published
-            resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = did) orElse { _ =>
-              // if it was not published, we return the encoded initial state
-              succeedWith(
-                ProtoCodecs.atalaOperationToDIDDataProto(
-                  did.stripPrismPrefix,
-                  validatedLongForm.initialState
-                )
-              )
-            }
-          }
-          .getOrElse(failWith(s"Invalid long form DID: ${request.did}"))
-      case DID.DIDFormat.Unknown =>
-        failWith(s"DID format not supported: ${request.did}")
+    didOpt match {
+      case Some(did) =>
+        did.getFormat match {
+          case DID.DIDFormat.Canonical(_) =>
+            resolve(did) orElse (err => Future.failed(err.toStatus.asRuntimeException()))
+          case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
+            // we first check that the encoded initial state matches the corresponding hash
+            longForm.validate
+              .map { validatedLongForm =>
+                // validation succeeded, we check if the DID was published
+                resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = did) orElse { _ =>
+                  // if it was not published, we return the encoded initial state
+                  succeedWith(
+                    ProtoCodecs.atalaOperationToDIDDataProto(
+                      did.stripPrismPrefix,
+                      validatedLongForm.initialState
+                    )
+                  )
+                }
+              }
+              .getOrElse(failWith(s"Invalid long form DID: ${request.did}"))
+          case DID.DIDFormat.Unknown =>
+            failWith(s"DID format not supported: ${request.did}")
+        }
+      case None =>
+        failWith(s"Invalid DID: ${request.did}")
     }
   }
 

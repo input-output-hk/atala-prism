@@ -17,6 +17,7 @@ import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
+import org.mockito.matchers.DefaultValueProvider
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.concurrent.ScalaFutures._
@@ -26,6 +27,10 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
+  val defaultValueDID = new DefaultValueProvider[DID] {
+    override def default: DID = DID.buildPrismDID("default")
+  }
+
   private implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   private val request = connector_api.GetConnectionTokenInfoRequest()
@@ -127,7 +132,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "accept the DID authentication" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -158,7 +163,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong DID authentication" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       // The request is signed with a different key
@@ -192,7 +197,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong nonce in DID authentication" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -225,13 +230,13 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in our database" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
 
       val participantsRepository = mock[ParticipantsRepository]
-      participantsRepository.findBy(any[DID]).returns {
+      participantsRepository.findBy(any[DID](defaultValueDID)).returns {
         Future.successful(Left(UnknownValueError("did", "not found"))).toFutureEither
       }
 
@@ -264,7 +269,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in the node" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -287,7 +292,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the key doesn't belong to the did" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -319,7 +324,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the nonce is reused" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
@@ -380,7 +385,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
   ): ConnectorAuthenticator = {
     val participantsRepository = mock[ParticipantsRepository]
-    participantsRepository.findBy(any[DID]).returns {
+    participantsRepository.findBy(any[DID](defaultValueDID)).returns {
       getuserId() match {
         case Some(userId) =>
           Future.successful(Right(dummyParticipantInfo(userId))).toFutureEither

@@ -65,7 +65,7 @@ trait MirrorFixtures {
   object ConnectionFixtures {
     lazy val connectionId1: ConnectionId = ConnectionId(UUID.fromString("0a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
     lazy val connectionId2: ConnectionId = ConnectionId(UUID.fromString("36325aef-d937-41b2-9a6c-b654e02b273d"))
-    lazy val connectionHolderDid2 = DID("did2")
+    lazy val connectionHolderDid2 = DID.buildPrismDID("did2")
     lazy val connection1: Connection =
       Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited, None)
     lazy val connection2: Connection =
@@ -73,7 +73,7 @@ trait MirrorFixtures {
         ConnectionToken("token2"),
         Some(connectionId2),
         ConnectionState.Invited,
-        Some(DID(connectionHolderDid2.value))
+        Some(connectionHolderDid2)
       )
 
     def insertAll[F[_]: Sync](database: Transactor[F]) = {
@@ -89,7 +89,7 @@ trait MirrorFixtures {
       UserCredential(
         ConnectionFixtures.connection1.token,
         RawCredential("rawCredentials1"),
-        Some(DID("issuersDID1")),
+        Some(DID.buildPrismDID("issuersdid1")),
         ConnectorMessageId("messageId1"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
@@ -109,7 +109,7 @@ trait MirrorFixtures {
   object CredentialFixtures {
 
     val issuanceKeyId = "Issuance-0"
-    val issuerDID = DID("did:prism:123456678abcdefg")
+    val issuerDID = DID.buildPrismDID("123456678abcdefg")
 
     val unsignedCredential: UnsignedCredential = createUnsignedCredential(issuanceKeyId, issuerDID)
 

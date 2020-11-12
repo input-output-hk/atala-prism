@@ -18,6 +18,7 @@ import io.iohk.atala.cvp.webextension.background.wallet.WalletManager.{
   GCM_IV_LENGTH,
   TAG_LENGTH_BIT
 }
+import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
 import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
@@ -371,7 +372,7 @@ private[background] class WalletManager(
         Map.empty,
         mnemonic,
         organisationName,
-        DID(response.did),
+        DID.unsafeFromString(response.did),
         response.transactionInfo.map(_.transactionId),
         role,
         logo

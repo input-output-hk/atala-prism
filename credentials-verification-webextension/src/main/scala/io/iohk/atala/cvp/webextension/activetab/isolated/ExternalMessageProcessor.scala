@@ -6,6 +6,7 @@ import io.circe.Encoder
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.activetab.models.{Command, Event, TaggedModel}
+import io.iohk.atala.cvp.webextension.circe._
 import org.scalajs.dom
 
 import scala.concurrent.ExecutionContext

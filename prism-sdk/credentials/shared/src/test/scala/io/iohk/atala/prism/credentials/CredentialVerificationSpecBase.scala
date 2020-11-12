@@ -14,7 +14,7 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
   implicit def ec: ECTrait
 
   private val unsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-    issuerDID = DID("did:prism:123456678abcdefg"),
+    issuerDID = DID.buildPrismDID("123456678abcdefg"),
     issuanceKeyId = "Issuance-0",
     claims = Json.obj()
   )

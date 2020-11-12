@@ -17,14 +17,15 @@ class JsonBasedCredentialContentSpec extends AnyWordSpec with Matchers with Eith
 
   "JsonBasedCredentialContent" should {
     "read issuer from JSON" in {
+      val did = DID.buildPrismDID("did")
       val json = Json.obj(
-        JsonFields.Issuer.name -> "did".asJson
+        JsonFields.Issuer.name -> did.value.asJson
       )
 
       json.as[CredentialContent[Nothing]] mustBe Right(
         CredentialContent(
           credentialType = Nil,
-          issuerDid = Some(DID("did")),
+          issuerDid = Some(did),
           issuanceKeyId = None,
           issuanceDate = None,
           expiryDate = None,
@@ -34,9 +35,10 @@ class JsonBasedCredentialContentSpec extends AnyWordSpec with Matchers with Eith
     }
 
     "read issuer from nested JSON" in {
+      val did = DID.buildPrismDID("did")
       val json = Json.obj(
         JsonFields.Issuer.name -> Json.obj(
-          JsonFields.IssuerDid.name -> "did".asJson,
+          JsonFields.IssuerDid.name -> did.value.asJson,
           JsonFields.IssuerName.name -> "did:prism:123".asJson
         )
       )
@@ -44,7 +46,7 @@ class JsonBasedCredentialContentSpec extends AnyWordSpec with Matchers with Eith
       json.as[CredentialContent[Nothing]] mustBe Right(
         CredentialContent(
           credentialType = Nil,
-          issuerDid = Some(DID("did")),
+          issuerDid = Some(did),
           issuanceKeyId = None,
           issuanceDate = None,
           expiryDate = None,

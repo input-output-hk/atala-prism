@@ -123,7 +123,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val paymentInfo = cardanoAddressInfoService
-        .findPaymentInfo(DID(connectionHolderDid2.value), cardanoNetwork2)
+        .findPaymentInfo(connectionHolderDid2, cardanoNetwork2)
         .runSyncUnsafe()
 
       // then
@@ -139,7 +139,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val paymentInfo =
-        cardanoAddressInfoService.findPaymentInfo(DID("non existing did"), cardanoNetwork2).runSyncUnsafe()
+        cardanoAddressInfoService.findPaymentInfo(DID.buildPrismDID("none"), cardanoNetwork2).runSyncUnsafe()
 
       // then
       paymentInfo mustBe None

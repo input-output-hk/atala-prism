@@ -67,7 +67,7 @@ class CredentialService(
               token = ConnectionToken(connectionInfo.token),
               id = parseUUID(connectionInfo.connectionId).map(ConnectionId),
               state = ConnectionState.Connected,
-              holderDID = Some(DID(connectionInfo.participantDID))
+              holderDID = Some(DID.unsafeFromString(connectionInfo.participantDID))
             )
 
             ConnectionDao
@@ -121,7 +121,6 @@ class CredentialService(
       .fromString(rawCredential.rawCredential)
       .toOption
       .flatMap(_.content.issuerDid)
-      .map(did => DID(did.value))
   }
 
   private def createUserCredential(

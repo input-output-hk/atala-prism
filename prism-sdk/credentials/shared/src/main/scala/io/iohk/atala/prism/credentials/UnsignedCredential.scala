@@ -28,7 +28,7 @@ class JsonBasedUnsignedCredential private (credentialBytes: Array[Byte]) extends
   lazy val bytes: Array[Byte] = credentialBytes
 
   lazy val issuerDID: Option[DID] = {
-    json.hcursor.get[String](JsonBasedUnsignedCredential.issuerDIDFieldName).map(DID.apply).toOption
+    json.hcursor.get[String](JsonBasedUnsignedCredential.issuerDIDFieldName).toOption.flatMap(DID.fromString)
   }
 
   lazy val issuanceKeyId: Option[String] = {

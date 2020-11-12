@@ -10,7 +10,7 @@ abstract class UnsignedCredentialSpec[A: UnsignedCredentialBuilder] extends AnyW
 
   private val builder = UnsignedCredentialBuilder[A]
 
-  private val mockIssuerDID = DID("did:prism:123456678abcdefg")
+  private val mockIssuerDID = DID.buildPrismDID("123456678abcdef")
   private val mockIssuanceKeyid = "Issuance-0"
   private val mockClaims = Json.obj()
 

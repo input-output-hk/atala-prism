@@ -44,7 +44,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         ParticipantType.Issuer,
         None,
         "Issuer",
-        Some(DID("did:test:issuer")),
+        Some(DID.buildPrismDID("issuer")),
         None,
         None,
         None

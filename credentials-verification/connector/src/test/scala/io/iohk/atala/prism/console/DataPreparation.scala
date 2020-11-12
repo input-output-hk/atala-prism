@@ -31,7 +31,7 @@ object DataPreparation {
       database: Transactor[IO]
   ): Institution.Id = {
     val id = Institution.Id(UUID.randomUUID())
-    val didValue = did.getOrElse(DID(s"did:geud:issuer-x$tag"))
+    val didValue = did.getOrElse(DID.buildPrismDID(s"issuer-x$tag"))
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
     val participant =
       ParticipantInfo(
@@ -57,7 +57,7 @@ object DataPreparation {
   )(implicit
       database: Transactor[IO]
   ): ParticipantId = {
-    val did = DID(s"did:geud:issuer-x$tag")
+    val did = DID.buildPrismDID(s"issuer-x$tag")
     val participant =
       ParticipantInfo(id, ParticipantType.Verifier, publicKey, name, Option(did), None, None, None)
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()

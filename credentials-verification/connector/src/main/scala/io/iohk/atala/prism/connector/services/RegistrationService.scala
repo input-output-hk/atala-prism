@@ -30,7 +30,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
           .createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
           .map(Right(_))
           .toFutureEither
-      did = DID(s"did:prism:${createDIDResponse.id}")
+      did = DID.buildPrismDID(createDIDResponse.id)
       transactionInfo = ProtoCodecs.fromTransactionInfo(
         createDIDResponse.transactionInfo.getOrElse(throw new RuntimeException("DID created has no transaction info"))
       )

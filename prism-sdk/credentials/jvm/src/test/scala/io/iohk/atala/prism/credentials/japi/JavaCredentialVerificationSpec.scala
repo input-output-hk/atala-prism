@@ -38,7 +38,7 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
     val credentialVerification = CredentialVerification.getInstance(Provider.ANDROID)
 
     val unsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-      issuerDID = DID("did:prism:123456678abcdefg"),
+      issuerDID = DID.buildPrismDID("123456678abcdefg"),
       issuanceKeyId = "Issuance-0",
       claims = Json.obj()
     )

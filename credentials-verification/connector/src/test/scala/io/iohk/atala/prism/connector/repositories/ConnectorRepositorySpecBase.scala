@@ -7,6 +7,7 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
@@ -15,7 +16,7 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
   protected def createParticipant(
       tpe: ParticipantType,
       name: String,
-      did: String,
+      did: DID,
       publicKey: Option[ECPublicKey],
       logo: Option[ParticipantLogo]
   ): ParticipantId = {
@@ -26,15 +27,15 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
   }
 
   protected def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None): ParticipantId = {
-    createParticipant(ParticipantType.Issuer, name, s"did:test:${name.toLowerCase}", None, logo)
+    createParticipant(ParticipantType.Issuer, name, DID.buildPrismDID(name.toLowerCase), None, logo)
   }
 
   protected def createHolder(name: String = "Holder", publicKey: Option[ECPublicKey] = None): ParticipantId = {
-    createParticipant(ParticipantType.Holder, name, s"did:test:${name.toLowerCase}", publicKey, None)
+    createParticipant(ParticipantType.Holder, name, DID.buildPrismDID(name.toLowerCase), publicKey, None)
   }
 
   protected def createVerifier(name: String = "Verifier", logo: Option[ParticipantLogo] = None): ParticipantId = {
-    createParticipant(ParticipantType.Verifier, name, s"did:test:${name.toLowerCase}", None, logo)
+    createParticipant(ParticipantType.Verifier, name, DID.buildPrismDID(name.toLowerCase), None, logo)
   }
 
   protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {

@@ -19,7 +19,7 @@ class ParticipantsRepositorySpec extends PostgresRepositorySpec {
   "getParticipant by did" should {
     "get a participant" in {
       val id = ParticipantId.random()
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val info = ParticipantInfo(id, "issuer", did, None)
       ParticipantsDAO
         .insert(info)
@@ -32,13 +32,13 @@ class ParticipantsRepositorySpec extends PostgresRepositorySpec {
     }
 
     "return no participant on unknown did" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       ParticipantsDAO
         .insert(
           ParticipantInfo(
             ParticipantId.random(),
             "issuer",
-            DID(did.value + "x"),
+            DID.buildPrismDID("test-x"),
             None
           )
         )

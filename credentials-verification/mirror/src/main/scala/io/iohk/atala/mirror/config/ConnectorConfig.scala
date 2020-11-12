@@ -17,7 +17,7 @@ object ConnectorConfig {
     val host = config.getString("host")
     val port = config.getInt("port")
 
-    val did = DID(config.getString("did"))
+    val did = DID.unsafeFromString(config.getString("did"))
     val didKeyId = config.getString("did-key-id")
     val didPrivateKey = config.getString("did-private-key")
 

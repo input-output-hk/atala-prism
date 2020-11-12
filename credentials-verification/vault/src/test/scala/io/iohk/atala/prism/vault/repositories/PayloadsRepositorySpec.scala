@@ -23,11 +23,11 @@ class PayloadsRepositorySpec extends PostgresRepositorySpec with OptionValues {
 
   "create" should {
     "create a new payload" in {
-      val did1 = DID("did:prism:test1")
+      val did1 = DID.buildPrismDID("test1")
       val content1 = "encrypted_data_1".getBytes.toVector
       val payload1 = createPayload(did1, content1)
 
-      val did2 = DID("did:prism:test2")
+      val did2 = DID.buildPrismDID("test2")
       val content2 = "encrypted_data_2".getBytes.toVector
       val payload2 = createPayload(did2, content2)
 
@@ -45,11 +45,11 @@ class PayloadsRepositorySpec extends PostgresRepositorySpec with OptionValues {
 
   "getBy" should {
     "return all created payloads" in {
-      val did1 = DID("did:prism:test1")
+      val did1 = DID.buildPrismDID("test1")
       val content1 = "encrypted_data_1".getBytes.toVector
       val payload1 = createPayload(did1, content1)
 
-      val did2 = DID("did:prism:test2")
+      val did2 = DID.buildPrismDID("test2")
       val content2 = "encrypted_data_2".getBytes.toVector
       val payload2 = createPayload(did2, content2)
 

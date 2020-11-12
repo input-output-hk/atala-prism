@@ -26,8 +26,7 @@ object ECKeyOperation {
   def didFromMasterKey(ecKeyPair: ECKeyPair): DID = {
     val atalaOperation = createDIDAtalaOperation(ecKeyPair)
     val didSuffix = SHA256Digest.compute(atalaOperation.toByteArray).hexValue
-    val did = s"did:prism:$didSuffix"
-    DID(did)
+    DID.buildPrismDID(didSuffix)
   }
 
   def createDIDAtalaOperation(ecKeyPair: ECKeyPair): AtalaOperation = {

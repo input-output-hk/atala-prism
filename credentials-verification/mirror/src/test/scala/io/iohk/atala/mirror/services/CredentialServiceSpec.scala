@@ -141,9 +141,9 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       // given
       val uuid = UUID.randomUUID
       val token = connection1.token.token
-      val participantDID = "did1"
+      val participantDID = DID.buildPrismDID("did1")
       val connectionInfos =
-        Seq(ConnectionInfo(token = token, connectionId = uuid.toString, participantDID = participantDID))
+        Seq(ConnectionInfo(token = token, connectionId = uuid.toString, participantDID = participantDID.value))
 
       val connectorClientStub = new ConnectorClientServiceStub(connectionInfos = connectionInfos)
       val credentialService = new CredentialService(databaseTask, connectorClientStub, defaultNodeClientStub)
@@ -165,7 +165,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
         connection1.copy(
           id = Some(ConnectionId(uuid)),
           state = ConnectionState.Connected,
-          holderDID = Some(DID(participantDID))
+          holderDID = Some(participantDID)
         )
       )
     }
@@ -189,7 +189,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
     "parse signed credential" in new ConnectionServiceFixtures {
       val keyPair = EC.generateKeyPair()
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(
-        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(DID("did:prism:id"), "", Json.obj()),
+        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(DID.buildPrismDID("id"), "", Json.obj()),
         keyPair.privateKey
       )(EC)
 
@@ -197,7 +197,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
         signedCredential.canonicalForm
       )
 
-      credentialService.getIssuersDid(credential) mustBe Some(DID("did:prism:id"))
+      credentialService.getIssuersDid(credential) mustBe Some(DID.buildPrismDID("id"))
     }
 
     "parse unsigned credential" in new ConnectionServiceFixtures {
@@ -208,7 +208,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
         ).credentialDocument
       )
 
-      credentialService.getIssuersDid(credential) mustBe Some(DID("did:prism:id"))
+      credentialService.getIssuersDid(credential) mustBe Some(DID.buildPrismDID("id"))
     }
   }
 

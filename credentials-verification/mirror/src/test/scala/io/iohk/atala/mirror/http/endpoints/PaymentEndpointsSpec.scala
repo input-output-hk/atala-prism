@@ -17,7 +17,7 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
   "GET payId" should {
     "return BadRequest when PayId-Version header is not supplied" in new PaymentEndpointsFixtures {
       val response = service
-        .run(Request(method = Method.GET, uri = uri"/somePayId", headers = Headers.of(acceptHeader)))
+        .run(Request(method = Method.GET, uri = uri"/did:prism:somepayid", headers = Headers.of(acceptHeader)))
         .runSyncUnsafe()
 
       response.status mustBe Status.BadRequest
@@ -25,14 +25,15 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
 
     "return BadRequest when Accept header is not supplied or incorrect" in new PaymentEndpointsFixtures {
       val response = service
-        .run(Request(method = Method.GET, uri = uri"/somePayId", headers = Headers.of(payIdHeader)))
+        .run(Request(method = Method.GET, uri = uri"/did:prism:somepayid", headers = Headers.of(payIdHeader)))
         .runSyncUnsafe()
 
       response.status mustBe Status.BadRequest
     }
 
     "return BadRequest when given payId doesn't exist" in new PaymentEndpointsFixtures {
-      val response = service.run(Request(method = Method.GET, uri = uri"/somePayId", headers = headers)).runSyncUnsafe()
+      val response =
+        service.run(Request(method = Method.GET, uri = uri"/did:prism:somepayid", headers = headers)).runSyncUnsafe()
 
       response.status mustBe Status.NotFound
     }

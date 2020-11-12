@@ -19,7 +19,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
   "getParticipant by did" should {
     "get a participant" in {
       val id = ParticipantId.random()
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(did), None, None, None)
       ParticipantsDAO
         .insert(info)
@@ -32,7 +32,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
     }
 
     "return no participant on unknown did" in {
-      val did = DID("did:prism:test")
+      val did = DID.buildPrismDID("test")
       ParticipantsDAO
         .insert(
           ParticipantInfo(
@@ -40,7 +40,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
             ParticipantType.Issuer,
             None,
             "issuer",
-            Some(DID(did.value + "x")),
+            Some(DID.buildPrismDID("test-x")),
             None,
             None,
             None

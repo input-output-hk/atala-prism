@@ -279,7 +279,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
       val did = generateDid(holderKey.publicKey)
       val issuerId =
-        createIssuer("Issuer", publicKey = Some(issuerAuthKey.publicKey), did = Some(DID("did:prism:issuer")))
+        createIssuer("Issuer", publicKey = Some(issuerAuthKey.publicKey), did = Some(DID.buildPrismDID("issuer")))
       val holderId = createHolder("Holder", publicKey = Some(holderKey.publicKey), did = Some(did))
       val connectionId = createConnection(issuerId, holderId)
 

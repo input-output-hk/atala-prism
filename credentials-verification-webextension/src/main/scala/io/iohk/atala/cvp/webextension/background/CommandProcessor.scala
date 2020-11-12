@@ -10,6 +10,7 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserNotificationService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
+import io.iohk.atala.cvp.webextension.circe._
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -20,7 +20,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
   "registerDID" should {
     "work" in {
       usingApiAs.unlogged { blockingStub =>
-        val expectedDID = DID("did:prism:test")
+        val expectedDID = DID.buildPrismDID("test")
         val name = "iohk"
         val logo = "none".getBytes()
         val transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value

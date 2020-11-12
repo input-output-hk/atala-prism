@@ -42,7 +42,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         connectorStub <- Task(createConnector("localhost", 50051))
 
         // Mirror: create new DID
-        did <- Task.fromFuture(connectorStub.registerDID(createDid)).map(response => DID(response.did))
+        did <- Task.fromFuture(connectorStub.registerDID(createDid)).map(response => DID.unsafeFromString(response.did))
         _ = logger.info(s"DID: $did")
 
         // create services

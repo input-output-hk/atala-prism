@@ -3,6 +3,7 @@ package io.iohk.atala.mirror.db
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.{ConnectorMessageId, UserCredential}
+import io.iohk.atala.prism.daos.BaseDAO.didMeta
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.mirror.models.Connection.ConnectionToken
