@@ -11,10 +11,12 @@ import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.core.content.res.getDimensionPixelSizeOrThrow
 import com.google.android.flexbox.*
 import com.google.android.material.chip.Chip
 import com.google.android.material.resources.MaterialResources
@@ -29,6 +31,8 @@ class WordsTextInputLayout : FlexboxLayout {
     private var chipsTextColor: Int? = null
     private var chipsCloseIconTint: ColorStateList? = null
     private var chipsCloseIcon: Drawable? = null
+    private var hint: String? = null
+    private var textSize: Float? = null
 
     private var maxWords: Int = -1
     private var maxLengthPerWord: Int = -1
@@ -91,6 +95,8 @@ class WordsTextInputLayout : FlexboxLayout {
                 try {
                     maxWords = getInteger(R.styleable.WordsTextInputLayout_maxWords, -1)
                     maxLengthPerWord = getInteger(R.styleable.WordsTextInputLayout_maxLengthPerWord, -1)
+                    hint = if (this.hasValue(R.styleable.WordsTextInputLayout_hint)) this.getString(R.styleable.WordsTextInputLayout_hint) else null
+                    textSize = if (this.hasValue(R.styleable.WordsTextInputLayout_textSize)) this.getDimensionPixelSizeOrThrow(R.styleable.WordsTextInputLayout_textSize).toFloat() else null
                     handleChipsAttributes(this)
                 } finally {
                     recycle()
@@ -115,6 +121,8 @@ class WordsTextInputLayout : FlexboxLayout {
     * */
     private fun buildEditText() {
         editText = EditText(context)
+        editText?.hint = hint
+        textSize?.let { editText?.setTextSize(TypedValue.COMPLEX_UNIT_PX, it) }
         editText?.setBackgroundColor(Color.TRANSPARENT)
         val layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
         layoutParams.marginStart = itemsMargin * 2

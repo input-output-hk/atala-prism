@@ -7,5 +7,7 @@
         <attr name="chipsTextColor" format="color" />
         <attr name="chipsCloseIconTint" format="color" />
         <attr name="chipsCloseIcon" format="reference" />
+        <attr name="hint" format="string" />
+        <attr name="textSize" format="dimension" />
     </declare-styleable>
 </resources>

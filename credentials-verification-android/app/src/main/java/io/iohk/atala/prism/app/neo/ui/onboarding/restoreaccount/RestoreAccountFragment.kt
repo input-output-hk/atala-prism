@@ -39,7 +39,7 @@ class RestoreAccountFragment : Fragment() {
                     binding.errorTextView.setText(R.string.recovery_must_have_twelve_words)
                 }
                 RestoreAccountViewModel.ErrorType.InvalidSecurityWord -> {
-                    binding.errorTextView.setText(R.string.incorrect_recovery_phrase)
+                    binding.errorTextView.setText(R.string.invalid_recovery_phrase)
                 }
                 RestoreAccountViewModel.ErrorType.UnknownError -> {
                     binding.errorTextView.setText(R.string.server_error_message)

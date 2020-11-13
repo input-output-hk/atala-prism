@@ -67,6 +67,8 @@
             <io.iohk.atala.prism.android.customui.wordstextinputlayout.WordsTextInputLayout
                 android:id="@+id/wordsInput"
                 words="@={viewModel.securityWords}"
+                app:hint="@string/recovery_hint"
+                app:textSize="14sp"
                 app:maxWords="12"
                 app:maxLengthPerWord="10"
                 style="@style/WordsTextInputLayoutStyle"
@@ -130,7 +132,7 @@
                 android:layout_width="0dp"
                 android:layout_height="64dp"
                 android:layout_marginBottom="32dp"
-                android:text="@string/accept"
+                android:text="@string/verify"
                 app:cornerRadius="32dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

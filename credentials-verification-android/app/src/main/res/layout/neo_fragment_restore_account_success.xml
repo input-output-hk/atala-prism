@@ -34,7 +34,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.276"
-            android:src="@drawable/ic_recover_account_success" />
+            android:src="@drawable/ic_done" />
 
         <TextView
             android:id="@+id/text_view_congrats"
