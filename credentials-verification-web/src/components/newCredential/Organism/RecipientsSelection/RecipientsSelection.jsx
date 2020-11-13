@@ -7,10 +7,6 @@ import './_style.scss';
 import GroupsTable from '../../../groups/Organisms/Tables/GroupsTable';
 import ConnectionsTable from '../../../connections/Organisms/table/ConnectionsTable';
 
-function onChange(e) {
-  // TODO: handle ignore contacts selection checkbox
-}
-
 const { TabPane } = Tabs;
 
 const GROUPS_KEY = 'groups';
@@ -26,7 +22,9 @@ const RecipientsSelection = ({
   selectedSubjects,
   setSelectedSubjects,
   setSubjectsFilter,
-  getSubjects
+  getSubjects,
+  toggleShouldSelectRecipients,
+  shouldSelectRecipients
 }) => {
   const { t } = useTranslation();
 
@@ -49,7 +47,7 @@ const RecipientsSelection = ({
               onChange={({ target: { value } }) => setGroupsFilter(value)}
             />
             <div className="selectGroupCheckbox">
-              <Checkbox onChange={onChange}>
+              <Checkbox onChange={toggleShouldSelectRecipients} checked={!shouldSelectRecipients}>
                 {t('newCredential.targetsSelection.checkbox')}
               </Checkbox>
             </div>
@@ -77,7 +75,7 @@ const RecipientsSelection = ({
               onChange={({ target: { value } }) => setSubjectsFilter(value)}
             />
             <div className="selectGroupCheckbox">
-              <Checkbox onChange={onChange}>
+              <Checkbox onChange={toggleShouldSelectRecipients} checked={!shouldSelectRecipients}>
                 {t('newCredential.targetsSelection.checkbox')}
               </Checkbox>
             </div>
@@ -85,10 +83,10 @@ const RecipientsSelection = ({
           {activeKey === SUBJECTS_KEY && (
             <ConnectionsTable
               isIssuer={isIssuer}
-              subjects={subjects}
-              selectedSubjects={selectedSubjects}
-              setSelectedSubjects={setSelectedSubjects}
-              handleHoldersRequest={getSubjects}
+              contacts={subjects}
+              selectedContacts={selectedSubjects}
+              setSelectedContacts={setSelectedSubjects}
+              handleContactsRequest={getSubjects}
             />
           )}
         </TabPane>
@@ -109,7 +107,9 @@ RecipientsSelection.propTypes = {
   selectedSubjects: PropTypes.arrayOf(PropTypes.string).isRequired,
   setSelectedSubjects: PropTypes.func.isRequired,
   setSubjectsFilter: PropTypes.func.isRequired,
-  getSubjects: PropTypes.func.isRequired
+  getSubjects: PropTypes.func.isRequired,
+  toggleShouldSelectRecipients: PropTypes.func.isRequired,
+  shouldSelectRecipients: PropTypes.bool.isRequired
 };
 
 export default RecipientsSelection;

@@ -11,62 +11,68 @@ import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScroll
 import './_style.scss';
 import PopOver from '../../../common/Organisms/Detail/PopOver';
 
-const getColumns = ({ inviteContact, viewContactDetail }) => [
-  {
-    key: 'avatar',
-    width: 45,
-    render: ({ avatar }) => (
-      <img
-        style={{ width: '40px', height: '40px' }}
-        src={avatar || holderDefaultAvatar}
-        alt="Avatar"
-      />
-    )
-  },
-  {
-    key: 'contactName',
-    render: ({ contactName }) => (
-      <CellRenderer title="contactName" value={contactName} componentName="contacts" />
-    )
-  },
-  {
-    key: 'externalid',
-    render: ({ externalid }) => (
-      <CellRenderer title="externalid" value={externalid} componentName="contacts" />
-    )
-  },
-  {
-    key: 'creationDate',
-    render: ({ creationDate }) => (
-      <CellRenderer
-        title="creationDate"
-        value={dayMonthYearBackendFormatter(creationDate)}
-        componentName="contacts"
-      />
-    )
-  },
-  {
-    key: 'connectionstatus',
-    render: ({ status }) => (
-      <CellRenderer title="contactStatus" componentName="contacts">
-        <StatusBadge status={status} />
-      </CellRenderer>
-    )
-  },
-  {
-    key: 'actions',
-    render: contact => {
-      const actionButtons = (
-        <ActionButtons
-          contact={contact}
-          inviteContact={inviteContact}
-          viewContactDetail={viewContactDetail}
+const getColumns = ({ inviteContact, viewContactDetail }) => {
+  const generalColumns = [
+    {
+      key: 'avatar',
+      width: 45,
+      render: ({ avatar }) => (
+        <img
+          style={{ width: '40px', height: '40px' }}
+          src={avatar || holderDefaultAvatar}
+          alt="Avatar"
         />
-      );
-      return <PopOver content={actionButtons} />;
+      )
+    },
+    {
+      key: 'contactName',
+      render: ({ contactName }) => (
+        <CellRenderer title="contactName" value={contactName} componentName="contacts" />
+      )
+    },
+    {
+      key: 'externalid',
+      render: ({ externalid }) => (
+        <CellRenderer title="externalid" value={externalid} componentName="contacts" />
+      )
+    },
+    {
+      key: 'creationDate',
+      render: ({ creationDate }) => (
+        <CellRenderer
+          title="creationDate"
+          value={dayMonthYearBackendFormatter(creationDate)}
+          componentName="contacts"
+        />
+      )
     }
-  }
-];
+  ];
+  const extraColumns = [
+    {
+      key: 'connectionstatus',
+      render: ({ status }) => (
+        <CellRenderer title="contactStatus" componentName="contacts">
+          <StatusBadge status={status} />
+        </CellRenderer>
+      )
+    },
+    {
+      key: 'actions',
+      render: contact => {
+        const actionButtons = (
+          <ActionButtons
+            contact={contact}
+            inviteContact={inviteContact}
+            viewContactDetail={viewContactDetail}
+          />
+        );
+        return <PopOver content={actionButtons} />;
+      }
+    }
+  ];
+
+  return viewContactDetail ? generalColumns.concat(extraColumns) : generalColumns;
+};
 
 const ConnectionsTable = ({
   contacts,
@@ -107,15 +113,17 @@ const ConnectionsTable = ({
 ConnectionsTable.defaultProps = {
   contacts: [],
   setSelectedContacts: null,
-  selectedContacts: []
+  selectedContacts: [],
+  inviteContact: null,
+  viewContactDetail: null
 };
 
 ConnectionsTable.propTypes = {
   contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
   setSelectedContacts: PropTypes.func,
   selectedContacts: PropTypes.arrayOf(PropTypes.string),
-  inviteContact: PropTypes.func.isRequired,
-  viewContactDetail: PropTypes.func.isRequired,
+  inviteContact: PropTypes.func,
+  viewContactDetail: PropTypes.func,
   handleContactsRequest: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired
 };

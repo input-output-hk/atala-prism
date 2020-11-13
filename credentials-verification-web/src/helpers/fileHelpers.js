@@ -52,9 +52,10 @@ export const imageToFileReader = image => fileToFileReader(image, IMAGE);
 export const excelToFileReader = excel => fileToFileReader(excel, EXCEL);
 
 export const downloadTemplateCsv = (inputData, headersMapping) => {
-  const csvData = inputData
-    ? generateCsvFromInputData(inputData, headersMapping)
-    : generateDefaultCsv(headersMapping.map(h => h.translation));
+  const csvData =
+    inputData && inputData.length
+      ? generateCsvFromInputData(inputData, headersMapping)
+      : generateDefaultCsv(headersMapping.map(h => h.translation));
   const filename = inputData ? getFilename(inputData) : 'template.csv';
   downloadCsvFile(filename, csvData);
 };

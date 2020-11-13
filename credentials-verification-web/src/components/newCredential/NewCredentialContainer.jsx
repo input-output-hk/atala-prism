@@ -47,6 +47,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [subjectsFilter, setSubjectsFilter] = useState('');
   const [filteredSubjects, setFilteredSubjects] = useState([]);
 
+  const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
+
   const [importedData, setImportedData] = useState([]);
 
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
@@ -105,6 +107,13 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   useEffect(() => {
     filterSubjects(subjectsFilter);
   }, [subjectsFilter, subjects]);
+
+  useEffect(() => {
+    if (!shouldSelectRecipients) {
+      setSelectedGroups([]);
+      setSelectedSubjects([]);
+    }
+  }, [shouldSelectRecipients]);
 
   const handleImportedData = (dataObjects, setResults) => {
     setImportedData(dataObjects);
@@ -198,6 +207,10 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
             selectedSubjects={selectedSubjects}
             setSubjectsFilter={setSubjectsFilter}
             getSubjects={getSubjects}
+            toggleShouldSelectRecipients={({ target: { checked } }) =>
+              setShouldSelectRecipients(!checked)
+            }
+            shouldSelectRecipients={shouldSelectRecipients}
           />
         );
       case IMPORT_CREDENTIAL_DATA_STEP: {
@@ -226,7 +239,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     }
   };
 
-  const hasSelectedRecipients = selectedGroups.length || selectedSubjects.length;
+  const hasSelectedRecipients =
+    !shouldSelectRecipients || selectedGroups.length || selectedSubjects.length;
 
   return (
     <NewCredential
