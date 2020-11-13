@@ -30,6 +30,12 @@ Then, running `sbt chromePackage` on this project is enough.
     **WARNING**: Beware that killing the session may leave `envoy` running and, next time you try to run it, it will fail to run again, but it's a harmless problem because it would be running anyway.
 - Be sure to integrate scalafmt on your IntelliJ to format the source code on save (see https://scalameta.org/scalafmt/docs/installation.html#intellij).
 
+### Run tests
+You are required to have Chrome installed in order to run the tests, then, run:
+- `CHROME_VERSION="$(google-chrome --version)" sbt test`
+
+Unfortunately, we haven't found a workaround to run the tests from IntelliJ.
+
 ### Running
 1. Install the script using **Load unpacked** button in `chrome://extensions/` tab (`target/chrome/unpacked-fast` folder).
 1. Open https://iohk.io/, script will be injected into that tab and it will request for signature
