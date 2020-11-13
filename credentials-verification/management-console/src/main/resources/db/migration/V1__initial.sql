@@ -62,7 +62,7 @@ CREATE TABLE contacts_per_group (
     added_at TIMESTAMPTZ NOT NULL,
     CONSTRAINT contacts_per_group_pk PRIMARY KEY (group_id, contact_id),
     CONSTRAINT contacts_per_group_group_id_fk FOREIGN KEY (group_id) REFERENCES institution_groups (group_id),
-    CONSTRAINT contacts_per_group_subject_id_fk FOREIGN KEY (contact_id) REFERENCES contacts (contact_id)
+    CONSTRAINT contacts_per_group_contact_id_fk FOREIGN KEY (contact_id) REFERENCES contacts (contact_id)
 );
 
 CREATE INDEX contacts_per_group_group_id_index ON contacts_per_group USING BTREE (group_id);
@@ -89,3 +89,38 @@ $func$  LANGUAGE plpgsql;
 CREATE TRIGGER contacts_per_group_tgr
     BEFORE INSERT ON contacts_per_group
     FOR EACH ROW EXECUTE PROCEDURE contacts_per_group_fun_check();
+
+CREATE TABLE draft_credentials(
+    credential_id UUID NOT NULL,
+    issuer_id UUID NOT NULL,
+    contact_id UUID NOT NULL,
+    created_on TIMESTAMPTZ NOT NULL,
+    credential_data JSONB NOT NULL,
+    CONSTRAINT draft_credentials_id_pk PRIMARY KEY (credential_id),
+    CONSTRAINT draft_credentials_issuer_id_fk FOREIGN KEY (issuer_id) REFERENCES participants (participant_id),
+    CONSTRAINT draft_credentials_contact_id_fk FOREIGN KEY (contact_id) REFERENCES contacts (contact_id)
+);
+
+CREATE INDEX draft_credentials_issuer_id_index ON draft_credentials USING BTREE (issuer_id);
+CREATE INDEX draft_credentials_created_on_index ON draft_credentials USING BTREE (created_on);
+CREATE INDEX draft_credentials_contact_id_index ON draft_credentials USING BTREE (contact_id);
+
+CREATE TABLE published_credentials(
+    -- the id that the cmanager assigns to the credential
+    credential_id UUID NOT NULL,
+    -- the id that the node assigns to the credential
+    node_credential_id TEXT NOT NULL,
+    -- the hex encoded hash of the AtalaOperation that is used to issue the credential
+    operation_hash TEXT NOT NULL,
+    -- the encoded signed credential (e.g. a compact JWS string)
+    encoded_signed_credential TEXT NOT NULL,
+    -- the timestamp when the credential was stored by management console
+    stored_at TIMESTAMPTZ NOT NULL,
+    -- the last time the credential was shared to the related contact which belongs
+    -- to the published_credentials because a non-published credential shouldn't be shared
+    shared_at TIMESTAMPTZ NULL DEFAULT NULL,
+    transaction_id TRANSACTION_ID NOT NULL,
+    ledger VARCHAR(32) NOT NULL,
+    CONSTRAINT published_credentials_pk PRIMARY KEY (credential_id),
+    CONSTRAINT published_credentials_credential_id_fk FOREIGN KEY (credential_id) references draft_credentials (credential_id)
+);

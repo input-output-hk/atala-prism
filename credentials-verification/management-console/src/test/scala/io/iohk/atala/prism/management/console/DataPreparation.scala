@@ -9,7 +9,12 @@ import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, InstitutionGroupsDAO, ParticipantsDAO}
+import io.iohk.atala.prism.management.console.repositories.daos.{
+  ContactsDAO,
+  CredentialsDAO,
+  InstitutionGroupsDAO,
+  ParticipantsDAO
+}
 
 object DataPreparation {
   def createParticipant(name: String)(implicit database: Transactor[IO]): ParticipantId = {
@@ -80,5 +85,21 @@ object DataPreparation {
 
         query.transact(database).unsafeRunSync()
     }
+  }
+
+  def createGenericCredential(issuedBy: ParticipantId, subjectId: Contact.Id, tag: String = "")(implicit
+      database: Transactor[IO]
+  ): GenericCredential = {
+    val request = CreateGenericCredential(
+      issuedBy = issuedBy,
+      subjectId = subjectId,
+      credentialData = Json.obj(
+        "title" -> s"Major IN Applied Blockchain $tag".trim.asJson,
+        "enrollmentDate" -> LocalDate.now().asJson,
+        "graduationDate" -> LocalDate.now().plusYears(5).asJson
+      )
+    )
+
+    CredentialsDAO.create(request).transact(database).unsafeRunSync()
   }
 }
