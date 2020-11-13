@@ -86,7 +86,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         .map(_.signedMessage)
         .map { sm =>
           JsSignedMessage(
-            did = sm.did,
+            did = sm.did.value,
             didKeyId = sm.didKeyId,
             encodedSignature = sm.base64UrlSignature,
             encodedNonce = sm.base64UrlNonce
