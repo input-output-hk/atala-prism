@@ -11,11 +11,17 @@ import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
 import { drawerWidth } from '../../helpers/constants';
 import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 import { contactShape } from '../../helpers/propShapes';
-
-import './_style.scss';
 import { withRedirector } from '../providers/withRedirector';
 
-const Connections = ({ tableProps, inviteContact, handleContactsRequest, refreshContacts }) => {
+import './_style.scss';
+
+const Connections = ({
+  tableProps,
+  inviteContact,
+  handleContactsRequest,
+  refreshContacts,
+  redirector: { redirectToContactDetails }
+}) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
@@ -36,28 +42,6 @@ const Connections = ({ tableProps, inviteContact, handleContactsRequest, refresh
   const emptyProps = {
     photoSrc: noContacts,
     model: t('contacts.title')
-  };
-
-  const getContactCredentials = connectionId => {
-    const { getCredentials } = tableProps;
-    return getCredentials(connectionId);
-  };
-
-  const viewContactDetail = contact => {
-    const { creationDate, avatar, createdat, contactName, connectionid } = contact;
-
-    getContactCredentials(connectionid)
-      .then(transactions => {
-        const formattedContact = {
-          user: { icon: avatar, name: contactName, date: createdat },
-          transactions,
-          date: creationDate
-        };
-
-        setCurrentContact(formattedContact);
-        setShowDrawer(true);
-      })
-      .catch(() => message.error(t('errors.errorGetting', { model: 'Credentials' })));
   };
 
   const onQRClosed = () => {
@@ -85,7 +69,7 @@ const Connections = ({ tableProps, inviteContact, handleContactsRequest, refresh
       {tableProps.contacts.length ? (
         <ConnectionsTable
           inviteContact={inviteContactAndShowQR}
-          viewContactDetail={viewContactDetail}
+          viewContactDetail={redirectToContactDetails}
           handleContactsRequest={handleContactsRequest}
           {...tableProps}
         />

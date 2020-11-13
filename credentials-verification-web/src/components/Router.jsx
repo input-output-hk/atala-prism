@@ -15,7 +15,7 @@ import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
-import Contact from './contactDetail/contact';
+import Contact from './contactDetail/ContactContainer';
 import GroupCreationContainer from './groupCreation/GroupCreationContainer';
 import Instructions from './instructions/instructions';
 import ImportContactsContainer from './importContacts/ImportContactsContainer';
@@ -27,10 +27,10 @@ const noRole = [];
 
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 
-const contactDetail = {
+const contact = {
   exact: true,
-  path: '/contact',
-  key: '/contact',
+  path: '/contacts/:id',
+  key: '/contacts/:id',
   component: withLoggedValidation(withSideBar(Contact), issuer)
 };
 const contacts = {
@@ -121,6 +121,7 @@ const routes = [
   adminRoute,
   errorRoute,
   contacts,
+  contact,
   groupCreationRoute,
   groups,
   credential,

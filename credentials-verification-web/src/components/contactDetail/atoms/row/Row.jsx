@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import './_style.scss';
 import IdIcon from '../../../../images/IdIcon.svg';
@@ -29,6 +30,16 @@ const RowInfo = ({ theme, groupName, contacts }) => {
       </div>
     </div>
   );
+};
+
+RowInfo.defaultProps = {
+  theme: 'row-info'
+};
+
+RowInfo.propTypes = {
+  theme: PropTypes.string,
+  groupName: PropTypes.string.isRequired,
+  contacts: PropTypes.number.isRequired
 };
 
 export default RowInfo;

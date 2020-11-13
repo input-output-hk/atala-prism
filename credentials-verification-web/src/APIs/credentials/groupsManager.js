@@ -2,8 +2,9 @@ import { GroupsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_p
 
 const { GetGroupsRequest, CreateGroupRequest } = require('../../protos/cmanager_api_pb');
 
-async function getGroups() {
+async function getGroups(contactId) {
   const groupRequest = new GetGroupsRequest();
+  if (contactId) groupRequest.setContactid(contactId);
 
   const metadata = await this.auth.getMetadata(groupRequest);
   const response = await this.client.getGroups(groupRequest, metadata);

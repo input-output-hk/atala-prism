@@ -16,6 +16,8 @@ export const withRedirector = Component => props => {
 
   const redirectToContacts = () => redirectTo('contacts');
 
+  const redirectToContactDetails = id => redirectTo(`contacts/${id}`);
+
   const redirectToImportContacts = () => redirectTo('contacts/import');
 
   const redirectToBulkImport = () => redirectTo('contacts/import/bulk');
@@ -36,6 +38,7 @@ export const withRedirector = Component => props => {
     redirectToRegistration,
     redirectToCredentials,
     redirectToContacts,
+    redirectToContactDetails,
     redirectToImportContacts,
     redirectToBulkImport,
     redirectToManualImport,

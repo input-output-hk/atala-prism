@@ -43,7 +43,7 @@ const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
       <CustomButton
         buttonProps={{
           className: 'theme-link',
-          onClick: () => viewContactDetail(contact)
+          onClick: () => viewContactDetail(contactid)
         }}
         buttonText={t('contacts.table.columns.view')}
       />
