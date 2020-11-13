@@ -8,6 +8,8 @@ import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
+import typings.materialUiCore.anon.PartialClassNameMapCircul
+import typings.materialUiCore.materialUiCoreStrings.indeterminate
 import typings.materialUiCore.{components => mui}
 import typings.materialUiIcons.{components => muiIcons}
 
@@ -22,7 +24,8 @@ import scala.util.{Failure, Success}
       password2: String,
       message: String,
       tandc: Boolean = false,
-      privacyPolicy: Boolean = false
+      privacyPolicy: Boolean = false,
+      isLoading: Boolean = false
   )
 
   private def setPassword(newValue: String): Unit = {
@@ -50,7 +53,7 @@ import scala.util.{Failure, Success}
   }
 
   def enableButton = {
-    if (state.tandc && state.privacyPolicy) {
+    if (state.tandc && state.privacyPolicy && !state.isLoading) {
       className := "btn_verify"
     } else {
       className := "btn_verify disabled"
@@ -151,19 +154,28 @@ import scala.util.{Failure, Success}
           onClick := { () =>
             recoverWallet()
           }
-        )("Recover wallet")
+        )("Recover wallet"),
+        if (state.isLoading) {
+          mui.CircularProgress
+            .variant(indeterminate)
+            .size(26)
+            .classes(PartialClassNameMapCircul().setRoot("progress_bar"))
+        } else {
+          div()
+        }
       )
     )
   }
 
   private def recoverWallet(): Unit = {
     if (isValidInput(state)) {
+      setState(_.copy(isLoading = true))
       props.backgroundAPI
         .recoverWallet(state.password, Mnemonic(state.seed))
         .onComplete {
           case Success(_) => props.switchToView(Recover)
           case Failure(ex) =>
-            setState(state.copy(message = "Failed recovering wallet"))
+            setState(_.copy(isLoading = false, message = "Failed recovering wallet"))
             println(s"Failed recovering wallet : ${ex.getMessage}")
         }
     }
@@ -171,16 +183,16 @@ import scala.util.{Failure, Success}
 
   private def isValidInput(state: State): Boolean = {
     if (state.password.isEmpty) {
-      setState(state.copy(message = "Password cannot be empty"))
+      setState(_.copy(message = "Password cannot be empty"))
       false
     } else if (state.password != state.password2) {
-      setState(state.copy(message = "Password verification does not match"))
+      setState(_.copy(message = "Password verification does not match"))
       false
     } else if (!Mnemonic.isValid(state.seed)) {
-      setState(state.copy(message = "Invalid Seed Phrase"))
+      setState(_.copy(message = "Invalid Seed Phrase"))
       false
     } else {
-      setState(state.copy(message = ""))
+      setState(_.copy(message = ""))
       true
     }
   }
