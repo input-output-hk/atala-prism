@@ -99,7 +99,7 @@ class CredentialsViewController: ListingBaseViewController {
                 historyActionIcon = "ico_history"
                 historyAction = actionHistory
                 navTitle = detailCredential.credentialName
-                viewDetail.config(credential: detailCredential)
+                viewDetail.config(credential: detailCredential, delegate: presenterImpl)
             } else if isHistory {
                 navTitle = String(format: "credentials_history_title".localize(), detailCredential.credentialName)
             } else {
@@ -212,5 +212,13 @@ class CredentialsViewController: ListingBaseViewController {
         }
         customPresentViewController(confirmation.presentr, viewController: confirmation, animated: true)
 
+    }
+    
+    // MARK: Verify credential
+
+    func showCredentialVerify() {
+        let verify = CredentialVerificationDetailViewController.makeThisView()
+        verify.config(credential: presenterImpl.detailCredential)
+        customPresentViewController(verify.presentr, viewController: verify, animated: true)
     }
 }

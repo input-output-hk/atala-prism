@@ -7,7 +7,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                             DegreeViewCellPresenterDelegate, ShareDialogPresenterDelegate,
                             CredentialHistoryHeaderViewCellPresenterDelegate,
                             CredentialSharedViewCellPresenterDelegate, CredentialSectionViewCellPresenterDelegate,
-                            UISearchBarDelegate {
+                            UISearchBarDelegate, CredentialDetailViewDelegate {
 
     var viewImpl: CredentialsViewController? {
         return view as? CredentialsViewController
@@ -473,4 +473,11 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             let data = historyRows?[index].value as? (String, Bool) else { return }
         cell.config(title: data.0, hideDivider: data.1)
     }
+
+    // MARK: Verify credential
+
+    func showCredentialVerify() {
+        viewImpl?.showCredentialVerify()
+    }
+
 }

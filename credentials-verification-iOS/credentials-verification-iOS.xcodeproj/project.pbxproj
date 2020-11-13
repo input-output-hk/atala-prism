@@ -62,6 +62,8 @@
 		B37FDA4A253897F00024766B /* common_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B37FDA49253897F00024766B /* common_models.proto */; };
 		B37FDB1625389CD40024766B /* connector_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37FDB1425389CD40024766B /* connector_api.pb.swift */; };
 		B37FDB1725389CD40024766B /* connector_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37FDB1525389CD40024766B /* connector_api.grpc.swift */; };
+		B37FDBC7253A23A90024766B /* CredentialVerificationDetail.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B37FDBC6253A23A90024766B /* CredentialVerificationDetail.storyboard */; };
+		B37FDBCC253A396F0024766B /* CredentialVerificationDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37FDBCB253A396F0024766B /* CredentialVerificationDetailViewController.swift */; };
 		B38D944A24AE53440053CE36 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D944924AE53430053CE36 /* Reachability.swift */; };
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
 		B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */; };
@@ -330,6 +332,8 @@
 		B37FDA49253897F00024766B /* common_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = common_models.proto; sourceTree = "<group>"; };
 		B37FDB1425389CD40024766B /* connector_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.pb.swift; sourceTree = "<group>"; };
 		B37FDB1525389CD40024766B /* connector_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.grpc.swift; sourceTree = "<group>"; };
+		B37FDBC6253A23A90024766B /* CredentialVerificationDetail.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CredentialVerificationDetail.storyboard; sourceTree = "<group>"; };
+		B37FDBCB253A396F0024766B /* CredentialVerificationDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialVerificationDetailViewController.swift; sourceTree = "<group>"; };
 		B38D944924AE53430053CE36 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
 		B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RestoreAccount.storyboard; sourceTree = "<group>"; };
@@ -1250,6 +1254,7 @@
 				EE7D4D002367621B007C31A8 /* CredentialsViewController.swift */,
 				B36F2FC324DDAFBE0012FDCC /* DeleteCredentialViewController.swift */,
 				B32B6353250BAC2900162A49 /* CredentialDetailView.swift */,
+				B37FDBCB253A396F0024766B /* CredentialVerificationDetailViewController.swift */,
 			);
 			path = credentials;
 			sourceTree = "<group>";
@@ -1261,6 +1266,7 @@
 				EE7D4D092367631B007C31A8 /* Credentials.storyboard */,
 				B36F2FC124DDAC620012FDCC /* DeleteCredential.storyboard */,
 				B32B6355250BB02B00162A49 /* CredentialDetailView.xib */,
+				B37FDBC6253A23A90024766B /* CredentialVerificationDetail.storyboard */,
 			);
 			path = credentials;
 			sourceTree = "<group>";
@@ -1612,6 +1618,7 @@
 				EE7D4D1523693A13007C31A8 /* Connections.storyboard in Resources */,
 				B309A99E250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib in Resources */,
 				B352433F24FFD59F0053A804 /* DateFormat.storyboard in Resources */,
+				B37FDBC7253A23A90024766B /* CredentialVerificationDetail.storyboard in Resources */,
 				B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */,
 				EE7D4C792366B9C4007C31A8 /* Localizable.strings in Resources */,
 				B309A9A8250FF2F200C62B50 /* CredentialSectionViewCell.xib in Resources */,
@@ -1900,6 +1907,7 @@
 				B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */,
 				EE7D4C432366B9C4007C31A8 /* Logger.swift in Sources */,
 				B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */,
+				B37FDBCC253A396F0024766B /* CredentialVerificationDetailViewController.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
 				B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */,
 				B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */,
@@ -2192,7 +2200,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 92;
+				CURRENT_PROJECT_VERSION = 93;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2218,7 +2226,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 92;
+				CURRENT_PROJECT_VERSION = 93;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

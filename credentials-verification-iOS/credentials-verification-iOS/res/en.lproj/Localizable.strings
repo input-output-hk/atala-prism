@@ -105,6 +105,7 @@
 "credentials_detail_share_search_contacts" = "Search contacts";
 "credentials_detail_share_contact_name" = "Contact Name";
 "credentials_detail_share_success" = "Credential(s) successfully shared";
+"credentials_detail_view_detail"= "View Detail";
 "credentials_empty_title" = "Connect to an organization to receive your credentials";
 "credentials_empty_subtitle" = "Receive, store and share your digital credentials";
 "credentials_detail_national_id_card" = "Government ID";
@@ -121,6 +122,14 @@
 "credentials_history_date" = "Shared: %1$@";
 "credentials_history_shared" = "SHARED WITH";
 "credentials_history_requested" = "REQUESTED BY";
+"credentials_verify_verified"= "Verified";
+"credentials_verify_original_file"= "Original File";
+"credentials_verify_blockchain_notarization"= "Blockchain Notarization";
+"credentials_verify_file_hash"= "File Hash";
+"credentials_verify_tx_hash"= "Tx Hash";
+"credentials_verify_date_time"= "Date & Time %@";
+"credentials_verify_close"= "Close";
+"credentials_verify_download"= "Download";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";

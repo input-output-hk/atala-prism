@@ -72,7 +72,7 @@ class NotificationsViewController: ListingBaseViewController {
         // Change the nav bar
         if isDetail, let detailCredential = presenterImpl.detailCredential {
             let navTitle = detailCredential.credentialName
-            viewDetail.config(credential: detailCredential)
+            viewDetail.config(credential: detailCredential, delegate: nil)
             navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
                                        hasBackButton: credentialsMode != .degrees, rightIconName: nil,
                                        rightIconAction: nil)

@@ -128,7 +128,7 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
     override func getScrollableMainView() -> UIScrollView? {
         return table
     }
-    
+
     // MARK: Profile picture 
 
     func chooseProfilePicture() {

@@ -9,26 +9,35 @@
 import UIKit
 import WebKit
 
+protocol CredentialDetailViewDelegate: AnyObject {
+    func showCredentialVerify()
+}
+
 class CredentialDetailView: BaseNibLoadingView, WKNavigationDelegate {
 
     @IBOutlet weak var credentialWv: WKWebView!
     @IBOutlet weak var wvHeightCtrt: NSLayoutConstraint!
     @IBOutlet weak var dateLbl: UILabel!
     @IBOutlet weak var dateBg: UIView!
+    @IBOutlet weak var verifyDetailBttn: UIButton!
+
+    weak var delegate: CredentialDetailViewDelegate?
 
     override func commonInit() {
         super.commonInit()
 
         dateBg.addRoundCorners(radius: 4)
+        verifyDetailBttn.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
         credentialWv.navigationDelegate = self
     }
 
-    func config(credential: Credential) {
+    func config(credential: Credential, delegate: CredentialDetailViewDelegate?) {
 
+        self.delegate = delegate
         credentialWv.loadHTMLString(credential.htmlView, baseURL: nil)
         dateLbl.text = String.init(format: "credentials_detail_date".localize(),
                                    credential.dateReceived.dateTimeString())
-
+        verifyDetailBttn.isHidden = delegate == nil
         self.refreshView()
     }
 
@@ -54,4 +63,7 @@ class CredentialDetailView: BaseNibLoadingView, WKNavigationDelegate {
 
     }
 
+    @IBAction func verifyDetailTapped(_ sender: Any) {
+        delegate?.showCredentialVerify()
+    }
 }
