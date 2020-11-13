@@ -121,6 +121,7 @@ const routes = [
   adminRoute,
   errorRoute,
   contacts,
+  importContacts,
   contact,
   groupCreationRoute,
   groups,
@@ -132,7 +133,6 @@ const routes = [
   individualCreation,
   landingRoute,
   instructions,
-  importContacts,
   dashboardRoute
 ];
 
