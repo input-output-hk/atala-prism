@@ -553,7 +553,7 @@ p.padding  { padding:0; margin:0;}
 
 .button_success_mui {
     color: #6FCF97 !important;
-    text-transform: lowercase !important;
+    text-transform: none !important;
     background:rgba(157, 242, 191, 0.2) !important;
     border: 1px solid #6FCF97 !important;
     display: flex !important;
