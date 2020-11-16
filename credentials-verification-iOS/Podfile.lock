@@ -158,9 +158,9 @@ PODS:
     - nanopb (~> 0.3)
   - gRPC-Core/Interface (1.23.1)
   - GTMSessionFetcher/Core (1.4.0)
-  - MaterialComponents/AnimationTiming (110.1.0)
-  - MaterialComponents/Availability (110.1.0)
-  - MaterialComponents/Buttons (110.1.0):
+  - MaterialComponents/AnimationTiming (117.0.0)
+  - MaterialComponents/Availability (117.0.0)
+  - MaterialComponents/Buttons (117.0.0):
     - MaterialComponents/Elevation
     - MaterialComponents/Ink
     - MaterialComponents/private/Math
@@ -172,7 +172,7 @@ PODS:
     - MaterialComponents/Typography
     - MDFInternationalization
     - MDFTextAccessibility
-  - MaterialComponents/Chips (110.1.0):
+  - MaterialComponents/Chips (117.0.0):
     - MaterialComponents/Elevation
     - MaterialComponents/Ink
     - MaterialComponents/private/Math
@@ -184,35 +184,35 @@ PODS:
     - MaterialComponents/TextFields
     - MaterialComponents/Typography
     - MDFInternationalization
-  - MaterialComponents/Elevation (110.1.0):
+  - MaterialComponents/Elevation (117.0.0):
     - MaterialComponents/Availability
     - MaterialComponents/private/Color
     - MaterialComponents/private/Math
-  - MaterialComponents/Ink (110.1.0):
+  - MaterialComponents/Ink (117.0.0):
     - MaterialComponents/Availability
     - MaterialComponents/private/Color
     - MaterialComponents/private/Math
-  - MaterialComponents/Palettes (110.1.0)
-  - MaterialComponents/private/Application (110.1.0)
-  - MaterialComponents/private/Color (110.1.0):
+  - MaterialComponents/Palettes (117.0.0)
+  - MaterialComponents/private/Application (117.0.0)
+  - MaterialComponents/private/Color (117.0.0):
     - MaterialComponents/Availability
-  - MaterialComponents/private/Math (110.1.0)
-  - MaterialComponents/Ripple (110.1.0):
+  - MaterialComponents/private/Math (117.0.0)
+  - MaterialComponents/Ripple (117.0.0):
     - MaterialComponents/AnimationTiming
     - MaterialComponents/Availability
     - MaterialComponents/private/Color
     - MaterialComponents/private/Math
-  - MaterialComponents/ShadowElevations (110.1.0)
-  - MaterialComponents/ShadowLayer (110.1.0):
+  - MaterialComponents/ShadowElevations (117.0.0)
+  - MaterialComponents/ShadowLayer (117.0.0):
     - MaterialComponents/ShadowElevations
-  - MaterialComponents/ShapeLibrary (110.1.0):
+  - MaterialComponents/ShapeLibrary (117.0.0):
     - MaterialComponents/private/Math
     - MaterialComponents/Shapes
-  - MaterialComponents/Shapes (110.1.0):
+  - MaterialComponents/Shapes (117.0.0):
     - MaterialComponents/private/Color
     - MaterialComponents/private/Math
     - MaterialComponents/ShadowLayer
-  - MaterialComponents/TextFields (110.1.0):
+  - MaterialComponents/TextFields (117.0.0):
     - MaterialComponents/AnimationTiming
     - MaterialComponents/Buttons
     - MaterialComponents/Elevation
@@ -220,7 +220,7 @@ PODS:
     - MaterialComponents/private/Math
     - MaterialComponents/Typography
     - MDFInternationalization
-  - MaterialComponents/Typography (110.1.0):
+  - MaterialComponents/Typography (117.0.0):
     - MaterialComponents/private/Application
     - MaterialComponents/private/Math
     - MDFTextAccessibility
@@ -337,7 +337,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 39530bc0ad980530298e9c4af8549e991fd033b1
   gRPC-Core: 4b1148eb8596225178e5a154e40e35141a3cdf0f
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
-  MaterialComponents: 4cb6659322cfc38bb0a7e40fba1866daaefeb12c
+  MaterialComponents: 29320b6a89c4c90e41c7a41fc70e91127ac34161
   MBProgressHUD: 4890f671c94e8a0f3cf959aa731e9de2f036d71a
   MDFInternationalization: 010097556d6b09d2c4ea38e0820ea6d37be6a314
   MDFTextAccessibility: 85c09a1bd9c321f494348e632a25063bcda35a53
@@ -356,4 +356,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 71815573d5d4bad83aa476ee3c71c7efa645b6a0
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.10.0

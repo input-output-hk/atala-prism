@@ -1024,7 +1024,6 @@
 				EE7D4AFE2366B9C3007C31A8 /* db */,
 				EE7D4AC22366B9C3007C31A8 /* general */,
 				EE7D4ACB2366B9C3007C31A8 /* libs */,
-				EE7D4AC02366B9C3007C31A8 /* pushes */,
 				EE7D4AA92366B9C2007C31A8 /* ui */,
 			);
 			path = utils;
@@ -1080,13 +1079,6 @@
 				EE71855B2383563100C58F62 /* ShareDialogViewController.swift */,
 			);
 			path = view;
-			sourceTree = "<group>";
-		};
-		EE7D4AC02366B9C3007C31A8 /* pushes */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = pushes;
 			sourceTree = "<group>";
 		};
 		EE7D4AC22366B9C3007C31A8 /* general */ = {
@@ -2200,7 +2192,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 95;
+				CURRENT_PROJECT_VERSION = 99;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2226,7 +2218,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 95;
+				CURRENT_PROJECT_VERSION = 99;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

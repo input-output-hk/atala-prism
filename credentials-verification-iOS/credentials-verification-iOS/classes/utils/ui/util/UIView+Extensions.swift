@@ -24,6 +24,13 @@ extension UIView {
         }
         self.addGestureRecognizer(gesture)
     }
+    
+    func addOnLongPressListener(action: SelectorAction?) {
+
+        let gesture = UILongPressGestureRecognizer(target: action, action: #selector(action?.action(_:)))
+        gesture.cancelsTouchesInView = false
+        self.addGestureRecognizer(gesture)
+    }
 
     public func addRoundCorners(radius: CGFloat = 5,
                                 borderWidth: CGFloat = 0,
