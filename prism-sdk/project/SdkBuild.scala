@@ -48,7 +48,14 @@ object SdkBuild {
         coverageScalacPluginVersion := "1.4.1",
         test in assembly := {},
         // use short hashes while versioning
-        git.formattedShaVersion := git.gitHeadCommit.value map { sha => sha.take(8) }
+        git.formattedShaVersion := git.gitHeadCommit.value map { sha => sha.take(8) },
+        autoAPIMappings := true,
+        libraryDependencies ++= {
+          CrossVersion.partialVersion(scalaVersion.value) match {
+            case Some((2, n)) if n == 12 => silencerDependencies
+            case _ => Seq()
+          }
+        }
       )
       .enablePlugins(GitVersioning)
       .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
@@ -97,10 +104,16 @@ object SdkBuild {
         PB.protoSources in Compile := Seq(
           (baseDirectory in ThisBuild).value / "protos"
         ),
-        scalacOptions ~= (_ :+ "-Wconf:src=.*scalapb/.*:silent"),
+        scalacOptions += {
+          CrossVersion.partialVersion(scalaVersion.value) match {
+            case Some((2, n)) if n <= 12 => "-P:silencer:pathFilters=.*scalapb/.*"
+            case _ => "-Wconf:src=.*scalapb/.*:silent"
+          }
+        },
         libraryDependencies += "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion
       )
       .jvmSettings(
+        crossScalaVersions := supportedScalaVersions,
         libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
         PB.targets in Compile := Seq(
           scalapb.gen() -> (sourceManaged in Compile).value
@@ -118,6 +131,8 @@ object SdkBuild {
     commonProject(crossProject(JSPlatform, JVMPlatform) in file("identity"))
       .settings(name := "prism-identity")
       .jvmSettings(
+        crossScalaVersions := supportedScalaVersions,
+        assemblyJarName in assembly := "prism-identity.jar",
         libraryDependencies ++= bouncyDependencies.map(_ % "provided")
       )
       .dependsOn(prismCrypto, prismProtos)

@@ -14,7 +14,7 @@ object ArrayOps {
   implicit class SeqByteArrayOps(seq: Seq[Byte]) {
 
     /**
-      * Convert [[Seq]] to byte array without a [[scala.reflect.ClassTag]] dependency.
+      * Convert [[scala.Seq]] to byte array without a [[scala.reflect.ClassTag]] dependency.
       */
     def toByteArray: Array[Byte] = {
       val arr = new Array[Byte](seq.size)

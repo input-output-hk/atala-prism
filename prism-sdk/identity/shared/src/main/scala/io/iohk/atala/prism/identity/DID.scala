@@ -70,12 +70,12 @@ object DID {
     DID(s"$prismPrefix${buildSuffix(stateHash, encodedState)}")
 
   def fromString(string: String): Option[DID] =
-    if (prismRegex.matches(string))
-      Some(DID(string))
-    else if (testRegex.matches(string))
-      Some(DID(string))
-    else
-      None
+    string match {
+      case prismRegex(_*) | testRegex(_*) =>
+        Some(DID(string))
+      case _ =>
+        None
+    }
 
   def unsafeFromString(string: String): DID =
     fromString(string).getOrElse(throw new IllegalArgumentException(s"Invalid DID $string"))

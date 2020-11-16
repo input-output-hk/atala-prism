@@ -7,6 +7,7 @@ object Dependencies {
   val bouncycastleVersion = "1.63"
   val circeVersion = "0.13.0"
   val scalajsTimeVersion = "1.0.0"
+  val silencerVersion = "1.6.0"
   val spongycastleVersion = "1.58.0.0"
   val scalatestVersion = "3.2.2"
   val scalatestplusVersion = s"$scalatestVersion.0"
@@ -14,12 +15,15 @@ object Dependencies {
   val bitcoinj = "org.bitcoinj" % "bitcoinj-core" % bitcoinjVersion
   val bouncyBcpkix = "org.bouncycastle" % "bcpkix-jdk15on" % bouncycastleVersion
   val bouncyBcprov = "org.bouncycastle" % "bcprov-jdk15on" % bouncycastleVersion
+  val silencer = "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
+  val silencerPlugin = compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full)
   val spongyBcpkix = "com.madgag.spongycastle" % "bcpkix-jdk15on" % spongycastleVersion
   val spongyBcprov = "com.madgag.spongycastle" % "prov" % spongycastleVersion
 
   val scalajsTime = Def.setting("org.scala-js" %%% "scalajs-java-time" % scalajsTimeVersion)
 
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
+  val silencerDependencies = Seq(silencer, silencerPlugin)
   val spongyDependencies = Seq(spongyBcpkix, spongyBcprov)
 
   val circeDependencies = Def.setting[Seq[ModuleID]](

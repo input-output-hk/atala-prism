@@ -10,7 +10,7 @@ package io.iohk.atala.prism.jose
   * @param x5u X.509 URL
   * @param x5c X.509 Certificate Chain
   * @param x5t X.509 Certificate SHA-1 Thumbprint
-  * @param x5t X.509 Certificate SHA-256 Thumbprint
+  * @param `x5t#S256` X.509 Certificate SHA-256 Thumbprint
   * @param typ Type
   */
 case class JwsHeader[K <: Jwk](
