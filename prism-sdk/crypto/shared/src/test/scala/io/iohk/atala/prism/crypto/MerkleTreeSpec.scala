@@ -13,7 +13,7 @@ class MerkleTreeSpec extends AnyWordSpec {
   val hashGen: Gen[SHA256Digest] =
     Gen.asciiStr.map(str => SHA256Digest.compute(str.getBytes))
   val hashNonEmptyListGen: Gen[List[SHA256Digest]] =
-    Gen.nonEmptyListOf(hashGen)
+    Gen.nonEmptyListOf(hashGen).suchThat(list => list.distinct.size == list.size)
 
   "MerkleTree" should {
     "build proofs for all supplied hashes" in {
@@ -52,12 +52,12 @@ class MerkleTreeSpec extends AnyWordSpec {
         forAll(
           hashGen.suchThat(_ != proof.hash),
           Gen.chooseNum[Int](0, relevantMask),
-          hashNonEmptyListGen.suchThat(_.toList != proof.siblings)
+          hashNonEmptyListGen.suchThat(_ != proof.siblings)
         ) { (otherHash, otherIndex, otherHashes) =>
           whenever(otherIndex != proof.index) {
             val invalidProof1 = proof.copy(hash = otherHash)
             val invalidProof2 = proof.copy(index = otherIndex)
-            val invalidProof3 = proof.copy(siblings = otherHashes.toList)
+            val invalidProof3 = proof.copy(siblings = otherHashes)
 
             MerkleTree.verifyProof(root, invalidProof1) mustBe false
             MerkleTree.verifyProof(root, invalidProof2) mustBe false
