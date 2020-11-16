@@ -81,53 +81,26 @@ class CredentialVerificationDetailViewController: UIViewController {
     }
 
     func setData() {
-
-        fileHashLbl.text = "#a4b412fdf47dfd457djhgf3bftjtyhn6hw45hwhw45gg345"
+        guard let encoded = credential?.encoded else { return }
+        
         txHashLbl.text = "#a4b412fdf47dfd457djhgf3bftjtyhn6hw45hwhw45gg345"
-        dateLbl.text = "Date & Date 11-30-2020 11:05am"
-//        //1. convert string to NSData
-//        guard let jsonData = credential?.htmlView.data(using: String.Encoding.utf8)! else { return }
-//
-//        //2. convert JSON data to JSON object
-//        let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: .allowFragments)
-//
-//        //3. convert back to JSON data by setting .PrettyPrinted option
-//        let prettyJsonData = try? JSONSerialization.data(withJSONObject: jsonObject!, options: .prettyPrinted)
-//
-//        //4. convert NSData back to NSString (use NSString init for convenience), later you can convert to String.
-//        let prettyPrintedJson = String(data: prettyJsonData!, encoding: String.Encoding.utf8)
+        dateLbl.text = "credentials_verify_date_time".localize()?
+            .appending(credential?.dateReceived.dateTimeString() ?? "")
 
-        //print the result
-        fileTv.text = """
-            EDIT: {
-                DATA: {
-                    PREVIEW: "Fieds to preview",
-                    CATEGORIES: "Certificate category",
-                    CERT: "Certificate data",
-                    PART: "Participant data",
-                    OTHER: "Other data",
+        let proto  = try? Io_Iohk_Atala_Prism_Protos_Credential(serializedData: encoded)
+        guard let jsonData = proto?.credentialDocument.data(using: String.Encoding.utf8)! else { return }
+        var jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: .allowFragments) as? [String: Any]
+        jsonObject?.removeValue(forKey: "view")
+        let prettyJsonData = try? JSONSerialization.data(withJSONObject: jsonObject!, options: .prettyPrinted)
+        let prettyPrintedJson = String(data: prettyJsonData!, encoding: String.Encoding.utf8)
+        fileTv.text = prettyPrintedJson
 
-                    MICRO_CRED_NAME: "Micro name",
-                    MICRO_CRED_FIELDS: "Micro fields"
-                },
-                DIALOG: {
-                    QR: {
-                        REQUEST_SENT: "Request sent",
-                        LOAD_BY_QR: "Load participant by QR code",
-                        LOADED_BY_QR: name => {
-                            return "Participant " + name + " loaded.";
-                        },
-                        DIDS_TITLE: "Loaded DIDS:"
-                    },
-                    PARTICIPANT: {
-                        TITLE: "Add participant",
-                        NAME: "Participant",
-                        CREATE: "Add",
-                        CLOSE: "Close"
-                    }
-                }
-            }
-            """
+        if let planeJsonData = try? JSONSerialization.data(withJSONObject: jsonObject!,
+                                                           options: .withoutEscapingSlashes) {
+            let hash = CryptoUtils.global.sha256(data: planeJsonData)
+            let data = Data(bytes: hash, count: hash.count)
+            fileHashLbl.text = "#\(data.hex)"
+        }
     }
 
     // MARK: ButtonActions

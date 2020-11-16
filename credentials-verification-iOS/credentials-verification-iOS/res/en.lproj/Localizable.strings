@@ -127,7 +127,7 @@
 "credentials_verify_blockchain_notarization"= "Blockchain Notarization";
 "credentials_verify_file_hash"= "File Hash";
 "credentials_verify_tx_hash"= "Tx Hash";
-"credentials_verify_date_time"= "Date & Time %@";
+"credentials_verify_date_time"= "Date & Time ";
 "credentials_verify_close"= "Close";
 "credentials_verify_download"= "Download";
 
