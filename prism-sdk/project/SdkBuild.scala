@@ -129,7 +129,10 @@ object SdkBuild {
 
   lazy val prismIdentity =
     commonProject(crossProject(JSPlatform, JVMPlatform) in file("identity"))
-      .settings(name := "prism-identity")
+      .settings(
+        name := "prism-identity",
+        libraryDependencies += scalaUri.value
+      )
       .jvmSettings(
         crossScalaVersions := supportedScalaVersions,
         assemblyJarName in assembly := "prism-identity.jar",

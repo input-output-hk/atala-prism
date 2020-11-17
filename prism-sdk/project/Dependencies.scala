@@ -1,26 +1,30 @@
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 import sbt._
 
-object Dependencies {
-  val bitcoinjVersion = "0.15.8"
+object versions {
+  val bitcoinj = "0.15.8"
   // Bouncy Castle is non-upgradable due to https://github.com/bitcoinj/bitcoinj/issues/1951
-  val bouncycastleVersion = "1.63"
-  val circeVersion = "0.13.0"
-  val scalajsTimeVersion = "1.0.0"
-  val silencerVersion = "1.6.0"
-  val spongycastleVersion = "1.58.0.0"
-  val scalatestVersion = "3.2.2"
-  val scalatestplusVersion = s"$scalatestVersion.0"
+  val bouncycastle = "1.63"
+  val circe = "0.13.0"
+  val scalajsTime = "1.0.0"
+  val silencer = "1.6.0"
+  val spongycastle = "1.58.0.0"
+  val scalatest = "3.2.2"
+  val scalatestplus = s"$scalatest.0"
+  val scalaUri = "3.0.0"
+}
 
-  val bitcoinj = "org.bitcoinj" % "bitcoinj-core" % bitcoinjVersion
-  val bouncyBcpkix = "org.bouncycastle" % "bcpkix-jdk15on" % bouncycastleVersion
-  val bouncyBcprov = "org.bouncycastle" % "bcprov-jdk15on" % bouncycastleVersion
-  val silencer = "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
-  val silencerPlugin = compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full)
-  val spongyBcpkix = "com.madgag.spongycastle" % "bcpkix-jdk15on" % spongycastleVersion
-  val spongyBcprov = "com.madgag.spongycastle" % "prov" % spongycastleVersion
+object Dependencies {
+  val bitcoinj = "org.bitcoinj" % "bitcoinj-core" % versions.bitcoinj
+  val bouncyBcpkix = "org.bouncycastle" % "bcpkix-jdk15on" % versions.bouncycastle
+  val bouncyBcprov = "org.bouncycastle" % "bcprov-jdk15on" % versions.bouncycastle
+  val silencer = "com.github.ghik" % "silencer-lib" % versions.silencer % Provided cross CrossVersion.full
+  val silencerPlugin = compilerPlugin("com.github.ghik" % "silencer-plugin" % versions.silencer cross CrossVersion.full)
+  val spongyBcpkix = "com.madgag.spongycastle" % "bcpkix-jdk15on" % versions.spongycastle
+  val spongyBcprov = "com.madgag.spongycastle" % "prov" % versions.spongycastle
 
-  val scalajsTime = Def.setting("org.scala-js" %%% "scalajs-java-time" % scalajsTimeVersion)
+  val scalajsTime = Def.setting("org.scala-js" %%% "scalajs-java-time" % versions.scalajsTime)
+  val scalaUri = Def.setting("io.lemonlabs" %%% "scala-uri" % versions.scalaUri)
 
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val silencerDependencies = Seq(silencer, silencerPlugin)
@@ -28,15 +32,15 @@ object Dependencies {
 
   val circeDependencies = Def.setting[Seq[ModuleID]](
     Seq(
-      "io.circe" %%% "circe-core" % circeVersion,
-      "io.circe" %%% "circe-parser" % circeVersion
+      "io.circe" %%% "circe-core" % versions.circe,
+      "io.circe" %%% "circe-parser" % versions.circe
     )
   )
 
   val scalatestDependencies = Def.setting[Seq[ModuleID]](
     Seq(
-      "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
-      "org.scalatestplus" %%% "scalacheck-1-14" % scalatestplusVersion % Test
+      "org.scalatest" %%% "scalatest" % versions.scalatest % Test,
+      "org.scalatestplus" %%% "scalacheck-1-14" % versions.scalatestplus % Test
     )
   )
 }
