@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.iohk.atala.mirror.protos";
+
+package io.iohk.atala.mirror.protos;
+
+message CredentialData {
+  string rawCredential = 1;
+  oneof issuersDidOption {
+    string issuersDid = 2;
+  }
+  string status = 3;
+}
+
+message GetCredentialForAddressData {
+  repeated CredentialData credentials = 1;
+}
+
+enum GetCredentialForAddressError {
+  UNKNOWN = 0;
+  ADDRESS_NOT_FOUND = 1;
+}

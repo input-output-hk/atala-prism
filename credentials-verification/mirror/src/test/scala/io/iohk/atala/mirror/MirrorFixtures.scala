@@ -7,12 +7,11 @@ import cats.effect.Sync
 import cats.implicits._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, MirrorMessage, RegisterAddressMessage}
-import io.iohk.atala.mirror.db.CardanoAddressInfoDao
+import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, UserCredentialDao}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
-import io.iohk.atala.mirror.db.ConnectionDao
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
 import io.iohk.atala.mirror.models._
@@ -104,6 +103,13 @@ trait MirrorFixtures {
         MessageReceivedDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
       )
+
+    def insertAll[F[_]: Sync](database: Transactor[F]) = {
+      insertManyFixtures(
+        UserCredentialDao.insert(userCredential1),
+        UserCredentialDao.insert(userCredential2)
+      )(database)
+    }
   }
 
   object CredentialFixtures {
