@@ -12,21 +12,26 @@ import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, PayIdMessa
 import monix.eval.Task
 import doobie.implicits._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
-import io.iohk.atala.mirror.models
-import io.iohk.atala.mirror.models.payid.{Address, AddressDetails, PaymentInformation}
+import io.iohk.atala.mirror.{NodeUtils, models}
+import io.iohk.atala.prism.mirror.payid.{Address, AddressDetails, CryptoAddressDetails, PayID, PaymentInformation}
 import io.iohk.atala.mirror.models.{CardanoAddressInfo, Connection, ConnectorMessageId}
 import io.iohk.atala.mirror.utils.ConnectionUtils
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, PayIdMessage, RegisterAddressMessage}
 import org.slf4j.LoggerFactory
-import io.iohk.atala.mirror.models.payid.AddressDetails.CryptoAddressDetails
 import io.circe.parser._
 import io.iohk.atala.mirror.config.HttpConfig
+import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
+import io.iohk.atala.prism.mirror.payid.implicits._
+import io.circe.syntax._
 import io.iohk.atala.prism.identity.DID
 
 import scala.util.Try
 
-class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig) {
+class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, nodeService: NodeClientService) {
+
+  private implicit def ec = EC
 
   private val logger = LoggerFactory.getLogger(classOf[CardanoAddressInfoService])
 
@@ -129,17 +134,31 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig) {
            None
          }).toOptionT[Task]
 
-      cardanoAddress = paymentInformation.verifiedAddresses.flatMap(verifiedAddress =>
-        parseAddress(receivedMessage, verifiedAddress.payload, connection)
+      addressWithVerifiedSignature <- OptionT.liftF(paymentInformation.verifiedAddresses.toList.traverseFilter {
+        address =>
+          verifySignature(address).map { isValidSignature =>
+            if (isValidSignature) Some(address)
+            else {
+              logger.warn(s"Address: $address signature is not valid")
+              None
+            }
+          }
+      })
+
+      cardanoAddresses = addressWithVerifiedSignature.flatMap(verifiedAddress =>
+        parseAddress(receivedMessage, verifiedAddress.content.payload.payIdAddress, connection)
       )
 
-      _ <- OptionT.liftF(cardanoAddress.traverse(saveCardanoAddress).transact(tx))
+      updatedPaymentInformation = paymentInformation.copy(verifiedAddresses = addressWithVerifiedSignature)
+
+      _ <- OptionT.liftF(cardanoAddresses.toList.traverse(saveCardanoAddress).transact(tx))
       _ <- OptionT.liftF(
         PayIdMessageDao
           .insert(
             models.PayIdMessage(
               connectorMessageId = ConnectorMessageId(receivedMessage.id),
-              rawPaymentInformation = models.PayIdMessage.RawPaymentInformation(payIdMessage.paymentInformation)
+              rawPaymentInformation =
+                models.PayIdMessage.RawPaymentInformation(updatedPaymentInformation.asJson.toString())
             )
           )
           .transact(tx)
@@ -148,23 +167,18 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig) {
     } yield ()).value.map(_ => ())
   }
 
-  private[services] def parseDidAndHostFromPayId(payId: String): Option[(DID, String)] =
-    payId.split("\\$") match {
+  private[services] def parseDidAndHostFromPayId(payId: PayID): Option[(DID, String)] =
+    payId.value.split("\\$") match {
       case Array(didRaw, host) => DID.fromString(didRaw).map(_ -> host)
       case _ => None
     }
 
   private[services] def parseAddress(
       receivedMessage: ReceivedMessage,
-      addressPayload: String,
+      paymentAddress: Address,
       connection: Connection
   ): Option[CardanoAddressInfo] = {
     for {
-      //TODO not sure if payload in verified address is actually Address https://github.com/payid-org/payid/issues/704
-      paymentAddress <- decode[Address](addressPayload).left.map { error =>
-        logger.warn(s"Could not parse payment address payload: $addressPayload error: ${error.getMessage}")
-      }.toOption
-
       cryptoAddressDetails <- parseCryptoAddressDetails(paymentAddress.addressDetails).orElse {
         logger.warn(s"Could not parse crypto address details: ${paymentAddress.addressDetails}")
         None
@@ -178,6 +192,45 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig) {
         messageId = ConnectorMessageId(receivedMessage.id)
       )
     }
+  }
+
+  private[services] def verifySignature(
+      verifiedAddress: VerifiedAddress
+  ): Task[Boolean] = {
+    (for {
+      kid <-
+        verifiedAddress.content.protectedHeader.jwk.kid
+          .orElse {
+            logger.warn(
+              s"Cannot verify address signature, protected header doesn't contain kid: ${verifiedAddress.content.protectedHeader}"
+            )
+            None
+          }
+          .toOptionT[Task]
+
+      (didRaw, keyId) <- (kid.split("#") match {
+          case Array(did, key) => Some(did -> key)
+          case _ =>
+            logger.warn(s"Cannot verify address signature, kid: $kid is not in did:prism:did-suffix#key-id format")
+            None
+        }).toOptionT[Task]
+
+      did <-
+        DID
+          .fromString(didRaw)
+          .orElse {
+            logger.warn(s"Cannot verify address signature, did: ${didRaw} is not in proper format")
+            None
+          }
+          .toOptionT[Task]
+
+      keyData <-
+        NodeUtils
+          .getKeyData(did, keyId, nodeService)
+          .leftMap(error => logger.warn(s"Cannot verify address signature, $error"))
+          .toOption
+
+    } yield verifiedAddress.isValidSignature(keyData.publicKey)).value.map(_.getOrElse(false))
   }
 
   private[services] def parseCryptoAddressDetails(addressDetails: AddressDetails): Option[CryptoAddressDetails] =

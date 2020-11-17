@@ -8,8 +8,44 @@ import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.AtalaOperation
+import cats.data.EitherT
+import io.iohk.atala.mirror.services.NodeClientService
+import io.iohk.atala.prism.credentials.KeyData
+import monix.eval.Task
+import cats.implicits._
 
 object NodeUtils {
+
+  def getKeyData(
+      issuerDID: DID,
+      issuanceKeyId: String,
+      nodeService: NodeClientService
+  ): EitherT[Task, String, KeyData] = {
+    for {
+      didData <- EitherT(
+        nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID ${issuerDID.value}"))
+      )
+
+      issuingKeyProto <-
+        didData.publicKeys
+          .find(_.id == issuanceKeyId)
+          .toRight(s"KeyId not found: $issuanceKeyId")
+          .toEitherT[Task]
+
+      issuingKey <- fromProtoKey(issuingKeyProto)
+        .toRight(s"Failed to parse proto key: $issuingKeyProto")
+        .toEitherT[Task]
+
+      addedOn <-
+        issuingKeyProto.addedOn
+          .map(fromTimestampInfoProto)
+          .toRight(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId ")
+          .toEitherT[Task]
+
+      revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
+    } yield KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
+  }
+
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {
     for {
       maybeX <- protoKey.keyData.ecKeyData

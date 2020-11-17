@@ -25,13 +25,8 @@ import io.iohk.atala.prism.credentials.{
 }
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
-import io.iohk.atala.mirror.models.payid.{
-  Address,
-  AddressDetails,
-  AddressDetailsType,
-  PaymentInformation,
-  VerifiedAddress
-}
+import io.iohk.atala.prism.mirror.payid._
+import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
@@ -42,8 +37,12 @@ import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
 import io.iohk.atala.prism.protos.credential_models
 import io.circe.syntax._
 import io.iohk.atala.mirror.config.{GrpcConfig, HttpConfig, MirrorConfig}
+import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
+import io.iohk.atala.prism.jose.implicits._
 
 trait MirrorFixtures {
+
+  private implicit def ec = EC
 
   lazy val mirrorConfig: MirrorConfig = MirrorConfig(GrpcConfig(50057), HttpConfig(8080, "localhost"))
 
@@ -244,27 +243,32 @@ trait MirrorFixtures {
   }
 
   object PayIdFixtures {
-    import ConnectionFixtures._
+    import ConnectionFixtures._, CredentialFixtures._
 
     val cardanoAddressPayId1 = "cardanoAddressPayId1"
 
+    lazy val payId1 = PayID(connectionHolderDid2.value + "$" + mirrorConfig.httpConfig.payIdHostAddress)
     lazy val paymentInformation1 = PaymentInformation(
+      payId = Some(payId1),
+      version = None,
       addresses = List.empty,
       verifiedAddresses = List(
         VerifiedAddress(
-          payload = Address(
-            paymentNetwork = "cardano",
-            environment = Some("testnet"),
-            addressDetailsType = AddressDetailsType.CryptoAddress,
-            addressDetails = AddressDetails.CryptoAddressDetails(
-              address = cardanoAddressPayId1,
-              tag = None
+          VerifiedAddressWrapper(
+            payId = payId1,
+            payIdAddress = Address(
+              paymentNetwork = "cardano",
+              environment = Some("testnet"),
+              addressDetails = CryptoAddressDetails(
+                address = cardanoAddressPayId1,
+                tag = None
+              )
             )
-          ).asJson.toString(),
-          signatures = List.empty
+          ),
+          keys,
+          keyId = s"${issuerDID.value}#$issuanceKeyId"
         )
       ),
-      payId = Some(connectionHolderDid2.value + "$" + mirrorConfig.httpConfig.payIdHostAddress),
       memo = None
     )
 

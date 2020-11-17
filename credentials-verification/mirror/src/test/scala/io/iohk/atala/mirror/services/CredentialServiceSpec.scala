@@ -248,20 +248,6 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
     }
   }
 
-  "getKeyData" should {
-    "return key data" in new ConnectionServiceFixtures {
-      credentialService.getKeyData(issuerDID, issuanceKeyId).value.runSyncUnsafe() mustBe a[Right[_, _]]
-    }
-
-    "return error when key data is not available" in {
-      val connectorClientStub = new ConnectorClientServiceStub
-      val nodeClientStub = new NodeClientServiceStub
-      val credentialService = new CredentialService(databaseTask, connectorClientStub, nodeClientStub)
-
-      credentialService.getKeyData(issuerDID, issuanceKeyId).value.runSyncUnsafe() mustBe a[Left[_, _]]
-    }
-  }
-
   "getCredentialData" should {
     "return credential data" in new ConnectionServiceFixtures {
       credentialService.getCredentialData(nodeCredentialId).value.runSyncUnsafe() mustBe a[Right[_, _]]

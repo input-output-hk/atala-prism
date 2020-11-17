@@ -7,6 +7,7 @@ import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
 import io.iohk.atala.mirror.models.{ConnectorMessageId, PayIdMessage}
 import io.circe.syntax._
+import io.iohk.atala.prism.mirror.payid.implicits._
 
 // sbt "project mirror" "testOnly *db.PayIdMessageDaoSpec"
 class PayIdMessageDaoSpec extends PostgresRepositorySpec with MirrorFixtures {

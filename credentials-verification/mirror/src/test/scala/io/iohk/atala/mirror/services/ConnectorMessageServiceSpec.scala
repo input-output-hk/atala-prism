@@ -13,7 +13,7 @@ import scala.concurrent.duration.DurationInt
 
 // sbt "project mirror" "testOnly *services.ConnectorMessageServiceSpec"
 class ConnectorMessageServiceSpec extends PostgresRepositorySpec with MirrorFixtures {
-  import ConnectorMessageFixtures._
+  import ConnectorMessageFixtures._, CredentialFixtures._
 
   "messagesUpdatesStream" should {
     "process messages" in {
@@ -22,7 +22,8 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec with MirrorFixt
       val connectorClientService =
         new ConnectorClientServiceStub(receivedMessages = Seq(cardanoAddressInfoMessage1, credentialMessage1))
 
-      val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig)
+      val cardanoAddressInfoService =
+        new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig, defaultNodeClientStub)
       val connectorMessagesService = new ConnectorMessagesService(
         databaseTask,
         connectorClientService,

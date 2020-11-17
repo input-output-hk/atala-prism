@@ -1,6 +1,6 @@
 package io.iohk.atala.mirror.http.endpoints
 
-import io.iohk.atala.mirror.models.payid.AddressDetails.CryptoAddressDetails
+import io.iohk.atala.prism.mirror.payid.CryptoAddressDetails
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
 import io.iohk.atala.mirror.models.CardanoAddressInfo
 import io.iohk.atala.mirror.services.CardanoAddressInfoService
@@ -11,7 +11,8 @@ import org.http4s.util.CaseInsensitiveString
 import org.http4s.circe._
 import io.circe.syntax._
 import io.iohk.atala.mirror.config.HttpConfig
-import io.iohk.atala.mirror.models.payid._
+import io.iohk.atala.prism.mirror.payid._
+import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.identity.DID
 
 class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, httpConfig: HttpConfig)
@@ -66,9 +67,10 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
       cardanoNetwork: CardanoNetwork
   ): PaymentInformation = {
     PaymentInformation(
+      payId = Some(PayID(did.value + "$" + httpConfig.payIdHostAddress)),
+      version = None,
       addresses = addressesInfo.map(toPayIdAddress(_, cardanoNetwork)),
       verifiedAddresses = List.empty,
-      payId = Some(did.value + "$" + httpConfig.payIdHostAddress),
       memo = None
     )
   }
@@ -77,7 +79,6 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
     Address(
       paymentNetwork = "CARDANO",
       environment = Some(cardanoNetwork.network.toUpperCase),
-      addressDetailsType = AddressDetailsType.CryptoAddress,
       addressDetails = CryptoAddressDetails(
         address = cardanoAddressInfo.cardanoAddress.address,
         tag = None

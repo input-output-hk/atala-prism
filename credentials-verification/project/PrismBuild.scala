@@ -55,6 +55,7 @@ object PrismBuild {
   lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJVM")
   lazy val credentialsLib = ProjectRef(file("../prism-sdk"), "prismCredentialsJVM")
   lazy val connectorLib = ProjectRef(file("../prism-sdk"), "prismConnectorJVM")
+  lazy val mirrorLib = ProjectRef(file("../prism-sdk"), "mirrorJVM")
 
   lazy val common =
     commonProject(project in file("common"))
@@ -184,7 +185,7 @@ object PrismBuild {
         mainClass in (Compile, run) := Some("io.iohk.atala.mirror.MirrorApp"),
         libraryDependencies ++= http4sDependencies
       )
-      .dependsOn(common % "compile->compile;test->test", connectorLib)
+      .dependsOn(common % "compile->compile;test->test", connectorLib, mirrorLib)
 
   lazy val vault =
     commonServerProject("vault")

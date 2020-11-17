@@ -80,7 +80,7 @@ object MirrorApp extends TaskApp {
       nodeService = new NodeClientServiceImpl(node, connectorConfig.authConfig)
       mirrorService = new MirrorService(tx, connectorService)
       credentialService = new CredentialService(tx, connectorService, nodeService)
-      cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig)
+      cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig, nodeService)
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
 
       connectorMessageService = new ConnectorMessagesService(

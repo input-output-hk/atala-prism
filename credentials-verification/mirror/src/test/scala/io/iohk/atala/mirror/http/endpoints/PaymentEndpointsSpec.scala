@@ -1,18 +1,18 @@
 package io.iohk.atala.mirror.http.endpoints
 
 import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.models.payid.AddressDetails.CryptoAddressDetails
 import io.iohk.atala.mirror.services.CardanoAddressInfoService
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
 import org.http4s._
 import org.http4s.implicits._
-import io.iohk.atala.mirror.models.payid._
+import io.iohk.atala.prism.mirror.payid._
+import io.iohk.atala.prism.mirror.payid.implicits._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 
 // sbt "project mirror" "testOnly *endpoints.PaymentEndpointsSpec"
 class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
-  import ConnectionFixtures._, CardanoAddressInfoFixtures._
+  import ConnectionFixtures._, CardanoAddressInfoFixtures._, CredentialFixtures._
 
   "GET payId" should {
     "return BadRequest when PayId-Version header is not supplied" in new PaymentEndpointsFixtures {
@@ -58,7 +58,6 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
       paymentInformation.addresses.foreach { address =>
         address.paymentNetwork mustBe "CARDANO"
         address.environment mustBe Some("TESTNET")
-        address.addressDetailsType mustBe AddressDetailsType.CryptoAddress
       }
       paymentInformation.addresses(0).addressDetails mustBe CryptoAddressDetails(
         cardanoAddressInfo2.cardanoAddress.address,
@@ -72,7 +71,8 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
   }
 
   trait PaymentEndpointsFixtures {
-    val cardanoAddressInfoService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig)
+    val cardanoAddressInfoService =
+      new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig, defaultNodeClientStub)
     val paymentEndpoints = new PaymentEndpoints(cardanoAddressInfoService, mirrorConfig.httpConfig)
     val service = paymentEndpoints.service.orNotFound
 

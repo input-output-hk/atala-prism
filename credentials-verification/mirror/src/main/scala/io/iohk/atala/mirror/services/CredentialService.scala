@@ -10,27 +10,22 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import monix.eval.Task
 import org.slf4j.LoggerFactory
-import io.iohk.atala.mirror.NodeUtils.{fromProtoKey, fromTimestampInfoProto}
+import io.iohk.atala.mirror.NodeUtils.fromTimestampInfoProto
 import io.iohk.atala.mirror.Utils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
-import io.iohk.atala.prism.credentials.{
-  CredentialData,
-  KeyData,
-  SlayerCredentialId,
-  VerifiableCredential,
-  VerificationError
-}
+import io.iohk.atala.prism.credentials.{CredentialData, SlayerCredentialId, VerifiableCredential, VerificationError}
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
-import io.iohk.atala.mirror.utils.ConnectionUtils
 import cats.implicits._
 import doobie.implicits._
+import io.iohk.atala.mirror.NodeUtils
+import io.iohk.atala.mirror.utils.ConnectionUtils
 import io.iohk.atala.prism.credentials.json.implicits._
 import io.iohk.atala.prism.identity.DID
 
@@ -168,33 +163,9 @@ class CredentialService(
         JsonBasedCredential.fromString(signedCredentialStringRepresentation).left.map(_.message).toEitherT[Task]
       issuerDid <- EitherT.fromOption[Task](credential.content.issuerDid, "Empty issuerDID")
       issuanceKeyId <- EitherT.fromOption[Task](credential.content.issuanceKeyId, "Empty issuanceKeyId")
-      keyData <- getKeyData(issuerDid, issuanceKeyId)
+      keyData <- NodeUtils.getKeyData(issuerDid, issuanceKeyId, nodeService)
       credentialData <- getCredentialData(SlayerCredentialId.compute(credential.hash, issuerDid))
     } yield VerifiableCredential.verify(keyData, credentialData, credential)).value
-  }
-
-  private[services] def getKeyData(issuerDID: DID, issuanceKeyId: String): EitherT[Task, String, KeyData] = {
-    for {
-      didData <- EitherT(nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID $issuerDID")))
-
-      issuingKeyProto <-
-        didData.publicKeys
-          .find(_.id == issuanceKeyId)
-          .toRight(s"KeyId not found: $issuanceKeyId")
-          .toEitherT[Task]
-
-      issuingKey <- fromProtoKey(issuingKeyProto)
-        .toRight(s"Failed to parse proto key: $issuingKeyProto")
-        .toEitherT[Task]
-
-      addedOn <-
-        issuingKeyProto.addedOn
-          .map(fromTimestampInfoProto)
-          .toRight(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId ")
-          .toEitherT[Task]
-
-      revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
-    } yield KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
   }
 
   private[services] def getCredentialData(id: SlayerCredentialId): EitherT[Task, String, CredentialData] = {
