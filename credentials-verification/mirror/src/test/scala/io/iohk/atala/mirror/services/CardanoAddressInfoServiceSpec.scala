@@ -1,20 +1,17 @@
 package io.iohk.atala.mirror.services
 
 import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, PayIdMessageDao}
+import io.iohk.atala.mirror.db.CardanoAddressInfoDao
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.mockito.scalatest.MockitoSugar
 import monix.execution.Scheduler.Implicits.global
 import doobie.implicits._
-import io.iohk.atala.mirror.models.ConnectorMessageId
 
 import scala.concurrent.duration.DurationInt
-import io.circe.parser._
 import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.mirror.payid._
-import io.iohk.atala.prism.mirror.payid.implicits._
 
 // sbt "project mirror" "testOnly *services.CardanoAddressInfoServiceSpec"
 class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
@@ -47,21 +44,15 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
 
       // when
-      val (cardanoAddressInfoOption, payIdMessageOption) = (for {
+      val cardanoAddressInfoOption = (for {
         _ <- paymentInformationMessageProcessor.attemptProcessMessage(paymentInformationMessage1).get
         cardanoAddressInfoOption <-
           CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
-        payIdMessageOption <-
-          PayIdMessageDao.findBy(ConnectorMessageId(paymentInformationMessage1.id)).transact(databaseTask)
-      } yield (cardanoAddressInfoOption, payIdMessageOption)).runSyncUnsafe(1.minute)
+      } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
 
       // then
       cardanoAddressInfoOption.map(_.cardanoAddress) mustBe Some(CardanoAddress(cardanoAddressPayId1))
-      payIdMessageOption
-        .map(_.rawPaymentInformation.raw)
-        .flatMap(rawPaymentInformation => decode[PaymentInformation](rawPaymentInformation).toOption) mustBe Some(
-        paymentInformation1
-      )
+      cardanoAddressInfoOption.flatMap(_.payidVerifiedAddress) mustBe a[Some[_]]
     }
 
     "do not upsert cardano address if holder did is incorrect" in new CardanoAddressInfoServiceFixtures {
@@ -75,17 +66,14 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
         paymentInformationMessage1.copy(message = paymentInformationToAtalaMessage(paymentInformationWithWrongHolder))
 
       // when
-      val (cardanoAddressInfoOption, payIdMessageOption) = (for {
+      val cardanoAddressInfoOption = (for {
         _ <- paymentInformationMessageProcessor.attemptProcessMessage(messageWithWrongHolder).get
         cardanoAddressInfoOption <-
           CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
-        payIdMessageOption <-
-          PayIdMessageDao.findBy(ConnectorMessageId(paymentInformationMessage1.id)).transact(databaseTask)
-      } yield (cardanoAddressInfoOption, payIdMessageOption)).runSyncUnsafe(1.minute)
+      } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
 
       // then
       cardanoAddressInfoOption mustBe None
-      payIdMessageOption mustBe None
     }
 
     "do not upsert cardano address if host network is incorrect" in new CardanoAddressInfoServiceFixtures {
@@ -99,17 +87,14 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
         paymentInformationMessage1.copy(message = paymentInformationToAtalaMessage(paymentInformationWithWrongNetwork))
 
       // when
-      val (cardanoAddressInfoOption, payIdMessageOption) = (for {
+      val cardanoAddressInfoOption = (for {
         _ <- paymentInformationMessageProcessor.attemptProcessMessage(messageWithWrongNetwork).get
         cardanoAddressInfoOption <-
           CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
-        payIdMessageOption <-
-          PayIdMessageDao.findBy(ConnectorMessageId(paymentInformationMessage1.id)).transact(databaseTask)
-      } yield (cardanoAddressInfoOption, payIdMessageOption)).runSyncUnsafe(1.minute)
+      } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
 
       // then
       cardanoAddressInfoOption mustBe None
-      payIdMessageOption mustBe None
     }
 
     "do not upsert cardano address if address signature cannot be verified (key doesn't exist)" in {

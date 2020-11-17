@@ -54,17 +54,21 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
 
       val paymentInformation = response.as[PaymentInformation].runSyncUnsafe()
 
-      paymentInformation.addresses.size mustBe 2
-      paymentInformation.addresses.foreach { address =>
-        address.paymentNetwork mustBe "CARDANO"
-        address.environment mustBe Some("TESTNET")
-      }
-      paymentInformation.addresses(0).addressDetails mustBe CryptoAddressDetails(
-        cardanoAddressInfo2.cardanoAddress.address,
+      paymentInformation.addresses.size mustBe 1
+      val address = paymentInformation.addresses.head
+      address.paymentNetwork mustBe "CARDANO"
+      address.environment mustBe Some("TESTNET")
+      address.addressDetails mustBe CryptoAddressDetails(
+        cardanoAddressInfo3.cardanoAddress.address,
         None
       )
-      paymentInformation.addresses(1).addressDetails mustBe CryptoAddressDetails(
-        cardanoAddressInfo3.cardanoAddress.address,
+
+      paymentInformation.verifiedAddresses.size mustBe 1
+      val verifiedAddress = paymentInformation.verifiedAddresses.head.content.payload.payIdAddress
+      verifiedAddress.paymentNetwork mustBe "cardano"
+      verifiedAddress.environment mustBe Some("testnet")
+      verifiedAddress.addressDetails mustBe CryptoAddressDetails(
+        cardanoAddressInfo2.cardanoAddress.address,
         None
       )
     }

@@ -8,11 +8,11 @@ import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.util.transactor.Transactor
-import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, PayIdMessageDao}
+import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
 import monix.eval.Task
 import doobie.implicits._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
-import io.iohk.atala.mirror.{NodeUtils, models}
+import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.prism.mirror.payid.{Address, AddressDetails, CryptoAddressDetails, PayID, PaymentInformation}
 import io.iohk.atala.mirror.models.{CardanoAddressInfo, Connection, ConnectorMessageId}
 import io.iohk.atala.mirror.utils.ConnectionUtils
@@ -24,7 +24,6 @@ import io.iohk.atala.mirror.config.HttpConfig
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.mirror.payid.implicits._
-import io.circe.syntax._
 import io.iohk.atala.prism.identity.DID
 
 import scala.util.Try
@@ -52,6 +51,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       connection <- OptionT(ConnectionUtils.findConnection(receivedMessage, logger).transact(tx))
       cardanoAddress = CardanoAddressInfo(
         cardanoAddress = CardanoAddressInfo.CardanoAddress(addressMessage.cardanoAddress),
+        payidVerifiedAddress = None,
         cardanoNetwork = CardanoNetwork(addressMessage.cardanoNetwork),
         connectionToken = connection.token,
         registrationDate = CardanoAddressInfo.RegistrationDate(Instant.now()),
@@ -145,23 +145,15 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
           }
       })
 
-      cardanoAddresses = addressWithVerifiedSignature.flatMap(verifiedAddress =>
-        parseAddress(receivedMessage, verifiedAddress.content.payload.payIdAddress, connection)
+      cardanoAddressesWithVerifiedSignature = addressWithVerifiedSignature.flatMap(verifiedAddress =>
+        parseAddress(receivedMessage, verifiedAddress.content.payload.payIdAddress, Some(verifiedAddress), connection)
       )
 
-      updatedPaymentInformation = paymentInformation.copy(verifiedAddresses = addressWithVerifiedSignature)
+      cardanoAddresses =
+        paymentInformation.addresses.flatMap(address => parseAddress(receivedMessage, address, None, connection))
 
-      _ <- OptionT.liftF(cardanoAddresses.toList.traverse(saveCardanoAddress).transact(tx))
       _ <- OptionT.liftF(
-        PayIdMessageDao
-          .insert(
-            models.PayIdMessage(
-              connectorMessageId = ConnectorMessageId(receivedMessage.id),
-              rawPaymentInformation =
-                models.PayIdMessage.RawPaymentInformation(updatedPaymentInformation.asJson.toString())
-            )
-          )
-          .transact(tx)
+        (cardanoAddresses ++ cardanoAddressesWithVerifiedSignature).toList.traverse(saveCardanoAddress).transact(tx)
       )
 
     } yield ()).value.map(_ => ())
@@ -176,6 +168,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
   private[services] def parseAddress(
       receivedMessage: ReceivedMessage,
       paymentAddress: Address,
+      verifiedAddress: Option[VerifiedAddress],
       connection: Connection
   ): Option[CardanoAddressInfo] = {
     for {
@@ -186,6 +179,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
     } yield {
       CardanoAddressInfo(
         cardanoAddress = CardanoAddressInfo.CardanoAddress(cryptoAddressDetails.address),
+        payidVerifiedAddress = verifiedAddress,
         cardanoNetwork = CardanoNetwork(paymentAddress.paymentNetwork),
         connectionToken = connection.token,
         registrationDate = CardanoAddressInfo.RegistrationDate(Instant.now()),

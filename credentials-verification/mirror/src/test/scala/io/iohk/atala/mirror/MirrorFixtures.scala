@@ -168,21 +168,41 @@ trait MirrorFixtures {
   }
 
   object CardanoAddressInfoFixtures {
-    import ConnectionFixtures._
+    import ConnectionFixtures._, CredentialFixtures._
 
     lazy val cardanoNetwork1 = CardanoNetwork("mainnet")
     lazy val cardanoNetwork2 = CardanoNetwork("testnet")
 
     lazy val cardanoAddressInfo1 = CardanoAddressInfo(
       cardanoAddress = CardanoAddress("address1"),
+      payidVerifiedAddress = None,
       cardanoNetwork = cardanoNetwork1,
       connectionToken = connection1.token,
       registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
       messageId = ConnectorMessageId("messageId1")
     )
 
+    lazy val payId1 = PayID(connectionHolderDid2.value + "$" + mirrorConfig.httpConfig.payIdHostAddress)
+    lazy val cardanoAddressInfo2Address = "address2"
     lazy val cardanoAddressInfo2 = CardanoAddressInfo(
-      cardanoAddress = CardanoAddress("address2"),
+      cardanoAddress = CardanoAddress(cardanoAddressInfo2Address),
+      payidVerifiedAddress = Some(
+        VerifiedAddress(
+          VerifiedAddressWrapper(
+            payId = payId1,
+            payIdAddress = Address(
+              paymentNetwork = "cardano",
+              environment = Some("testnet"),
+              addressDetails = CryptoAddressDetails(
+                address = cardanoAddressInfo2Address,
+                tag = None
+              )
+            )
+          ),
+          keys,
+          keyId = s"$issuerDID#$issuanceKeyId"
+        )
+      ),
       cardanoNetwork = cardanoNetwork2,
       connectionToken = connection2.token,
       registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
@@ -191,6 +211,7 @@ trait MirrorFixtures {
 
     lazy val cardanoAddressInfo3 = CardanoAddressInfo(
       cardanoAddress = CardanoAddress("address3"),
+      payidVerifiedAddress = None,
       cardanoNetwork = cardanoNetwork2,
       connectionToken = connection2.token,
       registrationDate = RegistrationDate(LocalDateTime.of(2020, 10, 6, 0, 0).toInstant(ZoneOffset.UTC)),

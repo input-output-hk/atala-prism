@@ -69,8 +69,8 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
     PaymentInformation(
       payId = Some(PayID(did.value + "$" + httpConfig.payIdHostAddress)),
       version = None,
-      addresses = addressesInfo.map(toPayIdAddress(_, cardanoNetwork)),
-      verifiedAddresses = List.empty,
+      addresses = addressesInfo.filter(_.payidVerifiedAddress.isEmpty).map(toPayIdAddress(_, cardanoNetwork)),
+      verifiedAddresses = addressesInfo.flatMap(_.payidVerifiedAddress),
       memo = None
     )
   }
