@@ -2,7 +2,7 @@ package io.iohk.atala.prism.jose.ec
 
 import java.{util => ju}
 
-import io.iohk.atala.prism.crypto.{ECTrait, ECPublicKey}
+import io.iohk.atala.prism.crypto.{ECTrait, ECPublicKey, ECConfig}
 import io.iohk.atala.prism.util.BigIntOps
 import io.iohk.atala.prism.jose.Jwk
 
@@ -41,7 +41,7 @@ object EcJwk {
     val point = publicKey.getCurvePoint
 
     EcJwk(
-      crv = "secp256k1",
+      crv = ECConfig.CURVE_NAME,
       x = ju.Base64.getUrlEncoder.withoutPadding.encodeToString(BigIntOps.toUnsignedByteArray(point.x)),
       y = ju.Base64.getUrlEncoder.withoutPadding.encodeToString(BigIntOps.toUnsignedByteArray(point.y)),
       didId = didId

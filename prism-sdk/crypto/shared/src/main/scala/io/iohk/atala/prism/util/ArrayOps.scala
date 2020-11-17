@@ -40,9 +40,6 @@ object ArrayOps {
 
     /**
       * Concat two arrays without a [[scala.reflect.ClassTag]] dependency.
-      *
-      * @param suffix
-      * @return
       */
     def safeAppendedAll(suffix: Array[Byte]): Array[Byte] = {
       val dest = new Array[Byte](array.length + suffix.length)
