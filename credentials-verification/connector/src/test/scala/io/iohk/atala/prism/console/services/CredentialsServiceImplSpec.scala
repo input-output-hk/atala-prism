@@ -17,7 +17,9 @@ import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{GenericCredential, Institution, IssuerGroup, PublishCredential}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
+import io.iohk.atala.prism.credentials.SlayerCredentialId
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
 import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
@@ -193,20 +195,23 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
-      val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
+
+      val issuanceOp = buildSignedIssueCredentialOp(
+        mockEncodedSignedCredentialHash,
+        mockDIDSuffix
+      )
+
+      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
+      val mockNodeCredentialId =
+        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
       val mockTransactionInfo =
         common_models
           .TransactionInfo()
           .withTransactionId(mockNodeCredentialId)
           .withLedger(common_models.Ledger.IN_MEMORY)
-
-      val issuanceOp = buildSignedIssueCredentialOp(
-        SHA256Digest.compute(mockEncodedSignedCredential.getBytes()),
-        mockDIDSuffix
-      )
 
       val nodeRequest = node_api
         .IssueCredentialRequest()
@@ -260,15 +265,18 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
-      val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
       val issuanceOp = buildSignedIssueCredentialOp(
-        SHA256Digest.compute(mockEncodedSignedCredential.getBytes()),
+        mockEncodedSignedCredentialHash,
         mockDIDSuffix
       )
+
+      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
+      val mockNodeCredentialId =
+        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
 
       val request = cmanager_api
         .PublishCredentialRequest()
@@ -277,12 +285,21 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         .withEncodedSignedCredential(mockEncodedSignedCredential)
         .withNodeCredentialId(mockNodeCredentialId)
         .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-      val wrongRpcRequest = SignedRpcRequest.generate(EC.generateKeyPair(), did, request)
+
+      val issuerName2 = "Issuer 2"
+      val keyPair2 = EC.generateKeyPair()
+      val publicKey2 = keyPair2.publicKey
+      val did2 = generateDid(publicKey2)
+      DataPreparation.createIssuer(issuerName2, publicKey = Some(publicKey2), did = Some(did2))
+
+      val wrongRpcRequest = SignedRpcRequest.generate(keyPair2, did2, request)
 
       usingApiAs(wrongRpcRequest) { serviceStub =>
-        intercept[RuntimeException](
+        val err = intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        err.getMessage must be("INTERNAL: requirement failed: The credential was not issued by the specified issuer")
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -303,15 +320,18 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val did = generateDid(publicKey)
       val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
 
-      val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
-      val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
       val issuanceOp = buildSignedIssueCredentialOp(
-        SHA256Digest.compute(mockEncodedSignedCredential.getBytes()),
+        mockEncodedSignedCredentialHash,
         mockDIDSuffix
       )
+
+      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
+      val mockNodeCredentialId =
+        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
 
       val unknownCredentialId = GenericCredential.Id(UUID.randomUUID())
       val request = cmanager_api
@@ -324,9 +344,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
-        intercept[RuntimeException](
+        val err = intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        err.getMessage.startsWith("INTERNAL: Credential with ID") must be(true)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, 10, None).value.futureValue.toOption.value
@@ -335,7 +357,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       }
     }
 
-    "fail if operation hash does not match the protocol credential id" in {
+    "fail if the issuer uses an incorrect protocol credential id" in {
       val issuerName = "Issuer 1"
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
@@ -345,15 +367,17 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
-      val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockIncorrectNodeCredentialId = SHA256Digest.compute("A DIFFERENT VALUE TO 000".getBytes()).hexValue
+      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
       val issuanceOp = buildSignedIssueCredentialOp(
-        SHA256Digest.compute(mockEncodedSignedCredential.getBytes()),
+        mockEncodedSignedCredentialHash,
         mockDIDSuffix
       )
+
+      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
+      val mockIncorrectNodeCredentialId = SHA256Digest.compute("AN INCORRECT VALUE".getBytes()).hexValue
 
       val request = cmanager_api
         .PublishCredentialRequest()
@@ -362,12 +386,67 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         .withEncodedSignedCredential(mockEncodedSignedCredential)
         .withNodeCredentialId(mockIncorrectNodeCredentialId)
         .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-      val wrongRpcRequest = SignedRpcRequest.generate(EC.generateKeyPair(), did, request)
 
-      usingApiAs(wrongRpcRequest) { serviceStub =>
-        intercept[RuntimeException](
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val err = intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        err.getMessage.endsWith("Invalid credential protocol id") must be(true)
+
+        val credentialList =
+          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
+
+        credentialList.length must be(1)
+
+        val updatedCredential = credentialList.headOption.value
+
+        updatedCredential must be(originalCredential)
+        updatedCredential.publicationData must be(empty)
+      }
+    }
+
+    "fail if the issuer provides a hash which does not match with the provided operation" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+
+      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
+
+      val issuanceOp = buildSignedIssueCredentialOp(
+        mockEncodedSignedCredentialHash,
+        mockDIDSuffix
+      )
+
+      val mockIncorrectOperationHash = SHA256Digest.compute("AN INVALID VALUE".getBytes())
+      val mockNodeCredentialId =
+        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
+
+      val request = cmanager_api
+        .PublishCredentialRequest()
+        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withIssueCredentialOperation(issuanceOp)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withNodeCredentialId(mockNodeCredentialId)
+        .withOperationHash(ByteString.copyFrom(mockIncorrectOperationHash.value.toArray))
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val err = intercept[RuntimeException](
+          serviceStub.publishCredential(request)
+        )
+
+        err.getMessage.endsWith("Operation hash does not match the provided operation") must be(true)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -391,16 +470,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = s"did:prism:${SHA256Digest.compute("issuerDIDSuffic".getBytes()).hexValue}"
-      val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockNodeCredentialId = mockOperationHash.hexValue
-
+      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
       val mockEmptyEncodedSignedCredential = ""
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEmptyEncodedSignedCredential.getBytes())
 
       val issuanceOp = buildSignedIssueCredentialOp(
-        SHA256Digest.compute(mockEmptyEncodedSignedCredential.getBytes()),
+        mockEncodedSignedCredentialHash,
         mockDIDSuffix
       )
+
+      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
+      val mockNodeCredentialId =
+        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
+
       val request = cmanager_api
         .PublishCredentialRequest()
         .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
@@ -411,9 +493,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
-        intercept[RuntimeException](
+        val err = intercept[RuntimeException](
           serviceStub.publishCredential(request)
         )
+
+        err.getMessage.endsWith("Empty encoded credential") must be(true)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value

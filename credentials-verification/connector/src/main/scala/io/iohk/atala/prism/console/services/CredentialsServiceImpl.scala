@@ -12,10 +12,13 @@ import io.iohk.atala.prism.console.models.{
   PublishCredential
 }
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
+import io.iohk.atala.prism.credentials.SlayerCredentialId
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs
 import io.iohk.atala.prism.protos.cmanager_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{cmanager_api, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
@@ -109,13 +112,19 @@ class CredentialsServiceImpl(
         credentialProtocolId = request.nodeCredentialId
         issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray.toVector)
         encodedSignedCredential = request.encodedSignedCredential
-        issueCredentialOp =
+        signedIssueCredentialOp =
           request.issueCredentialOperation
             .getOrElse(throw new RuntimeException("Missing IssueCredential operation"))
         // validation for sanity check
+        (contentHash, did, operationHash) = extractValues(signedIssueCredentialOp)
+        slayerId = SlayerCredentialId.compute(contentHash, did)
         _ = require(
-          credentialProtocolId == issuanceOperationHash.hexValue,
-          "operation hash and credential id don't match"
+          credentialProtocolId == slayerId.string,
+          "Invalid credential protocol id"
+        )
+        _ = require(
+          issuanceOperationHash == operationHash,
+          "Operation hash does not match the provided operation"
         )
         _ = require(encodedSignedCredential.nonEmpty, "Empty encoded credential")
         // Verify issuer
@@ -127,7 +136,7 @@ class CredentialsServiceImpl(
         credentialIssued <- nodeService.issueCredential {
           node_api
             .IssueCredentialRequest()
-            .withSignedOperation(issueCredentialOp)
+            .withSignedOperation(signedIssueCredentialOp)
         }
         transactionInfo =
           credentialIssued.transactionInfo.getOrElse(throw new RuntimeException("Credential issues has no transaction"))
@@ -151,6 +160,18 @@ class CredentialsServiceImpl(
             }
       } yield cmanager_api.PublishCredentialResponse().withTransactionInfo(transactionInfo)
     }
+  }
+
+  private def extractValues(signedAtalaOperation: SignedAtalaOperation): (SHA256Digest, DID, SHA256Digest) = {
+    val maybePair = for {
+      atalaOperation <- signedAtalaOperation.operation
+      opHash = SHA256Digest.compute(atalaOperation.toByteArray)
+      issueCredential <- atalaOperation.operation.issueCredential
+      credentialData <- issueCredential.credentialData
+      did = DID.buildPrismDID(credentialData.issuer)
+      contentHash = SHA256Digest(credentialData.contentHash.toByteArray.toVector)
+    } yield (contentHash, did, opHash)
+    maybePair.getOrElse(throw new RuntimeException("Failed to extract content hash and issuer DID"))
   }
 
   private def authenticatedHandler[Request <: scalapb.GeneratedMessage, Response <: scalapb.GeneratedMessage](
