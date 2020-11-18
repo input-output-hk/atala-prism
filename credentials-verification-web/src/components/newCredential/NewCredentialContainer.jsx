@@ -22,7 +22,7 @@ import {
   FAILED
 } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
-import { contactMapper } from '../../APIs/helpers';
+import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
 import { filterByManyFields } from '../../helpers/filterHelpers';
 import { useSession } from '../providers/SessionContext';

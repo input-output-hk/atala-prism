@@ -13,6 +13,8 @@ export const CONTACT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
 export const MAX_CONTACTS = 10000;
 // eslint-disable-next-line camelcase
+export const MAX_CREDENTIALS = 10000;
+// eslint-disable-next-line camelcase
 export const GROUP_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
 export const CREDENTIAL_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
@@ -24,13 +26,16 @@ export const yScroll = 600;
 export const drawerWidth = 450;
 export const AVATAR_WIDTH = 50;
 
+export const CONNECTED = 'CONNECTED';
 export const PENDING_CONNECTION = 'PENDING_CONNECTION';
+
 export const CONNECTION_STATUSES = {
   invitationMissing: 1,
   connectionMissing: 2,
   connectionAccepted: 3,
   connectionRevoked: 4
 };
+
 export const CONNECTION_STATUSES_TRANSLATOR = __.invert(CONNECTION_STATUSES);
 
 export const INDIVIDUAL_STATUSES = {
@@ -41,7 +46,14 @@ export const INDIVIDUAL_STATUSES = {
 };
 export const INDIVIDUAL_STATUSES_TRANSLATOR = __.invert(INDIVIDUAL_STATUSES);
 
-export const CONNECTED = 'CONNECTED';
+export const CREDENTIAL_STATUSES = {
+  credentialDraft: 1,
+  credentialSigned: 2,
+  credentialSent: 3,
+  credentialRevoked: 4
+};
+
+export const CREDENTIAL_STATUSES_TRANSLATOR = __.invert(CREDENTIAL_STATUSES);
 
 // eslint-disable-next-line quotes
 export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
@@ -107,9 +119,13 @@ export const ENTER = 'Enter';
 export const ARROW_LEFT = 'ArrowLeft';
 export const ARROW_RIGHT = 'ArrowRight';
 
-// const Import contact cata use cases
+// Import contact data use cases
 export const IMPORT_CONTACTS = 'importContacts';
 export const IMPORT_CREDENTIALS_DATA = 'importCredentialsData';
+
+// Status badge use cases
+export const CONTACT_STATUS = 'contacts';
+export const CREDENTIAL_STATUS = 'credentials';
 
 // credentials creation steps
 export const NEW_CREDENTIALS_STEP_UNIT = 1;

@@ -9,21 +9,7 @@ export function contactMapper(contact) {
     ...parseName(jsondata)
   };
   const status = holderStatus !== undefined ? holderStatus : connectionstatus;
-
   return Object.assign({}, rest, { key: contactid, status, contactid });
-}
-
-// TODO: adapt the rest of the frontend so this isn't necessary
-export function genericCredentialToStudentCredential(credential) {
-  const credentialData = JSON.parse(credential.credentialdata);
-  const subjectdata = JSON.parse(credential.subjectdata);
-  return {
-    ...omit(credential, ['credentialdata', 'subjectdata']),
-    ...credentialData,
-    credentialid: credential.id,
-    studentname: subjectdata.fullname,
-    studentid: subjectdata.studentid
-  };
 }
 
 export const parseName = ({ contactName = '', firstName = '', lastName = '', midNames = '' }) =>

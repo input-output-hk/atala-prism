@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PulseLoader } from 'react-spinners';
 import PropTypes from 'prop-types';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import preloginLogo from '../../images/logo-login.svg';
@@ -41,7 +40,6 @@ const Landing = ({ redirector: { redirectToRegistration } }) => {
             buttonProps={{ className: 'theme-secondary', onClick: handleLogin }}
             buttonText={t('landing.login')}
             loading={loading}
-            LoadingComponent={LoadingComponent}
           />
         </div>
         <div className="browserWalletOption">
@@ -54,8 +52,6 @@ const Landing = ({ redirector: { redirectToRegistration } }) => {
     </div>
   );
 };
-
-const LoadingComponent = () => <PulseLoader loading size={6} color="#000000" />;
 
 Landing.propTypes = {
   redirector: PropTypes.shape({

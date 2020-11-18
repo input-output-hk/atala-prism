@@ -7,9 +7,9 @@ import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 import { contactShape } from '../../../../helpers/propShapes';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
+import PopOver from '../../../common/Organisms/Detail/PopOver';
 
 import './_style.scss';
-import PopOver from '../../../common/Organisms/Detail/PopOver';
 
 const getColumns = ({ inviteContact, viewContactDetail }) => {
   const generalColumns = [

@@ -1,6 +1,6 @@
 import React from 'react';
-import { PulseLoader } from 'react-spinners';
 import { useTranslation } from 'react-i18next';
+import { PulseLoader } from 'react-spinners';
 import logo from '../../../../images/atala-logo-loading.svg';
 
 import './_style.scss';

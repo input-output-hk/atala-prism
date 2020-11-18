@@ -25,13 +25,12 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   const metadata = await this.auth.getMetadata(getCredentialsRequest);
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
+
   const credentialsList = result.getCredentialsList().map(cred => {
+    const credential = cred.toObject();
     const credentialData = JSON.parse(cred.getCredentialdata());
-    const subjectId = cred.getContactid();
-    const groupname = cred.getGroupname();
-    const id = cred.getCredentialid();
     const subjectData = JSON.parse(cred.getContactdata());
-    return Object.assign({ id, subjectId, groupname, subjectData }, credentialData);
+    return Object.assign(credential, { subjectData }, credentialData);
   });
 
   return credentialsList;

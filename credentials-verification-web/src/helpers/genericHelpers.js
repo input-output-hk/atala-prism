@@ -34,3 +34,5 @@ const lowerCase = string => string.toLowerCase();
 export const customUpperCase = string => customCharByCharModifier(string, upperCase);
 
 export const customLowerCase = string => customCharByCharModifier(string, lowerCase);
+
+export const mockDelay = timeoutMs => new Promise(resolve => setTimeout(resolve, timeoutMs));

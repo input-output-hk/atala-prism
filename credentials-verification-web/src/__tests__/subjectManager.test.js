@@ -1,4 +1,4 @@
-import { parseName } from '../APIs/helpers';
+import { parseName } from '../APIs/helpers/contactHelpers';
 import { invalidJsons, validJsons } from './__mocks__/contactNamesMockData';
 
 it('invalid JSONs do not break parsing', () => {

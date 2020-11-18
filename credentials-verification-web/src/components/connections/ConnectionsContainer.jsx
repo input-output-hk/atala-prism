@@ -7,7 +7,7 @@ import Logger from '../../helpers/Logger';
 import { CONTACT_PAGE_SIZE } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
-import { contactMapper } from '../../APIs/helpers';
+import { contactMapper } from '../../APIs/helpers/contactHelpers';
 
 const ConnectionsContainer = ({ api }) => {
   const { t } = useTranslation();

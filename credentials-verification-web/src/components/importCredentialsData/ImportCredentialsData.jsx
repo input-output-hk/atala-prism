@@ -7,7 +7,7 @@ import { withRedirector } from '../providers/withRedirector';
 import { withApi } from '../providers/withApi';
 import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
-import { contactMapper } from '../../APIs/helpers';
+import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
 
 const ImportCredentialsData = ({

@@ -9,7 +9,7 @@ const CellRenderer = ({ title, value, firstValue, componentName, children }) => 
   return (
     <div className="CellRenderer">
       <p className="TableLabel">{t(`${componentName}.table.columns.${title}`)}</p>
-      <p className="TableText">{value}</p>
+      <p className="TableText">{t(value)}</p>
       {children}
       <p className="TableTextBold">{firstValue}</p>
     </div>

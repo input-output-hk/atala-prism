@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
+import { PulseLoader } from 'react-spinners';
 import PropTypes from 'prop-types';
 
 import './_style.scss';
@@ -10,10 +11,10 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ icon, buttonText, buttonProps, loading, LoadingComponent }) => (
+const CustomButton = ({ icon, buttonText, buttonProps, loading, loadingProps }) => (
   <Button {...buttonProps} disabled={buttonProps?.disabled || loading}>
     {icon && icon}
-    {loading ? <LoadingComponent /> : buttonText}
+    {loading ? <PulseLoader loading {...loadingProps} /> : buttonText}
   </Button>
 );
 
@@ -21,7 +22,10 @@ CustomButton.defaultProps = {
   buttonText: '',
   icon: null,
   loading: false,
-  LoadingComponent: null
+  loadingProps: {
+    size: 6,
+    color: '#000000'
+  }
 };
 
 CustomButton.propTypes = {
@@ -40,7 +44,10 @@ CustomButton.propTypes = {
   buttonText: PropTypes.string,
   icon: PropTypes.element,
   loading: PropTypes.bool,
-  LoadingComponent: PropTypes.oneOfType([PropTypes.node, PropTypes.func])
+  loadingProps: PropTypes.shape({
+    size: PropTypes.number,
+    color: PropTypes.string
+  })
 };
 
 export default CustomButton;

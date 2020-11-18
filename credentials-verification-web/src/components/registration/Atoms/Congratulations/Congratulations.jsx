@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { PulseLoader } from 'react-spinners';
 import icon from '../../../../images/registrationCongratulation.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../../../providers/withRedirector';
@@ -38,13 +37,10 @@ const Congratulations = ({ redirector: { redirectToHome } }) => {
         }}
         buttonText={t('registration.congratulations.login')}
         loading={loading}
-        LoadingComponent={LoadingComponent}
       />
     </div>
   );
 };
-
-const LoadingComponent = () => <PulseLoader loading size={6} color="#000000" />;
 
 Congratulations.propTypes = {
   redirector: PropTypes.shape({

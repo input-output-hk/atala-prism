@@ -95,7 +95,10 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Open on Mobile",
-      "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
+      "subtitle": [
+        "Scan with your phone’s camera",
+        "using the Atala PRISM mobile app"
+      ]
     },
     "detail": {
       "title": "Credentials List",
@@ -151,6 +154,7 @@
   },
   "credentials": {
     "title": "Credentials",
+    "info": "View a list of credentials created.",
     "sendCredentials": "Send Credentials",
     "successfullyIssued": "The Credential has been successfully issued",
     "student": {
@@ -163,7 +167,12 @@
       }
     },
     "actions": {
-      "createCredential": "Create Credential"
+      "createCredential": "Create Credential",
+      "signSelectedCredentials": "Sign Credentials",
+      "sendSelectedCredentials": "Send Credentials",
+      "signOneCredential": "Sign",
+      "sendOneCredential": "Send",
+      "selectAll": "Select All"
     },
     "filters": {
       "ID": "ID",
@@ -190,7 +199,13 @@
         "studentname": "Student Name",
         "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
-        "groupAssigned": "Group Assigned"
+        "groupAssigned": "Group Assigned",
+        "credentialType": "Credential Type",
+        "contactName": "Contact Name",
+        "externalId": "External ID",
+        "creationDate": "Date Created",
+        "contactStatus": "Contact Status",
+        "credentialStatus": "Credential Status"
       }
     },
     "detail": {
@@ -224,6 +239,25 @@
       "credentials": "credentials",
       "cantSendText": "cannot be sent because their connections are pending and/or the credentials have not been signed.",
       "confirm": "Confirm"
+    },
+    "status": {
+      "credentialDraft": "Credential Draft",
+      "credentialSigned": "Credential Signed",
+      "credentialSent": "Credential Sent",
+      "credentialRevoked": "Credential Revoked"
+    },
+    "messages": {
+      "notImplementedYet": "This functionality is not implemented yet"
+    },
+    "success": {
+      "successSingleSign": "Succesfully sent credential to the wallet",
+      "successSingleSend": "Succesfully sent credential to the contact",
+      "successSelectedSign": "Succesfully sent credentials to the wallet",
+      "successSelectedSend": "Succesfully sent credentials to the contact"
+    },
+    "errors": {
+      "errorSigning": "An error occurred while signing the credential(s)",
+      "errorSending": "An error occurred while sending the credential(s)"
     }
   },
   "credentialSummary": {
