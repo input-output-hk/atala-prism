@@ -3,7 +3,7 @@ package io.iohk.atala.prism.console.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.console.models.{Contact, Institution, StoredSignedCredential}
+import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution, StoredSignedCredential}
 import io.iohk.atala.prism.console.repositories.daos.StoredCredentialsDAO
 import io.iohk.atala.prism.console.repositories.daos.StoredCredentialsDAO.StoredSignedCredentialData
 import io.iohk.atala.prism.utils.FutureEither
@@ -27,6 +27,15 @@ class StoredCredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
   def storeCredential(data: StoredSignedCredentialData): FutureEither[Nothing, Unit] = {
     StoredCredentialsDAO
       .storeSignedCredential(data)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def getLatestCredentialExternalId(verifierId: Institution.Id): FutureEither[Nothing, Option[CredentialExternalId]] = {
+    StoredCredentialsDAO
+      .getLatestCredentialExternalId(verifierId)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

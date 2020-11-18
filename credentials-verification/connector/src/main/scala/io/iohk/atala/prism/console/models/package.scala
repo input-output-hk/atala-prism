@@ -123,4 +123,15 @@ package object models {
   ) {
     def numberOfCredentialsInDraft: Int = numberOfCredentials - numberOfCredentialsPublished
   }
+
+  class CredentialExternalId private (val value: String) extends AnyVal
+
+  object CredentialExternalId {
+    def apply(value: String): CredentialExternalId = {
+      require(value.trim.nonEmpty, "External credential id must contain at least one non-whitespace character")
+      new CredentialExternalId(value)
+    }
+
+    def random(): CredentialExternalId = apply(UUID.randomUUID().toString)
+  }
 }

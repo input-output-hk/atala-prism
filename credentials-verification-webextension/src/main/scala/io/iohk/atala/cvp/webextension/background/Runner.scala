@@ -6,6 +6,7 @@ import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.models.Command
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
+import io.iohk.atala.cvp.webextension.background.services.console.ConsoleClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
@@ -40,6 +41,7 @@ class Runner(
     chrome.browserAction.BrowserAction.onClicked.addListener(_ => {
       browserWindowService.createOrUpdate()
     })
+
     processExternalMessages()
   }
 
@@ -120,9 +122,13 @@ object Runner {
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
     val connectorClientService = ConnectorClientService(config.backendUrl)
+    val consoleClientService = ConsoleClientService(config.backendUrl)
     val nodeClientService = NodeClientService(config.backendUrl)
+    val credentialsCopyJob =
+      new CredentialsCopyJob(connectorClientService, consoleClientService)
+
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService)
+      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService, credentialsCopyJob)
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, walletManager)
@@ -130,16 +136,23 @@ object Runner {
     new Runner(commandProcessor)
   }
 
-  def apply(config: Config, connectorClientService: ConnectorClientService, nodeClientService: NodeClientService)(
-      implicit ec: ExecutionContext
+  def apply(
+      config: Config,
+      connectorClientService: ConnectorClientService,
+      nodeClientService: NodeClientService,
+      consoleClientService: ConsoleClientService
+  )(implicit
+      ec: ExecutionContext
   ): Runner = {
     val storage = new StorageService
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
+    val credentialsCopyJob =
+      new CredentialsCopyJob(connectorClientService, consoleClientService)
 
     val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService)
+      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService, credentialsCopyJob)
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, walletManager)

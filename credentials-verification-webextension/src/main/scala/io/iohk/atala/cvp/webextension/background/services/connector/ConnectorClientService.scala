@@ -1,20 +1,21 @@
 package io.iohk.atala.cvp.webextension.background.services.connector
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
-import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService._
+import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
+import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
+import io.iohk.atala.cvp.webextension.background.services._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
-import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.cmanager_api.{PublishCredentialRequest, PublishCredentialResponse}
 import io.iohk.atala.prism.protos.connector_api.{
   GetCurrentUserRequest,
   GetCurrentUserResponse,
+  GetMessageStreamRequest,
+  GetMessageStreamResponse,
   RegisterDIDRequest,
   RegisterDIDResponse
 }
 import io.iohk.atala.prism.protos.{cmanager_api, connector_api}
-import scalapb.GeneratedMessage
 import scalapb.grpc.Channels
 
 import scala.concurrent.Future
@@ -60,24 +61,23 @@ class ConnectorClientService(url: String) {
       case Failure(error) => Future.failed(error)
     }
   }
+
+  def getMessageStream(
+      ecKeyPair: ECKeyPair,
+      did: DID,
+      stramObserver: StreamObserver[GetMessageStreamResponse],
+      lastSeenMessageId: String
+  ): ClientCallStreamObserver = {
+    val request = GetMessageStreamRequest(lastSeenMessageId = lastSeenMessageId)
+    val metadata = metadataForRequest(ecKeyPair, did, request).toJSDictionary
+    connectorApi.getMessageStream(
+      request,
+      metadata,
+      stramObserver
+    )
+  }
 }
 
 object ConnectorClientService {
-  private val requestAuthenticator = new RequestAuthenticator(EC)
-
   def apply(url: String): ConnectorClientService = new ConnectorClientService(url)
-
-  def metadataForRequest[Request <: GeneratedMessage](
-      ecKeyPair: ECKeyPair,
-      did: DID,
-      request: Request
-  ): Map[String, String] = {
-    val signedConnectorRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, ecKeyPair.privateKey)
-    Map(
-      "did" -> did.value,
-      "didKeyId" -> firstMasterKeyId,
-      "didSignature" -> signedConnectorRequest.encodedSignature,
-      "requestNonce" -> signedConnectorRequest.encodedRequestNonce
-    )
-  }
 }

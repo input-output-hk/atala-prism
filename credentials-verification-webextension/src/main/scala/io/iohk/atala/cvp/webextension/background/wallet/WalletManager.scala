@@ -8,6 +8,7 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
+import io.iohk.atala.cvp.webextension.background.CredentialsCopyJob
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
@@ -97,7 +98,8 @@ private[background] class WalletManager(
     browserActionService: BrowserActionService,
     storageService: StorageService,
     connectorClientService: ConnectorClientService,
-    nodeClientService: NodeClientService
+    nodeClientService: NodeClientService,
+    credentialsCopyJob: CredentialsCopyJob
 )(implicit
     ec: ExecutionContext
 ) {
@@ -431,8 +433,16 @@ private[background] class WalletManager(
     } yield ()
 
     result.onComplete {
-      case Success(value) => println("Successfully loaded wallet")
-      case Failure(exception) => println("Failed loading wallet"); exception.printStackTrace()
+      case Success(_) =>
+        val retrievedWalletData = walletData.getOrElse(throw new RuntimeException("Failed to load wallet"))
+        credentialsCopyJob.start(
+          ecKeyPairFromSeed(retrievedWalletData.mnemonic),
+          retrievedWalletData.did
+        )
+        println("Successfully loaded wallet")
+      case Failure(exception) =>
+        println("Failed loading wallet")
+        exception.printStackTrace()
     }
 
     result
@@ -448,6 +458,7 @@ private[background] class WalletManager(
 
   def lock(): Future[Unit] = {
     Future {
+      credentialsCopyJob.stop()
       this.storageKey = None
       this.walletData = None
     }

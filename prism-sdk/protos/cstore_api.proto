@@ -10,11 +10,13 @@ import "cstore_models.proto";
 service CredentialsStoreService {
   rpc StoreCredential (StoreCredentialRequest) returns (StoreCredentialResponse) {}
   rpc GetStoredCredentialsFor (GetStoredCredentialsForRequest) returns (GetStoredCredentialsForResponse) {}
+  rpc GetLatestCredentialExternalId (GetLatestCredentialExternalIdRequest) returns (GetLatestCredentialExternalIdResponse) {}
 }
 
 message StoreCredentialRequest {
   string connectionId = 1; // connection id retrieved from the connector message that carried the credential
   string encodedSignedCredential = 2; // the encoded signed data
+  string credentialExternalId = 3; // credential external id (currently, id of the connector message that carried it)
 }
 
 message StoreCredentialResponse {
@@ -27,4 +29,9 @@ message GetStoredCredentialsForRequest {
 
 message GetStoredCredentialsForResponse {
   repeated StoredSignedCredential credentials = 1;
+}
+
+message GetLatestCredentialExternalIdRequest {}
+message GetLatestCredentialExternalIdResponse {
+  string latestCredentialExternalId = 1;
 }

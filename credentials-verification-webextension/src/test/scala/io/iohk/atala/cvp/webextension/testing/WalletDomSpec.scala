@@ -3,6 +3,7 @@ package io.iohk.atala.cvp.webextension.testing
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.activetab.ActiveTabConfig
 import io.iohk.atala.cvp.webextension.background.Runner
+import io.iohk.atala.cvp.webextension.background.services.console.ConsoleClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import org.scalajs.dom.{Element, document}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
@@ -41,7 +42,8 @@ trait WalletDomSpec extends Suite with BeforeAndAfterAll with BeforeAndAfterEach
         privacyPolicyUrl = "http://localhost:10000/test-explorer"
       ),
       FakeConnectorClientService,
-      new NodeClientService("http://localhost:10000/test")
+      new NodeClientService("http://localhost:10000/test"),
+      new ConsoleClientService("http://localhost:10000/test")
     ).run()
 
     // Add view to be tested

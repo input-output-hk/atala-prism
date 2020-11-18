@@ -5,12 +5,16 @@ import java.util.UUID
 
 import doobie.{Meta, Read, Write}
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.console.models.{Contact, Institution, PublicationData}
+import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution, PublicationData}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 
 package object daos extends BaseDAO {
+
+  implicit val consoleMessageIdMeta: Meta[CredentialExternalId] =
+    Meta[String].timap(CredentialExternalId.apply)(_.value)
+
   implicit val publicationDataWrite: Write[PublicationData] =
     Write[(String, SHA256Digest, String, Instant, TransactionId, Ledger)].contramap(pc =>
       (
