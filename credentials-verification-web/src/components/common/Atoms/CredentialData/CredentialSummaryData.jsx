@@ -6,6 +6,9 @@ import freeUniLogo from '../../../../images/free-uni-logo.png';
 
 import './_style.scss';
 import { EXAMPLE_AWARD } from '../../../../helpers/constants';
+import { useTranslationWithPrefix } from '../../../../hooks/useTranslationWithPrefix';
+
+const translationPrefix = 'newCredential.table.columns';
 
 const CredentialSummaryData = ({
   title,
@@ -15,36 +18,29 @@ const CredentialSummaryData = ({
   graduationDate,
   lg,
   logo
-}) => (
-  <Col lg={lg} xs={24} className="CredentialTemplate">
-    <div className="CredentialHeader">
-      <CellRenderer componentName="newCredential" title="universityName" value={university} />
-      <img className="IconUniversity" src={logo || freeUniLogo} alt="Free University Tbilisi" />
-    </div>
-    <div className="CredentialContent">
-      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
-      <hr />
-      <CellRenderer componentName="newCredential" title="result" value={EXAMPLE_AWARD} />
-      <hr />
-      {student && (
-        <CellRenderer componentName="newCredential" title="fullName" value={student.fullname} />
-      )}
-      <hr />
-      <div className="DegreeDate">
-        {startDate && (
-          <CellRenderer componentName="newCredential" title="startDate" value={startDate} />
-        )}
-        {graduationDate && (
-          <CellRenderer
-            componentName="newCredential"
-            title="graduationDate"
-            value={graduationDate}
-          />
-        )}
+}) => {
+  const tp = useTranslationWithPrefix(translationPrefix);
+  return (
+    <Col lg={lg} xs={24} className="CredentialTemplate">
+      <div className="CredentialHeader">
+        <CellRenderer title={tp('universityName')} value={university} />
+        <img className="IconUniversity" src={logo || freeUniLogo} alt="Free University Tbilisi" />
       </div>
-    </div>
-  </Col>
-);
+      <div className="CredentialContent">
+        <CellRenderer title={tp('degreeName')} value={title} />
+        <hr />
+        <CellRenderer title={tp('result')} value={EXAMPLE_AWARD} />
+        <hr />
+        {student && <CellRenderer title={tp('fullName')} value={student.fullname} />}
+        <hr />
+        <div className="DegreeDate">
+          {startDate && <CellRenderer title={tp('startDate')} value={startDate} />}
+          {graduationDate && <CellRenderer title={tp('graduationDate')} value={graduationDate} />}
+        </div>
+      </div>
+    </Col>
+  );
+};
 
 CredentialSummaryData.defaultProps = {
   lg: 12,

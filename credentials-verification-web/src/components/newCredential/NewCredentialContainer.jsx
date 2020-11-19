@@ -54,6 +54,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
   const [credentialViews, setCredentialViews] = useState([]);
 
+  const handleGetGroups = allGroups => {
+    const parsedGroups = allGroups.map(group => ({ ...group, groupName: group.name }));
+    setGroups(parsedGroups);
+  };
+
   const getCredentialViewTemplates = () =>
     api.credentialsViewManager
       .getCredentialViewTemplates()
@@ -68,7 +73,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const getGroups = () =>
     api.groupsManager
       .getGroups()
-      .then(allGroups => setGroups(allGroups))
+      .then(handleGetGroups)
       .catch(error => {
         Logger.error('[NewCredentailContainer.getGroups] Error: ', error);
         message.error(t('errors.errorGettingHolders'));

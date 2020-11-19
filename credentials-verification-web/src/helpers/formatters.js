@@ -2,6 +2,7 @@ import moment from 'moment';
 // If the module isn't explicitly imported moment wouldn't recognize the georgian language setting
 import 'moment/locale/ka';
 import { getCurrentLanguage } from './languageUtils';
+import { DEFAULT_DATE_FORMAT } from './constants';
 
 const completeDateFormatter = (date, format) => {
   const lang = getCurrentLanguage();
@@ -65,6 +66,15 @@ export const fromMomentToProtoDateFormatter = date => {
   };
 
   return protoDate;
+};
+
+export const dateFormat = date => {
+  return moment(date).format(DEFAULT_DATE_FORMAT);
+};
+
+export const backendDateFormat = unixDate => {
+  // backend gives dates as timestamp expressed in seconds, moment takes it as milliseconds
+  return moment(unixDate * 1000).format(DEFAULT_DATE_FORMAT);
 };
 
 export const backendDateFormatter = format => date => completeDateFormatter(date, format);

@@ -1,0 +1,32 @@
+@import '../../../../css/general_styling';
+
+$border: 1px solid rgb(217, 217, 217);
+
+.InputContainer {
+  border: $border;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding-right: 0px;
+  height: 32px;
+  .InputPrefix {
+    padding: 0 8px;
+  }
+  &:focus-within {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  }
+  .ant-input,
+  .ant-select,
+  .ant-select-selection {
+    height: 100%;
+  }
+}
+
+.NoBorder {
+  border: none;
+  * {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

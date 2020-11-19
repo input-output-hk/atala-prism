@@ -1,25 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 
 import './_style.scss';
+import { useTranslationWithPrefix } from '../../../../hooks/useTranslationWithPrefix';
+
+const translationPrefix = 'credentials.student';
 
 const RenderStudent = ({ imageSrc, imageAlt, name }) => {
-  const { t } = useTranslation();
-
-  const title = 'student';
+  const tp = useTranslationWithPrefix(translationPrefix);
 
   return (
     <div className="StudentAvatar">
       {imageSrc && (
-        <img
-          style={{ height: '50px', width: '50px' }}
-          src={imageSrc}
-          alt={imageAlt || t('credential.student.alt')}
-        />
+        <img style={{ height: '50px', width: '50px' }} src={imageSrc} alt={imageAlt || tp('alt')} />
       )}
-      <CellRenderer value={name} title={title} componentName="credentials.student" />
+      <CellRenderer value={name} title={tp('table.columns.student')} />
     </div>
   );
 };

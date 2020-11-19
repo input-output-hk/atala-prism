@@ -1,42 +1,36 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { message } from 'antd';
+import { Button } from 'antd';
 import { Link } from 'react-router-dom';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import PopOver from '../../../common/Organisms/Detail/PopOver';
 
 import './_style.scss';
+
+const baseProps = {
+  type: 'link',
+  style: { color: '#FF2D3B' },
+  disabled: true
+};
 
 const ActionButtons = ({ id, setGroupToDelete, fullInfo }) => {
   const { t } = useTranslation();
 
-  return (
-    <div className="ControlButtons">
+  const menu = (
+    <>
+      <Button {...baseProps}>
+        <Link to={`group/${id}`}>{t('groups.table.buttons.view')}</Link>
+      </Button>
+      <Button {...baseProps}>{t('groups.table.buttons.edit')}</Button>
       {fullInfo && (
-        <Fragment>
-          <CustomButton
-            buttonProps={{
-              onClick: setGroupToDelete,
-              className: 'theme-link',
-              disabled: true
-            }}
-            buttonText={t('groups.table.buttons.delete')}
-          />
-          <CustomButton
-            buttonProps={{
-              onClick: () => message.info(`The id to copy is ${id}`),
-              className: 'theme-link',
-              disabled: true
-            }}
-            buttonText={t('groups.table.buttons.copy')}
-          />
-        </Fragment>
+        <Button {...baseProps} onClick={setGroupToDelete}>
+          {t('groups.table.buttons.delete')}
+        </Button>
       )}
-      <Link disabled to={`group/${id}`}>
-        {t('groups.table.buttons.view')}
-      </Link>
-    </div>
+    </>
   );
+
+  return <PopOver content={menu} />;
 };
 
 ActionButtons.propTypes = {

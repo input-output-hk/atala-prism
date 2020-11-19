@@ -3,17 +3,12 @@
 .SettingsMenu {
   div {
     color: $white;
-    cursor: pointer
+    cursor: pointer;
   }
 }
 
-.ant-dropdown {
-  top: 50px !important;
-}
-
-
-  .ant-dropdown-menu{
-  .ant-dropdown-menu-item:hover{
-    background-color: transparent!important;
+.ant-dropdown-menu {
+  .ant-dropdown-menu-item:hover {
+    background-color: transparent !important;
   }
 }

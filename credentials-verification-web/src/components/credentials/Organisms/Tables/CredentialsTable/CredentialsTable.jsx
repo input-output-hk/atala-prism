@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import i18n from 'i18next';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
@@ -18,6 +19,10 @@ import {
 } from '../../../../../helpers/constants';
 import './_style.scss';
 
+const translationKeyPrefix = 'credentials.table.columns';
+
+const tp = chain => i18n.t(`${translationKeyPrefix}.${chain}`);
+
 const commonColumns = [
   {
     key: 'icon',
@@ -32,27 +37,19 @@ const commonColumns = [
   {
     key: 'credentialType',
     render: ({ credentialType }) => (
-      <CellRenderer
-        title="credentialType"
-        value={credentialType?.name}
-        componentName="credentials"
-      />
+      <CellRenderer title={tp('credentialType')} value={credentialType?.name} />
     )
   },
   {
     key: 'contactName',
     render: ({ contactData }) => (
-      <CellRenderer
-        title="contactName"
-        value={contactData.contactName}
-        componentName="credentials"
-      />
+      <CellRenderer title={tp('contactName')} value={contactData.contactName} />
     )
   },
   {
     key: 'externalId',
     render: ({ contactData }) => (
-      <CellRenderer title="externalId" value={contactData.externalid} componentName="credentials" />
+      <CellRenderer title={tp('externalId')} value={contactData.externalid} />
     )
   }
 ];
@@ -72,16 +69,15 @@ const getCredentialsIssuedColumns = (
     key: 'creationDate',
     render: ({ contactData }) => (
       <CellRenderer
-        title="creationDate"
+        title={tp('creationDate')}
         value={dayMonthYearBackendFormatter(contactData.creationDate)}
-        componentName="credentials"
       />
     )
   },
   {
     key: 'contactStatus',
     render: ({ contactData: { status } }) => (
-      <CellRenderer title="contactStatus" componentName="credentials">
+      <CellRenderer title={tp('contactStatus')}>
         <StatusBadge status={status} useCase={CONTACT_STATUS} />
       </CellRenderer>
     )
@@ -89,7 +85,7 @@ const getCredentialsIssuedColumns = (
   {
     key: 'credentialStatus',
     render: ({ status }) => (
-      <CellRenderer title="credentialStatus" componentName="credentials">
+      <CellRenderer title={tp('credentialStatus')}>
         <StatusBadge status={status} useCase={CREDENTIAL_STATUS} />
       </CellRenderer>
     )

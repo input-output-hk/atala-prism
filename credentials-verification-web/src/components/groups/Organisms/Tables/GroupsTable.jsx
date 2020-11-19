@@ -1,51 +1,18 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
-import ActionButtons from '../../Molecules/ActionButtons/ActionButtons';
-import { ReactComponent as GroupIcon } from '../../../../images/icon-groups.svg';
+import { getGroupColumns } from '../../../../helpers/tableDefinitions/groups';
+import { tableHeightKeys } from '../../../../helpers/propShapes';
 
 import './_style.scss';
-
-const getColumns = ({ setGroupToDelete, setGroup }) => {
-  const componentName = 'groups';
-  const fullInfo = !setGroup;
-
-  const actionColumn = {
-    key: 'actions',
-    width: 300,
-    render: ({ key, name }) => (
-      <ActionButtons
-        id={key}
-        setGroupToDelete={() => setGroupToDelete({ id: key, name })}
-        fullInfo={fullInfo}
-      />
-    )
-  };
-
-  const nameColumn = {
-    key: 'groupName',
-    width: 300,
-    render: ({ name }) => (
-      <CellRenderer title="groupName" componentName={componentName} value="" firstValue={name} />
-    )
-  };
-
-  const iconColumn = {
-    key: 'icon',
-    width: 25,
-    render: () => <GroupIcon />
-  };
-
-  return [iconColumn, nameColumn].concat(setGroupToDelete ? [actionColumn] : []);
-};
 
 const GroupsTable = ({
   setGroupToDelete,
   groups,
   selectedGroups,
   setSelectedGroups,
-  onPageChange
+  onPageChange,
+  size
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -55,7 +22,7 @@ const GroupsTable = ({
   };
 
   const tableProps = {
-    columns: getColumns({ setGroupToDelete, setSelectedGroups }),
+    columns: getGroupColumns({ setGroupToDelete, setSelectedGroups }),
     data: groups,
     selectionType: !setSelectedGroups
       ? null
@@ -67,7 +34,8 @@ const GroupsTable = ({
     loading,
     hasMore: false,
     getMoreData,
-    rowKey: 'name'
+    rowKey: 'name',
+    size
   };
 
   return (
@@ -81,7 +49,8 @@ GroupsTable.defaultProps = {
   groups: [],
   selectedGroups: [],
   setSelectedGroups: null,
-  setGroupToDelete: null
+  setGroupToDelete: null,
+  size: 'xl'
 };
 
 GroupsTable.propTypes = {
@@ -90,7 +59,8 @@ GroupsTable.propTypes = {
   onPageChange: PropTypes.func.isRequired,
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   setSelectedGroups: PropTypes.func,
-  hasMore: PropTypes.bool.isRequired
+  hasMore: PropTypes.bool.isRequired,
+  size: PropTypes.oneOf(tableHeightKeys)
 };
 
 export default GroupsTable;

@@ -294,3 +294,11 @@ export const emptyFile = {
   ],
   expectedParse: []
 };
+
+export const contactListToFilter = {
+  input: {
+    contactName: 'Lyla Dodd',
+    externalid: 'd8619d78-e516-433a-ad45-24c91e39c7c6'
+  },
+  list: validContacts.expectedParse
+};

@@ -142,6 +142,13 @@ export const SUCCESS = 'success';
 // this format also allows: 'DD/MM/YYYY', 'DD-MM-YY' and 'DD/MM/YY'
 export const DEFAULT_DATE_FORMAT = 'DD-MM-YYYY';
 
+export const TABLE_HEIGHTS = {
+  xs: 150,
+  sm: 200,
+  md: 280,
+  lg: 360,
+  xl: 460
+};
 // credentials tabs
 export const CREDENTIALS_ISSUED = 'CREDENTIALS_ISSUED';
 export const CREDENTIALS_RECIEVED = 'CREDENTIALS_RECIEVED';

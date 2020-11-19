@@ -115,15 +115,16 @@
     }
   },
   "groups": {
-    "title": "Graduation Groups",
+    "title": "Groups",
     "noGroups": {
       "photoAlt": "No groups yet",
       "title": "You don't have Graduation Groups yet",
       "subtitle": "Click on create new group to add your first one!"
     },
     "filters": {
-      "date": "Date",
-      "search": "Search"
+      "date": "Filter by Date",
+      "search": "Search",
+      "name": "Name"
     },
     "createNewGroup": "Create New Group",
     "onCreateNewGroupClick": "New Groups can not yet be created",
@@ -135,11 +136,14 @@
       "columns": {
         "groupName": "Group Name",
         "lastUpdate": "Last Update",
-        "credential": "Credential"
+        "credential": "Credential",
+        "createdAt": "Date Created",
+        "numberOfContacts": "Contacts"
       },
       "buttons": {
         "addCredential": "Add Credentials",
         "delete": "Delete",
+        "edit": "Edit",
         "copy": "Copy",
         "view": "View"
       }

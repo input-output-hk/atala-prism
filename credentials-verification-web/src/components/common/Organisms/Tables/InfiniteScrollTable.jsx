@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Table } from 'antd';
 import PropTypes from 'prop-types';
 import './_style.scss';
-import { yScroll } from '../../../../helpers/constants';
+import { tableHeightKeys } from '../../../../helpers/propShapes';
 
 const InfiniteScrollTable = ({
   selectionType,
@@ -12,7 +12,8 @@ const InfiniteScrollTable = ({
   loading,
   getMoreData,
   hasMore,
-  rowKey
+  rowKey,
+  size
 }) => {
   // This use effect handles the call for more data after
   // the scroll reaches the end
@@ -31,11 +32,10 @@ const InfiniteScrollTable = ({
   }, [hasMore, loading]);
 
   return (
-    <div className={handleSort ? '' : 'PaginatedTable'}>
+    <div className={`${handleSort ? '' : 'PaginatedTable'} table-${size}`}>
       <Table
         rowSelection={selectionType}
         columns={columns}
-        scroll={{ y: yScroll }}
         dataSource={data}
         onChange={(_pagination, _filters, sorter) => {
           if (handleSort) return handleSort(sorter);
@@ -50,7 +50,8 @@ const InfiniteScrollTable = ({
 InfiniteScrollTable.defaultProps = {
   data: [],
   selectionType: null,
-  handleSort: null
+  handleSort: null,
+  size: 'xl'
 };
 
 InfiniteScrollTable.propTypes = {
@@ -61,7 +62,8 @@ InfiniteScrollTable.propTypes = {
   loading: PropTypes.bool.isRequired,
   getMoreData: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
-  rowKey: PropTypes.string.isRequired
+  rowKey: PropTypes.string.isRequired,
+  size: PropTypes.oneOfType(tableHeightKeys)
 };
 
 export default InfiniteScrollTable;

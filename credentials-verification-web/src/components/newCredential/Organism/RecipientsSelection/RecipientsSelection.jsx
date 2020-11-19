@@ -59,6 +59,7 @@ const RecipientsSelection = ({
                 groups={groups}
                 selectedGroups={selectedGroups}
                 setSelectedGroups={setSelectedGroups}
+                size="xs"
               />
             </div>
           )}

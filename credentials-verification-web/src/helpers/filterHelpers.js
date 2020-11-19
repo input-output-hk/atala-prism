@@ -7,8 +7,5 @@ export const filterByNewerDate = (filter, field) => !filter || filter < field;
 
 export const filterByManyFields = (toFilter, filterValue, keys) =>
   toFilter.filter(item =>
-    keys.reduce(
-      (matches, key) => matches || item[key].toLowerCase().includes(filterValue.toLowerCase()),
-      false
-    )
+    keys.reduce((matches, key) => matches || filterByInclusion(filterValue, item[key]), false)
   );

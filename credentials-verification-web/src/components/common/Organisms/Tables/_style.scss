@@ -1,6 +1,22 @@
 @import '../../../../css/general_styling';
 
-.PaginatedTable,.PaginatedTableHeader  {
+$sizes: (
+  'xs': 20vh,
+  'sm': 30vh,
+  'md': 40vh,
+  'lg': 50vh,
+  'xl': 60vh
+);
+
+@each $sizeKey, $size in $sizes {
+  .table-#{$sizeKey} {
+    height: $size;
+    overflow-y: scroll;
+  }
+}
+
+.PaginatedTable,
+.PaginatedTableHeader {
   margin-top: 10px;
   table {
     @include primary-text($body, $black);
@@ -29,17 +45,18 @@
     }
   }
 }
-.PaginatedTable{
+
+.PaginatedTable {
   .ant-table-thead {
     display: none;
   }
 }
-.PaginatedTableHeader{
 
-  .ant-table-thead > tr > th{
+.PaginatedTableHeader {
+  .ant-table-thead > tr > th {
     padding: 0.7em 0.5em 0;
     vertical-align: middle;
     background: $light-grey;
     border-bottom: 4px solid $white;
-}
+  }
 }

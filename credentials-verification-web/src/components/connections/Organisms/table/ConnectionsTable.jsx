@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import i18n from 'i18next';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
 import { dayMonthYearBackendFormatter } from '../../../../helpers/formatters';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 import { contactShape } from '../../../../helpers/propShapes';
+
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 import PopOver from '../../../common/Organisms/Detail/PopOver';
 
 import './_style.scss';
+
+const translationKeyPrefix = 'contacts.table.columns';
+
+const tp = chain => i18n.t(`${translationKeyPrefix}.${chain}`);
 
 const getColumns = ({ inviteContact, viewContactDetail }) => {
   const generalColumns = [
@@ -26,32 +32,28 @@ const getColumns = ({ inviteContact, viewContactDetail }) => {
     },
     {
       key: 'contactName',
-      render: ({ contactName }) => (
-        <CellRenderer title="contactName" value={contactName} componentName="contacts" />
-      )
+      render: ({ contactName }) => <CellRenderer title={tp('contactName')} value={contactName} />
     },
     {
       key: 'externalid',
-      render: ({ externalid }) => (
-        <CellRenderer title="externalid" value={externalid} componentName="contacts" />
-      )
+      render: ({ externalid }) => <CellRenderer title={tp('externalid')} value={externalid} />
     },
     {
       key: 'creationDate',
       render: ({ creationDate }) => (
         <CellRenderer
-          title="creationDate"
+          title={tp('creationDate')}
           value={dayMonthYearBackendFormatter(creationDate)}
-          componentName="contacts"
         />
       )
     }
   ];
+
   const extraColumns = [
     {
       key: 'connectionstatus',
       render: ({ status }) => (
-        <CellRenderer title="contactStatus" componentName="contacts">
+        <CellRenderer title={tp('contactStatus')}>
           <StatusBadge status={status} />
         </CellRenderer>
       )

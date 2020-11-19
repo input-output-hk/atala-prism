@@ -10,6 +10,8 @@ import { groupShape } from '../../helpers/propShapes';
 import noGroups from '../../images/noGroups.svg';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
+import { backendDateFormat } from '../../helpers/formatters';
+import { filterByInclusion } from '../../helpers/filterHelpers';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -34,16 +36,36 @@ const Groups = ({
 }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [date, setDate] = useState('');
+
   const [groupToDelete, setGroupToDelete] = useState({});
+  const [filteredGroups, setFilteredGroups] = useState([]);
 
   const closeModal = () => {
     setGroupToDelete({});
   };
 
   useEffect(() => {
+    setFilteredGroups(filterGroups());
+  }, [groups, name, date]);
+
+  useEffect(() => {
     const hasValues = Object.keys(groupToDelete).length !== 0;
     setOpen(hasValues);
   }, [groupToDelete]);
+
+  const filterGroups = () =>
+    groups.filter(
+      group =>
+        filterByInclusion(name, group.name) &&
+        (!date || backendDateFormat(group.createdat) === date)
+    );
+
+  const handleUpdateGroups = (oldGroups, newDate, newName) => {
+    setName(newName);
+    setDate(newDate);
+  };
 
   const modalProps = {
     toDelete: { name: groupToDelete.groupName, id: groupToDelete.id },
@@ -54,9 +76,9 @@ const Groups = ({
   };
 
   const tableProps = {
-    setGroupToDelete,
-    groups,
     onPageChange: updateGroups,
+    scroll: '60vh',
+    setGroupToDelete,
     hasMore
   };
 
@@ -69,10 +91,10 @@ const Groups = ({
         <h1>{t('groups.title')}</h1>
         {newGroupButton}
       </div>
-      <GroupFilters updateGroups={updateGroups} />
+      <GroupFilters updateGroups={handleUpdateGroups} />
       <Row>
         {groups.length ? (
-          <GroupsTable {...tableProps} />
+          <GroupsTable {...tableProps} groups={filteredGroups} />
         ) : (
           <EmptyComponent photoSrc={noGroups} model={t('groups.title')} button={newGroupButton} />
         )}

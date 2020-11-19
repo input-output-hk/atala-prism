@@ -7,53 +7,58 @@ import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { dayMonthYearBackendFormatter } from '../../../../helpers/formatters';
 
 import './_style.scss';
+import { useTranslationWithPrefix } from '../../../../hooks/useTranslationWithPrefix';
 
-const RecipientsList = ({ recipients }) => (
-  <div className="RecipientsList">
-    <Table
-      showHeader={false}
-      pagination={false}
-      columns={[
-        {
-          width: '60px',
-          render: ({ contactid }) => (
-            <img
-              style={{ width: '40px', height: '40px' }}
-              src={contactid ? contactLogo : groupLogo}
-              alt="logo"
-            />
-          )
-        },
-        {
-          render: ({ contactName, name }) => (
-            <CellRenderer
-              title={contactName ? 'contactName' : 'groupName'}
-              value={contactName || name}
-              componentName={contactName ? 'contacts' : 'groups'}
-            />
-          )
-        },
-        {
-          render: ({ externalid }) =>
-            externalid && (
-              <CellRenderer title="externalid" value={externalid} componentName="contacts" />
-            )
-        },
-        {
-          render: ({ creationDate }) =>
-            creationDate && (
-              <CellRenderer
-                title="creationDate"
-                value={dayMonthYearBackendFormatter(creationDate)}
-                componentName="contacts"
+const contactsPrefix = 'contacts.table.columns';
+const groupsPrefix = 'groups.table.columns';
+
+const RecipientsList = ({ recipients }) => {
+  const tpc = useTranslationWithPrefix(contactsPrefix);
+  const tpg = useTranslationWithPrefix(groupsPrefix);
+
+  return (
+    <div className="RecipientsList">
+      <Table
+        showHeader={false}
+        pagination={false}
+        columns={[
+          {
+            width: '60px',
+            render: ({ contactid }) => (
+              <img
+                style={{ width: '40px', height: '40px' }}
+                src={contactid ? contactLogo : groupLogo}
+                alt="logo"
               />
             )
-        }
-      ]}
-      dataSource={recipients}
-    />
-  </div>
-);
+          },
+          {
+            render: ({ contactName, groupName }) => (
+              <CellRenderer
+                title={contactName ? tpc('contactName') : tpg('groupName')}
+                value={contactName || groupName}
+              />
+            )
+          },
+          {
+            render: ({ externalid }) =>
+              externalid && <CellRenderer title={tpc('externalid')} value={externalid} />
+          },
+          {
+            render: ({ creationDate }) =>
+              creationDate && (
+                <CellRenderer
+                  title={tpc('creationDate')}
+                  value={dayMonthYearBackendFormatter(creationDate)}
+                />
+              )
+          }
+        ]}
+        dataSource={recipients}
+      />
+    </div>
+  );
+};
 
 RecipientsList.propTypes = {
   recipients: PropTypes.arrayOf(
