@@ -9,11 +9,7 @@ const {
   CreateGenericCredentialRequest,
   GetContactCredentialsRequest
 } = require('../../protos/cmanager_api_pb');
-const {
-  Credential,
-  AtalaMessage,
-  IssuerSentCredential
-} = require('../../protos/credential_models_pb');
+const { AtalaMessage, PlainTextCredential } = require('../../protos/credential_models_pb');
 
 async function getCredentials(limit, lastSeenCredentialId = null) {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
@@ -25,7 +21,6 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   const metadata = await this.auth.getMetadata(getCredentialsRequest);
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
-
   const credentialsList = result.getCredentialsList().map(cred => {
     const credential = cred.toObject();
     const credentialData = JSON.parse(cred.getCredentialdata());
@@ -96,64 +91,14 @@ async function createBatchOfCredentials(credentialsData) {
   return Promise.all(credentialStudentsPromises);
 }
 
-function populateCredential({ issuerInfo, subjectInfo, additionalInfo }) {
-  const credentialType = ['VerifiableCredential', 'AirsideDegreeCredential'];
-  const credential = new Credential();
-  const credentialDocument = {
-    type: credentialType,
-    issuer: issuerInfo,
-    issuanceDate: dayMonthYearBackendFormatter(additionalInfo.graduationDate),
-    credentialSubject: {
-      name: subjectInfo.fullName,
-      degreeAwarded: 'Bachelor of Science',
-      degreeResult: 'First class honors',
-      graduationYear: additionalInfo.graduationDate.year
-    }
-  };
-
-  credential.setTypeid(credentialType.join('/'));
-  credential.setCredentialdocument(JSON.stringify(credentialDocument));
-
-  return credential;
-}
-
-function parseAndPopulate(credentialData, studentData, did) {
-  const { enrollmentdate, graduationdate, id, issuername, title } = credentialData;
-
-  const issuerInfo = {
-    name: issuername,
-    did
-  };
-
-  const { fullName } = studentData;
-
-  const subjectInfo = {
-    fullName
-  };
-
-  const additionalInfo = {
-    degree: title,
-    issueNumber: id,
-    admissionDate: enrollmentdate,
-    graduationDate: graduationdate
-  };
-
-  return populateCredential({
-    issuerInfo,
-    subjectInfo,
-    additionalInfo
-  });
-}
-
-function getCredentialBinary(connectionData, studentData, did) {
+function getCredentialBinary(credential) {
+  const { encodedsignedcredential } = credential;
   const atalaMessage = new AtalaMessage();
-  const issuerCredential = new IssuerSentCredential();
+  const plainTextCredential = new PlainTextCredential();
 
-  const credential = parseAndPopulate(connectionData, studentData, did);
-  issuerCredential.setCredential(credential);
+  plainTextCredential.setEncodedcredential(encodedsignedcredential);
 
-  atalaMessage.setIssuersentcredential(issuerCredential);
-
+  atalaMessage.setPlaincredential(plainTextCredential);
   return atalaMessage.serializeBinary();
 }
 

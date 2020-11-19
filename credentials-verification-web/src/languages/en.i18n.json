@@ -166,6 +166,12 @@
         }
       }
     },
+    "modal": {
+      "title": "You are about to send:",
+      "sendables": "{{sendables}} credential(s)",
+      "nonSendables": "{{nonSendables}} credential(s) ",
+      "nonSendablesText": "cannot be sent because their connections are pending and/or the credentials have not been signed."
+    },
     "tabs": {
       "credentialsIssued": "Credentials Issued",
       "credentialsRecieved": "Credentials Recieved"
@@ -176,7 +182,9 @@
       "sendSelectedCredentials": "Send Credentials",
       "signOneCredential": "Sign",
       "sendOneCredential": "Send",
-      "selectAll": "Select All"
+      "selectAll": "Select All",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     },
     "filters": {
       "ID": "ID",
@@ -238,12 +246,6 @@
       "proofOfEmployment": "Proof of Employment",
       "healthInsurance": "Health Insurance"
     },
-    "sentCredentialModal": {
-      "title": "You are about to send",
-      "credentials": "credentials",
-      "cantSendText": "cannot be sent because their connections are pending and/or the credentials have not been signed.",
-      "confirm": "Confirm"
-    },
     "status": {
       "credentialDraft": "Credential Draft",
       "credentialSigned": "Credential Signed",
@@ -254,10 +256,8 @@
       "notImplementedYet": "This functionality is not implemented yet"
     },
     "success": {
-      "successSingleSign": "Succesfully sent credential to the wallet",
-      "successSingleSend": "Succesfully sent credential to the contact",
-      "successSelectedSign": "Succesfully sent credentials to the wallet",
-      "successSelectedSend": "Succesfully sent credentials to the contact"
+      "successSign": "Succesfully sent credential(s) to the wallet",
+      "successSend": "Succesfully sent credential(s) to the contact"
     },
     "errors": {
       "errorSigning": "An error occurred while signing the credential(s)",

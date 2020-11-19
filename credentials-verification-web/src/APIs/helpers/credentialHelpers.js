@@ -32,8 +32,8 @@ function getCredentialTypeObject(credentialData, credentialTypes) {
 }
 
 function getCredentialStatus(credential) {
-  const { publicationstoredat, sharedAt } = credential;
-  if (sharedAt) return CREDENTIAL_STATUSES.credentialSent;
+  const { publicationstoredat, sharedat } = credential;
+  if (sharedat) return CREDENTIAL_STATUSES.credentialSent;
   if (publicationstoredat) return CREDENTIAL_STATUSES.credentialSigned;
   return CREDENTIAL_STATUSES.credentialDraft;
 }

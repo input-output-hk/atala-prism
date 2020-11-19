@@ -70,7 +70,7 @@ const errorCredential = {
   }
 };
 
-async function issueCredential(message, connectionId) {
+async function sendCredential(message, connectionId) {
   const sendMessageRequest = new SendMessageRequest();
 
   sendMessageRequest.setConnectionid(connectionId);
@@ -124,7 +124,7 @@ function Connector(config, auth) {
 
 Connector.prototype.getConnectionsPaginated = getConnectionsPaginated;
 Connector.prototype.getMessagesForConnection = getMessagesForConnection;
-Connector.prototype.issueCredential = issueCredential;
+Connector.prototype.sendCredential = sendCredential;
 Connector.prototype.registerUser = registerUser;
 Connector.prototype.getCredentialsRecieved = getCredentialsRecieved;
 

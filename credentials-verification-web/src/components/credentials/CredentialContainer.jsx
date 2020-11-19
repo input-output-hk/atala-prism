@@ -4,6 +4,7 @@ import { message } from 'antd';
 import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
+import SendCredentialsConfirmationModal from './Molecules/Modals/SendCredentialConfirmationModal';
 import { withApi } from '../providers/withApi';
 import { credentialMapper, credentialRecievedMapper } from '../../APIs/helpers/credentialHelpers';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
@@ -13,7 +14,8 @@ import {
   CREDENTIAL_STATUSES_TRANSLATOR,
   MAX_CREDENTIALS,
   CREDENTIALS_ISSUED,
-  CREDENTIALS_RECIEVED
+  CREDENTIALS_RECIEVED,
+  CONNECTION_STATUSES
 } from '../../helpers/constants';
 
 const SEND_CREDENTIALS = 'SEND_CREDENTIALS';
@@ -44,6 +46,7 @@ const CredentialContainer = ({ api }) => {
   const [loadingSelection, setLoadingSelection] = useState(false);
 
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const fetchCredentialsIssued = async () => {
     try {
@@ -131,84 +134,135 @@ const CredentialContainer = ({ api }) => {
     setSelectAll(!hasMoreIssued && selectedRowKeys.length === credentialsIssued.length);
   };
 
-  const signCredentials = creds => api.wallet.signCredentials(creds);
+  const signCredentials = credentials => api.wallet.signCredentials(credentials);
 
-  // TODO: implement sending credenitals
-  const sendCredentials = () => {};
+  const sendCredentials = credentials => {
+    const sendCredentialsRequests = credentials.map(async ({ contactData, ...cred }) => {
+      const { connectionid } = await api.contactsManager.getContact(contactData.contactid);
+      const credentialBinary = await api.credentialsManager.getCredentialBinary(cred);
+      return api.connector.sendCredential(credentialBinary, connectionid);
+    });
 
-  const showSuccess = () => {
-    Logger.info('Successfully sent the credential(s) to the wallet');
-    message.success(t('credentials.success.successSingleSign'));
+    return Promise.all(sendCredentialsRequests);
   };
 
-  const showNotImplementedWarning = () => {
-    message.warn(t('credentials.messages.notImplementedYet'));
+  const showSignSuccess = () => {
+    Logger.info('Successfully sent the credential(s) to the wallet');
+    message.success(t('credentials.success.successSign'));
+  };
+
+  const showSendSuccess = () => {
+    Logger.info('Successfully sent the credential(s) to the wallet');
+    message.success(t('credentials.success.successSend'));
+  };
+
+  const showSignError = error => {
+    Logger.error(error);
+    message.error(t('credentials.errors.errorSigning'));
+  };
+
+  const showSendError = error => {
+    Logger.error(error);
+    message.error(t('credentials.errors.errorSigning'));
+  };
+
+  const signCredentialsRequiredStatus = {
+    credential: CREDENTIAL_STATUSES.credentialDraft
+  };
+
+  const sendCredentialsRequiredStatus = {
+    credential: CREDENTIAL_STATUSES.credentialSigned,
+    contact: CONNECTION_STATUSES.connectionAccepted
   };
 
   const actions = {
     [SIGN_CREDENTIALS]: {
       apiCall: signCredentials,
-      requiredStatus: CREDENTIAL_STATUSES.credentialDraft,
-      isBulkAction: true,
-      onSuccess: showSuccess
+      requiredStatus: signCredentialsRequiredStatus,
+      onSuccess: showSignSuccess,
+      onError: showSignError
     },
     [SEND_CREDENTIALS]: {
       apiCall: sendCredentials,
-      requiredStatus: CREDENTIAL_STATUSES.credentialSigned,
-      isBulkAction: true,
-      onSuccess: showNotImplementedWarning
+      requiredStatus: sendCredentialsRequiredStatus,
+      onSuccess: showSendSuccess,
+      onError: showSendError
     },
     [SIGN_SINGLE_CREDENTIAL]: {
       apiCall: signCredentials,
-      requiredStatus: CREDENTIAL_STATUSES.credentialDraft,
-      onSuccess: showSuccess
+      onSuccess: showSignSuccess,
+      onError: showSignError
     },
     [SEND_SINGLE_CREDENTIAL]: {
       apiCall: sendCredentials,
-      requiredStatus: CREDENTIAL_STATUSES.credentialSigned,
-      onSuccess: showNotImplementedWarning
+      onSuccess: showSendSuccess,
+      onError: showSendError
     }
   };
 
   const getTargetById = targetId =>
     credentialsIssued.find(creds => creds.credentialid === targetId);
 
-  const getTargetCredentials = actionType => {
-    const targetCredentials = getSelectedCredentials();
-    return targetCredentials.filter(({ status }) => status === actions[actionType].requiredStatus);
+  const wrapSingleCredential = targetId => ({
+    targetCredentials: [getTargetById(targetId)]
+  });
+
+  const getTargetCredentials = requiredStatus => {
+    const selected = getSelectedCredentials();
+    return {
+      selected,
+      targetCredentials: selected.filter(({ status, contactData }) => {
+        const validCredentialStatus =
+          !requiredStatus.credential || status === requiredStatus.credential;
+        const validContactStatus =
+          !requiredStatus.contact || contactData.status === requiredStatus.contact;
+        return validCredentialStatus && validContactStatus;
+      })
+    };
   };
 
   const getSelectedCredentials = () =>
     credentialsIssued.filter(c => selectedCredentials.includes(c.credentialid));
 
   const performBackendAction = async (actionType, targetId) => {
+    const { requiredStatus, apiCall, onSuccess, onError } = actions[actionType];
     try {
-      const targetCredentials = actions[actionType].isBulkAction
-        ? getTargetCredentials(actionType)
-        : [getTargetById(targetId)];
+      const { targetCredentials } = requiredStatus
+        ? getTargetCredentials(requiredStatus)
+        : wrapSingleCredential(targetId);
       if (!targetCredentials.length) {
-        const statusName = CREDENTIAL_STATUSES_TRANSLATOR[actions[actionType].requiredStatus];
+        const statusName = CREDENTIAL_STATUSES_TRANSLATOR[requiredStatus];
         throw new Error(
           `Invalid credential status. Select at least one credential in '${t(
             `credentials.status.${statusName}`
           )}' status`
         );
       }
-
-      await actions[actionType].apiCall(targetCredentials);
-      actions[actionType].onSuccess();
+      if (apiCall) await apiCall(targetCredentials);
+      if (onSuccess) onSuccess();
     } catch (error) {
-      Logger.error(error);
-      message.error(t('credentials.errors.errorSigning'));
+      if (onError) onError(error);
     }
   };
 
   const signSelectedCredentials = () => performBackendAction(SIGN_CREDENTIALS);
-  const sendSelectedCredentials = () => performBackendAction(SEND_CREDENTIALS);
   const signSingleCredential = credentialid =>
     performBackendAction(SIGN_SINGLE_CREDENTIAL, credentialid);
   const sendSingleCredential = credentialid =>
     performBackendAction(SEND_SINGLE_CREDENTIAL, credentialid);
+
+  const sendSelectedCredentials = () => {
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmSend = () => {
+    setShowConfirmationModal(false);
+    performBackendAction(SEND_CREDENTIALS);
+  };
+
+  const handleCancel = () => {
+    setShowConfirmationModal(false);
+  };
 
   const tabProps = {
     [CREDENTIALS_ISSUED]: {
@@ -247,7 +301,17 @@ const CredentialContainer = ({ api }) => {
     }
   };
 
-  return <Credentials tabProps={tabProps} setActiveTab={setActiveTab} />;
+  return (
+    <>
+      <SendCredentialsConfirmationModal
+        visible={showConfirmationModal}
+        onOk={handleConfirmSend}
+        onCancel={handleCancel}
+        {...getTargetCredentials(sendCredentialsRequiredStatus)}
+      />
+      <Credentials tabProps={tabProps} setActiveTab={setActiveTab} />
+    </>
+  );
 };
 
 CredentialContainer.propTypes = {
@@ -261,7 +325,10 @@ CredentialContainer.propTypes = {
     wallet: PropTypes.shape({
       signCredentials: PropTypes.func.isRequired
     }).isRequired,
-    connector: PropTypes.shape({ issueCredential: PropTypes.func.isRequired }).isRequired,
+    connector: PropTypes.shape({
+      getCredentialsRecieved: PropTypes.func.isRequired,
+      sendCredential: PropTypes.func.isRequired
+    }).isRequired,
     getCredentialTypes: PropTypes.func.isRequired,
     getCategoryTypes: PropTypes.func.isRequired,
     getCredentialsGroups: PropTypes.func.isRequired,
