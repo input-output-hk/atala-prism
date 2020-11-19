@@ -11,21 +11,14 @@ import StatusBadge from '../../../../connections/Atoms/StatusBadge/StatusBadge';
 import PopOver from '../../../../common/Organisms/Detail/PopOver';
 import {
   CREDENTIAL_STATUSES,
-  CREDENTIAL_STATUS,
-  CONTACT_STATUS
+  CREDENTIALS_ISSUED,
+  CREDENTIALS_RECIEVED,
+  CONTACT_STATUS,
+  CREDENTIAL_STATUS
 } from '../../../../../helpers/constants';
 import './_style.scss';
 
-const getColumns = (
-  viewText,
-  signText,
-  sendText,
-  onView,
-  signSingleCredential,
-  sendSingleCredential,
-  loadingSignSingle,
-  loadingSendSingle
-) => [
+const commonColumns = [
   {
     key: 'icon',
     render: ({ credentialType }) => (
@@ -61,7 +54,20 @@ const getColumns = (
     render: ({ contactData }) => (
       <CellRenderer title="externalId" value={contactData.externalid} componentName="credentials" />
     )
-  },
+  }
+];
+
+const getCredentialsIssuedColumns = (
+  viewText,
+  signText,
+  sendText,
+  onView,
+  signSingleCredential,
+  sendSingleCredential,
+  loadingSignSingle,
+  loadingSendSingle
+) => [
+  ...commonColumns,
   {
     key: 'creationDate',
     render: ({ contactData }) => (
@@ -129,6 +135,27 @@ const getColumns = (
   }
 ];
 
+const getCredentialsRecievedColumns = (viewText, onView) => [
+  ...commonColumns,
+  {
+    key: 'actions',
+    render: ({ status, credentialid }) => {
+      const actionButtons = (
+        <div>
+          <CustomButton
+            buttonProps={{
+              className: 'theme-link',
+              onClick: onView
+            }}
+            buttonText={viewText}
+          />
+        </div>
+      );
+      return <PopOver content={actionButtons} />;
+    }
+  }
+];
+
 const CredentialsTable = ({
   credentials,
   loading,
@@ -137,8 +164,8 @@ const CredentialsTable = ({
   onView,
   signSingleCredential,
   sendSingleCredential,
-  selectedCredentials,
-  handleSelectionChange
+  selectionType,
+  tab
 }) => {
   const { t } = useTranslation();
   const [loadingSignSingle, setLoadingSignSingle] = useState();
@@ -156,36 +183,38 @@ const CredentialsTable = ({
     setLoadingSendSingle(false);
   };
 
+  const columns = {
+    [CREDENTIALS_ISSUED]: getCredentialsIssuedColumns(
+      t('actions.view'),
+      t('credentials.actions.signOneCredential'),
+      t('credentials.actions.sendOneCredential'),
+      onView,
+      wrapSignSingleCredential,
+      wrapSendSingleCredential,
+      loadingSignSingle,
+      loadingSendSingle
+    ),
+    [CREDENTIALS_RECIEVED]: getCredentialsRecievedColumns(t('actions.view'), onView)
+  };
+
   return (
     <div className="CredentialsTable">
       <InfiniteScrollTable
-        columns={getColumns(
-          t('actions.view'),
-          t('credentials.actions.signOneCredential'),
-          t('credentials.actions.sendOneCredential'),
-          onView,
-          wrapSignSingleCredential,
-          wrapSendSingleCredential,
-          loadingSignSingle,
-          loadingSendSingle
-        )}
+        columns={columns[tab]}
         data={credentials}
         loading={loading}
         getMoreData={getMoreData}
         hasMore={hasMore}
         rowKey="credentialid"
-        selectionType={{
-          selectedRowKeys: selectedCredentials,
-          type: 'checkbox',
-          onChange: handleSelectionChange
-        }}
+        selectionType={selectionType}
       />
     </div>
   );
 };
 
 CredentialsTable.defaultProps = {
-  credentials: []
+  credentials: [],
+  selectionType: null
 };
 
 CredentialsTable.propTypes = {
@@ -196,8 +225,11 @@ CredentialsTable.propTypes = {
   onView: PropTypes.func.isRequired,
   signSingleCredential: PropTypes.func.isRequired,
   sendSingleCredential: PropTypes.func.isRequired,
-  selectedCredentials: PropTypes.func.isRequired,
-  handleSelectionChange: PropTypes.func.isRequired
+  selectionType: PropTypes.shape({
+    selectedRowKeys: PropTypes.arrayOf(PropTypes.string),
+    onChange: PropTypes.func
+  }),
+  tab: PropTypes.oneOf([CREDENTIALS_ISSUED, CREDENTIALS_RECIEVED]).isRequired
 };
 
 export default CredentialsTable;

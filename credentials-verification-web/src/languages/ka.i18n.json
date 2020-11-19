@@ -166,6 +166,10 @@
         }
       }
     },
+    "tabs": {
+      "credentialsIssued": "Credentials Issued",
+      "credentialsRecieved": "Credentials Recieved"
+    },
     "actions": {
       "createCredential": "Create Credential",
       "signSelectedCredentials": "Sign Credentials",

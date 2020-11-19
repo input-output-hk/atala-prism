@@ -5,7 +5,8 @@ const {
   GetConnectionsPaginatedRequest,
   GetMessagesForConnectionRequest,
   SendMessageRequest,
-  RegisterDIDRequest
+  RegisterDIDRequest,
+  GetMessagesPaginatedRequest
 } = require('../../protos/connector_api_pb');
 
 const { AtalaMessage, Credential } = require('../../protos/credential_models_pb');
@@ -101,6 +102,20 @@ async function registerUser(createOperation, name, logoFile, isIssuer) {
   return id;
 }
 
+async function getCredentialsRecieved(limit, lastSeenMessageId = null) {
+  Logger.info(`getting credentials recieved from ${lastSeenMessageId}, limit ${limit}`);
+
+  const getCredentialsRecievedRequest = new GetMessagesPaginatedRequest();
+  getCredentialsRecievedRequest.setLimit(limit);
+  getCredentialsRecievedRequest.setLastseenmessageid(lastSeenMessageId);
+
+  const metadata = await this.auth.getMetadata(getCredentialsRecievedRequest);
+
+  const result = await this.client.getMessagesPaginated(getCredentialsRecievedRequest, metadata);
+
+  return result.getMessagesList().map(msg => getCredentialFromMessage(msg));
+}
+
 function Connector(config, auth) {
   this.config = config;
   this.auth = auth;
@@ -111,5 +126,6 @@ Connector.prototype.getConnectionsPaginated = getConnectionsPaginated;
 Connector.prototype.getMessagesForConnection = getMessagesForConnection;
 Connector.prototype.issueCredential = issueCredential;
 Connector.prototype.registerUser = registerUser;
+Connector.prototype.getCredentialsRecieved = getCredentialsRecieved;
 
 export default Connector;

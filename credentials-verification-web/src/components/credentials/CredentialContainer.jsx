@@ -5,13 +5,15 @@ import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import { withApi } from '../providers/withApi';
-import { credentialMapper } from '../../APIs/helpers/credentialHelpers';
+import { credentialMapper, credentialRecievedMapper } from '../../APIs/helpers/credentialHelpers';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import {
   CREDENTIAL_PAGE_SIZE,
   CREDENTIAL_STATUSES,
   CREDENTIAL_STATUSES_TRANSLATOR,
-  MAX_CREDENTIALS
+  MAX_CREDENTIALS,
+  CREDENTIALS_ISSUED,
+  CREDENTIALS_RECIEVED
 } from '../../helpers/constants';
 
 const SEND_CREDENTIALS = 'SEND_CREDENTIALS';
@@ -23,24 +25,29 @@ const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
   // This field is used to know if there are no credentials on
   // the database, independently of the filters
-  const [noCredentials, setNoCredentials] = useState(true);
+  const [noIssuedCredentials, setNoIssuedCredentials] = useState(true);
+  const [noRecievedCredentials, setNoRecievedCredentials] = useState(true);
 
   // These are the arrays from options
   const [categories, setCategories] = useState([]);
   const [groups, setGroups] = useState([]);
 
   // These are the credentials returned from the "backend"
-  const [credentials, setCredentials] = useState([]);
+  const [credentialsIssued, setCredentialsIssued] = useState([]);
+  const [hasMoreIssued, setHasMoreIssued] = useState(true);
+  const [credentialsRecieved, setCredentialsRecieved] = useState([]);
+  const [hasMoreRecieved, setHasMoreRecieved] = useState(true);
   const [selectedCredentials, setSelectedCredentials] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
 
   const [selectAll, setSelectAll] = useState(false);
   const [indeterminateSelectAll, setIndeterminateSelectAll] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
 
-  const fetchCredentials = async () => {
+  const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
+
+  const fetchCredentialsIssued = async () => {
     try {
-      const { credentialid } = getLastArrayElementOrEmpty(credentials);
+      const { credentialid } = getLastArrayElementOrEmpty(credentialsIssued);
 
       const newlyFetchedCredentials = await api.credentialsManager.getCredentials(
         CREDENTIAL_PAGE_SIZE,
@@ -48,16 +55,39 @@ const CredentialContainer = ({ api }) => {
       );
 
       if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) {
-        setHasMore(false);
+        setHasMoreIssued(false);
       }
 
       const credentialTypes = api.credentialsManager.getCredentialTypes();
       const mappedCredentials = newlyFetchedCredentials.map(cred =>
         credentialMapper(cred, credentialTypes)
       );
-      const updatedCredentialsIssued = credentials.concat(mappedCredentials);
-      setCredentials(updatedCredentialsIssued);
-      setNoCredentials(!updatedCredentialsIssued.length);
+      const updatedCredentialsIssued = credentialsIssued.concat(mappedCredentials);
+      setCredentialsIssued(updatedCredentialsIssued);
+      setNoIssuedCredentials(!updatedCredentialsIssued.length);
+    } catch (error) {
+      Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
+      message.error(t('errors.errorGetting', { model: 'Credentials' }));
+    }
+  };
+
+  const fetchCredentialsRecieved = async () => {
+    try {
+      const { messageid } = getLastArrayElementOrEmpty(credentialsRecieved);
+
+      const newlyFetchedCredentials = await api.connector.getCredentialsRecieved(
+        CREDENTIAL_PAGE_SIZE,
+        messageid
+      );
+
+      if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) {
+        setHasMoreRecieved(false);
+      }
+
+      const mappedCredentials = newlyFetchedCredentials.map(credentialRecievedMapper);
+      const updatedCredentialsRecieved = credentialsRecieved.concat(mappedCredentials);
+      setCredentialsRecieved(updatedCredentialsRecieved);
+      setNoRecievedCredentials(!updatedCredentialsRecieved.length);
     } catch (error) {
       Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
@@ -65,24 +95,18 @@ const CredentialContainer = ({ api }) => {
   };
 
   useEffect(() => {
-    fetchCredentials();
+    fetchCredentialsIssued();
   }, []);
 
   useEffect(() => {
-    if (!credentials.length && hasMore) fetchCredentials();
-  }, [credentials, hasMore]);
+    if (!credentialsIssued.length && hasMoreIssued) fetchCredentialsIssued();
+  }, [credentialsIssued, hasMoreIssued]);
 
-  useEffect(() => {
-    if (selectAll) {
-      setSelectedCredentials(credentials.map(c => c.credentialid));
-    }
-  }, [credentials]);
-
-  const getAllCredentials = async () => {
+  const getAllCredentialsIssued = async () => {
     const allCredentials = await api.credentialsManager.getCredentials(MAX_CREDENTIALS, null);
     const credentialTypes = api.credentialsManager.getCredentialTypes();
     const mappedCredentials = allCredentials.map(cred => credentialMapper(cred, credentialTypes));
-    setCredentials(mappedCredentials);
+    setCredentialsIssued(mappedCredentials);
     return mappedCredentials;
   };
 
@@ -91,9 +115,9 @@ const CredentialContainer = ({ api }) => {
     const { checked } = ev.target;
     setIndeterminateSelectAll(false);
     setSelectAll(checked);
-    setSelectedCredentials(checked ? credentials.map(c => c.credentialid) : []);
-    if (checked && hasMore) {
-      const allCredentials = await getAllCredentials();
+    setSelectedCredentials(checked ? credentialsIssued.map(c => c.credentialid) : []);
+    if (checked && hasMoreIssued) {
+      const allCredentials = await getAllCredentialsIssued();
       setSelectedCredentials(allCredentials.map(c => c.credentialid));
     }
     setLoadingSelection(false);
@@ -102,9 +126,9 @@ const CredentialContainer = ({ api }) => {
   const handleSelectionChange = selectedRowKeys => {
     setSelectedCredentials(selectedRowKeys);
     setIndeterminateSelectAll(
-      !!selectedRowKeys.length && selectedRowKeys.length < credentials.length
+      !!selectedRowKeys.length && selectedRowKeys.length < credentialsIssued.length
     );
-    setSelectAll(!hasMore && selectedRowKeys.length === credentials.length);
+    setSelectAll(!hasMoreIssued && selectedRowKeys.length === credentialsIssued.length);
   };
 
   const signCredentials = creds => api.wallet.signCredentials(creds);
@@ -146,7 +170,8 @@ const CredentialContainer = ({ api }) => {
     }
   };
 
-  const getTargetById = targetId => credentials.find(creds => creds.credentialid === targetId);
+  const getTargetById = targetId =>
+    credentialsIssued.find(creds => creds.credentialid === targetId);
 
   const getTargetCredentials = actionType => {
     const targetCredentials = getSelectedCredentials();
@@ -154,7 +179,7 @@ const CredentialContainer = ({ api }) => {
   };
 
   const getSelectedCredentials = () =>
-    credentials.filter(c => selectedCredentials.includes(c.credentialid));
+    credentialsIssued.filter(c => selectedCredentials.includes(c.credentialid));
 
   const performBackendAction = async (actionType, targetId) => {
     try {
@@ -185,38 +210,44 @@ const CredentialContainer = ({ api }) => {
   const sendSingleCredential = credentialid =>
     performBackendAction(SEND_SINGLE_CREDENTIAL, credentialid);
 
-  const tableProps = {
-    credentials,
-    hasMore,
-    selectedCredentials,
-    handleSelectionChange,
-    signSingleCredential,
-    sendSingleCredential
+  const tabProps = {
+    [CREDENTIALS_ISSUED]: {
+      tableProps: {
+        credentials: credentialsIssued,
+        hasMore: hasMoreIssued,
+        signSingleCredential,
+        sendSingleCredential,
+        selectionType: {
+          selectedRowKeys: selectedCredentials,
+          type: 'checkbox',
+          onChange: handleSelectionChange
+        }
+      },
+      fetchCredentials: fetchCredentialsIssued,
+      bulkActionsProps: {
+        signSelectedCredentials,
+        sendSelectedCredentials,
+        selectAll,
+        indeterminateSelectAll,
+        toggleSelectAll
+      },
+      filterProps: {},
+      showEmpty: noIssuedCredentials,
+      loadingSelection
+    },
+    [CREDENTIALS_RECIEVED]: {
+      tableProps: {
+        credentials: credentialsRecieved,
+        hasMore: hasMoreRecieved
+      },
+      fetchCredentials: fetchCredentialsRecieved,
+      bulkActionsProps: {},
+      filterProps: {},
+      showEmpty: noRecievedCredentials
+    }
   };
 
-  const bulkActionsProps = {
-    signSelectedCredentials,
-    sendSelectedCredentials,
-    selectAll,
-    indeterminateSelectAll,
-    toggleSelectAll
-  };
-
-  const filterProps = {
-    categories,
-    groups
-  };
-
-  return (
-    <Credentials
-      showEmpty={noCredentials}
-      tableProps={tableProps}
-      fetchCredentials={fetchCredentials}
-      filterProps={filterProps}
-      bulkActionsProps={bulkActionsProps}
-      loadingSelection={loadingSelection}
-    />
-  );
+  return <Credentials tabProps={tabProps} setActiveTab={setActiveTab} />;
 };
 
 CredentialContainer.propTypes = {
@@ -228,7 +259,6 @@ CredentialContainer.propTypes = {
       getCredentialTypes: PropTypes.func.isRequired
     }).isRequired,
     wallet: PropTypes.shape({
-      getDid: PropTypes.func.isRequired,
       signCredentials: PropTypes.func.isRequired
     }).isRequired,
     connector: PropTypes.shape({ issueCredential: PropTypes.func.isRequired }).isRequired,

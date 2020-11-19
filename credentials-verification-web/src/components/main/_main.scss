@@ -16,11 +16,11 @@
 
   .MainContent {
     display: flex;
-    height: calc(100vh - 68px);
+    height: calc(100vh - #{$navbar-height});
     border-radius: 20px 20px 0 0;
     overflow: hidden;
     .MainContainer {
-      width: 100vw;
+      width: calc(100vw - #{$sidebar-width});
       background: $white;
       @include breakpoint(sm) {
         width: 100vw;

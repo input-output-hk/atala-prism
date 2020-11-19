@@ -1,4 +1,4 @@
-import { string, shape, number, oneOf, oneOfType, func, object, bool } from 'prop-types';
+import { string, shape, number, oneOf, oneOfType, func, object, bool, arrayOf } from 'prop-types';
 import __ from 'lodash';
 import { CONNECTION_STATUSES } from './constants';
 
@@ -93,4 +93,23 @@ export const credentialShape = {
   email: string,
   status: oneOf(['PENDING_CONNECTION', 'CONNECTED']),
   id: string
+};
+
+export const credentialTabShape = {
+  fetchCredentials: func.isRequired,
+  tableProps: shape({
+    credentials: arrayOf(shape()),
+    selectionType: shape({
+      selectedRowKeys: arrayOf(string)
+    }),
+    hasMore: bool.isRequired
+  }).isRequired,
+  bulkActionsProps: shape({
+    signSelectedCredentials: func,
+    sendSelectedCredentials: func,
+    toggleSelectAll: func,
+    selectAll: bool,
+    indeterminateSelectAll: bool
+  }).isRequired,
+  showEmpty: bool
 };

@@ -37,3 +37,15 @@ function getCredentialStatus(credential) {
   if (publicationstoredat) return CREDENTIAL_STATUSES.credentialSigned;
   return CREDENTIAL_STATUSES.credentialDraft;
 }
+
+export function credentialRecievedMapper(credentialRecieved) {
+  const { credentialSubject, ...rest } = credentialRecieved;
+
+  return {
+    contactData: {
+      externalid: credentialSubject.identityNumber,
+      contactName: credentialSubject.name
+    },
+    ...rest
+  };
+}
