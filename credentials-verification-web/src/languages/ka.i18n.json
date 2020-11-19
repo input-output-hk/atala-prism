@@ -75,6 +75,7 @@
         "creationDate": "Date Created",
         "issuedCredentials": "Credentials Issued",
         "recievedCredentials": "Credentials Recieved",
+        "credentials": "Credentials",
         "contactStatus": "Contact Status",
         "idNumber": "ID Number",
         "dateOfBirth": "Date Of Birth",
@@ -701,12 +702,16 @@
     "subtitle": "Type in a group name and select contacts to add to that group.",
     "form": {
       "buttonText": "Save",
-      "groupName": "Name"
+      "groupName": "Type Group Name"
     },
     "success": "Successfully created",
     "errors": {
-      "grpc": "Error creating group"
-    }
+      "grpc": "Error creating group",
+      "gettingGroups": "Error getting groups"
+    },
+    "selectAll": "Select All",
+    "groupName":"Group Name",
+    "addContacts":"Add Contacts"
   },
   "theme": {
     "title": {
@@ -767,5 +772,9 @@
       "previous": "Back",
       "next": "Next"
     }
+  },
+  "modelNames": {
+    "contacts": "Contacts",
+    "groups": "Groups"
   }
 }

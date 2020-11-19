@@ -9,28 +9,30 @@ import { withRedirector } from '../providers/withRedirector';
 
 const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
   const [groupName, setGroupName] = useState('');
+  const [members, setMembers] = useState([]);
   const formRef = React.createRef();
-
   const { t } = useTranslation();
+  const formValues = { groupName };
 
   const saveGroup = async () => {
     try {
-      await api.groupsManager.createGroup(groupName);
+      const newGroup = await api.groupsManager.createGroup(groupName);
+      await api.groupsManager.updateGroup(newGroup.id, members);
       message.success(t('groupCreation.success'));
       redirectToGroups();
     } catch (e) {
-      message.error('Error while creating the group');
+      message.error(t('groupCreation.errors.grpc'));
       Logger.error('groupCreation.errors.grpc', e);
     }
   };
 
-  const formValues = { groupName };
-
   return (
     <GroupCreation
+      isIssuer={() => api.wallet.isIssuer()}
       createGroup={saveGroup}
       formRef={formRef}
       updateForm={setGroupName}
+      updateMembers={setMembers}
       formValues={formValues}
     />
   );
@@ -38,7 +40,12 @@ const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
 
 GroupCreationContainer.propTypes = {
   api: PropTypes.shape({
-    groupsManager: PropTypes.shape({ createGroup: PropTypes.func.isRequired }).isRequired
+    groupsManager: PropTypes.shape({
+      createGroup: PropTypes.func.isRequired,
+      updateGroup: PropTypes.func.isRequired
+    }).isRequired,
+    contactsManager: PropTypes.shape({ getContacts: PropTypes.func.isRequired }).isRequired,
+    wallet: PropTypes.shape({ isIssuer: PropTypes.func, signCredentials: PropTypes.func })
   }).isRequired,
   redirector: PropTypes.shape({ redirectToGroups: PropTypes.func.isRequired }).isRequired
 };

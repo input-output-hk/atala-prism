@@ -9,3 +9,5 @@ export const filterByManyFields = (toFilter, filterValue, keys) =>
   toFilter.filter(item =>
     keys.reduce((matches, key) => matches || filterByInclusion(filterValue, item[key]), false)
   );
+
+export const exactValueExists = (list, filter, key) => list.some(item => item[key] === filter);
