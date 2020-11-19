@@ -43,6 +43,7 @@ class RestoreAccountPresenter: BasePresenter {
                 err.callResult?.statusMessage?.contains("Unknown encodedPublicKey") ?? false {
                 self.recoveryCompleted()
             } else {
+                self.viewImpl?.showLoading(doShow: false)
                 self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
             }
         })
@@ -84,6 +85,7 @@ class RestoreAccountPresenter: BasePresenter {
             self.fetchNextConnection()
         }, error: { error in
             print(error.localizedDescription)
+            self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
