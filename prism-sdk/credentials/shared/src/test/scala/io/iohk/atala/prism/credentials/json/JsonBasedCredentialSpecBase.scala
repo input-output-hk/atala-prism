@@ -95,6 +95,14 @@ abstract class JsonBasedCredentialSpecBase(implicit ec: ECTrait) extends AnyWord
       unsignedCredential.canonicalForm mustBe emptyCredential
       signedCredential.canonicalForm must startWith("e30=.") // the signature is dynamic
     }
+
+    "be possible to create credential from content" in new Fixtures {
+      JsonBasedCredential.fromCredentialContent(emptyCredentialContent) mustBe JsonBasedCredential(
+        contentBytes = emptyCredentialBytes,
+        content = emptyCredentialContent,
+        signature = None
+      )
+    }
   }
 
   trait Fixtures {

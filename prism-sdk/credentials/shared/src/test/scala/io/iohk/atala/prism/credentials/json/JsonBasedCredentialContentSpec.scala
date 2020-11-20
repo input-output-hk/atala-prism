@@ -54,6 +54,19 @@ class JsonBasedCredentialContentSpec extends AnyWordSpec with Matchers with Eith
         )
       )
     }
+
+    "produce empty credential string" in {
+      val content = CredentialContent(
+        credentialType = Nil,
+        issuerDid = None,
+        issuanceKeyId = None,
+        issuanceDate = None,
+        expiryDate = None,
+        credentialSubject = None
+      )
+
+      content.asJson.noSpaces mustBe "{}"
+    }
   }
 
 }

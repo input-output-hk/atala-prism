@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.credentials.json
 
-import io.circe.{Decoder, Json, parser}
-
+import io.circe.{Decoder, Encoder, Json, parser}
+import io.circe.syntax._
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.util.ArrayOps._
-
 import io.iohk.atala.prism.credentials.ECCredential
 import io.iohk.atala.prism.credentials.errors.CredentialParsingError
 
@@ -59,6 +58,16 @@ case class JsonBasedCredential[+C](
 }
 
 object JsonBasedCredential {
+  def fromCredentialContent[C: Encoder](
+      credentialContent: C
+  ): JsonBasedCredential[C] = {
+    JsonBasedCredential(
+      contentBytes = credentialContent.asJson.noSpaces.getBytes.toIndexedSeq,
+      content = credentialContent,
+      signature = None
+    )
+  }
+
   def fromString[C](credential: String)(implicit
       dc: Decoder[C]
   ): Either[CredentialParsingError, JsonBasedCredential[C]] = {
