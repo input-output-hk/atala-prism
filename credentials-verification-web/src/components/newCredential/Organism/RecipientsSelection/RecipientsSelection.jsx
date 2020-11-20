@@ -88,6 +88,7 @@ const RecipientsSelection = ({
               selectedContacts={selectedSubjects}
               setSelectedContacts={setSelectedSubjects}
               handleContactsRequest={getSubjects}
+              size="xs"
             />
           )}
         </TabPane>
