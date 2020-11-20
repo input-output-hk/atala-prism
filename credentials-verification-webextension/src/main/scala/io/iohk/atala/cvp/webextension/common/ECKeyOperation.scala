@@ -43,7 +43,7 @@ object ECKeyOperation {
       signingKeyId: String,
       signingKey: ECKeyPair,
       claimsString: String
-  ): Either[ParsingFailure, (AtalaOperation, String)] = {
+  ): Either[ParsingFailure, (AtalaOperation, String, SHA256Digest)] = {
     io.circe.parser.parse(claimsString) map { claims =>
       val unsignedCreedential =
         UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(
@@ -52,12 +52,14 @@ object ECKeyOperation {
           claims = claims
         )
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCreedential, signingKey.privateKey)
-      val contentHash = ByteString.copyFrom(CredentialsCryptoSDKImpl.hash(signedCredential).value.toArray)
+      val signedCredentialHash = CredentialsCryptoSDKImpl.hash(signedCredential)
+      val contentHash = ByteString.copyFrom(signedCredentialHash.value.toArray)
       val credentialData = CredentialData(issuer = issuerDID.stripPrismPrefix, contentHash = contentHash)
       val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
       (
         AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation)),
-        signedCredential.canonicalForm
+        signedCredential.canonicalForm,
+        signedCredentialHash
       )
     }
   }

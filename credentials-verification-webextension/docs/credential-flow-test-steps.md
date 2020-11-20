@@ -22,14 +22,14 @@ We will build everything from scratch.
 
 1. First, we will start the Postgres server. If you already have this up and running, you can skip this step.
    ``` 
-   $ docker run -it --rm -e POSTGRES_DB=geud_connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres 
+   $ docker run -it --rm -e POSTGRES_DB=connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres 
    ```
    
    The above command will start a docker Postgres container with a database necessary for the connector.
    Given that we will also need a database for the node, open a postgres client and create the needed database as follows:
    
    ``` 
-   $ psql geud_connector_db \
+   $ psql connector_db \
        -U postgres \
        -h localhost \
        -p 5432
@@ -38,7 +38,7 @@ We will build everything from scratch.
    Execute the query:
    
    ```
-   geud_connector_db=# CREATE DATABASE geud_node_db;
+   connector_db=# CREATE DATABASE node_db;
    ```
    and keep the sql shell open because we will need it for next steps.
 
@@ -54,14 +54,14 @@ We will build everything from scratch.
    ```
    [terminal 1]
    atala$ cd credentials-verification
-   credentials-verification$ mill -i connector.run
+   credentials-verification$ sbt "connector/run"
    ```
    
    Node
    ```
    [terminal 2]
    atala$ cd credentials-verification
-   credentials-verification$ mill -i node.run
+   credentials-verification$ sbt "node/run"
    ```
    
    Envoy
@@ -142,7 +142,7 @@ and we will not need to remember any other data apart from the organization name
    We need to first obtain the `issuer_id` defined for the issuer we created.
 
    ``` 
-   geud_connector_db=# SELECT name,id FROM participants ;
+   connector_db=# SELECT name,id FROM participants ;
                      name                   |                  id                  
    -----------------------------------------+--------------------------------------
     Issuer 1                                | c8834532-eade-11e9-a88d-d8f2ca059830
@@ -175,55 +175,62 @@ and we will not need to remember any other data apart from the organization name
    def queries(uuid: String): String = 
     s"""
        |INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('$uuid','$uuid', 'Test');
-       |INSERT INTO issuer_subjects (subject_id , external_id , created_at , connection_status , group_id , subject_data)
+       |INSERT INTO contacts (contact_id , external_id , created_at , connection_status , created_by , contact_data)
        |VALUES ('$uuid', '$uuid', now(), 'CONNECTION_MISSING','$uuid','{}');
+       |INSERT INTO contacts_per_group (group_id, contact_id, added_at) 
+       |VALUES ('$uuid', '$uuid', now());
        |INSERT INTO credentials
        |(credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
        |VALUES ('$uuid','$uuid','$uuid','Test',now(),'{}');
        |""".stripMargin
    ```
    Following our example, we open a REPL and do as follows 
-   (use the uuid you obtained in the step bellow, here we use `db4e7c01-3912-4be9-b41b-7e0e4a79ce4e`):
+   (use the uuid you obtained in the step below, here we use `db4e7c01-3912-4be9-b41b-7e0e4a79ce4e`):
 
    ```
    $ scala
-   scala> def queries(uuid: String): String = 
-           s"""
-              |INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('$uuid','$uuid', 'Test');
-              |INSERT INTO issuer_subjects (subject_id , external_id , created_at , connection_status , group_id , subject_data)
-              |VALUES ('$uuid', '$uuid', now(), 'CONNECTION_MISSING','$uuid','{}');
-              |INSERT INTO credentials
-              |(credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
-              |VALUES ('$uuid','$uuid','$uuid','Test',now(),'{}');
-              |""".stripMargin
+   scala> def queries(uuid: String): String =
+            s"""
+            |INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('$uuid','$uuid', 'Test');
+            |INSERT INTO contacts (contact_id , external_id , created_at , connection_status , created_by , contact_data)
+            |VALUES ('$uuid', '$uuid', now(), 'CONNECTION_MISSING','$uuid','{}');
+            |INSERT INTO contacts_per_group (group_id, contact_id, added_at)
+            |VALUES ('$uuid', '$uuid', now());
+            |INSERT INTO credentials
+            |(credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
+            |VALUES ('$uuid','$uuid','$uuid','Test',now(),'{}');
+            |""".stripMargin
    queries: (uuid: String)String
 
-   scala> queries("db4e7c01-3912-4be9-b41b-7e0e4a79ce4e")
-   res0: String =
-   "
+   scala> print(queries("db4e7c01-3912-4be9-b41b-7e0e4a79ce4e"))
+
    INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'Test');
-   INSERT INTO issuer_subjects (subject_id , external_id , created_at , connection_status , group_id , subject_data)
+   INSERT INTO contacts (contact_id , external_id , created_at , connection_status , created_by , contact_data)
    VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', now(), 'CONNECTION_MISSING','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','{}');
+   INSERT INTO contacts_per_group (group_id, contact_id, added_at)
+   VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', now());
    INSERT INTO credentials
    (credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
    VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','Test',now(),'{}');
-   "
    ```
   
-   **NOTE:** For simplicity all the needed ids (i.e. `credential_id`, `subject_id`, `group_id`) have the same value as 
+   **NOTE:** For simplicity all the needed ids (i.e. `credential_id`, `contact_id`, `group_id`) have the same value as 
    the `issuer_id`.
 
 1. Run the queries in the sql shell
 
    ```
-   geud_connector_db=# INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'Test');
+   connector_db=# INSERT INTO issuer_groups (group_id,issuer_id,name) VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'Test');
    INSERT 0 1
-   geud_connector_db=# INSERT INTO issuer_subjects (subject_id , created_at , connection_status , group_id , subject_data)
-   geud_connector_db-# VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', now(), 'CONNECTION_MISSING','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','{}');
+   connector_db=# INSERT INTO contacts (contact_id , external_id , created_at , connection_status , created_by , contact_data)
+   connector_db=# VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', now(), 'CONNECTION_MISSING','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','{}');
    INSERT 0 1
-   geud_connector_db=# INSERT INTO credentials
-   geud_connector_db-# (credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
-   geud_connector_db-# VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','Test',now(),'{}');
+   connector_db=# INSERT INTO contacts_per_group (group_id, contact_id, added_at)
+   connector_db=# VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', 'db4e7c01-3912-4be9-b41b-7e0e4a79ce4e', now());
+   INSERT 0 1
+   connector_db=# INSERT INTO credentials
+   connector_db=# (credential_id,issuer_id,subject_id,group_name,created_on,credential_data)
+   connector_db=# VALUES ('db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','db4e7c01-3912-4be9-b41b-7e0e4a79ce4e','Test',now(),'{}');
    INSERT 0 1
    ```
 
@@ -247,7 +254,7 @@ and we will not need to remember any other data apart from the organization name
    We will now go again to the sql shell and type:
    
    ``` 
-   geud_connector_db=# SELECT * FROM published_credentials ;
+   connector_db=# SELECT * FROM published_credentials ;
    ```
    If everything worked as expected you should see a row like this one
    

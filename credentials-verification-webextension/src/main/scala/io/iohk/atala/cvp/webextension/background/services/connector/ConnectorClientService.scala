@@ -5,6 +5,7 @@ import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
 import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
+import io.iohk.atala.prism.credentials.SlayerCredentialId
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.cmanager_api.{PublishCredentialRequest, PublishCredentialResponse}
 import io.iohk.atala.prism.protos.connector_api.{
@@ -44,15 +45,17 @@ class ConnectorClientService(url: String) {
       credentialClaims: String
   ): Future[PublishCredentialResponse] = {
     val inputTry = for {
-      (issuanceOperation, signedCredential) <- issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims).toTry
+      (issuanceOperation, signedCredential, signedCredentialHash) <-
+        issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims).toTry
       operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
-      sha256Hashed = SHA256Digest.compute(credentialClaims.getBytes)
+      atalaOperationSHA256 = SHA256Digest.compute(issuanceOperation.toByteArray)
+      slayerId = SlayerCredentialId.compute(signedCredentialHash, did)
       request = PublishCredentialRequest()
         .withCmanagerCredentialId(credentialId)
         .withEncodedSignedCredential(signedCredential)
         .withIssueCredentialOperation(operation)
-        .withOperationHash(ByteString.copyFrom(sha256Hashed.value.toArray))
-        .withNodeCredentialId(sha256Hashed.hexValue)
+        .withOperationHash(ByteString.copyFrom(atalaOperationSHA256.value.toArray))
+        .withNodeCredentialId(slayerId.string)
       metadata = metadataForRequest(ecKeyPair, did, request)
     } yield (request, metadata)
 

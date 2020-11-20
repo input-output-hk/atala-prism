@@ -20,13 +20,9 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/io.iohk.prism.protos.NodeService" }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
                           route:
                             cluster: node_service
-                            max_grpc_timeout: 0s
-                        - match: { prefix: "/io.iohk.prism.protos.WalletService" }
-                          route:
-                            cluster: wallet_service
                             max_grpc_timeout: 0s
                         - match: { prefix: "/io.iohk" }
                           route:
@@ -51,13 +47,6 @@ static_resources:
       lb_policy: round_robin
       # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
       hosts: [{ socket_address: { address: localhost, port_value: 50053 }}]
-    - name: wallet_service
-      connect_timeout: 15s
-      type: logical_dns
-      http2_protocol_options: {}
-      lb_policy: round_robin
-      # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-      hosts: [{ socket_address: { address: localhost, port_value: 50052 }}]
     - name: connector_service
       connect_timeout: 15s
       type: logical_dns
