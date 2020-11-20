@@ -417,9 +417,9 @@
     "chrome": "Chrome. ",
     "chromeWeb": "Chrome Web Store",
     "descriptionPartTwo": "Depending on the browser you are currently using. Please go to the relevant webstore and add the extension to your browser",
-    "comingSoon": "Comming Soon on ",
-    "register": "Already have your Atala PRISM? ",
-    "clickRegister": "Click to register",
+    "comingSoon": "Coming soon on ",
+    "register": "Already have your wallet set up? ",
+    "clickRegister": "Click here to log in",
     "button": "Download ZIP File"
   },
   "login": {
@@ -725,7 +725,7 @@
   },
   "theme": {
     "title": {
-      "issuer": "Issuer Portal",
+      "issuer": "MANAGEMENT CONSOLE",
       "verifier": "Verifier Portal"
     }
   },

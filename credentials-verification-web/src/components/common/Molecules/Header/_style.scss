@@ -23,7 +23,7 @@
       margin-left: 1.5em;
       padding-left: 1.5em;
       p {
-        @include secondary-text($h3, $white);
+        @include secondary-text($body, $white);
       }
     }
   }
