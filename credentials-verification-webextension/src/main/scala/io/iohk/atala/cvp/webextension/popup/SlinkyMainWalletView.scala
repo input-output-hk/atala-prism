@@ -93,7 +93,7 @@ import scala.util.{Failure, Success}
 
   private def signatureElement(signingRequest: SigningRequest, appendClass: String) = {
     div(className := "buttons_container")(
-      rejectButton(appendClass),
+      rejectButton(signingRequest, appendClass),
       nextElement(signingRequest, appendClass),
       circularProgress()
     )
@@ -105,14 +105,19 @@ import scala.util.{Failure, Success}
     val next = math.min(state.id + 1, count - 1)
 
     div(className := "div__field_group_mui")(
-      mui.IconButton.onClick(_ => setState(_.copy(id = previous)))(muiIcons.ChevronLeftOutlined()),
+      mui.IconButton.onClick(_ => setState(_.copy(id = previous, status = None)))(muiIcons.ChevronLeftOutlined()),
       s"${state.id + 1} of $count",
-      mui.IconButton.onClick(_ => setState(_.copy(id = next)))(muiIcons.ChevronRightOutlined())
+      mui.IconButton.onClick(_ => setState(_.copy(id = next, status = None)))(muiIcons.ChevronRightOutlined())
     )
   }
 
-  private def rejectButton(appendClass: String) =
-    div(className := s"btn_cancel btn_cancel_width $appendClass", id := "btn_cancel", "Reject")
+  private def rejectButton(signingRequest: SigningRequest, appendClass: String) =
+    div(
+      className := s"btn_cancel btn_cancel_width $appendClass",
+      id := "btn_cancel",
+      "Reject",
+      onClick := { () => rejectRequest(signingRequest.id) }
+    )
 
   private def lockButton() =
     div(className := "div__field_group")(
@@ -171,30 +176,30 @@ import scala.util.{Failure, Success}
 
   private def alertMessage() = {
     val emptyElement = div()()
-    val successMessage: ReactElement =
+    val successMessage = (message: String) =>
       div(className := "div__field_group_mui")(
         mui.Button.withProps(
           ButtonProps()
             .setColor(Color.default)
             .setVariant(materialUiCoreStrings.outlined)
             .setClassName("button_success_mui")
-        )(muiIcons.CheckCircle().className("buttonIcon_success"))("Credential successfully signed!")
+        )(muiIcons.CheckCircle().className("buttonIcon_success"))(message)
       )
 
-    val failMessage: ReactElement =
+    val failMessage = (message: String) =>
       div(className := "div__field_group_mui")(
         mui.Button.withProps(
           ButtonProps()
             .setColor(Color.default)
             .setVariant(materialUiCoreStrings.outlined)
             .setClassName("button_fail_mui")
-        )(muiIcons.Cancel().className("buttonIcon_fail"))("Credential signing failed")
+        )(muiIcons.Cancel().className("buttonIcon_fail"))(message)
       )
 
     state.status
       .map {
-        case true => successMessage
-        case false => failMessage
+        case true => successMessage(state.message)
+        case false => failMessage(state.message)
       }
       .getOrElse(emptyElement)
 
@@ -202,21 +207,32 @@ import scala.util.{Failure, Success}
 
   private def loadRequests(): Unit = {
     props.backgroundAPI.getSignatureRequests().map { req =>
-      setState(_.copy(requests = req.requests))
+      setState(_.copy(requests = req.requests, status = None))
     }
   }
 
   private def nextCredential(): Unit = {
-    setState(state.copy(status = None))
     loadRequests()
   }
 
   private def signRequest(requestId: Int): Unit = {
-    setState(state.copy(isLoading = true))
+    setState(_.copy(isLoading = true))
     props.backgroundAPI.signRequestAndPublish(requestId).onComplete {
-      case Success(_) => setState(state.copy(status = Some(true), isLoading = false))
+      case Success(_) =>
+        setState(_.copy(status = Some(true), isLoading = false, message = "Credential successfully signed!"))
       case Failure(ex) =>
-        setState(state.copy(status = Some(false), isLoading = false))
+        setState(_.copy(status = Some(false), isLoading = false, message = "Credential signing failed"))
+        println(s"Failed Credential signing : ${ex.getMessage}")
+    }
+  }
+
+  private def rejectRequest(requestId: Int): Unit = {
+    setState(_.copy(isLoading = true))
+    props.backgroundAPI.rejectRequest(requestId).onComplete {
+      case Success(_) =>
+        setState(_.copy(status = Some(true), isLoading = false, message = "Credential successfully rejected"))
+      case Failure(ex) =>
+        setState(_.copy(status = Some(false), isLoading = false, message = "Credential failed to reject"))
         println(s"Failed Publishing Credential : ${ex.getMessage}")
     }
   }
@@ -225,7 +241,7 @@ import scala.util.{Failure, Success}
     props.backgroundAPI.lockWallet().onComplete {
       case Success(_) => props.switchToView(Unlock)
       case Failure(ex) =>
-        setState(state.copy(message = "Failed Locking wallet"))
+        setState(_.copy(message = "Failed Locking wallet"))
         println(s"Failed Locking wallet : ${ex.getMessage}")
     }
   }

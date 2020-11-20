@@ -36,6 +36,7 @@ private[background] object Command {
   final case class SigningRequests(requests: List[SigningRequest])
 
   final case class SignRequest(requestId: Int) extends CommandWithResponse[Unit]
+  final case class RejectRequest(requestId: Int) extends CommandWithResponse[Unit]
 
   final case object GetWalletStatus extends CommandWithResponse[WalletStatusResult];
   final case class WalletStatusResult(status: WalletStatus)

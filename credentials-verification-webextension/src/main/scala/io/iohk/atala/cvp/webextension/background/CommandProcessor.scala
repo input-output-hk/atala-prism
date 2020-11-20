@@ -49,6 +49,8 @@ private[background] class CommandProcessor(
         walletManager.getLoggedInUserSession(origin).map(CommandResponse.apply)
       case Command.SignRequest(requestId) =>
         walletManager.signRequestAndPublish(requestId).map(_ => CommandResponse(()))
+      case Command.RejectRequest(requestId) =>
+        walletManager.rejectRequest(requestId).map(_ => CommandResponse(()))
       case Command.CreateWallet(password, mnemonic, role, organisationName, logo) =>
         walletManager.createWallet(password, mnemonic, role, organisationName, logo).map(CommandResponse.apply)
       case Command.RecoverWallet(password, mnemonic) =>

@@ -77,6 +77,10 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.SignRequest(requestId))
   }
 
+  def rejectRequest(requestId: Int): Future[Unit] = {
+    process(Command.RejectRequest(requestId))
+  }
+
   def recoverWallet(
       password: String,
       mnemonic: Mnemonic

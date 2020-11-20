@@ -1,6 +1,7 @@
 package io.iohk.atala.cvp.webextension.common.services
 
 import chrome.windows.bindings.{CreateOptions, UpdateOptions, Window}
+import org.scalajs.dom
 import typings.std.global.screen
 
 import scala.concurrent.ExecutionContext
@@ -41,7 +42,9 @@ class BrowserWindowService {
 
     windowId
       .map { id =>
-        chrome.windows.Windows.update(id, UpdateOptions(focused = true, drawAttention = true))
+        chrome.windows.Windows.remove(id).map { _ =>
+          createWindow(options: CreateOptions)
+        }
       }
       .getOrElse {
         createWindow(options)

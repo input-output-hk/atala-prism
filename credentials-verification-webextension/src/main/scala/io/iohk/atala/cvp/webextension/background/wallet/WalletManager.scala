@@ -164,6 +164,21 @@ private[background] class WalletManager(
     }
   }
 
+  def rejectRequest(requestId: Int): Future[Unit] = {
+    val signingRequestsF = Future.fromTry {
+      Try {
+        signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
+      }
+    }
+    signingRequestsF.map {
+      case (request, _) =>
+        signingRequests -= requestId
+        println(s"Rejected = ${request.subject.id}")
+        updateBadge()
+      case _ => throw new IllegalArgumentException("Unknown request")
+    }
+  }
+
   def initialAesGcm: crypto.AesGcmParams = {
     val ivBytes = Array.ofDim[Byte](GCM_IV_LENGTH)
     crypto.crypto.getRandomValues(ivBytes.toTypedArray)

@@ -26,9 +26,6 @@ class Runner(
         dom.document.getElementById("main-container")
       )
     }
-    dom.window.onfocus = _ => {
-      window.location.reload(true)
-    }
   }
 
 }
