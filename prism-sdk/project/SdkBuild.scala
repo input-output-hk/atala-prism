@@ -34,7 +34,7 @@ object SdkBuild {
       .settings(
         organization := "io.iohk",
         organizationName := "Input Output HK",
-        scalaVersion := "2.13.3",
+        scalaVersion := scala213,
         scalacOptions ++= Seq(
           "-language:implicitConversions",
           "-language:existentials",
@@ -168,7 +168,7 @@ object SdkBuild {
     project
       .in(file("docs"))
       .settings(
-        scalaVersion := "2.13.3",
+        scalaVersion := scala213,
         mdocVariables := Map(
           "VERSION" -> version.value
         ),

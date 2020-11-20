@@ -92,6 +92,26 @@ commands:
           name: "Test Scala code is properly formatted"
           command: ./scalafmt --test
 
+  aggregate-test-reports:
+    description: "Aggregate all test reports under a directory"
+    parameters:
+      directory:
+        type: string
+      target:
+        type: string
+        default: "target/test-reports"
+    steps:
+      - run:
+          name: Aggregate test reports
+          command: |
+            cd << parameters.directory >>
+            for reports in `find -name test-reports`; do
+              project=${reports%/target/*}
+              dest=<< parameters.target >>/$project
+              mkdir -p $dest
+              cp $reports/* $dest
+            done
+
 jobs:
   deploy-ecr-images:
     working_directory: ~/repo
@@ -280,28 +300,15 @@ jobs:
           name: Generate code coverage reports
           command: cd credentials-verification && sbt coverageReport coverageAggregate
 
-      - run:
-          name: Aggregate test reports
-          command: |
-            cd prism-sdk
-
-            # Aggregate every JVM test report under target/jvm/test-reports
-            mkdir -p target/test-reports
-            test -e common/target/test-reports && mv common/target/test-reports/* target/test-reports
-            test -e util/keyderivation/target/test-reports && mv util/keyderivation/target/test-reports/* target/test-reports
-            test -e mirror/target/test-reports && mv mirror/target/test-reports/* target/test-reports
-            test -e node/target/test-reports && mv node/target/test-reports/* target/test-reports
-            test -e node/client/target/test-reports && mv node/client/target/test-reports/* target/test-reports
-            test -e connector/target/test-reports && mv connector/target/test-reports/* target/test-reports
-            test -e connector/client/target/test-reports && mv connector/client/target/test-reports/* target/test-reports
-            true
+      - aggregate-test-reports:
+          directory: "credentials-verification"
 
       - store_test_results:
           path: credentials-verification/target/test-reports
 
       # Store code coverage reports
       - store_artifacts:
-          path: credentials-verification/target/scoverage-report
+          path: credentials-verification/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
 
   build-credentials-verification-landing:
     working_directory: ~/repo
@@ -524,32 +531,11 @@ jobs:
           name: Generate code coverage reports
           command: cd prism-sdk && sbt coverageReport coverageAggregate
 
-      - run:
-          name: Aggregate test reports
-          command: |
-            cd prism-sdk
-
-            # Aggregate every JVM test report under target/jvm/test-reports
-            mkdir -p target/jvm/test-reports
-            test -e connector/jvm/target/test-reports && mv connector/jvm/target/test-reports/* target/jvm/test-reports
-            test -e credentials/jvm/target/test-reports && mv credentials/jvm/target/test-reports/* target/jvm/test-reports
-            test -e identity/jvm/target/test-reports && mv identity/jvm/target/test-reports/* target/jvm/test-reports
-            test -e crypto/jvm/target/test-reports && mv crypto/jvm/target/test-reports/* target/jvm/test-reports
-            test -e protos/.jvm/target/test-reports && mv protos/.jvm/target/test-reports/* target/jvm/test-reports
-
-            # Aggregate every JS test report under target/jvm/test-reports
-            mkdir -p target/js/test-reports
-            test -e connector/js/target/test-reports && mv connector/js/target/test-reports/* target/js/test-reports
-            test -e credentials/js/target/test-reports && mv credentials/js/target/test-reports/* target/js/test-reports
-            test -e identity/js/target/test-reports && mv identity/js/target/test-reports/* target/js/test-reports
-            test -e crypto/js/target/test-reports && mv crypto/js/target/test-reports/* target/js/test-reports
-            test -e protos/.js/target/test-reports && mv protos/.js/target/test-reports/* target/js/test-reports
-            true
+      - aggregate-test-reports:
+          directory: "prism-sdk"
 
       - store_test_results:
-          path: prism-sdk/target/jvm/test-reports
-      - store_test_results:
-          path: prism-sdk/target/js/test-reports
+          path: prism-sdk/target/test-reports
 
       # Store code coverage reports
       - store_artifacts:

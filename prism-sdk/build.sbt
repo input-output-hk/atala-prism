@@ -1,3 +1,6 @@
+// Set Scala version for aggregate commands (e.g., test coverage)
+scalaVersion := SdkBuild.scala213
+
 lazy val sdk = SdkBuild.sdk
 
 lazy val prismCrypto = SdkBuild.prismCrypto

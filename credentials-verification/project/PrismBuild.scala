@@ -204,7 +204,7 @@ object PrismBuild {
       .dependsOn(common % "compile->compile;test->test")
 
   lazy val prism =
-    (project in file("."))
+    commonProject(project in file("."))
       .aggregate(
         common,
         node,
