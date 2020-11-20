@@ -5,7 +5,7 @@ import { withRedirector } from '../providers/withRedirector';
 import DetailBox from './molecules/detailBox/DetailBox';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import contactIcon from '../../images/holder-default-avatar.svg';
-import CredentialDetail from './molecules/detailBox/CredentialDetails/credentialDetail';
+import CredentialDetail from './molecules/detailBox/CredentialDetails/CredentialDetail';
 
 import './_style.scss';
 
@@ -53,12 +53,7 @@ const Contact = ({
           </div>
           <p>{t('contacts.detail.detailSection.groupsSubtitle')}</p>
           <div className="credentialDetailsContainer">
-            <CredentialDetail
-              img={contactIcon}
-              credentialName="Government ID"
-              title="Government ID"
-              date="10/11/2020"
-            />
+            <CredentialDetail />
           </div>
         </div>
       </div>

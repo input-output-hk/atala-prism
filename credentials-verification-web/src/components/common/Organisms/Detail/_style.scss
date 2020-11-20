@@ -1,4 +1,4 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
 .CredentialSummaryDetail {
   .CredentialSummaryHeader {
@@ -44,6 +44,7 @@
     }
   }
 }
+
 .DrawerCredentialData {
   .CredentialTemplate {
     margin-bottom: 1em;
@@ -104,8 +105,14 @@
 }
 
 .credentialDetailDrawer {
-  .ant-tabs-nav .ant-tabs-tab {
+  .ant-tabs-nav {
     @include primary-text($body, #d8d8d8);
+    width: 100%;
+  }
+  .ant-tabs-tab {
+    @include primary-text($body, #d8d8d8);
+    width: 50%;
+    text-align: center;
   }
   .ant-tabs-nav .ant-tabs-tab-active {
     color: $primary-color;
@@ -124,6 +131,18 @@
   }
   .ant-drawer-body {
     padding-top: 0;
+  }
+
+  .credentialContainer {
+    padding: 1em;
+  }
+
+  .actionsContainer {
+    width: 100%;
+    padding: 1em;
+    .verifyButton {
+      width: 100%;
+    }
   }
 }
 

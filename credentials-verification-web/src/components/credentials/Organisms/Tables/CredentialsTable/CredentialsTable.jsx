@@ -92,7 +92,8 @@ const getCredentialsIssuedColumns = (
   },
   {
     key: 'actions',
-    render: ({ status, credentialid }) => {
+    render: credential => {
+      const { status, credentialid } = credential;
       const actionButtons = (
         <div>
           {status === CREDENTIAL_STATUSES.credentialDraft && (
@@ -120,7 +121,7 @@ const getCredentialsIssuedColumns = (
           <CustomButton
             buttonProps={{
               className: 'theme-link',
-              onClick: onView
+              onClick: () => onView(credential)
             }}
             buttonText={viewText}
           />
@@ -135,13 +136,13 @@ const getCredentialsRecievedColumns = (viewText, onView) => [
   ...commonColumns,
   {
     key: 'actions',
-    render: ({ status, credentialid }) => {
+    render: credential => {
       const actionButtons = (
         <div>
           <CustomButton
             buttonProps={{
               className: 'theme-link',
-              onClick: onView
+              onClick: () => onView(credential)
             }}
             buttonText={viewText}
           />

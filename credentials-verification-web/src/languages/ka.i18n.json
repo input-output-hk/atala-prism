@@ -171,6 +171,14 @@
         }
       }
     },
+    "drawer": {
+      "summary": {
+        "title": "Summary"
+      },
+      "details": {
+        "title": "Verification Details"
+      }
+    },
     "modal": {
       "title": "You are about to send:",
       "sendables": "{{sendables}} credential(s)",
@@ -231,6 +239,7 @@
       "delete": "Delete",
       "resend": "Resend",
       "verify": "Verify",
+      "statusTitle": "Credential Status",
       "notarizationTitle": "Blockchain Notarization",
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
@@ -241,6 +250,7 @@
       "source": "Source:",
       "integrity": "Integrity: ",
       "hashedFile": "Hashed File",
+      "rawCredential": "Raw Credential",
       "fileHash": "File Hash",
       "transactionTimestamp": "Transaction Timestamp: ",
       "viewCardanoExplorer": "View in Cardano Explorer"

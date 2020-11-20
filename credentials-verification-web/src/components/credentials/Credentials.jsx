@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import CredentialsFilter from './Molecules/Filters/CredentialsFilter/CredentialsFilter';
 import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryDetail';
 import { credentialTabShape } from '../../helpers/propShapes';
-import { shortBackendDateFormatter } from '../../helpers/formatters';
 import CreateCredentialsButton from './Atoms/Buttons/CreateCredentialsButton';
 import CredentialsIssued from './Organisms/Tabs/CredentialsIssued';
 import CredentialsRecieved from './Organisms/Tabs/CredentialsRecieved';
@@ -20,18 +19,8 @@ const Credentials = ({ tabProps, setActiveTab }) => {
   const [currentCredential, setCurrentCredential] = useState({});
   const [showDrawer, setShowDrawer] = useState(false);
 
-  const showCredentialData = ({ title, graduationdate, enrollmentdate, studentname }) => {
-    const credentialToShow = {
-      graduationDate: shortBackendDateFormatter(graduationdate),
-      startDate: shortBackendDateFormatter(enrollmentdate),
-      student: {
-        fullname: studentname
-      },
-      lg: 24,
-      title
-    };
-
-    setCurrentCredential(credentialToShow);
+  const showCredentialData = credential => {
+    setCurrentCredential(credential);
     setShowDrawer(true);
   };
 

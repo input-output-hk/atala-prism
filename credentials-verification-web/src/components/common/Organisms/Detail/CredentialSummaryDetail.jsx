@@ -1,12 +1,10 @@
-import React, { Fragment } from 'react';
-import { Drawer, Icon, Tabs, Card, Popover, Button } from 'antd';
+import React from 'react';
+import _ from 'lodash';
+import { Drawer, message, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import CredentialSummaryData from '../../Atoms/CredentialData/CredentialSummaryData';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-import { drawerWidth, VERIFIER } from '../../../../helpers/constants';
-import { useSession } from '../../../providers/SessionContext';
-
+import { drawerWidth } from '../../../../helpers/constants';
 import img from '../../../../images/verified.svg';
 import cardanoLogo from '../../../../images/cardanoLogo.svg';
 import arrow from '../../../../images/right.svg';
@@ -14,15 +12,23 @@ import hashed from '../../../../images/hashed.svg';
 import hashedFile from '../../../../images/hashedFile.svg';
 import CardDetail from './DetailCard';
 import DataDetail from './DataDetail';
+import { sanitizeView } from '../../../../helpers/credentialView';
 
 const { TabPane } = Tabs;
 
 const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
   const { t } = useTranslation();
-  const { session } = useSession();
 
-  const role = session.userRole;
-  const university = session.organizationName;
+  const tabs = {
+    summary: {
+      key: 1,
+      title: t('credentials.drawer.summary.title')
+    },
+    details: {
+      key: 2,
+      title: t('credentials.drawer.details.title')
+    }
+  };
 
   const content = (
     <div>
@@ -77,6 +83,17 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     </div>
   );
 
+  const renderHtmlCredential = ({ html }) => {
+    const unescapedHtml = _.unescape(html);
+    const cleanHtml = sanitizeView(unescapedHtml);
+    /* eslint-disable-next-line react/no-danger */
+    return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
+  };
+
+  const handleVerify = () => {
+    message.warn(t('credentials.messages.notImplementedYet'));
+  };
+
   return (
     <Drawer
       className="credentialDetailDrawer"
@@ -85,70 +102,69 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
       destroyOnClose
       {...drawerInfo}
     >
-      <Fragment>
-        <Tabs defaultActiveKey="1">
-          <TabPane tab="View" key="1">
-            {credentialData && (
-              <CredentialSummaryData {...credentialData} university={university} />
-            )}
-            {role === VERIFIER && (
-              <CustomButton
-                buttonProps={{ className: 'theme-outline', onClick: () => {} }}
-                icon={<Icon type="download" />}
-              />
-            )}
-            {role === VERIFIER && (
-              <CustomButton
-                buttonProps={{ className: 'theme-secondary', onClick: () => {} }}
-                buttonText={t('credentials.detail.verify')}
-              />
-            )}
-          </TabPane>
-          <TabPane tab="Verification Details" key="2">
-            <CardDetail title="Credential Status" info={infoFirstCard} badge={extraJsx}>
-              {
-                <DataDetail
-                  img={hashedFile}
-                  title={t('credentials.detail.hashedFile')}
-                  data="Raw Credential"
-                  contentPopOver={content}
-                />
-              }
-            </CardDetail>
-            <CardDetail title="Blockchain Notarization" info={infoSecondCard}>
+      <Tabs defaultActiveKey={tabs.details.key} centered>
+        <TabPane tab={tabs.summary.title} key={tabs.summary.key}>
+          <div className="credentialContainer">{renderHtmlCredential({ ...credentialData })}</div>
+          <div className="actionsContainer">
+            <CustomButton
+              buttonText={t('credentials.detail.verify')}
+              buttonProps={{
+                className: 'theme-primary verifyButton',
+                onClick: handleVerify
+              }}
+            />
+          </div>
+        </TabPane>
+        <TabPane tab={tabs.details.title} key={tabs.details.key}>
+          <CardDetail
+            title={t('credentials.detail.statusTitle')}
+            info={infoFirstCard}
+            badge={extraJsx}
+          >
+            {
               <DataDetail
-                img={hashed}
-                title={t('credentials.detail.fileHash')}
-                data="#a4b412fdf47dfd457djhgf3..."
-                contentPopOver={contentSecondCard}
+                img={hashedFile}
+                title={t('credentials.detail.hashedFile')}
+                data={t('credentials.detail.rawCredential')}
+                contentPopOver={content}
               />
-              <DataDetail
-                img={hashed}
-                title={t('credentials.detail.hashTitle')}
-                data="#a4b412fdf47dfd457djhgf3..."
-                contentPopOver={contentSecondCard}
-              />
+            }
+          </CardDetail>
+          <CardDetail title={t('credentials.detail.notarizationTitle')} info={infoSecondCard}>
+            <DataDetail
+              img={hashed}
+              title={t('credentials.detail.fileHash')}
+              data="#a4b412fdf47dfd457djhgf3..."
+              contentPopOver={contentSecondCard}
+            />
+            <DataDetail
+              img={hashed}
+              title={t('credentials.detail.hashTitle')}
+              data="#a4b412fdf47dfd457djhgf3..."
+              contentPopOver={contentSecondCard}
+            />
 
-              <div className="cardanoContainer">
-                <div>
-                  <img src={cardanoLogo} alt="CardanoLogo" />
-                  <span>{t('credentials.detail.viewCardanoExplorer')}</span>
-                </div>
-                <div>
-                  <img src={arrow} alt="arrow" />
-                </div>
+            <div className="cardanoContainer">
+              <div>
+                <img src={cardanoLogo} alt="CardanoLogo" />
+                <span>{t('credentials.detail.viewCardanoExplorer')}</span>
               </div>
-            </CardDetail>
-          </TabPane>
-        </Tabs>
-      </Fragment>
+              <div>
+                <img src={arrow} alt="arrow" />
+              </div>
+            </div>
+          </CardDetail>
+        </TabPane>
+      </Tabs>
     </Drawer>
   );
 };
 
 CredentialSummaryDetail.propTypes = {
   drawerInfo: PropTypes.shape().isRequired,
-  credentialData: PropTypes.shape().isRequired
+  credentialData: PropTypes.shape({
+    html: PropTypes.string
+  }).isRequired
 };
 
 export default CredentialSummaryDetail;
