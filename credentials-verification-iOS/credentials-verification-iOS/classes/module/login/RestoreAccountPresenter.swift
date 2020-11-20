@@ -106,9 +106,9 @@ class RestoreAccountPresenter: BasePresenter {
         CryptoUtils.global.usedMnemonics = mnemonics
         CryptoUtils.global.generateSeed()
         if CryptoUtils.global.seed == nil {
-            viewImpl?.showErrorMessage(doShow: true, message: "Invalid mnemonics")
+            viewImpl?.showErrorMessage(doShow: true, message: "restore_phrase_invalid_error".localize())
         } else {
-            viewImpl?.showLoading(doShow: true, message: "Recovering data")
+            viewImpl?.showLoading(doShow: true, message: "restore_recovering_data".localize())
             fetchNextConnection()
         }
     }

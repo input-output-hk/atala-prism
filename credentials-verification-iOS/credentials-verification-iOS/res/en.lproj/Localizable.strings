@@ -206,10 +206,11 @@
 "restore_title" = "Restore Account";
 "restore_description" = "In order to restore your account, you need to type in the 12 words from the seed phrase that you will have kept safe.";
 "restore_subtitle" = "Recovery phrase";
-"restore_helper" = "Add a word and press enter or space to confirm.";
+"restore_helper" = "Press enter or space after entering each word.";
 "restore_hint" = "Enter your 12-word recovery phrase";
-"restore_verify" = "Verify";
-"restore_phrase_invalid_error" = "Warning Message lorem ipsum text";
+"restore_verify" = "Check";
+"restore_phrase_invalid_error" = "Invalid 12-word recovery phrase";
+"restore_recovering_data" = "Recovering data";
 
 // <!-- Success -->
 "success_register_title" = "Congrats!\nYour account has been created";
