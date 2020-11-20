@@ -8,7 +8,6 @@ import contactsIcon from '../../../../images/connectionsIcon.svg';
 import iconMenu from '../../../../images/icon-menu.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
-import settingsIcon from '../../../../images/settingsIcon.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
 import { useSession } from '../../../providers/SessionContext';
 import { ISSUER, VERIFIER } from '../../../../helpers/constants';
@@ -32,10 +31,7 @@ const SideMenu = ({ location: { pathname } }) => {
 
   const iconsByRole = icons.filter(({ restrictedTo }) => restrictedTo.includes(role));
 
-  const bottomIcons = [
-    { icon: settingsIcon, name: 'settings' },
-    { icon: supportIcon, name: 'support' }
-  ];
+  const bottomIcons = [{ icon: supportIcon, name: 'support' }];
 
   // Tried to move it to a new component but it
   // lost the styles therefore making it hideous

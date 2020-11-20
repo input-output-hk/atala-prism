@@ -9,7 +9,6 @@ import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
-import Settings from './settings/SettingsContainer';
 import IndividualCreation from './individualCreation/IndividualCreationContainer';
 import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
@@ -80,12 +79,6 @@ const dashboardRoute = {
   key: 'dashboard',
   component: withLoggedValidation(withSideBar(Dashboard), allRoles)
 };
-const settings = {
-  exact: true,
-  path: '/settings',
-  key: 'settings',
-  component: withLoggedValidation(withSideBar(Settings), allRoles)
-};
 const individualCreation = {
   exact: true,
   path: '/individualCreation',
@@ -126,7 +119,6 @@ const routes = [
   groupCreationRoute,
   groups,
   credential,
-  settings,
   newCredential,
   registration,
   payment,

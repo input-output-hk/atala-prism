@@ -21,9 +21,16 @@
   }
 }
 
+.ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .ant-menu-root.ant-menu-inline {
-  height: 85%;
   border-right: none;
+
   li.ant-menu-item {
     padding-left: 16px !important;
     margin-bottom: 20px;
