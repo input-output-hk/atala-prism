@@ -43,6 +43,10 @@ class JsonBasedUnsignedCredential private (credentialBytes: Array[Byte]) extends
   }
 
   private def canEqual(that: Any): Boolean = that.isInstanceOf[UnsignedCredential]
+
+  override def toString: String = {
+    json.spaces2
+  }
 }
 
 trait UnsignedCredentialBuilder[A] {

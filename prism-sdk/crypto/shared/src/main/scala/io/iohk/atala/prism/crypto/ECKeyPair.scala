@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.crypto
 
+import io.iohk.atala.prism.util
 import io.iohk.atala.prism.util.BigIntOps.toUnsignedByteArray
 import io.iohk.atala.prism.util.{BigIntOps, BytesOps}
 
@@ -30,6 +31,10 @@ trait ECPrivateKey extends ECKey {
   }
 
   def getD: BigInt
+
+  override def toString: String = {
+    util.StringUtils.masked(getHexEncoded)
+  }
 }
 
 trait ECPublicKey extends ECKey {
@@ -63,6 +68,8 @@ trait ECPublicKey extends ECKey {
   }
 
   def getCurvePoint: ECPoint
+
+  override def toString: String = getHexEncoded
 }
 
 case class ECPoint(x: BigInt, y: BigInt)

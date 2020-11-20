@@ -49,6 +49,15 @@ final class DID private (val value: String) extends AnyVal {
       case DIDFormat.Unknown => None
     }
   }
+
+  def asLongForm: Option[DIDFormat.LongForm] = {
+    getFormat match {
+      case f: DIDFormat.LongForm => Some(f)
+      case DIDFormat.Unknown | _: DIDFormat.Canonical => None
+    }
+  }
+
+  override def toString: String = value
 }
 
 object DID {
