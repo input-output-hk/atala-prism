@@ -2,7 +2,7 @@
 
 To install the module:
 ```scala
-libraryDependencies += "io.iohk" % "prism-crypto" % "@VERSION@"
+libraryDependencies += "io.iohk" %% "prism-crypto" % "@VERSION@"
 ```
 
 ## SHA256 Hash

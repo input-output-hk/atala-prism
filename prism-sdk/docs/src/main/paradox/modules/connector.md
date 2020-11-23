@@ -2,7 +2,7 @@
 
 To install the module:
 ```scala
-libraryDependencies += "io.iohk" % "prism-connector" % "@VERSION@"
+libraryDependencies += "io.iohk" %% "prism-connector" % "@VERSION@"
 ```
 
 ## Requests

@@ -2,7 +2,7 @@
 
 To install the module:
 ```scala
-libraryDependencies += "io.iohk" % "prism-identity" % "@VERSION@"
+libraryDependencies += "io.iohk" %% "prism-identity" % "@VERSION@"
 ```
 
 ## Decentralized Identifiers
