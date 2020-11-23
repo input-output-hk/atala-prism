@@ -472,9 +472,6 @@ jobs:
     steps:
       - checkout
 
-      - halt-step-if-not-changed:
-          directories: "prism-sdk"
-
       - attach_workspace:
           at: ./workspace
 
@@ -518,6 +515,10 @@ jobs:
           root: prism-sdk/docs/target
           paths:
             - site
+
+      # This is done after the docs have compiled so that *.md files aren't ignored
+      - halt-step-if-not-changed:
+          directories: "prism-sdk"
 
       - run:
           name: Run JS unit tests
