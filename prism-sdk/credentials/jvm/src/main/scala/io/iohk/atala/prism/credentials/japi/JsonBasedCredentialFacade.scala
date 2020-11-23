@@ -28,9 +28,16 @@ private[japi] class JsonBasedCredentialFacade[C](
 }
 
 private[japi] object JsonBasedCredentialFacade {
+
+  @throws(classOf[CredentialParsingException])
   def parse(credential: String): JsonBasedCredentialFacade[SCredentialContent[_]] = {
+    val parsedCredential = JsonBasedCredential.fromString(credential) match {
+      case Left(error) => throw new CredentialParsingException(error.message)
+      case Right(credential) => credential
+    }
+
     new japi.JsonBasedCredentialFacade(
-      JsonBasedCredential.unsafeFromString(credential),
+      parsedCredential,
       CredentialContentFacade
     )
   }

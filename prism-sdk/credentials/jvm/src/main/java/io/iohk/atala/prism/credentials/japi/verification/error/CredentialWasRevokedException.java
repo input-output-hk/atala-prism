@@ -3,11 +3,11 @@ package io.iohk.atala.prism.credentials.japi.verification.error;
 
 import io.iohk.atala.prism.credentials.japi.TimestampInfo;
 
-public class Revoked implements VerificationError {
+public class CredentialWasRevokedException extends VerificationException {
 
     private final TimestampInfo revokedOn;
 
-    public Revoked(TimestampInfo revokedOn) {
+    public CredentialWasRevokedException(TimestampInfo revokedOn) {
         this.revokedOn = revokedOn;
     }
 

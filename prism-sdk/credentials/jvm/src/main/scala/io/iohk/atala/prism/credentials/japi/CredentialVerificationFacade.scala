@@ -5,13 +5,19 @@ import java.util.Optional
 import cats.data.Validated.{Invalid, Valid}
 import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.credentials.VerificationError.{
+  CredentialWasRevoked,
   InvalidSignature,
   KeyWasNotValid,
-  KeyWasRevoked,
-  CredentialWasRevoked
+  KeyWasRevoked
 }
-import io.iohk.atala.prism.credentials.japi.verification.{VerificationResult, error => jvmError}
-import io.iohk.atala.prism.credentials.japi.verification.error.{VerificationError => JvmVerificationError}
+import io.iohk.atala.prism.credentials.japi.verification.VerificationResult
+import io.iohk.atala.prism.credentials.japi.verification.error.{
+  CredentialWasRevokedException,
+  InvalidSignatureException,
+  KeyWasNotValidException,
+  KeyWasRevokedException,
+  VerificationException => JvmVerificationException
+}
 import io.iohk.atala.prism.credentials.{
   Base64URLCredential => JvmBase64URLCredential,
   Base64URLSignature => JvmBase64URLSignature,
@@ -52,20 +58,20 @@ private[japi] class CredentialVerificationFacade(implicit val ec: ECTrait) exten
     import scala.jdk.CollectionConverters._
 
     verificationResult match {
-      case Valid(isValid) => new VerificationResult(List[JvmVerificationError]().asJava)
+      case Valid(isValid) => new VerificationResult(List[JvmVerificationException]().asJava)
       case Invalid(errors) => new VerificationResult((errors.toList map toJvmVerificationError).asJava)
     }
   }
 
-  private def toJvmVerificationError(err: VerificationError): JvmVerificationError =
+  private def toJvmVerificationError(err: VerificationError): JvmVerificationException =
     err match {
-      case CredentialWasRevoked(revokedOn) => new jvmError.Revoked(toTimestampInfo(revokedOn))
+      case CredentialWasRevoked(revokedOn) => new CredentialWasRevokedException(toTimestampInfo(revokedOn))
       case KeyWasRevoked(credentialIssuedOn, keyRevokedOn) =>
-        new jvmError.KeyWasRevoked(toTimestampInfo(credentialIssuedOn), toTimestampInfo(keyRevokedOn))
+        new KeyWasRevokedException(toTimestampInfo(credentialIssuedOn), toTimestampInfo(keyRevokedOn))
       case KeyWasNotValid(keyAddedOn, credentialIssuedOn) =>
-        new jvmError.KeyWasNotValid(toTimestampInfo(keyAddedOn), toTimestampInfo(credentialIssuedOn))
+        new KeyWasNotValidException(toTimestampInfo(keyAddedOn), toTimestampInfo(credentialIssuedOn))
       case InvalidSignature =>
-        new jvmError.InvalidSignature
+        new InvalidSignatureException
       case other => throw new NotImplementedError(s"$other error is not implemented")
     }
 

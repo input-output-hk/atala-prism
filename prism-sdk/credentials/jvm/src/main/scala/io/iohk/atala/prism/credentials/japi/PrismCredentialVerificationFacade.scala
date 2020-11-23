@@ -1,7 +1,15 @@
 package io.iohk.atala.prism.credentials.japi
 
 import io.iohk.atala.prism.credentials.japi.verification.VerificationResult
-import io.iohk.atala.prism.credentials.japi.verification.error.VerificationError
+import io.iohk.atala.prism.credentials.japi.verification.error.{
+  BatchWasRevokedException,
+  CredentialWasRevokedException,
+  InvalidMerkleProofException,
+  InvalidSignatureException,
+  KeyWasNotValidException,
+  KeyWasRevokedException,
+  VerificationException
+}
 import io.iohk.atala.prism.credentials.{
   CredentialData => SCredentialData,
   KeyData => SKeyData,
@@ -24,21 +32,27 @@ private[japi] object PrismCredentialVerificationFacade {
     new TimestampInfo(info.atalaBlockTimestamp, info.atalaBlockSequenceNumber, info.operationSequenceNumber)
   }
 
-  def convertError(error: SVerificationError): VerificationError = {
+  def convertError(error: SVerificationError): VerificationException = {
     error match {
-      case SVerificationError.InvalidSignature => new verification.error.InvalidSignature
+      case SVerificationError.InvalidSignature => new InvalidSignatureException
       case SVerificationError.KeyWasNotValid(keyAddedOn, credentialIssuedOn) =>
-        new verification.error.KeyWasNotValid(
+        new KeyWasNotValidException(
           convertTimestampInfo(keyAddedOn),
           convertTimestampInfo(credentialIssuedOn)
         )
       case SVerificationError.KeyWasRevoked(credentialIssuedOn, keyRevokedOn) =>
-        new verification.error.KeyWasRevoked(
+        new KeyWasRevokedException(
           convertTimestampInfo(credentialIssuedOn),
           convertTimestampInfo(keyRevokedOn)
         )
-      case SVerificationError.Revoked(revokedOn) =>
-        new verification.error.Revoked(convertTimestampInfo(revokedOn))
+      case SVerificationError.CredentialWasRevoked(revokedOn) =>
+        new CredentialWasRevokedException(convertTimestampInfo(revokedOn))
+
+      case SVerificationError.BatchWasRevoked(revokedOn) =>
+        new BatchWasRevokedException(convertTimestampInfo(revokedOn))
+
+      case SVerificationError.InvalidMerkleProof =>
+        new InvalidMerkleProofException()
     }
   }
 

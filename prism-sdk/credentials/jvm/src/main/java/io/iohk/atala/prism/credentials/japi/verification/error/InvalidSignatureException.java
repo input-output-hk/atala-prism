@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.credentials.japi.verification.error;
 
-public class InvalidSignature implements VerificationError {
+public class InvalidSignatureException extends VerificationException {
 
     @Override
     public ErrorCode getCode() {
