@@ -81,8 +81,7 @@ def check_jobs_results(results):
     if all(result == "success" for result in results):
         print("All jobs ended up successfully!")
     else:
-        # TODO(ATA-3042): Re-enable failing here, to properly denote the workflow has failed.
-        print("ERROR: A least one of the jobs did not return in success! See the logs above.")
+        raise ValueError("ERROR: A least one of the jobs did not return in success! See the logs above.")
 
 
 token = get_env_variable("CIRCLE_CI_TOKEN")
