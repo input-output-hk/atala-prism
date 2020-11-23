@@ -1,9 +1,14 @@
+<!-- This is meant to be part of a larger document -->
+
+\newpage
+
 # Key derivation and account recovery process
 
-# Context
+## Context
 
 This document describes the process used to derive keys from a given seed and recover account information.
 A user account is composed of mainly three parts:
+
 - Cryptographic keys: Keys used by a user to control his communications and identity
 - DIDs: Decentralised identifiers created and owned by the user
 - Credentials: Credentials issued, sent and/or received by the user
@@ -29,7 +34,7 @@ side. For example, when a user's computer/phone is lost, stolen or breaks down.
 In the following sections, we will first describe the process of keys and DIDs generation. Later on, we will explain 
 how to recover the different parts of an account.
 
-# Definitions
+## Definitions
 
 Throughout this text, we will use definitions extracted from 
 [BIP 32 conventions](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#conventions)
@@ -55,9 +60,9 @@ index.
 
 Hardened keys present different security properties that non-hardened keys.
 
-# Generation process
+## Generation process
 
-## Root key generation
+### Root key generation
 
 From [BIP39 spec](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed), the user 
 generates a mnemonic seed that can be translated into a 64 bytes seed.
@@ -70,7 +75,7 @@ From that 64 bytes seed, we will derive an extended private key that we will not
 Given the initial seed, libraries will provide a `generate` method to obtain m. We will refer to m as the root of our 
 keys. 
  
-## Children key derivations
+### Children key derivations
 
 BIP32 spec presents [three functions for extended key derivation](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-ckd-functions):
 - CKDpriv((k, c), index): Given an extended private key and an index (>= 0), returns a new "child" extended private key.
@@ -93,15 +98,17 @@ Comments
 For security reasons we will only use hardened child keys. For more details on this decision, read 
 [this link](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#security) .
 
-## The paths used in our protocol
+### The paths used in our protocol
 
 Given our root key m, generated from a mnemonic seed, we will structure our derivation tree according to the following 
 path.
+
 ```
 m / DID_NUMBER / KEY_TYPE / '
 ```
 
 where
+
 - `DID_NUMBER` is a hardened node i' and represents the (i+1)th DID of a user.
 - `KEY_TYPE` is one of:
   - 0': Representing master keys. The keys derived from this node are the only keys that can be used as MASTER_KEYs in 
@@ -117,6 +124,7 @@ where
 NOTE: The `KEY_TYPE` list may be updated as we progress with the implementation.
 
 Examples
+
 - m / 0' / 0' / 0' is the first master key for the first DID of a user derived from m
 - m / 0' / 0' / 1' is the second master key derived for the first DID for a user derived from m.
 - m / 1' / 0' / 0' is the first master key for the second DID derived from m
@@ -132,7 +140,7 @@ Note that all nodes and final keys are hardened ones.
 - We will use the term _fresh key_ to refer to a key that has not been marked as used already.
 - Given a path `p` we say that a key `k` is _derived_ from `p` if there exist `i` such that `k = p / i`.
 - We say that a key `k` is derived from a master seed `m` if there exists a path `p` with root `m` and index `i` such 
-  that `k = p / i`. 
+  that `k = p / i`.
  
  **Conventions**
  Whenever we generate a fresh key:
@@ -141,7 +149,7 @@ Note that all nodes and final keys are hardened ones.
    example, with respect generating a fresh issuing key for seed `m` and DID `d`, we will always pick the key generated
    by the smallest `i` where ` m / d' / 1' / i'` hasn't been used.                      
 
-## DID generation
+### DID generation
 
 We would like to obtain a DID based from the mnemonic seed too. For this, we will fix a format for our DID Documents. 
 When a user wants to create his first DID Document, the following process will be followed:
@@ -174,7 +182,7 @@ DIDs are generated in order and no keys can be shared between DIDs. This is, in 
 pick the minimal N such that `m / N' / 0' / 0'` hasn't been used. No DID can use a key from a branch of the tree that 
 does not derived from its own `DID_NUMBER`. 
 
-## DID Document updates
+### DID Document updates
 
 In order to update the DID Document and add more keys. The keys should also be generated following similar processes as
 the one for generation.
@@ -194,11 +202,11 @@ By convention, we will always have that the Nth key added of a given `KEY_TYPE` 
 `[KEY_TYPE]-[N-1]`. Applications can present uses with local aliases in the front-end. We won't be concerned about
 recovering such aliases in this document.
 
-# Account recovery
+## Account recovery
 
 Given the generation and derivation rules. The process to recover an account can be model as follows.
 
-## DID recovery
+### DID recovery
 
 Given that DIDs are generated in order based on canonical master keys. We can use the following process.
 Given a master seed m
@@ -219,7 +227,7 @@ This process will end up with all generated DIDs and their canonical master keys
 It will also compute the set of keys present in the DID Documents that we will attempt to recover in the next step of
 account recovery. 
 
-## Key recovery
+### Key recovery
 
 Note: This process assumes that all keys in the DID Documents owned by the user, were derived by the initial seed m.
 While recovering all DIDs, we computed a set of (DID_NUMBER, key, KEY_TYPE) tuples that need to be recovered. Let's call
@@ -238,7 +246,7 @@ The process would follow the same steps with the modification that, in step 2, w
 first one that does not match a public key in the set `KTR(d,kt))`. Also, in step 4, only keys with matching public key
 in a DID Document will be marked as used.
 
-## Credentials recovery 
+### Credentials recovery
 
 Now that we have explored how to recover all DIDs and keys present in them. The remaining part of the account that we 
 need are the credentials relevant to the user.
@@ -248,11 +256,11 @@ keys) from the master seed and call adequate APIs to get credentials stored by t
 
 Note that the above process should be updated according to implementation updates.
 
-## Test vectors
+### Test vectors
 
 Test vectors are available as [JSON file](key-derivation-test-vectors.json).
 
-### Vector 1
+#### Vector 1
 
 Seed phrase: abandon amount liar amount expire adjust cage candy arch gather drum buyer
   * [DID: 1]

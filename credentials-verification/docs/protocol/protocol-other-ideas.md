@@ -1,3 +1,7 @@
+<!-- This is meant to be part of a larger document -->
+
+\newpage
+
 # Improvement proposals
 
 This document contains ideas we would like to evaluate for future releases.
@@ -16,6 +20,7 @@ commitment. The update operation defines a commitment for the next operation. Th
 are optionally part of the DID Document.
 
 Now, here is an improvement we could use:
+
 - The initial DID could set a commitment to a public key hash PKH1 (as in KERI and Sidetree). We call this, the genesis
   commitment.
 - Now, in order to perform the first update, the controller needs a UTxO to spend from. Let the user receive a 
@@ -29,6 +34,7 @@ We could define similar "chains" of transactions for DID revocation, credential 
 and possible credential revocation registry.
   
 Some observations of this approach are:
+
 - Positive: We get smaller metadata.
 - Positive: Light node ideas described in the section [below](#light-nodes-and-multi-chain-identity).
 - Positive: We may be able to get "smarter" locking scripts for operations relaying on the underlying chain scripts.
@@ -49,6 +55,7 @@ Assume we could:
 
 With those two assumptions, if a light node has the full chain of headers, then given a DID with its initial state, the
 node could:
+
 1. Check all the bloom filters for the one that spends the initial publish key hash we described in the previous section.
    If no bloom filter is positive, then the current DID state is the one provided.
    If K filters return a positive response, we could provide the script to a server which should provide either:
@@ -97,4 +104,3 @@ To be expanded
     - For example, we thought about having a merkle tree hash published with the file reference, to allow controllers to
       move on in case a file is not revealed. However, the publisher can simply decide to post a different merkle root
       hash or even to never provide the inclusion proof to the controller.
-      

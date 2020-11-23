@@ -6,6 +6,7 @@ In order to increase the scalability and reduce operational costs for our [proto
 proposed the use of unpublished DIDs. In the current implementation (at the time of this writing), every DID is 
 published on-chain as soon as it is created. After publication, a node can resolve a DID and obtain the current state of
 the DID document. Publishing a DID currently allows to:
+
 - Resolve the DID
 - Send DID update operations
 - Issue credentials in our setting where proofs of existence are posted on-chain
@@ -15,6 +16,7 @@ between the moment the DID is generated, and the time it becomes resolvable by n
 We find it reasonable to believe that a substantial number of users won't use every DID for all the above features. 
 Hence, we propose to mitigate the stated drawbacks by allowing a DID to fulfil a subset of functionalities _before_
 being published. In particular, we would like to create a concept of **unpublished DID** that: 
+
 - Allows a DID to Be resolvable before on-chain publication 
 - Allows the DID to be published if needed
 
@@ -112,6 +114,7 @@ reasonable to adapt the DID recovery process to ask the connector if a DID was u
 
 We decided to make some tests to measure how long our long form DIDs would look like.
 We generated 100000 DIDs under 3 settings:
+
 1. With 1 master key
 2. With 2 master keys
 3. With 3 master keys
@@ -170,8 +173,8 @@ printing 3 longest DIDs
 Average DID length 464.28944 bytes
 ```
 
-We see an increase of ~130 bytes per key. We should point out that we are representing keys as eliptic curve points. 
-We could reduce space by representing keys in compresed representation (i.e. a coordinate and a bite that indicates the
+We see an increase of ~130 bytes per key. We should point out that we are representing keys as elliptic curve points. 
+We could reduce space by representing keys in compressed representation (i.e. a coordinate and a byte that indicates the
 sign of the other coordinate).
 
 By comparison, we can see [this Sidetree test vector](https://github.com/decentralized-identity/sidetree/blob/master/tests/fixtures/longFormDid/longFormDid.txt)

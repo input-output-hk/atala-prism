@@ -1,3 +1,7 @@
+<!-- This is meant to be part of a larger document -->
+
+\newpage
+
 # Canonicalization (and comments on signing)
 
 Our protocol uses cryptographic signatures and hash functions to guarantee its security (along with other properties). 
@@ -12,7 +16,8 @@ future challenges that may come.
 
 ## Our current state
 
-There are mainly three places where we are hashing/signing data. 
+There are mainly three places where we are hashing/signing data.
+
 - During Atala Operations construction
 - When we compute a DID suffix, where we hash the initial DIDData
 - When we need to sign credentials
@@ -38,15 +43,17 @@ message SignedAtalaOperation {
     bytes signature = 2; // signature of byte encoding of the operation
     AtalaOperation operation = 3;
 }
-``` 
+```
 
 In order to construct a `SignedAtalaOperation`:
+
 1. We construct the needed `AtalaOperation` message using the corresponding protobuf model
 2. We extract the bytes produced by protobuf based on the model
 3. We sign those bytes and we build a `SignedAtalaOperation` message that is then serialized and posted as part of 
    transaction metadata.
 
 Nodes later validate the signature in the following way:
+
 1. They see the message in transactions metadata 
 2. They decode the `SignedAtalaOperation` and extract the key, signature and the operation that was theoretically signed
 3. They serialize again the `AtalaOperation` into a sequence of bytes and check the signature against those bytes
@@ -75,8 +82,7 @@ message SignedAtalaOperation {
     bytes signature = 2; // signature of byte encoding of the operation
     bytes operation = 3;
 }
-``` 
-
+```
 
 ### Computing DID suffix
 
@@ -91,7 +97,7 @@ without the need of publishing it.
 The way in which we achieve consistent hashes in the client and node side is that given the models associated to these 
 protobuf messages:
 
-```  
+```
 enum KeyUsage {
     // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want user to explicitly choose the usage
     UNKNOWN_KEY = 0;
@@ -135,7 +141,7 @@ There is currently a PoC that needs to be reviewed on this topic. So we won't ex
 We will document the final approach in this section. At the end of this document, there are some comments on a simple
 approach.
 
-## Comments on JSON 
+## Comments on JSON
 
 There has been conversation related to the use of JSON to model credentials. It is also the case that both
 [DID Core](https://www.w3.org/TR/did-core/) and [Verifiable Credentials Data Model](https://www.w3.org/TR/vc-data-model/#syntaxes)
@@ -259,7 +265,8 @@ for an update in DIF slack.
 
 ## Comments on credentials' signing
 
-Research aside, a simple process we could follow to sign credentials is: 
+Research aside, a simple process we could follow to sign credentials is:
+
 1. Model the credential data as a JSON due to its flexibility
 2. Serialize the JSON to an array of bytes
 3. Sign the bytes
@@ -341,4 +348,4 @@ Later, on selective disclosure, a user would send the following data:
 }
 ```
 
-This may also be changed if we move toward ZK proofs. 
+This may also be changed if we move toward ZK proofs.

@@ -1,3 +1,7 @@
+<!-- This is meant to be part of a larger document -->
+
+\newpage
+
 # Late publication
 
 So far, we have explained how the protocol can achieve scalability though a batching technique. However, it is important
@@ -24,6 +28,7 @@ entire ledger history and applying updates to the state incorporating the missin
 that this _should_ happen, however, the current implementation assumes that the files are always published.
 
 The outcome of the above process should lead all nodes to have the following state:
+
 - A transaction `Tx1` which publishes `D1` with a DID Document that contains `k1` as valid key
 - An `UNRESOLVED` transaction `Tx2` (which updates `D1` to revoke `k1`)
 
@@ -109,7 +114,7 @@ Furthermore, note that if `C1` did not support revocation, then this history rew
 revocation after a proper validation.
 
 
-## Comparative - situation 2: Attack after key revocation 
+## Comparative - situation 2: Attack after key revocation
 
 Let us now imagine the scenario where Alice is not hiding files. She starts by publishing `Tx1`, `A1` and `B1` as before.
 Imagine that now Alice suspects that her key was compromised and decides to revoke it by publishing `Tx2`, `A2` and `B2`.
@@ -194,7 +199,7 @@ creds = [ hash(C1) -> Published on Tx2.time ]
 If now Bob receives `C1` and verifies it, it will receive a response stating that the credential is valid.
 Now, if Alice notices that a credential was issued without her knowledge, she could revoke `C1` and `k1` through a 
 transaction `Tx3` with files `A3` and `B3` containing an `UpdateDID` and a `RevokeCredential` operations. Leading to the
-state:   
+state:
 
 ```
 Ledger
@@ -239,9 +244,10 @@ Another small improvement we could remark is, if a client queries data to a node
 extra flag pointing out the situation. It will be then up to the client to wait for a few minutes to see if data changes
 are confirmed, or to simply ignore the incoming information.
 
-# Some conclusions
+## Some conclusions
 
 A system that allows late publishing brings some complexities:
+
 - Rollbacks and history rewrites should be handled properly
 - Clients should have richer notification methods to understand what happened
 - A priori, credentials that do not have a revocations semantic, could be revoked through late publication
@@ -252,7 +258,8 @@ A system that allows late publishing brings some complexities:
 
 Now, not everything is negative. Late publishing possibilities are a consequence of decentralization.
 
-If one decides not to allow late publishing, the selected approach to do so may bring disadvantages: 
+If one decides not to allow late publishing, the selected approach to do so may bring disadvantages:
+
 - Whitelisting who can issue operations with batches
    + This leads to some centralization. It could be mitigated by allowing on-chain operation publishing (which is our 
      current plan). Whoever does not want to relay on IOHK, can issue their operations on-chain without batching. 

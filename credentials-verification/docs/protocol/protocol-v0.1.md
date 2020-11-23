@@ -1,7 +1,13 @@
-# Bitcoin 2nd layer protocol
+<!-- This is meant to be part of a larger document -->
+
+\newpage
+
+# Slayer v1: Bitcoin 2nd layer protocol
+
 This document describes the protocol for building the credentials project as a 2nd layer on top of Bitcoin. The protocol is based on the [sidetree protocol](https://github.com/decentralized-identity/sidetree/blob/master/docs/protocol.md) from Microsoft.
 
 ## Definitions
+
 The definitions from the [high-level-design-document](https://github.com/input-output-hk/cardano-enterprise/tree/develop/credentials-verification/docs/bitcoin#definitions) apply here, be sure to review those ones first.
 
 - **DID**: A decentralized identifier, see the [official spec](https://w3c-ccg.github.io/did-spec/).
@@ -37,7 +43,7 @@ There are some steps involved before publishing an ATALA Operation, the followin
 
 1- Let's assume that issuer's DID is already registered on the ledger. In order to register an issued credential they need to send a signed ATALA operation containing its hash:
 
-```
+```json
 IssueCredentialOperation:
 {
   "signedWith": "issuing",
@@ -55,7 +61,7 @@ IssueCredentialOperation:
 
 2- After some time the node creates an ATALA Block containing all operations it has received from clients. Here it contains just one, but generally nodes will batch operations in order to lower block publishing costs.
 
-```
+```json
 {
   "version": "0.1",
   "operations": [
@@ -77,7 +83,7 @@ IssueCredentialOperation:
 
 3- An ATALA Object is created, it links the current ATALA Block. In the future we plan to add metadata which can help the ATALA Node to choose whether to retrieve the ATALA Block or not (think about a light client), such as list of ids of entities that the block affects. ATALA Block hash included is SHA256 hash of block file content - which consists of binary encoded `AtalaBlock` protobuf message.
 
-```
+```json
 {
   "blockHash": "s4Xy4+Cx4b1KaH1CHq4/kq9yzre3Uwk2A0SZmD1t7YQ=",
   "blockOperationCount": 1,
@@ -90,7 +96,7 @@ IssueCredentialOperation:
 
 5- A Bitcoin transaction is created and submitted to the Bitcoin network, it includes a reference to the ATALA Object on the special output (see the one with OP_RETURN), the `FFFF0000` is a magic value (to be defined) which tells ATALA Nodes that this transaction has an ATALA Object linked in it, after the magic value, you can see the `HASH(ATALA Object)` (SHA256 of the file).
 
-```
+```json
 {
   "txid": "0b6e7f92b27c70a6948dd144fe90387397c35a478f8b253ed9feef692677185e",
   "vin": [...],
@@ -151,7 +157,7 @@ We can divide operations into two kinds: ones that create a new entity (e.g. Cre
 
 Registers DID into the ATALA ledger. DID structure here is very simple: it consists only of id and sequence of public keys with their ids. It must be signed by one of the master keys given in the document.
 
-```
+```json
 {
   "signedWith": "master",
   "signature": "MEQCIBZGvHHcSY7AVsds/HqfwPCiIqxHlsi1m59hsUWeNkh3AiAWvvAUeF8jFgKLyTt11RNOQmbR3SIPXJJUhyI6yL90tA==",
@@ -185,7 +191,7 @@ Registers DID into the ATALA ledger. DID structure here is very simple: it consi
 ```
 
 RPC Response:
-```
+```json
 {
   "id": "7cd7b833ba072944ab6579da20706301ec6ab863992a41ae9d80d56d14559b39"
 }
@@ -199,7 +205,7 @@ Updates DID content by sequentially running update actions included. Actions ava
 
 The operation must be signed by a master key. Actions cannot include removal of the key used to sign the operation - in such case the operation is considered invalid. That is to protect agains losing control of the DID - we assure that there is always one master key present that the user is able to sign data with. In order to replace the master key, the user has to issue first operation adding new master key and then another removing previous one. In order for the operation to be considered valid, all its actions need to be.
 
-```
+```json
 {
   "signedWith": "master",
   "signature": "MEQCIGtIUUVSsuRlRWwN6zMzaSi7FImvRRbjId7Fu/akOxFeAiAavOigmiJ5qQ2ORknhAEb207/2aNkQKfzBr0Vw+JS+lw==",
@@ -232,7 +238,8 @@ The operation must be signed by a master key. Actions cannot include removal of 
 ```
 
 Response:
-```
+
+```json
 {}
 ```
 
@@ -241,7 +248,8 @@ Response:
 Register credential into the ATALA ledger, given hash of its contents. It must be signed by one of issuer's current issuing keys.
 
 Example:
-```
+
+```json
 {
   "alg": "EC",
   "keyId": "issuing",
@@ -258,7 +266,8 @@ Example:
 ```
 
 RPC response:
-```
+
+```json
 {
   "id": "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
 }
@@ -271,7 +280,8 @@ The returned identifier is hex encoding of the hash of the binary representation
 It must be signed by one of issuer's current issuing keys.
 
 Example:
-```
+
+```json
 {
   "alg": "EC",
   "keyId": "issuing",
@@ -286,7 +296,8 @@ Example:
 ```
 
 RPC response:
-```
+
+```json
 {}
 ```
 

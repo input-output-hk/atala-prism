@@ -1,9 +1,14 @@
-# Scaling without a second layer 
+<!-- This is meant to be part of a larger document -->
+
+\newpage
+
+# Slayer v3: Scaling without a second layer
 
 ## Motivation
 
 The goal of the protocol that we describe in this document, is to construct a scalable, decentralised and secure 
 identity system. The system must provide the following features:
+
 1. Allow the decentralised creation of self certifiable identifiers. This is, any person can create an identifier
    without the need of coordination with, or permission from any external authority. Only the creator (controller) of 
    the identifier can prove his ownership through the use of cryptographic techniques.
@@ -28,6 +33,7 @@ Decentralised Identity Foundation. In a simplified explanation, Sidetree protoco
 can post file references in the metadata (or equivalent) field of an underlying blockchain's transactions. The 
 references point to files in a publicly accessible content addressable storage (CAS) service. The files contain the 
 following events:
+
  - Create DID: An event that declares the creation of an identifier and declares its DID Document. 
  - Update DID: An event that allows to add/remove data to the associated DID Document.
  - Deactivate DID: An event that declares that the DID is not usable anymore.
@@ -47,8 +53,8 @@ improvement. However, we can observe some drawbacks related to this approach:
 1. Data availability problems (referenced files may not be available). This leads to the inability to obtain consensus
    about the order in which events occurred in the past (and event to know if certain event were ever valid). This 
    allows a situation known as ["late publication"](./late-publish.md), that could affect certain use cases (e.g. DID
-   transferability). 
-   
+   transferability).
+
    Late publication also represents a potential change to the "past" of the system state.
 2. Even though batching increases events throughput, it comes with the need of an anti spam strategy to avoid garbage
    events to saturate the system. This observation makes us think that the existence of batching does not necessarily 
@@ -64,18 +70,18 @@ performance (in terms of event throughput) while avoiding the issues related to 
 
 [In version 0.2](./protocol-v0.2.md), we describe an issuance operation that, in a simplified way, contains:
 
-``` 
+``` scala
 IssueCredential(
   issuerDIDSuffix: ...,
   keyId: ...,
   credentialHash: ...,
   signature: ...
 )
-``` 
+```
 
 Following Sidetree's approach, one would construct a file, `F1`, of the form
 
-``` 
+```scala 
 IssueCredential(issuerDIDSuffix1, keyId1, credentialHash1, signature1)
 IssueCredential(issuerDIDSuffix2, keyId2, credentialHash2, signature2)
 ···
@@ -87,7 +93,7 @@ and we would post a transaction containing the hash of `F1` on chain while stori
 However, it is reasonable to believe that, an issuer, will produce many credentials in batches. Meaning that each issuer
 could create a file where all the operations will be signed by the same key. This would lead to a file of the form:
 
-``` 
+```scala
 IssueCredential(issuerDIDSuffix, keyId, credentialHash1, signature1)
 IssueCredential(issuerDIDSuffix, keyId, credentialHash2, signature2)
 ···
@@ -97,21 +103,21 @@ IssueCredential(issuerDIDSuffix, keyId, credentialHashN, signatureN)
 Given that all the operations would be signed by the same key, one could replace the `N` signatures and occurrences of
 the `issuerDIDSuffix` and `keyId` by one, leading to a file with a single operation of the form:
 
-``` 
-IssueCredentials(issuerDIDSuffix, keyId, 
+``` scala
+IssueCredentials(issuerDIDSuffix, keyId,
    credentialHash1,
    credentialHash2,
    ···
-   credentialHashN, 
+   credentialHashN,
 signature)
 ```
 
 Now, at this point, one could ask, could we replace the list of hashes for something shorter? The answer is, yes. 
 
 An issuer could take the list of credential hashes `credentialHash1, credentialHash2, ..., credentialHashN` and compute
-a Merkle tree with them. Obtaining one root hash and `N` proofs of inclusion. 
+a Merkle tree with them. Obtaining one root hash and `N` proofs of inclusion.
 
-```
+```scala
 MerkleRoot,
 (credentialHash1, proofOfInclusion1),  
 (credentialHash2, proofOfInclusion2),
@@ -121,11 +127,12 @@ MerkleRoot,
 
 Now, the issuer could simply post this operation on the metadata of a transaction:
 
-``` 
+```scala
 IssueCredentials(issuerDIDSuffix, keyId, merkleRootHash, signature)
 ```
 
 and share with each corresponding holder, the pair `(credential, p)` where:
+
 - `credential` is the credential to share and,
 - `p` is the proof of inclusion that corresponds to `credential`  
 
@@ -134,15 +141,15 @@ would perform a modified version of the verification steps from version 0.2 of t
 formal description.
 
 A remaining question is, why would we want each credential operation separate in the first place? The answer is that, 
-our intention is for the issuer to be able to detect if an unauthorised credential is issued. So, does this change 
+our intention is for the issuer to be able to detect if an unauthorized credential is issued. So, does this change 
 affect that goal? Our argument is that, it does not. In order to detect that a credential was issued without 
-authorisation, the issuer needed to check each `IssueCredential` operation posted and check for those signed by his keys,
+authorization, the issuer needed to check each `IssueCredential` operation posted and check for those signed by his keys,
 then compare those to the ones in his database and make a decision. With the proposed change, the issuer would perform 
 the same steps, he would check all the merkle tree hashes posted with his signature and compare if that hash is 
 registered in his database.
 
 In conclusion, this change could allow us to remove the need of external files for issuing credentials and allow 
-credential issuance to be fully performed on-chain using Cardano's metadata.    
+credential issuance to be fully performed on-chain using Cardano's metadata.
 
 ### Credential revocation
 
@@ -151,9 +158,10 @@ as the increase we added for issuance. However, we could argue that credential r
 low throughput demand in comparison.
 
 If we analyse revocation scenarios, we could see some special cases:
+
 - The issuer detected a merkle root that is not authorised. In such case, he could revoke the full represented batch with
   a small operation of the form:
-  ``` 
+  ```scala
   RevokeCredentials(
     issuanceOperationHash,
     keyId,
@@ -173,7 +181,7 @@ If we analyse revocation scenarios, we could see some special cases:
      credentialHashK,
      signature
   )
-  ``` 
+  ```
 
 Each hash adds approximately 32 bytes of metadata, which adds very little fee. See [fee](#fee-estimations) for more 
 details on fees.
@@ -195,11 +203,12 @@ published. The long form also allows to never publish a DID if it is never updat
 
 We propose, for this protocol version, to leave DID creation operations as optional, just for the purpose of 
 timestamping. This is:
+
 - The initial DID could be posted on-chain as in version 0.2, or 
 - It could have a long format that describes its initial state and no event will be published. The format could, 
   informally be thought as
    
-  ```
+  ```text
   did:prism:hash_initial_DID_Document?initialState=InitialDIDDocument
   ```
   The initial DID document can be validated by the DID suffix. 
@@ -207,8 +216,9 @@ timestamping. This is:
   credential hashes) and post the hash of the root on-chain for later timestamping proving.
 
 In Sidetree's slack, we received the feedback that they see this as an evolution they plan for the protocol with some 
-differences from our proposal. 
-- They do not care about batched creation timestamping as we propose. 
+differences from our proposal.
+
+- They do not care about batched creation timestamping as we propose.
 - During the first update operation, they would like to post the initial DID state along with the update operation. 
   They prefer to store the initial state in the CAS rather than sharing a longer identifier on every interaction.
   We could leave this as two variations of the first update operation in our protocol, but there are considerations to 
@@ -256,12 +266,14 @@ We should keep evaluating if this is needed for this version.
 
 Another option could be to allow "on-chain batching". Note that we have a bit less than 16Kb for transaction metadata.
 Consider that updating a DID consists on:
-- Adding a key: requires a keyId and a key. 
-- Removing a key: requires a keyId. 
+
+- Adding a key: requires a keyId and a key.
+- Removing a key: requires a keyId.
 - Adding/removing a service endpoint: an id and the endpoint when adding it.
 
 If we imagine small update operations we could allow users to cooperate and batch up updates in a single ADA 
-transaction. 
+transaction.
+
 - Actors could take periodic turns to distribute fee costs. 
 - We could ask a cryptographer if there is any signature aggregation scheme that could help to reduce metadata size.
 - We would like to refer the reader to the [metadata considerations](#metadata-usage-concerns) section to be aware of
@@ -280,7 +292,8 @@ there is a maximum transaction size. The documentation also states the following
 > With constants `a` and `b`, and `x` as the transaction size in bytes.
 
 The constants, according to [Shelley parameters](https://hydra.iohk.io/build/3670619/download/1/index.html) are:
-```
+
+```json
     "maxTxSize": 16384,
     "maxBlockBodySize": 65536,
     "maxBlockHeaderSize": 1100,
@@ -291,15 +304,17 @@ The constants, according to [Shelley parameters](https://hydra.iohk.io/build/367
 Interestingly enough, the values `a` and `b` are inverted (a typo in the documentation already reported and confirmed).
 From the above data, the maximum transaction fee that could be created is
 
-```
+```scala
 maxFee = minFeeB + maxTxSize*minFeeA = 155381 + 16384*44 = 876277 lovelace = 0.876277 ADA
 ```
+
 which represents a 16 kilobyte transaction.
 
 Let us estimate fees per operation type. We will add extra bytes in our estimations due to the [metadata scheme enforced
 by Cardano](https://github.com/input-output-hk/cardano-ledger-specs/blob/master/shelley/design-spec/delegation_design_spec.tex#L4547). 
 
 We will assume:
+
 - A base transaction size (i.e. without the metadata) of 250 bytes.
 - A signature size of [75 bytes](https://crypto.stackexchange.com/questions/75996/probability-of-an-ecdsa-signature/75997#75997)
 - A hash size of 32 bytes.
@@ -308,19 +323,20 @@ We will assume:
 - A DID suffix of 32 bytes.
 
 Given the above, we could estimate:
+
 - DID creation without publishing would have cost of 0 ADA and uses no metadata nor transactions. 
 - The old DID creation (publishing the operation) with two keys (one Master and one for Issuing) would have:
   - At least two key ids (2 x 18)
   - At least two keys (2 x 32)
   - We currently also have a signature (75)
   Adding the base transaction, we could overestimate this with a 400 bytes transaction, leading to:
-     ```
+     ```scala
          minFeeB + 400*minFeeA = 155381 + 400*44 = 172981 lovelace = 0.172981 ADA
      ```
 - DID "batched" timestamping would have an operation identifier and a Merkle root hash. 
   We could overestimate this with a 300 bytes transaction.
   
-    ```
+    ```scala
     minFeeB + 300*minFeeA = 155381 + 300*44 = 168581 lovelace = 0.168581 ADA
     ```
   
@@ -331,7 +347,7 @@ Given the above, we could estimate:
   - a Merkle root hash (32)
   Overestimating, this leads to 450 bytes of metadata, leading to an issuance fee of:
 
-  ```
+  ```scala
   minFeeB + 450*minFeeA = 155381 + 450*44 = 175181 lovelace = 0.175181 ADA
   ``` 
   
@@ -339,7 +355,7 @@ Given the above, we could estimate:
   - 2 key ids (2 x 18)
   - 2 keys (2 x 32)
   Meaning that we add 100 bytes, leading to:
-  ```
+  ```scala
     minFeeB + 550*minFeeA = 155381 + 550*44 = 179581 lovelace = 0.179581 ADA
   ``` 
 - For revocation, we could analyse the cost per type of revocation.
@@ -351,7 +367,7 @@ Given the above, we could estimate:
 - DID updates would require a more variable estimation. Sidetree 
   [suggests](https://identity.foundation/sidetree/spec/#default-parameters) a maximum of 1 kilobyte for the size of an 
   update operation. In comparison, this would represent an approximate of:
-  ```
+  ```scala
     minFeeB + 1024*minFeeA = 155381 + 1024*44 = 200437 lovelace = 0.200437 ADA
   ``` 
 
@@ -378,7 +394,7 @@ node state.
 Given that we will now batch credential issuance and also optionally timestamp DID creation batches,
 we will update our node state definition. Let us start with type definitions:
 
-```
+```scala
 // Abstract types
 type Key  
 type Hash
@@ -416,7 +432,7 @@ type State = {
 
 Given the above, we define the node initial state as:
 
-``` 
+```scala
 state = {
   didTimestamps      = Map.empty,
   publishedDids      = Map.empty,
@@ -426,9 +442,9 @@ state = {
 ```
 
 We will add an additional value called `BeginingOfTime` which will be used to represent timestamps for keys that belong
-to unpublished DIDs. 
+to unpublished DIDs.
 
-## DID Creation 
+## DID Creation
 
 The DID creation process from v0.2 remains supported and unchanged.
 It will run the same validations and only update the state of `publishedDids`.
@@ -439,7 +455,7 @@ A difference with other operations is that to timestamp a batch of DIDs, we will
 a signature involved. Recall that on DID creation we ask for a Master key signature.
 So, given an operation:
  
-``` 
+```json
 {
   "operation": {
     "timestampDIDBatch" : {
@@ -451,7 +467,7 @@ So, given an operation:
  
 which posts a Merkle tree root hash, we opdate the state as follows:
 
-```  
+```scala
 state'.didTimestamps      = state.didTimestamps + { operation.timestampDIDBatch.markleRoot -> TX_TIMESTAMP }
 state'.publishedDids      = state.publishedDids
 state'.credentialBatches  = state.credentialBatches
@@ -463,7 +479,7 @@ state'.revokedCredentials = state.revokedCredentials
 Our new update operations will have a new optional field, called `initialState` that will represent the state used to
 create the DID.
 
-```
+```json
 {
   "signedWith": KEY_ID,
   "signature": SIGNATURE,
@@ -485,12 +501,12 @@ When the operation is observed in the stable part of the ledger, the node has tw
 
 - Case 1: The DID was already published before. This is, the condition
 
-  ```
+  ```scala
     alias didToUpdate   = decoded.operation.updateDid.didSuffix
     alias signingKeyId  = decoded.signedWith
     alias updateActions = decoded.operation.updateDID.actions
     alias messageSigned = decoded.operation
-    
+
     decoded.operation.initialState.isEmpty && // if the DID was already published, the initial state must not be present
     state.publishedDids.contains(didToUpdate) &&
     state.publishedDids(didToUpdate).keys.contains(signingKeyId) &&
@@ -506,7 +522,7 @@ When the operation is observed in the stable part of the ledger, the node has tw
    We will refine the specification of `updateMap` in a future iteration.
 
    If the check passes, then we get the following state update:
-   ```
+   ```scala
    state'.publishedDids = state.publishedDids.update(didToUpdate, { lastOperationReference = hash(decoded), 
                                                                     keys = updateMap(signingKeyId, state.publishedDids(didToUpdate).keys, updateActions).get }
    state'.didTimestamps = state.didTimestamps
@@ -516,13 +532,13 @@ When the operation is observed in the stable part of the ledger, the node has tw
 
 - Case 2: When the DID is published during its first update:
 
-```
+```scala
     alias didToUpdate   = decoded.operation.updateDid.didSuffix
     alias signingKeyId  = decoded.signedWith
     alias updateActions = decoded.operation.updateDID.actions
     alias messageSigned = decoded.operation
     alias initialState  = decoded.operation.initialState
-    
+
     ! state.publishedDids.contains(didToUpdate) &&
     decoded.operation.initialState.nonEmpty && // if the DID was not published, the initial state must be present
     hash(initialState) == didToUpdate && // we must check that the initial state matches the DID suffix
@@ -537,7 +553,7 @@ When the operation is observed in the stable part of the ledger, the node has tw
    declared in `initialState`.
    If the check passes, then we get the following state update:
    
-   ```
+   ```scala
    state'.publishedDids = state.publishedDids.update(didToUpdate, { lastOperationReference = hash(decoded), 
                                                                     keys = updateMap(signingKeyId, initialState.keys, updateActions).get }
    state'.didTimestamps = state.didTimestamps
@@ -553,7 +569,7 @@ be publicly available in order to process the issuance action.
 
 The old credential issuance operation is hence updated in the following way:
 
-```
+```json
 {
   "keyId": KEY_ID,
   "signature": SIGNATURE,
@@ -571,7 +587,7 @@ The old credential issuance operation is hence updated in the following way:
 
 The response is now a `batchId` that represents the batch analogous to the old `credentialId`:
 
-```
+```json
 {
   "batchId" : OPERATION_HASH
 }
@@ -599,7 +615,7 @@ The node state is now updated based on two possible cases.
 
    The state would be updated as follows:
 
-   ```
+   ```scala
     alias batchId = computeBatchId(decoded)
     alias merkleRoot = decoded.operation.issueCredential.batchData.merkleRoot 
     alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
@@ -636,7 +652,7 @@ The node state is now updated based on two possible cases.
 
    The state would be updated as follows, note that we also publish the DID:
 
-   ```
+   ```scala
     alias batchId = computeBatchId(decoded)
     alias merkleRoot = decoded.operation.issueCredential.batchData.merkleRoot 
     alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
@@ -659,7 +675,7 @@ The node state is now updated based on two possible cases.
 
 We now define the revocation for a batch of issued credentials.
 
-```
+```json
 {
   "keyId": KEY_ID,
   "signature":: SIGNATURE,
@@ -673,7 +689,7 @@ We now define the revocation for a batch of issued credentials.
 
 The preconditions to apply the operation are:
 
-``` 
+```scala
 alias batchId          = decoded.operation.revokeBatch.batchId
 alias signature        = decoded.signature
 alias signingKeyId     = decoded.keyId
@@ -691,7 +707,7 @@ isValid(signature, messageSigned, state.publishedDids(issuerDIDSuffix).keys(sign
 
 If the precondition holds, we update the node state as follows:
 
-```
+```scala
 alias batchId = decoded.operation.revokeBatch.batchId
 alias initialBatchState = state.credentialBatches(batchId)
 
@@ -712,7 +728,7 @@ state'.credentialBatches = state.credentialBatches + { batchId -> {
 We are finally on the credential revocation operation. We will update the operation from version 0.2 to now allow many
 credential hashes to revoke.
 
-```
+```json
 {
   "keyId": KEY_ID,
   "signature":: SIGNATURE,
@@ -727,7 +743,7 @@ credential hashes to revoke.
 
 The preconditions to apply the operation are:
 
-``` 
+```scala
 alias batchId          = decoded.operation.revokeCredentials.batchId
 alias signature        = decoded.signature
 alias signingKeyId     = decoded.keyId
@@ -747,7 +763,7 @@ isValid(signature, messageSigned, state.publishedDids(issuerDIDSuffix).keys(sign
 
 If the above holds, then:
 
-```
+```scala
 alias batchId          = decoded.operation.revokeCredential.batchId
 // we will only update the state for the credentials not already revoked
 alias credentialHashes = filterNotAlreadyRevoked(decoded.operation.revokeCredential.credentialHashes)
@@ -776,7 +792,7 @@ issuance batch).
 
 In order to describe credential verification, we assume the following data to be present in the credential.
 
-```
+```json
 {
   "issuerDID" : DiD,
   "signature" : SIGNATURE,
@@ -791,7 +807,7 @@ in its corresponding batch.
 Given a credential `c` and its Merkle proof of inclusion `mproof`, we define `c` to be valid if and only if the 
 following holds:
 
-``` 
+```scala
 alias computedMerkleRoot = computeRoot(c, mproof)
 alias batchId = computeBatchId(c, computedMerkleRoot) // we combine the data to compute the batch id
 alias issuerDIDSuffix = c.issuerDID.suffix

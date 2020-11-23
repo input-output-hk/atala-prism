@@ -1,6 +1,12 @@
-# Cardano 2nd layer protocol
+<!-- This is meant to be part of a larger document -->
+
+\newpage
+
+# Slayer v2: Cardano 2nd layer protocol
+
 This document describes the protocol for building the credentials project on top of Cardano.
 The main differences with version v0.1 of the protocol are:
+
 - We now post Atala operations one at a time instead of posting them in batches
 - DID Documents' underlying data is posted along with DIDs on the blockchain during the creation event
 
@@ -9,6 +15,7 @@ described in version 0.1. Another observation is that the content addressable st
 now has no need to store public data (DID Documents).
 
 ## Definitions
+
 - **DID**: A decentralized identifier, see the [official spec](https://w3c-ccg.github.io/did-spec/).
 - **DID Document**: The document representing a state of a DID, includes details like its public keys
 - **Verifiable Credential**: A signed digital document. E.g. digital university degrees, digital passport, etc.
@@ -78,7 +85,7 @@ are ignored.
 In order to describe the protocol, we will consider the following state that each node will represent. We will define 
 the protocol operations and services in terms of how they affect/interact with this abstract state. 
 
-```
+```scala
 // Abstract types
 type Key  
 type Hash
@@ -146,7 +153,7 @@ Registers DID into the ledger. The associated initial DID Document structure her
 a document id (the DID) and sequence of public keys with their respective key ids. It must be signed by one of the
 master keys given in the DID Document.
 
-```
+```json
 {
   "signedWith": "master",
   "signature": "MEQCIBZGvHHcSY7AVsds/HqfwPCiIqxHlsi1m59hsUWeNkh3AiAWvvAUeF8jFgKLyTt11RNOQmbR3SIPXJJUhyI6yL90tA==",
@@ -180,7 +187,8 @@ master keys given in the DID Document.
 ```
 
 RPC Response:
-```
+
+```json
 {
   "id": "7cd7b833ba072944ab6579da20706301ec6ab863992a41ae9d80d56d14559b39"
 }
@@ -191,7 +199,7 @@ can be obtained by prefixing the id with "did:atala:".
 
 When the operation is observed in the stable part of the ledger, the node performs the following checks:
 
-```
+```scala
 alias didSuffix = getDIDSuffix(decoded)
 alias referredKey: Option[Key] = extractKey(decoded) 
 alias messageSigned   = decoded.operation
@@ -201,11 +209,13 @@ alias messageSigned   = decoded.operation
  isValid(decoded.signature, messageSigned, referredKey.get) &&
  ! state.dids.contains(didSuffix)
 ```
+
 where `extractKey` searches the key mentioned in `signedWith` from the decoded operation and return the key if found or
 an empty option otherwise. 
 
 If the check passes, then we get the following state update:
-```
+
+```scala
 state'.dids = state.dids + (didSuffix -> { lastOperationReference = hash(decoded), 
                                            keys = createMap(decoded.operation.didData.publicKeys) } )
 state'.credentials = state.credentials
@@ -227,8 +237,7 @@ In order to replace the last master key, the user first has to add a new master 
 in a separate operation signed by the newly added key. 
 In order for the operation to be considered valid, all its actions need to be.
 
-
-```
+```json
 {
   "signedWith": "master",
   "signature": "MEQCIGtIUUVSsuRlRWwN6zMzaSi7FImvRRbjId7Fu/akOxFeAiAavOigmiJ5qQ2ORknhAEb207/2aNkQKfzBr0Vw+JS+lw==",
@@ -262,13 +271,14 @@ In order for the operation to be considered valid, all its actions need to be.
 ```
 
 Response:
-```
+
+```json
 {}
 ```
 
 When the operation is observed in the stable part of the ledger, the node performs the following checks:
 
-```
+```scala
 alias didToUpdate = decoded.operation.UpdateDID.didSuffix
 alias signingKeyId = decoded.signedWith
 alias updateActions = decoded.operation.updateDID.actions
@@ -291,7 +301,8 @@ We will refine the specification of `updateMap` in a future iteration.
 
 
 If the check passes, then we get the following state update:
-```
+
+```scala
 state'.dids = state.dids.update(didToUpdate, { lastOperationReference = hash(decoded), 
                                                keys = updateMap(signingKeyId, currentDidData, updateActions).get }
 state'.credentials = state.credentials
@@ -309,7 +320,7 @@ issuing keys.
   control. The revocation control lives still under the sole control of the university. Note that depending on this decision
   we need to add or remove checks in the verification process. I am currently assuming that the keys could be different. 
 
-```
+```json
 {
   "keyId": "issuing",
   "signature": "MEUCIQDCntn4GKNBja9LYPHa5U7KSQPukQYwHD2FuxXmC2I2QQIgEdN3EtFZW+k/zOe2KQYjYZWPaV5SE0Mnn8XmhDu1vg4=",
@@ -325,7 +336,8 @@ issuing keys.
 ```
 
 RPC response:
-```
+
+```json
 {
   "id": "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
 }
@@ -350,7 +362,8 @@ isValid(signature, messageSigned, state.dids(issuerDIDSuffix).keys(signingKeyId)
 ```
 
 If the check passes, then we get the following state update:
-```
+
+```scala
 alias credentialId = getCredId(decoded)
 
 state'.dids = state.dids
@@ -367,7 +380,8 @@ state'.credentials = { state.credentials + (credentialId -> { lastOperationRefer
 It must be signed by one of issuer's current issuing keys.
 
 Example:
-```
+
+```json
 {
   "keyId": "issuing",
   "signature": "MEUCIQCbX9aHbFGeeexwT7IOA/n93XZblxFMaJrBpsXK99I3NwIgQgkrkXPr6ExyflwPMIH4Yb3skqBhhz0LOLFrTqtev44=",
@@ -400,7 +414,8 @@ isValid(signature, messageSigned, state.dids(issuerDIDSuffix).keys(signingKeyId)
 ```
 
 If the check passes, then we get the following state update:
-```
+
+```scala
 state'.dids = state.dids
 state'.credentials = { state.credentials + (credentialId -> { lastOperationReference = hash(decoded), 
                                                               issuerDIDSuffix        = state.credentials(credentialId).issuerDIDSuffix, 
@@ -411,7 +426,8 @@ state'.credentials = { state.credentials + (credentialId -> { lastOperationRefer
 ```
 
 RPC response:
-```
+
+```scala
 {}
 ```
 
@@ -442,12 +458,14 @@ the blockchain. The credential will remain valid as long as the credential's exp
 and there must be no revocation operation posted in the blockchain referring to that credential. Otherwise the 
 credential is considered invalid.
 The credential needs to have the following information to perform this checks:
-```
+
+```scala
 - expirationDate: Option[Date]
 - issuerDID: DID
 - signature: Bytes
 - signingKey: String // reference to a key in the issuers DID Document
 ```
+
 The key is considered valid if it was added in the `issuerDID`'s DID Document before `credIssuingEvent` and, if the key 
 is revoked in the said DID Document, the revocation event occurred after `credIssuingEvent` (i.e. after the credential
 was recorded as issued). 
@@ -463,7 +481,8 @@ main administration is the one with the power to issue/revoke a credential. We s
 simulated with a single DID by having different issuing keys for the faculties.
 
 Expressed with respect to the node state, given a credential C:
-```
+
+```scala
 // C has no expiration date or the expiration date hasn't occur yet, and
 (C.expirationDate.isEmpty || C.expirationDate.get >= TODAY) && 
 // the credential was posted in the chain, and
@@ -497,7 +516,7 @@ isValidSignature(
 After reviewing the verification process we can propose this tentative generic credential schema.
 The schema could move around the fields, e.g. the signature field could be an object that contains the key reference.
 
-```
+```scala
 {
   credentialName: String
   expirationDate: Option[Date]
@@ -513,7 +532,8 @@ on many parts.
  
 However, the standard proposes a `credentialStatus` [field](https://www.w3.org/TR/vc-data-model/#status) for which
 documentation currently states:
-```
+
+```text
 credentialStatus
   The value of the credentialStatus property MUST include the:
   + id property, which MUST be a URL.
@@ -524,13 +544,15 @@ credentialStatus
   The precise contents of the credential status information is determined by the specific credentialStatus type 
   definition, and varies depending on factors such as whether it is simple to implement or if it is privacy-enhancing.
 ```
+
 and later says
 
-```
+```text
 Defining the data model, formats, and protocols for status schemes are out of scope for this specification. A Verifiable 
 Credential Extension Registry [VC-EXTENSION-REGISTRY] exists that contains available status schemes for implementers who 
 want to implement verifiable credential status checking.
 ```
+
 but the [extension registry](https://w3c-ccg.github.io/vc-extension-registry/) provides no relevant data.
 
 It is unclear at the moment of this writing how to define this field. We may need to
@@ -543,7 +565,7 @@ related to the protocol that we should perform.
 
 - Add a `RecoveryKey` value to the `KeyUsage` type. It could be useful to allow recovering the control over a DID even
   if the master key is lost/compromised. It should be non-revocable by any other key but itself (leaving an exception to
-  our DIDUpdate operation).                                       
+  our DIDUpdate operation).
 - Allow to publish both batched operations or individual operations in transactions' metadata. 
   Batching operations forces us the need to maintain a CAS which also brings possible problems related to files missing 
   in a CAS. On the other hand, batching operations reduces fees. If IOHK restricts who can issue operations (in order 
