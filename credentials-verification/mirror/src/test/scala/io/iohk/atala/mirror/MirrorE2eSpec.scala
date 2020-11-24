@@ -2,13 +2,15 @@ package io.iohk.atala.mirror
 
 import scala.concurrent.duration._
 import scala.util.Try
+
 import monix.eval.Task
 import com.google.protobuf.ByteString
-import io.grpc.{ManagedChannelBuilder, Metadata}
-import io.grpc.stub.{AbstractStub, MetadataUtils}
+import io.grpc.ManagedChannelBuilder
 import org.slf4j.LoggerFactory
+
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
+
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.connector.RequestAuthenticator
@@ -22,12 +24,20 @@ import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.mirror.config._
 import io.iohk.atala.mirror.db.UserCredentialDao
 import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
-import monix.execution.Scheduler.Implicits.global
+import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.credentials.CredentialContent
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+
 import cats.implicits._
 import doobie.implicits._
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.credentials.json.implicits._
+import monix.execution.Scheduler.Implicits.global
+import io.iohk.atala.mirror.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
+import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
 
 class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpec with MirrorFixtures {
+
+  implicit val ecTrait = EC
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -42,21 +52,31 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         connectorStub <- Task(createConnector("localhost", 50051))
 
         // Mirror: create new DID
-        did <- Task.fromFuture(connectorStub.registerDID(createDid)).map(response => DID.unsafeFromString(response.did))
-        _ = logger.info(s"DID: $did")
+        did <-
+          Task
+            .fromFuture(connectorStub.registerDID(createDid(masterKey)))
+            .map(response => DID.unsafeFromString(response.did))
+        _ = logger.info(s"DID: ${did.value}")
 
         // create services
-        connectorConfig = createConnectorConfig(did)
+        connectorConfig = createConnectorConfig(did, masterKey)
 
         nodeService = new NodeClientServiceImpl(nodeStub, connectorConfig.authConfig)
         connectorClientService =
-          new ConnectorClientServiceImpl(connectorStub, new RequestAuthenticator(EC), connectorConfig)
+          new ConnectorClientServiceImpl(connectorStub, new RequestAuthenticator(ecTrait), connectorConfig)
         credentialService = new CredentialService(
           databaseTask,
           connectorClientService,
           nodeService
         )
         mirrorService = new MirrorService(databaseTask, connectorClientService)
+
+        // Wallet: connector with public key auth
+        walletConnectorClientService = new BaseGrpcClientService(
+          connectorStub,
+          new RequestAuthenticator(ecTrait),
+          PublicKeyBasedAuthConfig(walletKey)
+        ) {}
 
         // Mirror: create new credential
         credential = signedCredential(did)
@@ -69,11 +89,10 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
 
         // Wallet: create connection from token and add it as header to the connector stub
         connection <-
-          connectorClientService
+          walletConnectorClientService
             .authenticatedCall(addConnectionFromTokenRequest(connectionToken), _.addConnectionFromToken)
-        _ = logger.info(s"Connection: ${connection}")
+        _ = logger.info(s"Connection: $connection")
         connectionId = connection.connection.map(_.connectionId).getOrElse("")
-        connectorClientWithUserId = addHeadersToStub(connectorStub, AuthHeaders.USER_ID -> connection.userId)
 
         // Mirror: start connection stream to update ConnectionId
         _ <-
@@ -85,14 +104,14 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
 
         // Wallet: get messages for given userId
         proofRequests <-
-          Task
-            .fromFuture(connectorClientWithUserId.getMessagesPaginated(getMessagesPaginatedRequest))
+          walletConnectorClientService
+            .authenticatedCall(getMessagesPaginatedRequest, _.getMessagesPaginated)
             .map(_.messages)
         _ = logger.info(s"proofRequests: $proofRequests")
 
         // Wallet: confirm proof requests
         _ <- Task(proofRequests.flatMap(parseProofRequest(credential.canonicalForm, connectionId)))
-          .flatMap(_.map(r => Task.fromFuture(connectorClientWithUserId.sendMessage(r))).toList.sequence)
+          .flatMap(_.map(r => walletConnectorClientService.authenticatedCall(r, _.sendMessage)).toList.sequence)
 
         // Mirror: process incoming messages
         cardanoAddressService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig, nodeService)
@@ -111,21 +130,33 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
   }
 
   trait E2eFixtures {
-    val masterKey = EC.generateKeyPair()
-    val issuanceKey = EC.generateKeyPair()
+    val walletKey = ecTrait.generateKeyPair()
+    val masterKey = ecTrait.generateKeyPair()
+    val issuanceKey = ecTrait.generateKeyPair()
 
     val keyId = "master"
 
-    def signedCredential(did: DID) =
-      CredentialFixtures.createSignedCredential(
-        CredentialFixtures.createUnsignedCredential(
-          keyId,
-          did
-        ),
-        masterKey
+    def signedCredential(did: DID) = {
+      val credentialContent = CredentialContent(
+        credentialType = Nil,
+        issuerDid = Some(did),
+        issuanceKeyId = Some(keyId),
+        issuanceDate = None,
+        expiryDate = None,
+        credentialSubject = None
       )
 
-    def addConnectionFromTokenRequest(token: String) = AddConnectionFromTokenRequest(token)
+      JsonBasedCredential
+        .fromCredentialContent(credentialContent)
+        .sign(masterKey.privateKey)
+    }
+
+    def addConnectionFromTokenRequest(token: String) = {
+      AddConnectionFromTokenRequest(
+        token = token,
+        holderEncodedPublicKey = Some(EncodedPublicKey(ByteString.copyFrom(walletKey.publicKey.getEncoded)))
+      )
+    }
 
     def sendMessageRequest(connectionId: String, message: ByteString) =
       SendMessageRequest(connectionId = connectionId, message = message)
@@ -141,7 +172,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
       } yield sendMessageRequest(connectionId, credential.toByteString)
     }
 
-    val createDid = {
+    def createDid(keys: ECKeyPair) = {
       val createDidOp = CreateDIDOperation(
         didData = Some(
           DIDData(
@@ -150,7 +181,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
                 id = keyId,
                 usage = KeyUsage.MASTER_KEY,
                 keyData = PublicKey.KeyData.EcKeyData(
-                  NodeUtils.toTimestampInfoProto(masterKey.publicKey)
+                  NodeUtils.toTimestampInfoProto(keys.publicKey)
                 )
               )
             )
@@ -163,7 +194,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
       val signedAtalaOperation = SignedAtalaOperation(
         signedWith = keyId,
         operation = Some(atalaOperation),
-        signature = ByteString.copyFrom(EC.sign(atalaOperation.toByteArray, masterKey.privateKey).data)
+        signature = ByteString.copyFrom(ecTrait.sign(atalaOperation.toByteArray, masterKey.privateKey).data)
       )
 
       RegisterDIDRequest()
@@ -173,20 +204,16 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         .withRole(RegisterDIDRequest.Role.issuer)
     }
 
-    def createConnectorConfig(did: DID) = {
+    def createConnectorConfig(did: DID, keys: ECKeyPair) = {
       ConnectorConfig(
         host = "localhost",
         port = 50051,
         authConfig = DidBasedAuthConfig(
           did = did,
           didKeyId = keyId,
-          didKeyPair = masterKey
+          didKeyPair = keys
         )
       )
-    }
-
-    object AuthHeaders {
-      val USER_ID = Metadata.Key.of("userId", Metadata.ASCII_STRING_MARSHALLER)
     }
   }
 
@@ -212,15 +239,5 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
       .build()
 
     ConnectorServiceGrpc.stub(channel)
-  }
-
-  private def addHeadersToStub[S <: AbstractStub[S]](stub: S, headers: (Metadata.Key[String], String)*): S = {
-    val metadata = new Metadata
-
-    headers.foreach {
-      case (key, value) => metadata.put(key, value)
-    }
-
-    MetadataUtils.attachHeaders(stub, metadata)
   }
 }

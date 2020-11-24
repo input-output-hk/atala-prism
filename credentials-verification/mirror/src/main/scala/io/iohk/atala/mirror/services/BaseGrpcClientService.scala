@@ -1,5 +1,6 @@
 package io.iohk.atala.mirror.services
 
+import java.util.Base64
 import scala.concurrent.Future
 import io.grpc.Metadata
 import io.grpc.stub.{AbstractStub, MetadataUtils}
@@ -7,7 +8,12 @@ import scalapb.GeneratedMessage
 import monix.eval.Task
 import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.mirror.services.BaseGrpcClientService.{AuthHeaders, DidBasedAuthConfig}
+import io.iohk.atala.mirror.services.BaseGrpcClientService.{
+  AuthHeaders,
+  BaseGrpcAuthConfig,
+  DidBasedAuthConfig,
+  PublicKeyBasedAuthConfig
+}
 import io.iohk.atala.prism.identity.DID
 
 /**
@@ -17,7 +23,7 @@ import io.iohk.atala.prism.identity.DID
 abstract class BaseGrpcClientService[S <: AbstractStub[S]](
     stub: S,
     requestAuthenticator: RequestAuthenticator,
-    authConfig: DidBasedAuthConfig
+    authConfig: BaseGrpcAuthConfig
 ) {
 
   /**
@@ -38,15 +44,24 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
   private[services] def signRequest[Request <: GeneratedMessage](request: Request): Metadata = {
     val signature = requestAuthenticator.signConnectorRequest(
       request.toByteArray,
-      authConfig.didKeyPair.privateKey
+      authConfig.keys.privateKey
     )
 
-    createMetadataHeaders(
-      AuthHeaders.DID -> authConfig.did.value,
-      AuthHeaders.DID_KEY_ID -> authConfig.didKeyId,
-      AuthHeaders.DID_SIGNATURE -> signature.encodedSignature,
-      AuthHeaders.REQUEST_NONCE -> signature.encodedRequestNonce
-    )
+    authConfig match {
+      case DidBasedAuthConfig(did, didKeyId, _) =>
+        createMetadataHeaders(
+          AuthHeaders.DID -> did.value,
+          AuthHeaders.DID_KEY_ID -> didKeyId,
+          AuthHeaders.DID_SIGNATURE -> signature.encodedSignature,
+          AuthHeaders.REQUEST_NONCE -> signature.encodedRequestNonce
+        )
+      case PublicKeyBasedAuthConfig(keyPair) =>
+        createMetadataHeaders(
+          AuthHeaders.PUBLIC_KEY -> Base64.getUrlEncoder.encodeToString(keyPair.publicKey.getEncoded),
+          AuthHeaders.SIGNATURE -> signature.encodedSignature,
+          AuthHeaders.REQUEST_NONCE -> signature.encodedRequestNonce
+        )
+    }
   }
 
   /**
@@ -68,16 +83,25 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
 
 object BaseGrpcClientService {
 
+  abstract sealed class BaseGrpcAuthConfig(val keys: ECKeyPair)
+
   case class DidBasedAuthConfig(
       did: DID,
       didKeyId: String,
       didKeyPair: ECKeyPair
-  )
+  ) extends BaseGrpcAuthConfig(didKeyPair)
+
+  case class PublicKeyBasedAuthConfig(keyPair: ECKeyPair) extends BaseGrpcAuthConfig(keyPair)
 
   object AuthHeaders {
+    // DID based
     val DID = Metadata.Key.of("did", Metadata.ASCII_STRING_MARSHALLER)
     val DID_KEY_ID = Metadata.Key.of("didKeyId", Metadata.ASCII_STRING_MARSHALLER)
     val DID_SIGNATURE = Metadata.Key.of("didSignature", Metadata.ASCII_STRING_MARSHALLER)
+    // PublicKey based
+    val PUBLIC_KEY = Metadata.Key.of("publicKey", Metadata.ASCII_STRING_MARSHALLER)
+    val SIGNATURE = Metadata.Key.of("signature", Metadata.ASCII_STRING_MARSHALLER)
+    // Common
     val REQUEST_NONCE = Metadata.Key.of("requestNonce", Metadata.ASCII_STRING_MARSHALLER)
   }
 }
