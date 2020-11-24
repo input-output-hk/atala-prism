@@ -33,7 +33,7 @@ class UserCredentialDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.insert(connection2)
         _ <- UserCredentialDao.insert(userCredential1)
-        _ <- UserCredentialDao.insert(userCredential2)
+        _ <- UserCredentialDao.insert(userCredential3)
       } yield ()).transact(database).unsafeRunSync()
 
       // when
@@ -57,7 +57,7 @@ class UserCredentialDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.insert(connection2)
         _ <- UserCredentialDao.insert(userCredential1)
-        _ <- UserCredentialDao.insert(userCredential2)
+        _ <- UserCredentialDao.insert(userCredential3)
       } yield ()).transact(database).unsafeRunSync()
 
       // when
@@ -65,7 +65,7 @@ class UserCredentialDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
         UserCredentialDao.findLastSeenMessageId.transact(database).unsafeRunSync()
 
       // then
-      lastSeenMessageId mustBe Some(userCredential2.messageId)
+      lastSeenMessageId mustBe Some(userCredential3.messageId)
     }
   }
 }

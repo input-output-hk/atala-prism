@@ -6,15 +6,31 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.mirror.protos.mirror_api.{
   CreateAccountResponse,
   GetCredentialForAddressRequest,
-  GetCredentialForAddressResponse
+  GetCredentialForAddressResponse,
+  GetIdentityInfoForAddressRequest,
+  GetIdentityInfoForAddressResponse
 }
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, UserCredentialDao}
-import io.iohk.atala.mirror.models.Connection
+import io.iohk.atala.mirror.models.{Connection, RedlandIdCredential}
 import doobie.implicits._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
+import io.iohk.atala.mirror.protos.ivms101.{
+  DateAndPlaceOfBirth,
+  NationalIdentification,
+  NationalIdentifierTypeCode,
+  NaturalPerson,
+  NaturalPersonName,
+  NaturalPersonNameId,
+  NaturalPersonNameTypeCode,
+  Person
+}
 import io.iohk.atala.mirror.protos.mirror_models.CredentialData.IssuersDidOption
-import io.iohk.atala.mirror.protos.mirror_models.GetCredentialForAddressError.ADDRESS_NOT_FOUND
+import io.iohk.atala.mirror.protos.mirror_models.MirrorError.ADDRESS_NOT_FOUND
 import io.iohk.atala.mirror.protos.mirror_models.{CredentialData, GetCredentialForAddressData}
+import cats.implicits._
+import doobie.ConnectionIO
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.mirror.models.RedlandIdCredential.redlandIdCredentialContentDecoder
 
 class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientService) {
 
@@ -59,4 +75,66 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
 
   }
 
+  def getIdentityInfoForAddress(request: GetIdentityInfoForAddressRequest): Task[GetIdentityInfoForAddressResponse] = {
+    val redlandCredentialOption = (for {
+      address <- OptionT(CardanoAddressInfoDao.findBy(CardanoAddress(request.address)))
+      credentials <- OptionT.liftF(UserCredentialDao.findBy(address.connectionToken))
+      redlandCredential <-
+        credentials
+          .sortBy(_.messageReceivedDate.date)
+          .flatMap(credential =>
+            JsonBasedCredential
+              .fromString(credential.rawCredential.rawCredential)(redlandIdCredentialContentDecoder)
+              .toOption
+          )
+          .flatMap(_.content.credentialSubject)
+          .lastOption
+          .toOptionT[ConnectionIO]
+
+    } yield redlandCredential).transact(tx).value
+
+    redlandCredentialOption.map {
+      case Some(redlandIdCredential) =>
+        val person = redlandIdCredentialToPerson(redlandIdCredential)
+
+        GetIdentityInfoForAddressResponse(
+          GetIdentityInfoForAddressResponse.Response.Person(person)
+        )
+
+      case None =>
+        GetIdentityInfoForAddressResponse(
+          GetIdentityInfoForAddressResponse.Response.Error(ADDRESS_NOT_FOUND)
+        )
+    }
+  }
+
+  private def redlandIdCredentialToPerson(redlandIdCredential: RedlandIdCredential): Person = {
+
+    val naturalPersonName = NaturalPersonName(
+      nameIdentifiers = Seq(
+        NaturalPersonNameId(
+          primaryIdentifier = redlandIdCredential.name,
+          nameIdentifierType = NaturalPersonNameTypeCode.NATURAL_PERSON_NAME_TYPE_CODE_LEGL
+        )
+      )
+    )
+
+    val nationalIdentification = NationalIdentification(
+      nationalIdentifier = redlandIdCredential.identityNumber,
+      nationalIdentifierType = NationalIdentifierTypeCode.NATIONAL_IDENTIFIER_TYPE_CODE_MISC
+    )
+
+    val dateAndPlaceOfBirth = DateAndPlaceOfBirth(
+      dateOfBirth = redlandIdCredential.dateOfBirth
+    )
+
+    val naturalPerson = NaturalPerson(
+      name = Some(naturalPersonName),
+      geographicAddresses = Seq.empty,
+      nationalIdentification = Some(nationalIdentification),
+      dateAndPlaceOfBirth = Some(dateAndPlaceOfBirth)
+    )
+
+    Person(Person.Person.NaturalPerson(naturalPerson))
+  }
 }

@@ -7,6 +7,8 @@ import io.iohk.atala.mirror.protos.mirror_api.{
   CreateAccountResponse,
   GetCredentialForAddressRequest,
   GetCredentialForAddressResponse,
+  GetIdentityInfoForAddressRequest,
+  GetIdentityInfoForAddressResponse,
   MirrorServiceGrpc
 }
 import io.iohk.atala.mirror.services.MirrorService
@@ -21,5 +23,11 @@ class MirrorGrpcService(mirrorService: MirrorService)(implicit s: Scheduler) ext
       request: GetCredentialForAddressRequest
   ): Future[GetCredentialForAddressResponse] = {
     mirrorService.getCredentialForAddress(request).runToFuture
+  }
+
+  override def getIdentityInfoForAddress(
+      request: GetIdentityInfoForAddressRequest
+  ): Future[GetIdentityInfoForAddressResponse] = {
+    mirrorService.getIdentityInfoForAddress(request).runToFuture
   }
 }

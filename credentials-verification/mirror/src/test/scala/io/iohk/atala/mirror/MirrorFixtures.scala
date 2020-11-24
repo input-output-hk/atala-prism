@@ -11,19 +11,11 @@ import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, UserCreden
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.circe.Json
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
 import io.iohk.atala.mirror.models._
-import io.iohk.atala.prism.credentials.{
-  CredentialsCryptoSDKImpl,
-  JsonBasedUnsignedCredential,
-  SignedCredential,
-  SlayerCredentialId,
-  TimestampInfo,
-  UnsignedCredential
-}
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.credentials.{CredentialContent, SlayerCredentialId, TimestampInfo}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.mirror.payid.implicits._
@@ -37,8 +29,10 @@ import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
 import io.iohk.atala.prism.protos.credential_models
 import io.circe.syntax._
 import io.iohk.atala.mirror.config.{GrpcConfig, HttpConfig, MirrorConfig}
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.jose.implicits._
+import io.iohk.atala.mirror.models.RedlandIdCredential._
 
 trait MirrorFixtures {
 
@@ -86,7 +80,7 @@ trait MirrorFixtures {
     lazy val userCredential1: UserCredential =
       UserCredential(
         ConnectionFixtures.connection1.token,
-        RawCredential("rawCredentials1"),
+        RawCredential(CredentialFixtures.jsonBasedCredential1.canonicalForm),
         Some(DID.buildPrismDID("issuersdid1")),
         ConnectorMessageId("messageId1"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
@@ -95,10 +89,20 @@ trait MirrorFixtures {
 
     lazy val userCredential2: UserCredential =
       UserCredential(
-        ConnectionFixtures.connection2.token,
-        RawCredential("rawCredentials2"),
-        None,
+        ConnectionFixtures.connection1.token,
+        RawCredential(CredentialFixtures.jsonBasedCredential2.canonicalForm),
+        Some(DID.buildPrismDID("issuersdid1")),
         ConnectorMessageId("messageId2"),
+        MessageReceivedDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
+        CredentialStatus.Valid
+      )
+
+    lazy val userCredential3: UserCredential =
+      UserCredential(
+        ConnectionFixtures.connection2.token,
+        RawCredential(CredentialFixtures.jsonBasedCredential1.canonicalForm),
+        None,
+        ConnectorMessageId("messageId3"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
       )
@@ -106,7 +110,8 @@ trait MirrorFixtures {
     def insertAll[F[_]: Sync](database: Transactor[F]) = {
       insertManyFixtures(
         UserCredentialDao.insert(userCredential1),
-        UserCredentialDao.insert(userCredential2)
+        UserCredentialDao.insert(userCredential2),
+        UserCredentialDao.insert(userCredential3)
       )(database)
     }
   }
@@ -116,14 +121,10 @@ trait MirrorFixtures {
     val issuanceKeyId = "Issuance-0"
     val issuerDID = DID.buildPrismDID("123456678abcdefg")
 
-    val unsignedCredential: UnsignedCredential = createUnsignedCredential(issuanceKeyId, issuerDID)
-
     val keyAddedDate: TimestampInfo = TimestampInfo(Instant.now().minusSeconds(1), 1, 1)
     val credentialIssueDate: TimestampInfo = TimestampInfo(Instant.now(), 2, 2)
 
     val keys: ECKeyPair = EC.generateKeyPair()
-    val signedCredential: SignedCredential = createSignedCredential(unsignedCredential, keys)
-
     val publicKey: PublicKey = PublicKey(
       id = issuanceKeyId,
       usage = KeyUsage.AUTHENTICATION_KEY,
@@ -135,19 +136,31 @@ trait MirrorFixtures {
     val didData: DIDData = DIDData("", Seq(publicKey))
     val getCredentialStateResponse: GetCredentialStateResponse =
       GetCredentialStateResponse(
-        issuerDID = unsignedCredential.issuerDID.get.value,
+        issuerDID = issuerDID.value,
         publicationDate = Some(NodeUtils.toInfoProto(credentialIssueDate)),
         revocationDate = None
       )
 
-    val nodeCredentialId: SlayerCredentialId = SlayerCredentialId
+    val nodeCredentialId1: SlayerCredentialId = SlayerCredentialId
       .compute(
-        credential = signedCredential,
+        credentialHash = SHA256Digest.compute(jsonBasedCredential1.canonicalForm.getBytes),
+        did = issuerDID
+      )
+
+    val nodeCredentialId2: SlayerCredentialId = SlayerCredentialId
+      .compute(
+        credentialHash = SHA256Digest.compute(jsonBasedCredential2.canonicalForm.getBytes),
         did = issuerDID
       )
 
     val defaultNodeClientStub =
-      new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
+      new NodeClientServiceStub(
+        Map(issuerDID -> didData),
+        Map(
+          nodeCredentialId1.string -> getCredentialStateResponse,
+          nodeCredentialId2.string -> getCredentialStateResponse
+        )
+      )
 
     val rawMessage: ByteString = createRawMessage("{}")
 
@@ -155,16 +168,39 @@ trait MirrorFixtures {
       Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = json).toByteString
     }
 
-    def createUnsignedCredential(issuanceKeyId: String, issuerDID: DID): UnsignedCredential =
-      JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-        issuerDID = issuerDID,
-        issuanceKeyId = issuanceKeyId,
-        claims = Json.obj()
+    lazy val redlandIdCredential1 = RedlandIdCredential(
+      id = "id1",
+      identityNumber = "identityNumber1",
+      name = "name1",
+      dateOfBirth = "1990-01-01"
+    )
+
+    lazy val redlandIdCredential2 = RedlandIdCredential(
+      id = "id2",
+      identityNumber = "identityNumber2",
+      name = "name2",
+      dateOfBirth = "1990-01-02"
+    )
+
+    lazy val jsonBasedCredential1 =
+      JsonBasedCredential
+        .fromCredentialContent(makeCredentialContent(redlandIdCredential1))
+        .sign(keys.privateKey)
+
+    lazy val jsonBasedCredential2 =
+      JsonBasedCredential
+        .fromCredentialContent(makeCredentialContent(redlandIdCredential2))
+        .sign(keys.privateKey)
+
+    def makeCredentialContent(redlandIdCredential: RedlandIdCredential): CredentialContent[RedlandIdCredential] =
+      CredentialContent(
+        credentialType = Seq("VerifiableCredential", "RedlandIdCredential"),
+        Some(issuerDID), //cannot use named argument here, as it's the same as issuerDID
+        issuanceKeyId = Some(issuanceKeyId),
+        issuanceDate = None,
+        expiryDate = None,
+        credentialSubject = Some(redlandIdCredential)
       )
-
-    def createSignedCredential(unsignedCredential: UnsignedCredential, keys: ECKeyPair): SignedCredential =
-      CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)(EC)
-
   }
 
   object CardanoAddressInfoFixtures {
@@ -237,7 +273,7 @@ trait MirrorFixtures {
       connectionId = connectionId1.uuid.toString,
       message = Credential(
         typeId = "VerifiableCredential/RedlandIdCredential",
-        credentialDocument = signedCredential.canonicalForm
+        credentialDocument = jsonBasedCredential1.canonicalForm
       ).toByteString
     )
 
@@ -247,7 +283,7 @@ trait MirrorFixtures {
       connectionId = connectionId2.uuid.toString,
       message = Credential(
         typeId = "VerifiableCredential/RedlandIdCredential",
-        credentialDocument = signedCredential.canonicalForm
+        credentialDocument = jsonBasedCredential2.canonicalForm
       ).toByteString
     )
 

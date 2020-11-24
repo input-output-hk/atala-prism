@@ -17,7 +17,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
 import io.circe.Json
 import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential}
-import io.iohk.atala.prism.crypto.{EC, ECTrait}
+import io.iohk.atala.prism.crypto.{EC, ECTrait, SHA256Digest}
 import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
 import io.iohk.atala.prism.identity.DID
 import org.mockito.scalatest.MockitoSugar
@@ -80,8 +80,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       // given
       ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe(1.minute)
 
-      val credentialSignedWithWrongKey =
-        CredentialsCryptoSDKImpl.signCredential(unsignedCredential, EC.generateKeyPair().privateKey)
+      val credentialSignedWithWrongKey = jsonBasedCredential1.sign(EC.generateKeyPair().privateKey)
 
       val receivedMessage =
         credentialMessage1.copy(message =
@@ -93,7 +92,12 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
       val connectorClientStub = new ConnectorClientServiceStub()
 
-      val nodeCredentialId = SlayerCredentialId.compute(credentialSignedWithWrongKey, issuerDID)
+      val nodeCredentialId = SlayerCredentialId
+        .compute(
+          credentialHash = SHA256Digest.compute(credentialSignedWithWrongKey.canonicalForm.getBytes),
+          did = issuerDID
+        )
+
       val nodeClientStub =
         new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
       val credentialService = new CredentialService(databaseTask, connectorClientStub, nodeClientStub)
@@ -215,7 +219,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
   "verifyCredential" should {
     "verifyCredential" in new ConnectionServiceFixtures {
       val result: Either[String, ValidatedNel[VerificationError, Unit]] =
-        credentialService.verifyCredential(signedCredential.canonicalForm).runSyncUnsafe()
+        credentialService.verifyCredential(jsonBasedCredential1.canonicalForm).runSyncUnsafe()
       result mustBe a[Right[_, _]]
       result.toOption.value.isValid mustBe true
     }
@@ -225,16 +229,19 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       val nodeClientStub = new NodeClientServiceStub
       val credentialService = new CredentialService(databaseTask, connectorClientStub, nodeClientStub)
 
-      credentialService.verifyCredential(signedCredential.canonicalForm).runSyncUnsafe() mustBe a[Left[_, _]]
+      credentialService.verifyCredential(jsonBasedCredential1.canonicalForm).runSyncUnsafe() mustBe a[Left[_, _]]
     }
 
     "return error when credential is invalid" in {
-      val credentialSignedWithWrongKey =
-        CredentialsCryptoSDKImpl.signCredential(unsignedCredential, EC.generateKeyPair().privateKey)
+      val credentialSignedWithWrongKey = jsonBasedCredential1.sign(EC.generateKeyPair().privateKey)
 
       val connectorClientStub = new ConnectorClientServiceStub
 
-      val nodeCredentialId = SlayerCredentialId.compute(credentialSignedWithWrongKey, issuerDID)
+      val nodeCredentialId = SlayerCredentialId
+        .compute(
+          credentialHash = SHA256Digest.compute(credentialSignedWithWrongKey.canonicalForm.getBytes),
+          did = issuerDID
+        )
 
       val nodeClientStub =
         new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
@@ -250,7 +257,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
   "getCredentialData" should {
     "return credential data" in new ConnectionServiceFixtures {
-      credentialService.getCredentialData(nodeCredentialId).value.runSyncUnsafe() mustBe a[Right[_, _]]
+      credentialService.getCredentialData(nodeCredentialId1).value.runSyncUnsafe() mustBe a[Right[_, _]]
     }
 
     "return error when credential is not available" in {
@@ -258,7 +265,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       val nodeClientStub = new NodeClientServiceStub
       val credentialService = new CredentialService(databaseTask, connectorClientStub, nodeClientStub)
 
-      credentialService.getCredentialData(nodeCredentialId).value.runSyncUnsafe() mustBe a[Left[_, _]]
+      credentialService.getCredentialData(nodeCredentialId1).value.runSyncUnsafe() mustBe a[Left[_, _]]
     }
   }
 

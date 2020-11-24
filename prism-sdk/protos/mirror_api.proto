@@ -6,10 +6,12 @@ option java_package = "io.iohk.atala.mirror.protos";
 package io.iohk.atala.mirror.protos;
 
 import "mirror_models.proto";
+import "ivms101.proto";
 
 service MirrorService {
   rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {}
   rpc GetCredentialForAddress(GetCredentialForAddressRequest) returns (GetCredentialForAddressResponse) {}
+  rpc GetIdentityInfoForAddress(GetIdentityInfoForAddressRequest) returns (GetIdentityInfoForAddressResponse) {}
 }
 
 message CreateAccountRequest {
@@ -26,6 +28,17 @@ message GetCredentialForAddressRequest {
 message GetCredentialForAddressResponse {
   oneof response {
       GetCredentialForAddressData data = 1;
-      GetCredentialForAddressError error = 2;
+      MirrorError error = 2;
+  }
+}
+
+message GetIdentityInfoForAddressRequest {
+  string address = 1;
+}
+
+message GetIdentityInfoForAddressResponse {
+  oneof response {
+      Person person = 1;
+      MirrorError error = 2;
   }
 }
