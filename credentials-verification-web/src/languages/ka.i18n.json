@@ -48,8 +48,7 @@
     },
     "filters": {
       "identityNumber": "Identity Number",
-      "name": "Name",
-      "email": "Email",
+      "search": "Search",
       "status": "Status"
     },
     "buttons": {

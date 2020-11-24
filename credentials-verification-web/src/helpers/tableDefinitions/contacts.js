@@ -46,7 +46,7 @@ const getExtendedColumns = ({ inviteContact, viewContactDetail }) => [
   {
     key: 'connectionstatus',
     render: ({ status }) => (
-      <CellRenderer title="contactStatus" componentName="contacts">
+      <CellRenderer title={tp('contactStatus')} componentName="contacts">
         <StatusBadge status={status} />
       </CellRenderer>
     )

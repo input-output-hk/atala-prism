@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import i18n from 'i18next';
 import { message } from 'antd';
-import { CONTACT_PAGE_SIZE } from '../helpers/constants';
+import {
+  CONNECTED,
+  CONNECTION_STATUSES,
+  CONTACT_PAGE_SIZE,
+  PENDING_CONNECTION
+} from '../helpers/constants';
 import { getLastArrayElementOrEmpty } from '../helpers/genericHelpers';
 import { contactMapper } from '../APIs/helpers/contactHelpers';
 import Logger from '../helpers/Logger';
@@ -55,28 +60,44 @@ export const useContacts = (contactsManager, setLoading) => {
 export const useContactsWithFilteredList = (contactsManager, setLoading) => {
   const [contacts, setContacts] = useState([]);
   const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts, setLoading);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('');
+  const [searchText, setSearchText] = useState();
+  const [status, setStatus] = useState();
   const [filteredContacts, setFilteredContacts] = useState([]);
 
+  const statusMatch = (contactStatus, filterStatus) =>
+    !filterStatus || allowedStatuses[filterStatus].includes(contactStatus);
+
+  const allowedStatuses = {
+    [PENDING_CONNECTION]: [
+      CONNECTION_STATUSES.invitationMissing,
+      CONNECTION_STATUSES.connectionMissing
+    ],
+    [CONNECTED]: [CONNECTION_STATUSES.connectionAccepted]
+  };
+
   useEffect(() => {
-    const newFilteredContacts = contacts.filter(it => {
-      const matchesName = filterByInclusion(name, it.contactName);
-      const matchesEmail = filterByInclusion(email, it.email);
-      // 0 is a valid status so it's not possible to check for !_status
-      const matchesStatus = [undefined, '', it.status].includes(status);
-
-      return matchesStatus && matchesName && matchesEmail;
-    });
+    const newFilteredContacts = applyFilters();
     setFilteredContacts(newFilteredContacts);
-  }, [contacts]);
+  }, [contacts, searchText, status]);
 
-  const handleContactsRequest = (_name, _email, _status) => {
+  useEffect(() => {
+    /* if the amount of filtered contacts is less than the page size,
+      there might be unfetched contacts that match the filters to show */
+    if ((searchText || status) && filteredContacts.length < CONTACT_PAGE_SIZE && hasMore) {
+      handleContactsRequest();
+    }
+  }, [filteredContacts, searchText, status]);
+
+  const applyFilters = () =>
+    contacts.filter(it => {
+      const matchesName = filterByInclusion(searchText, it.contactName);
+      const matchesExternalId = filterByInclusion(searchText, it.externalid);
+      const matchesStatus = statusMatch(it.status, status);
+      return matchesStatus && (matchesName || matchesExternalId);
+    });
+
+  const handleContactsRequest = () => {
     const { contactid } = getLastArrayElementOrEmpty(contacts);
-    setName(_name);
-    setEmail(_email);
-    setStatus(_status);
 
     return getContacts({
       pageSize: CONTACT_PAGE_SIZE,
@@ -85,5 +106,12 @@ export const useContactsWithFilteredList = (contactsManager, setLoading) => {
     });
   };
 
-  return { contacts, filteredContacts, getContacts, handleContactsRequest, hasMore };
+  const filterProps = {
+    searchText,
+    setSearchText,
+    status,
+    setStatus
+  };
+
+  return { contacts, filteredContacts, filterProps, getContacts, handleContactsRequest, hasMore };
 };

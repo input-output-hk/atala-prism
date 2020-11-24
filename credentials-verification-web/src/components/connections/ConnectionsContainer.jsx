@@ -9,6 +9,7 @@ const ConnectionsContainer = ({ api }) => {
   const {
     contacts,
     filteredContacts,
+    filterProps,
     getContacts,
     handleContactsRequest,
     hasMore
@@ -39,6 +40,7 @@ const ConnectionsContainer = ({ api }) => {
       inviteContact={inviteContact}
       refreshContacts={refreshContacts}
       loading={loading}
+      filterProps={filterProps}
     />
   );
 };

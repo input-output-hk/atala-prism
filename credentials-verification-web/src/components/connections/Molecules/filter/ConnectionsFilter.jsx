@@ -1,56 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Row, Col, Input, Icon, Select } from 'antd';
-import { PENDING_CONNECTION, CONNECTED, INDIVIDUAL_STATUSES } from '../../../../helpers/constants';
+import { PENDING_CONNECTION, CONNECTED } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const ConnectionsFilter = ({ fetchContacts }) => {
+const ConnectionsFilter = ({ searchText, setSearchText, status, setStatus }) => {
   const { t } = useTranslation();
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState(t(''));
-
-  useEffect(() => {
-    fetchContacts(name, email, status);
-  }, [name, email, status]);
-
   const statuses = [PENDING_CONNECTION, CONNECTED];
-  const statusesValues = {
-    PENDING_CONNECTION: INDIVIDUAL_STATUSES.created,
-    CONNECTED: INDIVIDUAL_STATUSES.connected
-  };
 
   return (
     <div className="FilterControls">
-      <Row gutter={24}>
-        <Col span={8}>
+      <Row className="ContactFilters" gutter={20}>
+        <Col span={12}>
           <Input
-            placeholder={t('contacts.filters.name')}
+            placeholder={t('contacts.filters.search')}
             prefix={<Icon type="search" />}
-            onChange={({ target: { value } }) => setName(value)}
+            onChange={({ target: { value } }) => setSearchText(value)}
             allowClear
-            value={name}
-            disabled
+            value={searchText}
           />
         </Col>
-        <Col span={8}>
-          <Input
-            placeholder={t('contacts.filters.email')}
-            prefix={<Icon type="search" />}
-            onChange={({ target: { value } }) => setEmail(value)}
+        <Col span={12}>
+          <Select
+            value={status}
+            onChange={setStatus}
             allowClear
-            value={email}
-            disabled
-          />
-        </Col>
-        <Col span={8}>
-          <Select value={status} onChange={setStatus} disabled>
-            <Select.Option value="">{t('contacts.filters.status')}</Select.Option>
+            placeholder={t('contacts.filters.status')}
+          >
             {statuses.map(statusType => (
-              <Select.Option key={statusType} value={statusesValues[statusType]}>
+              <Select.Option key={statusType} value={statusType}>
                 {t(`holders.status.${statusType}`)}
               </Select.Option>
             ))}
@@ -61,8 +42,16 @@ const ConnectionsFilter = ({ fetchContacts }) => {
   );
 };
 
+ConnectionsFilter.defaultProps = {
+  searchText: undefined,
+  status: undefined
+};
+
 ConnectionsFilter.propTypes = {
-  fetchContacts: PropTypes.func.isRequired
+  searchText: PropTypes.string,
+  setSearchText: PropTypes.func.isRequired,
+  status: PropTypes.string,
+  setStatus: PropTypes.func.isRequired
 };
 
 export default ConnectionsFilter;

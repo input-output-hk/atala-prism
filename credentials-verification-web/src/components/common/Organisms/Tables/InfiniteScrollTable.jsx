@@ -18,7 +18,7 @@ const InfiniteScrollTable = ({
   // This use effect handles the call for more data after
   // the scroll reaches the end
   useEffect(() => {
-    const tableContent = document.querySelector('.ant-table-body');
+    const tableContent = document.querySelector('.InfiniteScrollTableContainer');
 
     const scrollListener = ({ target: { scrollHeight, clientHeight, scrollTop } }) => {
       const maxScroll = scrollHeight - clientHeight;
@@ -32,7 +32,9 @@ const InfiniteScrollTable = ({
   }, [hasMore, loading]);
 
   return (
-    <div className={`${handleSort ? '' : 'PaginatedTable'} table-${size}`}>
+    <div
+      className={`InfiniteScrollTableContainer ${handleSort ? '' : 'PaginatedTable'} table-${size}`}
+    >
       <Table
         rowSelection={selectionType}
         columns={columns}

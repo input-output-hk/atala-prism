@@ -19,6 +19,7 @@ const Connections = ({
   handleContactsRequest,
   refreshContacts,
   loading,
+  filterProps,
   redirector: { redirectToContactDetails }
 }) => {
   const { t } = useTranslation();
@@ -63,7 +64,7 @@ const Connections = ({
         <h1>{t('contacts.title')}</h1>
         <AddUserButtons />
       </div>
-      <ConnectionsFilter fetchContacts={handleContactsRequest} />
+      <ConnectionsFilter {...filterProps} fetchContacts={handleContactsRequest} />
       {renderContent()}
       <QRModal
         visible={QRModalIsOpen}
@@ -88,7 +89,16 @@ Connections.propTypes = {
   }).isRequired,
   loading: PropTypes.bool,
   inviteContact: PropTypes.func.isRequired,
-  refreshContacts: PropTypes.func.isRequired
+  refreshContacts: PropTypes.func.isRequired,
+  filterProps: PropTypes.shape({
+    searchText: PropTypes.string,
+    setSearchText: PropTypes.func,
+    status: PropTypes.string,
+    setStatus: PropTypes.func
+  }).isRequired,
+  redirector: PropTypes.shape({
+    redirectToContactDetails: PropTypes.func
+  }).isRequired
 };
 
 export default withRedirector(Connections);
