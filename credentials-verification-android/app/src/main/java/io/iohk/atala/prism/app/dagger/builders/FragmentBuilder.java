@@ -4,7 +4,6 @@ import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
 import io.iohk.atala.prism.app.dagger.modules.AcceptConnectionDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.ActivityLogFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.ConnectionsListableModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactDetailFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.CredentialHistoryFragmentModule;
@@ -15,6 +14,7 @@ import io.iohk.atala.prism.app.dagger.modules.MyCredentialsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.PaymentsModule;
 import io.iohk.atala.prism.app.dagger.modules.ProfileFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.SettingsDateFormatFragmentModule;
+import io.iohk.atala.prism.app.dagger.modules.ProofRequestDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.SettingsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ShareCredentialDialogModule;
 import io.iohk.atala.prism.app.views.activities.UnlockActivity;
@@ -38,6 +38,7 @@ import io.iohk.atala.prism.app.views.fragments.PaymentCongratsFragment;
 import io.iohk.atala.prism.app.views.fragments.PaymentFragment;
 import io.iohk.atala.prism.app.views.fragments.PaymentHistoryFragment;
 import io.iohk.atala.prism.app.views.fragments.ProfileFragment;
+import io.iohk.atala.prism.app.views.fragments.ProofRequestDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.SecurityChangePinFragment;
 import io.iohk.atala.prism.app.views.fragments.SecurityFragment;
 import io.iohk.atala.prism.app.views.fragments.SecuritySettingsStep1Fragment;
@@ -45,7 +46,6 @@ import io.iohk.atala.prism.app.views.fragments.SecuritySettingsStep2Fragment;
 import io.iohk.atala.prism.app.views.fragments.SettingsDateFormatFragment;
 import io.iohk.atala.prism.app.views.fragments.SettingsFragment;
 import io.iohk.atala.prism.app.views.fragments.ShareCredentialDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.ShareProofRequestDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.WalletFragment;
 import io.iohk.atala.prism.app.views.utils.ForegroundBackgroundListener;
 
@@ -90,9 +90,6 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector(modules = AcceptConnectionDialogModule.class)
     abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragmentRefactored();
-
-    @ContributesAndroidInjector(modules = ConnectionsListableModule.class)
-    abstract ShareProofRequestDialogFragment contributeShareProofRequestDialogFragment();
 
     @ContributesAndroidInjector
     abstract BackendIpFragment contributeBackendIpFragment();
@@ -144,4 +141,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector(modules = SettingsDateFormatFragmentModule.class)
     abstract SettingsDateFormatFragment contributeSettingsDateFormatFragment();
+
+    @ContributesAndroidInjector(modules = ProofRequestDialogModule.class)
+    abstract ProofRequestDialogFragment contributeProofRequestDialogFragment();
 }

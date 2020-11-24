@@ -23,6 +23,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -31,7 +32,9 @@ import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult;
+import io.iohk.atala.prism.app.viewmodel.dtos.CredentialsToShare;
 import io.iohk.atala.prism.app.views.fragments.NotificationsFragment;
+import io.iohk.atala.prism.app.views.fragments.ProofRequestDialogFragment;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.exception.CaseNotFoundException;
 import io.iohk.atala.prism.app.core.exception.ErrorCode;
@@ -39,12 +42,10 @@ import io.iohk.atala.prism.app.viewmodel.MainViewModel;
 import io.iohk.atala.prism.app.views.Navigator;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.app.views.fragments.ContactsFragment;
-import io.iohk.atala.prism.app.views.fragments.CvpDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.CvpFragment;
 import io.iohk.atala.prism.app.views.fragments.MyCredentialsFragment;
 import io.iohk.atala.prism.app.views.fragments.ProfileFragment;
 import io.iohk.atala.prism.app.views.fragments.SettingsFragment;
-import io.iohk.atala.prism.app.views.fragments.ShareProofRequestDialogFragment;
 import io.iohk.atala.prism.app.views.interfaces.ConnectionManageable;
 import io.iohk.atala.prism.app.views.interfaces.FirebaseEventLogger;
 import io.iohk.atala.prism.app.views.interfaces.MainActivityEventHandler;
@@ -132,8 +133,12 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         viewModel.getCredentialsRequests().observe(this, credentialsRequests -> {
             if (!credentialsRequests.isEmpty()) {
                 // TODO this code only shows the dialog of the first message, it needs to fix this so that it can handle more than one
-                CvpDialogFragment dialog = ShareProofRequestDialogFragment.newInstance(credentialsRequests.get(0));
-                getNavigator().showDialogFragment(getSupportFragmentManager(), dialog, null);
+                CredentialsToShare data = credentialsRequests.get(0);
+                String messageId = data.getMessageId();
+                List<String> requestedCredentialsIds = data.getCredentialsIds();
+                String connectionId = data.getConnection().connectionId;
+                ProofRequestDialogFragment dialog = ProofRequestDialogFragment.Companion.build(messageId, connectionId, requestedCredentialsIds);
+                dialog.show(getSupportFragmentManager(), null);
             }
         });
     }
@@ -308,16 +313,16 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     }
 
-
     /*
      * MainActivityEventHandler is a temporary solution that helps us to know when a new
-     * Contact / Connection has been added and thus request a messages synchronization.
-     * this will be discarded when there is a stream of events in the backend or we have
+     * Contact / Connection has been added or a proof request accepted and this request a
+     * messages synchronization.
+     * This will be discarded when there is a stream of events in the backend or we have
      * the appropriate data repositories in this application.
      */
     @Override
     public void handleEvent(MainActivityEvent event) {
-        if (event.equals(MainActivityEvent.NEW_CONTACT)) {
+        if (event.equals(MainActivityEvent.SYNC_REQUEST)) {
             // navigate to contact TAB
             onNavigation(CONTACTS);
             bottomAppBar.setItemColors(CONTACTS);

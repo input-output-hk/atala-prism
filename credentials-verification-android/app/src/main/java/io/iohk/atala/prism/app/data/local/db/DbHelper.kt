@@ -15,6 +15,7 @@ interface DbHelper {
     suspend fun getAllCredentials(): List<Credential>
     fun allCredentials(): LiveData<List<Credential>>
     suspend fun getCredentialByCredentialId(credentialId: String): Credential?
+    suspend fun getCredentialsByCredentialsIds(credentialsIds: List<String>): List<Credential>
     suspend fun deleteCredential(credential: Credential)
     suspend fun getCredentialsByConnectionId(connectionId: String): List<Credential>
     suspend fun deleteContact(contact: Contact)

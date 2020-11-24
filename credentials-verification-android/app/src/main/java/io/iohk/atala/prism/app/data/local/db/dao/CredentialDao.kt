@@ -24,6 +24,9 @@ abstract class CredentialDao : ActivityHistoryDao() {
     @Query("SELECT * FROM credentials where credential_id = :credentialId order by id asc")
     abstract suspend fun getCredentialByCredentialId(credentialId: String): Credential?
 
+    @Query("SELECT * FROM credentials WHERE credential_id IN (:credentialsIds)")
+    abstract suspend fun getCredentialsByCredentialsIds(credentialsIds: List<String>): List<Credential>
+
     @Update
     abstract suspend fun updateCredential(credential: Credential)
 

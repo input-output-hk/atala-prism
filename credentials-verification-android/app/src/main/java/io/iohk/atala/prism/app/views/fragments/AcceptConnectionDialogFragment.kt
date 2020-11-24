@@ -98,6 +98,6 @@ class AcceptConnectionDialogFragment : DaggerDialogFragment() {
      * TODO Momentary solution, this will be discarded when we have the appropriate data repositories in this application.
      */
     private fun handleNewUserEvent() {
-        (requireActivity() as? MainActivityEventHandler)?.handleEvent(MainActivityEventHandler.MainActivityEvent.NEW_CONTACT)
+        (requireActivity() as? MainActivityEventHandler)?.handleEvent(MainActivityEventHandler.MainActivityEvent.SYNC_REQUEST)
     }
 }

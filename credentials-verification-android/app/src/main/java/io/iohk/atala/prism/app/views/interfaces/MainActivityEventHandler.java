@@ -11,6 +11,6 @@ public interface MainActivityEventHandler {
     void handleEvent(MainActivityEvent event);
 
     enum MainActivityEvent {
-        NEW_CONTACT
+        SYNC_REQUEST
     }
 }

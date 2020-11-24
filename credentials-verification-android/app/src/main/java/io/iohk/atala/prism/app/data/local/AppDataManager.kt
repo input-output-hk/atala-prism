@@ -123,6 +123,10 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
         return mDbHelper.getCredentialByCredentialId(credentialId)
     }
 
+    override suspend fun getCredentialsByCredentialsIds(credentialsIds: List<String>): List<Credential> {
+        return mDbHelper.getCredentialsByCredentialsIds(credentialsIds)
+    }
+
     override suspend fun deleteCredential(credential: Credential) {
         mDbHelper.deleteCredential(credential)
     }
