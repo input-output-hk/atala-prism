@@ -6,7 +6,7 @@ import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import SendCredentialsConfirmationModal from './Molecules/Modals/SendCredentialConfirmationModal';
 import { withApi } from '../providers/withApi';
-import { credentialMapper, credentialRecievedMapper } from '../../APIs/helpers/credentialHelpers';
+import { credentialMapper, credentialReceivedMapper } from '../../APIs/helpers/credentialHelpers';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import {
   CREDENTIAL_PAGE_SIZE,
@@ -14,7 +14,7 @@ import {
   CREDENTIAL_STATUSES_TRANSLATOR,
   MAX_CREDENTIALS,
   CREDENTIALS_ISSUED,
-  CREDENTIALS_RECIEVED,
+  CREDENTIALS_RECEIVED,
   CONNECTION_STATUSES
 } from '../../helpers/constants';
 
@@ -28,7 +28,7 @@ const CredentialContainer = ({ api }) => {
   // This field is used to know if there are no credentials on
   // the database, independently of the filters
   const [noIssuedCredentials, setNoIssuedCredentials] = useState(true);
-  const [noRecievedCredentials, setNoRecievedCredentials] = useState(true);
+  const [noReceivedCredentials, setNoReceivedCredentials] = useState(true);
 
   // These are the arrays from options
   const [categories, setCategories] = useState([]);
@@ -37,8 +37,8 @@ const CredentialContainer = ({ api }) => {
   // These are the credentials returned from the "backend"
   const [credentialsIssued, setCredentialsIssued] = useState([]);
   const [hasMoreIssued, setHasMoreIssued] = useState(true);
-  const [credentialsRecieved, setCredentialsRecieved] = useState([]);
-  const [hasMoreRecieved, setHasMoreRecieved] = useState(true);
+  const [credentialsReceived, setCredentialsReceived] = useState([]);
+  const [hasMoreReceived, setHasMoreReceived] = useState(true);
   const [selectedCredentials, setSelectedCredentials] = useState([]);
 
   const [selectAll, setSelectAll] = useState(false);
@@ -81,23 +81,23 @@ const CredentialContainer = ({ api }) => {
     fetchCredentialsIssued();
   }, []);
 
-  const fetchCredentialsRecieved = async () => {
+  const fetchCredentialsReceived = async () => {
     try {
-      const { messageid } = getLastArrayElementOrEmpty(credentialsRecieved);
+      const { messageid } = getLastArrayElementOrEmpty(credentialsReceived);
 
-      const newlyFetchedCredentials = await api.connector.getCredentialsRecieved(
+      const newlyFetchedCredentials = await api.connector.getCredentialsReceived(
         CREDENTIAL_PAGE_SIZE,
         messageid
       );
 
       if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) {
-        setHasMoreRecieved(false);
+        setHasMoreReceived(false);
       }
 
-      const mappedCredentials = newlyFetchedCredentials.map(credentialRecievedMapper);
-      const updatedCredentialsRecieved = credentialsRecieved.concat(mappedCredentials);
-      setCredentialsRecieved(updatedCredentialsRecieved);
-      setNoRecievedCredentials(!updatedCredentialsRecieved.length);
+      const mappedCredentials = newlyFetchedCredentials.map(credentialReceivedMapper);
+      const updatedCredentialsReceived = credentialsReceived.concat(mappedCredentials);
+      setCredentialsReceived(updatedCredentialsReceived);
+      setNoReceivedCredentials(!updatedCredentialsReceived.length);
     } catch (error) {
       Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
@@ -292,15 +292,15 @@ const CredentialContainer = ({ api }) => {
       showEmpty: noIssuedCredentials,
       loadingSelection
     },
-    [CREDENTIALS_RECIEVED]: {
+    [CREDENTIALS_RECEIVED]: {
       tableProps: {
-        credentials: credentialsRecieved,
-        hasMore: hasMoreRecieved
+        credentials: credentialsReceived,
+        hasMore: hasMoreReceived
       },
-      fetchCredentials: fetchCredentialsRecieved,
+      fetchCredentials: fetchCredentialsReceived,
       bulkActionsProps: {},
       filterProps: {},
-      showEmpty: noRecievedCredentials
+      showEmpty: noReceivedCredentials
     }
   };
 
@@ -329,7 +329,7 @@ CredentialContainer.propTypes = {
       signCredentials: PropTypes.func.isRequired
     }).isRequired,
     connector: PropTypes.shape({
-      getCredentialsRecieved: PropTypes.func.isRequired,
+      getCredentialsReceived: PropTypes.func.isRequired,
       sendCredential: PropTypes.func.isRequired
     }).isRequired,
     getCredentialTypes: PropTypes.func.isRequired,

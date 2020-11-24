@@ -38,8 +38,8 @@ function getCredentialStatus(credential) {
   return CREDENTIAL_STATUSES.credentialDraft;
 }
 
-export function credentialRecievedMapper(credentialRecieved) {
-  const { credentialSubject, ...rest } = credentialRecieved;
+export function credentialReceivedMapper(credentialReceived) {
+  const { credentialSubject, ...rest } = credentialReceived;
 
   return {
     contactData: {

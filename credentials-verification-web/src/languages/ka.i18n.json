@@ -74,7 +74,7 @@
         "externalid": "External ID",
         "creationDate": "Date Created",
         "issuedCredentials": "Credentials Issued",
-        "recievedCredentials": "Credentials Recieved",
+        "receivedCredentials": "Credentials Received",
         "credentials": "Credentials",
         "contactStatus": "Contact Status",
         "idNumber": "ID Number",
@@ -187,7 +187,7 @@
     },
     "tabs": {
       "credentialsIssued": "Credentials Issued",
-      "credentialsRecieved": "Credentials Recieved"
+      "credentialsReceived": "Credentials Received"
     },
     "actions": {
       "createCredential": "Create Credential",

@@ -13,7 +13,7 @@ import PopOver from '../../../../common/Organisms/Detail/PopOver';
 import {
   CREDENTIAL_STATUSES,
   CREDENTIALS_ISSUED,
-  CREDENTIALS_RECIEVED,
+  CREDENTIALS_RECEIVED,
   CONTACT_STATUS,
   CREDENTIAL_STATUS
 } from '../../../../../helpers/constants';
@@ -132,7 +132,7 @@ const getCredentialsIssuedColumns = (
   }
 ];
 
-const getCredentialsRecievedColumns = (viewText, onView) => [
+const getCredentialsReceivedColumns = (viewText, onView) => [
   ...commonColumns,
   {
     key: 'actions',
@@ -191,7 +191,7 @@ const CredentialsTable = ({
       loadingSignSingle,
       loadingSendSingle
     ),
-    [CREDENTIALS_RECIEVED]: getCredentialsRecievedColumns(t('actions.view'), onView)
+    [CREDENTIALS_RECEIVED]: getCredentialsReceivedColumns(t('actions.view'), onView)
   };
 
   return (
@@ -226,7 +226,7 @@ CredentialsTable.propTypes = {
     selectedRowKeys: PropTypes.arrayOf(PropTypes.string),
     onChange: PropTypes.func
   }),
-  tab: PropTypes.oneOf([CREDENTIALS_ISSUED, CREDENTIALS_RECIEVED]).isRequired
+  tab: PropTypes.oneOf([CREDENTIALS_ISSUED, CREDENTIALS_RECEIVED]).isRequired
 };
 
 export default CredentialsTable;

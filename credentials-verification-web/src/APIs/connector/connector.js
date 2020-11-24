@@ -102,16 +102,16 @@ async function registerUser(createOperation, name, logoFile, isIssuer) {
   return id;
 }
 
-async function getCredentialsRecieved(limit, lastSeenMessageId = null) {
-  Logger.info(`getting credentials recieved from ${lastSeenMessageId}, limit ${limit}`);
+async function getCredentialsReceived(limit, lastSeenMessageId = null) {
+  Logger.info(`getting credentials received from ${lastSeenMessageId}, limit ${limit}`);
 
-  const getCredentialsRecievedRequest = new GetMessagesPaginatedRequest();
-  getCredentialsRecievedRequest.setLimit(limit);
-  getCredentialsRecievedRequest.setLastseenmessageid(lastSeenMessageId);
+  const getCredentialsReceivedRequest = new GetMessagesPaginatedRequest();
+  getCredentialsReceivedRequest.setLimit(limit);
+  getCredentialsReceivedRequest.setLastseenmessageid(lastSeenMessageId);
 
-  const metadata = await this.auth.getMetadata(getCredentialsRecievedRequest);
+  const metadata = await this.auth.getMetadata(getCredentialsReceivedRequest);
 
-  const result = await this.client.getMessagesPaginated(getCredentialsRecievedRequest, metadata);
+  const result = await this.client.getMessagesPaginated(getCredentialsReceivedRequest, metadata);
 
   return result.getMessagesList().map(msg => getCredentialFromMessage(msg));
 }
@@ -126,6 +126,6 @@ Connector.prototype.getConnectionsPaginated = getConnectionsPaginated;
 Connector.prototype.getMessagesForConnection = getMessagesForConnection;
 Connector.prototype.sendCredential = sendCredential;
 Connector.prototype.registerUser = registerUser;
-Connector.prototype.getCredentialsRecieved = getCredentialsRecieved;
+Connector.prototype.getCredentialsReceived = getCredentialsReceived;
 
 export default Connector;

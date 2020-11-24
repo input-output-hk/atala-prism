@@ -7,8 +7,8 @@ import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummar
 import { credentialTabShape } from '../../helpers/propShapes';
 import CreateCredentialsButton from './Atoms/Buttons/CreateCredentialsButton';
 import CredentialsIssued from './Organisms/Tabs/CredentialsIssued';
-import CredentialsRecieved from './Organisms/Tabs/CredentialsRecieved';
-import { CREDENTIALS_ISSUED, CREDENTIALS_RECIEVED } from '../../helpers/constants';
+import CredentialsReceived from './Organisms/Tabs/CredentialsReceived';
+import { CREDENTIALS_ISSUED, CREDENTIALS_RECEIVED } from '../../helpers/constants';
 
 import './_style.scss';
 
@@ -50,10 +50,10 @@ const Credentials = ({ tabProps, setActiveTab, initialLoading }) => {
             initialLoading={initialLoading}
           />
         </TabPane>
-        <TabPane key={CREDENTIALS_RECIEVED} tab={t('credentials.tabs.credentialsRecieved')}>
-          <CredentialsFilter {...tabProps[CREDENTIALS_RECIEVED]} />
-          <CredentialsRecieved
-            {...tabProps[CREDENTIALS_RECIEVED]}
+        <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
+          <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} />
+          <CredentialsReceived
+            {...tabProps[CREDENTIALS_RECEIVED]}
             showCredentialData={showCredentialData}
             initialLoading={initialLoading}
           />
@@ -70,7 +70,7 @@ Credentials.defaultProps = {
 Credentials.propTypes = {
   tabProps: PropTypes.shape({
     [CREDENTIALS_ISSUED]: PropTypes.shape(credentialTabShape),
-    [CREDENTIALS_RECIEVED]: PropTypes.shape(credentialTabShape)
+    [CREDENTIALS_RECEIVED]: PropTypes.shape(credentialTabShape)
   }).isRequired,
   initialLoading: PropTypes.bool,
   setActiveTab: PropTypes.func.isRequired

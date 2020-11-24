@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
-import { CREDENTIALS_RECIEVED } from '../../../../helpers/constants';
+import { CREDENTIALS_RECEIVED } from '../../../../helpers/constants';
 import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
-const CredentialsRecieved = ({
+const CredentialsReceived = ({
   showEmpty,
   tableProps,
   fetchCredentials,
@@ -27,7 +27,7 @@ const CredentialsRecieved = ({
 
   const expandedTableProps = {
     ...tableProps,
-    tab: CREDENTIALS_RECIEVED,
+    tab: CREDENTIALS_RECEIVED,
     onView: showCredentialData
   };
 
@@ -47,11 +47,11 @@ const CredentialsRecieved = ({
   return <Row>{renderContent()}</Row>;
 };
 
-CredentialsRecieved.defaultProps = {
+CredentialsReceived.defaultProps = {
   showEmpty: false,
   initialLoading: false
 };
 
-CredentialsRecieved.propTypes = credentialTabShape;
+CredentialsReceived.propTypes = credentialTabShape;
 
-export default CredentialsRecieved;
+export default CredentialsReceived;
