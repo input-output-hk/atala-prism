@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.iohk.atala.prism.app.neo.common.OnSuccess
+import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
 import io.iohk.atala.prism.app.viewmodel.ContactDetailViewModel
 import io.iohk.atala.prism.app.viewmodel.ContactDetailViewModelFactory
 import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator
@@ -35,7 +36,7 @@ class ContactDetailFragment : CvpFragment<ContactDetailViewModel>() {
     private var contactId: Long = -1
 
     private val adapter by lazy {
-        ContactDetailActivityHistoryAdapter(requireContext())
+        ContactDetailActivityHistoryAdapter(requireContext(), dateFormatDDMMYYYY)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -94,6 +95,9 @@ class ContactDetailFragment : CvpFragment<ContactDetailViewModel>() {
     private fun setObservers() {
         viewModel.credentialActivityHistories.observe(viewLifecycleOwner) { credentialActivityHistories ->
             adapter.updateAllContent(credentialActivityHistories)
+        }
+        viewModel.customDateFormat.observe(viewLifecycleOwner) {
+            adapter.setDateFormat(it.dateFormat)
         }
     }
 

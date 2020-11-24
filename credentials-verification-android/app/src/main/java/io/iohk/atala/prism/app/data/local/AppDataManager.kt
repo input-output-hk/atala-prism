@@ -8,6 +8,7 @@ import io.iohk.atala.prism.app.data.local.db.DbHelper
 import io.iohk.atala.prism.app.data.local.db.model.*
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.preferences.PreferencesHelper
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.data.local.remote.ApiHelper
 import io.iohk.atala.prism.app.viewmodel.dtos.ConnectionDataDto
 import io.iohk.atala.prism.protos.*
@@ -56,6 +57,22 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
 
     override fun getKeyPairFromPath(keyDerivationPath: String): ECKeyPair {
         return prefHelper.getKeyPairFromPath(keyDerivationPath)
+    }
+
+    override fun saveCustomDateFormat(dateFormat: CustomDateFormat) {
+        prefHelper.saveCustomDateFormat(dateFormat)
+    }
+
+    override fun getDefaultDateFormat(): CustomDateFormat {
+        return prefHelper.getDefaultDateFormat()
+    }
+
+    override suspend fun getCurrentDateFormat(): CustomDateFormat {
+        return prefHelper.getCurrentDateFormat()
+    }
+
+    override suspend fun getCustomDateFormats(): List<CustomDateFormat> {
+        return prefHelper.getCustomDateFormats()
     }
 
     override fun saveMnemonics(phrasesList: MutableList<String>) {

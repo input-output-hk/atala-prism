@@ -26,7 +26,7 @@ import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents;
 import io.iohk.atala.prism.app.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.atala.prism.app.views.Navigator;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.app.views.activities.MainActivity;
 import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator;
 import io.iohk.atala.prism.app.views.fragments.utils.RootAppBar;
@@ -146,6 +146,12 @@ public class SettingsFragment extends CvpFragment<ConnectionsActivityViewModel> 
         deleteAllConnectionsDialogFragment.setTargetFragment(this, DELETE_ALL_CONNECTIONS_REQUEST_CODE);
         getNavigator().showDialogFragment(requireActivity().getSupportFragmentManager(),
                 deleteAllConnectionsDialogFragment, "DELETE_CONNECTIONS_DIALOG_FRAGMENT");
+    }
+
+    @OnClick(R.id.custom_date)
+    void onCustomDateClicked() {
+        SettingsDateFormatFragment fragment = new SettingsDateFormatFragment();
+        getNavigator().showFragmentOnTop(requireActivity().getSupportFragmentManager(), fragment);
     }
 
     @Override

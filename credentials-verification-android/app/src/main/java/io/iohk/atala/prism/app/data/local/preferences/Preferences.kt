@@ -1,9 +1,11 @@
-package io.iohk.atala.prism.app.views
+package io.iohk.atala.prism.app.data.local.preferences
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.graphics.Bitmap
 import io.iohk.atala.prism.app.core.exception.WrongPinLengthException
-import io.iohk.atala.prism.app.data.local.preferences.SecurityPin
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
+import io.iohk.atala.prism.app.data.local.preferences.models.customDateFormatFrom
 import io.iohk.atala.prism.app.neo.common.extensions.Bitmap
 import io.iohk.atala.prism.app.neo.common.extensions.toEncodedBase64String
 import io.iohk.atala.prism.app.utils.CryptoUtils.Companion.getKeyPairFromPath
@@ -13,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import java.util.*
 import java.util.stream.Collectors
+
 
 class Preferences(private val context: Context) {
     val isPrivateKeyStored: Boolean
@@ -87,6 +90,13 @@ class Preferences(private val context: Context) {
         editor.apply()
     }
 
+    fun saveInt(key: String?, value: Int) {
+        val prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putInt(key, value)
+        editor.apply()
+    }
+
     fun getInt(key: String?): Int {
         val sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, Context.MODE_PRIVATE)
         return sharedPreferences
@@ -151,6 +161,20 @@ class Preferences(private val context: Context) {
         editor.apply()
     }
 
+    fun saveCustomDateFormat(dateFormat: CustomDateFormat) {
+        saveInt(USER_CUSTOM_DATE_FORMAT, dateFormat.value)
+    }
+
+    fun getDefaultDateFormat(): CustomDateFormat {
+        return CustomDateFormat.DDMMYYYY
+    }
+
+    fun getCurrentDateFormat(): CustomDateFormat {
+        val sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE)
+        val value = sharedPreferences.getInt(USER_CUSTOM_DATE_FORMAT, -1)
+        return customDateFormatFrom(value, getDefaultDateFormat())
+    }
+
     companion object {
         const val USER_PROFILE_NAME = "user_profile_name"
         const val USER_PROFILE_COUNTRY = "user_profile_country"
@@ -162,6 +186,7 @@ class Preferences(private val context: Context) {
         private const val MY_PREFS_NAME = "IOHK.ATALA.CREDENTIAL.VERIFICATION"
         const val SECURITY_PIN = "security_pin"
         const val SECURITY_TOUCH_ENABLED = "security_touch_enabled"
+        const val USER_CUSTOM_DATE_FORMAT = "user_custom_date_format"
 
         // This key get used always that app start, this help to detect when app is starting and avoid to call UnlockActivity before the first activity is launched.
         const val FIRST_LAUNCH = "first_launch"

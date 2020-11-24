@@ -20,7 +20,7 @@ import io.iohk.atala.prism.app.utils.Constants;
 import io.iohk.atala.prism.app.views.Navigator;
 import dagger.Module;
 import dagger.Provides;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 
 import javax.inject.Singleton;
 
@@ -84,5 +84,4 @@ public class ApplicationModule {
     Preferences providePreferences(PrismApplication prismApplication) {
         return new Preferences(prismApplication);
     }
-
 }

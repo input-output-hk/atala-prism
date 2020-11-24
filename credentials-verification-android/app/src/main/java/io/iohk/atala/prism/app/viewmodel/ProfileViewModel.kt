@@ -2,7 +2,7 @@ package io.iohk.atala.prism.app.viewmodel
 
 import android.graphics.Bitmap
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.views.Preferences
+import io.iohk.atala.prism.app.data.local.preferences.Preferences
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val preferences: Preferences) : ViewModel() {

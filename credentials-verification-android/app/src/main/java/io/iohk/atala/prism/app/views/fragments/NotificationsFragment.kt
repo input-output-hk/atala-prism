@@ -10,6 +10,7 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
+import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
 import io.iohk.atala.prism.app.utils.ActivitiesRequestCodes
 import io.iohk.atala.prism.app.utils.IntentDataConstants
 import io.iohk.atala.prism.app.viewmodel.NotificationsViewModel
@@ -29,7 +30,7 @@ class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectIte
 
     lateinit var binding: FragmentNotificationsBinding
 
-    private val adapter: NotificationsAdapter by lazy { NotificationsAdapter(this) }
+    private val adapter: NotificationsAdapter by lazy { NotificationsAdapter(dateFormatDDMMYYYY, this) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, viewId, container, false)
@@ -72,6 +73,9 @@ class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectIte
             adapter.clear()
             adapter.addAll(it)
             adapter.notifyDataSetChanged()
+        }
+        viewModel.customDateFormat.observe(viewLifecycleOwner) {
+            adapter.setDateFormat(it.dateFormat)
         }
     }
 

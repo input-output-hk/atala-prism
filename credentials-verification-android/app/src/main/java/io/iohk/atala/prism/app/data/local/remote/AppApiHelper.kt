@@ -9,7 +9,7 @@ import io.iohk.cvp.BuildConfig
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.app.utils.GrpcUtils
 import io.iohk.atala.prism.app.viewmodel.dtos.ConnectionDataDto
-import io.iohk.atala.prism.app.views.Preferences
+import io.iohk.atala.prism.app.data.local.preferences.Preferences
 import io.iohk.atala.prism.protos.*
 import javax.inject.Inject
 

@@ -12,6 +12,8 @@ import androidx.databinding.InverseBindingAdapter;
 import androidx.databinding.InverseBindingListener;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.card.MaterialCardView;
+
 public class DataBindingAdapters {
 
     /**
@@ -73,5 +75,10 @@ public class DataBindingAdapters {
         } else {
             imageView.setImageDrawable(failImage);
         }
+    }
+
+    @BindingAdapter("strokeWidth")
+    public static void strokeWidth(MaterialCardView cardView, Float width) {
+        cardView.setStrokeWidth(width.intValue());
     }
 }

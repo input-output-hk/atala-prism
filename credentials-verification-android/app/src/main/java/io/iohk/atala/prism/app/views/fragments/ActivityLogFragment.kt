@@ -9,6 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
 import io.iohk.atala.prism.app.viewmodel.ActivityLogViewModel
 import io.iohk.atala.prism.app.viewmodel.ActivityLogViewModelFactory
 import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator
@@ -26,7 +27,7 @@ class ActivityLogFragment : CvpFragment<ActivityLogViewModel>() {
     private lateinit var binding: FragmentActivityLogBinding
 
     private val adapter: ActivityLogsAdapter by lazy {
-        ActivityLogsAdapter()
+        ActivityLogsAdapter(dateFormatDDMMYYYY)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -67,6 +68,9 @@ class ActivityLogFragment : CvpFragment<ActivityLogViewModel>() {
             adapter.clear()
             adapter.addAll(it)
             adapter.notifyDataSetChanged()
+        }
+        viewModel.customDateFormat.observe(viewLifecycleOwner) {
+            adapter.setDateFormat(it.dateFormat)
         }
     }
 }

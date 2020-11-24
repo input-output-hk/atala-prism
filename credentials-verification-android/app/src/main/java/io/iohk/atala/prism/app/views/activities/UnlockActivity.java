@@ -32,7 +32,7 @@ import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.exception.WrongPinLengthException;
 import io.iohk.atala.prism.app.data.local.preferences.SecurityPin;
 import io.iohk.atala.prism.app.views.Navigator;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import lombok.NonNull;
 import lombok.Setter;
 

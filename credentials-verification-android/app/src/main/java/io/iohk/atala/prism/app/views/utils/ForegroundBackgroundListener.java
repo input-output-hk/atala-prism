@@ -7,7 +7,7 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import io.iohk.atala.prism.app.views.Navigator;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 
 public class ForegroundBackgroundListener implements LifecycleObserver {
 

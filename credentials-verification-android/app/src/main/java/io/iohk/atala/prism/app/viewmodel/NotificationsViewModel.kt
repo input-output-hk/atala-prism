@@ -5,8 +5,16 @@ import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
+import kotlinx.coroutines.launch
 
 class NotificationsViewModel(private val dataManager: DataManager) : ViewModel() {
+
+    val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
+        viewModelScope.launch {
+            value = dataManager.getCurrentDateFormat()
+        }
+    }
 
     private val totalOfContacts = dataManager.totalOfContacts()
 

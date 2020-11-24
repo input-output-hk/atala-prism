@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="text"
+            type="String" />
+
+        <variable
+            name="isChecked"
+            type="Boolean" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        app:strokeColor="@color/colorPrimary"
+        android:clickable="true"
+        app:strokeWidth="@{isChecked ? @dimen/dp_1 : @dimen/dp_0}"
+        app:cardElevation="20dp"
+        android:layout_marginBottom="13dp"
+        app:cardCornerRadius="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:padding="18dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/verifier_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="25dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/blueGrey"
+                android:textSize="16sp"
+                android:layout_marginStart="8dp"
+                android:text="@{text}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/check_box"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Day / Month / Year (Default)" />
+
+            <CheckBox
+                android:clickable="false"
+                android:checked="@{isChecked}"
+                android:id="@+id/check_box"
+                android:button="@drawable/bg_custom_radio_button_bg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</layout>

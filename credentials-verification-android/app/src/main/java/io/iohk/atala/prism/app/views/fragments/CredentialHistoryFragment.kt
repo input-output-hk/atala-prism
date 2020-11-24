@@ -13,6 +13,7 @@ import io.iohk.atala.prism.app.core.enums.CredentialType
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
+import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
 import io.iohk.atala.prism.app.viewmodel.CredentialHistoryViewModel
 import io.iohk.atala.prism.app.viewmodel.CredentialHistoryViewModelFactory
 import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator
@@ -39,7 +40,7 @@ class CredentialHistoryFragment : CvpFragment<CredentialHistoryViewModel>(), OnS
 
     private var credentialId: String? = null
 
-    private val activitiesHistoriesAdapter by lazy { CredentialHistoryAdapter(requireContext(), onSelectItem = this) }
+    private val activitiesHistoriesAdapter by lazy { CredentialHistoryAdapter(requireContext(), dateFormatDDMMYYYY, onSelectItem = this) }
 
     // TODO this is a hack to support the behavior of [CvpFragment] and the current custom navigation system, when we migrate to a native Android navigation and [CvpFragment] inheritance is removed this has to be deleted
     private var titleResource = R.string.home_title
@@ -90,6 +91,9 @@ class CredentialHistoryFragment : CvpFragment<CredentialHistoryViewModel>(), OnS
         }
         viewModel.activityHistories.observe(viewLifecycleOwner) {
             activitiesHistoriesAdapter.updateAllContent(it)
+        }
+        viewModel.customDateFormat.observe(viewLifecycleOwner) {
+            activitiesHistoriesAdapter.setDateFormat(it.dateFormat)
         }
     }
 

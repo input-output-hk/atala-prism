@@ -14,6 +14,7 @@ import io.iohk.atala.prism.app.dagger.modules.DeleteContactAlertDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.MyCredentialsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.PaymentsModule;
 import io.iohk.atala.prism.app.dagger.modules.ProfileFragmentModule;
+import io.iohk.atala.prism.app.dagger.modules.SettingsDateFormatFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.SettingsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ShareCredentialDialogModule;
 import io.iohk.atala.prism.app.views.activities.UnlockActivity;
@@ -41,6 +42,7 @@ import io.iohk.atala.prism.app.views.fragments.SecurityChangePinFragment;
 import io.iohk.atala.prism.app.views.fragments.SecurityFragment;
 import io.iohk.atala.prism.app.views.fragments.SecuritySettingsStep1Fragment;
 import io.iohk.atala.prism.app.views.fragments.SecuritySettingsStep2Fragment;
+import io.iohk.atala.prism.app.views.fragments.SettingsDateFormatFragment;
 import io.iohk.atala.prism.app.views.fragments.SettingsFragment;
 import io.iohk.atala.prism.app.views.fragments.ShareCredentialDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.ShareProofRequestDialogFragment;
@@ -139,4 +141,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector(modules = ActivityLogFragmentModule.class)
     abstract ActivityLogFragment contributeActivityLogFragment();
+
+    @ContributesAndroidInjector(modules = SettingsDateFormatFragmentModule.class)
+    abstract SettingsDateFormatFragment contributeSettingsDateFormatFragment();
 }

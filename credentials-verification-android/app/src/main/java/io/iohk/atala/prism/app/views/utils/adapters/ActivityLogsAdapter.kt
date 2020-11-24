@@ -6,21 +6,28 @@ import androidx.databinding.DataBindingUtil
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContactAndCredential
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
-import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
 import io.iohk.atala.prism.app.views.fragments.CredentialUtil
 import io.iohk.cvp.databinding.RowActivityLogBinding
 import io.iohk.cvp.R
+import java.text.SimpleDateFormat
 
-class ActivityLogsAdapter : BaseRecyclerViewAdapter<ActivityHistoryWithContactAndCredential>() {
+
+class ActivityLogsAdapter(private var dateFormat: SimpleDateFormat) : BaseRecyclerViewAdapter<ActivityHistoryWithContactAndCredential>() {
+
+    fun setDateFormat(dateFormat: SimpleDateFormat) {
+        this.dateFormat = dateFormat
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder<ActivityHistoryWithContactAndCredential> {
         val inflater = LayoutInflater.from(parent.context)
         val binding: RowActivityLogBinding = DataBindingUtil.inflate(inflater, R.layout.row_activity_log, parent, false)
-        return ActivityLogViewHolder(binding)
+        return ActivityLogViewHolder(this, binding)
     }
 
-    class ActivityLogViewHolder(private val binding: RowActivityLogBinding) : BaseRecyclerViewAdapter.ViewHolder<ActivityHistoryWithContactAndCredential>(binding.root) {
 
+    class ActivityLogViewHolder(private val adapter: ActivityLogsAdapter, private val binding: RowActivityLogBinding) : BaseRecyclerViewAdapter.ViewHolder<ActivityHistoryWithContactAndCredential>(binding.root) {
+        
         override fun bind(data: ActivityHistoryWithContactAndCredential) {
             val ctx = binding.root.context
             val credentialName = if (data.credential != null) CredentialUtil.getName(data.credential, ctx) else ""
@@ -63,7 +70,7 @@ class ActivityLogsAdapter : BaseRecyclerViewAdapter<ActivityHistoryWithContactAn
             binding.iconImageView.setImageResource(iconResourceId)
             binding.titleTextView.text = title
             binding.descriptionTextView.text = description
-            binding.dateTextView.text = dateFormatDDMMYYYY.format(data.activityHistory.date)
+            binding.dateTextView.text = adapter.dateFormat.format(data.activityHistory.date)
         }
     }
 }

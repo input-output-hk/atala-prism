@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.app.data.local.preferences
 
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.crypto.japi.ECKeyPair
 
 /* This helper is extended by DataManager(alongside DbHelper and ApiHelper) so i can
@@ -11,4 +12,8 @@ interface PreferencesHelper {
     fun saveMnemonics(phrasesList: MutableList<String>)
     fun saveIndex(lastIndex: Int)
     fun getKeyPairFromPath(keyDerivationPath: String): ECKeyPair
+    fun saveCustomDateFormat(dateFormat: CustomDateFormat)
+    fun getDefaultDateFormat(): CustomDateFormat
+    suspend fun getCurrentDateFormat(): CustomDateFormat
+    suspend fun getCustomDateFormats(): List<CustomDateFormat>
 }

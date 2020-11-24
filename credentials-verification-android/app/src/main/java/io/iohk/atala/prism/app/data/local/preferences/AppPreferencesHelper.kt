@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.app.data.local.preferences
 
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.crypto.japi.ECKeyPair
-import io.iohk.atala.prism.app.views.Preferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,6 +21,22 @@ class AppPreferencesHelper @Inject constructor(private val preferences: Preferen
 
     override fun getKeyPairFromPath(keyDerivationPath: String): ECKeyPair {
         return preferences.getKeyPairFromPath(keyDerivationPath)
+    }
+
+    override fun saveCustomDateFormat(dateFormat: CustomDateFormat) {
+        preferences.saveCustomDateFormat(dateFormat)
+    }
+
+    override fun getDefaultDateFormat(): CustomDateFormat {
+        return preferences.getDefaultDateFormat()
+    }
+
+    override suspend fun getCurrentDateFormat(): CustomDateFormat {
+        return preferences.getCurrentDateFormat()
+    }
+
+    override suspend fun getCustomDateFormats(): List<CustomDateFormat> {
+        return CustomDateFormat.values().toList()
     }
 
     override fun saveMnemonics(phrasesList: MutableList<String>) {

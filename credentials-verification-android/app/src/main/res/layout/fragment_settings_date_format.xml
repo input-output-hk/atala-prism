@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.viewmodel.SettingsDateFormatViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:textStyle="bold"
+            android:id="@+id/title_text_view"
+            android:textSize="22sp"
+            android:textColor="@color/black"
+            android:layout_marginTop="40dp"
+            android:layout_marginHorizontal="@dimen/activity_default_side_margin"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/custom_date_format"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:paddingVertical="38dp"
+            android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/activity_default_side_margin"
+            app:layout_constraintTop_toBottomOf="@+id/title_text_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/accept_button"
+            android:id="@+id/date_formats_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
+        <Button
+            android:onClick="@{v-> viewModel.savePreferences()}"
+            android:text="@string/settings_custom_date_format_accept_button_text"
+            app:cornerRadius="32dp"
+            android:layout_margin="@dimen/activity_default_side_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/accept_button"
+            android:layout_width="0dp"
+            android:layout_height="64dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

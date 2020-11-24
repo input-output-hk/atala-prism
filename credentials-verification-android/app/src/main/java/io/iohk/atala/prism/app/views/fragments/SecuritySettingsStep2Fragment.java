@@ -17,7 +17,7 @@ import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents;
 import io.iohk.atala.prism.app.views.Navigator;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator;
 import io.iohk.atala.prism.app.views.fragments.utils.NoAppBar;
 import lombok.Setter;

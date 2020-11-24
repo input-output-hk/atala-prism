@@ -4,7 +4,7 @@ import androidx.lifecycle.*
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
-import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -14,8 +14,15 @@ class ContactDetailViewModel(private val dataManager: DataManager) : ViewModel()
 
     val contact: LiveData<Contact> = _contact
 
-    val contactCreatedDate: LiveData<String> = Transformations.map(contact) {
-        dateFormatDDMMYYYY.format(it.dateCreated)
+    val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
+        viewModelScope.launch {
+            value = dataManager.getCurrentDateFormat()
+        }
+    }
+
+    val contactCreatedDate = MediatorLiveData<String>().apply {
+        addSource(customDateFormat) { value = computeContactCreatedDate() }
+        addSource(contact) { value = computeContactCreatedDate() }
     }
 
     private val _credentialActivityHistories = MutableLiveData<List<ActivityHistoryWithCredential>>(listOf())
@@ -29,6 +36,11 @@ class ContactDetailViewModel(private val dataManager: DataManager) : ViewModel()
                 _credentialActivityHistories.postValue(dataManager.getCredentialsActivityHistoriesByConnection(it.connectionId))
             }
         }
+    }
+
+    private fun computeContactCreatedDate(): String? {
+        val customDateFormat = customDateFormat.value ?: dataManager.getDefaultDateFormat()
+        return if (contact.value == null) null else customDateFormat.dateFormat.format(contact.value!!.dateCreated)
     }
 }
 

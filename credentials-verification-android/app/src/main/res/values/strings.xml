@@ -123,6 +123,8 @@
     <string name="about_button_name">About</string>
     <string name="about_button_description">Legal and version information</string>
     <string name="support_title">Support</string>
+    <string name="custom_date_button_name">Date</string>
+    <string name="custom_date_button_description">Custom date format</string>
 
     <!-- Payment screen labels -->
     <string name="receive_credential">Receive Credential</string>
@@ -266,4 +268,11 @@
     <string name="activity_description_connected">Connected</string>
     <string name="activity_description_deleted">Deleted</string>
     <string name="you_dont_have_activities_yet">You don’t have Activities yet</string>
+    <string name="settings_custom_date_format_title">Date Format</string>
+    <string name="custom_date_format">Custom date format</string>
+    <string name="settings_custom_date_format_accept_button_text">Ok</string>
+    <string name="default_indicator">(Default)</string>
+    <string name="date_format_dd_mm_yyyy">DD / MM / YYYY</string>
+    <string name="date_format_mm_dd_yyyy">MM / DD / YYYY</string>
+    <string name="date_format_yyyy_mm_dd">YYYY / MM / DD</string>
 </resources>

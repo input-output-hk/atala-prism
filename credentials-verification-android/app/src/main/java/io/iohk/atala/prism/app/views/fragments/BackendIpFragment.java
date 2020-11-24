@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModel;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator;
 import io.iohk.atala.prism.app.views.fragments.utils.RootAppBar;
 

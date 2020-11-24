@@ -5,7 +5,7 @@ import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
-import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -19,8 +19,15 @@ class CredentialHistoryViewModel(private val dataManager: DataManager) : ViewMod
 
     val activityHistories: LiveData<List<ActivityHistoryWithContact>> = _activityHistories
 
-    val formattedIssuedDate = Transformations.map(_credential) {
-        dateFormatDDMMYYYY.format(it.dateReceived)
+    val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
+        viewModelScope.launch {
+            value = dataManager.getCurrentDateFormat()
+        }
+    }
+
+    val formattedIssuedDate = MediatorLiveData<String>().apply {
+        addSource(customDateFormat) { value = computeContactCreatedDate() }
+        addSource(_credential) { value = computeContactCreatedDate() }
     }
 
     fun fetchData(credentialId: String) {
@@ -34,6 +41,11 @@ class CredentialHistoryViewModel(private val dataManager: DataManager) : ViewMod
                 _activityHistories.postValue(activityHistories)
             }
         }
+    }
+
+    private fun computeContactCreatedDate(): String? {
+        val customDateFormat = customDateFormat.value ?: dataManager.getDefaultDateFormat()
+        return if (_credential.value == null) null else customDateFormat.dateFormat.format(_credential.value!!.dateReceived)
     }
 }
 

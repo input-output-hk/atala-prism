@@ -37,7 +37,7 @@ import io.iohk.atala.prism.app.core.exception.CaseNotFoundException;
 import io.iohk.atala.prism.app.core.exception.ErrorCode;
 import io.iohk.atala.prism.app.viewmodel.MainViewModel;
 import io.iohk.atala.prism.app.views.Navigator;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.app.views.fragments.ContactsFragment;
 import io.iohk.atala.prism.app.views.fragments.CvpDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.CvpFragment;
@@ -55,7 +55,7 @@ import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse;
 import lombok.Getter;
 
 import static io.iohk.atala.prism.app.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
-import static io.iohk.atala.prism.app.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
+import static io.iohk.atala.prism.app.data.local.preferences.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
 import static io.iohk.atala.prism.app.views.utils.components.bottomAppBar.BottomAppBarOption.CONTACTS;
 
 public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener, FirebaseEventLogger, ConnectionManageable, MainActivityEventHandler {

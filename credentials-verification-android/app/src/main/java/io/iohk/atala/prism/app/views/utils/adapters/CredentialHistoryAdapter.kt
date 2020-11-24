@@ -8,7 +8,6 @@ import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
-import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.RowContactActivityHistoryBinding
 import io.iohk.cvp.databinding.RowHeaderBinding
@@ -16,8 +15,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 
-class CredentialHistoryAdapter(context: Context, private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>? = null) : BaseRecyclerViewAdapter<CredentialHistoryAdapter.ViewType>() {
+class CredentialHistoryAdapter(context: Context, private var dateFormat: SimpleDateFormat, private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>? = null) : BaseRecyclerViewAdapter<CredentialHistoryAdapter.ViewType>() {
 
     private val adapterScope = CoroutineScope(Dispatchers.Default)
 
@@ -33,6 +33,11 @@ class CredentialHistoryAdapter(context: Context, private val onSelectItem: OnSel
     sealed class ViewType(val type: Int) {
         data class Header(val title: String) : ViewType(CredentialHistoryAdapter.TYPE_HEADER)
         data class ActivityHistory(val activityHistoryWithCredential: ActivityHistoryWithContact) : ViewType(CredentialHistoryAdapter.TYPE_ACTIVITY_HISTORY)
+    }
+
+    fun setDateFormat(dateFormat: SimpleDateFormat) {
+        this.dateFormat = dateFormat
+        notifyDataSetChanged()
     }
 
     fun updateAllContent(data: List<ActivityHistoryWithContact>) {
@@ -88,7 +93,7 @@ class CredentialHistoryAdapter(context: Context, private val onSelectItem: OnSel
     private fun buildActivityHistoryViewHolder(parent: ViewGroup): ActivityHistoryViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding: RowContactActivityHistoryBinding = DataBindingUtil.inflate(layoutInflater, R.layout.row_contact_activity_history, parent, false)
-        return ActivityHistoryViewHolder(binding, onSelectItem)
+        return ActivityHistoryViewHolder(this, binding, onSelectItem)
     }
 
     private class HeaderViewHolder(val binding: RowHeaderBinding) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
@@ -99,7 +104,7 @@ class CredentialHistoryAdapter(context: Context, private val onSelectItem: OnSel
         }
     }
 
-    private class ActivityHistoryViewHolder(private val binding: RowContactActivityHistoryBinding, private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>?) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
+    private class ActivityHistoryViewHolder(private val adapter: CredentialHistoryAdapter, private val binding: RowContactActivityHistoryBinding, private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>?) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
 
         init {
             binding.root.setOnClickListener {
@@ -112,7 +117,7 @@ class CredentialHistoryAdapter(context: Context, private val onSelectItem: OnSel
         override fun bind(data: ViewType) {
             (data as? ViewType.ActivityHistory)?.activityHistoryWithCredential?.let {
                 binding.contact = it.contact
-                binding.formattedDate = dateFormatDDMMYYYY.format(it.activityHistory.date)
+                binding.formattedDate = adapter.dateFormat.format(it.activityHistory.date)
             }
         }
     }

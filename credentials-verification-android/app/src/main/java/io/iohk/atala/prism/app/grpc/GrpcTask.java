@@ -13,7 +13,7 @@ import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.iohk.cvp.BuildConfig;
-import io.iohk.atala.prism.app.views.Preferences;
+import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.protos.ConnectorServiceGrpc;
 
 public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
