@@ -68,14 +68,11 @@ export const fromMomentToProtoDateFormatter = date => {
   return protoDate;
 };
 
-export const dateFormat = date => {
-  return moment(date).format(DEFAULT_DATE_FORMAT);
-};
+export const dateFormat = date => moment(date).format(DEFAULT_DATE_FORMAT);
 
-export const backendDateFormat = unixDate => {
+export const backendDateFormat = unixDate =>
   // backend gives dates as timestamp expressed in seconds, moment takes it as milliseconds
-  return moment(unixDate * 1000).format(DEFAULT_DATE_FORMAT);
-};
+  moment(unixDate * 1000).format(DEFAULT_DATE_FORMAT);
 
 export const backendDateFormatter = format => date => completeDateFormatter(date, format);
 export const frontendDateFormatter = format => date => completeFrontendDateFormatter(date, format);

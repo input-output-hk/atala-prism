@@ -2,8 +2,8 @@
 $background: #f1f3f8;
 $surface: #fff;
 
-$primary-color: #F83633;
-$primary-color-darker: #BA2926;
+$primary-color: #f83633;
+$primary-color-darker: #ba2926;
 $secondary-color: #011727;
 $secondary-color-disabled: #0000004d;
 
@@ -12,10 +12,10 @@ $success-color: #1ed69e;
 $black: #303034;
 $white: #fff;
 // $dark-grey: #728099;
-$dark-grey: #99A2A9; 
+$dark-grey: #99a2a9;
 $grey: #b3bec5;
 $medium-grey: #c5d0de;
-$light-grey: #F8F9F9;
+$light-grey: #f8f9f9;
 
 // Typographic Scale
 $title: 32px;
@@ -79,6 +79,17 @@ $red-shadow: 0 1px 6px rgba(255, 45, 60, 0.16), 0 2px 6px rgba(255, 45, 60, 0.16
   font-variant: normal;
 }
 
+// PopOver
+
+.ant-popover-content {
+  .ant-popover-arrow {
+    display: none !important;
+  }
+  .ant-popover-inner-content {
+    width: 400px;
+  }
+}
+
 // Container
 
 @mixin container() {
@@ -128,15 +139,20 @@ $screen-lg-min: 1024px;
 
 @mixin breakpoint($media) {
   @if $media == xs {
-    @media only screen and (max-width: $screen-xs-min) { @content; }
-  }
-    @else if $media == sm {
-    @media only screen and (max-width: $screen-sm-min) { @content; }
-  }
-  @else if $media == md {
-    @media only screen and (max-width: $screen-md-min) { @content; }
-  }
-  @else if $media == lg {
-    @media only screen and (max-width: $screen-lg-min) { @content; }
+    @media only screen and (max-width: $screen-xs-min) {
+      @content;
+    }
+  } @else if $media == sm {
+    @media only screen and (max-width: $screen-sm-min) {
+      @content;
+    }
+  } @else if $media == md {
+    @media only screen and (max-width: $screen-md-min) {
+      @content;
+    }
+  } @else if $media == lg {
+    @media only screen and (max-width: $screen-lg-min) {
+      @content;
+    }
   }
 }
