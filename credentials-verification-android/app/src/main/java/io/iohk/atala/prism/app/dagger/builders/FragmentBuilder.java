@@ -12,6 +12,7 @@ import io.iohk.atala.prism.app.dagger.modules.NotificationsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.DeleteContactAlertDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.MyCredentialsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.PaymentsModule;
+import io.iohk.atala.prism.app.dagger.modules.ProfileFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.SettingsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ShareCredentialDialogModule;
 import io.iohk.atala.prism.app.views.activities.UnlockActivity;
@@ -53,7 +54,7 @@ public abstract class FragmentBuilder {
     @ContributesAndroidInjector(modules = MyCredentialsFragmentModule.class)
     abstract MyCredentialsFragment contributeMyCredentialsFragment();
 
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = ProfileFragmentModule.class)
     abstract ProfileFragment contributeProfileFragment();
 
     @ContributesAndroidInjector(modules = NotificationsFragmentModule.class)
