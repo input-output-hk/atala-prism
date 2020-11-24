@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContactAndCredential
 
 @Dao
 abstract class ActivityHistoryDao {
@@ -16,6 +16,9 @@ abstract class ActivityHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertActivityHistories(activityHistories: List<ActivityHistory>): List<Long>
 
-    @Query("SELECT * FROM activityHistories order by id asc")
+    @Query("SELECT * FROM activityHistories ORDER BY id ASC")
     abstract suspend fun getAllActivityHistories(): List<ActivityHistory>
+
+    @Query("SELECT * FROM activityHistories ORDER BY date DESC, id")
+    abstract fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>>
 }

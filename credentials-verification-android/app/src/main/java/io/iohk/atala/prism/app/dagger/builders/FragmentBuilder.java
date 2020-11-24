@@ -3,6 +3,7 @@ package io.iohk.atala.prism.app.dagger.builders;
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
 import io.iohk.atala.prism.app.dagger.modules.AcceptConnectionDialogModule;
+import io.iohk.atala.prism.app.dagger.modules.ActivityLogFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ConnectionsListableModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactDetailFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactsFragmentModule;
@@ -18,6 +19,7 @@ import io.iohk.atala.prism.app.dagger.modules.ShareCredentialDialogModule;
 import io.iohk.atala.prism.app.views.activities.UnlockActivity;
 import io.iohk.atala.prism.app.views.fragments.AboutFragment;
 import io.iohk.atala.prism.app.views.fragments.AcceptConnectionDialogFragment;
+import io.iohk.atala.prism.app.views.fragments.ActivityLogFragment;
 import io.iohk.atala.prism.app.views.fragments.AddQrCodeDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.AlreadyConnectedDialogFragment;
 import io.iohk.atala.prism.app.views.fragments.BackendIpFragment;
@@ -134,4 +136,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector(modules = CredentialHistoryFragmentModule.class)
     abstract CredentialHistoryFragment contributeCredentialHistoryFragment();
+
+    @ContributesAndroidInjector(modules = ActivityLogFragmentModule.class)
+    abstract ActivityLogFragment contributeActivityLogFragment();
 }

@@ -1,10 +1,7 @@
 package io.iohk.atala.prism.app.data.local.db
 
 import androidx.lifecycle.LiveData
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
-import io.iohk.atala.prism.app.data.local.db.model.Contact
-import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.*
 
 interface DbHelper {
     suspend fun getAllContacts(): List<Contact>
@@ -28,4 +25,5 @@ interface DbHelper {
     fun totalOfContacts(): LiveData<Int>
     fun allIssuedCredentialsNotifications(): LiveData<List<ActivityHistoryWithCredential>>
     suspend fun clearCredentialNotifications(credentialId: String)
+    fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>>
 }

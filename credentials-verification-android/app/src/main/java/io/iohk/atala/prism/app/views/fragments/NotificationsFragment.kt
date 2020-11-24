@@ -3,9 +3,7 @@ package io.iohk.atala.prism.app.views.fragments
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
@@ -50,6 +48,7 @@ class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectIte
     }
 
     override fun getAppBarConfigurator(): AppBarConfigurator {
+        setHasOptionsMenu(true)
         return RootAppBar(R.string.notifications)
     }
 
@@ -89,5 +88,18 @@ class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectIte
     private fun configureRecyclerView() {
         binding.notificationsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.notificationsRecyclerView.adapter = adapter
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        menu.findItem(R.id.action_activity_log).isVisible = true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_activity_log) {
+            val fragment = ActivityLogFragment()
+            navigator.showFragmentOnTop(requireActivity().supportFragmentManager, fragment);
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

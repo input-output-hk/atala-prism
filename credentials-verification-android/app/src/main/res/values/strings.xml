@@ -259,4 +259,11 @@
     <string name="profile_pic_menu_camera">Take from camera</string>
     <string name="profile_pic_menu_library">Choose from library</string>
     <string name="profile_pic_menu_remove">Remove image</string>
+    <string name="activity_log_title">Activity Log</string>
+    <string name="activity_description_received_from">Received from %1$s</string>
+    <string name="activity_description_shared_with">Shared with %1$s</string>
+    <string name="activity_description_requested_by">Requested by %1$s</string>
+    <string name="activity_description_connected">Connected</string>
+    <string name="activity_description_deleted">Deleted</string>
+    <string name="you_dont_have_activities_yet">You don’t have Activities yet</string>
 </resources>

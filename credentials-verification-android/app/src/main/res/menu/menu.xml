@@ -1,50 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto">
-  <item
-    android:id="@+id/action_history"
-    android:icon="@drawable/ic_history"
-    android:title="@string/payment_history_menu_item_label"
-    android:visible="false"
-    app:showAsAction="ifRoom" />
-  <item
-    android:id="@+id/action_edit_profile"
-    android:icon="@drawable/ic_edit"
-    android:title="@string/edit_profile"
-    android:visible="false"
-    app:showAsAction="ifRoom" />
-  <item
-      android:id="@+id/addNewBtn"
-      android:title="@string/add_new"
-      android:visible="false"
-      app:showAsAction="ifRoom" />
-  <item
-    android:id="@+id/action_new_connection"
-    android:icon="@drawable/ic_scan_qr_menu_item_red"
-    android:title="@string/new_connection"
-    android:visible="false"
-    app:showAsAction="ifRoom" />
-  <item
-      android:id="@+id/action_credential_history"
-      android:icon="@drawable/ic_history"
-      android:visible="false"
-      app:showAsAction="ifRoom" />
-  <item
-      android:id="@+id/action_delete_credential"
-      android:icon="@drawable/ic_delete"
-      android:title="@string/share_credential"
-      android:visible="false"
-      app:showAsAction="ifRoom" />
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_history"
+        android:icon="@drawable/ic_history"
+        android:title="@string/payment_history_menu_item_label"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_edit_profile"
+        android:icon="@drawable/ic_edit"
+        android:title="@string/edit_profile"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/addNewBtn"
+        android:title="@string/add_new"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_new_connection"
+        android:icon="@drawable/ic_scan_qr_menu_item_red"
+        android:title="@string/new_connection"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_credential_history"
+        android:icon="@drawable/ic_history"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_delete_credential"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/share_credential"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
 
-  <item
-    android:id="@+id/action_share_credential"
-    android:icon="@drawable/ic_share_button"
-    android:title="@string/share_credential"
-    android:visible="false"
-    app:showAsAction="ifRoom" />
-  <item
-      android:id="@+id/action_delete_contact"
-      android:icon="@drawable/ic_delete"
-      android:visible="false"
-      app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_share_credential"
+        android:icon="@drawable/ic_share_button"
+        android:title="@string/share_credential"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_delete_contact"
+        android:icon="@drawable/ic_delete"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_activity_log"
+        android:icon="@drawable/ic_history"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
 </menu>

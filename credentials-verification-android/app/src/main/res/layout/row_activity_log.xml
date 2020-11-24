@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="item"
+            type="io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContactAndCredential" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:paddingHorizontal="@dimen/activity_default_side_margin"
+            android:layout_marginTop="22dp"
+            android:id="@+id/data_container"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/icon_image_view"
+                android:layout_gravity="top"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_id_government"
+                android:layout_width="43dp"
+                android:layout_height="43dp" />
+
+            <LinearLayout
+                android:layout_marginStart="@dimen/default_spacing"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/title_text_view"
+                    android:text="Government ID"
+                    android:maxLines="2"
+                    android:textSize="16sp"
+                    android:textColor="@color/black"
+                    android:ellipsize="end"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/description_text_view"
+                    android:layout_marginTop="2dp"
+                    android:text="Shared with University of Innovation and Technology"
+                    android:maxLines="2"
+                    android:textSize="14sp"
+                    android:textColor="@color/onSurfaceMedium"
+                    android:ellipsize="end"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <LinearLayout
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_gravity="center_vertical"
+                        android:tint="@color/onSurfaceMedium"
+                        android:src="@drawable/ic_clock"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/date_text_view"
+                        android:layout_gravity="center_vertical"
+                        android:textColor="@color/onSurfaceMedium"
+                        android:textSize="14sp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="01-07-2020 12:30pm"
+                        android:layout_marginStart="7dp"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_marginHorizontal="@dimen/activity_default_side_margin"
+            android:layout_marginTop="12dp"
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="@color/grey_2"
+            app:layout_constraintTop_toBottomOf="@+id/data_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

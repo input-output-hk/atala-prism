@@ -5,9 +5,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.japi.ECKeyPair
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.DbHelper
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
-import io.iohk.atala.prism.app.data.local.db.model.Contact
+import io.iohk.atala.prism.app.data.local.db.model.*
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.preferences.PreferencesHelper
 import io.iohk.atala.prism.app.data.local.remote.ApiHelper
@@ -139,7 +137,7 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
     override suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> {
         return mDbHelper.getContactsActivityHistoriesByCredentialId(credentialId)
     }
-    
+
     override fun totalOfContacts(): LiveData<Int> {
         return mDbHelper.totalOfContacts()
     }
@@ -150,5 +148,9 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
 
     override suspend fun clearCredentialNotifications(credentialId: String) {
         mDbHelper.clearCredentialNotifications(credentialId)
+    }
+
+    override fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>> {
+        return mDbHelper.activityHistories()
     }
 }

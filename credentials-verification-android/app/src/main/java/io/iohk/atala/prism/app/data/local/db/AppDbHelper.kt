@@ -1,10 +1,7 @@
 package io.iohk.atala.prism.app.data.local.db
 
 import androidx.lifecycle.LiveData
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
-import io.iohk.atala.prism.app.data.local.db.model.Contact
-import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -93,5 +90,9 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
 
     override suspend fun clearCredentialNotifications(credentialId: String) {
         mAppDatabase.credentialDao().clearCredentialNotifications(credentialId)
+    }
+
+    override fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>> {
+        return mAppDatabase.credentialDao().activityHistories()
     }
 }
