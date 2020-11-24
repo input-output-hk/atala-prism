@@ -37,7 +37,7 @@ const commonColumns = [
   {
     key: 'credentialType',
     render: ({ credentialType }) => (
-      <CellRenderer title={tp('credentialType')} value={credentialType?.name} />
+      <CellRenderer title={tp('credentialType')} value={i18n.t(credentialType?.name)} />
     )
   },
   {
