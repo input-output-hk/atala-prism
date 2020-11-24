@@ -30,7 +30,11 @@ sed -i "1s/.*/# Grpc API reference/" docs/src/main/paradox/grpc-api.md
 Then, you can proceed to generate the website.
 
 ## Website
-The [docs](docs) are type-checked by [mdoc](https://github.com/olafurpg/mdoc), and compiled to a website by [paradox](https://github.com/lightbend/paradox) and [sbt-site](https://github.com/sbt/sbt-site), while updating them, run `sbt prismDocs/previewSite` to launch the preview at [localhost:4000](localhost:4000).
+The [docs](docs) are type-checked by [mdoc](https://github.com/olafurpg/mdoc), and compiled to a website by [paradox](https://github.com/lightbend/paradox) and [sbt-site](https://github.com/sbt/sbt-site), while updating them.
+ 
+Run:
+- `sbt prismDocs/previewSite` to launch the preview at [localhost:4000](https://localhost:4000).
+- `sbt prismDocs/makeSite` to build the website at `docs/target/site/`
 
 ## Troubleshooting
 If you get errors while the project gets imported by IntelliJ, try running IntelliJ from the terminal:, when dealing with scalajs, npm is required, sometimes IntelliJ fails to get the proper `PATH`:
@@ -43,4 +47,3 @@ This occurs commonly when dealing with scalajs, because npm is required, and, so
 ```
 [error] (ProjectRef(uri("file:/home/dell/iohk/repo/cardano-enterprise/prism-sdk/"), "sdkJS") / ssExtractDependencies) java.io.IOException: Cannot run program "npm" (in directory "/home/dell/iohk/repo/cardano-enterprise/prism-sdk/js/target/scala-2.13/scalajs-bundler/main"): error=2, No such file or directory
 ```
-
