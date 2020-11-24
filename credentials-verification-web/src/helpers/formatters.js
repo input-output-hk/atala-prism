@@ -2,7 +2,7 @@ import moment from 'moment';
 // If the module isn't explicitly imported moment wouldn't recognize the georgian language setting
 import 'moment/locale/ka';
 import { getCurrentLanguage } from './languageUtils';
-import { DEFAULT_DATE_FORMAT } from './constants';
+import { LONG_DATE_FORMAT, DEFAULT_DATE_FORMAT } from './constants';
 
 const completeDateFormatter = (date, format) => {
   const lang = getCurrentLanguage();
@@ -78,7 +78,12 @@ export const backendDateFormatter = format => date => completeDateFormatter(date
 export const frontendDateFormatter = format => date => completeFrontendDateFormatter(date, format);
 export const simpleMomentFormatter = date => date.format('L');
 
-export const longDateFormatter = frontendDateFormatter('LLLL');
+export const longDateFormatter = date => {
+  const lang = getCurrentLanguage();
+  return moment(date)
+    .locale(lang)
+    .format(LONG_DATE_FORMAT);
+};
 export const shortDateFormatter = frontendDateFormatter('LL');
 export const shortBackendDateFormatter = backendDateFormatter('LL');
 export const dayMonthYearFormatter = frontendDateFormatter('L');

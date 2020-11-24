@@ -12,11 +12,13 @@ const sizes = {
   xl: 15
 };
 
-const SimpleLoading = ({ color, size }) => (
-  <span className={`SimpleLoadingContainer ${size}`}>
-    <PulseLoader loading size={sizes[size]} color={color} />
-  </span>
-);
+const SimpleLoading = ({ color, size }) => {
+  return (
+    <span className={`SimpleLoadingContainer ${size}`}>
+      <PulseLoader loading size={sizes[size] || sizes.sm} color={color} />
+    </span>
+  );
+};
 
 SimpleLoading.defaultProps = {
   color: '#000000',

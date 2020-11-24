@@ -534,6 +534,17 @@
     },
     "connectionSummary": {
       "title": "Connection Summary"
+    },
+    "analytics": {
+      "total": "Total",
+      "connected": "Connected",
+      "contacts": "Contacts",
+      "groups": "Groups",
+      "credentials": "Credentials",
+      "pendingConnection": "Pending Connection",
+      "signed": "Signed",
+      "sent": "Sent",
+      "received": "Received"
     }
   },
   "payment": {

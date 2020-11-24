@@ -1,68 +1,62 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { pick } from 'lodash';
 import PropTypes from 'prop-types';
-import moment from 'moment';
-import { DatePicker, Space } from 'antd';
+import { message } from 'antd';
+import { withApi } from '../providers/withApi';
 import Welcome from './Atoms/Welcome/Welcome';
 import CurrentBundle from './Atoms/CurrentBundle/CurrentBundle';
-import ConnectionSummary from './Molecules/ConnectionSummary/ConnectionSummary';
-import TransactionSummary from './Molecules/TransactionSummary/TransactionSummary';
-import { getCurrentLanguage } from '../../helpers/languageUtils';
-import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { useSession } from '../providers/SessionContext';
 import DashboardCard from './organism/DashboardCard';
 import DashboardCardGroup from './organism/DashboardCardGroup';
 import DashboardCardCredential from './organism/DashboardCardCredential';
+import Logger from '../../helpers/Logger';
 import './_style.scss';
+import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
+import { longDateFormatter } from '../../helpers/formatters';
 
-const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
+const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
+  const tp = useTranslationWithPrefix('dashboard');
+  const [contactsStats, setContactsStats] = useState({});
+  const [groupsStats, setGroupsStats] = useState({});
+  const [credentialsStats, setCredentialsStats] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const dateFormat = 'YYYY/MM/DD';
+  useEffect(() => {
+    getStatistics();
+  }, []);
 
-  const customFormat = value => `custom format: ${value.format(dateFormat)}`;
-
-  moment.locale(getCurrentLanguage());
+  const getStatistics = async () => {
+    setLoading(true);
+    try {
+      const statistics = await api.summaryManager.getStatistics();
+      setContactsStats(statistics.contacts);
+      setGroupsStats(statistics.groups);
+      setCredentialsStats(statistics.credentials);
+    } catch (error) {
+      Logger.error('Error getting statistics: ', error);
+      message.error(t('errors.errorGetting', { model: 'statistics' }));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="DashboardContainer Wrapper">
       <div className="DashboardHeader">
-        <h1>{t('dashboard.title')}</h1>
-        <p>{moment().format('DD/MM/YYYY')}</p>
+        <h1>{tp('title')}</h1>
+        <p>{longDateFormatter()}</p>
       </div>
       <div className="DashboardContent">
-        <Welcome name={name} importantInfo={t('dashboard.welcome.subtitle')} />
+        <Welcome name={name} importantInfo={tp('welcome.subtitle')} />
         {false && <CurrentBundle bundle={bundle} />}
       </div>
       <div className="DashboardContentBottom">
-        <h1>{t('dashboard.titleBottom')}</h1>
-        <h3>{t('dashboard.subtitle')}</h3>
-        <div className="dateInputsContainer">
-          <div className="dateSpanContainer">
-            <span>{t('commonWords.from')}</span>
-          </div>
-          <div className="datePickerContainer">
-            <DatePicker defaultValue={moment('2015/01/01', dateFormat)} format={dateFormat} />
-          </div>
-          <div className="dateSpanContainer">
-            <span>{t('commonWords.to')}</span>
-          </div>
-          <div className="datePickerContainer">
-            <DatePicker defaultValue={moment('2015/01/01', dateFormat)} format={dateFormat} />
-          </div>
-          <div className="applyButtonContainer">
-            <CustomButton
-              buttonProps={{
-                className: 'theme-outline'
-              }}
-              buttonText="Apply"
-            />
-          </div>
-        </div>
+        <h1>{tp('titleBottom')}</h1>
         <div className="dashboardCardContainer">
-          <DashboardCard />
-          <DashboardCardGroup />
-          <DashboardCardCredential />
+          <DashboardCard data={contactsStats} loading={loading} />
+          <DashboardCardGroup data={groupsStats} loading={loading} />
+          <DashboardCardCredential data={credentialsStats} loading={loading} />
         </div>
       </div>
     </div>
@@ -71,25 +65,20 @@ const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
 
 Dashboard.defaultProps = {
   bundle: undefined,
-  name: 'Username',
-  credentials: { week: 10, month: 60 },
-  proofRequests: { week: 10, month: 60 }
+  name: 'Username'
 };
 
 Dashboard.propTypes = {
+  api: PropTypes.shape({
+    summaryManager: PropTypes.shape({
+      getStatistics: PropTypes.func.isRequired
+    }).isRequired
+  }).isRequired,
   name: PropTypes.string,
   bundle: PropTypes.shape({
     remaining: PropTypes.number,
     totalConnections: PropTypes.number
-  }),
-  credentials: PropTypes.shape({
-    week: PropTypes.number,
-    month: PropTypes.number
-  }),
-  proofRequests: PropTypes.shape({
-    week: PropTypes.number,
-    month: PropTypes.number
   })
 };
 
-export default Dashboard;
+export default withApi(Dashboard);

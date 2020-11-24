@@ -23,7 +23,7 @@
     display: flex;
     align-items: center;
     margin: 20px 0;
-    .ant-calendar-picker:hover .ant-calendar-picker-input:not(.ant-input-disabled){
+    .ant-calendar-picker:hover .ant-calendar-picker-input:not(.ant-input-disabled) {
       border-color: $primary-color;
     }
   }
@@ -36,8 +36,8 @@
   .datePickerContainer {
     margin-right: 20px;
   }
-  .applyButtonContainer{
-    .theme-outline{
+  .applyButtonContainer {
+    .theme-outline {
       width: 150px;
     }
   }
@@ -47,6 +47,9 @@
     margin-top: 2em;
     h3 {
       @include primary-text($h3, #728099);
+    }
+    & > h1 {
+      margin-bottom: 1em;
     }
     .TransactionSummary,
     .ConnectionSummary {
@@ -65,7 +68,7 @@
   }
 }
 
-.dashboardCardContainer{
+.dashboardCardContainer {
   display: flex;
   justify-content: space-between;
 }

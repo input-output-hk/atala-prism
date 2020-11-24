@@ -2,6 +2,9 @@
   display: flex;
   justify-content: center;
   margin: 0.5em 0;
+  &.xs {
+    margin: 0;
+  }
   &.md {
     margin: 3em 0;
   }

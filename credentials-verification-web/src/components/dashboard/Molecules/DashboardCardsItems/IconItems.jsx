@@ -1,8 +1,9 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
+import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import './_style.scss';
 
-const BulletItems = ({ icon, title, value }) => (
+const IconItems = ({ icon, title, value, loading }) => (
   <div className="BulletItemsContainer">
     <div className="textTitleContainer">
       <div className="icon">
@@ -12,10 +13,20 @@ const BulletItems = ({ icon, title, value }) => (
         <span>{title}</span>
       </div>
     </div>
-    <div className="valueContainer">
-      <h1>{value}</h1>
-    </div>
+    <div className="valueContainer">{loading ? <SimpleLoading size="xs" /> : <h1>{value}</h1>}</div>
   </div>
 );
 
-export default BulletItems;
+IconItems.defaultProps = {
+  loading: false,
+  value: '-'
+};
+
+IconItems.propTypes = {
+  loading: PropTypes.bool,
+  icon: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+};
+
+export default IconItems;

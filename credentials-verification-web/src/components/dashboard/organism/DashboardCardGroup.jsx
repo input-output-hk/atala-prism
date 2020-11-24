@@ -1,23 +1,43 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import './_style.scss';
 import { Divider } from 'antd';
+import PropTypes from 'prop-types';
 import imgCard from '../../../images/groupIcon.svg';
 import BulletItems from '../Molecules/DashboardCardsItems/BulletItems';
+import { useTranslationWithPrefix } from '../../../hooks/useTranslationWithPrefix';
 
-const DashboardCardGroup = () => (
-  <div className="DashboardContactCardContainer">
-    <div className="HeaderCardContainer">
-      <div>
-        <img src={imgCard} alt="img" srcSet="" />
+const DashboardCardGroup = ({ loading, data }) => {
+  const tp = useTranslationWithPrefix('dashboard.analytics');
+  return (
+    <div className="DashboardContactCardContainer">
+      <div className="HeaderCardContainer">
+        <div>
+          <img src={imgCard} alt="img" srcSet="" />
+        </div>
+        <span className="titleCardContainer">{tp('groups')}</span>
       </div>
-      <span className="titleCardContainer">Groups</span>
+      <div className="divider">
+        <Divider />
+      </div>
+      <BulletItems
+        bulletClass="violetBullet"
+        title={tp('total')}
+        value={data.numberofgroups}
+        loading={loading}
+      />
     </div>
-    <div className="divider">
-      <Divider />
-    </div>
-    <BulletItems bulletClass="violetBullet" title="Total" value="10" />
-  </div>
-);
+  );
+};
+
+DashboardCardGroup.defaultProps = {
+  loading: false
+};
+
+DashboardCardGroup.propTypes = {
+  loading: PropTypes.bool,
+  data: PropTypes.shape({
+    numberofgroups: PropTypes.number
+  }).isRequired
+};
 
 export default DashboardCardGroup;
