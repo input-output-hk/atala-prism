@@ -141,7 +141,7 @@ export const FAILED = 'failed';
 export const SUCCESS = 'success';
 
 // this format also allows: 'DD/MM/YYYY', 'DD-MM-YY' and 'DD/MM/YY'
-export const DEFAULT_DATE_FORMAT = 'DD-MM-YYYY';
+export const DEFAULT_DATE_FORMAT = 'DD/MM/YYYY';
 
 export const TABLE_HEIGHTS = {
   xs: 150,

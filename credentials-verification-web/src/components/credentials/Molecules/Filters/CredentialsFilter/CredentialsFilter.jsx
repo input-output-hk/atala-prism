@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { DatePicker, Row, Col, Input, Icon, Select } from 'antd';
-import moment from 'moment';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
+import { DEFAULT_DATE_FORMAT } from '../../../../../helpers/constants';
 
 const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, groups }) => {
   const { t } = useTranslation();
@@ -33,7 +33,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
     placeholder: t('credentials.filters.date'),
     suffixIcon: <Icon type="down" />,
     onChange: (_, dateString) => setDate(dateString),
-    value: date && moment(date)
+    format: DEFAULT_DATE_FORMAT
   };
 
   return (

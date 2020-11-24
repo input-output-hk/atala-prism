@@ -11,6 +11,7 @@ import FileUploader from '../../../common/Molecules/FileUploader/FileUploader';
 
 import './_style.scss';
 import { getCurrentLanguage } from '../../../../helpers/languageUtils';
+import { DEFAULT_DATE_FORMAT } from '../../../../helpers/constants';
 
 const getStartDate = formRef => formRef.current.getForm().getFieldValue('startDate');
 
@@ -57,6 +58,7 @@ const TemplateForm = React.forwardRef(
             allowClear={false}
             size="large"
             showToday={false}
+            format={DEFAULT_DATE_FORMAT}
             locale={locale}
           />
         )
@@ -84,6 +86,7 @@ const TemplateForm = React.forwardRef(
               updateExampleCredential('graduationDate', 1000 * moment(_d).unix())
             }
             allowClear={false}
+            format={DEFAULT_DATE_FORMAT}
             size="large"
             locale={locale}
           />
