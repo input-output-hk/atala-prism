@@ -8,10 +8,12 @@ import contactIcon from '../../images/holder-default-avatar.svg';
 import CredentialDetail from './molecules/detailBox/CredentialDetails/CredentialDetail';
 
 import './_style.scss';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 
 const Contact = ({
   contact: { contactName, externalid },
   groups,
+  loading,
   redirector: { redirectToContacts }
 }) => {
   const { t } = useTranslation();
@@ -32,15 +34,15 @@ const Contact = ({
             </div>
             <div className="title">
               <p>{t('contacts.table.columns.contactName')}</p>
-              <span>{contactName}</span>
+              <span>{loading.contact ? <SimpleLoading size="xs" /> : contactName}</span>
             </div>
             <div className="title">
               <p>{t('contacts.table.columns.externalid')}</p>
-              <span>{externalid}</span>
+              <span>{loading.contact ? <SimpleLoading size="xs" /> : externalid}</span>
             </div>
           </div>
           <p className="subtitle">{t('contacts.detail.detailSection.credentialSubtitle')}</p>
-          <DetailBox groups={groups} />
+          <DetailBox groups={groups} loading={loading.groups} />
         </div>
         <div className="CredentialInfo">
           <div className="CredentialTitleContainer">
@@ -69,7 +71,11 @@ const Contact = ({
 
 Contact.defaultProps = {
   contact: {},
-  groups: []
+  groups: [],
+  loading: {
+    contact: false,
+    groups: false
+  }
 };
 
 Contact.propTypes = {
@@ -93,7 +99,8 @@ Contact.propTypes = {
       numberofcontacts: PropTypes.number
     })
   ),
-  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
+  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired,
+  loading: PropTypes.shape({ contact: PropTypes.bool, groups: PropTypes.bool })
 };
 
 export default withRedirector(Contact);

@@ -27,7 +27,8 @@ const ImportDataContainer = ({
   onCancel,
   useCase,
   getTargets,
-  headersMapping
+  headersMapping,
+  loading
 }) => {
   const [selection, setSelection] = useState();
 
@@ -66,6 +67,7 @@ const ImportDataContainer = ({
           showGroupSelection={showGroupSelection[useCase]}
           useCase={useCase}
           headersMapping={headersMapping}
+          loading={loading}
         />
       );
     }
@@ -88,6 +90,7 @@ const ImportDataContainer = ({
 ImportDataContainer.defaultProps = {
   getTargets: null,
   bulkValidator: null,
+  loading: false,
   useCase: IMPORT_CONTACTS
 };
 
@@ -96,6 +99,7 @@ ImportDataContainer.propTypes = {
   bulkValidator: PropTypes.func,
   onFinish: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
   headersMapping: PropTypes.arrayOf(
     PropTypes.shape({ key: PropTypes.string, translation: PropTypes.string })

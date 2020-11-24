@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
-const GenericFooter = ({ previous, next, disablePrevious, disableNext, labels }) => (
+const GenericFooter = ({ previous, next, disablePrevious, disableNext, labels, loading }) => (
   <div className="GenericFooter">
     <div className="LeftButtons">
       {previous && (
@@ -26,6 +26,7 @@ const GenericFooter = ({ previous, next, disablePrevious, disableNext, labels })
             disabled: disableNext
           }}
           buttonText={labels.next}
+          loading={loading}
         />
       )}
     </div>
@@ -37,6 +38,7 @@ GenericFooter.defaultProps = {
   next: undefined,
   disablePrevious: false,
   disableNext: false,
+  loading: false,
   labels: { previous: 'Back', next: 'Next' }
 };
 
@@ -45,6 +47,7 @@ GenericFooter.propTypes = {
   next: PropTypes.func,
   disablePrevious: PropTypes.bool,
   disableNext: PropTypes.bool,
+  loading: PropTypes.bool,
   labels: PropTypes.shape({ previous: PropTypes.string, next: PropTypes.string })
 };
 

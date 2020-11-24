@@ -24,7 +24,8 @@ const BulkImportSteps = ({
   cancelImport,
   getTargets,
   useCase,
-  headersMapping
+  headersMapping,
+  loading
 }) => {
   const [currentStep, setCurrentStep] = useState(COMPLETE_SPREADSHEET_STEP);
 
@@ -80,6 +81,7 @@ const BulkImportSteps = ({
         previousStep={handlePreviousStep}
         nextStep={handleNextStep}
         disableNext={disableNext}
+        loading={loading}
         onFinish={onFinish}
       />
     </div>
@@ -89,6 +91,7 @@ const BulkImportSteps = ({
 BulkImportSteps.defaultProps = {
   fileData: null,
   showGroupSelection: false,
+  loading: false,
   selectedGroups: [],
   onFinish: () => {},
   cancelImport: () => {},
@@ -105,6 +108,7 @@ BulkImportSteps.propTypes = {
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   setSelectedGroups: PropTypes.func.isRequired,
   showGroupSelection: PropTypes.bool,
+  loading: PropTypes.bool,
   onFinish: PropTypes.func,
   cancelImport: PropTypes.func,
   skipGroupsAssignment: PropTypes.bool.isRequired,

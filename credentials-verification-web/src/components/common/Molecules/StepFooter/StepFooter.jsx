@@ -24,7 +24,8 @@ const StepFooter = ({
   disablePrevious,
   disableNext,
   onCancel,
-  onFinish
+  onFinish,
+  loading
 }) => {
   const { t } = useTranslation();
 
@@ -55,6 +56,7 @@ const StepFooter = ({
             disabled: disableNext
           }}
           buttonText={t(lastStep ? finishText : 'actions.next')}
+          loading={lastStep && loading}
         />
       </div>
     </div>
@@ -63,9 +65,10 @@ const StepFooter = ({
 
 StepFooter.defaultProps = {
   renderExtraOptions: () => {},
-  finishText: 'actions.next',
+  finishText: 'actions.done',
   disablePrevious: false,
-  disableNext: false
+  disableNext: false,
+  loading: false
 };
 
 StepFooter.propTypes = {
@@ -77,6 +80,7 @@ StepFooter.propTypes = {
   finishText: PropTypes.string,
   disablePrevious: PropTypes.bool,
   disableNext: PropTypes.bool,
+  loading: PropTypes.bool,
   onCancel: PropTypes.func.isRequired,
   onFinish: PropTypes.func.isRequired
 };

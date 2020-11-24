@@ -44,7 +44,7 @@ const CredentialContainer = ({ api }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [indeterminateSelectAll, setIndeterminateSelectAll] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
@@ -71,8 +71,15 @@ const CredentialContainer = ({ api }) => {
     } catch (error) {
       Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchCredentialsIssued();
+  }, []);
 
   const fetchCredentialsRecieved = async () => {
     try {
@@ -96,10 +103,6 @@ const CredentialContainer = ({ api }) => {
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
     }
   };
-
-  useEffect(() => {
-    fetchCredentialsIssued();
-  }, []);
 
   useEffect(() => {
     if (!credentialsIssued.length && hasMoreIssued) fetchCredentialsIssued();
@@ -309,7 +312,7 @@ const CredentialContainer = ({ api }) => {
         onCancel={handleCancel}
         {...getTargetCredentials(sendCredentialsRequiredStatus)}
       />
-      <Credentials tabProps={tabProps} setActiveTab={setActiveTab} />
+      <Credentials tabProps={tabProps} setActiveTab={setActiveTab} initialLoading={loading} />
     </>
   );
 };

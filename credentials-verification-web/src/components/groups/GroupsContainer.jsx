@@ -14,6 +14,7 @@ const GroupsContainer = ({ api }) => {
 
   const [groups, setGroups] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const updateGroups = (oldGroups = groups, date, name) => {
     if (!hasMore) return;
@@ -35,11 +36,13 @@ const GroupsContainer = ({ api }) => {
       .catch(error => {
         Logger.error('[GroupsContainer.updateGroups] Error: ', error);
         message.error(t('errors.errorGettingHolders'));
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     if (!groups.length) {
+      setLoading(true);
       updateGroups();
     }
   }, [groups]);
@@ -64,6 +67,7 @@ const GroupsContainer = ({ api }) => {
         updateGroups(oldGroups, date, name);
       }}
       handleGroupDeletion={handleGroupDeletion}
+      loading={loading}
       hasMore={hasMore}
     />
   );

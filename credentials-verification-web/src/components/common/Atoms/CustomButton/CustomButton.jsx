@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'antd';
-import { PulseLoader } from 'react-spinners';
 import PropTypes from 'prop-types';
+import SimpleLoading from '../SimpleLoading/SimpleLoading';
 
 import './_style.scss';
 
@@ -11,21 +11,17 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ icon, buttonText, buttonProps, loading, loadingProps }) => (
+const CustomButton = ({ icon, buttonText, buttonProps, loading }) => (
   <Button {...buttonProps} disabled={buttonProps?.disabled || loading}>
     {icon && icon}
-    {loading ? <PulseLoader loading {...loadingProps} /> : buttonText}
+    {loading ? <SimpleLoading /> : buttonText}
   </Button>
 );
 
 CustomButton.defaultProps = {
   buttonText: '',
   icon: null,
-  loading: false,
-  loadingProps: {
-    size: 6,
-    color: '#000000'
-  }
+  loading: false
 };
 
 CustomButton.propTypes = {
@@ -43,11 +39,7 @@ CustomButton.propTypes = {
   }).isRequired,
   buttonText: PropTypes.string,
   icon: PropTypes.element,
-  loading: PropTypes.bool,
-  loadingProps: PropTypes.shape({
-    size: PropTypes.number,
-    color: PropTypes.string
-  })
+  loading: PropTypes.bool
 };
 
 export default CustomButton;

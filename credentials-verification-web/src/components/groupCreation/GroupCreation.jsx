@@ -16,6 +16,7 @@ import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import Logger from '../../helpers/Logger';
 import { exactValueExists } from '../../helpers/filterHelpers';
 import './_style.scss';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 
 const { Search } = Input;
 
@@ -53,10 +54,15 @@ const GroupCreation = ({
   updateForm,
   formValues,
   updateMembers,
-  isIssuer
+  isIssuer,
+  isSaving
 }) => {
   const [nameState, setNameState] = useState(NAME_STATES.initial);
-  const [contacts, handleContactsRequest, hasMore] = useContacts(api.contactsManager);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+  const [contacts, handleContactsRequest, hasMore] = useContacts(
+    api.contactsManager,
+    setLoadingContacts
+  );
   const [filteredContacts, setFilterValue, selectedContacts, setSelectedContacts] = useTableHandler(
     contacts,
     [CONTACT_NAME_KEY, EXTERNAL_ID_KEY]
@@ -65,6 +71,7 @@ const GroupCreation = ({
   const { t } = useTranslation();
 
   useEffect(() => {
+    setLoadingContacts(true);
     if (!contacts.length) handleContactsRequest();
   }, []);
 
@@ -158,15 +165,19 @@ const GroupCreation = ({
           <Row gutter={10} align="bottom" type="flex">
             <Col sm={24} md={20}>
               <div className="addContactsContainer">
-                <ConnectionsTable
-                  isIssuer={isIssuer}
-                  contacts={filteredContacts}
-                  selectedContacts={selectedContacts}
-                  setSelectedContacts={setSelectedContacts}
-                  handleContactsRequest={handleContactsRequest}
-                  hasMore={hasMore}
-                  size="md"
-                />
+                {loadingContacts ? (
+                  <SimpleLoading />
+                ) : (
+                  <ConnectionsTable
+                    isIssuer={isIssuer}
+                    contacts={filteredContacts}
+                    selectedContacts={selectedContacts}
+                    setSelectedContacts={setSelectedContacts}
+                    handleContactsRequest={handleContactsRequest}
+                    hasMore={hasMore}
+                    size="md"
+                  />
+                )}
               </div>
             </Col>
             <Col sm={24} md={4}>
@@ -178,6 +189,7 @@ const GroupCreation = ({
                     onClick: () => createGroup(groupName)
                   }}
                   buttonText={t('groupCreation.form.buttonText')}
+                  loading={isSaving}
                 />
               </div>
             </Col>
@@ -197,6 +209,10 @@ GroupForm.propTypes = {
   groupName: PropTypes.string
 };
 
+GroupCreation.defaultProps = {
+  isSaving: false
+};
+
 GroupCreation.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({
@@ -210,8 +226,9 @@ GroupCreation.propTypes = {
   createGroup: PropTypes.func.isRequired,
   formRef: PropTypes.shape().isRequired,
   updateForm: PropTypes.func.isRequired,
-  updateMembers: PropTypes.func.isRequired,
-  formValues: PropTypes.shape().isRequired
+  formValues: PropTypes.shape().isRequired,
+  isSaving: PropTypes.bool,
+  updateMembers: PropTypes.func.isRequired
 };
 
 export default withApi(withRedirector(GroupCreation));

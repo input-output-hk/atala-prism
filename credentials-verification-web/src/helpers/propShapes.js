@@ -112,5 +112,6 @@ export const credentialTabShape = {
     selectAll: bool,
     indeterminateSelectAll: bool
   }).isRequired,
-  showEmpty: bool
+  showEmpty: bool,
+  initialLoading: bool
 };

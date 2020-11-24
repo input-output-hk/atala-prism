@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -122,6 +122,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
   const handleImportedData = (dataObjects, setResults) => {
     setImportedData(dataObjects);
+
     setResults({
       credentialDataImported: dataObjects.length,
       continueCallback: () => goToCredentialsPreview(dataObjects)
@@ -181,11 +182,13 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       message.success(
         t('newCredential.messages.creationSuccess', { amount: credentialsData.length })
       );
+
       redirectToCredentials();
     } catch (error) {
-      setIsLoading(false);
       Logger.error(error);
       message.error(t('errors.errorSaving', { model: t('credentials.title') }));
+    } finally {
+      setIsLoading(false);
     }
   };
 

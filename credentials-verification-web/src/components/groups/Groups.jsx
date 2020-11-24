@@ -10,6 +10,7 @@ import { groupShape } from '../../helpers/propShapes';
 import noGroups from '../../images/noGroups.svg';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import { backendDateFormat } from '../../helpers/formatters';
 import { filterByInclusion } from '../../helpers/filterHelpers';
 
@@ -32,6 +33,7 @@ const Groups = ({
   handleGroupDeletion,
   updateGroups,
   hasMore,
+  loading,
   redirector: { redirectToGroupCreation }
 }) => {
   const { t } = useTranslation();
@@ -84,6 +86,12 @@ const Groups = ({
 
   const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
 
+  const renderContent = () => {
+    if (loading) return <SimpleLoading size="md" />;
+    if (groups.length) return <GroupsTable {...tableProps} groups={filteredGroups} />;
+    return <EmptyComponent photoSrc={noGroups} model={t('groups.title')} button={newGroupButton} />;
+  };
+
   return (
     <div className="Wrapper">
       <DeleteGroupModal {...modalProps} />
@@ -92,19 +100,14 @@ const Groups = ({
         {newGroupButton}
       </div>
       <GroupFilters updateGroups={handleUpdateGroups} />
-      <Row>
-        {groups.length ? (
-          <GroupsTable {...tableProps} groups={filteredGroups} />
-        ) : (
-          <EmptyComponent photoSrc={noGroups} model={t('groups.title')} button={newGroupButton} />
-        )}
-      </Row>
+      <Row>{renderContent()}</Row>
     </div>
   );
 };
 
 Groups.defaultProps = {
-  groups: []
+  groups: [],
+  loading: false
 };
 
 Groups.propTypes = {
@@ -112,6 +115,7 @@ Groups.propTypes = {
   handleGroupDeletion: PropTypes.func.isRequired,
   updateGroups: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
+  loading: PropTypes.bool,
   redirector: PropTypes.shape({ redirectToGroupCreation: PropTypes.func.isRequired }).isRequired
 };
 

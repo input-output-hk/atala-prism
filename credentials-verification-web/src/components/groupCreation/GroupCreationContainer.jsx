@@ -9,20 +9,24 @@ import { withRedirector } from '../providers/withRedirector';
 
 const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
   const [groupName, setGroupName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [members, setMembers] = useState([]);
   const formRef = React.createRef();
   const { t } = useTranslation();
   const formValues = { groupName };
 
   const saveGroup = async () => {
+    setIsSaving(true);
     try {
       const newGroup = await api.groupsManager.createGroup(groupName);
       await api.groupsManager.updateGroup(newGroup.id, members);
       message.success(t('groupCreation.success'));
+      setIsSaving(false);
       redirectToGroups();
     } catch (e) {
       message.error(t('groupCreation.errors.grpc'));
       Logger.error('groupCreation.errors.grpc', e);
+      setIsSaving(false);
     }
   };
 
@@ -34,6 +38,7 @@ const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
       updateForm={setGroupName}
       updateMembers={setMembers}
       formValues={formValues}
+      isSaving={isSaving}
     />
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { message } from 'antd';
@@ -19,6 +19,7 @@ import './_style.scss';
 
 const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) => {
   const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
 
   const headersMapping = COMMON_CONTACT_HEADERS.map(headerKey => ({
     key: headerKey,
@@ -27,6 +28,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
 
   // TODO: replace with bulk request
   const handleRequests = async (contactsData, groups, setResults) => {
+    setLoading(true);
     try {
       const translatedContacts = translateBackSpreadsheetNamesToContactKeys(
         contactsData,
@@ -44,6 +46,8 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
     } catch (error) {
       Logger.error('Error while creating contact', error);
       message.error('Error while saving the contact');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,6 +87,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
       onCancel={redirectToContacts}
       useCase={IMPORT_CONTACTS}
       headersMapping={headersMapping}
+      loading={loading}
     />
   );
 };

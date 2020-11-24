@@ -10,7 +10,8 @@ const BulkImport = ({
   showGroupSelection,
   getTargets,
   useCase,
-  headersMapping
+  headersMapping,
+  loading
 }) => {
   const [fileData, setFileData] = useState();
   const [selectedGroups, setSelectedGroups] = useState([]);
@@ -29,7 +30,8 @@ const BulkImport = ({
     cancelImport,
     getTargets,
     useCase,
-    headersMapping
+    headersMapping,
+    loading
   };
 
   const handleReturnToUploadStep = () => {
@@ -53,7 +55,8 @@ const BulkImport = ({
 BulkImport.defaultProps = {
   cancelImport: () => {},
   showGroupSelection: false,
-  getTargets: null
+  getTargets: null,
+  loading: false
 };
 
 BulkImport.propTypes = {
@@ -61,6 +64,7 @@ BulkImport.propTypes = {
   onUpload: PropTypes.func.isRequired,
   cancelImport: PropTypes.func,
   showGroupSelection: PropTypes.bool,
+  loading: PropTypes.bool,
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
   headersMapping: PropTypes.arrayOf(
     PropTypes.shape({ key: PropTypes.string, translation: PropTypes.string })

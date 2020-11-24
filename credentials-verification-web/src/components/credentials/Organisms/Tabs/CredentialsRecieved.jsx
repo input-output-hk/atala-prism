@@ -7,8 +7,15 @@ import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent'
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CREDENTIALS_RECIEVED } from '../../../../helpers/constants';
 import { credentialTabShape } from '../../../../helpers/propShapes';
+import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
-const CredentialsRecieved = ({ showEmpty, tableProps, fetchCredentials, showCredentialData }) => {
+const CredentialsRecieved = ({
+  showEmpty,
+  tableProps,
+  fetchCredentials,
+  showCredentialData,
+  initialLoading
+}) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
@@ -31,19 +38,18 @@ const CredentialsRecieved = ({ showEmpty, tableProps, fetchCredentials, showCred
 
   const renderEmptyComponent = !tableProps.credentials.length || showEmpty;
 
-  return (
-    <Row>
-      {showEmpty || renderEmptyComponent ? (
-        <EmptyComponent {...emptyProps} />
-      ) : (
-        <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />
-      )}
-    </Row>
-  );
+  const renderContent = () => {
+    if (initialLoading) return <SimpleLoading size="md" />;
+    if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
+    return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
+  };
+
+  return <Row>{renderContent()}</Row>;
 };
 
 CredentialsRecieved.defaultProps = {
-  showEmpty: false
+  showEmpty: false,
+  initialLoading: false
 };
 
 CredentialsRecieved.propTypes = credentialTabShape;

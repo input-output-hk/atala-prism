@@ -11,12 +11,14 @@ import { contactShape } from '../../helpers/propShapes';
 import { withRedirector } from '../providers/withRedirector';
 
 import './_style.scss';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 
 const Connections = ({
   tableProps,
   inviteContact,
   handleContactsRequest,
   refreshContacts,
+  loading,
   redirector: { redirectToContactDetails }
 }) => {
   const { t } = useTranslation();
@@ -40,6 +42,21 @@ const Connections = ({
     refreshContacts();
   };
 
+  const renderContent = () => {
+    if (loading) return <SimpleLoading size="md" />;
+    if (tableProps.contacts.length) {
+      return (
+        <ConnectionsTable
+          inviteContact={inviteContactAndShowQR}
+          viewContactDetail={redirectToContactDetails}
+          handleContactsRequest={handleContactsRequest}
+          {...tableProps}
+        />
+      );
+    }
+    return <EmptyComponent {...emptyProps} />;
+  };
+
   return (
     <div className="Wrapper">
       <div className="ContentHeader">
@@ -47,16 +64,7 @@ const Connections = ({
         <AddUserButtons />
       </div>
       <ConnectionsFilter fetchContacts={handleContactsRequest} />
-      {tableProps.contacts.length ? (
-        <ConnectionsTable
-          inviteContact={inviteContactAndShowQR}
-          viewContactDetail={redirectToContactDetails}
-          handleContactsRequest={handleContactsRequest}
-          {...tableProps}
-        />
-      ) : (
-        <EmptyComponent {...emptyProps} />
-      )}
+      {renderContent()}
       <QRModal
         visible={QRModalIsOpen}
         onCancel={onQRClosed}
@@ -67,6 +75,10 @@ const Connections = ({
   );
 };
 
+Connections.defaultProps = {
+  loading: false
+};
+
 Connections.propTypes = {
   handleContactsRequest: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
@@ -74,6 +86,7 @@ Connections.propTypes = {
     getCredentials: PropTypes.func.isRequired,
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
+  loading: PropTypes.bool,
   inviteContact: PropTypes.func.isRequired,
   refreshContacts: PropTypes.func.isRequired
 };

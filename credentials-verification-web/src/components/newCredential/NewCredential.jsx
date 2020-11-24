@@ -50,6 +50,8 @@ const NewCredential = ({
 
   const previous = [redirectToCredentials, goBack, goBack, goBack];
 
+  const isLastStep = currentStep + 1 === steps.length;
+
   return (
     <React.Fragment>
       <div className="CredentialMainContent">
@@ -67,6 +69,7 @@ const NewCredential = ({
             finishText="newCredential.save"
             disableNext={isLoading}
             disablePrev={isLoading || !currentStep}
+            loading={isLoading && isLastStep}
           />
         )}
       </div>

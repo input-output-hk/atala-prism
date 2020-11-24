@@ -7,7 +7,7 @@ import { contactMapper } from '../APIs/helpers/contactHelpers';
 import Logger from '../helpers/Logger';
 import { filterByInclusion } from '../helpers/filterHelpers';
 
-const useGetContacts = (contactsManager, setContacts) => {
+const useGetContacts = (contactsManager, setContacts, setLoading) => {
   const [hasMore, setHasMore] = useState(true);
 
   const getContacts = ({ pageSize, lastId, oldContacts = [], isRefresh = false }) =>
@@ -29,14 +29,15 @@ const useGetContacts = (contactsManager, setContacts) => {
       .catch(error => {
         Logger.error('[Contacts.getContacts] Error while getting contacts', error);
         message.error(i18n.t('errors.errorGetting', { model: 'Contacts' }));
-      });
+      })
+      .finally(() => setLoading && setLoading(false));
 
   return [getContacts, hasMore];
 };
 
-export const useContacts = contactsManager => {
+export const useContacts = (contactsManager, setLoading) => {
   const [contacts, setContacts] = useState([]);
-  const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts);
+  const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts, setLoading);
 
   const handleContactsRequest = () => {
     const { contactid } = getLastArrayElementOrEmpty(contacts);
@@ -51,9 +52,9 @@ export const useContacts = contactsManager => {
   return [contacts, handleContactsRequest, hasMore];
 };
 
-export const useContactsWithFilteredList = contactsManager => {
+export const useContactsWithFilteredList = (contactsManager, setLoading) => {
   const [contacts, setContacts] = useState([]);
-  const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts);
+  const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts, setLoading);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');

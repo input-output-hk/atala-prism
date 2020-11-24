@@ -14,6 +14,7 @@ const ContactContainer = ({ api }) => {
 
   const [contact, setContact] = useState();
   const [groups, setGroups] = useState();
+  const [loading, setLoading] = useState({});
 
   const getContact = () =>
     api.contactsManager
@@ -25,7 +26,8 @@ const ContactContainer = ({ api }) => {
       .catch(error => {
         Logger.error(`[ContactContainer.getContact] Error while getting contact ${id}`, error);
         message.error(t('errors.errorGetting', { model: 'contact' }));
-      });
+      })
+      .finally(() => setLoading({ ...loading, contact: false }));
 
   const getGroups = () =>
     api.groupsManager
@@ -37,14 +39,16 @@ const ContactContainer = ({ api }) => {
           error
         );
         message.error(t('errors.errorGetting', { model: 'groups' }));
-      });
+      })
+      .finally(() => setLoading({ ...loading, groups: false }));
 
   useEffect(() => {
+    setLoading({ contact: true, groups: true });
     getContact();
     getGroups();
   }, []);
 
-  return !contact && !groups ? <Loading /> : <Contact contact={contact} groups={groups} />;
+  return <Contact contact={contact} groups={groups} loading={loading} />;
 };
 
 ContactContainer.propTypes = {

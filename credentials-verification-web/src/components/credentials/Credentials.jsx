@@ -14,7 +14,7 @@ import './_style.scss';
 
 const { TabPane } = Tabs;
 
-const Credentials = ({ tabProps, setActiveTab }) => {
+const Credentials = ({ tabProps, setActiveTab, initialLoading }) => {
   const { t } = useTranslation();
   const [currentCredential, setCurrentCredential] = useState({});
   const [showDrawer, setShowDrawer] = useState(false);
@@ -47,6 +47,7 @@ const Credentials = ({ tabProps, setActiveTab }) => {
           <CredentialsIssued
             {...tabProps[CREDENTIALS_ISSUED]}
             showCredentialData={showCredentialData}
+            initialLoading={initialLoading}
           />
         </TabPane>
         <TabPane key={CREDENTIALS_RECIEVED} tab={t('credentials.tabs.credentialsRecieved')}>
@@ -54,6 +55,7 @@ const Credentials = ({ tabProps, setActiveTab }) => {
           <CredentialsRecieved
             {...tabProps[CREDENTIALS_RECIEVED]}
             showCredentialData={showCredentialData}
+            initialLoading={initialLoading}
           />
         </TabPane>
       </Tabs>
@@ -61,11 +63,16 @@ const Credentials = ({ tabProps, setActiveTab }) => {
   );
 };
 
+Credentials.defaultProps = {
+  initialLoading: false
+};
+
 Credentials.propTypes = {
   tabProps: PropTypes.shape({
     [CREDENTIALS_ISSUED]: PropTypes.shape(credentialTabShape),
     [CREDENTIALS_RECIEVED]: PropTypes.shape(credentialTabShape)
   }).isRequired,
+  initialLoading: PropTypes.bool,
   setActiveTab: PropTypes.func.isRequired
 };
 

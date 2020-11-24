@@ -9,6 +9,7 @@ import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CREDENTIALS_ISSUED } from '../../../../helpers/constants';
 import { credentialTabShape } from '../../../../helpers/propShapes';
+import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
 const CredentialsIssued = ({
   showEmpty,
@@ -16,7 +17,8 @@ const CredentialsIssued = ({
   bulkActionsProps,
   showCredentialData,
   fetchCredentials,
-  loadingSelection
+  loadingSelection,
+  initialLoading
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,12 @@ const CredentialsIssued = ({
 
   const renderEmptyComponent = !credentials.length || showEmpty;
 
+  const renderContent = () => {
+    if (initialLoading) return <SimpleLoading size="md" />;
+    if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
+    return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
+  };
+
   return (
     <>
       <div className="bulkActionsRow">
@@ -67,19 +75,13 @@ const CredentialsIssued = ({
           disableSend={!selectedRowKeys?.length || loadingSelection}
         />
       </div>
-      <Row>
-        {showEmpty || renderEmptyComponent ? (
-          <EmptyComponent {...emptyProps} />
-        ) : (
-          <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />
-        )}
-      </Row>
+      <Row>{renderContent()}</Row>
     </>
   );
 };
 
 CredentialsIssued.defaultProps = {
-  showEmpty: false
+  initialLoading: false
 };
 
 CredentialsIssued.propTypes = credentialTabShape;
