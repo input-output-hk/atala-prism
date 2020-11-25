@@ -122,6 +122,9 @@ jobs:
 
       - setup_remote_docker
 
+      - attach_workspace:
+          at: ./workspace
+
       - restore_cache:
           key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
 
@@ -157,6 +160,13 @@ jobs:
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
             aws configure set region $AWS_DEFAULT_REGION --profile default
             $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+
+      - run:
+          name: Build and push prism-docs-website
+          command: |
+            mv workspace/site prism-sdk/infra/docs-website/website
+            docker build -f prism-sdk/infra/docs-website/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG} prism-sdk/infra/docs-website
+            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG}
 
       - run:
           name: Build and push credentials-verification-web
@@ -617,7 +627,9 @@ workflows:
                 - /geud-test.*/
           requires:
             - build-credentials-verification-web
+            - build-credentials-verification-landing
             - build-credentials-verification
+            - build-prism-sdk
 
       - rebuild-prism-env:
           intdemo-enabled: true
