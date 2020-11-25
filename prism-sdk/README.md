@@ -36,6 +36,17 @@ Run:
 - `sbt prismDocs/previewSite` to launch the preview at [localhost:4000](https://localhost:4000).
 - `sbt prismDocs/makeSite` to build the website at `docs/target/site/`
 
+If for any reason, you get this error, make sure to run `sbt prismDocs/clean` then retry:
+
+```
+[error] Unexpected top-level pages (pages that do no have a parent in the Table of Contents).
+[error] If this is intentional, update the `paradoxRoots` sbt setting to reflect the new expected roots.
+[error] Current ToC roots: [connector.html, crypto.html, identity.html, index.html]
+[error] Specified ToC roots: [index.html]
+[error] Paradox failed with 1 errors
+[error] (prismDocs / Compile / paradoxMarkdownToHtml) com.lightbend.paradox.sbt.ParadoxPlugin$ParadoxException
+```
+
 ## Troubleshooting
 If you get errors while the project gets imported by IntelliJ, try running IntelliJ from the terminal:, when dealing with scalajs, npm is required, sometimes IntelliJ fails to get the proper `PATH`:
 - `./bin/idea.sh` from the IntelliJ directory, for Linux.
