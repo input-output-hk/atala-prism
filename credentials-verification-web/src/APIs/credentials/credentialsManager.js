@@ -93,6 +93,11 @@ async function createBatchOfCredentials(credentialsData) {
 
 function getCredentialBinary(credential) {
   const { encodedsignedcredential } = credential;
+  if (!encodedsignedcredential) {
+    Logger.error('Could not get encoded credential', credential);
+    throw new Error('No encoded credential');
+  }
+
   const atalaMessage = new AtalaMessage();
   const plainTextCredential = new PlainTextCredential();
 

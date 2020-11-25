@@ -2,7 +2,14 @@ import { CREDENTIAL_STATUSES } from '../../helpers/constants';
 import { contactMapper } from './contactHelpers';
 
 export function credentialMapper(credential, credentialTypes) {
-  const { credentialid, credentialdata, contactid, contactdata, connectionstatus } = credential;
+  const {
+    credentialid,
+    credentialdata,
+    contactid,
+    contactdata,
+    connectionstatus,
+    encodedsignedcredential
+  } = credential;
 
   const parsedCredentialJson = JSON.parse(credentialdata);
 
@@ -10,6 +17,7 @@ export function credentialMapper(credential, credentialTypes) {
     ...parsedCredentialJson,
     credentialid,
     credentialdata,
+    encodedsignedcredential,
     credentialType: getCredentialTypeObject(parsedCredentialJson, credentialTypes),
     status: getCredentialStatus(credential),
     contactData: contactMapper({

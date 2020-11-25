@@ -140,11 +140,15 @@ const CredentialContainer = ({ api }) => {
   const signCredentials = credentials => api.wallet.signCredentials(credentials);
 
   const sendCredentials = credentials => {
-    const sendCredentialsRequests = credentials.map(async ({ contactData, ...cred }) => {
-      const { connectionid } = await api.contactsManager.getContact(contactData.contactid);
-      const credentialBinary = await api.credentialsManager.getCredentialBinary(cred);
-      return api.connector.sendCredential(credentialBinary, connectionid);
-    });
+    const sendCredentialsRequests = credentials.map(({ contactData, ...cred }) =>
+      api.contactsManager
+        .getContact(contactData.contactid)
+        .then(({ connectionid }) =>
+          api.credentialsManager
+            .getCredentialBinary(cred)
+            .then(credentialBinary => api.connector.sendCredential(credentialBinary, connectionid))
+        )
+    );
 
     return Promise.all(sendCredentialsRequests);
   };
