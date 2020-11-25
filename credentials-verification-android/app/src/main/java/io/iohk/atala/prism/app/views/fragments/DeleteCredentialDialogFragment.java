@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.app.views.fragments;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -21,6 +22,8 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.common.SupportErrorDialogFragment;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import butterknife.BindView;
@@ -40,7 +43,6 @@ import static io.iohk.atala.prism.app.utils.IntentDataConstants.CREDENTIAL_TYPE_
 public class DeleteCredentialDialogFragment extends CvpDialogFragment<CredentialsViewModel> {
     private static final float DELETE_ALL_CONNECTIONS_DIALOG_WIDTH = 350;
     private static final float DELETE_ALL_CONNECTIONS_DIALOG_HEIGHT = 300;
-    private DeleteCredentialDialogFragment.OnDeleteCredential onInputListener;
     private String credentialId;
 
     @BindView(R.id.credential_text)
@@ -55,6 +57,9 @@ public class DeleteCredentialDialogFragment extends CvpDialogFragment<Credential
     @OnClick(R.id.cancel_button)
     void cancel() {
         this.dismiss();
+        Optional.ofNullable(getTargetFragment()).ifPresent(fragment ->
+                fragment.onActivityResult(getTargetRequestCode(), Activity.RESULT_CANCELED, null)
+        );
     }
 
     @OnClick(R.id.delete_button)
@@ -99,8 +104,10 @@ public class DeleteCredentialDialogFragment extends CvpDialogFragment<Credential
     private void initObservers() {
         getViewModel().getDeleteCredentialLiveData().observe(getViewLifecycleOwner(), credentialDeleted -> {
             if (credentialDeleted) {
-                onInputListener.credentialDeleted();
                 this.dismiss();
+                Optional.ofNullable(getTargetFragment()).ifPresent(targetFragment ->
+                        targetFragment.onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null)
+                );
             }
         });
 
@@ -114,16 +121,6 @@ public class DeleteCredentialDialogFragment extends CvpDialogFragment<Credential
     }
 
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        onInputListener = (DeleteCredentialDialogFragment.OnDeleteCredential) getTargetFragment();
-    }
-
-    public interface OnDeleteCredential {
-        void credentialDeleted();
-    }
-
-    @Override
     protected int getViewId() {
         return R.layout.component_delete_credential_dialog;
     }
@@ -132,5 +129,4 @@ public class DeleteCredentialDialogFragment extends CvpDialogFragment<Credential
     public CredentialsViewModel getViewModel() {
         return ViewModelProviders.of(this, factory).get(CredentialsViewModel.class);
     }
-
 }

@@ -133,8 +133,16 @@ abstract class ContactDao : ActivityHistoryDao() {
      *
      * @param connectionId [String] of the contact
      */
-    @Query("SELECT * FROM credentials WHERE connection_id = :connectionId")
+    @Query("SELECT * FROM credentials WHERE connection_id = :connectionId AND deleted = 0")
     abstract suspend fun getIssuedCredentials(connectionId: String): List<Credential>
+
+    /**
+     * Find all [Credential] issued by a [Contact] but which are already deleted.
+     *
+     * @param connectionId [String] of the contact
+     */
+    @Query("SELECT * FROM credentials WHERE connection_id = :connectionId AND deleted = 1")
+    abstract suspend fun getDeletedIssuedCredentials(connectionId: String): List<Credential>
 
     /**
      * Insert a [Contact] and their issued [Credential]´s with the necessary [ActivityHistory] inside a transaction.

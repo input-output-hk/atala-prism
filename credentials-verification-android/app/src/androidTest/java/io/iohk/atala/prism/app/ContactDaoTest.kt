@@ -272,10 +272,8 @@ class ContactDaoTest {
         val deletedContact = contactDao.getContactByConnectionId("connection1")
         MatcherAssert.assertThat("the contact should be as deleted", deletedContact!!.deleted == true)
         val credentials = contactDao.getIssuedCredentials("connection1")
-        val deletedCredentials = credentials.map {
-            it.deleted
-        }
-        MatcherAssert.assertThat("The contact should have all their issued credentials as deleted", deletedCredentials.size == 2 && credentials.size == 2)
+        val deletedCredentials = contactDao.getDeletedIssuedCredentials("connection1")
+        MatcherAssert.assertThat("The contact should have all their issued credentials as deleted", deletedCredentials.size == 2 && credentials.size == 0)
         val deletedContactActivitiesHistories = contactDao.getActivityHistoriesByConnection("connection1").filter {
             it.activityHistory.type == ActivityHistory.Type.ContactDeleted
         }

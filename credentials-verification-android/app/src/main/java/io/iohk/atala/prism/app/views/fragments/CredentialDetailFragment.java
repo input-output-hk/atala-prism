@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.app.views.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -31,12 +33,12 @@ import lombok.Setter;
 // TODO This needs its own ViewModel
 @Setter
 @NoArgsConstructor
-public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> implements DeleteCredentialDialogFragment.OnDeleteCredential {
+public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> {
 
     @Inject
     ViewModelProvider.Factory factory;
 
-    private static final int DELETE_ALL_CONNECTIONS_REQUEST_CODE = 22;
+    private static final int REQUEST_DELETE_CREDENTIAL = 22;
 
     private Credential credential;
 
@@ -80,6 +82,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
             case R.id.action_delete_credential:
                 navigator.showDialogFragment(
                         requireActivity().getSupportFragmentManager(), getDeleteCredentialFragment(), null);
+                return true;
             case R.id.action_credential_history:
                 CredentialHistoryFragment fragment = CredentialHistoryFragment.Companion.build(credential.credentialId);
                 navigator.showFragmentOnTop(
@@ -100,7 +103,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     private DeleteCredentialDialogFragment getDeleteCredentialFragment() {
         DeleteCredentialDialogFragment fragment = new DeleteCredentialDialogFragment();
-        fragment.setTargetFragment(this, DELETE_ALL_CONNECTIONS_REQUEST_CODE);
+        fragment.setTargetFragment(this, REQUEST_DELETE_CREDENTIAL);
         Bundle args = new Bundle();
         args.putString(IntentDataConstants.CREDENTIAL_TYPE_KEY, credential.credentialType);
         args.putString(IntentDataConstants.CREDENTIAL_ID_KEY, credential.credentialId);
@@ -138,13 +141,14 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
         return viewModel;
     }
 
-    @Override
-    public void credentialDeleted() {
-        getFragmentManager().popBackStack();
-    }
-
     public void setCredential(Credential credential) {
         this.credential = credential;
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == REQUEST_DELETE_CREDENTIAL && resultCode == Activity.RESULT_OK) {
+            requireActivity().onBackPressed();
+        }
+    }
 }
