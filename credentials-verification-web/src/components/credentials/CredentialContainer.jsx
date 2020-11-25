@@ -141,13 +141,10 @@ const CredentialContainer = ({ api }) => {
 
   const sendCredentials = credentials => {
     const sendCredentialsRequests = credentials.map(({ contactData, ...cred }) =>
-      api.contactsManager
-        .getContact(contactData.contactid)
-        .then(({ connectionid }) =>
-          api.credentialsManager
-            .getCredentialBinary(cred)
-            .then(credentialBinary => api.connector.sendCredential(credentialBinary, connectionid))
-        )
+      api.contactsManager.getContact(contactData.contactid).then(({ connectionid }) => {
+        const credentialBinary = api.credentialsManager.getCredentialBinary(cred);
+        return api.connector.sendCredential(credentialBinary, connectionid);
+      })
     );
 
     return Promise.all(sendCredentialsRequests);
