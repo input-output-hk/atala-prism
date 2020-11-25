@@ -502,19 +502,6 @@ jobs:
 
       - scalafmt-test
 
-      - run:
-          name: Compile SDK and its tests
-          command: |
-            cd prism-sdk
-            sbt compile test:compile
-
-      - save_cache:
-          paths:
-            - ~/.cache/coursier
-            - ~/.ivy2
-            - ~/.m2
-          key: prism-sdk-cache-{{ checksum "prism-sdk/build.sbt" }}-{{ checksum "prism-sdk/project/SdkBuild.scala" }}-{{ checksum "prism-sdk/project/Dependencies.scala" }}-{{ checksum "prism-sdk/project/plugins.sbt" }}-{{ checksum "prism-sdk/project/protoc.sbt" }}
-
       # generating docs takes a short time, if this fails, it makes no sense to run the tests
       - run:
           name: Generate documentation
@@ -529,6 +516,19 @@ jobs:
       # This is done after the docs have compiled so that *.md files aren't ignored
       - halt-step-if-not-changed:
           directories: "prism-sdk"
+
+      - run:
+          name: Compile SDK and its tests
+          command: |
+            cd prism-sdk
+            sbt compile test:compile
+
+      - save_cache:
+          paths:
+            - ~/.cache/coursier
+            - ~/.ivy2
+            - ~/.m2
+          key: prism-sdk-cache-{{ checksum "prism-sdk/build.sbt" }}-{{ checksum "prism-sdk/project/SdkBuild.scala" }}-{{ checksum "prism-sdk/project/Dependencies.scala" }}-{{ checksum "prism-sdk/project/plugins.sbt" }}-{{ checksum "prism-sdk/project/protoc.sbt" }}
 
       - run:
           name: Run JS unit tests
