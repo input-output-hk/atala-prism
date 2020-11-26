@@ -32,7 +32,6 @@ import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 class ConnectorService(
@@ -44,9 +43,7 @@ class ConnectorService(
     paymentsRepository: PaymentsRepository,
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     nodeService: NodeServiceGrpc.NodeService,
-    participantsRepository: ParticipantsRepository,
-    // TODO: remove this flag when mobile clients implement signatures
-    requireSignatureOnConnectionCreation: Boolean = false
+    participantsRepository: ParticipantsRepository
 )(implicit
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
@@ -185,31 +182,10 @@ class ConnectorService(
             .map { encodedKey =>
               EC.toPublicKey(encodedKey.publicKey.toByteArray)
             }
-            .getOrElse {
-              // The iOS app has a key hardcoded which is not a valid ECKey
-              // This hack allow us to do the demo because it generates a valid key
-              // ignoring whatever cames from the app.
-              // TODO: Remove me after the demo
-              try {
-                request.holderPublicKey
-                  .map { protoKey =>
-                    EC.toPublicKey(
-                      x = BigInt(protoKey.x),
-                      y = BigInt(protoKey.y)
-                    )
-                  }
-                  .getOrElse(throw new RuntimeException("Missing public key"))
-              } catch {
-                case NonFatal(_) =>
-                  EC.generateKeyPair().publicKey
-              }
-            }
+            .getOrElse(throw new RuntimeException("The encoded public key is required to accept a connection"))
 
           val result = for {
-            _ <-
-              if (requireSignatureOnConnectionCreation) {
-                verifyRequestSignature(publicKey)
-              } else Future.successful(Right(())).toFutureEither
+            _ <- verifyRequestSignature(publicKey)
             connectionCreationResult <-
               connections
                 .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)

@@ -139,8 +139,11 @@ message GetConnectionTokenInfoResponse {
 
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
+  // this used to allow the holder public key as (x, y), it was replaced by the holderEncodedPublicKey field
+  reserved 2;
+  reserved "holderPublicKey";
+
   string token = 1; // token to instantiate connection
-  io.iohk.atala.prism.protos.ConnectorPublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
   // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
   io.iohk.atala.prism.protos.EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key

@@ -92,10 +92,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val issuerId = createIssuer("Issuer")
       val token = createToken(issuerId)
       val keys = EC.generateKeyPair()
-      val ecPoint = keys.publicKey.getCurvePoint
-      val publicKeyProto =
-        connector_models.ConnectorPublicKey(ecPoint.x.toString(), ecPoint.y.toString())
-      val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+      val encodedPubKey = connector_models.EncodedPublicKey(ByteString.copyFrom(keys.publicKey.getEncoded))
+      val request = connector_api
+        .AddConnectionFromTokenRequest(token.token)
+        .withHolderEncodedPublicKey(encodedPubKey)
       usingApiAs(Vector.empty, keys, request) { blockingStub =>
         val response = blockingStub.addConnectionFromToken(request)
         val holderId = response.userId
@@ -133,11 +133,11 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val issuerId = createIssuer("Issuer")
       val token = createToken(issuerId)
       val keys = EC.generateKeyPair()
-      val ecPoint = keys.publicKey.getCurvePoint
-      val publicKeyProto =
-        connector_models.ConnectorPublicKey(ecPoint.x.toString(), ecPoint.y.toString())
+      val encodedPubKey = connector_models.EncodedPublicKey(ByteString.copyFrom(keys.publicKey.getEncoded))
       usingApiAs.unlogged { blockingStub =>
-        val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+        val request = connector_api
+          .AddConnectionFromTokenRequest(token.token)
+          .withHolderEncodedPublicKey(encodedPubKey)
         val ex = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request)
         }
@@ -148,11 +148,11 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     "return UNKNOWN if the token does not exist" in {
       val token = TokenString.random()
       val keys = EC.generateKeyPair()
-      val ecPoint = keys.publicKey.getCurvePoint
-      val publicKeyProto =
-        connector_models.ConnectorPublicKey(ecPoint.x.toString(), ecPoint.y.toString())
+      val encodedPubKey = connector_models.EncodedPublicKey(ByteString.copyFrom(keys.publicKey.getEncoded))
 
-      val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+      val request = connector_api
+        .AddConnectionFromTokenRequest(token.token)
+        .withHolderEncodedPublicKey(encodedPubKey)
       usingApiAs(Vector.empty, keys, request) { blockingStub =>
         val status = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request)

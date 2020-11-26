@@ -86,8 +86,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
     paymentsRepository,
     authenticator,
     nodeMock,
-    participantsRepository,
-    requireSignatureOnConnectionCreation = true
+    participantsRepository
   )(
     executionContext
   )

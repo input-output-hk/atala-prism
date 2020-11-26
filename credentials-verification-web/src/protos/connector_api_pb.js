@@ -1842,7 +1842,6 @@ proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.prototype.toObjec
 proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     token: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    holderpublickey: (f = msg.getHolderpublickey()) && connector_models_pb.ConnectorPublicKey.toObject(includeInstance, f),
     paymentnonce: jspb.Message.getFieldWithDefault(msg, 3, ""),
     holderencodedpublickey: (f = msg.getHolderencodedpublickey()) && connector_models_pb.EncodedPublicKey.toObject(includeInstance, f)
   };
@@ -1884,11 +1883,6 @@ proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.deserializeBinary
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setToken(value);
-      break;
-    case 2:
-      var value = new connector_models_pb.ConnectorPublicKey;
-      reader.readMessage(value,connector_models_pb.ConnectorPublicKey.deserializeBinaryFromReader);
-      msg.setHolderpublickey(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
@@ -1935,14 +1929,6 @@ proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.serializeBinaryTo
       f
     );
   }
-  f = message.getHolderpublickey();
-  if (f != null) {
-    writer.writeMessage(
-      2,
-      f,
-      connector_models_pb.ConnectorPublicKey.serializeBinaryToWriter
-    );
-  }
   f = message.getPaymentnonce();
   if (f.length > 0) {
     writer.writeString(
@@ -1976,43 +1962,6 @@ proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.prototype.getToke
  */
 proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.prototype.setToken = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional ConnectorPublicKey holderPublicKey = 2;
- * @return {?proto.io.iohk.atala.prism.protos.ConnectorPublicKey}
- */
-proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.prototype.getHolderpublickey = function() {
-  return /** @type{?proto.io.iohk.atala.prism.protos.ConnectorPublicKey} */ (
-    jspb.Message.getWrapperField(this, connector_models_pb.ConnectorPublicKey, 2));
-};
-
-
-/**
- * @param {?proto.io.iohk.atala.prism.protos.ConnectorPublicKey|undefined} value
- * @return {!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest} returns this
-*/
-proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.prototype.setHolderpublickey = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest} returns this
- */
-proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.prototype.clearHolderpublickey = function() {
-  return this.setHolderpublickey(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.io.iohk.atala.prism.protos.AddConnectionFromTokenRequest.prototype.hasHolderpublickey = function() {
-  return jspb.Message.getField(this, 2) != null;
 };
 
 
