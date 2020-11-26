@@ -92,7 +92,7 @@ object ConnectorIntegration {
         connectionId: ConnectionId
     ): Future[Seq[Message]] = {
       messagesService
-        .getMessages(recipientId, connectionId)
+        .getConnectionMessages(recipientId, connectionId)
         .toFuture(toRuntimeException)
     }
 

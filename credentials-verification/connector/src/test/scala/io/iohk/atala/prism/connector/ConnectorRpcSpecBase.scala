@@ -2,8 +2,9 @@ package io.iohk.atala.prism.connector
 
 import java.time.Instant
 
+import cats.effect.{ContextShift, IO, Timer}
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
@@ -13,19 +14,26 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   MessagesDAO,
   ParticipantsDAO
 }
-import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.connector.services.{
+  ConnectionsService,
+  MessageNotificationService,
+  MessagesService,
+  RegistrationService
+}
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.connector_api
-import monix.execution.schedulers.TestScheduler
+import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationLong
 
 class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
-  implicit val executionContext = scala.concurrent.ExecutionContext.global
+  implicit val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
+  implicit val contextShift: ContextShift[IO] = IO.contextShift(executionContext)
+  implicit val timer: Timer[IO] = IO.timer(executionContext)
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
@@ -37,8 +45,6 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
           executionContext
         )
     )
-
-  protected val scheduler: TestScheduler = TestScheduler()
 
   val usingApiAs: ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub] =
     usingApiAsConstructor(
@@ -70,20 +76,31 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val registrationService = new RegistrationService(participantsRepository, nodeMock)(executionContext)
+  lazy val messageNotificationService = MessageNotificationService(database)(contextShift, timer)
   lazy val connectorService = new ConnectorService(
     connectionsService,
     messagesService,
     registrationService,
+    messageNotificationService,
     braintreePayments,
     paymentsRepository,
     authenticator,
     nodeMock,
     participantsRepository,
-    scheduler,
     requireSignatureOnConnectionCreation = true
   )(
     executionContext
   )
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    messageNotificationService.start()
+  }
+
+  override def afterAll(): Unit = {
+    messageNotificationService.stop()
+    super.afterAll()
+  }
 
   protected def createParticipant(
       name: String,
@@ -180,7 +197,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
     }).flatten
   }
 
-  def createMessage(sender: ParticipantId, connectionId: ConnectionId, content: Array[Byte]): MessageId = {
+  private def createMessage(sender: ParticipantId, connectionId: ConnectionId, content: Array[Byte]): MessageId = {
     val messageId = MessageId.random()
     val query = for {
       recipientOption <- ConnectionsDAO.getOtherSide(connectionId, sender)

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.connector
 
 import java.util.UUID
 
+import cats.effect._
 import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.grpc.stub.StreamObserver
@@ -14,7 +15,12 @@ import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment => Con
 import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, PaymentsRepository}
-import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.atala.prism.connector.services.{
+  ConnectionsService,
+  MessageNotificationService,
+  MessagesService,
+  RegistrationService
+}
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
@@ -23,10 +29,8 @@ import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
-import monix.execution.Scheduler
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.concurrent.duration.{Duration, FiniteDuration, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -35,13 +39,12 @@ class ConnectorService(
     connections: ConnectionsService,
     messages: MessagesService,
     registrationService: RegistrationService,
+    messageNotificationService: MessageNotificationService,
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     nodeService: NodeServiceGrpc.NodeService,
     participantsRepository: ParticipantsRepository,
-    scheduler: Scheduler,
-    messageStreamPeriod: FiniteDuration = 1.second,
     // TODO: remove this flag when mobile clients implement signatures
     requireSignatureOnConnectionCreation: Boolean = false
 )(implicit
@@ -50,6 +53,8 @@ class ConnectorService(
     with ConnectorErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  private implicit val contextSwitch: ContextShift[IO] = IO.contextShift(executionContext)
 
   /** Retrieve a connection for a given connection token.
     *
@@ -353,29 +358,19 @@ class ConnectorService(
       request: GetMessageStreamRequest,
       responseObserver: StreamObserver[GetMessageStreamResponse]
   ): Unit = {
-    val PAGE_SIZE = 100
-
-    def streamMessages(
-        participantId: ParticipantId,
-        lastSeenMessageId: Option[MessageId]
-    ): Unit = {
-      messages
-        .getMessagesPaginated(recipientId = participantId, limit = PAGE_SIZE, lastSeenMessageId = lastSeenMessageId)
-        .toFuture(e => new RuntimeException("Could not query messages", e.toStatus.asException()))
+    def streamMessages(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): Unit = {
+      val existingMessageStream =
+        messages.getMessageStream(recipientId = recipientId, lastSeenMessageId = lastSeenMessageId)
+      val newMessageStream = messageNotificationService.stream(recipientId)
+      (existingMessageStream ++ newMessageStream)
+        .map(message => responseObserver.onNext(connector_api.GetMessageStreamResponse().withMessage(message.toProto)))
+        .compile
+        .drain
+        .unsafeToFuture()
         .onComplete {
-          case Success(messages) =>
-            // Stream all messages one by one
-            messages.foreach { message =>
-              responseObserver.onNext(connector_api.GetMessageStreamResponse(message = Some(message.toProto)))
-            }
-            val lastMessageId = messages.lastOption.map(_.id).orElse(lastSeenMessageId)
-            // Try to stream immediately again if more messages may be pending
-            val streamDuration = if (messages.size == PAGE_SIZE) Duration.Zero else messageStreamPeriod
-            scheduler.scheduleOnce(streamDuration) {
-              streamMessages(participantId, lastMessageId)
-            }
+          case Success(_) => responseObserver.onCompleted()
           case Failure(exception) =>
-            logger.warn(s"Could not query messages for participant $participantId", exception)
+            logger.warn(s"Could not stream messages for recipient $recipientId", exception)
             responseObserver.onError(exception)
         }
     }
@@ -428,7 +423,7 @@ class ConnectorService(
           )
 
         validatedConnectionId.toFutureEither
-          .flatMap(connectionId => messages.getMessages(userId, connectionId))
+          .flatMap(connectionId => messages.getConnectionMessages(userId, connectionId))
           .wrapExceptions
           .successMap { msgs =>
             connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto))

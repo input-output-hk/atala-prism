@@ -2,14 +2,15 @@ package io.iohk.atala.prism.connector.repositories
 
 import cats.effect.IO
 import doobie.implicits._
+import fs2.Stream
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, InvalidArgumentError}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
 import io.iohk.atala.prism.errors.LoggingContext
+import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -65,12 +66,19 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
     }
   }
 
-  def getMessages(
+  def getMessageStream(
+      recipientId: ParticipantId,
+      lastSeenMessageId: Option[MessageId]
+  ): Stream[IO, Message] = {
+    MessagesDAO.getMessageStream(recipientId, lastSeenMessageId).transact(xa)
+  }
+
+  def getConnectionMessages(
       recipientId: ParticipantId,
       connectionId: ConnectionId
   ): FutureEither[ConnectorError, Seq[Message]] = {
     MessagesDAO
-      .getMessagesPaginated(recipientId, connectionId)
+      .getConnectionMessages(recipientId, connectionId)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

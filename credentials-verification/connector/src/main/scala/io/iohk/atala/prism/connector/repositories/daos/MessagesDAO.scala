@@ -2,8 +2,9 @@ package io.iohk.atala.prism.connector.repositories.daos
 
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.models.ParticipantId
+import fs2.Stream
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
+import io.iohk.atala.prism.models.ParticipantId
 
 object MessagesDAO {
   def insert(
@@ -52,7 +53,7 @@ object MessagesDAO {
     query.query[Message].to[Seq]
   }
 
-  def getMessagesPaginated(
+  def getConnectionMessages(
       recipientId: ParticipantId,
       connectionId: ConnectionId
   ): doobie.ConnectionIO[Seq[Message]] = {
@@ -63,5 +64,36 @@ object MessagesDAO {
          |      connection = $connectionId
          |ORDER BY received_at ASC, id
        """.stripMargin.query[Message].to[Seq]
+  }
+
+  def getMessageStream(
+      recipientId: ParticipantId,
+      lastSeenMessageId: Option[MessageId]
+  ): Stream[doobie.ConnectionIO, Message] = {
+    val query = lastSeenMessageId match {
+      case Some(value) =>
+        sql"""
+             |WITH CTE AS (
+             |  SELECT received_at AS last_seen_time
+             |  FROM messages
+             |  WHERE id = $value
+             |)
+             |SELECT id, connection, received_at, content
+             |FROM CTE CROSS JOIN messages
+             |WHERE recipient = $recipientId AND
+             |      (received_at > last_seen_time OR (received_at = last_seen_time AND id > $value))
+             |ORDER BY received_at ASC, id
+       """.stripMargin
+
+      case None =>
+        sql"""
+             |SELECT id, connection, received_at, content
+             |FROM messages
+             |WHERE recipient = $recipientId
+             |ORDER BY received_at ASC, id
+       """.stripMargin
+    }
+
+    query.query[Message].stream
   }
 }

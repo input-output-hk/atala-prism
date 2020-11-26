@@ -1,12 +1,18 @@
 package io.iohk.atala.prism.connector
 
+import cats.effect.IO
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
-import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.atala.prism.connector.services.{
+  ConnectionsService,
+  MessageNotificationService,
+  MessagesService,
+  RegistrationService
+}
 import io.iohk.atala.prism.console.repositories.{
   ContactsRepository,
   CredentialsRepository,
@@ -37,11 +43,11 @@ import io.iohk.atala.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import monix.execution.Scheduler.{global => scheduler}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import scala.util.Try
 
 object ConnectorApp {
   def main(args: Array[String]): Unit = {
@@ -57,6 +63,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private[this] var server: Server = null
+  private[this] var messageNotificationService: MessageNotificationService = null
 
   private def start(): Unit = {
     logger.info("Loading config")
@@ -94,6 +101,12 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       GrpcAuthenticationHeaderParser
     )
 
+    // Background services
+    val contextShift = IO.contextShift(executionContext)
+    val timer = IO.timer(executionContext)
+    messageNotificationService = MessageNotificationService(xa)(contextShift, timer)
+    messageNotificationService.start()
+
     // connector services
     val connectionsService =
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, node)(executionContext)
@@ -103,12 +116,12 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       connectionsService,
       messagesService,
       registrationService,
+      messageNotificationService,
       braintreePayments,
       paymentsRepository,
       authenticator,
       node,
-      participantsRepository,
-      scheduler
+      participantsRepository
     )(
       executionContext
     )
@@ -178,6 +191,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
   }
 
   private def stop(): Unit = {
+    if (messageNotificationService != null) {
+      Try(messageNotificationService.stop())
+    }
     if (server != null) {
       server.shutdown()
     }

@@ -13,15 +13,14 @@ import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.MockitoSugar.{mock, verify}
+import org.mockito.MockitoSugar._
 import org.mockito.captor.ArgCaptor
 import org.mockito.verification.VerificationWithTimeout
 
-import scala.concurrent.duration._
-
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
-  private def eventually: VerificationWithTimeout = Mockito.timeout(1000)
+  private def eventually: VerificationWithTimeout = Mockito.timeout(5000)
 
   "SendMessage" should {
     "insert message into database" in {
@@ -198,10 +197,61 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
         service.getMessageStream(getMessageStreamRequest.request, streamObserver)
         val messageIds = generateMessageIds(participantId)
-        scheduler.tick(1.second)
 
         verify(streamObserver, eventually.atLeast(messageIds.size)).onNext(responseCaptor.capture)
         asMessageIds(responseCaptor.values) mustBe messageIds
+      }
+    }
+
+    "close the previous observer for the same recipient when a new observer connects" in {
+      val participantId = createParticipant()
+      // Connect first observer
+      val getMessageStreamRequest1 = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+      val streamObserver1 = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
+      usingAsyncApiAs(getMessageStreamRequest1) { service =>
+        service.getMessageStream(getMessageStreamRequest1.request, streamObserver1)
+      }
+      // Connect second observer
+      val getMessageStreamRequest2 = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+      val streamObserver2 = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
+      usingAsyncApiAs(getMessageStreamRequest2) { service =>
+        service.getMessageStream(getMessageStreamRequest2.request, streamObserver2)
+      }
+
+      // Insert new messages
+      val messageIds = generateMessageIds(participantId)
+
+      // Verify second observer received all messages and remains open
+      val responseCaptor2 = ArgCaptor[connector_api.GetMessageStreamResponse]
+      verify(streamObserver2, eventually.atLeast(messageIds.size)).onNext(responseCaptor2.capture)
+      asMessageIds(responseCaptor2.values) mustBe messageIds
+      verify(streamObserver2, never).onCompleted()
+      // Verify first observer received no messages and was closed (this is checked last to ensure time has past)
+      verify(streamObserver1, never).onNext(any)
+      verify(streamObserver1).onCompleted()
+    }
+
+    "stop sending messages after an observer fails" in {
+      val participantId = createParticipant()
+      val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+
+      usingAsyncApiAs(getMessageStreamRequest) { service =>
+        val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
+        val responseCaptor = ArgCaptor[connector_api.GetMessageStreamResponse]
+
+        service.getMessageStream(getMessageStreamRequest.request, streamObserver)
+
+        // Generate first batch of messages
+        val messageIds1 = generateMessageIds(participantId)
+        // Verify first message batch arrives
+        verify(streamObserver, eventually.atLeast(messageIds1.size)).onNext(responseCaptor.capture)
+        asMessageIds(responseCaptor.values) mustBe messageIds1
+        // Simulate the client closing the stream
+        when(streamObserver.onNext(any)).thenThrow(new IllegalStateException("Stream is closed"))
+        // Generate second batch of messages
+        generateMessageIds(participantId)
+        // Verify second batch does not arrive (except the first one, as it is when the exception is thrown)
+        verify(streamObserver, eventually.times(messageIds1.size + 1)).onNext(any)
       }
     }
   }
