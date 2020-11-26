@@ -124,6 +124,7 @@ env_name_short                = "$env_name_short"
 connector_docker_image      = "$connector_docker_image"
 node_docker_image           = "$node_docker_image"
 landing_docker_image        = "$landing_docker_image"
+prism_sdk_website_docs_docker_image        = "$prism_sdk_website_docs_docker_image"
 prism_console_docker_image  = "$prism_console_docker_image"
 prism_lb_envoy_docker_image = "$prism_lb_envoy_docker_image"
 
@@ -142,6 +143,7 @@ set_vars () {
   connector_docker_image=$(get_docker_image "connector" "$env_name_short" "develop")
   node_docker_image=$(get_docker_image "node" "$env_name_short" "develop")
   landing_docker_image=$(get_docker_image "landing" "$env_name_short" "develop")
+  prism_sdk_website_docs_docker_image=$(get_docker_image "prism-docs-website" "$env_name_short" "develop")
   prism_console_docker_image=$(get_docker_image "web" "$env_name_short" "develop")
   prism_lb_envoy_docker_image=$(get_docker_image "prism-lb-envoy" "$env_name_short" "develop")
 
@@ -153,6 +155,7 @@ set_vars () {
   echo "Using connector image: $connector_docker_image"
   echo "Using node image: $node_docker_image"
   echo "Using landing image: $landing_docker_image"
+  echo "Using prisk website docs image: $prism_sdk_website_docs_docker_image"
   echo "Using prism console image: $prism_console_docker_image"
   echo "Using envoy image: $prism_lb_envoy_docker_image"
 }

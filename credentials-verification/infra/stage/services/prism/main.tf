@@ -231,6 +231,8 @@ module "prism_service" {
   node_port                  = var.node_port
   landing_docker_image       = var.landing_docker_image
   landing_port               = var.landing_port
+  prism_sdk_website_docs_docker_image = var.prism_sdk_website_docs_docker_image
+  prism_sdk_website_docs_port = var.prism_sdk_website_docs_port
   prism_console_docker_image = var.prism_console_docker_image
   prism_console_port         = var.prism_console_port
   envoy_docker_image         = var.prism_lb_envoy_docker_image
@@ -425,6 +427,16 @@ resource aws_route53_record console_dns_entry {
   count   = var.geud_enabled ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = "console-${var.env_name_short}.${var.atala_prism_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [module.prism_service.envoy_lb_dns_name]
+}
+
+# public DNS record for the PRISM docs
+resource aws_route53_record docs_dns_entry {
+  count   = 1
+  zone_id = var.atala_prism_zoneid
+  name    = "docs-${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
   ttl     = "300"
   records = [module.prism_service.envoy_lb_dns_name]

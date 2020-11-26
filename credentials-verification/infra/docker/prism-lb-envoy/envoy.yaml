@@ -28,6 +28,11 @@ static_resources:
                       routes:
                         - match: { prefix: "/" }
                           route: { cluster: prism_console_service }
+                    - name: prims_sdk_website_docs
+                      domains: ["$ATALA_PRISM_SDK_WEBSITE_DOCS_DOMAIN"]
+                      routes:
+                        - match: { prefix: "/" }
+                          route: { cluster: prism_sdk_website_docs_service }
                 http_filters:
                   - name: envoy.router
 
@@ -178,6 +183,24 @@ static_resources:
                     socket_address:
                       address: "$PRISM_CONSOLE_ADDRESS"
                       port_value: "$PRISM_CONSOLE_PORT"
+      outlier_detection:
+        # eject instance that has failure rate > 50% for 2 minutes, assuming there are at least 2 instances
+        failure_percentage_threshold: 50
+        failure_percentage_minimum_hosts: 2
+        base_ejection_time: "120s"
+    - name: prism_sdk_website_docs_service
+      connect_timeout: 5s
+      type: strict_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: prism_sdk_website_docs_service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: "$PRISM_SDK_WEBSITE_DOCS_ADDRESS"
+                      port_value: "$PRISM_SDK_WEBSITE_DOCS_PORT"
       outlier_detection:
         # eject instance that has failure rate > 50% for 2 minutes, assuming there are at least 2 instances
         failure_percentage_threshold: 50

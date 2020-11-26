@@ -114,6 +114,28 @@ module "console" {
   log_group_name = var.log_group_name
 }
 
+module "prism_sdk_website_docs" {
+  source  = "../../components/prism-sdk-website-docs"
+
+  prism_sdk_website_docs_docker_image = var.prism_sdk_website_docs_docker_image
+  prism_sdk_website_docs_port         = var.prism_sdk_website_docs_port
+
+  parent_name               = "prism-${var.env_name_short}"
+  aws_region                = var.aws_region
+  ecs_cluster_id            = var.ecs_cluster_id
+  ecs_cluster_iam_role_name = var.ecs_cluster_iam_role_name
+  execution_role_arn        = var.execution_role_arn
+
+  vpc_id            = var.vpc_id
+  security_group_id = var.security_group_id
+  subnets           = var.component_subnets
+
+  private_dns_namespace_id   = var.private_dns_namespace_id
+  private_dns_namespace_name = var.private_dns_namespace_name
+
+  log_group_name = var.log_group_name
+}
+
 module "envoy" {
   source = "../../components/envoy"
 
@@ -127,6 +149,8 @@ module "envoy" {
     { name = "LANDING_PAGE_PORT", value = "80" },
     { name = "PRISM_CONSOLE_ADDRESS", value = var.geud_enabled ? module.console.console_host : "0.0.0.0" },
     { name = "PRISM_CONSOLE_PORT", value = "80" },
+    { name = "PRISM_SDK_WEBSITE_DOCS_ADDRESS", value = module.prism_sdk_website_docs.prism_sdk_website_docs_host },
+    { name = "PRISM_SDK_WEBSITE_DOCS_PORT", value = "80" },
     { name = "CONNECTOR_ADDRESS", value = module.connector.connector_host },
     { name = "CONNECTOR_PORT", value = var.connector_port },
     { name = "NODE_ADDRESS", value = module.node.node_host },
@@ -134,6 +158,7 @@ module "envoy" {
     { name = "ATALA_PRISM_DOMAIN", value = var.atala_prism_domain },
     { name = "ATALA_PRISM_LANDING_DOMAIN", value = "${var.env_name_short}.${var.atala_prism_domain}" },
     { name = "ATALA_PRISM_CONSOLE_DOMAIN", value = "console-${var.env_name_short}.${var.atala_prism_domain}" },
+    { name = "ATALA_PRISM_SDK_WEBSITE_DOCS_DOMAIN", value = "docs-${var.env_name_short}.${var.atala_prism_domain}" },
   ]
 
   parent_name               = "prism-${var.env_name_short}"

@@ -79,6 +79,16 @@ variable landing_port {
   default     = 80
 }
 
+variable prism_sdk_website_docs_docker_image {
+  description = "Docker image for the SDK docs website."
+}
+
+variable prism_sdk_website_docs_port {
+  description = "Port for the SDK docs website."
+  type        = number
+  default     = 80
+}
+
 variable prism_console_docker_image {
   description = "Docker image for the PRISM console web app."
 }
