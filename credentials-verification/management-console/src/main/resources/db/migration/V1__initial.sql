@@ -124,3 +124,15 @@ CREATE TABLE published_credentials(
     CONSTRAINT published_credentials_pk PRIMARY KEY (credential_id),
     CONSTRAINT published_credentials_credential_id_fk FOREIGN KEY (credential_id) references draft_credentials (credential_id)
 );
+
+CREATE TABLE received_credentials(
+    received_id UUID NOT NULL,
+    contact_id UUID NOT NULL,
+    received_at TIMESTAMPTZ NOT NULL,
+    encoded_signed_credential TEXT NOT NULL,
+    credential_external_id TEXT NOT NULL,
+    CONSTRAINT received_credentials_pk PRIMARY KEY (received_id),
+    CONSTRAINT received_credentials_credential_external_id_unique UNIQUE (credential_external_id)
+);
+
+CREATE INDEX received_credentials_contact_id_index ON received_credentials (contact_id);
