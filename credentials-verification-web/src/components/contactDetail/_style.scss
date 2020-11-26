@@ -43,10 +43,13 @@
       @include primary-text($h3, #303034);
       margin-bottom: 20px;
     }
+    .ContactInfo {
+      width: 45%;
+    }
     .CredentialInfo {
       padding: 2em 3em;
       margin: 2em 0;
-      width: 500px;
+      width: 55%;
       h3 {
         @include primary-text($h3, $black);
       }
@@ -72,6 +75,10 @@
             @include secondary-text($label, #303034);
           }
         }
+      }
+      .CredentialsContainer {
+        height: 50vh;
+        overflow-y: scroll;
       }
     }
   }

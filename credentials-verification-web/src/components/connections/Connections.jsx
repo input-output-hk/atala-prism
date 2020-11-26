@@ -84,7 +84,6 @@ Connections.propTypes = {
   handleContactsRequest: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
     contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
-    getCredentials: PropTypes.func.isRequired,
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
   loading: PropTypes.bool,

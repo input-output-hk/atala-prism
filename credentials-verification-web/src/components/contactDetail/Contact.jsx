@@ -1,33 +1,43 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { Tabs } from 'antd';
 import { withRedirector } from '../providers/withRedirector';
 import DetailBox from './molecules/detailBox/DetailBox';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import contactIcon from '../../images/holder-default-avatar.svg';
 import CredentialDetail from './molecules/detailBox/CredentialDetails/CredentialDetail';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
+import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
+import { credentialShape, credentialTypesShape } from '../../helpers/propShapes';
 
 import './_style.scss';
-import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
+
+const { TabPane } = Tabs;
+
+const ISSUED = 'issued';
+const RECEIVED = 'received';
 
 const Contact = ({
   contact: { contactName, externalid },
   groups,
   loading,
+  issuedCredentials,
+  receivedCredentials,
+  credentialTypes,
   redirector: { redirectToContacts }
 }) => {
   const { t } = useTranslation();
-
-  const credNumber = 3;
+  const tp = useTranslationWithPrefix('contacts.detail');
 
   return (
     <div className="contactDetail">
       <div className="ContentHeader headerSection">
-        <h1>{t('contacts.detail.detailSection.title')}</h1>
+        <h1>{tp('detailSection.title')}</h1>
       </div>
       <div className="detailSection">
-        <div>
-          <h3>{t('contacts.detail.detailSection.subtitle')}</h3>
+        <div className="ContactInfo">
+          <h3>{tp('detailSection.subtitle')}</h3>
           <div className="header">
             <div className="img">
               <img className="ContactIcon" src={contactIcon} alt="ContactIcon" />
@@ -41,27 +51,39 @@ const Contact = ({
               <span>{loading.contact ? <SimpleLoading size="xs" /> : externalid}</span>
             </div>
           </div>
-          <p className="subtitle">{t('contacts.detail.detailSection.credentialSubtitle')}</p>
+          <p className="subtitle">{tp('detailSection.credentialSubtitle')}</p>
           <DetailBox groups={groups} loading={loading.groups} />
         </div>
-        <div className="CredentialInfo">
-          <div className="CredentialTitleContainer">
-            <span>
-              {t('contacts.detail.credIssued')} ({credNumber})
-            </span>
-            <span>
-              {t('contacts.detail.credReceived')} ({credNumber})
-            </span>
-          </div>
-          <p>{t('contacts.detail.detailSection.groupsSubtitle')}</p>
-          <div className="credentialDetailsContainer">
-            <CredentialDetail />
-          </div>
-        </div>
+        <Tabs defaultActiveKey={ISSUED} className="CredentialInfo">
+          <TabPane key={ISSUED} tab={`${tp('credIssued')} (${issuedCredentials.length})`}>
+            <p>{tp('detailSection.groupsSubtitle')}</p>
+            <div className="CredentialsContainer">
+              {loading.issuedCredentials ? (
+                <SimpleLoading size="xs" />
+              ) : (
+                issuedCredentials.map(credential => (
+                  <CredentialDetail credential={credential} credentialTypes={credentialTypes} />
+                ))
+              )}
+            </div>
+          </TabPane>
+          <TabPane key={RECEIVED} tab={`${tp('credReceived')} (${receivedCredentials.length})`}>
+            <p>{tp('detailSection.groupsSubtitle')}</p>
+            <div className="CredentialsContainer">
+              {loading.receivedCredentials ? (
+                <SimpleLoading size="xs" />
+              ) : (
+                receivedCredentials.map(credential => (
+                  <CredentialDetail credential={credential} credentialTypes={credentialTypes} />
+                ))
+              )}
+            </div>
+          </TabPane>
+        </Tabs>
       </div>
       <div className="buttonSection">
         <CustomButton
-          buttonText="Back"
+          buttonText={t('actions.back')}
           buttonProps={{ className: 'theme-grey', onClick: redirectToContacts }}
         />
       </div>
@@ -72,9 +94,13 @@ const Contact = ({
 Contact.defaultProps = {
   contact: {},
   groups: [],
+  issuedCredentials: [],
+  receivedCredentials: [],
   loading: {
     contact: false,
-    groups: false
+    groups: false,
+    issuedCredentials: false,
+    receivedCredentials: false
   }
 };
 
@@ -99,8 +125,16 @@ Contact.propTypes = {
       numberofcontacts: PropTypes.number
     })
   ),
-  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired,
-  loading: PropTypes.shape({ contact: PropTypes.bool, groups: PropTypes.bool })
+  loading: PropTypes.shape({
+    contact: PropTypes.bool,
+    groups: PropTypes.bool,
+    issuedCredentials: PropTypes.bool,
+    receivedCredentials: PropTypes.bool
+  }),
+  issuedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
+  receivedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
+  credentialTypes: PropTypes.shape(credentialTypesShape).isRequired,
+  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };
 
 export default withRedirector(Contact);

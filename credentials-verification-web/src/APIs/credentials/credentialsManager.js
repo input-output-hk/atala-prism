@@ -1,6 +1,5 @@
 import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import { dayMonthYearBackendFormatter } from '../../helpers/formatters';
 import credentialTypes from './credentialTypes';
 import { FAILED, SUCCESS } from '../../helpers/constants';
 
@@ -10,6 +9,13 @@ const {
   GetContactCredentialsRequest
 } = require('../../protos/cmanager_api_pb');
 const { AtalaMessage, PlainTextCredential } = require('../../protos/credential_models_pb');
+
+function mapCredential(cred) {
+  const credential = cred.toObject();
+  const credentialData = JSON.parse(cred.getCredentialdata());
+  const subjectData = JSON.parse(cred.getContactdata());
+  return Object.assign(credential, { subjectData }, credentialData);
+}
 
 async function getCredentials(limit, lastSeenCredentialId = null) {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
@@ -21,12 +27,8 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   const metadata = await this.auth.getMetadata(getCredentialsRequest);
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
-  const credentialsList = result.getCredentialsList().map(cred => {
-    const credential = cred.toObject();
-    const credentialData = JSON.parse(cred.getCredentialdata());
-    const subjectData = JSON.parse(cred.getContactdata());
-    return Object.assign(credential, { subjectData }, credentialData);
-  });
+
+  const credentialsList = result.getCredentialsList().map(mapCredential);
 
   return credentialsList;
 }
@@ -119,7 +121,7 @@ async function getContactCredentials(contactId) {
   const metadata = await this.auth.getMetadata(req);
 
   const res = await this.client.getContactCredentials(req, metadata);
-  const credentialsList = res.getGenericcredentialsList();
+  const credentialsList = res.getGenericcredentialsList().map(mapCredential);
   Logger.info('Got credentials:', credentialsList);
 
   return credentialsList;

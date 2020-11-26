@@ -53,7 +53,10 @@ async function getMessagesForConnection(connectionId) {
   // TODO: we should use mapMessageToCredential and update HolderSentCredential to contain a Credential
   // instead of an AlphaCredential. getCredentialFromMessage is only used as mobile apps are currently
   // not wrapping the Credential in an AtalaMessage
-  return result.getMessagesList().map(msg => getCredentialFromMessage(msg));
+  const messages = result.getMessagesList().map(getCredentialFromMessage);
+  Logger.info('Got messages:', messages);
+
+  return messages;
 }
 
 const errorCredential = {

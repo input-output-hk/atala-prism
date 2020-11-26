@@ -95,10 +95,7 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Open on Mobile",
-      "subtitle": [
-        "Scan with your phone’s camera",
-        "using the Atala PRISM mobile app"
-      ]
+      "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
     },
     "detail": {
       "title": "Credentials List",
@@ -244,6 +241,8 @@
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential",
       "dateCreated": "Date Created",
+      "datePublished": "Date Published",
+      "notPublished": "Not Published",
       "validity": "Validity: ",
       "valid": "Valid",
       "source": "Source:",
@@ -730,8 +729,8 @@
       "gettingGroups": "Error getting groups"
     },
     "selectAll": "Select All",
-    "groupName":"Group Name",
-    "addContacts":"Add Contacts"
+    "groupName": "Group Name",
+    "addContacts": "Add Contacts"
   },
   "theme": {
     "title": {

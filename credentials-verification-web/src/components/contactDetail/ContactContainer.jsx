@@ -6,7 +6,6 @@ import { message } from 'antd';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import Contact from './Contact';
-import Loading from '../common/Atoms/Loading/Loading';
 
 const ContactContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -14,7 +13,14 @@ const ContactContainer = ({ api }) => {
 
   const [contact, setContact] = useState();
   const [groups, setGroups] = useState();
+  const [issuedCredentials, setIssuedCredentials] = useState();
+  const [receivedCredentials, setReceivedCredentials] = useState();
+
   const [loading, setLoading] = useState({});
+  const setLoadingByKey = (key, value) =>
+    setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
+
+  const credentialTypes = api.credentialsManager.getCredentialTypes();
 
   const getContact = () =>
     api.contactsManager
@@ -27,7 +33,7 @@ const ContactContainer = ({ api }) => {
         Logger.error(`[ContactContainer.getContact] Error while getting contact ${id}`, error);
         message.error(t('errors.errorGetting', { model: 'contact' }));
       })
-      .finally(() => setLoading({ ...loading, contact: false }));
+      .finally(() => setLoadingByKey('contact', false));
 
   const getGroups = () =>
     api.groupsManager
@@ -40,21 +46,66 @@ const ContactContainer = ({ api }) => {
         );
         message.error(t('errors.errorGetting', { model: 'groups' }));
       })
-      .finally(() => setLoading({ ...loading, groups: false }));
+      .finally(() => setLoadingByKey('groups', false));
+
+  const getIssuedCredentials = () =>
+    api.credentialsManager
+      .getContactCredentials(id)
+      .then(setIssuedCredentials)
+      .catch(error => {
+        Logger.error(
+          `[ContactContainer.getIssuedCredentials] Error while getting issued credentials for contact ${id}`,
+          error
+        );
+        message.error(t('errors.errorGetting', { model: 'issued credentials' }));
+      })
+      .finally(() => setLoadingByKey('issuedCredentials', false));
+
+  const getReceivedCredentials = () =>
+    api.connector
+      .getMessagesForConnection(contact.connectionid)
+      .then(setReceivedCredentials)
+      .catch(error => {
+        Logger.error(
+          `[ContactContainer.getReceivedCredentials] Error while getting received credentials for contact ${id}`,
+          error
+        );
+        message.error(t('errors.errorGetting', { model: 'received credentials' }));
+      })
+      .finally(() => setLoadingByKey('receivedCredentials', false));
 
   useEffect(() => {
-    setLoading({ contact: true, groups: true });
+    setLoading({ contact: true, groups: true, issuedCredentials: true, receivedCredentials: true });
     getContact();
     getGroups();
+    getIssuedCredentials();
   }, []);
 
-  return <Contact contact={contact} groups={groups} loading={loading} />;
+  useEffect(() => {
+    if (contact) getReceivedCredentials();
+  }, [contact]);
+
+  return (
+    <Contact
+      loading={loading}
+      contact={contact}
+      groups={groups}
+      issuedCredentials={issuedCredentials}
+      receivedCredentials={receivedCredentials}
+      credentialTypes={credentialTypes}
+    />
+  );
 };
 
 ContactContainer.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({ getContact: PropTypes.func }),
-    groupsManager: PropTypes.shape({ getGroups: PropTypes.func })
+    groupsManager: PropTypes.shape({ getGroups: PropTypes.func }),
+    credentialsManager: PropTypes.shape({
+      getContactCredentials: PropTypes.func,
+      getCredentialTypes: PropTypes.func
+    }),
+    connector: PropTypes.shape({ getMessagesForConnection: PropTypes.func })
   }).isRequired
 };
 

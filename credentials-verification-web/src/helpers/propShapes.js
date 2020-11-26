@@ -1,4 +1,16 @@
-import { string, shape, number, oneOf, oneOfType, func, object, bool, arrayOf } from 'prop-types';
+import {
+  string,
+  shape,
+  number,
+  oneOf,
+  oneOfType,
+  func,
+  object,
+  bool,
+  arrayOf,
+  element,
+  objectOf
+} from 'prop-types';
 import __ from 'lodash';
 import { CONNECTION_STATUSES, TABLE_HEIGHTS } from './constants';
 
@@ -114,4 +126,26 @@ export const credentialTabShape = {
   }).isRequired,
   showEmpty: bool,
   initialLoading: bool
+};
+
+export const credentialTypeShape = {
+  id: number,
+  name: string,
+  logo: element,
+  sampleImage: element,
+  fields: arrayOf(
+    shape({
+      key: string,
+      type: string,
+      validations: arrayOf(string)
+    })
+  ),
+  placeholders: objectOf(string)
+};
+
+export const credentialTypesShape = {
+  governmentId: shape(credentialTypeShape),
+  educational: shape(credentialTypeShape),
+  proofOfEmployment: shape(credentialTypeShape),
+  healthIsurance: shape(credentialTypeShape)
 };

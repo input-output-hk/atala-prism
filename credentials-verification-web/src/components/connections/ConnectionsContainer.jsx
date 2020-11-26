@@ -24,13 +24,9 @@ const ConnectionsContainer = ({ api }) => {
     if (!contacts.length) handleContactsRequest();
   }, []);
 
-  // Wrapper to preserve 'this' context
-  const getCredentials = connectionId => api.connector.getMessagesForConnection(connectionId);
-
   const tableProps = {
     contacts: filteredContacts,
-    hasMore,
-    getCredentials
+    hasMore
   };
 
   return (

@@ -3,12 +3,14 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 import CredentialSummaryDetail from '../../../../common/Organisms/Detail/CredentialSummaryDetail';
-import contactIcon from '../../../../../images/holder-default-avatar.svg';
 import { mockHtmlCredential } from '../../../../../helpers/mockData';
+import { dateFormat } from '../../../../../helpers/formatters';
+import { credentialTypesShape } from '../../../../../helpers/propShapes';
+
 import './style.scss';
 
-const CredentialDetail = ({ credential }) => {
-  const { img, credentialName, title, date } = credential;
+const CredentialDetail = ({ credential, credentialTypes }) => {
+  const { credentialType, publicationstoredat } = credential;
   const { t } = useTranslation();
 
   const [currentCredential, setCurrentCredential] = useState({});
@@ -18,6 +20,8 @@ const CredentialDetail = ({ credential }) => {
     setCurrentCredential(clickedCredential);
     setShowDrawer(true);
   };
+
+  const { logo: credentialLogo } = credentialTypes[credentialType];
 
   return (
     <div className="credentialDetailContainer">
@@ -31,17 +35,21 @@ const CredentialDetail = ({ credential }) => {
       />
       <div className="credentialDataContainer">
         <div className="img">
-          <img className="icons" src={img} alt={credentialName} />
+          <img className="icons" src={credentialLogo} alt={credentialType?.name || ''} />
         </div>
         <div className="credentialData">
-          <p>{credentialName}</p>
-          <span>{title}</span>
+          <p>{t('credentials.table.columns.credentialType')}</p>
+          <span>{t(`credentials.type.${credentialType}`)}</span>
         </div>
       </div>
       <div className="credentialDataContainer">
         <div className="credentialData">
-          <p>{t('credentials.detail.dateCreated')}</p>
-          <span>{date}</span>
+          <p>{t('credentials.detail.datePublished')}</p>
+          <span>
+            {publicationstoredat
+              ? dateFormat(publicationstoredat)
+              : t('credentials.detail.notPublished')}
+          </span>
         </div>
         <div>
           <CustomButton
@@ -58,25 +66,20 @@ const CredentialDetail = ({ credential }) => {
 };
 
 const mockCredential = {
-  img: contactIcon,
-  credentialName: 'Government ID',
-  title: 'Government ID',
-  date: '10/11/2020',
+  credentialType: 'governmentId',
+  publicationstoredat: 0,
   html: mockHtmlCredential
 };
 
-CredentialDetail.defaultProps = {
-  credential: mockCredential
-};
+CredentialDetail.defaultProps = { credential: mockCredential };
 
 CredentialDetail.propTypes = {
   credential: PropTypes.shape({
-    img: PropTypes.string,
-    credentialName: PropTypes.string,
-    title: PropTypes.string,
-    date: PropTypes.string,
+    credentialType: PropTypes.string,
+    publicationstoredat: PropTypes.number,
     html: PropTypes.string
-  })
+  }),
+  credentialTypes: PropTypes.shape(credentialTypesShape).isRequired
 };
 
 export default CredentialDetail;
