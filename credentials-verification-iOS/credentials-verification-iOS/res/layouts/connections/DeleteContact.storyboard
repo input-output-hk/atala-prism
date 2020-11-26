@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17126"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -189,6 +190,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="XlN-Ic-vgb"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Fij-r3-4bO" firstAttribute="leading" secondItem="lUc-ce-LRX" secondAttribute="leadingMargin" id="0rS-v9-VDd"/>
@@ -196,15 +198,16 @@
                             <constraint firstAttribute="bottomMargin" secondItem="Fij-r3-4bO" secondAttribute="bottom" id="XDg-81-Cpb"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Fij-r3-4bO" secondAttribute="trailing" id="e85-ii-Rwc"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="XlN-Ic-vgb"/>
                     </view>
                     <connections>
                         <outlet property="buttonConfirm" destination="wTY-6s-gHZ" id="kwj-bU-SQL"/>
                         <outlet property="buttonDecline" destination="MLp-Bf-MDm" id="WBd-Ox-r7q"/>
                         <outlet property="contactIcon" destination="6Md-uR-D1l" id="8w0-Mw-F9H"/>
                         <outlet property="contactNameLbl" destination="C3t-UQ-aVY" id="ge5-Do-HWn"/>
-                        <outlet property="credentialsLbl" destination="pfh-uX-N3J" id="R6i-wr-Wiz"/>
+                        <outlet property="credentialsLbl" destination="pfh-uX-N3J" id="czb-ab-SjP"/>
+                        <outlet property="separator" destination="gqT-l3-MAT" id="f5Q-On-SMy"/>
                         <outlet property="viewBg" destination="OR1-Vn-O01" id="kNs-vR-qWM"/>
+                        <outlet property="warningLbl" destination="z4m-3l-ORO" id="dRo-P4-s6X"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="uba-h0-6iE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

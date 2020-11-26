@@ -17,6 +17,8 @@ class DeleteContactViewController: UIViewController {
     @IBOutlet weak var contactIcon: UIImageView!
     @IBOutlet weak var contactNameLbl: UILabel!
     @IBOutlet weak var credentialsLbl: UILabel!
+    @IBOutlet weak var warningLbl: UILabel!
+    @IBOutlet weak var separator: UIView!
 
     var onDelete: (() -> Void)!
     var contact: Contact?
@@ -49,6 +51,9 @@ class DeleteContactViewController: UIViewController {
             }
         }
         credentialsLbl.text = credentialsList
+        let emptyCredentials = credentials?.isEmpty ?? true
+        warningLbl.text = emptyCredentials ? "" : "contacts_delete_description".localize()
+        separator.isHidden = emptyCredentials
     }
 
     static func makeThisView() -> DeleteContactViewController {
