@@ -25,7 +25,8 @@
   },
   "generic": {
     "step": "Step {{step}}",
-    "underConstruction": "Under construction"
+    "underConstruction": "Under construction",
+    "template": "Template"
   },
   "sidebar": {
     "itemAlt": "{{itemName}} Icon"

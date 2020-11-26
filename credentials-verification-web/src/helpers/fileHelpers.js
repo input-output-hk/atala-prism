@@ -1,61 +1,12 @@
 import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
-import _ from 'lodash';
-import {
-  ALLOWED_IMAGE_TYPES,
-  MAX_FILE_SIZE,
-  ALLOWED_EXCEL_TYPES,
-  TOO_LARGE,
-  INVALID_TYPE,
-  IMAGE,
-  EXCEL,
-  COMMON_CREDENTIALS_HEADERS
-} from './constants';
-
-const isInvalidFile = size => (size > MAX_FILE_SIZE ? TOO_LARGE : null);
-
-const isInvalidPicture = ({ type, size }) => {
-  const invalidType = !ALLOWED_IMAGE_TYPES.includes(type);
-
-  if (invalidType) return INVALID_TYPE;
-
-  return isInvalidFile(size);
-};
-
-const isInvalidExcel = ({ type, size }) => {
-  const invalidType = !ALLOWED_EXCEL_TYPES.includes(type);
-
-  if (invalidType) return INVALID_TYPE;
-
-  return isInvalidFile(size);
-};
-
-const handlerDictionary = {
-  image: isInvalidPicture,
-  excel: isInvalidExcel,
-  any: ({ size }) => isInvalidFile(size)
-};
-
-const fileToFileReader = (file, type) =>
-  new Promise((resolve, reject) => {
-    const invalidFile = handlerDictionary[type](file);
-
-    if (invalidFile) return reject(new Error(invalidFile));
-
-    const reader = new FileReader();
-    reader.readAsArrayBuffer(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-
-export const imageToFileReader = image => fileToFileReader(image, IMAGE);
-export const excelToFileReader = excel => fileToFileReader(excel, EXCEL);
+import i18n from 'i18next';
 
 export const downloadTemplateCsv = (inputData, headersMapping) => {
   const csvData = inputData?.contacts?.length
     ? generateCsvFromInputData(inputData, headersMapping)
     : generateDefaultCsv(headersMapping.map(h => h.translation));
-  const filename = inputData ? getFilename(inputData) : 'template.csv';
+  const filename = inputData ? getFilename(inputData) : `${i18n.t('generic.template')}.csv`;
   downloadCsvFile(filename, csvData);
 };
 
@@ -69,7 +20,7 @@ const generateCsvFromInputData = ({ contacts }, headersMapping) => {
   return Papa.unparse(templateJSON);
 };
 
-const getFilename = ({ credentialType }) => `${credentialType.name}.csv`;
+const getFilename = ({ credentialType }) => `${i18n.t(credentialType.name)}.csv`;
 
 // empty csv from headers array
 const headersToCsvString = headers => headers.reduce((acc, h) => (!acc ? h : `${acc},${h}`), null);
@@ -91,6 +42,7 @@ const getKeysFromArrayOfArrays = arrayOfArrays =>
 // take an array of arrays and turn it into an array of objects
 export const arrayOfArraysToObjects = arrayOfArrays => {
   const keys = getKeysFromArrayOfArrays(arrayOfArrays);
+  // eslint-disable-next-line no-magic-numbers
   const values = arrayOfArrays.slice(1);
 
   return values.map(array =>
@@ -101,20 +53,30 @@ export const arrayOfArraysToObjects = arrayOfArrays => {
 };
 
 export const getColName = col => {
-  const fold = Math.floor(col / 26);
-  return fold >= 0 ? getColName(fold - 1) + String.fromCharCode(65 + (col % 26)) : '';
+  const columnLetters = 26;
+  const asciiShift = 65;
+
+  const fold = Math.floor(col / columnLetters);
+  /* eslint-disable no-magic-numbers */
+  return fold >= 0
+    ? getColName(fold - 1) + String.fromCharCode(asciiShift + (col % columnLetters))
+    : '';
+  /* eslint-enable no-magic-numbers */
 };
 
 // spreadsheets row numbers offset:
 // +1 because row numeration starts from 1 (instead of 0)
 // +1 because of headers row
+// eslint-disable-next-line no-magic-numbers
 export const getRowNumber = rowIndex => rowIndex + 1 + 1;
 
 export const trimEmptyRows = contacts => {
   if (!contacts?.length) return [];
+  /* eslint-disable no-magic-numbers */
   return isEmptyRow(contacts[contacts.length - 1])
     ? trimEmptyRows(contacts.slice(0, contacts.length - 1))
     : contacts;
+  /* eslint-enable no-magic-numbers */
 };
 
 export const isEmptyRow = ({ originalArray }) => originalArray.every(field => !field);
