@@ -69,17 +69,39 @@ const CredentialContainer = ({ api }) => {
       setCredentialsIssued(updatedCredentialsIssued);
       setNoIssuedCredentials(!updatedCredentialsIssued.length);
     } catch (error) {
-      Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
+      Logger.error(
+        '[CredentialContainer.getCredentialsIssued] Error while getting Credentials',
+        error
+      );
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    setLoading(true);
-    fetchCredentialsIssued();
-  }, []);
+  const refreshCredentialsIssued = async () => {
+    try {
+      const refreshedCredentials = await api.credentialsManager.getCredentials(
+        credentialsIssued.length,
+        null
+      );
+
+      const credentialTypes = api.credentialsManager.getCredentialTypes();
+      const mappedCredentials = refreshedCredentials.map(cred =>
+        credentialMapper(cred, credentialTypes)
+      );
+
+      setCredentialsIssued(mappedCredentials);
+    } catch (error) {
+      Logger.error(
+        '[CredentialContainer.refreshCredentialsIssued] Error while getting Credentials',
+        error
+      );
+      message.error(t('errors.errorGetting', { model: 'Credentials' }));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchCredentialsReceived = async () => {
     try {
@@ -99,10 +121,18 @@ const CredentialContainer = ({ api }) => {
       setCredentialsReceived(updatedCredentialsReceived);
       setNoReceivedCredentials(!updatedCredentialsReceived.length);
     } catch (error) {
-      Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
+      Logger.error(
+        '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
+        error
+      );
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
     }
   };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchCredentialsIssued();
+  }, []);
 
   useEffect(() => {
     if (!credentialsIssued.length && hasMoreIssued) fetchCredentialsIssued();
@@ -140,12 +170,14 @@ const CredentialContainer = ({ api }) => {
   const signCredentials = credentials => api.wallet.signCredentials(credentials);
 
   const sendCredentials = credentials => {
-    const sendCredentialsRequests = credentials.map(({ contactData, ...cred }) =>
-      api.contactsManager.getContact(contactData.contactid).then(({ connectionid }) => {
-        const credentialBinary = api.credentialsManager.getCredentialBinary(cred);
-        return api.connector.sendCredential(credentialBinary, connectionid);
-      })
-    );
+    const handleSendCredential = async ({ contactData, ...cred }) => {
+      const { connectionid } = await api.contactsManager.getContact(contactData.contactid);
+      const credentialBinary = api.credentialsManager.getCredentialBinary(cred);
+      await api.connector.sendCredential(credentialBinary, connectionid);
+      return api.credentialsManager.markAsSent(cred.credentialid);
+    };
+
+    const sendCredentialsRequests = credentials.map(handleSendCredential);
 
     return Promise.all(sendCredentialsRequests);
   };
@@ -244,6 +276,7 @@ const CredentialContainer = ({ api }) => {
       }
       if (apiCall) await apiCall(targetCredentials);
       if (onSuccess) onSuccess();
+      refreshCredentialsIssued();
     } catch (error) {
       if (onError) onError(error);
     }
@@ -324,7 +357,8 @@ CredentialContainer.propTypes = {
     credentialsManager: PropTypes.shape({
       getCredentialBinary: PropTypes.func.isRequired,
       getCredentials: PropTypes.func.isRequired,
-      getCredentialTypes: PropTypes.func.isRequired
+      getCredentialTypes: PropTypes.func.isRequired,
+      markAsSent: PropTypes.func.isRequired
     }).isRequired,
     wallet: PropTypes.shape({
       signCredentials: PropTypes.func.isRequired

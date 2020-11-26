@@ -6,7 +6,8 @@ import { FAILED, SUCCESS } from '../../helpers/constants';
 const {
   GetGenericCredentialsRequest,
   CreateGenericCredentialRequest,
-  GetContactCredentialsRequest
+  GetContactCredentialsRequest,
+  ShareCredentialRequest
 } = require('../../protos/cmanager_api_pb');
 const { AtalaMessage, PlainTextCredential } = require('../../protos/credential_models_pb');
 
@@ -127,6 +128,17 @@ async function getContactCredentials(contactId) {
   return credentialsList;
 }
 
+async function markAsSent(credentialid) {
+  const markCredentialRequest = new ShareCredentialRequest();
+  markCredentialRequest.setCmanagercredentialid(credentialid);
+
+  const metadata = await this.auth.getMetadata(markCredentialRequest);
+
+  const res = await this.client.shareCredential(markCredentialRequest, metadata);
+  Logger.info(`Marked credential (${credentialid}) as sent`);
+  return res;
+}
+
 function CredentialsManager(config, auth) {
   this.config = config;
   this.auth = auth;
@@ -139,5 +151,6 @@ CredentialsManager.prototype.createBatchOfCredentials = createBatchOfCredentials
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 CredentialsManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialsManager.prototype.getContactCredentials = getContactCredentials;
+CredentialsManager.prototype.markAsSent = markAsSent;
 
 export default CredentialsManager;
