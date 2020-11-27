@@ -5,12 +5,21 @@ import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.management.console.repositories.{
   ContactsRepository,
+  CredentialsRepository,
+  InstitutionGroupsRepository,
   ParticipantsRepository,
-  RequestNoncesRepository
+  ReceivedCredentialsRepository,
+  RequestNoncesRepository,
+  StatisticsRepository
 }
-import io.iohk.atala.prism.management.console.services.ConsoleServiceImpl
+import io.iohk.atala.prism.management.console.services.{
+  ConsoleServiceImpl,
+  CredentialsServiceImpl,
+  CredentialsStoreServiceImpl,
+  GroupsServiceImpl
+}
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.protos.{cmanager_api, console_api, cstore_api}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
@@ -57,6 +66,10 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     val contactsRepository = new ContactsRepository(xa)(executionContext)
     val participantsRepository = new ParticipantsRepository(xa)(executionContext)
     val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
+    val statisticsRepository = new StatisticsRepository(xa)
+    val credentialsRepository = new CredentialsRepository(xa)(executionContext)
+    val receivedCredentialsRepository = new ReceivedCredentialsRepository(xa)(executionContext)
+    val institutionGroupsRepository = new InstitutionGroupsRepository(xa)(executionContext)
 
     val authenticator = new ManagementConsoleAuthenticator(
       participantsRepository,
@@ -65,7 +78,12 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
       GrpcAuthenticationHeaderParser
     )
 
-    val consoleService = new ConsoleServiceImpl(contactsRepository, authenticator)(
+    val credentialsService =
+      new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, node)(executionContext)
+    val credentialsStoreService =
+      new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)(executionContext)
+    val groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)(executionContext)
+    val consoleService = new ConsoleServiceImpl(contactsRepository, statisticsRepository, authenticator)(
       executionContext
     )
 
@@ -73,8 +91,27 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     server = ServerBuilder
       .forPort(ManagementConsoleApp.port)
       .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
+      .addService(cmanager_api.CredentialsServiceGrpc.bindService(credentialsService, executionContext))
+      .addService(cmanager_api.GroupsServiceGrpc.bindService(groupsService, executionContext))
+      .addService(cstore_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
+      .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
       .build()
       .start()
+
+    logger.info("Server started, listening on " + ManagementConsoleApp.port)
+    sys.addShutdownHook {
+      System.err.println("*** shutting down gRPC server since JVM is shutting down")
+      self.stop()
+      System.err.println("*** server shut down")
+    }
+    ()
+  }
+
+  private def stop(): Unit = {
+    if (server != null) {
+      server.shutdown()
+    }
+    ()
   }
 
   private def blockUntilShutdown(): Unit = {

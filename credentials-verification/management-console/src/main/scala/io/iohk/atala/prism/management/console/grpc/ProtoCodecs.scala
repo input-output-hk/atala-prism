@@ -3,9 +3,10 @@ package io.iohk.atala.prism.management.console.grpc
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential}
-import io.iohk.atala.prism.protos.{cmanager_models, common_models, console_models}
+import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics}
+import io.iohk.atala.prism.protos.{cmanager_models, common_models, console_api, console_models}
 import io.scalaland.chimney.Transformer
+import io.scalaland.chimney.dsl._
 
 object ProtoCodecs {
 
@@ -45,5 +46,12 @@ object ProtoCodecs {
       .withExternalId(contact.externalId.value)
       .withJsonData(contact.data.noSpaces)
       .withCreatedAt(contact.createdAt.toEpochMilli)
+  }
+
+  def toStatisticsProto(statistics: Statistics): console_api.GetStatisticsResponse = {
+    statistics
+      .into[console_api.GetStatisticsResponse]
+      .withFieldConst(_.numberOfCredentialsInDraft, statistics.numberOfCredentialsInDraft)
+      .transform
   }
 }

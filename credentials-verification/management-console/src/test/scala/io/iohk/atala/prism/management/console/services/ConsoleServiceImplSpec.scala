@@ -427,7 +427,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
     }
   }
 
-  "getStatistics" ignore {
+  "getStatistics" should {
     "work" in {
       val institutionName = "tokenizer"
       val groupName = InstitutionGroup.Name("Grp 1")
@@ -437,7 +437,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       val did = generateDid(publicKey)
       val institutionId = createParticipant(institutionName, did)
       createInstitutionGroup(institutionId, groupName)
-      val _ = createContact(institutionId, contactName, groupName)
+      createContact(institutionId, contactName, groupName)
       val request = console_api.GetStatisticsRequest()
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 

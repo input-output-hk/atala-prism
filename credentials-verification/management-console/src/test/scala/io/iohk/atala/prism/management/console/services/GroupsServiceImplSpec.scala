@@ -162,7 +162,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val _ = createParticipant(did)
+      createParticipant(did)
 
       val request = cmanager_api.GetGroupsRequest().withContactId("xyz")
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)

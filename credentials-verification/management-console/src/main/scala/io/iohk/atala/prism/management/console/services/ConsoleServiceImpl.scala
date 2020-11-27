@@ -7,7 +7,7 @@ import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleErrorSupport
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
-import io.iohk.atala.prism.management.console.repositories.ContactsRepository
+import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, StatisticsRepository}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
@@ -19,6 +19,7 @@ import scala.util.Try
 
 class ConsoleServiceImpl(
     contactsRepository: ContactsRepository,
+    statisticsRepository: StatisticsRepository,
     authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -135,5 +136,23 @@ class ConsoleServiceImpl(
       request: GenerateConnectionTokenForContactRequest
   ): Future[GenerateConnectionTokenForContactResponse] = ???
 
-  override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] = ???
+  override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] = {
+    def f(participantId: ParticipantId): Future[GetStatisticsResponse] = {
+      implicit val loggingContext: LoggingContext =
+        LoggingContext("request" -> request, "participantId" -> participantId)
+
+      for {
+        response <-
+          statisticsRepository
+            .query(participantId)
+            .map(ProtoCodecs.toStatisticsProto)
+            .wrapExceptions
+            .flatten
+      } yield response
+    }
+
+    authenticator.authenticated("getStatistics", request) { participantId =>
+      f(participantId)
+    }
+  }
 }
