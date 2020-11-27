@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node
 
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.concurrent.TimeUnit
 
 import cats.scalatest.EitherMatchers._
@@ -8,13 +8,15 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.CredentialState
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, CredentialState}
 import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
@@ -27,7 +29,7 @@ import io.iohk.atala.prism.node.operations.{
   TimestampInfo,
   UpdateDIDOperationSpec
 }
-import io.iohk.atala.prism.node.repositories.DIDDataRepository
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
@@ -40,6 +42,8 @@ import io.iohk.atala.prism.node.services.{
   ObjectManagementService
 }
 import io.iohk.atala.prism.protos.node_api.{
+  GetBatchStateRequest,
+  GetCredentialRevocationTimeRequest,
   GetCredentialStateRequest,
   GetNodeBuildInfoRequest,
   GetTransactionStatusRequest,
@@ -64,8 +68,9 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   protected var channelHandle: ManagedChannel = _
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
-  val objectManagementService = mock[ObjectManagementService]
-  val credentialsService = mock[CredentialsService]
+  private val objectManagementService = mock[ObjectManagementService]
+  private val credentialsService = mock[CredentialsService]
+  private val credentialBatchesRepository = mock[CredentialBatchesRepository]
 
   private val testTransactionInfo =
     TransactionInfo(TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value, Ledger.InMemory)
@@ -88,7 +93,12 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       .addService(
         node_api.NodeServiceGrpc
           .bindService(
-            new NodeServiceImpl(didDataService, objectManagementService, credentialsService),
+            new NodeServiceImpl(
+              didDataService,
+              objectManagementService,
+              credentialsService,
+              credentialBatchesRepository
+            ),
             executionContext
           )
       )
@@ -400,19 +410,20 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
   "NodeService.getCredentialState" should {
     "fail when credentialId is not valid" in {
-      val requestWithInvalidId = GetCredentialStateRequest(credentialId = "")
-      val ex = new RuntimeException("INTERNAL: requirement failed")
+      val invalidCredentialId = "invalid@_?"
+      val requestWithInvalidId = GetCredentialStateRequest(credentialId = invalidCredentialId)
+      val expectedMessage = "INTERNAL: requirement failed"
 
       val error = intercept[RuntimeException] {
         service.getCredentialState(requestWithInvalidId)
       }
-      error.getMessage must be(ex.getMessage)
+      error.getMessage must be(expectedMessage)
     }
 
     "fail when the CredentialService reports an error" in {
       val validCredentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
-      val ex = new RuntimeException(s"UNKNOWN: Unknown credential_id: ${validCredentialId.id}")
+      val expectedMessage = s"UNKNOWN: Unknown credential_id: ${validCredentialId.id}"
 
       val repositoryError = new FutureEither[NodeError, CredentialState](
         Future(
@@ -425,7 +436,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val serviceError = intercept[RuntimeException] {
         service.getCredentialState(requestWithValidId)
       }
-      serviceError.getMessage must be(ex.getMessage)
+      serviceError.getMessage must be(expectedMessage)
     }
 
     "return credential state when CredentialService succeeds" in {
@@ -462,6 +473,160 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       response.issuerDID must be(issuerDIDSuffix.suffix)
       response.publicationDate must be(Some(timestampInfoProto))
       response.revocationDate must be(empty)
+    }
+  }
+
+  "NodeService.getBatchState" should {
+    "fail when batchId is not valid" in {
+      val invalidBatchId = "invalid@_?"
+      val requestWithInvalidId = GetBatchStateRequest(batchId = invalidBatchId)
+      val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
+
+      val error = intercept[RuntimeException] {
+        service.getBatchState(requestWithInvalidId)
+      }
+      error.getMessage must be(expectedMessage)
+    }
+
+    "fail when the CredentialBatchesRepository reports an error" in {
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
+      val expectedMessage = s"UNKNOWN: Unknown BatchId: ${validBatchId.id}"
+
+      val repositoryError = new FutureEither[NodeError, CredentialBatchState](
+        Future.successful(
+          Left(UnknownValueError("BatchId", validBatchId.id))
+        )
+      )
+
+      doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
+
+      val serviceError = intercept[RuntimeException] {
+        service.getBatchState(requestWithValidId)
+      }
+      serviceError.getMessage must be(expectedMessage)
+    }
+
+    "return batch state when CredentialBatchesRepository succeeds" in {
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
+
+      val issuerDIDSuffix = DIDSuffix(SHA256Digest.compute("testDID".getBytes()))
+      val issuedOn = TimestampInfo.dummyTime
+      val merkleRoot = MerkleRoot(SHA256Digest.compute("content".getBytes()))
+      val credState =
+        CredentialBatchState(
+          merkleRoot = merkleRoot,
+          batchId = validBatchId,
+          issuerDIDSuffix = issuerDIDSuffix,
+          issuedOn = issuedOn,
+          revokedOn = None,
+          lastOperation = SHA256Digest.compute("lastOp".getBytes())
+        )
+
+      val repositoryResponse = new FutureEither[NodeError, CredentialBatchState](
+        Future.successful(
+          Right(credState)
+        )
+      )
+
+      val timestampInfoProto = node_models
+        .TimestampInfo()
+        .withBlockTimestamp(issuedOn.atalaBlockTimestamp.toEpochMilli)
+        .withBlockSequenceNumber(issuedOn.atalaBlockSequenceNumber)
+        .withOperationSequenceNumber(issuedOn.operationSequenceNumber)
+
+      doReturn(repositoryResponse).when(credentialBatchesRepository).getBatchState(validBatchId)
+
+      val response = service.getBatchState(requestWithValidId)
+      response.issuerDID must be(issuerDIDSuffix.suffix)
+      response.merkleRoot.toByteArray.toVector must be(merkleRoot.hash.value)
+      response.publicationDate must be(Some(timestampInfoProto))
+      response.revocationDate must be(empty)
+    }
+  }
+
+  "NodeService.getCredentialRevocationTime" should {
+    "fail when batchId is not valid" in {
+      val invalidBatchId = "invalid@_?"
+      val validCredentialHash = SHA256Digest.compute("random".getBytes())
+      val requestWithInvalidId =
+        GetCredentialRevocationTimeRequest(
+          batchId = invalidBatchId,
+          credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
+        )
+      val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
+
+      val error = intercept[RuntimeException] {
+        service.getCredentialRevocationTime(requestWithInvalidId)
+      }
+      error.getMessage must be(expectedMessage)
+    }
+
+    "fail when credentialHash is not valid" in {
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes())).value
+      val requestWithInvalidCredentialHash =
+        GetCredentialRevocationTimeRequest(
+          batchId = validBatchId.id,
+          credentialHash = ByteString.EMPTY
+        )
+      val expectedMessage = "INTERNAL: requirement failed"
+
+      val error = intercept[RuntimeException] {
+        service.getCredentialRevocationTime(requestWithInvalidCredentialHash)
+      }
+      error.getMessage must be(expectedMessage)
+    }
+
+    "return empty timestamp when CredentialBatchesRepository succeeds returning None" in {
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val validCredentialHash = SHA256Digest.compute("random".getBytes())
+      val validRequest = GetCredentialRevocationTimeRequest(
+        batchId = validBatchId.id,
+        credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
+      )
+
+      val repositoryResponse = new FutureEither[NodeError, Option[TimestampInfo]](
+        Future.successful(
+          Right(None)
+        )
+      )
+
+      doReturn(repositoryResponse)
+        .when(credentialBatchesRepository)
+        .getCredentialRevocationTime(validBatchId, validCredentialHash)
+
+      val response = service.getCredentialRevocationTime(validRequest)
+      response.revocationDate must be(empty)
+    }
+
+    "return correct timestamp when CredentialBatchesRepository succeeds returning a time" in {
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val validCredentialHash = SHA256Digest.compute("random".getBytes())
+      val validRequest = GetCredentialRevocationTimeRequest(
+        batchId = validBatchId.id,
+        credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
+      )
+      val revocationDate = TimestampInfo(Instant.now(), 1, 1)
+
+      val repositoryResponse = new FutureEither[NodeError, Option[TimestampInfo]](
+        Future.successful(
+          Right(Some(revocationDate))
+        )
+      )
+
+      val timestampInfoProto = node_models
+        .TimestampInfo()
+        .withBlockTimestamp(revocationDate.atalaBlockTimestamp.toEpochMilli)
+        .withBlockSequenceNumber(revocationDate.atalaBlockSequenceNumber)
+        .withOperationSequenceNumber(revocationDate.operationSequenceNumber)
+
+      doReturn(repositoryResponse)
+        .when(credentialBatchesRepository)
+        .getCredentialRevocationTime(validBatchId, validCredentialHash)
+
+      val response = service.getCredentialRevocationTime(validRequest)
+      response.revocationDate must be(Some(timestampInfoProto))
     }
   }
 

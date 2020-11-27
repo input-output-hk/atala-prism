@@ -8,7 +8,7 @@ import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
-import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
@@ -26,7 +26,6 @@ import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
-
 import io.iohk.atala.prism.credentials.json.implicits._
 
 class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with BeforeAndAfterEach {
@@ -38,6 +37,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
   protected var channelHandle: ManagedChannel = _
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataService: DIDDataService = _
+  protected var credentialBatchesRepository: CredentialBatchesRepository = _
   protected var credentialsService: CredentialsService = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
@@ -50,6 +50,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
 
     didDataService = new DIDDataService(new DIDDataRepository(database))
     credentialsService = new CredentialsService(new CredentialsRepository(database))
+    credentialBatchesRepository = new CredentialBatchesRepository(database)
 
     storage = new objects.ObjectStorageService.InMemory()
 
@@ -77,7 +78,15 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
       .directExecutor()
       .addService(
         node_api.NodeServiceGrpc
-          .bindService(new NodeServiceImpl(didDataService, objectManagementService, credentialsService), ec)
+          .bindService(
+            new NodeServiceImpl(
+              didDataService,
+              objectManagementService,
+              credentialsService,
+              credentialBatchesRepository
+            ),
+            ec
+          )
       )
       .build()
       .start()

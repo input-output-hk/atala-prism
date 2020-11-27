@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.credentials
 
+import java.util.UUID
+
 import io.iohk.atala.prism.crypto.SHA256Digest
 
 class CredentialBatchId private (val id: String) extends AnyVal
@@ -13,4 +15,7 @@ object CredentialBatchId {
   }
 
   def fromDigest(digest: SHA256Digest): Option[CredentialBatchId] = fromString(digest.hexValue)
+
+  def random(): CredentialBatchId =
+    new CredentialBatchId(SHA256Digest.compute(UUID.randomUUID().toString.getBytes()).hexValue)
 }

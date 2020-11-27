@@ -28,6 +28,10 @@ service NodeService {
     rpc GetTransactionStatus(GetTransactionStatusRequest) returns (GetTransactionStatusResponse) {}
 
     rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
+
+    rpc GetBatchState(GetBatchStateRequest) returns (GetBatchStateResponse) {}
+
+    rpc GetCredentialRevocationTime(GetCredentialRevocationTimeRequest) returns (GetCredentialRevocationTimeResponse) {}
 }
 
 message GetDidDocumentRequest {
@@ -97,9 +101,29 @@ message GetCredentialStateRequest {
 }
 
 message GetCredentialStateResponse {
-    string issuerDID = 1; // did used to sign the IssueCredential operation
-    TimestampInfo publicationDate = 2; // If present: underlying blockchain timestamp that refers to the transaction that                                // contains the IssueCredential operation associated to the credential
+    string issuerDID = 1; // did used to sign the IssueCredentialBatch operation
+    TimestampInfo publicationDate = 2; // If present: underlying blockchain timestamp that refers to the transaction that contains the IssueCredential operation associated to the credential
     TimestampInfo revocationDate = 3;  // If present: underlying blockchain timestamp that refers to the transaction that RevokeCredential operation associated to the credential
+}
+
+message GetBatchStateRequest {
+    string batchId = 1; // id of the batch
+}
+
+message GetBatchStateResponse {
+    string issuerDID = 1; // did used to sign the IssueCredential operation
+    bytes merkleRoot = 2; // merkle root used IssueCredential operation
+    TimestampInfo publicationDate = 3; // If present: underlying blockchain timestamp that refers to the transaction that                                // contains the IssueCredential operation associated to the credential
+    TimestampInfo revocationDate = 4;  // If present: underlying blockchain timestamp that refers to the transaction that RevokeCredential operation associated to the credential
+}
+
+message GetCredentialRevocationTimeRequest {
+    string batchId = 1; // the id corresponding to the credential to query about
+    bytes credentialHash = 2; // the hash of the credential to query about
+}
+
+message GetCredentialRevocationTimeResponse {
+    TimestampInfo revocationDate = 1; // if present, the time when the credential was revoked
 }
 
 message GetTransactionStatusRequest {

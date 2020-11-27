@@ -148,10 +148,13 @@ class CredentialService(
       case Invalid(errors) =>
         logger.warn(s"Parse credential error: $errors")
         errors.head match {
-          case _: VerificationError.Revoked => CredentialStatus.Revoked
+          case _: VerificationError.CredentialWasRevoked => CredentialStatus.Revoked
           case _: VerificationError.KeyWasNotValid => CredentialStatus.Invalid
           case _: VerificationError.KeyWasRevoked => CredentialStatus.Invalid
           case VerificationError.InvalidSignature => CredentialStatus.Invalid
+          // Added for exhaustive analysis, related to credentials batches
+          case _: VerificationError.BatchWasRevoked => CredentialStatus.Revoked
+          case VerificationError.InvalidMerkleProof => CredentialStatus.Invalid
         }
     }
 

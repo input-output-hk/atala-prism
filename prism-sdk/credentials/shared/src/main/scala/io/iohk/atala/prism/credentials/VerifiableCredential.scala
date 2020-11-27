@@ -37,7 +37,7 @@ object VerifiableCredential {
     // the credential is not revoked
     val credentialNotRevoked: ValidationResult[Unit] =
       credentialData.revokedOn.fold(().validNel[VerificationError]) { revokedOn =>
-        Revoked(revokedOn = revokedOn).invalidNel
+        CredentialWasRevoked(revokedOn = revokedOn).invalidNel
       }
 
     // the key was added before the credential was issued

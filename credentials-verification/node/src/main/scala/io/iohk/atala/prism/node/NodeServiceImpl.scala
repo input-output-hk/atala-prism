@@ -1,16 +1,24 @@
 package io.iohk.atala.prism.node
 
+import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.operations._
+import io.iohk.atala.prism.node.repositories.CredentialBatchesRepository
 import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
 import io.iohk.atala.prism.protos.node_api.{
+  GetBatchStateRequest,
+  GetBatchStateResponse,
+  GetCredentialRevocationTimeRequest,
+  GetCredentialRevocationTimeResponse,
   GetCredentialStateRequest,
   GetCredentialStateResponse,
   GetTransactionStatusRequest,
@@ -31,7 +39,8 @@ import scala.util.Try
 class NodeServiceImpl(
     didDataService: DIDDataService,
     objectManagement: ObjectManagementService,
-    credentialsService: CredentialsService
+    credentialsService: CredentialsService,
+    credentialBatchesRepository: CredentialBatchesRepository
 )(implicit
     ec: ExecutionContext
 ) extends node_api.NodeServiceGrpc.NodeService {
@@ -265,6 +274,76 @@ class NodeServiceImpl(
         "revokeCredentials",
         node_api.RevokeCredentialsResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
       )
+    }
+  }
+
+  override def getBatchState(request: GetBatchStateRequest): Future[GetBatchStateResponse] = {
+    logRequest("getBatchState", request)
+    val batchIdF = Future.fromTry {
+      Try {
+        CredentialBatchId
+          .fromString(request.batchId)
+          .getOrElse(throw new RuntimeException(s"Invalid batch id: ${request.batchId}"))
+      }
+    }
+
+    for {
+      batchId <- batchIdF
+      stateEither <-
+        credentialBatchesRepository
+          .getBatchState(batchId)
+          .value
+    } yield stateEither match {
+      case Left(error) =>
+        throw error.toStatus.asRuntimeException()
+      case Right(state) =>
+        val revocationDateProto = state.revokedOn.map(ProtoCodecs.toTimeStampInfoProto)
+        val responseBase = GetBatchStateResponse()
+          .withIssuerDID(state.issuerDIDSuffix.suffix)
+          .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.hash.value.toArray))
+          .withPublicationDate(ProtoCodecs.toTimeStampInfoProto(state.issuedOn))
+        val response = revocationDateProto.fold(responseBase)(responseBase.withRevocationDate)
+        logAndReturnResponse(
+          "getBatchState",
+          response
+        )
+    }
+  }
+
+  override def getCredentialRevocationTime(
+      request: GetCredentialRevocationTimeRequest
+  ): Future[GetCredentialRevocationTimeResponse] = {
+    logRequest("getCredentialRevocationTime", request)
+    val batchIdF = Future.fromTry {
+      Try {
+        CredentialBatchId
+          .fromString(request.batchId)
+          .getOrElse(throw new RuntimeException(s"Invalid batch id: ${request.batchId}"))
+      }
+    }
+    val credentialHashF = Future.fromTry {
+      Try {
+        SHA256Digest(request.credentialHash.toByteArray.toVector)
+      }
+    }
+
+    for {
+      batchId <- batchIdF
+      credentialHash <- credentialHashF
+      timeEither <-
+        credentialBatchesRepository
+          .getCredentialRevocationTime(batchId, credentialHash)
+          .value
+    } yield timeEither match {
+      case Left(error) =>
+        throw error.toStatus.asRuntimeException()
+      case Right(timestampInfo) =>
+        logAndReturnResponse(
+          "getCredentialRevocationTime",
+          GetCredentialRevocationTimeResponse(
+            revocationDate = timestampInfo.map(ProtoCodecs.toTimeStampInfoProto)
+          )
+        )
     }
   }
 }

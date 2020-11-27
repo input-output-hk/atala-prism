@@ -4,7 +4,12 @@ import java.util.Optional
 
 import cats.data.Validated.{Invalid, Valid}
 import io.iohk.atala.prism.credentials.VerificationError
-import io.iohk.atala.prism.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
+import io.iohk.atala.prism.credentials.VerificationError.{
+  InvalidSignature,
+  KeyWasNotValid,
+  KeyWasRevoked,
+  CredentialWasRevoked
+}
 import io.iohk.atala.prism.credentials.japi.verification.{VerificationResult, error => jvmError}
 import io.iohk.atala.prism.credentials.japi.verification.error.{VerificationError => JvmVerificationError}
 import io.iohk.atala.prism.credentials.{
@@ -54,13 +59,14 @@ class CredentialVerificationFacade(implicit val ec: ECTrait) extends CredentialV
 
   private def toJvmVerificationError(err: VerificationError): JvmVerificationError =
     err match {
-      case Revoked(revokedOn) => new jvmError.Revoked(toTimestampInfo(revokedOn))
+      case CredentialWasRevoked(revokedOn) => new jvmError.Revoked(toTimestampInfo(revokedOn))
       case KeyWasRevoked(credentialIssuedOn, keyRevokedOn) =>
         new jvmError.KeyWasRevoked(toTimestampInfo(credentialIssuedOn), toTimestampInfo(keyRevokedOn))
       case KeyWasNotValid(keyAddedOn, credentialIssuedOn) =>
         new jvmError.KeyWasNotValid(toTimestampInfo(keyAddedOn), toTimestampInfo(credentialIssuedOn))
       case InvalidSignature =>
         new jvmError.InvalidSignature
+      case other => throw new NotImplementedError(s"$other error is not implemented")
     }
 
   private def toTimestampInfo(timestampInfo: JvmTimestampInfo): TimestampInfo =

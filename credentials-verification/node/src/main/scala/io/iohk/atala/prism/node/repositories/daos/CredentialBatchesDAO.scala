@@ -77,6 +77,17 @@ object CredentialBatchesDAO {
       .map(_ => ())
   }
 
+  def findRevokedCredentialTime(
+      batchId: CredentialBatchId,
+      credentialHash: SHA256Digest
+  ): ConnectionIO[Option[TimestampInfo]] = {
+    sql"""SELECT revoked_on, revoked_on_absn, revoked_on_osn
+         |FROM revoked_credentials
+         |WHERE batch_id = $batchId AND
+         |      credential_id = $credentialHash::CREDENTIAL_HASH
+         |""".stripMargin.query[TimestampInfo].option
+  }
+
   // only for testing
   def findRevokedCredentials(batchId: CredentialBatchId): ConnectionIO[List[(SHA256Digest, TimestampInfo)]] = {
     sql"""SELECT credential_id, revoked_on, revoked_on_absn, revoked_on_osn

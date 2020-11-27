@@ -5,7 +5,12 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.iohk.atala.prism.credentials.VerificationError
-import io.iohk.atala.prism.credentials.VerificationError.{InvalidSignature, KeyWasNotValid, KeyWasRevoked, Revoked}
+import io.iohk.atala.prism.credentials.VerificationError.{
+  CredentialWasRevoked,
+  InvalidSignature,
+  KeyWasNotValid,
+  KeyWasRevoked
+}
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
 import io.iohk.atala.cvp.webextension.activetab.models.{JsSdkDetails, JsSignedMessage, JsUserDetails}
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
@@ -109,7 +114,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
   private def toJsErrorList(validations: ValidatedNel[VerificationError, Unit]): js.Array[String] = {
     def toErrorCode(err: VerificationError): String =
       err match {
-        case Revoked(revokedOn) =>
+        case CredentialWasRevoked(revokedOn) =>
           s"The credential was revoked on $revokedOn"
         case KeyWasNotValid(keyAddedOn, credentialIssuedOn) =>
           s"The signing key was added after the credential was issued.\nKey added on: $keyAddedOn\nCredential issued on: $credentialIssuedOn"

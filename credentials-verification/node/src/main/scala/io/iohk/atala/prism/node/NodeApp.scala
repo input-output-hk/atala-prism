@@ -4,7 +4,12 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
-import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository, KeyValuesRepository}
+import io.iohk.atala.prism.node.repositories.{
+  CredentialBatchesRepository,
+  CredentialsRepository,
+  DIDDataRepository,
+  KeyValuesRepository
+}
 import io.iohk.atala.prism.node.services.AtalaService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
@@ -94,7 +99,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     )
     objectManagementServicePromise.success(objectManagementService)
 
-    val nodeService = new NodeServiceImpl(didDataService, objectManagementService, credentialsService)
+    val credentialBatchesRepository = new CredentialBatchesRepository(xa)
+
+    val nodeService =
+      new NodeServiceImpl(didDataService, objectManagementService, credentialsService, credentialBatchesRepository)
 
     logger.info("Starting server")
     import io.grpc.protobuf.services.ProtoReflectionService
