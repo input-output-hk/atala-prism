@@ -12,7 +12,7 @@ import { contactMapper } from '../APIs/helpers/contactHelpers';
 import Logger from '../helpers/Logger';
 import { filterByInclusion } from '../helpers/filterHelpers';
 
-const useGetContacts = (contactsManager, setContacts, setLoading) => {
+const useGetContacts = (contactsManager, setContacts, setLoading, setSearching) => {
   const [hasMore, setHasMore] = useState(true);
 
   const getContacts = ({ pageSize, lastId, oldContacts = [], isRefresh = false }) =>
@@ -35,7 +35,10 @@ const useGetContacts = (contactsManager, setContacts, setLoading) => {
         Logger.error('[Contacts.getContacts] Error while getting contacts', error);
         message.error(i18n.t('errors.errorGetting', { model: 'Contacts' }));
       })
-      .finally(() => setLoading && setLoading(false));
+      .finally(() => {
+        if (setLoading) setLoading(false);
+        if (setSearching) setSearching(false);
+      });
 
   return [getContacts, hasMore];
 };
@@ -57,9 +60,14 @@ export const useContacts = (contactsManager, setLoading) => {
   return [contacts, handleContactsRequest, hasMore];
 };
 
-export const useContactsWithFilteredList = (contactsManager, setLoading) => {
+export const useContactsWithFilteredList = (contactsManager, setLoading, setSearching) => {
   const [contacts, setContacts] = useState([]);
-  const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts, setLoading);
+  const [getContacts, hasMore] = useGetContacts(
+    contactsManager,
+    setContacts,
+    setLoading,
+    setSearching
+  );
   const [searchText, setSearchText] = useState();
   const [status, setStatus] = useState();
   const [filteredContacts, setFilteredContacts] = useState([]);
@@ -99,6 +107,7 @@ export const useContactsWithFilteredList = (contactsManager, setLoading) => {
   const handleContactsRequest = () => {
     const { contactid } = getLastArrayElementOrEmpty(contacts);
 
+    setSearching(true);
     return getContacts({
       pageSize: CONTACT_PAGE_SIZE,
       lastId: contactid,

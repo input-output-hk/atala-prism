@@ -6,7 +6,7 @@ import { PENDING_CONNECTION, CONNECTED } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const ConnectionsFilter = ({ searchText, setSearchText, status, setStatus }) => {
+const ConnectionsFilter = ({ searchText, setSearchText, status, setStatus, withStatus }) => {
   const { t } = useTranslation();
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
@@ -23,20 +23,22 @@ const ConnectionsFilter = ({ searchText, setSearchText, status, setStatus }) => 
             value={searchText}
           />
         </Col>
-        <Col span={12}>
-          <Select
-            value={status}
-            onChange={setStatus}
-            allowClear
-            placeholder={t('contacts.filters.status')}
-          >
-            {statuses.map(statusType => (
-              <Select.Option key={statusType} value={statusType}>
-                {t(`holders.status.${statusType}`)}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
+        {withStatus && (
+          <Col span={12}>
+            <Select
+              value={status}
+              onChange={setStatus}
+              allowClear
+              placeholder={t('contacts.filters.status')}
+            >
+              {statuses.map(statusType => (
+                <Select.Option key={statusType} value={statusType}>
+                  {t(`holders.status.${statusType}`)}
+                </Select.Option>
+              ))}
+            </Select>
+          </Col>
+        )}
       </Row>
     </div>
   );
@@ -44,13 +46,15 @@ const ConnectionsFilter = ({ searchText, setSearchText, status, setStatus }) => 
 
 ConnectionsFilter.defaultProps = {
   searchText: undefined,
-  status: undefined
+  status: undefined,
+  withStatus: true
 };
 
 ConnectionsFilter.propTypes = {
   searchText: PropTypes.string,
   setSearchText: PropTypes.func.isRequired,
   status: PropTypes.string,
+  withStatus: PropTypes.bool,
   setStatus: PropTypes.func.isRequired
 };
 

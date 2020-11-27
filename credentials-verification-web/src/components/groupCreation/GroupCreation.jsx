@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Input, Checkbox, Row, Col, Icon, message } from 'antd';
-import { useTableHandler } from '../../hooks/useTableHandler';
 import { withApi } from '../providers/withApi';
-import { useContacts } from '../../hooks/useContacts';
+import { useContactsWithFilteredList } from '../../hooks/useContacts';
 import { useDebounce } from '../../hooks/useDebounce';
 import { noEmptyInput } from '../../helpers/formRules';
 import CustomForm from '../common/Organisms/Forms/CustomForm';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { CONTACT_NAME_KEY, EXTERNAL_ID_KEY } from '../../helpers/constants';
+import { MAX_CONTACTS } from '../../helpers/constants';
 import { colors } from '../../helpers/colors';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import Logger from '../../helpers/Logger';
 import { exactValueExists } from '../../helpers/filterHelpers';
 import './_style.scss';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
+import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
 
 const { Search } = Input;
 
@@ -58,15 +58,18 @@ const GroupCreation = ({
   isSaving
 }) => {
   const [nameState, setNameState] = useState(NAME_STATES.initial);
+  const [selectedContacts, setSelectedContacts] = useState([]);
   const [loadingContacts, setLoadingContacts] = useState(false);
-  const [contacts, handleContactsRequest, hasMore] = useContacts(
-    api.contactsManager,
-    setLoadingContacts
-  );
-  const [filteredContacts, setFilterValue, selectedContacts, setSelectedContacts] = useTableHandler(
+  const [searching, setSearching] = useState(true);
+  const {
     contacts,
-    [CONTACT_NAME_KEY, EXTERNAL_ID_KEY]
-  );
+    filteredContacts,
+    filterProps,
+    getContacts,
+    handleContactsRequest,
+    hasMore
+  } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
+
   const { groupName } = formValues;
   const { t } = useTranslation();
 
@@ -106,14 +109,11 @@ const GroupCreation = ({
 
   const checkIfGroupExists = useDebounce(groupExists);
 
-  const handleContactsSearch = e => {
-    setFilterValue(e.target.value);
-  };
-
-  const handleSelectAll = e => {
+  const handleSelectAll = async e => {
     const { checked } = e.target;
     if (checked) {
-      setSelectedContacts(filteredContacts.map(contact => contact.contactid));
+      const allContacts = await api.contactsManager.getContacts(null, MAX_CONTACTS);
+      setSelectedContacts(allContacts.map(contact => contact.contactid));
     } else {
       setSelectedContacts([]);
     }
@@ -151,21 +151,19 @@ const GroupCreation = ({
             </Col>
           </Row>
           <h3>{t('groupCreation.addContacts')}</h3>
-          <div className="groupsCheckboxContainer">
-            <div className="groupsCheckbox">
+          <Row className="UtilsContainer mb-0">
+            <Col span={3}>
               <Checkbox onChange={handleSelectAll}>{t('groupCreation.selectAll')}</Checkbox>
-            </div>
-            <Search
-              className="searchInput"
-              placeholder="Search"
-              onChange={handleContactsSearch}
-              style={{ width: 200 }}
-            />
-          </div>
+              {selectedContacts.length ? `(${selectedContacts.length})` : null}
+            </Col>
+            <Col span={19}>
+              <ConnectionsFilter {...filterProps} withStatus={false} />
+            </Col>
+          </Row>
           <Row gutter={10} align="bottom" type="flex">
             <Col sm={24} md={20}>
               <div className="addContactsContainer">
-                {loadingContacts ? (
+                {(searching && !filteredContacts.length) || loadingContacts ? (
                   <SimpleLoading />
                 ) : (
                   <ConnectionsTable
@@ -174,6 +172,7 @@ const GroupCreation = ({
                     selectedContacts={selectedContacts}
                     setSelectedContacts={setSelectedContacts}
                     handleContactsRequest={handleContactsRequest}
+                    searching={searching}
                     hasMore={hasMore}
                     size="md"
                   />
@@ -216,7 +215,8 @@ GroupCreation.defaultProps = {
 GroupCreation.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({
-      getGroups: PropTypes.func.isRequired
+      getGroups: PropTypes.func.isRequired,
+      getContacts: PropTypes.func.isRequired
     }).isRequired,
     groupsManager: PropTypes.shape({
       getGroups: PropTypes.func.isRequired

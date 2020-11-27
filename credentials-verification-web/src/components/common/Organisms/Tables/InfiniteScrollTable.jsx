@@ -3,6 +3,7 @@ import { Table } from 'antd';
 import PropTypes from 'prop-types';
 import './_style.scss';
 import { tableHeightKeys } from '../../../../helpers/propShapes';
+import SimpleLoading from '../../Atoms/SimpleLoading/SimpleLoading';
 
 const InfiniteScrollTable = ({
   selectionType,
@@ -10,6 +11,7 @@ const InfiniteScrollTable = ({
   data,
   handleSort,
   loading,
+  searching,
   getMoreData,
   hasMore,
   rowKey,
@@ -44,6 +46,7 @@ const InfiniteScrollTable = ({
         }}
         pagination={false}
         rowKey={rowKey}
+        footer={() => (searching || loading) && <SimpleLoading size="xs" />}
       />
     </div>
   );
@@ -53,6 +56,7 @@ InfiniteScrollTable.defaultProps = {
   data: [],
   selectionType: null,
   handleSort: null,
+  searching: false,
   size: 'xl'
 };
 
@@ -62,6 +66,7 @@ InfiniteScrollTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   handleSort: PropTypes.func,
   loading: PropTypes.bool.isRequired,
+  searching: PropTypes.bool,
   getMoreData: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
   rowKey: PropTypes.string.isRequired,

@@ -20,7 +20,7 @@
     }
   }
 
-  .groupsCheckboxContainer {
+  .UtilsContainer {
     display: flex;
     width: 100%;
     align-items: center;
@@ -59,7 +59,8 @@
   @include primary-text($h3, #728099);
 }
 .addContactsContainer {
-  overflow-y: auto;
+  overflow-y: hidden;
+  height: map-get($height-sizes, 'md');
   .textContactData {
     margin-right: 40px;
     h4 {

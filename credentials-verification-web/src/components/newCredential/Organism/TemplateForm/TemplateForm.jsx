@@ -1,17 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { DatePicker, Input } from 'antd';
+import { Input } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import localeKa from 'moment/locale/ka';
-import localeEn from 'moment/locale/en-gb';
 import { noEmptyInput, futureDate, pastDate, minOneElement } from '../../../../helpers/formRules';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import FileUploader from '../../../common/Molecules/FileUploader/FileUploader';
+import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 
 import './_style.scss';
-import { getCurrentLanguage } from '../../../../helpers/languageUtils';
-import { DEFAULT_DATE_FORMAT } from '../../../../helpers/constants';
 
 const getStartDate = formRef => formRef.current.getForm().getFieldValue('startDate');
 
@@ -33,8 +30,6 @@ const TemplateForm = React.forwardRef(
   ) => {
     const { t } = useTranslation();
 
-    const locale = getCurrentLanguage() === 'en' ? localeEn : localeKa;
-
     const items = [
       getInput('degreeName', degreeName, t, ({ target: { value } }) =>
         updateExampleCredential('degreeName', value)
@@ -53,13 +48,11 @@ const TemplateForm = React.forwardRef(
         key: 'startDate',
         className: 'DatePickerContainer firstElement',
         input: (
-          <DatePicker
+          <CustomDatePicker
             onChange={({ _d }) => updateExampleCredential('startDate', 1000 * moment(_d).unix())}
             allowClear={false}
             size="large"
             showToday={false}
-            format={DEFAULT_DATE_FORMAT}
-            locale={locale}
           />
         )
       },
@@ -81,14 +74,12 @@ const TemplateForm = React.forwardRef(
         key: 'graduationDate',
         className: 'DatePickerContainer',
         input: (
-          <DatePicker
+          <CustomDatePicker
             onChange={({ _d }) =>
               updateExampleCredential('graduationDate', 1000 * moment(_d).unix())
             }
             allowClear={false}
-            format={DEFAULT_DATE_FORMAT}
             size="large"
-            locale={locale}
           />
         )
       }

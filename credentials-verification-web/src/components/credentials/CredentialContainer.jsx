@@ -44,12 +44,16 @@ const CredentialContainer = ({ api }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [indeterminateSelectAll, setIndeterminateSelectAll] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({ issued: false, received: false });
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
+  const setLoadingByKey = (key, value) =>
+    setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
+
   const fetchCredentialsIssued = async () => {
     try {
+      setLoadingByKey('issued', true);
       const { credentialid } = getLastArrayElementOrEmpty(credentialsIssued);
 
       const newlyFetchedCredentials = await api.credentialsManager.getCredentials(
@@ -75,12 +79,13 @@ const CredentialContainer = ({ api }) => {
       );
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
     } finally {
-      setLoading(false);
+      setLoadingByKey('issued', false);
     }
   };
 
   const refreshCredentialsIssued = async () => {
     try {
+      setLoadingByKey('issued', true);
       const refreshedCredentials = await api.credentialsManager.getCredentials(
         credentialsIssued.length,
         null
@@ -99,12 +104,13 @@ const CredentialContainer = ({ api }) => {
       );
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
     } finally {
-      setLoading(false);
+      setLoadingByKey('issued', false);
     }
   };
 
   const fetchCredentialsReceived = async () => {
     try {
+      setLoadingByKey('received', true);
       const { messageid } = getLastArrayElementOrEmpty(credentialsReceived);
 
       const newlyFetchedCredentials = await api.connector.getCredentialsReceived(
@@ -126,11 +132,12 @@ const CredentialContainer = ({ api }) => {
         error
       );
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
+    } finally {
+      setLoadingByKey('received', false);
     }
   };
 
   useEffect(() => {
-    setLoading(true);
     fetchCredentialsIssued();
   }, []);
 
@@ -346,7 +353,7 @@ const CredentialContainer = ({ api }) => {
         onCancel={handleCancel}
         {...getTargetCredentials(sendCredentialsRequiredStatus)}
       />
-      <Credentials tabProps={tabProps} setActiveTab={setActiveTab} initialLoading={loading} />
+      <Credentials tabProps={tabProps} setActiveTab={setActiveTab} loading={loading} />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Checkbox, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PulseLoader } from 'react-spinners';
@@ -22,6 +22,7 @@ const CredentialsIssued = ({
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [selectedLength, setSelectedLength] = useState();
 
   const emptyProps = {
     photoSrc: noCredentialsPicture,
@@ -29,6 +30,11 @@ const CredentialsIssued = ({
     isFilter: showEmpty,
     button: <CreateCredentialsButton />
   };
+
+  useEffect(() => {
+    const keys = Object.keys(selectedRowKeys);
+    setSelectedLength(keys.length);
+  }, [tableProps.selectionType.selectedRowKeys]);
 
   const { credentials, selectionType } = tableProps;
   const { selectedRowKeys } = selectionType || {};
@@ -66,8 +72,11 @@ const CredentialsIssued = ({
           {loadingSelection ? (
             <PulseLoader size={3} color="#FFAEB3" />
           ) : (
-            t('credentials.actions.selectAll')
-          )}{' '}
+            <span>
+              {t('credentials.actions.selectAll')}
+              {selectedLength ? `  (${selectedLength})  ` : null}
+            </span>
+          )}
         </Checkbox>
         <CredentialButtons
           {...bulkActionsProps}

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { DatePicker, Row, Col, Input, Icon, Select } from 'antd';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 import { DEFAULT_DATE_FORMAT } from '../../../../../helpers/constants';
+import CustomDatePicker from '../../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 
 const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, groups }) => {
   const { t } = useTranslation();
@@ -32,8 +33,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
     disabled: true,
     placeholder: t('credentials.filters.date'),
     suffixIcon: <Icon type="down" />,
-    onChange: (_, dateString) => setDate(dateString),
-    format: DEFAULT_DATE_FORMAT
+    onChange: (_, dateString) => setDate(dateString)
   };
 
   return (
@@ -75,7 +75,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
           </Select>
         </Col>
         <Col span={3}>
-          <DatePicker {...datePickerProps} />
+          <CustomDatePicker {...datePickerProps} />
         </Col>
         <Col span={3}>
           <Input

@@ -26,13 +26,14 @@ const DashboardCardCredential = ({ loading, data }) => {
       <IconItems
         icon={iconSigned}
         title={tp('signed')}
-        value={data.numberofcredentialsindraft}
+        value={data.numberofcredentialspublished}
         loading={loading}
       />
       <IconItems
         icon={iconSent}
         title={tp('sent')}
-        value={data.numberofcredentialspublished}
+        // TODO: review this field
+        value={0}
         loading={loading}
       />
       <IconItems

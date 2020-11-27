@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { DatePicker, Icon, Input, Row, Col, Select } from 'antd';
+import { Icon, Input, Row, Col, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
-import { DEFAULT_DATE_FORMAT } from '../../../../helpers/constants';
+import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 
 const { Option } = Select;
 
@@ -20,7 +20,6 @@ const GroupFilters = ({ updateGroups }) => {
   const datePickerProps = {
     placeholder: t('groups.filters.date'),
     suffixIcon: <Icon type="down" />,
-    format: DEFAULT_DATE_FORMAT,
     onChange: (_, dateString) => setDate(dateString)
   };
 
@@ -36,16 +35,17 @@ const GroupFilters = ({ updateGroups }) => {
         </Col>
         <Col span={4}>
           <CustomInputGroup prefixIcon="calendar">
-            <DatePicker {...datePickerProps} />
+            <CustomDatePicker {...datePickerProps} />
           </CustomInputGroup>
         </Col>
-        <Col span={4}>
+        {/* TODO: in 0.4 this will help */}
+        {/* <Col span={4}>
           <CustomInputGroup prefixIcon="sort-ascending">
             <Select defaultValue="name" disabled>
               <Option value="name">{t('groups.filters.name')}</Option>
             </Select>
           </CustomInputGroup>
-        </Col>
+        </Col> */}
       </Row>
     </div>
   );

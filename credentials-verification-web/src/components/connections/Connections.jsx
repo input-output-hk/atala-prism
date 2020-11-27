@@ -19,6 +19,7 @@ const Connections = ({
   handleContactsRequest,
   refreshContacts,
   loading,
+  searching,
   filterProps,
   redirector: { redirectToContactDetails }
 }) => {
@@ -44,18 +45,18 @@ const Connections = ({
   };
 
   const renderContent = () => {
-    if (loading) return <SimpleLoading size="md" />;
-    if (tableProps.contacts.length) {
-      return (
-        <ConnectionsTable
-          inviteContact={inviteContactAndShowQR}
-          viewContactDetail={redirectToContactDetails}
-          handleContactsRequest={handleContactsRequest}
-          {...tableProps}
-        />
-      );
-    }
-    return <EmptyComponent {...emptyProps} />;
+    if (!tableProps.contacts.length && !loading && !searching)
+      return <EmptyComponent {...emptyProps} />;
+    if (!tableProps.contacts.length && (loading || searching)) return <SimpleLoading size="md" />;
+    return (
+      <ConnectionsTable
+        inviteContact={inviteContactAndShowQR}
+        viewContactDetail={redirectToContactDetails}
+        handleContactsRequest={handleContactsRequest}
+        searching={searching}
+        {...tableProps}
+      />
+    );
   };
 
   return (
@@ -77,7 +78,8 @@ const Connections = ({
 };
 
 Connections.defaultProps = {
-  loading: false
+  loading: false,
+  searching: false
 };
 
 Connections.propTypes = {
@@ -87,6 +89,7 @@ Connections.propTypes = {
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
   loading: PropTypes.bool,
+  searching: PropTypes.bool,
   inviteContact: PropTypes.func.isRequired,
   refreshContacts: PropTypes.func.isRequired,
   filterProps: PropTypes.shape({

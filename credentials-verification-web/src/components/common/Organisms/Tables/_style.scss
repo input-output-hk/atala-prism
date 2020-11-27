@@ -1,14 +1,6 @@
 @import '../../../../css/general_styling';
 
-$sizes: (
-  'xs': 20vh,
-  'sm': 30vh,
-  'md': 40vh,
-  'lg': 50vh,
-  'xl': 60vh
-);
-
-@each $sizeKey, $size in $sizes {
+@each $sizeKey, $size in $height-sizes {
   .table-#{$sizeKey} {
     height: $size;
     overflow-y: scroll;

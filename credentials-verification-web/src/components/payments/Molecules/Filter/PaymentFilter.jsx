@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Col, DatePicker, Icon, Input, Row } from 'antd';
-import { DEFAULT_DATE_FORMAT } from '../../../../helpers/constants';
+import { Col, Icon, Input, Row } from 'antd';
+import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 
 const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
   const { t } = useTranslation();
@@ -12,7 +12,6 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
     id: 'from',
     placeholder: t('payment.filterBy', { field: t('payment.fields.from') }),
     suffixIcon: <Icon type="down" />,
-    format: DEFAULT_DATE_FORMAT,
     onChange: (_, dateString) => setFrom(dateString)
   };
 
@@ -21,7 +20,6 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
     id: 'to',
     placeholder: t('payment.filterBy', { field: t('payment.fields.to') }),
     suffixIcon: <Icon type="down" />,
-    format: DEFAULT_DATE_FORMAT,
     onChange: (_, dateString) => setTo(dateString)
   };
 
@@ -29,10 +27,10 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
     <div className="FilterControls">
       <Row gutter={8}>
         <Col span={8}>
-          <DatePicker {...fromProps} />
+          <CustomDatePicker {...fromProps} />
         </Col>
         <Col span={8}>
-          <DatePicker {...toProps} />
+          <CustomDatePicker {...toProps} />
         </Col>
         <Col span={8}>
           <Input

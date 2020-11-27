@@ -16,7 +16,8 @@ const ConnectionsTable = ({
   handleContactsRequest,
   hasMore,
   viewContactDetail,
-  size
+  size,
+  searching
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +36,7 @@ const ConnectionsTable = ({
         hasMore={hasMore}
         rowKey="contactid"
         size={size}
+        searching={searching}
         selectionType={
           setSelectedContacts && {
             selectedRowKeys: selectedContacts,
@@ -53,6 +55,7 @@ ConnectionsTable.defaultProps = {
   setSelectedContacts: null,
   selectedContacts: [],
   inviteContact: null,
+  searching: false,
   size: 'xl'
 };
 
@@ -64,6 +67,7 @@ ConnectionsTable.propTypes = {
   viewContactDetail: PropTypes.func,
   handleContactsRequest: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
+  searching: PropTypes.bool,
   size: PropTypes.oneOf(Object.keys(TABLE_HEIGHTS))
 };
 

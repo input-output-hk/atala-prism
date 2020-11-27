@@ -5,7 +5,8 @@ import { withApi } from '../providers/withApi';
 import { useContactsWithFilteredList } from '../../hooks/useContacts';
 
 const ConnectionsContainer = ({ api }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(true);
   const {
     contacts,
     filteredContacts,
@@ -13,14 +14,13 @@ const ConnectionsContainer = ({ api }) => {
     getContacts,
     handleContactsRequest,
     hasMore
-  } = useContactsWithFilteredList(api.contactsManager, setLoading);
+  } = useContactsWithFilteredList(api.contactsManager, setLoading, setSearching);
 
   const refreshContacts = () => getContacts({ pageSize: contacts.length, isRefresh: true });
 
   const inviteContact = contactId => api.contactsManager.generateConnectionToken(contactId);
 
   useEffect(() => {
-    setLoading(true);
     if (!contacts.length) handleContactsRequest();
   }, []);
 
@@ -36,6 +36,7 @@ const ConnectionsContainer = ({ api }) => {
       inviteContact={inviteContact}
       refreshContacts={refreshContacts}
       loading={loading}
+      searching={searching}
       filterProps={filterProps}
     />
   );
