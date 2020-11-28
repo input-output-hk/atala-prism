@@ -5,6 +5,7 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+// Represents a stored payload on the authenticated user's vault
 message Payload {
     string id = 1; // unique uuid identifying the payload
     bytes hash = 2; // content hash

@@ -5,6 +5,7 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+// Indicates the status on the contact's connection
 enum ContactConnectionStatus {
   STATUS_MISSING = 0; // default value, represents the lack of status
   INVITATION_MISSING = 1; // the is no connection token generated and no invitation has been sent
@@ -13,12 +14,13 @@ enum ContactConnectionStatus {
   CONNECTION_REVOKED = 4; // the contact rejected the connection
 }
 
+// Represents a contact
 message Contact {
-  string contactId = 1;
-  string externalId = 2; // the id provided by the issuer at contact creation time
-  string jsonData = 3;
-  ContactConnectionStatus connectionStatus = 4;
-  string connectionToken = 5; // present when the status is ConnectionMissing
-  string connectionId = 6; // present when the status is ConnectionAccepted
-  int64 createdAt = 7;
+  string contactId = 1; // the internal id to identify the contact
+  string externalId = 2; // the id provided by the issuer at contact creation time, commonly used to match the issuer's record keeping system, for example, it could be the student id for a university
+  string jsonData = 3; // arbitrary data for the contact, should be a valid json, when missing, "{}" will be used
+  ContactConnectionStatus connectionStatus = 4; // the connection status for this contact
+  string connectionToken = 5; // the connection token used to get this contact connected, present when the status is ConnectionMissing
+  string connectionId = 6; // the connection id necessary to send messages to this contact, present when the status is ConnectionAccepted
+  int64 createdAt = 7; // the timestamp when the contact was created
 }

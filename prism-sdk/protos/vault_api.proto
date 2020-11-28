@@ -8,31 +8,39 @@ package io.iohk.atala.prism.protos;
 import "vault_models.proto";
 import "common_models.proto";
 
+// The Vault API
 service EncryptedDataVaultService {
     // Checks if the service is healthy
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+
     // Stores a given encrypted payload, associating it with the authenticated user.
     rpc StoreData (StoreDataRequest) returns (StoreDataResponse) {}
+
     // Retrieves all encrypted payloads stored by the authenticated user, paginated and sorted by insertion order.
     rpc GetPaginatedData (GetPaginatedDataRequest) returns (GetPaginatedDataResponse) {}
 }
 
+// Request to store data on the authenticated user
 message StoreDataRequest {
     string externalId = 1; // client-generated UUID; should be unique for semantically different requests 
     bytes payloadHash = 2; // content hash
     bytes payload = 3; // content of the payload encrypted by the user
 }
 
+// The response for storing data
 message StoreDataResponse {
-    string payloadId = 1; // server-generated UUID representing the actual id of the payload;
-                          // it is different from the client-supplied externalId
+    // server-generated UUID representing the actual id of the payload;
+    // it is different from the client-supplied externalId
+    string payloadId = 1;
 }
 
+// Request to get the store data from the authenticated user
 message GetPaginatedDataRequest {
     string lastSeenId = 1; // returned payloads will have been created after the last seen payload (optional field)
     int32 limit = 2; // maximum number of payloads to return; must be > 0
 }
 
+// Response when getting stored data from the authenticated user
 message GetPaginatedDataResponse {
     repeated Payload payloads = 1;
 }

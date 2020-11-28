@@ -8,19 +8,35 @@ package io.iohk.atala.prism.protos;
 import "console_models.proto";
 import "common_models.proto";
 
+// The Management Console API
 service ConsoleService {
   // Checks if the service is healthy
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+
+  // Creates a contact for the authenticated institution
   rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
+
+  // Retrieves the available contacts for the authenticated institution
   rpc GetContacts (GetContactsRequest) returns (GetContactsResponse) {}
+
+  // Retrieves a contact for the authenticated institution
   rpc GetContact (GetContactRequest) returns (GetContactResponse) {}
+
+  // Generates a connection token for the given contact
+  //
+  // This is a necessary step before being able to connect to the contact.
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
+
+  // Retrieves numbers about the operations done in the management console
   rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
 }
 
+// Request to get usage statistics for the authenticated institution
 message GetStatisticsRequest {}
+
+// Response with the usage statistics for the authenticated institution
 message GetStatisticsResponse {
-  int32 numberOfContacts = 1; // total number of contacts for the authenticated user
+  int32 numberOfContacts = 1; // total number of contacts created
   int32 numberOfContactsPendingConnection = 2; // total number of contacts where they haven't accepted the connection
   int32 numberOfContactsConnected = 3; // total number of contacts where they accepted the connection
   int32 numberOfGroups = 4; // total number of groups created
@@ -29,37 +45,47 @@ message GetStatisticsResponse {
   int32 numberOfCredentialsReceived = 7; // total number of credentials received from contacts
 }
 
+// Request to create a contact on the authenticated institution
 message CreateContactRequest {
   string groupName = 1;
   string jsonData = 2;
-  // The id provided by the issuer at contact creation time
-  // An issuer cannot have two contacts with the same external id
+  // The id provided by the institution at contact creation time
+  // An institution cannot have two contacts with the same external id
   // The id could be repeated in different issuers
   string externalId = 3;
 }
+// Response after creating a contact
 message CreateContactResponse {
-  Contact contact = 1;
+  Contact contact = 1; // the created contact
 }
 
+// Request to retrieve the contacts from the authenticated institution
+//
+// The result is sorted by the contact's creation date in ascending order, breaking ties by contact id
 message GetContactsRequest {
   int32 limit = 1; // the max amount of contacts to return, must be > 0
   string lastSeenContactId = 2; // the last seen contact (if any), the returned contacts start after this one
   string groupName = 3; // if provided, get only the contacts that belong to this group
 }
+// Response with the retrieved contacts
 message GetContactsResponse {
   repeated Contact contacts = 1;
 }
 
+// Request to retrieve a contact from the authenticated institution
 message GetContactRequest {
   string contactId = 1;
 }
+// Response for the retrieved contact
 message GetContactResponse {
-  Contact contact = 1;
+  Contact contact = 1; // the retrieved contact
 }
 
+// Request to generate a connection token for the given contact on the authenticated institution
 message GenerateConnectionTokenForContactRequest {
   string contactId = 1; // the contact that will be linked to the token
 }
+// Response after generating a connection token
 message GenerateConnectionTokenForContactResponse {
-  string token = 1;
+  string token = 1; // the token that needs to be shared to the user to accept the connection
 }
