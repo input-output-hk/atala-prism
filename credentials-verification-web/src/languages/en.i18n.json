@@ -669,7 +669,7 @@
     "assignToGroups": {
       "title": "Assign or Create Group",
       "info": "Assign Contacts to 1 or more groups",
-      "placeholder": "Select groups",
+      "placeholder": "Select group(s) or create new group(s)",
       "skipStepText": "Skip this step"
     },
     "errorLog": {
