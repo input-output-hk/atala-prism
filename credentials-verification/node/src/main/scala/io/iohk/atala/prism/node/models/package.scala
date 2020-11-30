@@ -2,11 +2,10 @@ package io.iohk.atala.prism.node
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.models.TransactionInfo
-import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {

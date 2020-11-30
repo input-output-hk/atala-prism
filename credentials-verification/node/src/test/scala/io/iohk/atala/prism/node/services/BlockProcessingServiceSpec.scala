@@ -1,12 +1,15 @@
 package io.iohk.atala.prism.node.services
 
+import java.time.Instant
+
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPrivateKey}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.DIDSuffix
-import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -46,9 +49,11 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 
+  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+
   val service = new BlockProcessingServiceImpl()
-  val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
-  val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
+  val dummyTimestamp = dummyTimestampInfo.atalaBlockTimestamp
+  val dummyABSequenceNumber = dummyTimestampInfo.atalaBlockSequenceNumber
 
   "BlockProcessingService" should {
     "apply block in" in {

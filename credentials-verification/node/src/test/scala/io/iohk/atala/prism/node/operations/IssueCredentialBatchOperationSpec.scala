@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.node.operations
 
+import java.time.Instant
+
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
@@ -24,7 +27,7 @@ object IssueCredentialBatchOperationSpec {
     DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.publicKey)
   )
 
-  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
   lazy val issuerCreateDIDOperation =
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
   lazy val issuerDIDSuffix = issuerCreateDIDOperation.id

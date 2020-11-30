@@ -4,11 +4,11 @@ import java.security.PublicKey
 import java.time.Instant
 
 import com.google.protobuf.ByteString
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, JvmECPublicKey}
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
-import io.iohk.atala.prism.node.operations.TimestampInfo
 import io.iohk.atala.prism.protos.{node_api, node_models}
 
 object ProtoCodecs {

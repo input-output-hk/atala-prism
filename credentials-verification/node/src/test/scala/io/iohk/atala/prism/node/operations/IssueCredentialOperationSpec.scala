@@ -1,9 +1,11 @@
 package io.iohk.atala.prism.node.operations
 
 import java.security.MessageDigest
+import java.time.Instant
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
@@ -24,7 +26,7 @@ object IssueCredentialOperationSpec {
     DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.publicKey)
   )
 
-  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
   lazy val issuerOperation =
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
   lazy val issuer = issuerOperation.id

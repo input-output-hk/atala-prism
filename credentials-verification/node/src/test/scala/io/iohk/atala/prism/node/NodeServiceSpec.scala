@@ -8,7 +8,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
@@ -26,7 +26,6 @@ import io.iohk.atala.prism.node.operations.{
   ParsingUtils,
   RevokeCredentialOperationSpec,
   RevokeCredentialsOperationSpec,
-  TimestampInfo,
   UpdateDIDOperationSpec
 }
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
@@ -118,11 +117,13 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
     super.afterEach()
   }
 
+  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = SHA256Digest.compute("test".getBytes())
       val didSuffix = DIDSuffix(didDigest)
-      val dummyTime = TimestampInfo.dummyTime
+      val dummyTime = dummyTimestampInfo
       DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
       PublicKeysDAO.insert(key, dummyTime).transact(database).unsafeRunSync()
@@ -167,7 +168,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value)
       val didSuffix = DIDSuffix(didDigest)
-      val dummyTime = TimestampInfo.dummyTime
+      val dummyTime = dummyTimestampInfo
       DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
       val key1 = DIDPublicKey(didSuffix, "master0", KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
@@ -444,7 +445,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
 
       val issuerDIDSuffix = DIDSuffix(SHA256Digest.compute("testDID".getBytes()))
-      val issuedOn = TimestampInfo.dummyTime
+      val issuedOn = dummyTimestampInfo
       val credState =
         CredentialState(
           contentHash = SHA256Digest.compute("content".getBytes()),
@@ -512,7 +513,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val issuerDIDSuffix = DIDSuffix(SHA256Digest.compute("testDID".getBytes()))
-      val issuedOn = TimestampInfo.dummyTime
+      val issuedOn = dummyTimestampInfo
       val merkleRoot = MerkleRoot(SHA256Digest.compute("content".getBytes()))
       val credState =
         CredentialBatchState(

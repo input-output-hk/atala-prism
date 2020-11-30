@@ -1,13 +1,15 @@
 package io.iohk.atala.prism.node.services
 
+import java.time.Instant
+
 import cats.scalatest.EitherMatchers._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix}
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
-import io.iohk.atala.prism.node.operations.TimestampInfo
 import io.iohk.atala.prism.node.repositories.CredentialsRepository
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.wordspec.AnyWordSpec
@@ -44,13 +46,14 @@ class CredentialsServiceSpec extends AnyWordSpec with must.Matchers with ScalaFu
 
     "return proper data when found in the database" in {
       val credentialId = CredentialId(SHA256Digest.compute("testId".getBytes()))
+      val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
       val credState =
         CredentialState(
           contentHash = SHA256Digest.compute("content".getBytes()),
           credentialId = credentialId,
           issuerDIDSuffix = DIDSuffix(SHA256Digest.compute("testDID".getBytes())),
-          issuedOn = TimestampInfo.dummyTime,
+          issuedOn = dummyTimestampInfo,
           revokedOn = None,
           lastOperation = SHA256Digest.compute("lastOp".getBytes())
         )

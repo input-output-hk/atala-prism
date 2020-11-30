@@ -5,13 +5,13 @@ import cats.effect.IO
 import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, DIDSuffix}
-import io.iohk.atala.prism.node.operations.TimestampInfo
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 
 import scala.concurrent.ExecutionContext

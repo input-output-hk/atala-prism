@@ -4,6 +4,7 @@ import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState

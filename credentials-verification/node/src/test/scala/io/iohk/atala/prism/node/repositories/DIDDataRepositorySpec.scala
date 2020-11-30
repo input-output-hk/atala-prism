@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.node.repositories
 
+import java.time.Instant
+
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
-import io.iohk.atala.prism.node.operations.TimestampInfo
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
@@ -46,7 +48,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
   )
 
   val didData = DIDData(didSuffix, keys, operationDigest)
-  val dummyTimestamp = TimestampInfo.dummyTime
+  val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
   "DIDDataRepository" should {
     "retrieve previously inserted DID data" in {

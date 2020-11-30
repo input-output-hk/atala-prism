@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.node.operations
 
+import java.time.Instant
+
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
@@ -20,7 +23,7 @@ object UpdateDIDOperationSpec {
 
   val newMasterKeys = EC.generateKeyPair()
 
-  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
   lazy val createDidOperation =
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
 

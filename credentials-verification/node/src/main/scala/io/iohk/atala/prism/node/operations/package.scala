@@ -5,6 +5,7 @@ import java.time.Instant
 
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.models.DIDSuffix
@@ -93,27 +94,6 @@ package object operations {
   /** Data required to verify the correctness of the operation */
   case class CorrectnessData(key: ECPublicKey, previousOperation: Option[SHA256Digest])
 
-  case class TimestampInfo(
-      atalaBlockTimestamp: Instant, // timestamp provided from the underlying blockchain
-      atalaBlockSequenceNumber: Int, // transaction index inside the underlying blockchain block
-      operationSequenceNumber: Int // operation index inside the AtalaBlock
-  ) {
-    def occurredBefore(later: TimestampInfo): Boolean = {
-      (atalaBlockTimestamp isBefore later.atalaBlockTimestamp) || (
-        atalaBlockTimestamp == later.atalaBlockTimestamp &&
-        atalaBlockSequenceNumber < later.atalaBlockSequenceNumber
-      ) || (
-        atalaBlockTimestamp == later.atalaBlockTimestamp &&
-        atalaBlockSequenceNumber == later.atalaBlockSequenceNumber &&
-        operationSequenceNumber < later.operationSequenceNumber
-      )
-    }
-  }
-
-  object TimestampInfo {
-    def dummyTime: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
-  }
-
   /** Representation of already parsed valid operation, common for operations */
   trait Operation {
 
@@ -157,13 +137,14 @@ package object operations {
     }
 
     /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter
-      * (defined in io.iohk.atala.prism.node.operations.TimestampInfo.dummyTime)
+      * (defined in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
       *
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
       * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
       */
     def parseWithMockedTime(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] = {
-      parse(signedOperation, TimestampInfo.dummyTime)
+      val mockTime = TimestampInfo(Instant.now(), 1, 1)
+      parse(signedOperation, mockTime)
     }
   }
 

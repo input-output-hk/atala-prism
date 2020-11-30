@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.node.operations
 
+import java.time.Instant
+
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -36,6 +39,8 @@ object CreateDIDOperationSpec {
   val issuingKeys = EC.generateKeyPair()
   val issuingEcKey = protoECKeyFromPublicKey(issuingKeys.publicKey)
 
+  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+
   val exampleOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(
@@ -46,7 +51,7 @@ object CreateDIDOperationSpec {
               node_models.PublicKey(
                 "master",
                 node_models.KeyUsage.MASTER_KEY,
-                Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
               ),
@@ -54,21 +59,21 @@ object CreateDIDOperationSpec {
                 .PublicKey(
                   "issuing",
                   node_models.KeyUsage.ISSUING_KEY,
-                  Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                  Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
                 ),
               node_models.PublicKey(
                 "authentication",
                 node_models.KeyUsage.AUTHENTICATION_KEY,
-                Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
               ),
               node_models.PublicKey(
                 "communication",
                 node_models.KeyUsage.COMMUNICATION_KEY,
-                Some(ProtoCodecs.toTimeStampInfoProto(TimestampInfo.dummyTime)),
+                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
               )
@@ -87,7 +92,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
-  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val dummyTimestamp = dummyTimestampInfo
 
   "CreateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {

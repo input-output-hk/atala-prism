@@ -1,9 +1,11 @@
 package io.iohk.atala.prism.node.repositories
 
+import java.time.Instant
+
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.DIDData
-import io.iohk.atala.prism.node.operations.TimestampInfo
 import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO.CreateCredentialData
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -20,11 +22,12 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
   val didSuffix = didSuffixFromDigest(didOperationDigest)
   val didData = DIDData(didSuffix, Nil, didOperationDigest)
 
+  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
   val credentialOperationDigest = digestGen(1, 2)
   val credentialId = credentialIdFromDigest(credentialOperationDigest)
   val credentialDigest = digestGen(127, 1)
-  val issuanceDate = TimestampInfo.dummyTime
-  val revocationDate = TimestampInfo.dummyTime
+  val issuanceDate = dummyTimestampInfo
+  val revocationDate = dummyTimestampInfo
   val createCredentialData =
     CreateCredentialData(credentialId, credentialOperationDigest, didSuffix, credentialDigest, issuanceDate)
 
@@ -72,7 +75,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val otherCredentialId = credentialIdFromDigest(digestGen(1, 3))
 
       val result = (for {
-        _ <- didDataRepository.create(didData, TimestampInfo.dummyTime)
+        _ <- didDataRepository.create(didData, dummyTimestampInfo)
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(otherCredentialId, revocationDate)
       } yield revocation).value.futureValue.toOption.value

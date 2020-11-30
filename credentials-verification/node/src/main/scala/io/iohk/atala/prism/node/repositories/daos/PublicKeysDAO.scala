@@ -3,10 +3,10 @@ package io.iohk.atala.prism.node.repositories.daos
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.ECConfig
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix}
-import io.iohk.atala.prism.node.operations.TimestampInfo
 
 object PublicKeysDAO {
   def insert(key: DIDPublicKey, timestampInfo: TimestampInfo): ConnectionIO[Unit] = {

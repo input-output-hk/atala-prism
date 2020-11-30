@@ -5,13 +5,12 @@ import java.time.Instant
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.CredentialBatchState
-import io.iohk.atala.prism.node.operations.TimestampInfo
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
@@ -28,6 +27,8 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
   implicit lazy val db = database
 
   private lazy implicit val repository = new CredentialBatchesRepository(database)
+
+  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
   "CredentialsRepository.getCredentialRevocationTime" should {
     "return empty timestamp when there is no data associated to the credential and batch" in {
@@ -46,7 +47,7 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       val randomIssuerDIDSuffix = DIDSuffix(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
-      val randomIssuedOnTime = TimestampInfo.dummyTime
+      val randomIssuedOnTime = dummyTimestampInfo
 
       registerDID(randomIssuerDIDSuffix)
 
@@ -89,7 +90,7 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       val randomIssuerDIDSuffix = DIDSuffix(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
-      val randomIssuedOnTime = TimestampInfo.dummyTime
+      val randomIssuedOnTime = dummyTimestampInfo
 
       registerDID(randomIssuerDIDSuffix)
 
@@ -123,7 +124,7 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       val randomIssuerDIDSuffix = DIDSuffix(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
-      val randomIssuedOnTime = TimestampInfo.dummyTime
+      val randomIssuedOnTime = dummyTimestampInfo
 
       val randomRevocationTime = TimestampInfo(Instant.now(), 10, 100)
 

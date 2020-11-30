@@ -4,6 +4,7 @@ import java.time.Instant
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -22,7 +23,7 @@ object RevokeCredentialOperationSpec {
     DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.publicKey)
   )
 
-  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
   lazy val issuerOperation =
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
   lazy val credentialIssueOperation =

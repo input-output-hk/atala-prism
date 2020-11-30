@@ -6,7 +6,7 @@ import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
@@ -20,7 +20,6 @@ import io.iohk.atala.prism.node.models.{
   DIDSuffix,
   KeyUsage
 }
-import io.iohk.atala.prism.node.operations.TimestampInfo
 
 package object daos {
 

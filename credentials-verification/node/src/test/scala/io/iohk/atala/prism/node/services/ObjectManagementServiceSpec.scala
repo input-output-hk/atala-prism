@@ -5,6 +5,7 @@ import java.time.{Duration, Instant}
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.models.{
   BlockInfo,
@@ -20,7 +21,7 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
-import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, TimestampInfo}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
@@ -79,8 +80,10 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       blockProcessing
     )
 
-  private val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
-  private val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
+  private val dummyTime = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+
+  private val dummyTimestamp = dummyTime.atalaBlockTimestamp
+  private val dummyABSequenceNumber = dummyTime.atalaBlockSequenceNumber
   private val dummyTransactionInfo =
     TransactionInfo(
       transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
