@@ -610,3 +610,12 @@ p.padding  { padding:0; margin:0;}
     justify-content: center;
     align-items: center;
 }
+
+.upload_status_container {
+  background-color: rgba(255, 45, 59, 0.1);
+  padding: 10px 15px;
+  color: #ff2d3b;
+  font-size: 12px;
+  line-height: 100%;
+  margin-top: 10px;
+}

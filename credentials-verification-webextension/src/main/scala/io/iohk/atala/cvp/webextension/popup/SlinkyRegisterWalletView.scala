@@ -158,7 +158,8 @@ import scala.util.{Failure, Success}
               onChange := (e => setFile(e.target.asInstanceOf[HTMLInputElement].files(0)))
             ),
             label(htmlFor := "logo")("Upload your logo")
-          )
+          ),
+          state.fileOpt.map(f => div(className := "upload_status_container")(f.name))
         ),
         div(className := "div__field_group")(
           div(className := "input__container")(
