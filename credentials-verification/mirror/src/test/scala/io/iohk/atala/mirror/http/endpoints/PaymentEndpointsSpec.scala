@@ -38,7 +38,18 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
       response.status mustBe Status.NotFound
     }
 
-    "return payId information" in new PaymentEndpointsFixtures {
+    "return payId information by holder DID" in new PaymentEndpointsFixtures {
+      testFetchingPayIdInformationForConnection2(s"/${connectionHolderDid2.value}")
+    }
+
+    "return payId information by holder pay id name" in new PaymentEndpointsFixtures {
+      testFetchingPayIdInformationForConnection2(s"/${connectionPayIdName2.name}")
+    }
+
+    def testFetchingPayIdInformationForConnection2(uriPath: String) = {
+      val fixtures = new PaymentEndpointsFixtures {}
+      import fixtures._
+
       (for {
         _ <- ConnectionFixtures.insertAll(databaseTask)
         _ <- CardanoAddressInfoFixtures.insertAll(databaseTask)
@@ -46,7 +57,7 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec with MirrorFixtures {
 
       val response = service
         .run(
-          Request(method = Method.GET, uri = Uri.unsafeFromString(s"/${connectionHolderDid2.value}"), headers = headers)
+          Request(method = Method.GET, uri = Uri.unsafeFromString(uriPath), headers = headers)
         )
         .runSyncUnsafe()
 

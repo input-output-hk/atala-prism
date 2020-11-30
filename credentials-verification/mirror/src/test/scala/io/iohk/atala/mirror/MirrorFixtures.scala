@@ -57,15 +57,17 @@ trait MirrorFixtures {
   object ConnectionFixtures {
     lazy val connectionId1: ConnectionId = ConnectionId(UUID.fromString("0a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
     lazy val connectionId2: ConnectionId = ConnectionId(UUID.fromString("36325aef-d937-41b2-9a6c-b654e02b273d"))
+    lazy val connectionPayIdName2 = PayIdName("payIdName2")
     lazy val connectionHolderDid2 = DID.buildPrismDID("did2")
     lazy val connection1: Connection =
-      Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited, None)
+      Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited, None, None)
     lazy val connection2: Connection =
       Connection(
         ConnectionToken("token2"),
         Some(connectionId2),
         ConnectionState.Invited,
-        Some(connectionHolderDid2)
+        Some(connectionHolderDid2),
+        Some(connectionPayIdName2)
       )
 
     def insertAll[F[_]: Sync](database: Transactor[F]) = {
@@ -340,6 +342,22 @@ trait MirrorFixtures {
       AtalaMessage()
         .withMirrorMessage(
           MirrorMessage().withPayIdMessage(credential_models.PayIdMessage(paymentInformation.asJson.toString()))
+        )
+        .toByteString
+
+    lazy val payIdName1 = "newPayIdName1"
+
+    lazy val payIdNameRegistrationMessage1 = ReceivedMessage(
+      id = "id1",
+      received = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
+      connectionId = connectionId1.uuid.toString,
+      message = payIdNameRegistrationToAtalaMessage(payIdName1)
+    )
+
+    def payIdNameRegistrationToAtalaMessage(payIdName: String): ByteString =
+      AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage().withPayIdNameRegistrationMessage(credential_models.PayIdNameRegistrationMessage(payIdName))
         )
         .toByteString
   }

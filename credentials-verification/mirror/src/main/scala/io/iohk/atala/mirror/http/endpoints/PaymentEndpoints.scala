@@ -11,6 +11,7 @@ import org.http4s.util.CaseInsensitiveString
 import org.http4s.circe._
 import io.circe.syntax._
 import io.iohk.atala.mirror.config.HttpConfig
+import io.iohk.atala.mirror.models.Connection.PayIdName
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.identity.DID
@@ -33,7 +34,7 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
   }
 
   val service: HttpRoutes[Task] = HttpRoutes.of[Task] {
-    case request @ GET -> Root / didRaw =>
+    case request @ GET -> Root / payIdPrefix =>
       val payIdHeader = request.headers.find(_.name == CaseInsensitiveString(PayIDVersionHeader))
       val cardanoNetwork = parseAcceptHeader(request.headers)
 
@@ -46,28 +47,30 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
           )
 
         case (_, Some(cardanoNetwork)) =>
-          DID.fromString(didRaw) match {
+          DID.fromString(payIdPrefix) match {
             case Some(did) =>
-              cardanoAddressInfoService.findPaymentInfo(did, cardanoNetwork).flatMap {
+              cardanoAddressInfoService.findPaymentInfoByHolderDid(did, cardanoNetwork).flatMap {
                 case None => NotFound()
                 case Some((_, cardanoAddresses)) =>
-                  Ok(toPaymentInformation(did, cardanoAddresses, cardanoNetwork).asJson)
+                  Ok(toPaymentInformation(payIdPrefix, cardanoAddresses, cardanoNetwork).asJson)
               }
             case None =>
-              BadRequest(
-                s"$didRaw is not a valid DID"
-              )
+              cardanoAddressInfoService.findPaymentInfoByPayIdName(PayIdName(payIdPrefix), cardanoNetwork).flatMap {
+                case None => NotFound()
+                case Some((_, cardanoAddresses)) =>
+                  Ok(toPaymentInformation(payIdPrefix, cardanoAddresses, cardanoNetwork).asJson)
+              }
           }
       }
   }
 
   def toPaymentInformation(
-      did: DID,
+      payIdPrefix: String,
       addressesInfo: List[CardanoAddressInfo],
       cardanoNetwork: CardanoNetwork
   ): PaymentInformation = {
     PaymentInformation(
-      payId = Some(PayID(did.value + "$" + httpConfig.payIdHostAddress)),
+      payId = Some(PayID(payIdPrefix + "$" + httpConfig.payIdHostAddress)),
       version = None,
       addresses = addressesInfo.filter(_.payidVerifiedAddress.isEmpty).map(toPayIdAddress(_, cardanoNetwork)),
       verifiedAddresses = addressesInfo.flatMap(_.payidVerifiedAddress),

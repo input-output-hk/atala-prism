@@ -10,7 +10,8 @@ case class Connection(
     token: ConnectionToken,
     id: Option[ConnectionId],
     state: ConnectionState,
-    holderDID: Option[DID]
+    holderDID: Option[DID],
+    payIdName: Option[PayIdName]
 )
 
 object Connection {
@@ -27,4 +28,6 @@ object Connection {
     final case object Connected extends ConnectionState("CONNECTED")
     final case object Revoked extends ConnectionState("REVOKED")
   }
+
+  case class PayIdName(name: String) extends AnyVal
 }

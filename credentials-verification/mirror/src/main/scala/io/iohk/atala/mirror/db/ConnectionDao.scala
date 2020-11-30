@@ -3,7 +3,7 @@ package io.iohk.atala.mirror.db
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.Connection
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
+import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken, PayIdName}
 import io.iohk.atala.prism.daos.BaseDAO.didMeta
 import cats.data.NonEmptyList
 import doobie.Fragments
@@ -15,7 +15,7 @@ object ConnectionDao {
 
   def findByConnectionToken(token: ConnectionToken): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state, holder_did
+    | SELECT token, id, state, holder_did, pay_id_name
     | FROM connections
     | WHERE token = $token
     """.stripMargin.query[Connection].option
@@ -23,7 +23,7 @@ object ConnectionDao {
 
   def findByConnectionId(id: ConnectionId): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state, holder_did
+    | SELECT token, id, state, holder_did, pay_id_name
     | FROM connections
     | WHERE id = $id
     """.stripMargin.query[Connection].option
@@ -31,16 +31,24 @@ object ConnectionDao {
 
   def findByHolderDID(holderDID: DID): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state, holder_did
+    | SELECT token, id, state, holder_did, pay_id_name
     | FROM connections
     | WHERE holder_did = $holderDID
+    """.stripMargin.query[Connection].option
+  }
+
+  def findByPayIdName(payIdName: PayIdName): ConnectionIO[Option[Connection]] = {
+    sql"""
+    | SELECT token, id, state, holder_did, pay_id_name
+    | FROM connections
+    | WHERE pay_id_name = $payIdName
     """.stripMargin.query[Connection].option
   }
 
   def findBy(ids: NonEmptyList[ConnectionId]): ConnectionIO[List[Connection]] = {
     val sql =
       fr"""
-      | SELECT token, id, state, holder_did
+      | SELECT token, id, state, holder_did, pay_id_name
       | FROM connections
       | WHERE
       """.stripMargin ++ Fragments.in(fr"id", ids)
@@ -75,7 +83,8 @@ object ConnectionDao {
     | id = ${connection.id},
     | state = ${connection.state}::CONNECTION_STATE,
     | updated_at = now(),
-    | holder_did = ${connection.holderDID}
+    | holder_did = ${connection.holderDID},
+    | pay_id_name = ${connection.payIdName}
     | WHERE token = ${connection.token}
     """.stripMargin.update.run
 
@@ -88,6 +97,8 @@ object ConnectionDao {
     * }}}
     */
   private def insertMany: Update[Connection] =
-    Update[Connection]("INSERT INTO connections(token, id, state, holder_did) values (?, ?, ?::CONNECTION_STATE, ?)")
+    Update[Connection](
+      "INSERT INTO connections(token, id, state, holder_did, pay_id_name) values (?, ?, ?::CONNECTION_STATE, ?, ?)"
+    )
 
 }

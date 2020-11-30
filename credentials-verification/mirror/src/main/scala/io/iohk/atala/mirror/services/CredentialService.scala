@@ -62,7 +62,8 @@ class CredentialService(
               token = ConnectionToken(connectionInfo.token),
               id = parseUUID(connectionInfo.connectionId).map(ConnectionId),
               state = ConnectionState.Connected,
-              holderDID = DID.fromString(connectionInfo.participantDID)
+              holderDID = DID.fromString(connectionInfo.participantDID),
+              payIdName = None
             )
 
             ConnectionDao

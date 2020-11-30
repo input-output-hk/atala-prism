@@ -39,6 +39,7 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with Mi
         Connection.ConnectionToken(token),
         None,
         Connection.ConnectionState.Invited,
+        None,
         None
       )
     )

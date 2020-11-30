@@ -58,6 +58,14 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
       } yield connection).transact(database).unsafeRunSync() mustBe Some(connection2)
     }
 
+    "return connection by pay id name" in {
+      (for {
+        _ <- ConnectionDao.insert(connection1)
+        _ <- ConnectionDao.insert(connection2)
+        connection <- ConnectionDao.findByPayIdName(connectionPayIdName2)
+      } yield connection).transact(database).unsafeRunSync() mustBe Some(connection2)
+    }
+
     "return connection by many ids" in {
       (for {
         _ <- ConnectionDao.insert(connection1)

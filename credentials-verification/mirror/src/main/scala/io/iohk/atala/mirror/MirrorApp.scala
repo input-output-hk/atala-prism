@@ -89,7 +89,8 @@ object MirrorApp extends TaskApp {
         List(
           credentialService.credentialMessageProcessor,
           cardanoAddressInfoService.cardanoAddressInfoMessageProcessor,
-          cardanoAddressInfoService.payIdMessageProcessor
+          cardanoAddressInfoService.payIdMessageProcessor,
+          cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
         )
       )
 
