@@ -45,11 +45,18 @@ const BulkImportSteps = ({
     [IMPORT_CREDENTIALS_DATA]: false
   };
 
+  const isEmbedded = {
+    [IMPORT_CONTACTS]: false,
+    [IMPORT_CREDENTIALS_DATA]: true
+  };
+
   const disableNext = shouldDisableNext[currentStep];
 
   return (
-    <div className="BulkImportStepsWrapper">
-      <div className="ContentHeader TitleAndSubtitle">
+    <div className={`BulkImportStepsWrapper ${isEmbedded[useCase] ? 'EmbeddedImportWrapper' : ''}`}>
+      <div
+        className={`ContentHeader TitleAndSubtitle ${isEmbedded[useCase] ? 'EmbeddedHeader' : ''}`}
+      >
         <h3>{t(`${useCase}.bulkImportStep.title`)}</h3>
         <p>{t(`${useCase}.bulkImportStep.info`)}</p>
       </div>
@@ -61,6 +68,7 @@ const BulkImportSteps = ({
           getTargets={getTargets}
           showStepNumber={showStepNumber[useCase]}
           headersMapping={headersMapping}
+          isEmbedded={isEmbedded[useCase]}
         />
         {showGroupSelection && (
           <AssignToGroupsStep

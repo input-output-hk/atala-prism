@@ -21,7 +21,7 @@ const ImportTypeSelectionContainer = ({ onFinish, onCancel, isEmbedded, useCase 
 
   return (
     <div className={`ImportWrapper ${isEmbedded ? 'EmbeddedImportWrapper' : ''}`}>
-      <div className="ContentHeader TitleAndSubtitle">
+      <div className={`ContentHeader TitleAndSubtitle ${isEmbedded ? 'EmbeddedHeader' : ''}`}>
         <h2>{t(`${useCase}.importTypeSelection.title`)}</h2>
         <p>{t(`${useCase}.importTypeSelection.info`)}</p>
       </div>

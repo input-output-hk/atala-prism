@@ -43,7 +43,7 @@ const AssignToGroupsStep = ({
     title: t('bulkImport.assignToGroups.title'),
     info: t('bulkImport.assignToGroups.info'),
     actions: (
-      <div className="InputContainer">
+      <div className="MultiSelectContainer">
         <Select
           mode="tags"
           style={{ width: '100%' }}

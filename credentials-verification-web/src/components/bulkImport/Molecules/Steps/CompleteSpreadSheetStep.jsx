@@ -14,7 +14,8 @@ const CompleteSpreadSheetStep = ({
   getTargets,
   setFileData,
   showStepNumber,
-  headersMapping
+  headersMapping,
+  isEmbedded
 }) => {
   const { t } = useTranslation();
 
@@ -83,7 +84,8 @@ const CompleteSpreadSheetStep = ({
       </>
     ),
     setCurrentStep,
-    showStepNumber
+    showStepNumber,
+    isEmbedded
   };
 
   return <GenericStep {...props} />;
@@ -111,7 +113,8 @@ CompleteSpreadSheetStep.propTypes = {
   showStepNumber: PropTypes.bool,
   headersMapping: PropTypes.arrayOf(
     PropTypes.shape({ key: PropTypes.string, translation: PropTypes.string })
-  ).isRequired
+  ).isRequired,
+  isEmbedded: PropTypes.bool.isRequired
 };
 
 export default CompleteSpreadSheetStep;
