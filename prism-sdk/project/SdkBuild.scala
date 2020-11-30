@@ -43,6 +43,9 @@ object SdkBuild {
           "-feature",
           "-Xfatal-warnings"
         ),
+        scalacOptions in (Compile, doc) ++= Seq(
+          "-no-link-warnings" // Suppresses problems with Scaladoc links
+        ),
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         libraryDependencies ++= scalatestDependencies.value,
         coverageScalacPluginVersion := "1.4.1",
