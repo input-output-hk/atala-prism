@@ -25,7 +25,7 @@ async function generateConnectionToken(contactId) {
 async function createContact(groupName, jsonData, externalid) {
   Logger.info(`Creating contact with externalId = ${externalid} for group ${groupName}`, jsonData);
   const req = new CreateContactRequest();
-  req.setGroupname(groupName);
+  if (groupName) req.setGroupname(groupName);
   req.setJsondata(JSON.stringify(jsonData));
   req.setExternalid(externalid);
 
@@ -34,6 +34,7 @@ async function createContact(groupName, jsonData, externalid) {
   const res = await this.client.createContact(req, metadata);
   const { contact } = res.toObject();
   Logger.info('Created contact:', contact);
+  return contact;
 }
 
 async function getContacts(lastSeenContactId, limit = HOLDER_PAGE_SIZE, groupName) {

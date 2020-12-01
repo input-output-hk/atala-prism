@@ -35,13 +35,13 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
         headersMapping
       );
 
-      const groupCreations = await createNewGroups(groups);
-      const contactCreations = await createNewContacts(translatedContacts, groups);
+      const groupsToAssign = await createMissingGroups(groups);
+
+      const contactsCreated = await createContacts(translatedContacts, groupsToAssign);
 
       message.success(t('importContacts.success'));
       setResults({
-        groupCreations: groupCreations.length,
-        contactCreations: contactCreations.length
+        contactCreations: contactsCreated.length
       });
     } catch (error) {
       Logger.error('Error while creating contact', error);
@@ -51,34 +51,45 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
     }
   };
 
-  const createNewGroups = async groups => {
+  const createMissingGroups = async groups => {
+    if (!groups.length) return [];
     const preExistingGroups = await api.groupsManager.getGroups();
     const newGroups = groups.filter(group => !preExistingGroups.map(g => g.name).includes(group));
     const groupCreationPromises = newGroups.map(group => api.groupsManager.createGroup(group));
 
-    return Promise.all(groupCreationPromises);
+    const createdGroups = await Promise.all(groupCreationPromises);
+    const updatedGroupList = preExistingGroups.concat(createdGroups);
+    return updatedGroupList.filter(g => groups.includes(g.name));
   };
 
-  const createNewContacts = async (contactsData, groups) => {
-    const contactCreationPromises = contactsData
-      .map(contact =>
-        groups.map(group =>
-          api.contactsManager.createContact(
-            group,
-            creationDateDecorator(omit(contact, ['originalArray'])),
-            contact.externalid
-          )
-        )
+  const createContacts = async (contacts, groups) => {
+    const [firstGroup, ...otherGroups] = groups;
+    const contactCreationPromises = contacts.map(contact =>
+      api.contactsManager.createContact(
+        firstGroup?.name,
+        creationDateDecorator(omit(contact, ['originalArray'])),
+        contact.externalid
       )
-      .flat();
-
-    return Promise.all(contactCreationPromises);
+    );
+    const contactsCreated = await Promise.all(contactCreationPromises);
+    await assignToGroups(contactsCreated, otherGroups);
+    return contactsCreated;
   };
 
   const creationDateDecorator = data => ({
     ...data,
     creationDate: fromMomentToProtoDateFormatter(moment())
   });
+
+  const assignToGroups = async (contacts, groups) => {
+    const contactIds = contacts.map(c => c.contactid);
+
+    const updateGroupsPromises = groups.map(group =>
+      api.groupsManager.updateGroup(group.id, contactIds)
+    );
+
+    await Promise.all(updateGroupsPromises);
+  };
 
   return (
     <ImportDataContainer
@@ -96,7 +107,8 @@ ImportContactsContainer.propTypes = {
   api: PropTypes.shape({
     groupsManager: PropTypes.shape({
       getGroups: PropTypes.func.isRequired,
-      createGroup: PropTypes.func.isRequired
+      createGroup: PropTypes.func.isRequired,
+      updateGroup: PropTypes.func.isRequired
     }).isRequired,
     contactsManager: PropTypes.shape({ createContact: PropTypes.func.isRequired }).isRequired
   }).isRequired,

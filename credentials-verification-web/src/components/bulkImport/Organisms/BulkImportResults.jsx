@@ -8,7 +8,6 @@ const BulkImportResult = ({
   fileData,
   validationErrors,
   contactCreations,
-  groupsCreations,
   returnToUploadStep,
   credentialDataImported,
   continueCallback,
@@ -22,7 +21,6 @@ const BulkImportResult = ({
 
   const successfulUpdates = {
     contactCreations,
-    groupsCreations,
     credentialDataImported,
     continueCallback,
     useCase
@@ -39,7 +37,6 @@ BulkImportResult.defaultProps = {
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   validationErrors: null,
   contactCreations: 0,
-  groupsCreations: 0,
   credentialDataImported: 0,
   continueCallback: null
 };
@@ -51,7 +48,6 @@ BulkImportResult.propTypes = {
     PropTypes.arrayOf(PropTypes.shape({ error: PropTypes.string }))
   ),
   contactCreations: PropTypes.number,
-  groupsCreations: PropTypes.number,
   returnToUploadStep: PropTypes.func.isRequired,
   credentialDataImported: PropTypes.number,
   continueCallback: PropTypes.func,

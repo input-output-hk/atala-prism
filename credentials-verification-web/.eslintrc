@@ -62,7 +62,7 @@
     "global-require": "off",
     "no-unused-expressions": 0,
     "chai-friendly/no-unused-expressions": 2,
-    "no-magic-numbers": "warn"
+    "no-magic-numbers": [ "warn", { "ignore": [1], "ignoreArrayIndexes": true }]
   },
   "plugins": [
     "import",
