@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.cardano
 
+import cats.effect.{IO, Resource}
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.cardano.CardanoClient.Result
@@ -67,7 +68,9 @@ object CardanoClient {
 
   case class Config(dbSyncConfig: CardanoDbSyncClient.Config, cardanoWalletConfig: CardanoWalletApiClient.Config)
 
-  def apply(config: Config)(implicit ec: ExecutionContext): CardanoClient = {
-    new CardanoClient(CardanoDbSyncClient(config.dbSyncConfig), CardanoWalletApiClient(config.cardanoWalletConfig))
+  def apply(config: Config)(implicit ec: ExecutionContext): Resource[IO, CardanoClient] = {
+    CardanoDbSyncClient(config.dbSyncConfig).map(cardanoDbSyncClient =>
+      new CardanoClient(cardanoDbSyncClient, CardanoWalletApiClient(config.cardanoWalletConfig))
+    )
   }
 }

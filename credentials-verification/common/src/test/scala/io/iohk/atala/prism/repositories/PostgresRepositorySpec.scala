@@ -65,7 +65,9 @@ trait PostgresRepositorySpec
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    _database = Some(TransactorFactory(transactorConfig))
+    val (database, releaseDatabase) = TransactorFactory.transactorIO(transactorConfig).allocated.unsafeRunSync()
+    _database = Some(database)
+    _releaseDatabase = Some(releaseDatabase)
 
     import doobie.implicits._
     // solution to clean the database as provided by StackOverflow user User
@@ -83,6 +85,11 @@ trait PostgresRepositorySpec
     ()
   }
 
+  override protected def afterAll(): Unit = {
+    super.afterAll()
+    _releaseDatabase.foreach(_.unsafeRunSync())
+  }
+
   protected def migrate(): Unit = {
     val _ = SchemaMigrations.migrate(transactorConfig)
   }
@@ -92,6 +99,7 @@ trait PostgresRepositorySpec
   }
 
   protected var _database: Option[Transactor[IO]] = None
+  protected var _releaseDatabase: Option[IO[Unit]] = None
 
   implicit def database: Transactor[IO] = {
     _database.getOrElse(throw new IllegalStateException("Attempt to use database before it is ready"))

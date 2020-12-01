@@ -5,18 +5,17 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.blocking
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
-import cats.effect.{Blocker, ExitCode, Resource}
+import cats.effect.{ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder, ServerServiceDefinition}
 import io.grpc.protobuf.services.ProtoReflectionService
 import org.flywaydb.core.Flyway
-import doobie.util.ExecutionContexts
 import doobie.hikari.HikariTransactor
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
-import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, NodeConfig, TransactorConfig}
+import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, NodeConfig}
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
 import io.iohk.atala.mirror.services.{
@@ -29,6 +28,7 @@ import io.iohk.atala.mirror.services.{
 }
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.mirror.models.CredentialProofRequestType
+import io.iohk.atala.prism.repositories.TransactorFactory
 
 object MirrorApp extends TaskApp {
 
@@ -61,12 +61,12 @@ object MirrorApp extends TaskApp {
 
       // configs
       mirrorConfig = MirrorConfig(globalConfig)
-      transactorConfig = TransactorConfig(globalConfig)
+      transactorConfig = TransactorFactory.transactorConfig(globalConfig)
       connectorConfig = ConnectorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
 
       // db
-      tx <- createTransactor(transactorConfig)
+      tx <- TransactorFactory.transactorTask(transactorConfig)
       _ <- Resource.liftF(runMigrations(tx, classLoader))
 
       // connector
@@ -145,23 +145,6 @@ object MirrorApp extends TaskApp {
 
     Resource.make(Task(builder.build()))(shutdown)
   }
-
-  /**
-    * Create resource with a db transactor.
-    */
-  def createTransactor(transactorConfig: TransactorConfig): Resource[Task, HikariTransactor[Task]] =
-    for {
-      ce <- ExecutionContexts.fixedThreadPool[Task](32) // connection EC
-      be <- Blocker[Task] // blocking EC
-      xa <- HikariTransactor.newHikariTransactor[Task](
-        transactorConfig.driver,
-        transactorConfig.jdbcUrl,
-        transactorConfig.username,
-        transactorConfig.password,
-        ce, // await connection here
-        be // execute JDBC operations here
-      )
-    } yield xa
 
   /**
     * Run db migrations with Flyway.

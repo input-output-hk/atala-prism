@@ -36,7 +36,8 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
       val clientConfig = NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
       val walletId = WalletId.from(clientConfig.walletId).value
       val paymentAddress = Address(clientConfig.paymentAddress)
-      val cardanoClient = CardanoClient(clientConfig.cardanoClientConfig)
+      val (cardanoClient, releaseCardanoClient) =
+        CardanoClient(clientConfig.cardanoClientConfig).allocated.unsafeRunSync()
       val keyValueService = new KeyValueService(new KeyValuesRepository(database))
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService = new CardanoLedgerService(
@@ -80,6 +81,7 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
 
       // Verify object has been notified
       notifiedAtalaObjects must contain(atalaObject)
+      releaseCardanoClient.unsafeRunSync()
     }
   }
 

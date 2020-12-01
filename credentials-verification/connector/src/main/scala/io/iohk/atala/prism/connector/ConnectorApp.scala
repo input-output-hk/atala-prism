@@ -68,13 +68,13 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
   private def start(): Unit = {
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
-    val databaseConfig = transactorConfig(globalConfig.getConfig("db"))
+    val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val xa = TransactorFactory(databaseConfig)
+    val (xa, releaseXa) = TransactorFactory.transactorIO(databaseConfig).allocated.unsafeRunSync()
 
     logger.info("Initializing Payment Wall")
     val braintreePayments =
@@ -184,6 +184,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     logger.info("Server started, listening on " + ConnectorApp.port)
     sys.addShutdownHook {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
+      releaseXa.unsafeRunSync()
       self.stop()
       System.err.println("*** server shut down")
     }
@@ -213,17 +214,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     } else {
       logger.info(s"$appliedMigrations migration scripts applied")
     }
-  }
-
-  def transactorConfig(config: Config): TransactorFactory.Config = {
-    val url = config.getString("url")
-    val username = config.getString("username")
-    val password = config.getString("password")
-    TransactorFactory.Config(
-      jdbcUrl = url,
-      username = username,
-      password = password
-    )
   }
 
   private def braintreePaymentsConfig(config: Config): BraintreePayments.Config = {

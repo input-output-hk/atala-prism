@@ -40,18 +40,7 @@ object NodeConfig {
   }
 
   def cardanoDbSyncConfig(config: Config): CardanoDbSyncClient.Config = {
-    CardanoDbSyncClient.Config(transactorConfig(config.getConfig("db")))
-  }
-
-  def transactorConfig(config: Config): TransactorFactory.Config = {
-    val url = config.getString("url")
-    val username = config.getString("username")
-    val password = config.getString("password")
-    TransactorFactory.Config(
-      jdbcUrl = url,
-      username = username,
-      password = password
-    )
+    CardanoDbSyncClient.Config(TransactorFactory.transactorConfig(config))
   }
 
   def cardanoWalletConfig(config: Config): CardanoWalletApiClient.Config = {

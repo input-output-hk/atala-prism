@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import cats.effect.{IO, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
@@ -44,13 +45,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def start(): Unit = {
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
-    val databaseConfig = NodeConfig.transactorConfig(globalConfig.getConfig("db"))
+    val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    implicit val xa = TransactorFactory(databaseConfig)
+    implicit val (transactor, releaseTransactor) =
+      TransactorFactory.transactorIO(databaseConfig).allocated.unsafeRunSync()
 
     val storage = globalConfig.getString("storage") match {
       case "in-memory" => new ObjectStorageService.InMemory()
@@ -75,20 +77,25 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }
     }
 
-    val keyValueService = new KeyValueService(new KeyValuesRepository(xa))
+    val keyValueService = new KeyValueService(new KeyValuesRepository(transactor))
 
-    val atalaReferenceLedger = globalConfig.getString("ledger") match {
-      case "bitcoin" => initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaObject)
-      case "cardano" => initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaObject)
+    val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
+      case "bitcoin" => (initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaObject), None)
+      case "cardano" =>
+        val (cardano, releaseCardano) =
+          initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaObject).allocated
+            .unsafeRunSync()
+        (cardano, Some(releaseCardano))
+
       case "in-memory" =>
         logger.info("Using in-memory ledger")
-        new InMemoryLedgerService(onAtalaObject)
+        (new InMemoryLedgerService(onAtalaObject), None)
     }
 
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
-    val didDataService = new DIDDataService(new DIDDataRepository(xa))
-    val credentialsService = new CredentialsService(new CredentialsRepository(xa))
+    val didDataService = new DIDDataService(new DIDDataRepository(transactor))
+    val credentialsService = new CredentialsService(new CredentialsRepository(transactor))
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val objectManagementService = ObjectManagementService(
@@ -99,7 +106,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     )
     objectManagementServicePromise.success(objectManagementService)
 
-    val credentialBatchesRepository = new CredentialBatchesRepository(xa)
+    val credentialBatchesRepository = new CredentialBatchesRepository(transactor)
 
     val nodeService =
       new NodeServiceImpl(didDataService, objectManagementService, credentialsService, credentialBatchesRepository)
@@ -118,6 +125,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Server started, listening on " + NodeApp.port)
     sys.addShutdownHook {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
+      releaseTransactor.unsafeRunSync()
+      releaseAtalaReferenceLedger.foreach(_.unsafeRunSync())
       self.stop()
       System.err.println("*** server shut down")
     }
@@ -149,7 +158,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       config: Config,
       keyValueService: KeyValueService,
       onAtalaObject: AtalaObjectNotificationHandler
-  ): CardanoLedgerService = {
+  ): Resource[IO, CardanoLedgerService] = {
     logger.info("Creating cardano client")
     CardanoLedgerService(NodeConfig.cardanoConfig(config), keyValueService, onAtalaObject)
   }

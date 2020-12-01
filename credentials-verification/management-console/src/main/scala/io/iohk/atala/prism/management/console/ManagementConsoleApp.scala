@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console
 
-import com.typesafe.config.{Config, ConfigFactory}
+import cats.effect.IO
+import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.management.console.repositories.{
@@ -30,6 +31,7 @@ object ManagementConsoleApp {
     val server = new ManagementConsoleApp(ExecutionContext.global)
     server.start()
     server.blockUntilShutdown()
+    server.releaseResources()
   }
 
   private val port = 50054
@@ -40,17 +42,19 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private[this] var server: Server = null
+  private[this] var releaseTransactor: Option[IO[Unit]] = None
 
   private def start(): Unit = {
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
-    val databaseConfig = transactorConfig(globalConfig.getConfig("db"))
+    val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val xa = TransactorFactory(databaseConfig)
+    val (transactor, releaseTransactor) = TransactorFactory.transactorIO(databaseConfig).allocated.unsafeRunSync()
+    self.releaseTransactor = Some(releaseTransactor)
 
     // node client
     val nodeChannel = ManagedChannelBuilder
@@ -63,13 +67,13 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     val node = NodeServiceGrpc.stub(nodeChannel)
 
     // Vault repositories
-    val contactsRepository = new ContactsRepository(xa)(executionContext)
-    val participantsRepository = new ParticipantsRepository(xa)(executionContext)
-    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
-    val statisticsRepository = new StatisticsRepository(xa)
-    val credentialsRepository = new CredentialsRepository(xa)(executionContext)
-    val receivedCredentialsRepository = new ReceivedCredentialsRepository(xa)(executionContext)
-    val institutionGroupsRepository = new InstitutionGroupsRepository(xa)(executionContext)
+    val contactsRepository = new ContactsRepository(transactor)(executionContext)
+    val participantsRepository = new ParticipantsRepository(transactor)(executionContext)
+    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(transactor)(executionContext)
+    val statisticsRepository = new StatisticsRepository(transactor)
+    val credentialsRepository = new CredentialsRepository(transactor)(executionContext)
+    val receivedCredentialsRepository = new ReceivedCredentialsRepository(transactor)(executionContext)
+    val institutionGroupsRepository = new InstitutionGroupsRepository(transactor)(executionContext)
 
     val authenticator = new ManagementConsoleAuthenticator(
       participantsRepository,
@@ -120,6 +124,8 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     }
   }
 
+  private def releaseResources(): Unit = releaseTransactor.foreach(_.unsafeRunSync())
+
   private def applyDatabaseMigrations(databaseConfig: TransactorFactory.Config): Unit = {
     val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
     if (appliedMigrations == 0) {
@@ -127,16 +133,5 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     } else {
       logger.info(s"$appliedMigrations migration scripts applied")
     }
-  }
-
-  private def transactorConfig(config: Config): TransactorFactory.Config = {
-    val url = config.getString("url")
-    val username = config.getString("username")
-    val password = config.getString("password")
-    TransactorFactory.Config(
-      jdbcUrl = url,
-      username = username,
-      password = password
-    )
   }
 }

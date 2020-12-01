@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.effect.{IO, Resource}
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.models.{
   BlockInfo,
@@ -192,25 +193,27 @@ object CardanoLedgerService {
 
   def apply(config: Config, keyValueService: KeyValueService, onAtalaObject: AtalaObjectNotificationHandler)(implicit
       scheduler: Scheduler
-  ): CardanoLedgerService = {
+  ): Resource[IO, CardanoLedgerService] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(throw new IllegalArgumentException(s"Wallet ID ${config.walletId} is invalid"))
     val walletPassphrase = config.walletPassphrase
     val paymentAddress = Address(config.paymentAddress)
-    val cardanoClient = CardanoClient(config.cardanoClientConfig)
+    val cardanoClientResource = CardanoClient(config.cardanoClientConfig)
 
-    new CardanoLedgerService(
-      config.network,
-      walletId,
-      walletPassphrase,
-      paymentAddress,
-      config.blockNumberSyncStart,
-      config.blockConfirmationsToWait,
-      cardanoClient,
-      keyValueService,
-      onAtalaObject,
-      scheduler
-    )
+    cardanoClientResource.map(cardanoClient => {
+      new CardanoLedgerService(
+        config.network,
+        walletId,
+        walletPassphrase,
+        paymentAddress,
+        config.blockNumberSyncStart,
+        config.blockConfirmationsToWait,
+        cardanoClient,
+        keyValueService,
+        onAtalaObject,
+        scheduler
+      )
+    })
   }
 }
