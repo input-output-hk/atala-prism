@@ -105,7 +105,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
       <Tabs defaultActiveKey={tabs.details.key} centered>
         <TabPane tab={tabs.summary.title} key={tabs.summary.key}>
           <div className="credentialContainer">{renderHtmlCredential({ ...credentialData })}</div>
-          <div className="actionsContainer">
+          {/* Left commented code for when it's possible verify credential */}
+          {/* <div className="actionsContainer">
             <CustomButton
               buttonText={t('credentials.detail.verify')}
               buttonProps={{
@@ -113,7 +114,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
                 onClick: handleVerify
               }}
             />
-          </div>
+          </div> */}
         </TabPane>
         <TabPane tab={tabs.details.title} key={tabs.details.key}>
           <CardDetail

@@ -4,7 +4,7 @@ import 'moment/locale/ka';
 import { getCurrentLanguage } from './languageUtils';
 import { LONG_DATE_FORMAT, DEFAULT_DATE_FORMAT } from './constants';
 
-const completeDateFormatter = (date, format) => {
+const completeDateFormatter = (date, format = DEFAULT_DATE_FORMAT) => {
   const lang = getCurrentLanguage();
 
   try {
@@ -20,7 +20,7 @@ const completeDateFormatter = (date, format) => {
   }
 };
 
-const completeFrontendDateFormatter = (date, format) => {
+const completeFrontendDateFormatter = (date, format = DEFAULT_DATE_FORMAT) => {
   const lang = getCurrentLanguage();
   moment.locale(lang);
   // The dates come from the backend as unix timestamp with miliseconds
@@ -74,7 +74,7 @@ export const backendDateFormat = unixDate =>
   // backend gives dates as timestamp expressed in seconds, moment takes it as milliseconds
   moment(unixDate * 1000).format(DEFAULT_DATE_FORMAT);
 
-export const backendDateFormatter = format => date => completeDateFormatter(date, format);
+export const backendDateFormatter = () => date => completeDateFormatter(date);
 export const frontendDateFormatter = format => date => completeFrontendDateFormatter(date, format);
 export const simpleMomentFormatter = date => date.format('L');
 
@@ -84,10 +84,10 @@ export const longDateFormatter = date => {
     .locale(lang)
     .format(LONG_DATE_FORMAT);
 };
-export const shortDateFormatter = frontendDateFormatter('LL');
-export const shortBackendDateFormatter = backendDateFormatter('LL');
-export const dayMonthYearFormatter = frontendDateFormatter('L');
-export const dayMonthYearBackendFormatter = backendDateFormatter('L');
+export const shortDateFormatter = frontendDateFormatter();
+export const shortBackendDateFormatter = backendDateFormatter();
+export const dayMonthYearFormatter = frontendDateFormatter();
+export const dayMonthYearBackendFormatter = backendDateFormatter();
 
 export const monthDayFormat = frontendDateFormatter('MMM DD');
 

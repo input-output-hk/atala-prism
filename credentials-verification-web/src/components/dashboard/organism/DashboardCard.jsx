@@ -9,6 +9,9 @@ import { useTranslationWithPrefix } from '../../../hooks/useTranslationWithPrefi
 const DashboardCard = ({ loading, data }) => {
   const tp = useTranslationWithPrefix('dashboard.analytics');
 
+  // TODO: remove and use backend data when it's well calculated
+  const contactsPendingConnection = data.numberofcontacts - data.numberofcontactsconnected;
+
   return (
     <div className="DashboardContactCardContainer">
       <div className="HeaderCardContainer">
@@ -23,7 +26,7 @@ const DashboardCard = ({ loading, data }) => {
       <BulletItems
         bulletClass="beigeBullet"
         title={tp('pendingConnection')}
-        value={data.numberofcontactspendingconnection}
+        value={contactsPendingConnection}
         loading={loading}
       />
       <BulletItems
