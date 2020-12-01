@@ -52,8 +52,8 @@ trait ECTrait {
     )
     require(encoded(0) == 4, s"First byte was expected to be 4, but got ${encoded(0)}")
 
-    val xBytes = encoded.slice(1, 1 + ECConfig.CURVE_FIELD_BYTE_SIZE)
-    val yBytes = encoded.slice(1 + ECConfig.CURVE_FIELD_BYTE_SIZE, encoded.length)
+    val xBytes = java.util.Arrays.copyOfRange(encoded, 1, 1 + ECConfig.CURVE_FIELD_BYTE_SIZE)
+    val yBytes = java.util.Arrays.copyOfRange(encoded, 1 + ECConfig.CURVE_FIELD_BYTE_SIZE, encoded.length)
     toPublicKey(xBytes, yBytes)
   }
 

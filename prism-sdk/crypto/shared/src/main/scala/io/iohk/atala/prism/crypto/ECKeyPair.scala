@@ -59,8 +59,8 @@ trait ECPublicKey extends ECKey {
     if (xArr.length <= size && yArr.length <= size) {
       val arr = new Array[Byte](1 + 2 * size)
       arr(0) = 4 // Uncompressed point indicator for encoding
-      Array.copy(xArr, 0, arr, size - xArr.length + 1, xArr.length)
-      Array.copy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
+      System.arraycopy(xArr, 0, arr, size - xArr.length + 1, xArr.length)
+      System.arraycopy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
       arr
     } else {
       throw new RuntimeException("Point coordinates do not match field size")

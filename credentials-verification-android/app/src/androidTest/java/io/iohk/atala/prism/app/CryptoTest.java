@@ -2,6 +2,7 @@ package io.iohk.atala.prism.app;
 
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
+import io.iohk.atala.prism.crypto.japi.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,13 +10,11 @@ import org.junit.runner.RunWith;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import io.iohk.atala.prism.crypto.japi.CryptoProvider;
-import io.iohk.atala.prism.crypto.japi.EC;
-import io.iohk.atala.prism.crypto.japi.ECKeyPair;
-import io.iohk.atala.prism.crypto.japi.ECSignature;
+import io.iohk.atala.prism.crypto.MnemonicException;
+import io.iohk.atala.prism.identity.japi.DID;
+import io.iohk.atala.prism.identity.japi.DIDFactory;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4ClassRunner.class)
 public class CryptoTest {
@@ -85,6 +84,37 @@ public class CryptoTest {
 
         boolean result = ec.verify(randomBytes2, keyPair.getPublic(), signedEC);
         assertFalse(result);
+    }
+
+    @Test
+    public void checkDid() {
+        ECKeyPair keyPair = ec.generateKeyPair();
+        DID did = DIDFactory.createUnpublishedDID(keyPair.getPublic());
+
+        assertTrue(did.isLongForm());
+        assertFalse(did.isCanonicalForm());
+        assertTrue(did.getSuffix().isPresent());
+        assertTrue(did.getCanonicalSuffix().isPresent());
+        assertEquals("did:prism:" + did.stripPrismPrefix(), did.getValue());
+    }
+
+    @Test
+    public void checkMnemonics() throws MnemonicException {
+        KeyDerivation keyDerivation = KeyDerivation.getInstance(CryptoProvider.Android);
+        DerivationPath derivationPath = DerivationPath.parse("m/0'/1'/0'");
+        MnemonicCode mnemonicCode = keyDerivation.randomMnemonicCode();
+        byte[] seed = keyDerivation.binarySeed(mnemonicCode, "");
+        keyDerivation.deriveKey(seed, derivationPath).getKeyPair();
+    }
+
+    @Test
+    public void checkKeyEncoding() {
+        ECKeyPair keyPair = ec.generateKeyPair();
+        ECPublicKey publicKey = keyPair.getPublic();
+
+        byte[] encodedPublicKey = publicKey.getEncoded();
+        ECPublicKey decodedPublicKey = ec.toPublicKey(encodedPublicKey);
+        assertEquals(publicKey.getHexEncoded(), decodedPublicKey.getHexEncoded());
     }
 }
 

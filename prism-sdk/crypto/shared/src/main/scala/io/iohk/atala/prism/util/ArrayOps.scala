@@ -14,7 +14,7 @@ object ArrayOps {
   implicit class SeqByteArrayOps(seq: Seq[Byte]) {
 
     /**
-      * Convert [[scala.Seq]] to byte array without a [[scala.reflect.ClassTag]] dependency.
+      * Convert [[scala.Seq]] to byte array without a scala.reflect.ClassTag dependency.
       */
     def toByteArray: Array[Byte] = {
       val arr = new Array[Byte](seq.size)
@@ -29,7 +29,7 @@ object ArrayOps {
   implicit class ByteArrayOps(val array: Array[Byte]) {
 
     /**
-      * Prepend element to the array without a [[scala.reflect.ClassTag]] dependency.
+      * Prepend element to the array without a scala.reflect.ClassTag dependency.
       */
     def safePrepended(x: Byte): Array[Byte] = {
       val dest = new Array[Byte](array.length + 1)
@@ -39,7 +39,7 @@ object ArrayOps {
     }
 
     /**
-      * Concat two arrays without a [[scala.reflect.ClassTag]] dependency.
+      * Concat two arrays without a scala.reflect.ClassTag dependency.
       */
     def safeAppendedAll(suffix: Array[Byte]): Array[Byte] = {
       val dest = new Array[Byte](array.length + suffix.length)

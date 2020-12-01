@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -5,6 +7,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
+apply plugin: 'com.palantir.git-version'
 
 android {
     compileSdkVersion 29
@@ -149,6 +152,22 @@ def espressoTestDependencies = [
         idlingConcurrent: "androidx.test.espresso.idling:idling-concurrent:$espressoVersion",
 ]
 
+// Publishes PRISM SDK artifacts to the local m2 repository if necessary
+void publishPrismSdk(String gitVersion) {
+    def homeDir = project.gradle.gradleUserHomeDir.getParentFile().toPath()
+    def prismRepositoryBase = homeDir.resolve(".m2/repository/io/iohk")
+    def cryptoArtifact = prismRepositoryBase.resolve("prism-crypto_2.12/$gitVersion")
+    def protosArtifact = prismRepositoryBase.resolve("prism-protos_2.12/$gitVersion")
+    def identityArtifact = prismRepositoryBase.resolve("prism-identity_2.12/$gitVersion")
+    if (!Files.exists(cryptoArtifact) || !Files.exists(protosArtifact) || !Files.exists(identityArtifact)) {
+        def cmd = "sbt +prismCryptoJVM/publishM2 +prismProtosJVM/publishM2 +prismIdentityJVM/publishM2"
+        def proc = cmd.execute(null, new File("../prism-sdk"))
+        proc.in.eachLine { line -> println line }
+        proc.err.eachLine { line -> println 'WARNING: ' + line }
+        proc.waitFor()
+    }
+}
+
 
 dependencies {
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
@@ -213,7 +232,15 @@ dependencies {
     testDependencies.each { k, dep -> compile dep }
     testCoreDependencies.each { k, dep -> androidTestImplementation dep }
     espressoTestDependencies.each { k, dep -> androidTestImplementation dep }
-    implementation files('../../prism-sdk/crypto/jvm/target/scala-2.12/prism-crypto.jar')
+
+    def gitVersion = versionDetails().gitHash.substring(0, 8)
+    publishPrismSdk(gitVersion)
+
+    implementation("io.iohk:prism-identity_2.12:$gitVersion") {
+        exclude group: 'com.google.protobuf' // We use javalite version instead
+        exclude group: 'com.thesamet.scalapb', module: 'scalapb-runtime-grpc_2.12'
+    }
+
     implementation "androidx.core:core-ktx:$coreKtxVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

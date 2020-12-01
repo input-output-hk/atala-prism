@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.util
 
+import scala.util.control.Breaks
+
 object BigIntOps {
   def toHex(bigInt: BigInt): String = {
     bigInt.toString(16)
@@ -18,6 +20,19 @@ object BigIntOps {
   }
 
   def toUnsignedByteArray(src: BigInt): Array[Byte] = {
-    src.toByteArray.dropWhile(_ == 0)
+    val array = src.toByteArray
+    var result = new Array[Byte](0)
+    Breaks.breakable {
+      for (i <- array.indices) {
+        if (array(i) != 0) {
+          result = new Array[Byte](array.length - i)
+          for (j <- i until array.length) {
+            result(j - i) = array(j)
+          }
+          Breaks.break()
+        }
+      }
+    }
+    result
   }
 }

@@ -8,7 +8,7 @@ import io.iohk.atala.prism.protos.node_models
 
 import scala.util.matching.Regex
 
-final class DID private (val value: String) extends AnyVal {
+final class DID private (val value: String) {
   import DID._
 
   def isLongForm: Boolean = {
@@ -58,6 +58,16 @@ final class DID private (val value: String) extends AnyVal {
   }
 
   override def toString: String = value
+
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: DID =>
+        value == that.value
+      case _ => false
+    }
+
+  override def hashCode(): Int =
+    value.hashCode
 }
 
 object DID {

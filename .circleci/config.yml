@@ -382,6 +382,7 @@ jobs:
 
       - restore_cache:
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
+      - install-sbt
       - run:
           name: Download Dependencies
           command: cd credentials-verification-android && ./gradlew androidDependencies
@@ -389,10 +390,6 @@ jobs:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
-      - install-sbt
-      - run:
-          name: Assembly Prism Crypto
-          command: cd prism-sdk && sbt +prismCryptoJVM/assembly
       - run:
           name: Run Lint Tests
           command: cd credentials-verification-android && ./gradlew lint test

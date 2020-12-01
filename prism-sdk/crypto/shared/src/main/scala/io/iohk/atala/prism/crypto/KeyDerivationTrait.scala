@@ -79,7 +79,7 @@ object DerivationPath {
     if (!splitPath.headOption.map(_.trim.toLowerCase).contains("m")) {
       throw new IllegalArgumentException("Path needs to start with m or M")
     } else {
-      DerivationPath(splitPath.tail.toVector.map(parseAxis))
+      DerivationPath(splitPath.toVector.tail.map(parseAxis))
     }
   }
 
