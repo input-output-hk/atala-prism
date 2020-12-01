@@ -90,7 +90,15 @@
         "status": "Status",
         "class": "Class",
         "policyNumber": "Policy Number",
-        "endDate": "End Date"
+        "endDate": "End Date",
+        "gender": "Gender",
+        "countryOfCitizenship": "Country Of Citizenship",
+        "placeOfBirth": "Place Of Birth",
+        "cardNumber": "Card Number",
+        "personalNumber": "Personal Number",
+        "degreeName": "Degree Name",
+        "degreeResult": "Degree Result",
+        "cumulativeScore": "Cumulative Score"
       }
     },
     "inviteSuccessfull": "The Holder has been successfully invited",
@@ -256,9 +264,10 @@
     },
     "type": {
       "governmentId": "Government ID",
-      "educational": "Educational Credential",
+      "educational": "Educational Degree",
       "proofOfEmployment": "Proof of Employment",
-      "healthInsurance": "Health Insurance"
+      "healthInsurance": "Health Insurance",
+      "transcript": "Educational Transcript"
     },
     "status": {
       "credentialDraft": "Credential Draft",

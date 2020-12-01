@@ -6,13 +6,15 @@
   display: flex;
   flex-flow: column;
   align-items: center;
-  button{
+  overflow-y: scroll;
+
+  button {
     background-color: transparent;
     border: none;
     cursor: pointer;
   }
 }
 
-.arrowsContainer{
+.arrowsContainer {
   margin-top: 20px;
 }

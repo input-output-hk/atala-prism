@@ -130,6 +130,7 @@ export const credentialTabShape = {
 
 export const credentialTypeShape = {
   id: number,
+  enabled: bool,
   name: string,
   logo: element,
   sampleImage: element,

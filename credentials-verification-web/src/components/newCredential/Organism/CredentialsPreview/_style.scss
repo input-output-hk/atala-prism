@@ -2,7 +2,7 @@
 
 .CredentialsPreview {
   display: flex;
-  height: 100vh;
+  height: 50vh;
 
   .Divider {
     margin: 2em 0;
@@ -14,11 +14,11 @@
     width: 65%;
     display: flex;
     flex-flow: column;
-    h3{
-      @include primary-text($h3, #26385B);
+    h3 {
+      @include primary-text($h3, #26385b);
       font-weight: bold;
     }
-    h4{
+    h4 {
       @include primary-text($h3, $dark-grey);
       margin-bottom: 25px;
     }

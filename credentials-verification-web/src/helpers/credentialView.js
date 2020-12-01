@@ -1,6 +1,8 @@
 import sanitizeHtml from 'sanitize-html';
+import { dateFormat } from './formatters';
 
 const ISSUER_NAME_PLACEHOLDER = '{{issuer.name}}';
+const ISSUANCE_DATE_PLACEHOLDER = '{{issueDate}}';
 
 const HTML_SANITIZER_OPTIONS = {
   allowedTags: ['head', 'meta', 'body', 'div', 'p', 'h1', 'img', 'h3'],
@@ -29,6 +31,7 @@ export const fillHTMLCredential = (
       htmlTemplate
     )
     .replace(ISSUER_NAME_PLACEHOLDER, organisationName)
+    .replace(ISSUANCE_DATE_PLACEHOLDER, dateFormat(new Date()))
     // The educational credential contains an unnecessary property
     // that breaks the styling during sanitization so here we remove it
     .replace('boxShadow;', '');
