@@ -16,8 +16,9 @@ scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-language:existentials",
   "-Xlint",
+  "-Xlint:-byname-implicit",
   "-deprecation",
-  //"-Xfatal-warnings",
+  "-Xfatal-warnings",
   "-feature",
   "-Ymacro-annotations"
 )

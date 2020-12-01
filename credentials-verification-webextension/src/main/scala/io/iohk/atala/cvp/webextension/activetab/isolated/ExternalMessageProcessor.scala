@@ -40,7 +40,6 @@ private[isolated] class ExternalMessageProcessor(commandProcessor: CommandProces
             ()
 
           case Success(value) =>
-            implicit val origin: String = event.origin
             commandProcessor
               .process(value.model)
               .onComplete(reply(event.origin, value.tag, _))

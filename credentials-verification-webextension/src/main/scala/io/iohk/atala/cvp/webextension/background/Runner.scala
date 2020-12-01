@@ -48,7 +48,7 @@ class Runner(
   // this is needed as defining a generic method seems to be the only way to tell Scala
   // that in response: CommandResponse[_] encoder response.enc is the right one for response.response
   private def encodeCommandResponseAsRight[T](response: CommandResponse[T]): Json = {
-    implicit val responseEnc: Encoder[T] = response.enc
+    import response.enc
     implicitly[Encoder[Either[Nothing, T]]].apply(Right(response.response))
   }
 

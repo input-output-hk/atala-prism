@@ -1,7 +1,6 @@
 package io.iohk.atala.cvp.webextension.common.services
 
-import chrome.windows.bindings.{CreateOptions, UpdateOptions, Window}
-import org.scalajs.dom
+import chrome.windows.bindings.{CreateOptions, Window}
 import typings.std.global.screen
 
 import scala.concurrent.ExecutionContext

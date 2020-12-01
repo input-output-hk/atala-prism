@@ -12,7 +12,7 @@ object NodeUtils {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
+    } yield EC.toPublicKey(maybeX.x.toByteArray(), maybeY.y.toByteArray())
   }
 
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): credentials.TimestampInfo = {

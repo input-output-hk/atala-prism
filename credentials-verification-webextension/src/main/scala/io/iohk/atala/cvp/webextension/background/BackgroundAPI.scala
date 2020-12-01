@@ -15,6 +15,7 @@ import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, Role, UserDetails}
 
+import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.util.{Failure, Success, Try}
@@ -106,8 +107,8 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.LockWallet())
   }
 
-  private def process[Resp](command: CommandWithResponse[Resp])(implicit dec: Decoder[Resp]): Future[Resp] = {
-    val promise = Promise[Resp]
+  private def process[Resp](command: CommandWithResponse[Resp])(implicit @nowarn dec: Decoder[Resp]): Future[Resp] = {
+    val promise = Promise[Resp]()
 
     val callback: js.Function1[js.Object, Unit] = { rawResult =>
       log(s"Received response $rawResult")

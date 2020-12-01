@@ -49,7 +49,7 @@ import scala.util.{Failure, Success}
     }
   }
 
-  override def render: ReactElement = {
+  override def render(): ReactElement = {
     (state.walletStatus, state.view) match {
       case (WalletStatus.Missing, Default) =>
         SlinkyInitialWalletView(props.backgroundAPI, (view: View) => updateView(view))

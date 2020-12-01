@@ -30,7 +30,7 @@ object Main {
 
   @JSExportTopLevel("runOnCurrentTabContext")
   def runOnCurrentTabContext(): Unit = {
-    activetab.context.Runner(config).run()
+    activetab.context.Runner().run()
   }
 
   @JSExportTopLevel("runOnBackground")

@@ -7,7 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
-  def process(cmd: Command)(implicit origin: String): Future[Event] = {
+  def process(cmd: Command): Future[Event] = {
     cmd match {
       case Command.GetSdkDetails =>
         val response = Event.GotSdkDetails(extensionId = chrome.runtime.Runtime.id)

@@ -76,6 +76,8 @@ object Role {
     role match {
       case GetCurrentUserResponse.Role.issuer => Issuer
       case GetCurrentUserResponse.Role.verifier => Verifier
+      case GetCurrentUserResponse.Role.Unrecognized(roleValue) =>
+        throw new IllegalArgumentException(s"Unrecognized role $roleValue")
     }
   }
 }
@@ -105,7 +107,6 @@ private[background] class WalletManager(
 ) {
   private val requestAuthenticator = new RequestAuthenticator(EC)
 
-  private var storageKey: Option[CryptoKey] = None
   type SessionID = String
   type Origin = String
   private[this] var session = Set[(SessionID, Origin)]()
@@ -118,8 +119,7 @@ private[background] class WalletManager(
     browserActionService.setBadgeText(badgeText)
   }
 
-  private def updateStorageKeyAndWalletData(storageKey: CryptoKey, walletData: WalletData): Unit = {
-    this.storageKey = Some(storageKey)
+  private def updateWalletData(walletData: WalletData): Unit = {
     this.walletData = Some(walletData)
   }
 
@@ -395,7 +395,7 @@ private[background] class WalletManager(
         logo
       )
       _ <- save(aesKey, newWalletData)
-      _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
+      _ = updateWalletData(newWalletData)
     } yield ()
 
     result.onComplete {
@@ -414,7 +414,7 @@ private[background] class WalletManager(
       newWalletData <- recoverAccount(mnemonic)
       aesKey <- generateSecretKey(password)
       _ <- save(aesKey, newWalletData)
-      _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
+      _ = updateWalletData(newWalletData)
     } yield ()
 
     result.onComplete {
@@ -444,7 +444,7 @@ private[background] class WalletManager(
               }
           }
           .getOrElse(throw new RuntimeException("You need to create the wallet before unlocking it"))
-      _ = updateStorageKeyAndWalletData(aesKey, parseWalletDataFromJson(json))
+      _ = updateWalletData(parseWalletDataFromJson(json))
     } yield ()
 
     result.onComplete {
@@ -474,7 +474,6 @@ private[background] class WalletManager(
   def lock(): Future[Unit] = {
     Future {
       credentialsCopyJob.stop()
-      this.storageKey = None
       this.walletData = None
     }
   }

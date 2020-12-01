@@ -3,11 +3,13 @@ package io.iohk.atala.cvp.webextension.testing
 import chrome.runtime.bindings.Runtime.AppID
 import chrome.runtime.bindings.SendMessageOptions
 import chrome.tabs.bindings.TabCreateProperties
-import org.scalajs.dom
 
+import scala.annotation.nowarn
 import scala.collection.mutable.ListBuffer
 import scala.scalajs.js
 
+// Ignore unused warnings. FakeChromeApi methods are actually used through js.Dynamic.global.
+@nowarn
 object FakeChromeApi extends js.Object() {
   val storage: js.Object = new js.Object() {
     val local: js.Object = new js.Object() {

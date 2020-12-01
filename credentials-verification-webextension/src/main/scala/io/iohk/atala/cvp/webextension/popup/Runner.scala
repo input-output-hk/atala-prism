@@ -4,7 +4,6 @@ import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 import org.scalajs.dom
-import org.scalajs.dom.window
 import slinky.web.ReactDOM
 
 import scala.concurrent.ExecutionContext
@@ -15,8 +14,6 @@ class Runner(
     blockchainExplorerUrl: String,
     termsUrl: String,
     privacyPolicyUrl: String
-)(implicit
-    ec: ExecutionContext
 ) {
 
   def run(): Unit = {

@@ -6,7 +6,9 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.credentials.VerificationError.{
+  BatchWasRevoked,
   CredentialWasRevoked,
+  InvalidMerkleProof,
   InvalidSignature,
   KeyWasNotValid,
   KeyWasRevoked
@@ -43,9 +45,9 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
         configurable = false
         // NOTE: The highlighted error is a bug on IntelliJ as the code compiles properly
         value = js.Dictionary(
-          "getSdkDetails" -> js.Any.fromFunction0(getSdkDetails),
-          "getWalletStatus" -> js.Any.fromFunction0(getWalletStatus),
-          "login" -> js.Any.fromFunction0(login),
+          "getSdkDetails" -> js.Any.fromFunction0(() => getSdkDetails()),
+          "getWalletStatus" -> js.Any.fromFunction0(() => getWalletStatus()),
+          "login" -> js.Any.fromFunction0(() => login()),
           "requestSignature" -> js.Any.fromFunction2(requestSignature),
           "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest),
           "verifySignedCredential" -> js.Any.fromFunction2(verifySignedCredential)
@@ -116,6 +118,10 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
       err match {
         case CredentialWasRevoked(revokedOn) =>
           s"The credential was revoked on $revokedOn"
+        case BatchWasRevoked(revokedOn) =>
+          s"The batch was revoked on $revokedOn"
+        case InvalidMerkleProof =>
+          "Invalid Merkle proof"
         case KeyWasNotValid(keyAddedOn, credentialIssuedOn) =>
           s"The signing key was added after the credential was issued.\nKey added on: $keyAddedOn\nCredential issued on: $credentialIssuedOn"
         case KeyWasRevoked(credentialIssuedOn, keyRevokedOn) =>
