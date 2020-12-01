@@ -19,6 +19,14 @@ object MessagesDAO {
          |VALUES ($id, $connection, $sender, $recipient, now(), $content)""".stripMargin.update.run.map(_ => ())
   }
 
+  def getMessage(id: MessageId): doobie.ConnectionIO[Option[Message]] = {
+    sql"""
+         |SELECT id, connection, recipient, received_at, content
+         |FROM messages
+         |WHERE id = $id
+       """.stripMargin.query[Message].option
+  }
+
   def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
@@ -32,7 +40,7 @@ object MessagesDAO {
              |  FROM messages
              |  WHERE id = $value
              |)
-             |SELECT id, connection, received_at, content
+             |SELECT id, connection, recipient, received_at, content
              |FROM CTE CROSS JOIN messages
              |WHERE recipient = $recipientId AND
              |      (received_at > last_seen_time OR (received_at = last_seen_time AND id > $value))
@@ -42,7 +50,7 @@ object MessagesDAO {
 
       case None =>
         sql"""
-             |SELECT id, connection, received_at, content
+             |SELECT id, connection, recipient, received_at, content
              |FROM messages
              |WHERE recipient = $recipientId
              |ORDER BY received_at ASC, id
@@ -58,7 +66,7 @@ object MessagesDAO {
       connectionId: ConnectionId
   ): doobie.ConnectionIO[Seq[Message]] = {
     sql"""
-         |SELECT id, connection, received_at, content
+         |SELECT id, connection, recipient, received_at, content
          |FROM messages
          |WHERE recipient = $recipientId AND
          |      connection = $connectionId
@@ -78,7 +86,7 @@ object MessagesDAO {
              |  FROM messages
              |  WHERE id = $value
              |)
-             |SELECT id, connection, received_at, content
+             |SELECT id, connection, recipient, received_at, content
              |FROM CTE CROSS JOIN messages
              |WHERE recipient = $recipientId AND
              |      (received_at > last_seen_time OR (received_at = last_seen_time AND id > $value))
@@ -87,7 +95,7 @@ object MessagesDAO {
 
       case None =>
         sql"""
-             |SELECT id, connection, received_at, content
+             |SELECT id, connection, recipient, received_at, content
              |FROM messages
              |WHERE recipient = $recipientId
              |ORDER BY received_at ASC, id

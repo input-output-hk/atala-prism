@@ -4,7 +4,7 @@ import cats.effect.{ContextShift, IO, Timer}
 import doobie.HC
 import doobie.implicits._
 import doobie.postgres._
-import io.circe.Json
+import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 
 import scala.concurrent.Future
@@ -28,7 +28,6 @@ class DbNotificationStreamerSpec extends PostgresRepositorySpec {
     ()
   }
 
-  private def notify(json: Json): Unit = notify(json.noSpaces)
   private def notify(payload: String): Unit = {
     val sendNotification = for {
       _ <- PHC.pgNotify(CHANNEL, payload)
@@ -41,7 +40,7 @@ class DbNotificationStreamerSpec extends PostgresRepositorySpec {
   private def streamSome(
       dbNotificationStreamer: DbNotificationStreamer,
       some: Int
-  ): Future[List[RowNotification]] = {
+  ): Future[List[DbNotification]] = {
     val stream = dbNotificationStreamer.stream
       .transact(database)
       .take(some.toLong)
@@ -56,7 +55,7 @@ class DbNotificationStreamerSpec extends PostgresRepositorySpec {
     stream
   }
 
-  private def streamAll(dbNotificationStreamer: DbNotificationStreamer): Future[List[RowNotification]] = {
+  private def streamAll(dbNotificationStreamer: DbNotificationStreamer): Future[List[DbNotification]] = {
     val stream = dbNotificationStreamer.stream
       .transact(database)
       .drain
@@ -74,67 +73,28 @@ class DbNotificationStreamerSpec extends PostgresRepositorySpec {
   "dbNotificationStreamer" should {
     "stream DB notifications" in {
       usingDbNotificationStreamer { dbNotificationStreamer =>
-        val stream = streamSome(dbNotificationStreamer, some = 4)
+        val stream = streamSome(dbNotificationStreamer, some = 2)
 
-        val insertRow = Json.obj("test" -> Json.fromString("inserted"))
-        notify(Json.obj("operation" -> Json.fromString("INSERT"), "row" -> insertRow))
-        val updateRow = Json.obj("test" -> Json.fromString("updated"))
-        notify(Json.obj("operation" -> Json.fromString("UPDATE"), "row" -> updateRow))
-        val deleteRow = Json.obj("test" -> Json.fromString("deleted"))
-        notify(Json.obj("operation" -> Json.fromString("DELETE"), "row" -> deleteRow))
-        val truncateRow = Json.obj("test" -> Json.fromString("truncated"))
-        notify(Json.obj("operation" -> Json.fromString("TRUNCATE"), "row" -> truncateRow))
+        val notificationPayload1 = "Notification payload #1"
+        notify(notificationPayload1)
+        val notificationPayload2 = "Notification payload #2"
+        notify(notificationPayload2)
 
-        stream.futureValue mustBe
-          List(
-            RowNotification(RowOperation.Insert, insertRow),
-            RowNotification(RowOperation.Update, updateRow),
-            RowNotification(RowOperation.Delete, deleteRow),
-            RowNotification(RowOperation.Truncate, truncateRow)
-          )
+        stream.futureValue mustBe List(DbNotification(notificationPayload1), DbNotification(notificationPayload2))
       }
     }
 
     "support multiple streams for the same channel" in {
       usingDbNotificationStreamer { dbNotificationStreamer =>
-        val stream1 = streamSome(dbNotificationStreamer, some = 2)
-        val stream2 = streamSome(dbNotificationStreamer, some = 2)
+        val stream1 = streamSome(dbNotificationStreamer, some = 1)
+        val stream2 = streamSome(dbNotificationStreamer, some = 1)
 
-        val insertRow = Json.obj("test" -> Json.fromString("inserted"))
-        notify(Json.obj("operation" -> Json.fromString("INSERT"), "row" -> insertRow))
-        val updateRow = Json.obj("test" -> Json.fromString("updated"))
-        notify(Json.obj("operation" -> Json.fromString("UPDATE"), "row" -> updateRow))
+        val notificationPayload = "Notification payload"
+        notify(notificationPayload)
 
-        val expectedNotifications =
-          List(RowNotification(RowOperation.Insert, insertRow), RowNotification(RowOperation.Update, updateRow))
+        val expectedNotifications = List(DbNotification(notificationPayload))
         stream1.futureValue mustBe expectedNotifications
         stream2.futureValue mustBe expectedNotifications
-      }
-    }
-
-    "ignore malformed DB notifications" in {
-      usingDbNotificationStreamer { dbNotificationStreamer =>
-        val stream = streamSome(dbNotificationStreamer, some = 2)
-
-        val insertRow = Json.obj("test" -> Json.fromString("inserted"))
-        notify(Json.obj("operation" -> Json.fromString("INSERT"), "row" -> insertRow))
-        // Should be ignored
-        notify(
-          Json.obj("operation-wrong" -> Json.fromString("INSERT"), "row" -> Json.obj("test" -> Json.fromBoolean(true)))
-        )
-        // Should be ignored
-        notify(
-          Json.obj("operation" -> Json.fromString("INSERT"), "row-wrong" -> Json.obj("test" -> Json.fromBoolean(true)))
-        )
-        // Should be ignored
-        notify("not-json")
-        val updateRow = Json.obj("test" -> Json.fromString("updated"))
-        notify(Json.obj("operation" -> Json.fromString("UPDATE"), "row" -> updateRow))
-
-        stream.futureValue mustBe List(
-          RowNotification(RowOperation.Insert, insertRow),
-          RowNotification(RowOperation.Update, updateRow)
-        )
       }
     }
 

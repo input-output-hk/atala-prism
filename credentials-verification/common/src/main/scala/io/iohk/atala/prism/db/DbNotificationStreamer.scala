@@ -7,11 +7,8 @@ import cats.implicits._
 import doobie._
 import doobie.implicits._
 import doobie.postgres._
-import enumeratum.EnumEntry.Uppercase
-import enumeratum.{Enum, EnumEntry}
 import fs2.Stream
 import fs2.Stream._
-import io.circe.{Decoder, Json}
 import monix.execution.atomic.AtomicBoolean
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -26,7 +23,7 @@ class DbNotificationStreamer private (channelName: String)(implicit timer: Timer
   private val stopped = AtomicBoolean(false)
   private val stoppedLatch = new CountDownLatch(1)
 
-  lazy val stream: Stream[ConnectionIO, RowNotification] = {
+  lazy val stream: Stream[ConnectionIO, DbNotification] = {
     val notificationStream = for {
       // Grab channel as resource so it gets closed automatically when done
       _ <- resource(channel(channelName))
@@ -47,19 +44,7 @@ class DbNotificationStreamer private (channelName: String)(implicit timer: Timer
         }
     } yield maybeNotification
 
-    notificationStream.unNoneTerminate
-      .map(notification =>
-        io.circe.parser
-          .parse(notification.getParameter)
-          .flatMap(_.as[RowNotification])
-          .leftMap(e => {
-            logger.warn(s"Could not parse notification: ${notification.getParameter}", e)
-            e
-          })
-          .toOption
-      )
-      // Ignore malformed notifications
-      .unNone
+    notificationStream.unNoneTerminate.map(notification => DbNotification(payload = notification.getParameter))
   }
 
   def stopStreaming(): Unit = {
@@ -74,22 +59,6 @@ class DbNotificationStreamer private (channelName: String)(implicit timer: Timer
 object DbNotificationStreamer {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  private implicit val rowOperationDecoder: Decoder[RowOperation] = Decoder.decodeString.emapTry { string =>
-    RowOperation.withNameInsensitiveEither(string).toTry
-  }
-
-  private implicit val rowNotificationDecoder: Decoder[RowNotification] = {
-    Decoder.decodeJson.emapTry { json =>
-      {
-        val h = json.hcursor
-        for {
-          operation <- h.downField("operation").as[RowOperation]
-          row <- h.downField("row").as[Json]
-        } yield RowNotification(operation, row)
-      }.toTry
-    }
-  }
-
   def apply(channelName: String)(implicit timer: Timer[IO]): DbNotificationStreamer = {
     new DbNotificationStreamer(channelName)
   }
@@ -98,16 +67,6 @@ object DbNotificationStreamer {
   private def channel(name: String): Resource[ConnectionIO, Unit] = {
     Resource.make(PHC.pgListen(name) *> HC.commit)(_ => PHC.pgUnlisten(name) *> HC.commit)
   }
+
+  case class DbNotification(payload: String)
 }
-
-sealed trait RowOperation extends EnumEntry
-object RowOperation extends Enum[RowOperation] with Uppercase {
-  val values: IndexedSeq[RowOperation] = findValues
-
-  case object Insert extends RowOperation
-  case object Update extends RowOperation
-  case object Delete extends RowOperation
-  case object Truncate extends RowOperation
-}
-
-case class RowNotification(operation: RowOperation, row: Json)

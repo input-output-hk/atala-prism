@@ -122,7 +122,13 @@ object TokenString {
   def random(): TokenString = random(Random)
 }
 
-case class Message(id: MessageId, connection: ConnectionId, receivedAt: Instant, content: Array[Byte]) {
+case class Message(
+    id: MessageId,
+    connection: ConnectionId,
+    recipientId: ParticipantId,
+    receivedAt: Instant,
+    content: Array[Byte]
+) {
   def toProto: connector_models.ReceivedMessage = {
     connector_models.ReceivedMessage(
       id.id.toString,

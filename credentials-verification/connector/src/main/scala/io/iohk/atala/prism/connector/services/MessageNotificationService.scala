@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.connector.services
 
-import java.time.ZonedDateTime
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -9,14 +8,13 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import fs2.concurrent.{NoneTerminatedQueue, Queue}
-import io.circe.Decoder
-import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
+import io.iohk.atala.prism.connector.model.{Message, MessageId}
+import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.db.DbNotificationStreamer
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.util.BytesOps
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.Try
+import scala.util.control.NonFatal
 
 class MessageNotificationService private (
     dbNotificationStreamer: DbNotificationStreamer,
@@ -49,13 +47,30 @@ class MessageNotificationService private (
   def start(): Unit = {
     dbNotificationStreamer.stream
       .map { notification =>
-        val row = notification.row
-        val recipientId = row.hcursor.downField("recipient").as[UUID].map(ParticipantId(_)).toOption
-        recipientId
-          .flatMap(r => Option(streamQueues.get(r)))
-          .foreach { queue =>
-            row.as[Message].toOption.foreach(message => enqueue(queue, Some(message)))
-          }
+        try {
+          Some(MessageId(UUID.fromString(notification.payload)))
+        } catch {
+          case NonFatal(e) =>
+            logger.error(s"DB notification payload could not be parsed as message ID", e)
+            None
+        }
+      }
+      // Ignore malformed IDs
+      .unNone
+      // Query whole message
+      .evalMap(messageId =>
+        MessagesDAO.getMessage(messageId).map {
+          case Some(message) => Some(message)
+          case None =>
+            logger.error(s"Message with ID $messageId not found")
+            None
+        }
+      )
+      // Ignore messages not found
+      .unNone
+      // Notify any connected stream
+      .map { message =>
+        Option(streamQueues.get(message.recipientId)).foreach(enqueue(_, Some(message)))
       }
       .transact(xa)
       .compile
@@ -78,22 +93,6 @@ class MessageNotificationService private (
 
 object MessageNotificationService {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
-
-  private implicit val messageDecoder: Decoder[Message] = {
-    Decoder.decodeJson.emapTry { json =>
-      {
-        val h = json.hcursor
-        for {
-          id <- h.downField("id").as[UUID]
-          connection <- h.downField("connection").as[UUID]
-          // Instant format from DB has timezone
-          receivedAt <- h.downField("received_at").as[ZonedDateTime]
-          hexContent <- h.downField("content").as[String]
-          content <- Try(BytesOps.hexToBytes(hexContent.stripPrefix("\\x"))).toEither
-        } yield Message(MessageId(id), ConnectionId(connection), receivedAt.toInstant, content)
-      }.toTry
-    }
-  }
 
   def apply(
       xa: Transactor[IO]

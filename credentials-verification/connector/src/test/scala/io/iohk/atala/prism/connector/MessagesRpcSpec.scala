@@ -133,8 +133,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
   }
 
-  // TODO(ATA-3933): Re-enable tests once streaming is fixed
-  "GetMessageStream" ignore {
+  "GetMessageStream" should {
     val keyPair = EC.generateKeyPair()
     val publicKey = keyPair.publicKey
     val did = generateDid(publicKey)
