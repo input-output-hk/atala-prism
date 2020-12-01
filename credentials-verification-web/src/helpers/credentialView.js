@@ -19,19 +19,36 @@ const HTML_SANITIZER_OPTIONS = {
   }
 };
 
+const replacePlaceholdersFromObject = (html, placeholders, data) =>
+  Object.keys(placeholders).reduce(
+    (template, key) => template.replace(placeholders[key], data[key]),
+    html
+  );
+
 export const fillHTMLCredential = (
   htmlTemplate,
-  placeholders,
+  credentialType,
   credentialData,
   organisationName
 ) => {
-  const credentialTemplate = Object.keys(placeholders)
-    .reduce(
-      (template, key) => template.replace(placeholders[key], credentialData[key]),
-      htmlTemplate
-    )
+  const { placeholders, isMultiRow, multiRowKey, multiRowView } = credentialType;
+
+  const multiRowHTML = isMultiRow
+    ? credentialData[multiRowKey]
+        .map(data =>
+          replacePlaceholdersFromObject(multiRowView.html, multiRowView.placeholders, data)
+        )
+        .join('')
+    : '';
+
+  const credentialTemplate = replacePlaceholdersFromObject(
+    htmlTemplate,
+    placeholders,
+    credentialData
+  )
     .replace(ISSUER_NAME_PLACEHOLDER, organisationName)
     .replace(ISSUANCE_DATE_PLACEHOLDER, dateFormat(new Date()))
+    .replace(`{{${multiRowKey}Html}}`, multiRowHTML)
     // The educational credential contains an unnecessary property
     // that breaks the styling during sanitization so here we remove it
     .replace('boxShadow;', '');

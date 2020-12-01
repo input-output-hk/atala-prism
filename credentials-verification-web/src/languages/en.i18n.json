@@ -98,7 +98,12 @@
         "personalNumber": "Personal Number",
         "degreeName": "Degree Name",
         "degreeResult": "Degree Result",
-        "cumulativeScore": "Cumulative Score"
+        "cumulativeScore": "Cumulative Score",
+        "courseName": "Course Name",
+        "courseCode": "Course Code",
+        "credits": "Credits",
+        "score": "Score",
+        "grade": "Grade"
       }
     },
     "inviteSuccessfull": "The Holder has been successfully invited",

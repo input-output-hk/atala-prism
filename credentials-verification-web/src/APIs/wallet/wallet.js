@@ -115,6 +115,11 @@ async function signCredentials(unsignedCredentials) {
       id: unsignedCredential.credentialid,
       properties: JSON.parse(unsignedCredential.credentialdata)
     };
+
+    // FIXME: remove the courses property from the transcript credential
+    // as the wallet doesn't support arrays as properties
+    delete payload.properties.courses;
+
     return window.prism.requestSignature(sessionId, JSON.stringify(payload));
   });
   return Promise.all(signRequests);

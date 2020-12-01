@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes, { arrayOf } from 'prop-types';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import ImportDataContainer from '../importContactData/ImportDataContainer';
@@ -9,6 +9,7 @@ import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpe
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
+import { credentialTypeShape } from '../../helpers/propShapes';
 
 const ImportCredentialsData = ({
   selectedGroups,
@@ -82,10 +83,7 @@ ImportCredentialsData.propTypes = {
   selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
   selectedSubjects: PropTypes.arrayOf(PropTypes.string).isRequired,
   subjects: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string })).isRequired,
-  credentialType: PropTypes.shape({
-    name: PropTypes.string,
-    fields: arrayOf(PropTypes.shape({ key: PropTypes.string }))
-  }).isRequired,
+  credentialType: PropTypes.shape(credentialTypeShape).isRequired,
   onCancel: PropTypes.func.isRequired,
   onFinish: PropTypes.func.isRequired,
   getContactsFromGroups: PropTypes.func.isRequired

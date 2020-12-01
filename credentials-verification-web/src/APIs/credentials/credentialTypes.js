@@ -12,10 +12,12 @@ import GeorgiaNationalIDLogo from '../../images/GeorgiaNationalIDLogo.png';
 import GeorgiaEducationalDegreeSample from '../../images/GeorgiaEducationalDegreeSample.svg';
 import GeorgiaEducationalDegreeTranscriptSample from '../../images/GeorgiaEducationalDegreeTranscriptSample.svg';
 import GeorgiaNationalIDSample from '../../images/GeorgiaNationalIDSample.svg';
+import { coursesView } from './credentialExtraViews';
 
 const governmentId = {
   id: 1,
   enabled: false,
+  isMultiRow: false,
   name: 'credentials.type.governmentId',
   logo: governmentIdLogo,
   sampleImage: governmentIdSample,
@@ -57,6 +59,7 @@ const governmentId = {
 const educational = {
   id: 2,
   enabled: false,
+  isMultiRow: false,
   name: 'credentials.type.educational',
   logo: educationalLogo,
   sampleImage: educationalSample,
@@ -99,6 +102,7 @@ const educational = {
 const proofOfEmployment = {
   id: 3,
   enabled: false,
+  isMultiRow: false,
   name: 'credentials.type.proofOfEmployment',
   logo: proofOfEmploymentLogo,
   sampleImage: proofOfEmploymentSample,
@@ -130,6 +134,7 @@ const proofOfEmployment = {
 const healthIsurance = {
   id: 4,
   enabled: false,
+  isMultiRow: false,
   name: 'credentials.type.healthInsurance',
   logo: healthInsuranceLogo,
   sampleImage: healthInsuranceSample,
@@ -161,6 +166,7 @@ const healthIsurance = {
 const GeorgiaNationalID = {
   id: 5,
   enabled: true,
+  isMultiRow: false,
   name: 'credentials.type.governmentId',
   logo: GeorgiaNationalIDLogo,
   sampleImage: GeorgiaNationalIDSample,
@@ -221,6 +227,7 @@ const GeorgiaNationalID = {
 const GeorgiaEducationalDegree = {
   id: 6,
   enabled: true,
+  isMultiRow: false,
   name: 'credentials.type.educational',
   logo: GeorgiaEducationalDegreeLogo,
   sampleImage: GeorgiaEducationalDegreeSample,
@@ -257,6 +264,9 @@ const GeorgiaEducationalDegree = {
 const GeorgiaEducationalDegreeTranscript = {
   id: 7,
   enabled: true,
+  isMultiRow: true,
+  multiRowKey: 'courses',
+  multiRowView: coursesView,
   name: 'credentials.type.transcript',
   logo: GeorgiaEducationalDegreeTranscriptLogo,
   sampleImage: GeorgiaEducationalDegreeTranscriptSample,
@@ -277,16 +287,40 @@ const GeorgiaEducationalDegreeTranscript = {
       validations: ['required']
     },
     {
-      key: 'subjects',
-      type: 'array',
-      validations: ['required']
+      key: 'courseName',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'courseCode',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'credits',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'score',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'grade',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
     }
   ],
   placeholders: {
     fullname: '{{credentialSubject.name}}',
     degreeName: '{{degreeName}}',
-    cumulativeScore: '{{cumulativeScore}}',
-    subjects: '{{coursesHtml}}'
+    cumulativeScore: '{{cumulativeScore}}'
   }
 };
 

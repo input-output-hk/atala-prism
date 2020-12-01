@@ -131,6 +131,7 @@ export const credentialTabShape = {
 export const credentialTypeShape = {
   id: number,
   enabled: bool,
+  isMultiRow: bool,
   name: string,
   logo: element,
   sampleImage: element,
@@ -138,7 +139,8 @@ export const credentialTypeShape = {
     shape({
       key: string,
       type: string,
-      validations: arrayOf(string)
+      validations: arrayOf(string),
+      isRowField: bool
     })
   ),
   placeholders: objectOf(string)

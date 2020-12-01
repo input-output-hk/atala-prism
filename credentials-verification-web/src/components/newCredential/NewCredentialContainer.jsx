@@ -120,12 +120,32 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     }
   }, [shouldSelectRecipients]);
 
+  const parseMultiRowCredentials = (dataObjects, multiRowKey, fields) => {
+    const groupedData = _.groupBy(dataObjects, 'externalid');
+    const externalIds = Object.keys(groupedData);
+    const rowsPerExternalId = externalIds.map(externalId => groupedData[externalId]);
+    const rowFields = fields.filter(({ isRowField }) => isRowField).map(({ key }) => key);
+    return rowsPerExternalId.map(rows => {
+      const firstRow = _.head(rows);
+      const rowsData = rows.map(row => _.pick(row, ...rowFields));
+      return {
+        ..._.omit(firstRow, ...rowFields),
+        [multiRowKey]: rowsData
+      };
+    });
+  };
+
   const handleImportedData = (dataObjects, setResults) => {
-    setImportedData(dataObjects);
+    const { isMultiRow, multiRowKey, fields } = credentialTypes[credentialType];
+    const credentialsData = isMultiRow
+      ? parseMultiRowCredentials(dataObjects, multiRowKey, fields)
+      : dataObjects;
+
+    setImportedData(credentialsData);
 
     setResults({
-      credentialDataImported: dataObjects.length,
-      continueCallback: () => goToCredentialsPreview(dataObjects)
+      credentialDataImported: credentialsData.length,
+      continueCallback: () => goToCredentialsPreview(credentialsData)
     });
   };
 
@@ -136,7 +156,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     const htmlCredentials = credentialsData.map(credentialData =>
       fillHTMLCredential(
         htmltemplate,
-        credentialTypes[credentialType].placeholders,
+        credentialTypes[credentialType],
         credentialData,
         session.organisationName
       )
