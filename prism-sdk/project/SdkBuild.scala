@@ -61,6 +61,7 @@ object SdkBuild {
         }
       )
       .enablePlugins(GitVersioning)
+      .jvmSettings(crossScalaVersions := supportedScalaVersions)
       .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
       .jsSettings(
         assembleArtifact in packageBin := false,
@@ -76,7 +77,6 @@ object SdkBuild {
         libraryDependencies ++= circeDependencies.value
       )
       .jvmSettings(
-        crossScalaVersions := supportedScalaVersions,
         Test / fork := true, // Avoid classloader issues during testing with `sbt ~test`
         assemblyJarName in assembly := "prism-crypto.jar",
         // In order to use this library in Android, we need to bundle it with the scala stdlib
@@ -116,7 +116,6 @@ object SdkBuild {
         libraryDependencies += "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion
       )
       .jvmSettings(
-        crossScalaVersions := supportedScalaVersions,
         libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
         PB.targets in Compile := Seq(
           scalapb.gen() -> (sourceManaged in Compile).value
@@ -137,7 +136,6 @@ object SdkBuild {
         libraryDependencies += scalaUri.value
       )
       .jvmSettings(
-        crossScalaVersions := supportedScalaVersions,
         assemblyJarName in assembly := "prism-identity.jar",
         libraryDependencies ++= bouncyDependencies.map(_ % "provided")
       )

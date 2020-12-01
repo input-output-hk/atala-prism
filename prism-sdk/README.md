@@ -13,6 +13,14 @@ $ sbt +prismCryptoJVM/assembly
 
 You can find the resulting fat JARs in `crypto/jvm/target/scala-2.12/prism-crypto.jar` and `crypto/jvm/target/scala-2.13/prism-crypto.jar`.
 
+If you want to locally publish modularized version of SDK use:
+
+```
+$ sbt +sdkJVM/publishLocal
+```
+
+That can also be done for single module (e.g. `sbt +prismConnectorJVM/publishLocal`), but in such case you need to make sure you publish all dependencies as well.
+
 ## Docs
 
 ## Grpc API
