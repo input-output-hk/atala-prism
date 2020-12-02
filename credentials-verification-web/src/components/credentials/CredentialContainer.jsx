@@ -44,7 +44,7 @@ const CredentialContainer = ({ api }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [indeterminateSelectAll, setIndeterminateSelectAll] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
-  const [loading, setLoading] = useState({ issued: false, received: false });
+  const [loading, setLoading] = useState({ issued: true, received: true });
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
@@ -53,7 +53,6 @@ const CredentialContainer = ({ api }) => {
 
   const fetchCredentialsIssued = async () => {
     try {
-      setLoadingByKey('issued', true);
       const { credentialid } = getLastArrayElementOrEmpty(credentialsIssued);
 
       const newlyFetchedCredentials = await api.credentialsManager.getCredentials(
@@ -110,7 +109,6 @@ const CredentialContainer = ({ api }) => {
 
   const fetchCredentialsReceived = async () => {
     try {
-      setLoadingByKey('received', true);
       const { messageid } = getLastArrayElementOrEmpty(credentialsReceived);
 
       const newlyFetchedCredentials = await api.connector.getCredentialsReceived(
