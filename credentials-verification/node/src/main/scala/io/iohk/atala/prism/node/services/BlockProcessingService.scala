@@ -48,8 +48,12 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
         IssueCredentialOperation.parse(signedOperation, timestampInfo)
       case _: node_models.AtalaOperation.Operation.RevokeCredential =>
         RevokeCredentialOperation.parse(signedOperation, timestampInfo)
-      case op =>
-        Left(InvalidValue(Path.root, op.getClass.getSimpleName, "Unknown operation"))
+      case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
+        IssueCredentialBatchOperation.parse(signedOperation, timestampInfo)
+      case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
+        RevokeCredentialsOperation.parse(signedOperation, timestampInfo)
+      case empty @ node_models.AtalaOperation.Operation.Empty =>
+        Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
     }
   }
 

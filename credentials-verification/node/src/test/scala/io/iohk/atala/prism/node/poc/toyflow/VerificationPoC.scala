@@ -7,7 +7,7 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.node.poc.{CManager, Connector, NodeSDK}
+import io.iohk.atala.prism.node.poc.NodeSDK
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{
@@ -21,14 +21,13 @@ import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
-import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 import io.iohk.atala.prism.credentials.json.implicits._
 
-class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with BeforeAndAfterEach {
+class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
   implicit val ecTrait = EC
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
@@ -112,17 +111,16 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
       // 2- she uses the connector to publish it
       // 3. she grabs credential data from the CManager
       // 4- she builds a generic credential
-      // 5. she signes it with the wallet
+      // 5. she signs it with the wallet
       // 6. she issues the credential through the cmanager
-      // /. she encode the credential and send it through the connector
+      // 7. she encodes the credential and send it through the connector
       // ... later ...
-      // 8. a verifier recieves the credential through the connector
-      // 9. gives the signed credential to the wallet to verify it
-      // 10. the wallet queries the node and verify stuff and succeeds
+      // 8. a verifier receives the credential through the connector
+      // 9. gives the signed credential to the wallet to verify it and succeeds
       // ... later ...
-      // 11. the issuer decides to revoke the crdential
+      // 10. the issuer decides to revoke the credential
       // ... later ...
-      // 12. the verifier calls the wallet again to verify the credential
+      // 11. the verifier calls the wallet again to verify the credential
       //     and the verification fails
 
       // some illustrative component representations
@@ -180,7 +178,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
       validResult must be(true)
 
       // ... later ...
-      // 11. the issuer decides to revoke the credential
+      // 10. the issuer decides to revoke the credential
       val prevOpHash: SHA256Digest = SHA256Digest.compute(issueCredentialOp.toByteArray)
       val credentialIdToRevoke = calculatedCredentialId
       val revokeCredOp = NodeSDK.buildRevokeCredentialOp(prevOpHash, credentialIdToRevoke)
@@ -188,7 +186,7 @@ class VerificationPoC extends PostgresRepositorySpec with MockitoSugar with Befo
       cmanager.revokeCredential("the corresponding id", signedRevokeOp)
 
       // ... later ...
-      // 12. the verifier calls the wallet again to verify the credential
+      // 11. the verifier calls the wallet again to verify the credential
       //     and the verification fails
       val invalidResult = wallet.verifyCredential(verifyMe)
 

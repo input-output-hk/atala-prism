@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.node.poc
+package io.iohk.atala.prism.node.poc.toyflow
 
 import java.time.LocalDate
 import java.util.UUID

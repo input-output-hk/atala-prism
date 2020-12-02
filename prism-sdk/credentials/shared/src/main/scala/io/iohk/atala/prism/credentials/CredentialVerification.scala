@@ -2,6 +2,7 @@ package io.iohk.atala.prism.credentials
 
 import cats.implicits._
 import cats.data._
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
 
@@ -101,13 +102,13 @@ object CredentialVerification {
     * @param signedCredential the credential to verify
     * @return a validation result
     */
-  def verifyCredential(
+  def verifyCredential[C](
       keyData: KeyData,
       batchData: BatchData,
       credentialRevocationTime: Option[TimestampInfo],
       merkleRoot: MerkleRoot,
       inclusionProof: MerkleInclusionProof,
-      signedCredential: SignedCredential
+      signedCredential: JsonBasedCredential[C]
   )(implicit ec: ECTrait): ValidatedNel[VerificationError, Unit] = {
 
     // Scala's type system is evil, so we need this type alias to currify things for the
@@ -142,7 +143,7 @@ object CredentialVerification {
     // the signature is valid
     val signatureIsValid: ValidationResult[Unit] =
       Validated.condNel(
-        CredentialsCryptoSDKImpl.verifyCredentialSignature(signedCredential, keyData.publicKey),
+        signedCredential.isValidSignature(keyData.publicKey),
         (),
         InvalidSignature
       )

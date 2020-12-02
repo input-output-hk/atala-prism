@@ -1,21 +1,24 @@
 package io.iohk.atala.prism.credentials
 
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.crypto.{MerkleTree, SHA256Digest}
+import io.iohk.atala.prism.crypto.MerkleTree
 
 object CredentialBatches {
-  def batch(signedCredentials: List[SignedCredential]): (MerkleRoot, List[MerkleInclusionProof]) = {
+  def batch[C](
+      signedCredentials: List[JsonBasedCredential[C]]
+  ): (MerkleRoot, List[MerkleInclusionProof]) = {
     MerkleTree.generateProofs(
-      signedCredentials.map(cred => SHA256Digest.compute(cred.signedCredentialBytes))
+      signedCredentials.map(_.hash)
     )
   }
 
-  def verifyInclusion(
-      signedCredential: SignedCredential,
+  def verifyInclusion[C](
+      signedCredential: JsonBasedCredential[C],
       merkleRoot: MerkleRoot,
       inclusionProof: MerkleInclusionProof
   ): Boolean = {
-    SHA256Digest.compute(signedCredential.signedCredentialBytes) == inclusionProof.hash &&
+    signedCredential.hash == inclusionProof.hash &&
     MerkleTree.verifyProof(merkleRoot, inclusionProof)
   }
 }

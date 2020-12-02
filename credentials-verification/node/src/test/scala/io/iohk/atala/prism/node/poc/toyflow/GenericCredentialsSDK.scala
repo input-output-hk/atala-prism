@@ -15,17 +15,17 @@ object GenericCredentialsSDK {
   def buildGenericCredential(
       credentialType: String,
       issuerDID: DIDSuffix,
-      issuianceKeyId: String,
+      issuanceKeyId: String,
       claims: String
   ): String = {
     issuerDIDUsed = issuerDID
-    keyIdUsed = issuianceKeyId
+    keyIdUsed = issuanceKeyId
     s"""{
        |  "credentialType" : "$credentialType",
        |  "issuerDID" : "did:prism:${issuerDID.suffix}",
        |  "signingKey" : {
        |     "type" : "DIDKey",
-       |     "key" : "$issuianceKeyId"
+       |     "key" : "$issuanceKeyId"
        |  },
        |  "claims" : $claims
        |}""".stripMargin
