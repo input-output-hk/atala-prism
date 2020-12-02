@@ -40,7 +40,8 @@ const SendCredentialConfirmationModal = ({ selected, targetCredentials, ...modal
         <CustomButton
           buttonProps={{
             className: 'theme-primary',
-            onClick: onOk
+            onClick: onOk,
+            disabled: !targetCredentials.length
           }}
           buttonText={t('credentials.actions.confirm')}
         />

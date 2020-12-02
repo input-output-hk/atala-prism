@@ -206,7 +206,7 @@ const CredentialContainer = ({ api }) => {
 
   const showSendError = error => {
     Logger.error(error);
-    message.error(t('credentials.errors.errorSigning'));
+    message.error(t('credentials.errors.errorSending'));
   };
 
   const signCredentialsRequiredStatus = {

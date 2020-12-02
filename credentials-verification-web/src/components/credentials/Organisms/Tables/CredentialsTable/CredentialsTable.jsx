@@ -15,7 +15,8 @@ import {
   CREDENTIALS_ISSUED,
   CREDENTIALS_RECEIVED,
   CONTACT_STATUS,
-  CREDENTIAL_STATUS
+  CREDENTIAL_STATUS,
+  CONNECTION_STATUSES
 } from '../../../../../helpers/constants';
 import './_style.scss';
 
@@ -93,7 +94,7 @@ const getCredentialsIssuedColumns = (
   {
     key: 'actions',
     render: credential => {
-      const { status, credentialid } = credential;
+      const { status, credentialid, contactData } = credential;
       const actionButtons = (
         <div>
           {status === CREDENTIAL_STATUSES.credentialDraft && (
@@ -111,7 +112,8 @@ const getCredentialsIssuedColumns = (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
-                onClick: () => sendSingleCredential(credentialid)
+                onClick: () => sendSingleCredential(credentialid),
+                disabled: contactData.status !== CONNECTION_STATUSES.connectionAccepted
               }}
               buttonText={sendText}
               loading={loadingSendSingle}
