@@ -8,7 +8,8 @@ export function credentialMapper(credential, credentialTypes) {
     contactid,
     contactdata,
     connectionstatus,
-    encodedsignedcredential
+    encodedsignedcredential,
+    publicationstoredat
   } = credential;
 
   const parsedCredentialJson = JSON.parse(credentialdata);
@@ -18,6 +19,7 @@ export function credentialMapper(credential, credentialTypes) {
     credentialid,
     credentialdata,
     encodedsignedcredential,
+    publicationstoredat,
     credentialType: getCredentialTypeObject(parsedCredentialJson, credentialTypes),
     status: getCredentialStatus(credential),
     contactData: contactMapper({

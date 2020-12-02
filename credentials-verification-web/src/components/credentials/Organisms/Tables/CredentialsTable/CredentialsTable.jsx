@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
-import { dayMonthYearBackendFormatter } from '../../../../../helpers/formatters';
+import { dateFormat } from '../../../../../helpers/formatters';
 import InfiniteScrollTable from '../../../../common/Organisms/Tables/InfiniteScrollTable';
 import freeUniLogo from '../../../../../images/free-uni-logo.png';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
@@ -67,11 +67,11 @@ const getCredentialsIssuedColumns = (
 ) => [
   ...commonColumns,
   {
-    key: 'creationDate',
-    render: ({ contactData }) => (
+    key: 'dateSigned',
+    render: ({ publicationstoredat }) => (
       <CellRenderer
-        title={tp('creationDate')}
-        value={dayMonthYearBackendFormatter(contactData.creationDate)}
+        title={tp('dateSigned')}
+        value={publicationstoredat ? dateFormat(publicationstoredat) : '-'}
       />
     )
   },

@@ -21,7 +21,7 @@ const CredentialDetail = ({ credential, credentialTypes }) => {
     setShowDrawer(true);
   };
 
-  const { logo: credentialLogo } = credentialTypes[credentialType];
+  const { name, logo: credentialLogo } = credentialTypes[credentialType];
 
   return (
     <div className="credentialDetailContainer">
@@ -39,17 +39,13 @@ const CredentialDetail = ({ credential, credentialTypes }) => {
         </div>
         <div className="credentialData">
           <p>{t('credentials.table.columns.credentialType')}</p>
-          <span>{t(`credentials.type.${credentialType}`)}</span>
+          <span>{t(name)}</span>
         </div>
       </div>
       <div className="credentialDataContainer">
         <div className="credentialData">
-          <p>{t('credentials.detail.datePublished')}</p>
-          <span>
-            {publicationstoredat
-              ? dateFormat(publicationstoredat)
-              : t('credentials.detail.notPublished')}
-          </span>
+          <p>{t('credentials.detail.dateSigned')}</p>
+          <span>{publicationstoredat ? dateFormat(publicationstoredat) : '-'}</span>
         </div>
         <div>
           <CustomButton

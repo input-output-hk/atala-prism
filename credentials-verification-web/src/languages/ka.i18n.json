@@ -238,7 +238,7 @@
         "credentialType": "Credential Type",
         "contactName": "Contact Name",
         "externalId": "External ID",
-        "creationDate": "Date Created",
+        "dateSigned": "Date Signed",
         "contactStatus": "Contact Status",
         "credentialStatus": "Credential Status"
       }
@@ -255,8 +255,7 @@
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential",
       "dateCreated": "Date Created",
-      "datePublished": "Date Published",
-      "notPublished": "Not Published",
+      "dateSigned": "Date Signed",
       "validity": "Validity: ",
       "valid": "Valid",
       "source": "Source:",
