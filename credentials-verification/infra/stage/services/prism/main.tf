@@ -333,8 +333,18 @@ data aws_acm_certificate cf-tls-cert {
   statuses = ["ISSUED"]
 }
 
+locals {
+  # intdemo www
+  env_prod = "www"
+  # prism console develop
+  env_develop = "develop"
+  # cloud front will be used only for develop or prod environment server for http to https redirection
+  endpoint_cf_or_lb = (var.env_name_short == local.env_develop) ? data.dns_cname_record_set.console_cf_dns[0].host : module.prism_service.envoy_lb_dns_name
+  cf_cname_prefix = (var.geud_enabled && var.env_name_short == local.env_develop) ? "console-${local.env_develop}" : "console-${var.env_name_short}"
+}
+
 resource aws_cloudfront_distribution intdemo_cf_dist {
-  count = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
+  count = var.intdemo_enabled && var.env_name_short == local.env_prod ? 1 : 0
 
   origin {
     domain_name = module.prism_service.envoy_lb_dns_name
@@ -393,6 +403,66 @@ resource aws_cloudfront_distribution intdemo_cf_dist {
   }
 }
 
+# management console cloud front distribution
+resource aws_cloudfront_distribution console_cf_dist {
+  count = var.geud_enabled && var.env_name_short == local.env_develop ? 1 : 0
+
+  origin {
+    domain_name = module.prism_service.envoy_lb_dns_name
+    origin_id   = "${local.cf_cname_prefix}-origin-id"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "${var.env_name_short} Cloudfront distribution"
+
+  aliases = ["${local.cf_cname_prefix}.${var.atala_prism_domain}"]
+
+  default_cache_behavior {
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "${local.cf_cname_prefix}-origin-id"
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  tags = {
+    Name        = "${var.env_name_short}-cf-distribution"
+    Environment = var.env_name_short
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = data.aws_acm_certificate.cf-tls-cert.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2018"
+  }
+}
+
 # public DNS record for the loadbalancer/grpc proxy/other backend services
 # This points to <env>.atalaprism.io
 resource aws_route53_record grpc_dns_entry {
@@ -408,13 +478,21 @@ resource aws_route53_record grpc_dns_entry {
 # for www/prod, use the bare domain atalaprism.io
 # query A record for cloudfront domain
 data dns_a_record_set cf_dns {
-  count = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
+  count = var.intdemo_enabled && var.env_name_short == local.env_prod ? 1 : 0
   host  = aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name
+}
+
+# management console DNS
+# for management console , use the domain console-{var.env_name_short}.atalaprism.io
+# query CNAME record for cloudfront domain
+data dns_cname_record_set console_cf_dns {
+  count = var.geud_enabled && var.env_name_short == local.env_develop ? 1 : 0
+  host  = aws_cloudfront_distribution.console_cf_dist[0].domain_name
 }
 
 # create a matching one for atalaprism.io
 resource aws_route53_record domain_dns_entry {
-  count   = var.intdemo_enabled && var.env_name_short == "www" ? 1 : 0
+  count   = var.intdemo_enabled && var.env_name_short == local.env_prod ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = var.atala_prism_domain
   type    = "A"
@@ -429,7 +507,7 @@ resource aws_route53_record console_dns_entry {
   name    = "console-${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
   ttl     = "300"
-  records = [module.prism_service.envoy_lb_dns_name]
+  records = [local.endpoint_cf_or_lb]
 }
 
 # public DNS record for the PRISM docs
