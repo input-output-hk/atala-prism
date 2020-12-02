@@ -560,7 +560,7 @@ jobs:
       # this is for the public api, hence, the admin/intdemo APIs are removed
       - run:
           name: Move the protos to the proper folder
-          command: mv prism-sdk/protos protos && rm -rf protos/admin_api.proto protos/intdemo
+          command: mv prism-sdk/protos protos && rm -rf protos/admin_api.proto protos/intdemo protos/*internal.proto
 
       # apparently, the argument to set the destination folder doesn't work
       - run:

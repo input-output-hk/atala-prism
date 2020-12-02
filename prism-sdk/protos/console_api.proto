@@ -22,8 +22,7 @@ service ConsoleService {
   // Retrieves a contact for the authenticated institution
   rpc GetContact (GetContactRequest) returns (GetContactResponse) {}
 
-  // Generates a connection token for the given contact
-  //
+  // Generates a connection token for the given contact.
   // This is a necessary step before being able to connect to the contact.
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
 
@@ -47,11 +46,16 @@ message GetStatisticsResponse {
 
 // Request to create a contact on the authenticated institution
 message CreateContactRequest {
+  // Optional, when present, the given contact gets assigned to a group with the given name.
+  // TODO: We likely need a list of groups instead, also, use group id instead of the name.
   string groupName = 1;
+
+  // Arbitrary data for the contact, should be a valid json, when missing, "{}" will be used
   string jsonData = 2;
-  // The id provided by the institution at contact creation time
-  // An institution cannot have two contacts with the same external id
-  // The id could be repeated in different issuers
+
+  // The id provided by the institution at contact creation time.
+  // An institution cannot have two contacts with the same external id.
+  // The id could be repeated in different institutions.
   string externalId = 3;
 }
 // Response after creating a contact
@@ -59,9 +63,9 @@ message CreateContactResponse {
   Contact contact = 1; // the created contact
 }
 
-// Request to retrieve the contacts from the authenticated institution
+// Request to retrieve the contacts from the authenticated institution.
 //
-// The result is sorted by the contact's creation date in ascending order, breaking ties by contact id
+// The result is sorted by the contact's creation date in ascending order, breaking ties by contact id.
 message GetContactsRequest {
   int32 limit = 1; // the max amount of contacts to return, must be > 0
   string lastSeenContactId = 2; // the last seen contact (if any), the returned contacts start after this one
@@ -69,12 +73,12 @@ message GetContactsRequest {
 }
 // Response with the retrieved contacts
 message GetContactsResponse {
-  repeated Contact contacts = 1;
+  repeated Contact contacts = 1; // the contacts found
 }
 
 // Request to retrieve a contact from the authenticated institution
 message GetContactRequest {
-  string contactId = 1;
+  string contactId = 1; // the id used to find the contact
 }
 // Response for the retrieved contact
 message GetContactResponse {

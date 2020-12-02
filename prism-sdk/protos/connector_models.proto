@@ -5,10 +5,12 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
-// @exclude GENERAL
+// @exclude
+// GENERAL
 
 // just an EC public key represented with big integers as strings
-// @exclude TODO: merge with the node PublicKey
+//
+// TODO: merge with the node PublicKey
 message ConnectorPublicKey {
     string x = 1;
     string y = 2;
@@ -19,7 +21,8 @@ message EncodedPublicKey {
 }
 
 // Information on an Issuer
-// @exclude TODO: Remove deprecated value
+//
+// TODO: Remove deprecated value
 message IssuerInfo {
     string DID = 1;
     string name = 2;
@@ -27,7 +30,8 @@ message IssuerInfo {
 }
 
 // Information on a Verifier
-// @exclude TODO: Remove deprecated value
+//
+// TODO: Remove deprecated value
 message VerifierInfo {
     string DID = 1;
     string name = 2;
@@ -43,7 +47,8 @@ message HolderInfo {
 
 // Type representing generic participant in the system, alternative of IssuerInfo, HolderInfo, or VerifierInfo.
 message ParticipantInfo {
-    // @exclude TODO: Remove roles, they no longer exist
+    // @exclude
+    // TODO: Remove roles, they no longer exist
     oneof participant {
         IssuerInfo issuer = 1;
         HolderInfo holder = 2;
@@ -52,10 +57,10 @@ message ParticipantInfo {
 }
 
 
-// @exclude CONNECTIONS
+// @exclude
+// CONNECTIONS
 
-// A connection between two parties authorizing
-// the use of the connector as a messaging channel.
+// A connection between two parties authorizing the use of the connector as a messaging channel.
 message Connection {
     // the connection token used to initialize the connection with the wallet
     string connectionToken = 1;
@@ -75,8 +80,9 @@ message ConnectionInfo {
     string participantDID = 7; // same value as the one contained in `participantInfo`
 }
 
-// Communication key for connection participant
-// @exclude TODO: Remove this when unpublished DIDs are integrated on the apps
+// Communication key for connection participant.
+//
+// TODO: Remove this when unpublished DIDs are integrated on the apps.
 message ConnectionKey {
   // identifier of the key; can be empty if participant uses one key only
   string keyId = 1;
@@ -86,7 +92,8 @@ message ConnectionKey {
 }
 
 
-// @exclude MESSAGES
+// @exclude
+// MESSAGES
 
 // Message received via a connection
 message ReceivedMessage {
@@ -97,7 +104,8 @@ message ReceivedMessage {
 }
 
 // Enumeration representing billing plan of Issuer. Possible values are hardcoded as new billing options would require implementation changes anyway.
-// @exclude TODO: Remove unnecessary model
+//
+// TODO: Remove unnecessary model
 enum BillingPlan {
     NO_PLAN = 0; // participant not able to generate connection tokens
     FREE_PLAN = 1; // connections are created for free
@@ -105,7 +113,8 @@ enum BillingPlan {
     RECEIVER_PAYS = 3; // side receiving the token and using it to instantiate connection pays for it
 }
 
-// @exclude TODO: Remote unnecessary model
+// @exclude
+// TODO: Remote unnecessary model
 message Payment {
     string id = 1;
     string amount = 2;

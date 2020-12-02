@@ -5,12 +5,13 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+// Represents a credential template
 message CredentialViewTemplate {
-    int64 id = 1;
-    string name = 2;
-    // Logo image encoded in base64 as a UTF-8 string
-    string encodedLogoImage = 3;
-    string logoImageMimeType = 4;
+    int64 id = 1; // the unique id for this template
+    string name = 2; // the template's name
+    string encodedLogoImage = 3; // Logo image encoded in base64 as a UTF-8 string
+    string logoImageMimeType = 4; // the Mime Type for the logo
+
     // HTML view with replaceable variables enclosed by double brackets, e.g., "{{foo.bar}}"
     string htmlTemplate = 5;
 }

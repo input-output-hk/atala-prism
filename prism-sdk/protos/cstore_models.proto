@@ -5,8 +5,12 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+// Represents a received credential
 message StoredSignedCredential {
+    // The contact that sent the credential.
+    // TODO: Rename to contactId
     string individualId = 1;
-    string encodedSignedCredential = 2;
-    int64 storedAt = 3; // the time when the credential was stored in the cstore database
+
+    string encodedSignedCredential = 2; // The signed credential encoded as a string
+    int64 storedAt = 3; // the time when the credential was stored in the database
 }

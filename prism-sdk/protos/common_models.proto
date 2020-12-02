@@ -5,7 +5,9 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+// Request to check the service's health
 message HealthCheckRequest {}
+// Response after checking the service's health
 message HealthCheckResponse {}
 
 // Represents a date broken by its pieces, used to avoid format issues on different languages
@@ -19,14 +21,15 @@ message Date {
 enum Ledger {
     UNKNOWN_LEDGER = 0; // Invalid default value
     IN_MEMORY = 1; // This is used only for development
-    BITCOIN_TESTNET = 2;
-    BITCOIN_MAINNET = 3;
-    CARDANO_TESTNET = 4;
-    CARDANO_MAINNET = 5;
+    BITCOIN_TESTNET = 2; // Bitcoin testnet (used for testing, deprecated)
+    BITCOIN_MAINNET = 3; // Bitcoin mainnet (deprecated)
+    CARDANO_TESTNET = 4; // Cardano testnet (used for testing)
+    CARDANO_MAINNET = 5; // Cardano mainnet, used in production
 }
 
-// Information about a ledger block
-// TODO: Consider renaming to TransactionInBlockInfo given that it includes information about the transaction
+// Information about a ledger block.
+//
+// TODO: Consider renaming to TransactionInBlockInfo given that it includes information about the transaction.
 message BlockInfo {
     int32 number = 1; // Number of the block in the ledger
     int64 timestamp = 2; // Millis since epoch when the block was created

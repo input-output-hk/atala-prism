@@ -5,110 +5,170 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+// Includes timestamping details about a blockchain's block.
+//
+// TODO: Consider renaming to BlockTimestampInfo.
 message TimestampInfo {
     uint64 blockTimestamp = 1; // timestamp provided from the underlying blockchain
     uint32 blockSequenceNumber = 2; // transaction index inside the underlying blockchain block
     uint32 operationSequenceNumber = 3; // operation index inside the AtalaBlock
 }
 
+// Every key has a single purpose, these are the available ones
 enum KeyUsage {
     // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want user to explicitly choose the usage
     UNKNOWN_KEY = 0;
+
+    // This is the most privileged key-type, when any other key is lost, you could use this to recover the others
     MASTER_KEY = 1;
+
+    // This key-type is used for issuing credentials only, it should be kept in a safe place
+    // to avoid malicious credentials being issued.
     ISSUING_KEY = 2;
+
+    // This key-type is used for end to end encrypted communication, whoever wants to send a message should
+    // use this key-type to encrypt the content.
     COMMUNICATION_KEY = 3;
+
+    // This key-type is used to authenticate requests, or logging into services.
     AUTHENTICATION_KEY = 4;
 }
 
+// Holds the necessary data to recover an Elliptic Curve's public key.
+//
+// TODO: Consider renaming this to ECPublicKeyData.
 message ECKeyData {
-    string curve = 1;
-    bytes x = 2;
-    bytes y = 3;
+    string curve = 1; // the curve name, like secp256k1
+    bytes x = 2; // the x coordinate represented as bytes
+    bytes y = 3; // the y coordinate represented as bytes
 }
 
+// Represents a public key with metadata, necessary for a DID document.
+//
+// TODO: Consider renaming this to something more specific, like DIDPublicKey.
 message PublicKey {
-    string id = 1;
-    KeyUsage usage = 2;
-    TimestampInfo addedOn = 3;
-    TimestampInfo revokedOn = 4;
+    string id = 1; // the key identifier within the DID Document
+    KeyUsage usage = 2; // the key purpose
+    TimestampInfo addedOn = 3; // the time when the key was added to the DID Document
+    TimestampInfo revokedOn = 4; // the time when the key was revoked from the DID Document
+
+    // The key representation
     oneof keyData {
-        ECKeyData ecKeyData = 8;
+        ECKeyData ecKeyData = 8; // the Elliptic Curve key
     };
 }
 
+// The DID document's data
 message DIDData {
     string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
-    repeated PublicKey publicKeys = 2;
+    repeated PublicKey publicKeys = 2; // the keys that belong to this DID Document
 }
 
+// The necessary data to create a credential on the blockchain.
+//
+// Check the protocol to find how to compute the data.
+//
+// TODO: Remove as it is deprecated, use credential batches instead.
 message CredentialData {
-    string id = 1;
-    string issuer = 2;
-    bytes contentHash = 3;
+    string id = 1; // the credential id
+    string issuer = 2; // the DID suffix from the institution
+    bytes contentHash = 3; // the credential's hash
 }
 
+// The operation to create a public DID
 message CreateDIDOperation {
     DIDData didData = 1; // DIDData with did empty id field
 }
 
+// The necessary data to add a key to a DID
 message AddKeyAction {
-    PublicKey key = 1;
+    PublicKey key = 1; // the key to include
 }
 
+// The necessary data to remove a key from a DID
 message RemoveKeyAction {
-    string keyId = 1;
+    string keyId = 1; // the key id to remove
 }
 
+// The potential details that can be updated in a DID
 message UpdateDIDAction {
+
+    // the action to perform
     oneof action {
-        AddKeyAction addKey = 1;
-        RemoveKeyAction removeKey = 2;
+        AddKeyAction addKey = 1; // used to add a new key to the DID
+        RemoveKeyAction removeKey = 2; // used to remove a key from the DID
     }
 }
 
+// Specifies the necessary data to update a public DID
 message UpdateDIDOperation {
-    bytes previousOperationHash = 1;
-    string id = 2;
-    repeated UpdateDIDAction actions = 3;
+    bytes previousOperationHash = 1; // the hash of the operation that issued the DID
+    string id = 2; // TODO: To be redefined after we start using this operation
+    repeated UpdateDIDAction actions = 3; // the actual updates to perform on the DID
 }
 
+// Specifies the necessary data to issue a single credential.
+//
+// TODO: Remove legacy code.
 message IssueCredentialOperation {
     CredentialData credentialData = 1; // credential data with id empty
 }
 
+// Specifies the data necessary to revoke a credential's batch
 message RevokeCredentialOperation {
-    bytes previousOperationHash = 1;
+    bytes previousOperationHash = 1; // the hash for the operation that issued this batch
     string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
 }
 
+// Represents a credential's batch.
+//
+// Check the protocol docs to understand it.
 message CredentialBatchData {
-    string issuerDID = 1;
-    bytes merkleRoot = 2;
+    string issuerDID = 1; // The DID suffix that issues the credential's batch
+    bytes merkleRoot = 2; // The merkle root for the credential's batch
 }
 
+// Specifies the data to issue a credential batch
 message IssueCredentialBatchOperation {
-    CredentialBatchData credentialBatchData = 1;
+    CredentialBatchData credentialBatchData = 1; // the actual credential batch data
 }
 
+// Specifies the credentials to revoke, being the whole batch, or a subset of it
 message RevokeCredentialsOperation {
     bytes previousOperationHash = 1; // the hash of the operation that issued the batch
     string credentialBatchId = 2; // the corresponding batch id, as returned in IssueCredentialBatchResponse
     repeated bytes credentialsToRevoke = 3; // hashes of the credentials to revoke. If empty, the full batch is revoked
 }
 
+// The possible operations affecting the blockchain
 message AtalaOperation {
+    // the actual operation
     oneof operation {
+        // Used to create a public DID
         CreateDIDOperation createDid = 1;
+
+        // Used to update an existing public DID
         UpdateDIDOperation updateDid = 2;
+
+        // Used to issue a single credential
+        // TODO: Remove it as IssueCredentialBatchOperation should be used instead
         IssueCredentialOperation issueCredential = 3;
+
+        // Used to revoke a single credential
+        // TODO: Remove it as RevokeCredentialsOperation should be used instead
         RevokeCredentialOperation revokeCredential = 4;
+
+        // Used to issue a batch of credentials
         IssueCredentialBatchOperation issueCredentialBatch = 5;
+
+        // Used to revoke a credential batch
         RevokeCredentialsOperation revokeCredentials = 6;
     };
 }
 
+// A signed operation, necessary to post anything on the blockchain
 message SignedAtalaOperation {
-    string signedWith = 1; // id of key used to sign
-    bytes signature = 2; // signature of byte encoding of the operation
-    AtalaOperation operation = 3;
+    string signedWith = 1; // the key id used to sign the operation, it must belong to the DID that signs the operation
+    bytes signature = 2; // the actual signature
+    AtalaOperation operation = 3; // the operation that was signed
 }

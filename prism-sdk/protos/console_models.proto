@@ -17,7 +17,7 @@ enum ContactConnectionStatus {
 // Represents a contact
 message Contact {
   string contactId = 1; // the internal id to identify the contact
-  string externalId = 2; // the id provided by the issuer at contact creation time, commonly used to match the issuer's record keeping system, for example, it could be the student id for a university
+  string externalId = 2; // the id provided by the institution at contact creation time, commonly used to match the institution's record keeping system, for example, it could be the student id for a university
   string jsonData = 3; // arbitrary data for the contact, should be a valid json, when missing, "{}" will be used
   ContactConnectionStatus connectionStatus = 4; // the connection status for this contact
   string connectionToken = 5; // the connection token used to get this contact connected, present when the status is ConnectionMissing

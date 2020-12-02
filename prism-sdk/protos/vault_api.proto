@@ -29,8 +29,8 @@ message StoreDataRequest {
 
 // The response for storing data
 message StoreDataResponse {
-    // server-generated UUID representing the actual id of the payload;
-    // it is different from the client-supplied externalId
+    // server-generated UUID representing the actual id of the payload.
+    // it is different from the client-supplied externalId.
     string payloadId = 1;
 }
 
@@ -42,5 +42,5 @@ message GetPaginatedDataRequest {
 
 // Response when getting stored data from the authenticated user
 message GetPaginatedDataResponse {
-    repeated Payload payloads = 1;
+    repeated Payload payloads = 1; // the retrieved data
 }

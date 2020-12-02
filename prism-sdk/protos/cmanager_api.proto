@@ -9,99 +9,139 @@ import "cmanager_models.proto";
 import "common_models.proto";
 import "node_models.proto";
 
+// The Credentials API
 service CredentialsService {
-    // Generic versions
+    // Creates a credential on the authenticated institution.
+    // TODO: Consider renaming this to CreateDraftCredential given that this is not published.
+    // TODO: Consider freezing the credential details once it gets published.
     rpc CreateGenericCredential (CreateGenericCredentialRequest) returns (CreateGenericCredentialResponse) {}
+
+    // Retrieves the credentials created by the authenticated institution
     rpc GetGenericCredentials (GetGenericCredentialsRequest) returns (GetGenericCredentialsResponse) {}
 
+    // Retrieves the contact credentials created by the authenticated institution
     rpc GetContactCredentials (GetContactCredentialsRequest) returns (GetContactCredentialsResponse) {}
 
-    // Publish an encoded signed credential into the blockchain
+    // Publishes a signed credential to the blockchain.
+    // This method stores the published credential on the database, and invokes the necessary
+    // methods to get it published to the blockchain.
     rpc PublishCredential (PublishCredentialRequest) returns (PublishCredentialResponse) {}
 
-    // Marks a credential as shared
-    //
+    // Marks a credential as shared.
     // NOTE: This doesn't send the actual credential to the related contact, but is supposed to be
     //       invoked everytime such credential is sent.
     rpc ShareCredential (ShareCredentialRequest) returns (ShareCredentialResponse) {}
 }
 
+// The Groups API
 service GroupsService {
+    // Creates a group on the authenticated institution
     rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
+
+    // Retrieves the available groups on the authenticated institution
     rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
 
-    // Update an existing group by adding new contacts and removing some of the old ones
+    // Updates an existing group by adding new contacts and removing some of the old ones
     rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse) {}
 }
 
-// groups
+// Request to create a group on the authenticated institution
 message CreateGroupRequest {
-    string name = 1;
+    string name = 1; // the group name, which must not exists
 }
+// Response after creating a group
 message CreateGroupResponse {
     Group group = 1; // the group created and its associated details
 }
 
+// Request to retrieve the available groups on the authenticated institution
 message GetGroupsRequest {
     string contactId = 1; // optional, when provided, only groups related to the given contact are included
 }
+// Response with the available groups
 message GetGroupsResponse {
-    repeated Group groups = 1;
+    repeated Group groups = 1; // the groups available
 }
 
+// Request to update a group
 message UpdateGroupRequest {
     string groupId = 1; // the id of the existing group
     repeated string contactIdsToAdd = 2; // the list of contact ids to be added to the specified group
     repeated string contactIdsToRemove = 3; // the list of contact ids to be removed from the specified group
 }
+// Response after updating a group
 message UpdateGroupResponse {}
 
-// generic credentials
-// The authenticated issuer is creating a credential
+// Request to create a credential on the authenticated institution
 message CreateGenericCredentialRequest {
-    string contactId = 1; // required if the externalId isn't provided, otherwise, ignored.
+    // The contact id to link the credential to.
+    // It is required if the externalId isn't provided, otherwise, ignored.
+    string contactId = 1;
+
+    // The credential payload as a JSON string.
+    // A valid non-empty JSON is required.
     string credentialData = 2;
+
+    // The group name linked to a credential.
+    // TODO: Remove legacy argument, this was used only for Dec/2019 Georgia's demo only.
     string groupName = 3;
-    string externalId = 4; // The id provided by the issuer at contact creation time, when this isn't provided,
-                           // the contactId is expected.
+
+    // The id provided by the institution at contact creation time, when this isn't provided,
+    // the contactId is expected.
+    string externalId = 4;
 }
+// Response when a credential is created
 message CreateGenericCredentialResponse {
-    CManagerGenericCredential genericCredential = 1;
+    CManagerGenericCredential genericCredential = 1; // The credential details
 }
 
-// The authenticated issuer is retrieving its issued credentials
+// The authenticated institution is retrieving its issued credentials.
+//
+// The results are sorted by creation date in ascending order, breaking ties by id.
 message GetGenericCredentialsRequest {
     int32 limit = 1; // the max amount of credentials to return, must be > 0
     string lastSeenCredentialId = 2; // the last seen credential (if any), the returned credentials start after this one
 }
+// Response with the credentials found
 message GetGenericCredentialsResponse {
-    repeated CManagerGenericCredential credentials = 1;
+    repeated CManagerGenericCredential credentials = 1; // the retrieved credentials
 }
 
+// Request to publish a credential to the blockchain
 message PublishCredentialRequest {
     string encodedSignedCredential = 1; // the encoded credential to publish
     string cmanagerCredentialId = 2; // cmanager internal credential id
     SignedAtalaOperation issueCredentialOperation = 3; // a signed instance of IssueCredential operation
     string nodeCredentialId = 4; // the credentialId computed by the protocol
-    bytes operationHash = 5;  // the hash of the AtalaOperation sent inside the
-                              // SignedAtalaOperation represented by the issueCredential
-                              // field. This is needed for revocation as it represents
-                              // the previous operation hash
-}
 
+    // The hash of the AtalaOperation sent inside the SignedAtalaOperation represented by the
+    // issueCredential field.
+    // This is needed for revocation as it represents the previous operation hash.
+    bytes operationHash = 5;
+}
+// Response after publishing a credential
 message PublishCredentialResponse {
-    TransactionInfo transactionInfo = 1;
+    TransactionInfo transactionInfo = 1; // the blockchain transaction details where the credential was published
 }
 
+// Request to share a credential, which ends up just marking the credential as sent.
+//
+// This is intended to be invoked after sending the credential through the connector.
+//
+// TODO: Consider renaming this to MarkCredentialAsSent.
 message ShareCredentialRequest {
     string cmanagerCredentialId = 2; // cmanager internal credential id
 }
-
+// Response after sharing a credential
 message ShareCredentialResponse {}
 
+// Request to get the credentials for the given contact.
+//
+// As the expected amount of credentials per contact is small, no pagination is required.
 message GetContactCredentialsRequest {
     string contactId = 1;
 }
+// Response with the contact credentials
 message GetContactCredentialsResponse {
-    repeated CManagerGenericCredential genericCredentials = 1;
+    repeated CManagerGenericCredential genericCredentials = 1; // the credentials found
 }

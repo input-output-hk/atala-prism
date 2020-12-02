@@ -18,52 +18,36 @@ service ConnectorService {
   // Get active connections for the authenticated user
   rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {}
 
-  // Return info about connection token such as creator info
-  //
+  // Return info about connection token such as creator info.
   // This is commonly used to verify if you want to accept the connection or not.
-  //
-  // Errors:
-  // Token does not exist (UNKNOWN)
   rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {}
 
-  // Instantiate connection from connection token
-  //
-  // Errors:
-  // Token does not exist (UNKNOWN)
+  // Instantiate connection from connection token.
   rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {}
 
-  // Delete active connection
-  //
-  // Errors:
-  // Connection does not exist (UNKNOWN)
+  // Delete active connection.
   rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {}
 
-  // Bind DID to issuer
-  //
+  // Bind DID to institution.
   // This is commonly expected for institutions that need to use a public DID, the method
   // invokes the node to publish the DID to the blockchain.
-  //
-  // @exclude TODO: Delete method, we should not register the DID but receive the registered one
-  //
+  // TODO: Delete method, we should not register the DID but receive the registered one.
   // Errors:
-  // Invalid DID (INVALID_ARGUMENT)
-  // Invalid DID document (INVALID_ARGUMENT)
-  // DID Document does not match DID (INVALID_ARGUMENT)
+  // Invalid DID (INVALID_ARGUMENT).
+  // Invalid DID document (INVALID_ARGUMENT).
+  // DID Document does not match DID (INVALID_ARGUMENT).
   rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
 
-  // Change billing plan of participant who wants to generate connection tokens
-  //
-  // @exclude TODO: Remove, this is not useful anymore
-  //
+  // Change billing plan of participant who wants to generate connection tokens.
+  // TODO: Remove, this is not useful anymore.
   // Errors:
-  // Unknown billing plan (UNKNOWN)
-  // User not allowed to set this billing plan (PERMISSION_DENIED)
+  // Unknown billing plan (UNKNOWN).
+  // User not allowed to set this billing plan (PERMISSION_DENIED).
   rpc ChangeBillingPlan (ChangeBillingPlanRequest) returns (ChangeBillingPlanResponse) {}
 
-  // Generate connection token that can be used to instantiate connection
-  //
+  // Generate connection token that can be used to instantiate connection.
   // Errors:
-  // Billing plan doesn't allow token generation (PERMISSION_DENIED)
+  // Billing plan doesn't allow token generation (PERMISSION_DENIED).
   rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
 
   // Return messages received after given time moment, sorted in ascending order by receive time
@@ -78,21 +62,21 @@ service ConnectorService {
   // Returns public keys that can be used for secure communication with the other end of connection
   rpc GetConnectionCommunicationKeys (GetConnectionCommunicationKeysRequest) returns (GetConnectionCommunicationKeysResponse) {}
 
-  // Send message over a connection
-  //
+  // Send message over a connection.
   // Errors:
-  // Unknown connection (UNKNOWN)
-  // Connection closed (FAILED_PRECONDITION)
+  // Unknown connection (UNKNOWN).
+  // Connection closed (FAILED_PRECONDITION).
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
 
-  // Generate a URL that can be used to do a payment
-  // @exclude TODO: Remove unnecessary method
+  // Generate a URL that can be used to do a payment.
   rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
 
-  // @exclude TODO: Remove unnecessary method
+  // @exclude
+  // TODO: Remove unnecessary method
   rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
 
-  // @exclude TODO: Remove unnecessary method
+  // @exclude
+  // TODO: Remove unnecessary method
   rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
 
   // Return the information about the Connector and Node builds
@@ -111,9 +95,9 @@ message GetConnectionByTokenResponse {
 	io.iohk.atala.prism.protos.Connection connection = 1;
 }
 
-// Request connections instantiated by us / with us possibly after a known connection
+// Request connections instantiated by us / with us possibly after a known connection.
 //
-// The results are sorted by the time the connection was created in ascending order
+// The results are sorted by the time the connection was created in ascending order.
 message GetConnectionsPaginatedRequest {
   string lastSeenConnectionId = 1; // returned connections will have been created after the last seen connection (optional field)
   int32 limit = 2; // maximum number of connections to return; must be > 0
@@ -152,7 +136,8 @@ message AddConnectionFromTokenRequest {
 message AddConnectionFromTokenResponse {
   io.iohk.atala.prism.protos.ConnectionInfo connection = 1; // instantiated connection info
   // your generated user id
-  // @exclude TODO: Remove useless field, we are replacing user ids by DIDs
+  // @exclude
+  // TODO: Remove useless field, we are replacing user ids by DIDs
   string userId = 2;
 }
 
@@ -198,7 +183,8 @@ message GetMessageStreamResponse {
 }
 
 // Finds the available messages from the given connection
-// @exclude TODO: Remove unnecessary method, it was used before to parse received credentials but this is not required anymore
+// @exclude
+// TODO: Remove unnecessary method, it was used before to parse received credentials but this is not required anymore
 message GetMessagesForConnectionRequest {
   string connectionId = 1;
 }
@@ -212,8 +198,8 @@ message GetConnectionCommunicationKeysRequest {
 }
 
 message GetConnectionCommunicationKeysResponse {
-  // keys that can be used for communication with the other end of connection with their ids
-  // keyId inside might be empty if there is just one key in the collection
+  // keys that can be used for communication with the other end of connection with their ids.
+  // keyId inside might be empty if there is just one key in the collection.
   repeated io.iohk.atala.prism.protos.ConnectionKey keys = 1;
 }
 
@@ -227,16 +213,19 @@ message SendMessageRequest {
 message SendMessageResponse {
 }
 
-// @exclude REGISTRATION AND ACCOUNT MANAGEMENT
+// @exclude
+// REGISTRATION AND ACCOUNT MANAGEMENT
 
-// Request to register DID
-// @exclude TODO: Use the method to not register the DID on the blockchain
+// Request to register DID.
+// @exclude
+// TODO: Use the method to not register the DID on the blockchain.
 message RegisterDIDRequest {
   // The necessary operation to publish the DID to the blockchain
   io.iohk.atala.prism.protos.SignedAtalaOperation createDIDOperation = 1;
 
-  // The user's role
-  // @exclude TODO: Remove, we don't use roles anymore
+  // The user's role.
+  // @exclude
+  // TODO: Remove, we don't use roles anymore.
   Role role = 2;
 
   // The way to identify the institution
@@ -272,8 +261,9 @@ message RegisterDIDResponse {
   TransactionInfo transactionInfo = 2;
 }
 
-// Request to change the billing plan
-// @exclude TODO: Remove unnecessary method
+// Request to change the billing plan.
+//
+// TODO: Remove unnecessary method.
 message ChangeBillingPlanRequest {
   io.iohk.atala.prism.protos.BillingPlan billingPlan = 1; // new billing plan
 }
@@ -282,13 +272,15 @@ message ChangeBillingPlanRequest {
 message ChangeBillingPlanResponse {
 }
 
-// @exclude TODO: Remove unnecessary method
+// @exclude
+// TODO: Remove unnecessary method
 message GetBraintreePaymentsConfigRequest {}
 message GetBraintreePaymentsConfigResponse {
   string tokenizationKey = 1;
 }
 
-// @exclude TODO: Remove unnecessary method
+// @exclude
+// TODO: Remove unnecessary method
 message ProcessPaymentRequest {
   string amount = 1; // exact decimal amount
   string nonce = 2; // client nonce
@@ -297,7 +289,8 @@ message ProcessPaymentResponse {
   io.iohk.atala.prism.protos.Payment payment = 1;
 }
 
-// @exclude TODO: Remove unnecessary method
+// @exclude
+// TODO: Remove unnecessary method
 message GetPaymentsRequest {}
 message GetPaymentsResponse {
   repeated io.iohk.atala.prism.protos.Payment payments = 1;
