@@ -16,7 +16,7 @@ import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.credentials.json.implicits._
-import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_api.GetCredentialRevocationTimeRequest
 
@@ -105,7 +105,6 @@ case class PrismWallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
   def verifyCredential[C](
       credential: JsonBasedCredential[C],
-      merkleRoot: MerkleRoot,
       merkleProof: MerkleInclusionProof
   ): ValidatedNel[VerificationError, Unit] = {
     // extract user DIDSuffix and keyId from credential
@@ -117,6 +116,7 @@ case class PrismWallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val issuanceKeyId = jsonContent.issuanceKeyId.value
 
     // request credential state to the node
+    val merkleRoot = merkleProof.derivedRoot
     val batchId = CredentialBatchId.fromBatchData(issuerDID.suffix, merkleRoot)
 
     val batchStateProto = node.getBatchState(

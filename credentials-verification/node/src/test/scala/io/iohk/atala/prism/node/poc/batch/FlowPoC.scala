@@ -194,12 +194,10 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       }
 
       // 9. gives the signed credentials to the wallet to verify them and it succeeds
-      // TODO: I am using the merkle roots that we have above, but I will update the code to derive
-      //       them from the credential and the proof of inclusion
-      wallet.verifyCredential(c1, root1, p1).isValid mustBe true
-      wallet.verifyCredential(c2, root1, p2).isValid mustBe true
-      wallet.verifyCredential(c3, root2, p3).isValid mustBe true
-      wallet.verifyCredential(c4, root2, p4).isValid mustBe true
+      wallet.verifyCredential(c1, p1).isValid mustBe true
+      wallet.verifyCredential(c2, p2).isValid mustBe true
+      wallet.verifyCredential(c3, p3).isValid mustBe true
+      wallet.verifyCredential(c4, p4).isValid mustBe true
 
       // ... later ...
       // 10. the issuer decides to revoke the first batch
@@ -219,19 +217,19 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       // ... later ...
       // 12. the verifier calls the wallet again to verify the credentials
       //     and the verification fails for all but the second credential of the second batch
-      val e1 = wallet.verifyCredential(c1, root1, p1).invalid.e
+      val e1 = wallet.verifyCredential(c1, p1).invalid.e
       e1.size mustBe 1
       e1.head mustBe a[BatchWasRevoked]
 
-      val e2 = wallet.verifyCredential(c2, root1, p2).invalid.e
+      val e2 = wallet.verifyCredential(c2, p2).invalid.e
       e2.size mustBe 1
       e2.head mustBe a[BatchWasRevoked]
 
-      val e3 = wallet.verifyCredential(c3, root2, p3).invalid.e
+      val e3 = wallet.verifyCredential(c3, p3).invalid.e
       e3.size mustBe 1
       e3.head mustBe a[CredentialWasRevoked]
 
-      wallet.verifyCredential(c4, root2, p4).isValid mustBe true
+      wallet.verifyCredential(c4, p4).isValid mustBe true
     }
   }
 }

@@ -86,4 +86,14 @@ class MerkleTreeSpec extends AnyWordSpec {
       }
     }
   }
+
+  "MerkleInclusionProof" should {
+    "derive consistent root" in {
+      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
+        val (root, proofs) = MerkleTree.generateProofs(hashes)
+
+        assert(proofs.forall(_.derivedRoot == root))
+      }
+    }
+  }
 }

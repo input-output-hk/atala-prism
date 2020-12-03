@@ -39,7 +39,21 @@ object MerkleTree {
       hash: Hash, // hash inclusion of which this proof is for
       index: Index, // index for the given hash's position in the tree
       siblings: List[Hash] // given hash's siblings at each level of the tree starting from the bottom
-  )
+  ) {
+    // merkle root of which this proof is for
+    def derivedRoot: MerkleRoot = {
+      val n = siblings.size
+      val root = siblings.indices.foldLeft(prefixHash(hash)) {
+        case (currentHash, i) =>
+          if ((index & (1 << (n - i - 1))) == 0) {
+            combineHashes(currentHash, siblings(i))
+          } else {
+            combineHashes(siblings(i), currentHash)
+          }
+      }
+      MerkleRoot(root)
+    }
+  }
 
   private def combineHashes(left: Hash, right: Hash): Hash =
     SHA256Digest.compute((NodePrefix +: (left.value ++ right.value)).toArray)
@@ -92,21 +106,8 @@ object MerkleTree {
   }
 
   def verifyProof(root: MerkleRoot, proof: MerkleInclusionProof): Boolean = {
-    val n = proof.siblings.size
     // Proof length should not exceed 31 as 2^31 is the maximum size of Merkle tree
-    if (n > 31) {
-      false
-    } else {
-      val calculatedHash = (0 until n).foldLeft(prefixHash(proof.hash)) {
-        case (currentHash, i) =>
-          if ((proof.index & (1 << (n - i - 1))) == 0) {
-            combineHashes(currentHash, proof.siblings(i))
-          } else {
-            combineHashes(proof.siblings(i), currentHash)
-          }
-      }
-
-      calculatedHash == root.hash
-    }
+    proof.siblings.size < 31 &&
+    proof.derivedRoot == root
   }
 }
