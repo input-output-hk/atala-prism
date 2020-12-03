@@ -84,7 +84,7 @@ const CredentialsIssued = ({
           disableSend={!selectedRowKeys?.length || loadingSelection}
         />
       </div>
-      <Row>{renderContent()}</Row>
+      {renderContent()}
     </>
   );
 };

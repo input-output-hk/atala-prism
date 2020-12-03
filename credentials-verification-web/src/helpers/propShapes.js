@@ -12,11 +12,10 @@ import {
   objectOf
 } from 'prop-types';
 import __ from 'lodash';
-import { CONNECTION_STATUSES, TABLE_HEIGHTS } from './constants';
+import { CONNECTION_STATUSES } from './constants';
 
 export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
 export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
-export const tableHeightKeys = __.keys(TABLE_HEIGHTS);
 
 export const contactShape = {
   avatar: string,

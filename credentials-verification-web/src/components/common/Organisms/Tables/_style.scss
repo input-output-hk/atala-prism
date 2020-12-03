@@ -7,6 +7,11 @@
   }
 }
 
+.InfiniteScrollTableContainer {
+  height: 100%;
+  overflow-y: auto;
+}
+
 .PaginatedTable,
 .PaginatedTableHeader {
   margin-top: 10px;

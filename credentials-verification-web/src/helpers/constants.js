@@ -144,13 +144,6 @@ export const SUCCESS = 'success';
 export const DEFAULT_DATE_FORMAT = 'DD/MM/YYYY';
 export const LONG_DATE_FORMAT = 'DD MMMM YYYY';
 
-export const TABLE_HEIGHTS = {
-  xs: 150,
-  sm: 200,
-  md: 280,
-  lg: 360,
-  xl: 460
-};
 // credentials tabs
 export const CREDENTIALS_ISSUED = 'CREDENTIALS_ISSUED';
 export const CREDENTIALS_RECEIVED = 'CREDENTIALS_RECEIVED';

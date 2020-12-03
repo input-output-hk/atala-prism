@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 import { getGroupColumns } from '../../../../helpers/tableDefinitions/groups';
-import { tableHeightKeys } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -11,8 +10,7 @@ const GroupsTable = ({
   groups,
   selectedGroups,
   setSelectedGroups,
-  onPageChange,
-  size
+  onPageChange
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -34,8 +32,7 @@ const GroupsTable = ({
     loading,
     hasMore: false,
     getMoreData,
-    rowKey: 'name',
-    size
+    rowKey: 'name'
   };
 
   return (
@@ -49,8 +46,7 @@ GroupsTable.defaultProps = {
   groups: [],
   selectedGroups: [],
   setSelectedGroups: null,
-  setGroupToDelete: null,
-  size: 'xl'
+  setGroupToDelete: null
 };
 
 GroupsTable.propTypes = {
@@ -59,8 +55,7 @@ GroupsTable.propTypes = {
   onPageChange: PropTypes.func.isRequired,
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   setSelectedGroups: PropTypes.func,
-  hasMore: PropTypes.bool.isRequired,
-  size: PropTypes.oneOf(tableHeightKeys)
+  hasMore: PropTypes.bool.isRequired
 };
 
 export default GroupsTable;

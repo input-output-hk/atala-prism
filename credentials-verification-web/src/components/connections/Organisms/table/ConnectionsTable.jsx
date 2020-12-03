@@ -6,7 +6,6 @@ import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScroll
 import { getContactColumns } from '../../../../helpers/tableDefinitions/contacts';
 
 import './_style.scss';
-import { TABLE_HEIGHTS } from '../../../../helpers/constants';
 
 const ConnectionsTable = ({
   contacts,
@@ -16,7 +15,6 @@ const ConnectionsTable = ({
   handleContactsRequest,
   hasMore,
   viewContactDetail,
-  size,
   searching
 }) => {
   const [loading, setLoading] = useState(false);
@@ -35,7 +33,6 @@ const ConnectionsTable = ({
         getMoreData={getMoreData}
         hasMore={hasMore}
         rowKey="contactid"
-        size={size}
         searching={searching}
         selectionType={
           setSelectedContacts && {
@@ -55,8 +52,7 @@ ConnectionsTable.defaultProps = {
   setSelectedContacts: null,
   selectedContacts: [],
   inviteContact: null,
-  searching: false,
-  size: 'xl'
+  searching: false
 };
 
 ConnectionsTable.propTypes = {
@@ -67,8 +63,7 @@ ConnectionsTable.propTypes = {
   viewContactDetail: PropTypes.func,
   handleContactsRequest: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
-  searching: PropTypes.bool,
-  size: PropTypes.oneOf(Object.keys(TABLE_HEIGHTS))
+  searching: PropTypes.bool
 };
 
 export default ConnectionsTable;

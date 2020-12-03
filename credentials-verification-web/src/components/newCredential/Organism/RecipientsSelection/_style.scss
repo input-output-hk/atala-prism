@@ -2,6 +2,23 @@
 
 .RecipientsSelection {
   height: 100%;
+  .ant-tabs {
+    height: 100%;
+
+  }
+  .ant-tabs-content {
+    height: calc(100% - 6.5em);
+
+  }
+  .ConnectionsTable {
+    height: calc(100% - 6.5em);
+  }
+  .groupsTableContainer {
+    height: calc(100% - 6.5em);
+  }
+  .GroupTableContainer{
+    height: 100%;
+  }
   .ant-tabs-nav-wrap,
   .selectionGroups {
     margin: 1em 3em;
