@@ -19,24 +19,19 @@ package object errors {
     }
   }
 
-  case class UserIdMissingError() extends ConnectorError {
-    override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Missing UserId")
-    }
-  }
   case class PublicKeyMissingError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Missing Public Key")
+      Status.UNAUTHENTICATED.withDescription("Authentication required, missing public key")
     }
   }
   case class SignatureMissingError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Missing Signature")
+      Status.UNAUTHENTICATED.withDescription("Authentication required, missing signature")
     }
   }
   case class SignatureVerificationError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Signature Invalid")
+      Status.UNAUTHENTICATED.withDescription("Authentication required, signature invalid")
     }
   }
 

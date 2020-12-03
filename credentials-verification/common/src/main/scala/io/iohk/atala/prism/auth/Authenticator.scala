@@ -257,8 +257,8 @@ abstract class SignedRequestsAuthenticatorBase[Id](
           value.map(v => withLogging(methodName, request, v) { f(v) }).successMap(identity)
         }
         .getOrElse {
-          logger.error(s"$methodName - missing userId, request = ${request.toProtoString}")
-          Future.failed(throw new RuntimeException("Missing userId"))
+          logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+          Future.failed(throw new RuntimeException("Missing or bad authentication"))
         }
         .flatten
 
