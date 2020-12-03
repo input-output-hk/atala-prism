@@ -26,7 +26,7 @@ object Config {
   ): Config = {
     Config(
       ActiveTabConfig(contextScripts = activeTabContextScripts),
-      backendUrl = overrideConnectorUrl.getOrElse("https://console-develop.atalaprism.io:4433"),
+      backendUrl = overrideConnectorUrl.getOrElse("https://grpc-console-develop.atalaprism.io:4433"),
       blockchainExplorerUrl =
         blockchainExplorerUrl.getOrElse("https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=%s"),
       termsUrl = termsUrl.getOrElse("https://legal.atalaprism.io/terms-and-conditions.html"),

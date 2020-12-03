@@ -519,3 +519,14 @@ resource aws_route53_record docs_dns_entry {
   ttl     = "300"
   records = [module.prism_service.envoy_lb_dns_name]
 }
+
+# public DNS record for the PRISM grpc console
+# This is required to bypass the cloud front for grpc calls
+resource aws_route53_record grpc_console_dns_entry {
+  count   = var.geud_enabled ? 1 : 0
+  zone_id = var.atala_prism_zoneid
+  name    = "grpc-console-${var.env_name_short}.${var.atala_prism_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [module.prism_service.envoy_lb_dns_name]
+}
