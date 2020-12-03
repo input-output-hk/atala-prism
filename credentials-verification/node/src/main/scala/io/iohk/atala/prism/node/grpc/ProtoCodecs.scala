@@ -6,6 +6,7 @@ import java.time.Instant
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, JvmECPublicKey}
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
@@ -15,7 +16,7 @@ object ProtoCodecs {
   def toCredentialStateResponseProto(credentialState: CredentialState): node_api.GetCredentialStateResponse = {
     val c = node_api
       .GetCredentialStateResponse()
-      .withIssuerDID(credentialState.issuerDIDSuffix.suffix)
+      .withIssuerDID(credentialState.issuerDIDSuffix.value)
       .withPublicationDate(toTimeStampInfoProto(credentialState.issuedOn))
 
     credentialState.revokedOn.fold(c)(toTimeStampInfoProto _ andThen c.withRevocationDate)
@@ -29,10 +30,10 @@ object ProtoCodecs {
       .withOperationSequenceNumber(timestampInfo.operationSequenceNumber)
   }
 
-  def atalaOperationToDIDDataProto(did: String, op: node_models.AtalaOperation): node_models.DIDData = {
+  def atalaOperationToDIDDataProto(didSuffix: DIDSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
     node_models
       .DIDData()
-      .withId(did)
+      .withId(didSuffix.value)
       .withPublicKeys(
         op.getCreateDid.didData
           .getOrElse(throw new RuntimeException("DID document with no keys"))

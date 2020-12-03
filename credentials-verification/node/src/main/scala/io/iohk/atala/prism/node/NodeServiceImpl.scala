@@ -70,7 +70,7 @@ class NodeServiceImpl(
                   // if it was not published, we return the encoded initial state
                   succeedWith(
                     ProtoCodecs.atalaOperationToDIDDataProto(
-                      did.stripPrismPrefix,
+                      did.suffix,
                       validatedLongForm.initialState
                     )
                   )
@@ -97,7 +97,7 @@ class NodeServiceImpl(
     } yield {
       logAndReturnResponse(
         "createDID",
-        node_api.CreateDIDResponse(id = parsedOp.id.suffix).withTransactionInfo(toTransactionInfo(transactionInfo))
+        node_api.CreateDIDResponse(id = parsedOp.id.value).withTransactionInfo(toTransactionInfo(transactionInfo))
       )
     }
   }
@@ -299,7 +299,7 @@ class NodeServiceImpl(
       case Right(state) =>
         val revocationDateProto = state.revokedOn.map(ProtoCodecs.toTimeStampInfoProto)
         val responseBase = GetBatchStateResponse()
-          .withIssuerDID(state.issuerDIDSuffix.suffix)
+          .withIssuerDID(state.issuerDIDSuffix.value)
           .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.hash.value.toArray))
           .withPublicationDate(ProtoCodecs.toTimeStampInfoProto(state.issuedOn))
         val response = revocationDateProto.fold(responseBase)(responseBase.withRevocationDate)
@@ -368,7 +368,7 @@ object NodeServiceImpl {
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(st) =>
-          succeedWith(ProtoCodecs.toDIDDataProto(did.stripPrismPrefix, st))
+          succeedWith(ProtoCodecs.toDIDDataProto(did.suffix.value, st))
         case Left(err: NodeError) => ifFailed(err)
       }
   }

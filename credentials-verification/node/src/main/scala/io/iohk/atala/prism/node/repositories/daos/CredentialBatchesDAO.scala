@@ -10,7 +10,7 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.DIDSuffix
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.CredentialBatchState
 
 object CredentialBatchesDAO {

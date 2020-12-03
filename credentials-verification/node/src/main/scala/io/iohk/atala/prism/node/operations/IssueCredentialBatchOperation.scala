@@ -8,7 +8,8 @@ import doobie.postgres.sqlstate
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.{DIDSuffix, KeyUsage}
+import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.node.models.KeyUsage
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
@@ -62,7 +63,7 @@ case class IssueCredentialBatchOperation(
           case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
             // that shouldn't happen, as key verification requires issuer in the DB,
             // but putting it here just in the case
-            StateError.EntityMissing("issuerDID", issuerDIDSuffix.suffix)
+            StateError.EntityMissing("issuerDID", issuerDIDSuffix.value)
         }
     }
 }
@@ -85,10 +86,9 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
           .fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
       issuerDID <- credentialBatchData.child(_.issuerDID, "issuerDID").parse { issuerDID =>
-        Either.cond(
-          DIDSuffix.DID_SUFFIX_RE.pattern.matcher(issuerDID).matches(),
-          DIDSuffix(issuerDID),
-          "must be a valid DID suffix"
+        Either.fromOption(
+          DIDSuffix.fromString(issuerDID),
+          s"must be a valid DID suffix: $issuerDID"
         )
       }
       merkleRoot <- credentialBatchData.child(_.merkleRoot, "merkleRoot").parse { merkleRoot =>

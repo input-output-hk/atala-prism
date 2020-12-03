@@ -41,8 +41,8 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     val wrong = DID.buildPrismDID("wrong")
 
     "get the correct canonical suffix" in {
-      short.getCanonicalSuffix.value mustBe canonicalSuffix
-      long.getCanonicalSuffix.value mustBe canonicalSuffix
+      short.getCanonicalSuffix.value.value mustBe canonicalSuffix
+      long.getCanonicalSuffix.value.value mustBe canonicalSuffix
       wrong.getCanonicalSuffix mustBe None
     }
 
@@ -77,14 +77,13 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     }
 
     "properly obtain the DID suffix" in {
-      short.getSuffix.value mustBe canonicalSuffix
-      long.getSuffix.value mustBe s"$canonicalSuffix:$encodedStateUsed"
-      wrong.getSuffix mustBe None
+      short.suffix.value mustBe canonicalSuffix
+      long.suffix.value mustBe s"$canonicalSuffix:$encodedStateUsed"
     }
 
-    "properly strip the PRISM DID preffix" in {
-      short.stripPrismPrefix mustBe canonicalSuffix
-      long.stripPrismPrefix mustBe s"$canonicalSuffix:$encodedStateUsed"
+    "properly strip the PRISM DID prefix" in {
+      short.suffix.value mustBe canonicalSuffix
+      long.suffix.value mustBe s"$canonicalSuffix:$encodedStateUsed"
     }
 
     "properly validate a long form DID" in {
@@ -134,7 +133,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     "strip the did:prism: prefix" in {
       val input = DID.buildPrismDID("aabbccddee")
       val expected = "aabbccddee"
-      input.stripPrismPrefix mustBe expected
+      input.suffix.value mustBe expected
     }
   }
 

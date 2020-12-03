@@ -26,6 +26,7 @@ import org.scalatest.BeforeAndAfterEach
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 import io.iohk.atala.prism.credentials.json.implicits._
+import io.iohk.atala.prism.identity.DID
 
 class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
   implicit val ecTrait = EC
@@ -135,7 +136,7 @@ class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       val signedCreateDIDOp = wallet.signOperation(createDIDOp, "master0", didSuffix)
       val suffixReturned = connector.registerDID(signedAtalaOperation = signedCreateDIDOp)
 
-      suffixReturned must be(didSuffix.suffix)
+      suffixReturned must be(didSuffix.value)
 
       // 3. she grabs credential data from the CManager
       val cmanagerCredential = cmanager.getCredential()
@@ -143,10 +144,11 @@ class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       // 4- she builds a generic credential
       val issuanceKeyId = "issuance0"
 
+      val issuerDID = DID.buildPrismDID(didSuffix)
       val credentialToSign =
         GenericCredentialsSDK.buildGenericCredential(
           "university-degree",
-          didSuffix,
+          issuerDID,
           issuanceKeyId,
           cmanagerCredential.credentialData
         )

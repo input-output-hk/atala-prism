@@ -5,7 +5,8 @@ import java.util.UUID
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.protos.node_models
 
 class CredentialBatchId private (val id: String) extends AnyVal
 
@@ -19,13 +20,13 @@ object CredentialBatchId {
 
   def fromDigest(digest: SHA256Digest): Option[CredentialBatchId] = fromString(digest.hexValue)
 
-  def fromBatchData(issuerDID: DID, merkleRoot: MerkleRoot): CredentialBatchId = {
+  def fromBatchData(issuerDIDSuffix: DIDSuffix, merkleRoot: MerkleRoot): CredentialBatchId = {
     new CredentialBatchId(
       SHA256Digest
         .compute(
-          io.iohk.atala.prism.protos.node_models
+          node_models
             .CredentialBatchData()
-            .withIssuerDID(issuerDID.stripPrismPrefix)
+            .withIssuerDID(issuerDIDSuffix.value)
             .withMerkleRoot(ByteString.copyFrom(merkleRoot.hash.value.toArray))
             .toByteArray
         )

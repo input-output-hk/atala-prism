@@ -7,8 +7,9 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix}
+import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
@@ -48,7 +49,7 @@ case class CreateDIDOperation(
       _ <- EitherT {
         DIDDataDAO.insert(id, digest).attemptSomeSqlState {
           case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("DID", id.suffix): StateError
+            EntityExists("DID", id.value): StateError
         }
       }
 
@@ -94,7 +95,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       timestampInfo: TimestampInfo
   ): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
-    val didSuffix = DIDSuffix(operationDigest)
+    val didSuffix = DIDSuffix.unsafeFromDigest(operationDigest)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")

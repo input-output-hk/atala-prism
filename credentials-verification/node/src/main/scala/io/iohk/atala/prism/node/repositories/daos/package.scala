@@ -9,6 +9,7 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
@@ -17,7 +18,6 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectTransactionSubmissionStatus,
   CredentialId,
-  DIDSuffix,
   KeyUsage
 }
 
@@ -39,8 +39,8 @@ package object daos {
       _.entryName
     )
 
-  implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.suffix)
-  implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix(_))
+  implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.value)
+  implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix.unsafeFromString)
 
   implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
   implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))

@@ -7,8 +7,8 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models

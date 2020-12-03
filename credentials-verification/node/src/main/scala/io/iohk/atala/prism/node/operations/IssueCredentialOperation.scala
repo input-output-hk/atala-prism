@@ -1,11 +1,13 @@
 package io.iohk.atala.prism.node.operations
 
 import cats.data.EitherT
+import cats.syntax.either._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.operations.path._
@@ -60,7 +62,7 @@ case class IssueCredentialOperation(
           case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
             // that shouldn't happen, as key verification requires issuer in the DB,
             // but puting it here just in the case
-            StateError.EntityMissing("issuer", issuerDIDSuffix.suffix)
+            StateError.EntityMissing("issuer", issuerDIDSuffix.value)
         }
     }
 }
@@ -81,9 +83,8 @@ object IssueCredentialOperation extends SimpleOperationCompanion[IssueCredential
         Either.cond(id.isEmpty, (), "Id must be empty for DID creation operation")
       }
       issuer <- credentialData.child(_.issuer, "issuer").parse { issuerDidSuffix =>
-        Either.cond(
-          DIDSuffix.DID_SUFFIX_RE.pattern.matcher(issuerDidSuffix).matches(),
-          DIDSuffix(issuerDidSuffix),
+        Either.fromOption(
+          DIDSuffix.fromString(issuerDidSuffix),
           "must be a valid DID suffix"
         )
       }

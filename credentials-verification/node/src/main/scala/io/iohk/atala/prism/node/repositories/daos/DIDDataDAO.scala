@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories.daos
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.DIDSuffix
+import io.iohk.atala.prism.identity.DIDSuffix
 
 object DIDDataDAO {
   def insert(didSuffix: DIDSuffix, lastOperation: SHA256Digest): ConnectionIO[Unit] = {

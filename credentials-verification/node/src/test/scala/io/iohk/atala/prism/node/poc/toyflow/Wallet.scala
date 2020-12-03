@@ -5,12 +5,11 @@ import io.iohk.atala.prism.credentials.CredentialContent
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.poc.NodeSDK
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
-
 import io.iohk.atala.prism.credentials.json.implicits._
+import io.iohk.atala.prism.identity.DIDSuffix
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
@@ -53,7 +52,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
-    val didSuffix = DIDSuffix(operationHash)
+    val didSuffix = DIDSuffix.unsafeFromDigest(operationHash)
 
     dids += (didSuffix -> Map(
       "master0" -> masterPrivateKey,

@@ -13,7 +13,6 @@ import io.iohk.atala.prism.credentials.{
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.credentials.json.implicits._
@@ -31,9 +30,9 @@ case class PrismWallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   private val issuancePrivateKey = issuanceKeyPair.privateKey
   private val issuancePublicKey = issuanceKeyPair.publicKey
 
-  private var dids: Map[DIDSuffix, Map[String, ECPrivateKey]] = Map()
+  private var dids: Map[DID, Map[String, ECPrivateKey]] = Map()
 
-  def generateDID(): (DIDSuffix, node_models.AtalaOperation) = {
+  def generateDID(): (DID, node_models.AtalaOperation) = {
     // This could be encapsulated in the "NodeSDK". I added it here for simplicity
     // Note that in our current design we cannot create a did that has two keys from start
     val createDidOp = node_models.CreateDIDOperation(
@@ -61,22 +60,22 @@ case class PrismWallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
-    val didSuffix = DIDSuffix(operationHash)
+    val did = DID.buildPrismDID(operationHash.hexValue)
 
-    dids += (didSuffix -> Map(
+    dids += (did -> Map(
       "master0" -> masterPrivateKey,
       "issuance0" -> issuancePrivateKey
     ))
 
-    (didSuffix, atalaOp)
+    (did, atalaOp)
   }
 
   def signOperation(
       operation: node_models.AtalaOperation,
       keyId: String,
-      didSuffix: DIDSuffix
+      did: DID
   ): node_models.SignedAtalaOperation = {
-    val key = dids(didSuffix)(keyId)
+    val key = dids(did)(keyId)
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
@@ -87,14 +86,14 @@ case class PrismWallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   def signCredential(
       credential: String,
       keyId: String,
-      didSuffix: DIDSuffix
+      signerDID: DID
   ): JsonBasedCredential[CredentialContent[String]] = {
-    val privateKey = dids(didSuffix)(keyId)
+    val privateKey = dids(signerDID)(keyId)
     JsonBasedCredential
       .fromCredentialContent[CredentialContent[String]](
         CredentialContent[String](
           credentialType = Seq(),
-          issuerDid = Some(DID.buildPrismDID(didSuffix.suffix)),
+          issuerDid = Some(signerDID),
           issuanceKeyId = Some(keyId),
           issuanceDate = None,
           expiryDate = None,
@@ -118,7 +117,7 @@ case class PrismWallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val issuanceKeyId = jsonContent.issuanceKeyId.value
 
     // request credential state to the node
-    val batchId = CredentialBatchId.fromBatchData(issuerDID, merkleRoot)
+    val batchId = CredentialBatchId.fromBatchData(issuerDID.suffix, merkleRoot)
 
     val batchStateProto = node.getBatchState(
       node_api.GetBatchStateRequest(

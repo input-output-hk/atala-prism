@@ -32,20 +32,15 @@ final class DID private (val value: String) {
     }
   }
 
-  def stripPrismPrefix: String = value.stripPrefix(prismPrefix)
+  private def stripPrismPrefix: String = value.stripPrefix(prismPrefix)
 
-  def getSuffix: Option[String] = {
-    getFormat match {
-      case DIDFormat.Canonical(suffix) => Some(suffix)
-      case DIDFormat.LongForm(stateHash, encodedState) => Some(buildSuffix(stateHash, encodedState))
-      case DIDFormat.Unknown => None
-    }
-  }
+  // the method assumes that the DID is a PRISM DID
+  def suffix: DIDSuffix = DIDSuffix.unsafeFromString(stripPrismPrefix)
 
-  def getCanonicalSuffix: Option[String] = {
+  def getCanonicalSuffix: Option[DIDSuffix] = {
     getFormat match {
-      case DIDFormat.Canonical(suffix) => Some(suffix)
-      case DIDFormat.LongForm(stateHash, _) => Some(stateHash)
+      case DIDFormat.Canonical(suffix) => Some(DIDSuffix.unsafeFromString(suffix))
+      case DIDFormat.LongForm(stateHash, _) => Some(DIDSuffix.unsafeFromString(stateHash))
       case DIDFormat.Unknown => None
     }
   }
@@ -71,6 +66,7 @@ final class DID private (val value: String) {
 }
 
 object DID {
+  val suffixRegex: Regex = "[:A-Za-z0-9_-]+$".r
   val prismPrefix: String = "did:prism:"
   val prismRegex: Regex = "^did:prism(:[A-Za-z0-9_-]+)+$".r
   // This is the prefix we currently use in IntDemo TODO: Remove once possible
@@ -87,6 +83,9 @@ object DID {
 
   def buildPrismDID(stateHash: String, encodedState: String): DID =
     DID(s"$prismPrefix${buildSuffix(stateHash, encodedState)}")
+
+  def buildPrismDID(suffix: DIDSuffix): DID =
+    DID(s"$prismPrefix${suffix.value}")
 
   def fromString(string: String): Option[DID] =
     string match {

@@ -39,7 +39,7 @@ object IssueCredentialBatchOperationSpec {
       value = node_models.IssueCredentialBatchOperation(
         credentialBatchData = Some(
           node_models.CredentialBatchData(
-            issuerDID = issuerDIDSuffix.suffix,
+            issuerDID = issuerDIDSuffix.value,
             merkleRoot = ByteString.copyFrom(mockMerkleRoot.hash.value.toArray)
           )
         )

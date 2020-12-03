@@ -9,8 +9,6 @@ public interface DID {
 
     boolean isCanonicalForm();
 
-    String stripPrismPrefix();
-
     Optional<String> getSuffix();
 
     Optional<String> getCanonicalSuffix();

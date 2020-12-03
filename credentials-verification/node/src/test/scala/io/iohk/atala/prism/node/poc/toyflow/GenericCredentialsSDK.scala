@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.poc.toyflow
 
 import com.github.ghik.silencer.silent
-import io.iohk.atala.prism.node.models.DIDSuffix
+import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 
 // This SDK would allow to build generic credentials and manipulate them
 // For this toy example, the credential model is a String that represents a JSON
@@ -9,12 +9,12 @@ import io.iohk.atala.prism.node.models.DIDSuffix
 // to build a degree credential
 object GenericCredentialsSDK {
 
-  private var issuerDIDUsed: DIDSuffix = _
+  private var issuerDIDUsed: DID = _
   private var keyIdUsed: String = ""
 
   def buildGenericCredential(
       credentialType: String,
-      issuerDID: DIDSuffix,
+      issuerDID: DID,
       issuanceKeyId: String,
       claims: String
   ): String = {
@@ -22,7 +22,7 @@ object GenericCredentialsSDK {
     keyIdUsed = issuanceKeyId
     s"""{
        |  "credentialType" : "$credentialType",
-       |  "issuerDID" : "did:prism:${issuerDID.suffix}",
+       |  "issuerDID" : "${issuerDID.value}",
        |  "signingKey" : {
        |     "type" : "DIDKey",
        |     "key" : "$issuanceKeyId"
@@ -32,9 +32,9 @@ object GenericCredentialsSDK {
   }
 
   @silent("never used")
-  def getIssuerDID(credential: String): String = s"did:prism:$issuerDIDUsed"
+  def getIssuerDID(credential: String): String = issuerDIDUsed.value
   @silent("never used")
-  def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed
+  def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed.suffix
   @silent("never used")
-  def getKeyId(credential: String) = keyIdUsed
+  def getKeyId(credential: String): String = keyIdUsed
 }

@@ -100,7 +100,7 @@ object NodeUtils {
           node_models.IssueCredentialOperation(
             credentialData = Some(
               node_models.CredentialData(
-                issuer = did.stripPrismPrefix,
+                issuer = did.suffix.value,
                 contentHash = ByteString.copyFrom(credentialHash.value.toArray)
               )
             )

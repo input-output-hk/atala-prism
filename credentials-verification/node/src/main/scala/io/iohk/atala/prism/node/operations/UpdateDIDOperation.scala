@@ -7,8 +7,9 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
@@ -19,7 +20,7 @@ case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
-    id: DIDSuffix,
+    didSuffix: DIDSuffix,
     actions: List[UpdateDIDAction],
     previousOperation: SHA256Digest,
     digest: SHA256Digest,
@@ -33,11 +34,11 @@ case class UpdateDIDOperation(
     for {
       lastOperation <- EitherT[ConnectionIO, StateError, SHA256Digest] {
         DIDDataDAO
-          .getLastOperation(id)
-          .map(_.toRight(StateError.EntityMissing("did", id.toString)))
+          .getLastOperation(didSuffix)
+          .map(_.toRight(StateError.EntityMissing("did suffix", didSuffix.value)))
       }
       key <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
-        PublicKeysDAO.find(id, keyId).map(_.toRight(StateError.UnknownKey(id, keyId)))
+        PublicKeysDAO.find(didSuffix, keyId).map(_.toRight(StateError.UnknownKey(didSuffix, keyId)))
       }.subflatMap { didKey =>
         Either.cond(didKey.keyUsage == KeyUsage.MasterKey, didKey.key, StateError.InvalidKeyUsed("master key"))
       }
@@ -54,7 +55,7 @@ case class UpdateDIDOperation(
         EitherT {
           PublicKeysDAO.insert(key, timestampInfo).attemptSomeSqlState {
             case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("DID", id.suffix): StateError
+              EntityExists("DID suffix", didSuffix.value): StateError
           }
         }
       case RevokeKeyAction(keyId) =>
@@ -76,7 +77,8 @@ case class UpdateDIDOperation(
     type ConnectionIOEitherTError[T] = EitherT[ConnectionIO, StateError, T]
 
     for {
-      _ <- OptionT(DIDDataDAO.findByDidSuffix(id)).toRight(StateError.EntityMissing("DID", id.suffix))
+      _ <-
+        OptionT(DIDDataDAO.findByDidSuffix(didSuffix)).toRight(StateError.EntityMissing("DID Suffix", didSuffix.value))
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
     } yield ()
   }
@@ -124,10 +126,9 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
     for {
       didSuffix <- updateOperation.child(_.id, "id").parse { didSuffix =>
-        Either.cond(
-          DIDSuffix.DID_SUFFIX_RE.pattern.matcher(didSuffix).matches(),
-          DIDSuffix(didSuffix),
-          "must be a valid DID suffix"
+        Either.fromOption(
+          DIDSuffix.fromString(didSuffix),
+          s"must be a valid DID suffix: $didSuffix"
         )
       }
       previousOperation <- ParsingUtils.parseHash(

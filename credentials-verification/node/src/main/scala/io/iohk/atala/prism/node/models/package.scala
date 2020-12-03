@@ -5,6 +5,7 @@ import enumeratum._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.TransactionInfo
 
 package object models {
@@ -25,22 +26,6 @@ package object models {
 
   }
 
-  class DIDSuffix private (val suffix: String) extends AnyVal {
-    override def toString = suffix
-  }
-
-  object DIDSuffix {
-    def apply(didSuffix: String): DIDSuffix = {
-      require(DIDSuffix.DID_SUFFIX_RE.pattern.matcher(didSuffix).matches(), s"invalid DID format: $didSuffix")
-
-      new DIDSuffix(didSuffix)
-    }
-
-    def apply(digest: SHA256Digest): DIDSuffix = apply(digest.hexValue)
-
-    val DID_SUFFIX_RE = "^[0-9a-f]{64}$".r
-  }
-
   case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
 
   case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey], lastOperation: SHA256Digest)
@@ -49,7 +34,7 @@ package object models {
 
   object CredentialId {
     def apply(id: String): CredentialId = {
-      require(DIDSuffix.DID_SUFFIX_RE.pattern.matcher(id).matches())
+      require(CREDENTIAL_ID_RE.pattern.matcher(id).matches())
 
       new CredentialId(id)
     }

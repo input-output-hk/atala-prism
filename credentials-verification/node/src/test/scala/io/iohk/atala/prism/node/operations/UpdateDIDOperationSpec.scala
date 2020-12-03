@@ -31,7 +31,7 @@ object UpdateDIDOperationSpec {
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.value.toArray),
-        id = createDidOperation.id.suffix,
+        id = createDidOperation.id.value,
         actions = Seq(
           node_models.UpdateDIDAction(
             node_models.UpdateDIDAction.Action.AddKey(

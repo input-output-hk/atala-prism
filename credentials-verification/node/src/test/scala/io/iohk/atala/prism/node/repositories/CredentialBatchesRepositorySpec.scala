@@ -8,8 +8,8 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
-import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.CredentialBatchState
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
@@ -44,7 +44,7 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       val randomCredentialHash2 = SHA256Digest.compute("another random".getBytes())
       val randomRevocationTime = TimestampInfo(Instant.now(), 10, 100)
 
-      val randomIssuerDIDSuffix = DIDSuffix(SHA256Digest.compute("did".getBytes()))
+      val randomIssuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
       val randomIssuedOnTime = dummyTimestampInfo
@@ -87,7 +87,7 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
 
     "return proper data when there is non-revoked batch data" in {
       val randomBatchId = CredentialBatchId.random()
-      val randomIssuerDIDSuffix = DIDSuffix(SHA256Digest.compute("did".getBytes()))
+      val randomIssuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
       val randomIssuedOnTime = dummyTimestampInfo
@@ -121,7 +121,7 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
 
     "return proper data when the batch was revoked" in {
       val randomBatchId = CredentialBatchId.random()
-      val randomIssuerDIDSuffix = DIDSuffix(SHA256Digest.compute("did".getBytes()))
+      val randomIssuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
       val randomIssuedOnTime = dummyTimestampInfo

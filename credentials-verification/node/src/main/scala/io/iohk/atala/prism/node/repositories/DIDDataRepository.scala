@@ -6,12 +6,13 @@ import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState}
-import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, DIDSuffix}
+import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 
 import scala.concurrent.ExecutionContext
@@ -43,7 +44,7 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def findByDidSuffix(didSuffix: DIDSuffix): FutureEither[NodeError, DIDDataState] = {
     val query = for {
       lastOperation <- OptionT(DIDDataDAO.getLastOperation(didSuffix))
-        .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.suffix))
+        .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.value))
       keys <- EitherT.right[NodeError](PublicKeysDAO.findAll(didSuffix))
     } yield DIDDataState(didSuffix, keys, lastOperation)
 
@@ -56,7 +57,7 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def findKey(didSuffix: DIDSuffix, keyId: String): FutureEither[NodeError, DIDPublicKeyState] = {
     OptionT(PublicKeysDAO.find(didSuffix, keyId))
-      .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.suffix))
+      .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.value))
       .transact(xa)
       .value
       .unsafeToFuture()

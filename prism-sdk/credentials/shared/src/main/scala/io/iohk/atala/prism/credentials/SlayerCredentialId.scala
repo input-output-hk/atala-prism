@@ -16,7 +16,7 @@ object SlayerCredentialId {
 
   def compute(credentialHash: SHA256Digest, did: DID): SlayerCredentialId = {
     val credentialData = node_models.CredentialData(
-      issuer = did.stripPrismPrefix,
+      issuer = did.suffix.value,
       contentHash = ByteString.copyFrom(credentialHash.value.toArray)
     )
     val operation = node_models.AtalaOperation.Operation.IssueCredential(

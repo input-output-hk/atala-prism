@@ -12,11 +12,9 @@ class DIDFacade(did: identity.DID) extends DID {
 
   override def isCanonicalForm: Boolean = did.isCanonicalForm
 
-  override def stripPrismPrefix(): String = did.stripPrismPrefix
-
   override def getSuffix: Optional[String] =
-    AsJavaConverter.asJavaOptional(did.getSuffix)
+    AsJavaConverter.asJavaOptional(Some(did.suffix.value))
 
   override def getCanonicalSuffix: Optional[String] =
-    AsJavaConverter.asJavaOptional(did.getCanonicalSuffix)
+    AsJavaConverter.asJavaOptional(did.getCanonicalSuffix.map(_.value))
 }

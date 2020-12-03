@@ -7,8 +7,8 @@ import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPrivateKey}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.prism.node.models.DIDSuffix
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -68,7 +68,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       credentials.size mustBe 1
       val digest = SHA256Digest.compute(createDidOperation.toByteArray)
-      credentials.head mustBe DIDSuffix(digest)
+      credentials.head mustBe DIDSuffix.unsafeFromDigest(digest)
     }
 
     "not apply operation when signature is wrong" in {
@@ -154,7 +154,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
-        .map(op => DIDSuffix(SHA256Digest.compute(op.toByteArray)))
+        .map(op => DIDSuffix.unsafeFromDigest(SHA256Digest.compute(op.toByteArray)))
       credentials must contain theSameElementsAs (expectedSuffixes)
     }
   }

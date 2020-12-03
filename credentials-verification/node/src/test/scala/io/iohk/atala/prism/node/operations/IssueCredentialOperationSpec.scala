@@ -38,7 +38,7 @@ object IssueCredentialOperationSpec {
       value = node_models.IssueCredentialOperation(
         credentialData = Some(
           node_models.CredentialData(
-            issuer = issuer.suffix,
+            issuer = issuer.value,
             contentHash = ByteString.copyFrom(contentHash.toArray)
           )
         )

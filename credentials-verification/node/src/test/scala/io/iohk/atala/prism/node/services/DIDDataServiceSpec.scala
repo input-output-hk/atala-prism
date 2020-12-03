@@ -33,7 +33,7 @@ class DIDDataServiceSpec extends PostgresRepositorySpec {
         .futureValue
       result mustBe a[Right[_, _]]
 
-      val did = DID.buildPrismDID(parsedOperation.id.suffix)
+      val did = DID.buildPrismDID(parsedOperation.id.value)
       didDataService.findByDID(did).value.futureValue mustBe a[Right[_, _]]
     }
 

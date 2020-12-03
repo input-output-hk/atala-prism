@@ -192,8 +192,8 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
       val did1 = DID.createUnpublishedDID(keys1.publicKey)
       val did2 = DID.createUnpublishedDID(keys2.publicKey)
       val fakeDid = DID.buildPrismDID(
-        did1.getCanonicalSuffix.get,
-        did2.stripPrismPrefix.dropWhile(_ != ':').tail
+        did1.getCanonicalSuffix.get.value,
+        did2.suffix.value.dropWhile(_ != ':').tail
       )
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys1, fakeDid, request)

@@ -54,7 +54,7 @@ object ECKeyOperation {
       val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCreedential, signingKey.privateKey)
       val signedCredentialHash = CredentialsCryptoSDKImpl.hash(signedCredential)
       val contentHash = ByteString.copyFrom(signedCredentialHash.value.toArray)
-      val credentialData = CredentialData(issuer = issuerDID.stripPrismPrefix, contentHash = contentHash)
+      val credentialData = CredentialData(issuer = issuerDID.suffix.value, contentHash = contentHash)
       val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
       (
         AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation)),

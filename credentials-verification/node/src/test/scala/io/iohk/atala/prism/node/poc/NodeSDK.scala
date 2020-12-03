@@ -2,7 +2,8 @@ package io.iohk.atala.prism.node.poc
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.node.models.{CredentialId, DIDSuffix}
+import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.protos.node_models
 
 object NodeSDK {
@@ -15,7 +16,7 @@ object NodeSDK {
         node_models.IssueCredentialOperation(
           credentialData = Some(
             node_models.CredentialData(
-              issuer = didSuffix.suffix,
+              issuer = didSuffix.value,
               contentHash = ByteString.copyFrom(credentialHash.value.toArray)
             )
           )

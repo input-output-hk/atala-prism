@@ -11,13 +11,13 @@ import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, CredentialState}
-import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage}
+import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
@@ -122,15 +122,15 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = SHA256Digest.compute("test".getBytes())
-      val didSuffix = DIDSuffix(didDigest)
+      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
       val dummyTime = dummyTimestampInfo
       DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
       PublicKeysDAO.insert(key, dummyTime).transact(database).unsafeRunSync()
 
-      val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.suffix}"))
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.value}"))
       val document = response.document.value
-      document.id mustBe didSuffix.suffix
+      document.id mustBe didSuffix.value
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
@@ -148,7 +148,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
       val document = response.document.value
-      document.id mustBe longFormDID.stripPrismPrefix
+      document.id mustBe longFormDID.suffix.value
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
@@ -166,8 +166,8 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val longFormDID = DID.createUnpublishedDID(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value)
-      val didSuffix = DIDSuffix(didDigest)
+      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value.value)
+      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
       val dummyTime = dummyTimestampInfo
       DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
       val key1 = DIDPublicKey(didSuffix, "master0", KeyUsage.MasterKey, masterKey)
@@ -178,7 +178,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
       val document = response.document.value
-      document.id mustBe longFormDID.stripPrismPrefix
+      document.id mustBe longFormDID.suffix.value
       document.publicKeys.size mustBe 2
 
       val publicKey1 = document.publicKeys.find(_.id == "master0").value
@@ -246,7 +246,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
     "return error when provided operation is invalid" in {
       val operation = BlockProcessingServiceSpec.signOperation(
-        UpdateDIDOperationSpec.exampleOperation.update(_.updateDid.id := "abc"),
+        UpdateDIDOperationSpec.exampleOperation.update(_.updateDid.id := "abc#@!"),
         "master",
         UpdateDIDOperationSpec.masterKeys.privateKey
       )
@@ -444,7 +444,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val validCredentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
 
-      val issuerDIDSuffix = DIDSuffix(SHA256Digest.compute("testDID".getBytes()))
+      val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()))
       val issuedOn = dummyTimestampInfo
       val credState =
         CredentialState(
@@ -471,7 +471,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       doReturn(repositoryResponse).when(credentialsService).getCredentialState(validCredentialId)
 
       val response = service.getCredentialState(requestWithValidId)
-      response.issuerDID must be(issuerDIDSuffix.suffix)
+      response.issuerDID must be(issuerDIDSuffix.value)
       response.publicationDate must be(Some(timestampInfoProto))
       response.revocationDate must be(empty)
     }
@@ -512,7 +512,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
-      val issuerDIDSuffix = DIDSuffix(SHA256Digest.compute("testDID".getBytes()))
+      val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()))
       val issuedOn = dummyTimestampInfo
       val merkleRoot = MerkleRoot(SHA256Digest.compute("content".getBytes()))
       val credState =
@@ -540,7 +540,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       doReturn(repositoryResponse).when(credentialBatchesRepository).getBatchState(validBatchId)
 
       val response = service.getBatchState(requestWithValidId)
-      response.issuerDID must be(issuerDIDSuffix.suffix)
+      response.issuerDID must be(issuerDIDSuffix.value)
       response.merkleRoot.toByteArray.toVector must be(merkleRoot.hash.value)
       response.publicationDate must be(Some(timestampInfoProto))
       response.revocationDate must be(empty)
