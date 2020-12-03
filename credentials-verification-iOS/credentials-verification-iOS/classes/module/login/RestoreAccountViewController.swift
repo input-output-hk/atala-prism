@@ -195,6 +195,7 @@ extension RestoreAccountViewController: MDCChipFieldDelegate {
             if chipsField.chips.count == CryptoUtils.SEED_COUNT {
                 chipField.textField.isEnabled = false
                 chipField.textField.placeholder = ""
+                enableVerifyButton(enable: true)
             }
         }
     }
