@@ -301,9 +301,10 @@ message GetBuildInfoRequest {}
 
 // The actual service's information
 message GetBuildInfoResponse {
+  reserved 4; // buildTime
+
   string version = 1; // the service's version
   string scalaVersion = 2; // the scala's version used by the service
   string sbtVersion = 3; // the sbt's version used to compile the service
-  string buildTime = 4; // the time when the service was compiled
   string nodeVersion = 5; // the node service version
 }

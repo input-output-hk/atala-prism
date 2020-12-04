@@ -1,16 +1,14 @@
-import java.time.{LocalDateTime, ZoneOffset}
-
+import Dependencies._
 import com.typesafe.sbt.GitVersioning
 import play.twirl.sbt.SbtTwirl
+import sbt.Keys._
+import sbt._
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtdocker.DockerPlugin
 import sbtdocker.DockerPlugin.autoImport._
-import sbt.Keys._
-import sbt._
 import scoverage.ScoverageKeys._
-import Dependencies._
 
 object PrismBuild {
 
@@ -81,11 +79,6 @@ object PrismBuild {
     commonProject(Project(name, file(name)))
       .settings(
         buildInfoPackage := "io.iohk.atala.prism",
-        buildInfoKeys ++= Seq[BuildInfoKey](
-          BuildInfoKey.action("buildTime") {
-            LocalDateTime.now(ZoneOffset.UTC).toString
-          }
-        ),
         dockerfile in docker := {
           val artifact = assembly.value
           val className = (mainClass in (Compile, run)).value.get

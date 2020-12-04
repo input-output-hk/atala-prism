@@ -225,7 +225,6 @@ class NodeServiceImpl(
             .withVersion(BuildInfo.version)
             .withScalaVersion(BuildInfo.scalaVersion)
             .withSbtVersion(BuildInfo.sbtVersion)
-            .withBuildTime(BuildInfo.buildTime)
         )
       )
   }

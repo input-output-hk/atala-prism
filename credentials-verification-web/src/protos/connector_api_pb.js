@@ -6076,7 +6076,6 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.toObject = function(includ
     version: jspb.Message.getFieldWithDefault(msg, 1, ""),
     scalaversion: jspb.Message.getFieldWithDefault(msg, 2, ""),
     sbtversion: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    buildtime: jspb.Message.getFieldWithDefault(msg, 4, ""),
     nodeversion: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
@@ -6125,10 +6124,6 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.deserializeBinaryFromReade
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setSbtversion(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setBuildtime(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
@@ -6181,13 +6176,6 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.serializeBinaryToWriter = 
   if (f.length > 0) {
     writer.writeString(
       3,
-      f
-    );
-  }
-  f = message.getBuildtime();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
       f
     );
   }
@@ -6252,24 +6240,6 @@ proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.getSbtversion = 
  */
 proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.setSbtversion = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional string buildTime = 4;
- * @return {string}
- */
-proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.getBuildtime = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.io.iohk.atala.prism.protos.GetBuildInfoResponse} returns this
- */
-proto.io.iohk.atala.prism.protos.GetBuildInfoResponse.prototype.setBuildtime = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 

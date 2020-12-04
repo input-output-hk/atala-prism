@@ -1,8 +1,5 @@
 package io.iohk.atala.prism.node
 
-import java.time.{Instant, LocalDateTime, ZoneOffset}
-import java.util.concurrent.TimeUnit
-
 import cats.scalatest.EitherMatchers._
 import com.google.protobuf.ByteString
 import doobie.implicits._
@@ -28,8 +25,8 @@ import io.iohk.atala.prism.node.operations.{
   RevokeCredentialsOperationSpec,
   UpdateDIDOperationSpec
 }
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
   AtalaObjectTransactionStatus
@@ -55,6 +52,8 @@ import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
 
+import java.time.Instant
+import java.util.concurrent.TimeUnit
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -394,18 +393,12 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
   "NodeService.getBuildInfo" should {
     "return proper build information" in {
-      // Use a month so that's long enough to not cache the build date but short enough to be helpful for the test
-      val aMonthAgo = LocalDateTime.now(ZoneOffset.UTC).minusMonths(1)
-
       val buildInfo = service.getNodeBuildInfo(GetNodeBuildInfoRequest())
 
       // This changes greatly, so just test something was set
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.13.3"
       buildInfo.sbtVersion mustBe "1.4.2"
-      // Give it enough time between build creation and test
-      val buildTime = LocalDateTime.parse(buildInfo.buildTime)
-      buildTime.compareTo(aMonthAgo) must be > 0
     }
   }
 

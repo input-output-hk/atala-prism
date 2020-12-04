@@ -121,10 +121,11 @@ message GetNodeBuildInfoRequest {
 }
 // Response with the Node version info
 message GetNodeBuildInfoResponse {
+    reserved 4; // buildTime
+
     string version = 1; // the actual version
     string scalaVersion = 2; // the scala version used to compile the app
     string sbtVersion = 3; // the sbt version used to compile the app
-    string buildTime = 4; // the time when the app was compiled
 }
 
 // Request to get the credential's state
