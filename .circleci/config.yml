@@ -139,9 +139,11 @@ jobs:
             echo "export ENV=$branchPrefix" >> $BASH_ENV;
             . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
+      # the prism-wallet.zip is needed so that the website can allow downloading it
       - run:
           name: Create web assembly
           command: |
+            cp ./workspace/prism-wallet.zip credentials-verification-web/public/
             cd credentials-verification-web
             npm ci --production
             CI=false GENERATE_SOURCEMAP=false npm run build
@@ -470,6 +472,12 @@ jobs:
       - store_artifacts:
           path: credentials-verification-webextension/target/chrome/prism-wallet.zip
 
+      # persist the wallet, so that it can be deployed by another job
+      - persist_to_workspace:
+          root: credentials-verification-webextension/target/chrome
+          paths:
+            - prism-wallet.zip
+
   build-prism-sdk:
     working_directory: ~/repo
     docker:
@@ -627,6 +635,7 @@ workflows:
             - build-credentials-verification-landing
             - build-credentials-verification
             - build-prism-sdk
+            - build-credentials-verification-webextension
 
       - rebuild-prism-env:
           intdemo-enabled: true
