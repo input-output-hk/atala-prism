@@ -8,6 +8,7 @@ import io.iohk.atala.prism.app.dagger.modules.ContactDetailFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.ContactsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.CredentialHistoryFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.CredentialsFragmentModule;
+import io.iohk.atala.prism.app.dagger.modules.DeleteCredentialDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.NotificationsFragmentModule;
 import io.iohk.atala.prism.app.dagger.modules.DeleteContactAlertDialogModule;
 import io.iohk.atala.prism.app.dagger.modules.MyCredentialsFragmentModule;
@@ -124,7 +125,7 @@ public abstract class FragmentBuilder {
     @ContributesAndroidInjector
     abstract AddQrCodeDialogFragment addQrCodeDialogFragment();
 
-    @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
+    @ContributesAndroidInjector(modules = DeleteCredentialDialogModule.class)
     abstract DeleteCredentialDialogFragment deleteCredentialDialogFragment();
 
     @ContributesAndroidInjector(modules = DeleteContactAlertDialogModule.class)

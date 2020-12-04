@@ -80,8 +80,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
                 requireActivity().onBackPressed();
                 return true;
             case R.id.action_delete_credential:
-                navigator.showDialogFragment(
-                        requireActivity().getSupportFragmentManager(), getDeleteCredentialFragment(), null);
+                getDeleteCredentialFragment().show(requireActivity().getSupportFragmentManager(), null);
                 return true;
             case R.id.action_credential_history:
                 CredentialHistoryFragment fragment = CredentialHistoryFragment.Companion.build(credential.credentialId);
@@ -102,15 +101,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     }
 
     private DeleteCredentialDialogFragment getDeleteCredentialFragment() {
-        DeleteCredentialDialogFragment fragment = new DeleteCredentialDialogFragment();
-        fragment.setTargetFragment(this, REQUEST_DELETE_CREDENTIAL);
-        Bundle args = new Bundle();
-        args.putString(IntentDataConstants.CREDENTIAL_TYPE_KEY, credential.credentialType);
-        args.putString(IntentDataConstants.CREDENTIAL_ID_KEY, credential.credentialId);
-        args.putString(IntentDataConstants.CREDENTIAL_DATA_KEY, credential.credentialDocument);
-        fragment.setArguments(args);
-
-        return fragment;
+        DeleteCredentialDialogFragment dialog = DeleteCredentialDialogFragment.Companion.build(credential.credentialId);
+        dialog.setTargetFragment(this, REQUEST_DELETE_CREDENTIAL);
+        return dialog;
     }
 
     @Override
