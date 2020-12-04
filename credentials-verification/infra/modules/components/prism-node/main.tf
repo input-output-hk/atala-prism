@@ -45,6 +45,7 @@ module "node_container_definition" {
     { name = "NODE_PSQL_USERNAME", value = var.psql_username },
     { name = "NODE_PSQL_PASSWORD", value = var.psql_password },
     { name = "NODE_LEDGER", value = "cardano" },
+    { name = "NODE_CARDANO_CONFIRMATION_BLOCKS", value = var.cardano_confirmation_blocks },
     { name = "NODE_CARDANO_DB_SYNC_HOST", value = var.cardano_db_sync_psql_host },
     { name = "NODE_CARDANO_DB_SYNC_USERNAME", value = var.cardano_db_sync_psql_username },
     { name = "NODE_CARDANO_DB_SYNC_PASSWORD", value = var.cardano_db_sync_psql_password },
