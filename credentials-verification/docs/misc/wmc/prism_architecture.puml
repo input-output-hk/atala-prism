@@ -44,7 +44,6 @@ System_Boundary(PRISM, "PRISM") {
 
     
 
-    Connector -left-> Vault
     Connector -right-> PRISM_Node
 
     Container_Boundary(MC, "Management Console [MC]") {
@@ -58,6 +57,13 @@ System_Boundary(PRISM, "PRISM") {
     }
 
     Container(Mobile_Wallet, "Mobile Wallet", "PRISM", "Android, iOS")
-    Mobile_Wallet -> MC_Backend
+    Mobile_Wallet ---> Connector
+    Mobile_Wallet ---> PRISM_Node
+    Mobile_Wallet -up-> Vault
+
+    Container(Browser_Wallet, "Browser Wallet", "PRISM", "Chrome, Firefox")
+    MC_Frontend -right-> Browser_Wallet
+    Browser_Wallet ---> PRISM_Node
+    Browser_Wallet -> Connector
 }
 @enduml
