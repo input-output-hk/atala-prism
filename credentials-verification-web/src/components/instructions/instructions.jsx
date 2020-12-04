@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import imgLogo from '../../images/logo-instructions.svg';
 import imgScreenshots from '../../images/img-instructions.png';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
@@ -25,10 +26,12 @@ const Instructions = ({ name, bundle, credentials, proofRequests }) => {
             {t('instructions.descriptionPartTwo')}
           </p>
           <div>
-            <CustomButton
-              buttonProps={{ className: 'theme-outline' }}
-              buttonText={t('instructions.button')}
-            />
+            <a href="/prism-wallet.zip" download="prism-wallet">
+              <CustomButton
+                buttonProps={{ className: 'theme-outline' }}
+                buttonText={t('instructions.button')}
+              />
+            </a>
           </div>
           <h3 className="italic">
             {t('instructions.comingSoon')}
@@ -36,7 +39,9 @@ const Instructions = ({ name, bundle, credentials, proofRequests }) => {
           </h3>
           <h5 className="register-text">
             {t('instructions.register')}
-            <span>{t('instructions.clickRegister')}</span>
+            <Link to="/">
+              <span>{t('instructions.clickRegister')}</span>
+            </Link>
           </h5>
         </div>
 
