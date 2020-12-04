@@ -1,4 +1,4 @@
-# PRISM
+W# PRISM
 This is the server side from the PRISM project.
 
 ## How to import project using BSP
@@ -28,7 +28,7 @@ $ idea .
 When IntelliJ IDEA asks you what project configuration to use, pick "Open as BSP project". Once the project has been imported, make sure your project SDK is set to JDK 8.
 
 ## Troubleshooting
-If you get errors while the project gets imported by IntelliJ, try running IntelliJ from the terminal:, when dealing with scalajs, npm is required, sometimes IntelliJ fails to get the proper `PATH`:
+If you get errors while the project gets imported by IntelliJ, try running IntelliJ from the terminal:
 - `./bin/idea.sh` from the IntelliJ directory, for Linux.
 - `open -a "IntelliJ IDEA"` or `open -a "IntelliJ IDEA CE"` for Mac.
 

@@ -37,13 +37,8 @@ You are required to have Chrome installed in order to run the tests, then, run:
 Unfortunately, we haven't found a workaround to run the tests from IntelliJ.
 
 ### Running
-1. Install the script using **Load unpacked** button in `chrome://extensions/` tab (`target/chrome/unpacked-fast` folder).
-1. Open https://iohk.io/, script will be injected into that tab and it will request for signature
-1. Click the extension icon right to the address bar
-1. Choose key to do the signing
-1. Click on certificate request
-1. There should be a notification from the tab script, that it has received the signature
-1. You can view tab logs by opening Developer Console and popup logs by right-clicking the icon and choosing *Inspect pop-up*; please note that each time the pop-up is closed its state is cleared.
+
+See our [README](../README.md#How-to-run) for instructions.
 
 ## Release
 Run: `PROD=true sbt chromePackage` which generates:

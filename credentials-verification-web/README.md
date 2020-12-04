@@ -2,29 +2,16 @@
 
 ## Running the project
 
-We use [nvm](https://github.com/nvm-sh/nvm) to handle the node versions.
-
-To ensure the node version standardized run `nvm use`, which will set the node version to 10.16.3, if installed, otherwise install it and then run the command again.
-
-Prior to running the app install the dependencies with `npm install`.
-
-Copy `.env` file to `.env.local` and configure environment variables.
-
-Lastly, to run the project use `npm run start` or just `npm start`.
-
 ### Integration with grpc backends
 
 First of all, ensure you have .protos compiled. For more information go to [Compile .protos section](#Compile-.protos)
 
-Run envoy proxy. Envoy is just for dev environment.
-1. Edit `./envoy/envoy.yaml` setting your host ip in `clusters.hosts[socket_address.address]`. 
-1. Start envoy running `docker run --rm -ti --net=host -v $PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.12.1`
+### Actual instructions to run the project
 
-To run backend see [Run backend doc](../credentials-verification/docs/connector/README.md)
-- Connector `mill -i connector.run`
-- Wallet `mill -i wallet.run`
+See our main [README](../README.md#How-to-run) for instructions.
 
-Configure envoy proxy "listening port" at .env.local file. For more information about environment variables see [Configurations](#Configurations)
+If needed, configure envoy proxy "listening port" at `.env.local` file.
+For more information about environment variables see [Configurations](#Configurations)
 
 ## Compile .protos
 
@@ -51,6 +38,8 @@ Environment variables are configured in `.env` file.
 For development purposes copy `.env` file to `.env.local`. This file is excluded from git and overrides `.env` for all environments except test.
 
 ### Docker build
+
+These instructions are useful for our deploys, they may be outdated. They are not needed to run the app locally.
 
 1. Environment variables in `.env` config file are used as default.
 1. Build deployment bundle with `npm run build`
