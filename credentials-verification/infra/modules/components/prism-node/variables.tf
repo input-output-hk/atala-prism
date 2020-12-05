@@ -49,10 +49,6 @@ variable psql_password {
   description = "PostgreSQL password to use for node"
 }
 
-variable cardano_confirmation_blocks {
-  description = "Number of blocks to wait for a particular Cardano block to be confirmed by PRISM"
-}
-
 variable cardano_db_sync_psql_host {
   description = "PostgreSQL host for the cardano-db-sync db"
 }
