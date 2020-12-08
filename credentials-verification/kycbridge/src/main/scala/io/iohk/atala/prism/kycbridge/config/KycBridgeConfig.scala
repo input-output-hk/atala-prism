@@ -2,20 +2,27 @@ package io.iohk.atala.prism.kycbridge.config
 
 import com.typesafe.config.Config
 
-case class AssureIdConfig(url: String, username: String, password: String, subscriptionId: String)
+case class AcuantConfig(
+    assureIdUrl: String,
+    acasUrl: String,
+    username: String,
+    password: String,
+    subscriptionId: String
+)
 
-case class KycBridgeConfig(assureIdConfig: AssureIdConfig)
+case class KycBridgeConfig(acuantConfig: AcuantConfig)
 
 object KycBridgeConfig {
   def apply(config: Config): KycBridgeConfig = {
-    val assureIdConfig = config.getConfig("assureId")
+    val acuantConfig = config.getConfig("acuant")
 
     KycBridgeConfig(
-      assureIdConfig = AssureIdConfig(
-        url = assureIdConfig.getString("url"),
-        username = assureIdConfig.getString("username"),
-        password = assureIdConfig.getString("password"),
-        subscriptionId = assureIdConfig.getString("subscriptionId")
+      acuantConfig = AcuantConfig(
+        assureIdUrl = acuantConfig.getString("assureIdUrl"),
+        acasUrl = acuantConfig.getString("acasUrl"),
+        username = acuantConfig.getString("username"),
+        password = acuantConfig.getString("password"),
+        subscriptionId = acuantConfig.getString("subscriptionId")
       )
     )
   }

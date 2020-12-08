@@ -5,7 +5,7 @@ import cats.effect.{ExitCode, Resource}
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.kycbridge.config.KycBridgeConfig
 import io.iohk.atala.prism.kycbridge.models.assureId.{Device, DeviceType}
-import io.iohk.atala.prism.kycbridge.services.{AssureIdService, AssureIdServiceImpl}
+import io.iohk.atala.prism.kycbridge.services.{AcasServiceImpl, AssureIdServiceImpl}
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.slf4j.LoggerFactory
 
@@ -17,31 +17,40 @@ object KycBridgeApp extends TaskApp {
 
   override def run(args: List[String]): Task[ExitCode] = {
     val classLoader = Thread.currentThread().getContextClassLoader
-    app(classLoader).use { assureIdService =>
-      logger.info("Kyc bridge application started")
+    app(classLoader).use {
+      case (assureIdService, acasService) =>
+        logger.info("Kyc bridge application started")
 
-      //only for demonstration purpose
-      val device = Device(
-        `type` = DeviceType(
-          manufacturer = "manufacturer",
-          model = "model"
+        //only for demonstration purpose
+        val device = Device(
+          `type` = DeviceType(
+            manufacturer = "manufacturer",
+            model = "model"
+          )
         )
-      )
 
-      assureIdService
-        .createNewDocumentInstance(device)
-        .map(println(_))
-        .flatMap(_ => Task.never)
+        (for {
+          documentResponse <- assureIdService.createNewDocumentInstance(device)
+          _ = logger.info(s"New document response: $documentResponse")
+          accessTokenResponse <- acasService.getAccessToken
+          _ = logger.info(s"Access token response: $accessTokenResponse")
+          documentStatus <- assureIdService.getDocumentStatus(
+            documentResponse.toOption.get.documentId,
+            accessTokenResponse.toOption.get.accessToken
+          )
+          _ = logger.info(s"Document status: $documentStatus")
+        } yield ()).flatMap(_ => Task.never)
     }
   }
 
-  def app(classLoader: ClassLoader): Resource[Task, AssureIdService] =
+  def app(classLoader: ClassLoader): Resource[Task, (AssureIdServiceImpl, AcasServiceImpl)] =
     for {
       httpClient <- BlazeClientBuilder[Task](global).resource
 
       kycBridgeConfig = KycBridgeConfig(ConfigFactory.load(classLoader))
 
-      assureIdService = new AssureIdServiceImpl(kycBridgeConfig.assureIdConfig, httpClient)
+      assureIdService = new AssureIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
+      acasService = new AcasServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
 
-    } yield assureIdService
+    } yield (assureIdService, acasService)
 }
