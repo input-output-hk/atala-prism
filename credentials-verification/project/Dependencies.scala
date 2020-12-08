@@ -45,6 +45,7 @@ object Dependencies {
   val chimney = "io.scalaland" %% "chimney" % versions.chimney
   val circeCore = "io.circe" %% "circe-core" % versions.circe
   val circeGeneric = "io.circe" %% "circe-generic" % versions.circe
+  val circeGenericExtras = "io.circe" %% "circe-generic-extras" % versions.circe
   val circeParser = "io.circe" %% "circe-parser" % versions.circe
   val circeOptics = "io.circe" %% "circe-optics" % versions.circeOptics
   val doobieCore = "org.tpolecat" %% "doobie-core" % versions.doobie
@@ -96,7 +97,7 @@ object Dependencies {
   val silencerPlugin = compilerPlugin("com.github.ghik" % "silencer-plugin" % versions.silencer cross CrossVersion.full)
 
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
-  val circeDependencies = Seq(circeCore, circeGeneric, circeParser, circeOptics)
+  val circeDependencies = Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
   val dockerDependencies = Seq(dockerClient, dockerTestkitScalatest, dockerTestkitSpotify)
   val doobieDependencies = Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobieScalatest)
   val grpcDependencies = Seq(grpcNetty, grpcServices, grpcContext)

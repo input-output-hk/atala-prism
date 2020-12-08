@@ -196,6 +196,15 @@ object PrismBuild {
       )
       .dependsOn(common % "compile->compile;test->test")
 
+  lazy val kycbridge =
+    commonServerProject("kycbridge")
+      .settings(
+        name := "kycbridge",
+        mainClass in (Compile, run) := Some("io.iohk.atala.prism.kycbridge.KycBridgeApp"),
+        libraryDependencies ++= http4sDependencies
+      )
+      .dependsOn(common % "compile->compile;test->test")
+
   lazy val prism =
     commonProject(project in file("."))
       .aggregate(
@@ -207,6 +216,7 @@ object PrismBuild {
         keyderivation,
         mirror,
         vault,
-        managementConsole
+        managementConsole,
+        kycbridge
       )
 }
