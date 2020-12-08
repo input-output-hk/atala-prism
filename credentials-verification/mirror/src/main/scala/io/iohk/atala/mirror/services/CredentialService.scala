@@ -22,7 +22,7 @@ import io.iohk.atala.prism.credentials.{
   SlayerCredentialId,
   VerificationError
 }
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
@@ -31,7 +31,6 @@ import cats.implicits._
 import doobie.implicits._
 import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.mirror.utils.ConnectionUtils
-import io.iohk.atala.prism.credentials.json.implicits._
 import io.iohk.atala.prism.identity.DID
 
 class CredentialService(
@@ -113,15 +112,15 @@ class CredentialService(
   private[services] def parseCredential(message: ReceivedMessage): Option[RawCredential] = {
     Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toOption
       .map(_.credentialDocument)
-      .filter(!_.isEmpty)
+      .filterNot(_.isEmpty)
       .map(RawCredential)
   }
 
   private[services] def getIssuersDid(rawCredential: RawCredential): Option[DID] = {
-    JsonBasedCredential
+    Credential
       .fromString(rawCredential.rawCredential)
-      .toOption
       .flatMap(_.content.issuerDid)
+      .toOption
   }
 
   private def createUserCredential(
@@ -168,10 +167,9 @@ class CredentialService(
       signedCredentialStringRepresentation: String
   ): Task[Either[String, ValidatedNel[VerificationError, Unit]]] = {
     (for {
-      credential <-
-        JsonBasedCredential.fromString(signedCredentialStringRepresentation).left.map(_.message).toEitherT[Task]
-      issuerDid <- EitherT.fromOption[Task](credential.content.issuerDid, "Empty issuerDID")
-      issuanceKeyId <- EitherT.fromOption[Task](credential.content.issuanceKeyId, "Empty issuanceKeyId")
+      credential <- Credential.fromString(signedCredentialStringRepresentation).left.map(_.message).toEitherT[Task]
+      issuerDid <- credential.content.issuerDid.left.map(_.getMessage).toEitherT[Task]
+      issuanceKeyId <- credential.content.issuanceKeyId.left.map(_.getMessage).toEitherT[Task]
       keyData <- NodeUtils.getKeyData(issuerDid, issuanceKeyId, nodeService)
       credentialData <- getCredentialData(SlayerCredentialId.compute(credential.hash, issuerDid))
     } yield PrismCredentialVerification.verify(keyData, credentialData, credential)).value

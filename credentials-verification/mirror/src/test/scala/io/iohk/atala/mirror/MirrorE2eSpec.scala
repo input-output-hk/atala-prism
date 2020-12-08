@@ -15,7 +15,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.node_models._
-import io.iohk.atala.prism.protos.credential_models._
+import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -25,12 +25,12 @@ import io.iohk.atala.mirror.config._
 import io.iohk.atala.mirror.db.UserCredentialDao
 import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.credentials.CredentialContent
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 
 import cats.implicits._
 import doobie.implicits._
-import io.iohk.atala.prism.credentials.json.implicits._
 import monix.execution.Scheduler.Implicits.global
 import io.iohk.atala.mirror.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
@@ -138,15 +138,11 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
 
     def signedCredential(did: DID) = {
       val credentialContent = CredentialContent(
-        credentialType = Nil,
-        issuerDid = Some(did),
-        issuanceKeyId = Some(keyId),
-        issuanceDate = None,
-        expiryDate = None,
-        credentialSubject = None
+        "issuerDid" -> did.value,
+        "issuanceKeyId" -> keyId
       )
 
-      JsonBasedCredential
+      Credential
         .fromCredentialContent(credentialContent)
         .sign(masterKey.privateKey)
     }
@@ -165,10 +161,11 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
 
     def parseProofRequest(credentialDocument: String, connectionId: String)(message: ReceivedMessage) = {
       for {
-        message <- Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
+        message <- Try(credential_models.AtalaMessage.parseFrom(message.message.toByteArray)).toOption
         getIssuerSentCredential = message.getIssuerSentCredential
         proofRequest <- message.message.proofRequest
-        credential = Credential(typeId = proofRequest.typeIds.head, credentialDocument = credentialDocument)
+        credential =
+          credential_models.Credential(typeId = proofRequest.typeIds.head, credentialDocument = credentialDocument)
       } yield sendMessageRequest(connectionId, credential.toByteString)
     }
 

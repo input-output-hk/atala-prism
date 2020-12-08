@@ -1,9 +1,10 @@
 package io.iohk.atala.mirror.models
 
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto._
-import io.iohk.atala.prism.credentials.CredentialContent
-import io.iohk.atala.prism.credentials.json.implicits._
+import io.circe.{parser, Decoder}
+
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.CredentialContent.CredentialContentException
+import io.iohk.atala.prism.credentials.content.CredentialContent.WrongTypeException
 
 case class RedlandIdCredential(
     id: String,
@@ -13,12 +14,10 @@ case class RedlandIdCredential(
 )
 
 object RedlandIdCredential {
-  implicit val redlandIdCredentialDecoder: Decoder[RedlandIdCredential] = deriveDecoder[RedlandIdCredential]
-  implicit val redlandIdCredentialEncoder: Encoder[RedlandIdCredential] = deriveEncoder[RedlandIdCredential]
-
-  implicit val redlandIdCredentialContentDecoder: Decoder[CredentialContent[RedlandIdCredential]] =
-    decodeCredentialContent[RedlandIdCredential]
-
-  implicit val redlandIdCredentialContentEncoder: Encoder[CredentialContent[RedlandIdCredential]] =
-    encodeCredentialContent[RedlandIdCredential]
+  def fromCredentialContent(
+      content: CredentialContent
+  )(implicit d: Decoder[RedlandIdCredential]): Either[CredentialContentException, RedlandIdCredential] =
+    content.credentialSubject.flatMap(subject =>
+      parser.decode[RedlandIdCredential](subject).left.map(e => WrongTypeException(e.getMessage))
+    )
 }

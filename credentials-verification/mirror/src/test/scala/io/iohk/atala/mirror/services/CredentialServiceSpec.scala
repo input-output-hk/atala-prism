@@ -8,15 +8,13 @@ import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.{ConnectorMessageId, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-import io.iohk.atala.prism.protos.credential_models.Credential
+import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
-import io.iohk.atala.prism.credentials._
+import io.iohk.atala.prism.credentials.{Credential, SlayerCredentialId, VerificationError}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
-import io.circe.Json
-import io.iohk.atala.prism.credentials.{CredentialsCryptoSDKImpl, JsonBasedUnsignedCredential}
 import io.iohk.atala.prism.crypto.{EC, ECTrait, SHA256Digest}
 import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
 import io.iohk.atala.prism.identity.DID
@@ -24,6 +22,8 @@ import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationInt
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 
 // sbt "project mirror" "testOnly *services.CredentialServiceSpec"
 class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
@@ -84,10 +84,12 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
       val receivedMessage =
         credentialMessage1.copy(message =
-          Credential(
-            typeId = "VerifiableCredential/RedlandIdCredential",
-            credentialDocument = credentialSignedWithWrongKey.canonicalForm
-          ).toByteString
+          credential_models
+            .Credential(
+              typeId = "VerifiableCredential/RedlandIdCredential",
+              credentialDocument = credentialSignedWithWrongKey.canonicalForm
+            )
+            .toByteString
         )
 
       val connectorClientStub = new ConnectorClientServiceStub()
@@ -192,10 +194,13 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
   "getIssuersDid" should {
     "parse signed credential" in new ConnectionServiceFixtures {
       val keyPair = EC.generateKeyPair()
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(
-        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(DID.buildPrismDID("id"), "", Json.obj()),
-        keyPair.privateKey
-      )(EC)
+      val signedCredential = Credential
+        .fromCredentialContent(
+          CredentialContent(
+            CredentialContent.JsonFields.IssuerDid.field -> DID.buildPrismDID("id").value
+          )
+        )
+        .sign(keyPair.privateKey)
 
       val credential = RawCredential(
         signedCredential.canonicalForm
@@ -206,10 +211,12 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
     "parse unsigned credential" in new ConnectionServiceFixtures {
       val credential = RawCredential(
-        Credential(
-          typeId = "typeId",
-          credentialDocument = """{"issuer": "did:prism:id"}"""
-        ).credentialDocument
+        credential_models
+          .Credential(
+            typeId = "typeId",
+            credentialDocument = """{"id": "did:prism:id"}"""
+          )
+          .credentialDocument
       )
 
       credentialService.getIssuersDid(credential) mustBe Some(DID.buildPrismDID("id"))

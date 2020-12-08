@@ -1,18 +1,18 @@
 package io.iohk.atala.prism.credentials.japi
 
-import io.iohk.atala.prism.credentials.{VerifiableCredential => SVerifiableCredential}
+import io.iohk.atala.prism.credentials.{Credential => SCredential}
 import io.iohk.atala.prism.crypto.japi.{ECFacade, ECPrivateKeyFacade, ECPublicKeyFacade}
-import io.iohk.atala.prism.crypto.{ECPrivateKey, ECPublicKey, ECSignature, japi}
+import io.iohk.atala.prism.crypto.{ECSignature, japi}
 
-private[japi] abstract class ECVerifiableCredentialFacade[C](
-    override val wrapped: SVerifiableCredential[C, ECSignature, ECPrivateKey, ECPublicKey],
-    contentWrapper: CredentialContentFacadeFactory[C],
+private[japi] abstract class ECVerifiableCredentialFacade(
+    override val wrapped: SCredential,
+    contentWrapper: CredentialContentFacadeFactory,
     signatureWrapper: CredentialSignatureFacadeFactory[ECSignature]
 ) extends CredentialWrapper(wrapped, contentWrapper)
     with VerifiableCredential {
   import io.iohk.atala.prism.util.ArrayOps._
 
-  protected def wrapSigned(signed: SVerifiableCredential[C, ECSignature, ECPrivateKey, ECPublicKey]): Credential
+  protected def wrapSigned(signed: SCredential): Credential
 
   override def getSignature: CredentialSignature = wrapped.signature.map(signatureWrapper.wrap).orNull
 
@@ -26,15 +26,11 @@ private[japi] abstract class ECVerifiableCredentialFacade[C](
 
   override def sign(privateKey: japi.ECPrivateKey, ec: japi.EC): Credential = {
     val scalaKey = ECPrivateKeyFacade.unwrap(privateKey)
-    def signBytes(bytes: IndexedSeq[Byte]): ECSignature = ECFacade.unwrap(ec).sign(bytes.toByteArray, scalaKey)
-    wrapSigned(wrapped.sign(signBytes))
+    wrapSigned(wrapped.sign(scalaKey)(ECFacade.unwrap(ec)))
   }
 
   override def verifySignature(publicKey: japi.ECPublicKey, ec: japi.EC): Boolean = {
     val scalaKey = ECPublicKeyFacade.unwrap(publicKey)
-    def verifyBytes(bytes: IndexedSeq[Byte], signature: ECSignature): Boolean = {
-      ECFacade.unwrap(ec).verify(bytes.toByteArray, scalaKey, signature)
-    }
-    wrapped.isValidSignature(verifyBytes)
+    wrapped.isValidSignature(scalaKey)(ECFacade.unwrap(ec))
   }
 }

@@ -1,26 +1,21 @@
 package io.iohk.atala.prism.credentials.japi
 
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.credentials.json.implicits._
-import io.iohk.atala.prism.credentials.{
-  japi,
-  CredentialContent => SCredentialContent,
-  VerifiableCredential => SVerifiableCredential
-}
-import io.iohk.atala.prism.crypto.{ECPrivateKey, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.credentials.japi
+import io.iohk.atala.prism.credentials.{Credential => SCredential}
 
-private[japi] class JsonBasedCredentialFacade[C](
-    override val wrapped: JsonBasedCredential[C],
-    contentWrapper: CredentialContentFacadeFactory[C]
-) extends ECVerifiableCredentialFacade[C](
+private[japi] class JsonBasedCredentialFacade(
+    override val wrapped: JsonBasedCredential,
+    contentWrapper: CredentialContentFacadeFactory
+) extends ECVerifiableCredentialFacade(
       wrapped,
       contentWrapper,
       ECCredentialSignature
     ) {
-  override def wrapSigned(signed: SVerifiableCredential[C, ECSignature, ECPrivateKey, ECPublicKey]): Credential = {
+  override def wrapSigned(signed: SCredential): Credential = {
     signed match {
-      case jsonSigned: JsonBasedCredential[C] =>
-        new JsonBasedCredentialFacade[C](jsonSigned, contentWrapper)
+      case jsonSigned: JsonBasedCredential =>
+        new JsonBasedCredentialFacade(jsonSigned, contentWrapper)
       case _ =>
         throw new IllegalArgumentException(s"Expected JsonBasedCredential, got ${signed.getClass.getName}")
     }
@@ -30,7 +25,7 @@ private[japi] class JsonBasedCredentialFacade[C](
 private[japi] object JsonBasedCredentialFacade {
 
   @throws(classOf[CredentialParsingException])
-  def parse(credential: String): JsonBasedCredentialFacade[SCredentialContent[_]] = {
+  def parse(credential: String): JsonBasedCredentialFacade = {
     val parsedCredential = JsonBasedCredential.fromString(credential) match {
       case Left(error) => throw new CredentialParsingException(error.message)
       case Right(credential) => credential

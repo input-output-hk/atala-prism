@@ -5,13 +5,13 @@ import java.util.Optional
 
 import io.iohk.atala.prism.credentials.japi.verification.error.VerificationException.ErrorCode
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.credentials.CredentialContent
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.crypto.japi.{CryptoProvider, EC, ECPrivateKey, ECPrivateKeyFacade}
 import io.iohk.atala.prism.crypto.{AndroidEC, ECTrait, ECPrivateKey => JvmECPrivateKey}
 import io.iohk.atala.prism.identity.DID
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
-import io.iohk.atala.prism.credentials.json.implicits._
 
 class JavaCredentialVerificationSpec extends AnyWordSpec {
   private val before = new TimestampInfo(Instant.now().minusSeconds(1), 1, 1)
@@ -23,14 +23,11 @@ class JavaCredentialVerificationSpec extends AnyWordSpec {
     implicit val jvmEc: ECTrait = AndroidEC
     val ec = EC.getInstance(CryptoProvider.Android)
 
-    val credentialContent: CredentialContent[Nothing] =
+    val credentialContent: CredentialContent =
       CredentialContent(
-        credentialType = Seq("VerifiableCredential", "RedlandIdCredential"),
-        issuerDid = Some(DID.buildPrismDID("123456678abcdefg")),
-        issuanceKeyId = Some("Issuance-0"),
-        issuanceDate = None,
-        expiryDate = None,
-        credentialSubject = None
+        "credentialType" -> CredentialContent.Values("VerifiableCredential", "RedlandIdCredential"),
+        "issuerDid" -> DID.buildPrismDID("123456678abcdefg").value,
+        "issuanceKeyId" -> "Issuance-0"
       )
 
     lazy val jsonBasedCredential =

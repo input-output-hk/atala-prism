@@ -8,13 +8,12 @@ import com.google.protobuf.ByteString
 import io.grpc.{ManagedChannel, Server}
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.atala.prism.credentials.VerificationError.{BatchWasRevoked, CredentialWasRevoked}
-import io.iohk.atala.prism.credentials.json.implicits._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.node.poc.toyflow.GenericCredentialsSDK
+import io.iohk.atala.prism.node.poc.{Wallet, GenericCredentialsSDK}
 import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{
@@ -134,23 +133,24 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       // 12. the verifier calls the wallet again to verify the credentials
       //     and the verification fails for all but the second credential of the second batch
 
-      val wallet = PrismWallet(nodeServiceStub)
+      val wallet = Wallet(nodeServiceStub)
       val console = ManagementConsole(nodeServiceStub)
       val connector = Connector(nodeServiceStub)
 
       // 1. issuer generates a DID with the wallet
-      val (issuerDID, createDIDOp) = wallet.generateDID()
+      val (didSuffix, createDIDOp) = wallet.generateDID()
 
       // 2- she uses the connector to publish it
-      val signedCreateDIDOp = wallet.signOperation(createDIDOp, "master0", issuerDID)
+      val signedCreateDIDOp = wallet.signOperation(createDIDOp, "master0", didSuffix)
       connector.registerDID(signedAtalaOperation = signedCreateDIDOp)
 
       // 3. she grabs credential data from the management console
       val consoleCredentials = console.getCredentials(4)
 
-      // 4- she builds 4 generic credentials
+      // 4. she builds 4 generic credentials
       val issuanceKeyId = "issuance0"
 
+      val issuerDID = DID.buildPrismDID(didSuffix)
       val credentialsToSign = consoleCredentials.map { credential =>
         GenericCredentialsSDK.buildGenericCredential(
           "university-degree",
@@ -162,7 +162,7 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
 
       // 5. she signs them with the wallet
       val signedCredentials = credentialsToSign.map { credentialToSign =>
-        wallet.signCredential(credentialToSign, issuanceKeyId, issuerDID)
+        wallet.signCredential(credentialToSign, issuanceKeyId, didSuffix)
       }
 
       // 6. she issues the credentials as two batches (with 2 credentials per batch)
@@ -173,8 +173,8 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       val issueBatch1Op = issueBatchOperation(issuerDID, root1)
       val issueBatch2Op = issueBatchOperation(issuerDID, root2)
 
-      val signedIssueBatch1Op = wallet.signOperation(issueBatch1Op, issuanceKeyId, issuerDID)
-      val signedIssueBatch2Op = wallet.signOperation(issueBatch2Op, issuanceKeyId, issuerDID)
+      val signedIssueBatch1Op = wallet.signOperation(issueBatch1Op, issuanceKeyId, didSuffix)
+      val signedIssueBatch2Op = wallet.signOperation(issueBatch2Op, issuanceKeyId, didSuffix)
       console.issueCredentialBatch(signedIssueBatch1Op)
       console.issueCredentialBatch(signedIssueBatch2Op)
 
@@ -190,7 +190,7 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       // 8. a verifier receives the credentials through the connector
       val List((c1, p1), (c2, p2), (c3, p3), (c4, p4)) = connector.receivedCredentialAndProof().map {
         case (c, p) =>
-          (JsonBasedCredential.unsafeFromString(c), p)
+          (Credential.unsafeFromString(c), p)
       }
 
       // 9. gives the signed credentials to the wallet to verify them and it succeeds
@@ -204,14 +204,14 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
       val issueBatch1OpHash = SHA256Digest.compute(issueBatch1Op.toByteArray)
       val batchId1 = CredentialBatchId.fromBatchData(issuerDID.suffix, root1)
       val revokeBatch1Op = revokeCredentialsOperation(issueBatch1OpHash, batchId1)
-      val signedRevokeBatch1Op = wallet.signOperation(revokeBatch1Op, issuanceKeyId, issuerDID)
+      val signedRevokeBatch1Op = wallet.signOperation(revokeBatch1Op, issuanceKeyId, didSuffix)
       console.revokeCredentialBatch(signedRevokeBatch1Op)
 
       // 11. the issuer decides to revoke the first credential from the second batch
       val issueBatch2OpHash = SHA256Digest.compute(issueBatch2Op.toByteArray)
       val batchId2 = CredentialBatchId.fromBatchData(issuerDID.suffix, root2)
       val revokeC3Op = revokeCredentialsOperation(issueBatch2OpHash, batchId2, Seq(c3.hash))
-      val signedRevokeC3Op = wallet.signOperation(revokeC3Op, issuanceKeyId, issuerDID)
+      val signedRevokeC3Op = wallet.signOperation(revokeC3Op, issuanceKeyId, didSuffix)
       console.revokeSpecificCredentials(signedRevokeC3Op)
 
       // ... later ...

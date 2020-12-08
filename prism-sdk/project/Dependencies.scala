@@ -12,6 +12,7 @@ object versions {
   val scalatest = "3.2.2"
   val scalatestplus = s"$scalatest.0"
   val scalaUri = "3.0.0"
+  val scalaParserCombinators = "1.1.2"
 }
 
 object Dependencies {
@@ -25,6 +26,8 @@ object Dependencies {
 
   val scalajsTime = Def.setting("org.scala-js" %%% "scalajs-java-time" % versions.scalajsTime)
   val scalaUri = Def.setting("io.lemonlabs" %%% "scala-uri" % versions.scalaUri)
+  val scalaParserCombinators =
+    Def.setting("org.scala-lang.modules" %%% "scala-parser-combinators" % versions.scalaParserCombinators)
 
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val silencerDependencies = Seq(silencer, silencerPlugin)

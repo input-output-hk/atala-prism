@@ -2,7 +2,6 @@ package io.iohk.atala.prism.credentials
 
 import cats.implicits._
 import cats.data._
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
 
@@ -108,7 +107,7 @@ object CredentialVerification {
       credentialRevocationTime: Option[TimestampInfo],
       merkleRoot: MerkleRoot,
       inclusionProof: MerkleInclusionProof,
-      signedCredential: JsonBasedCredential[C]
+      signedCredential: Credential
   )(implicit ec: ECTrait): ValidatedNel[VerificationError, Unit] = {
 
     // Scala's type system is evil, so we need this type alias to currify things for the

@@ -1,7 +1,9 @@
-package io.iohk.atala.prism.node.poc.toyflow
+package io.iohk.atala.prism.node.poc
 
 import com.github.ghik.silencer.silent
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 
 // This SDK would allow to build generic credentials and manipulate them
 // For this toy example, the credential model is a String that represents a JSON
@@ -17,18 +19,15 @@ object GenericCredentialsSDK {
       issuerDID: DID,
       issuanceKeyId: String,
       claims: String
-  ): String = {
+  ): CredentialContent = {
     issuerDIDUsed = issuerDID
     keyIdUsed = issuanceKeyId
-    s"""{
-       |  "credentialType" : "$credentialType",
-       |  "issuerDID" : "${issuerDID.value}",
-       |  "signingKey" : {
-       |     "type" : "DIDKey",
-       |     "key" : "$issuanceKeyId"
-       |  },
-       |  "claims" : $claims
-       |}""".stripMargin
+    CredentialContent(
+      CredentialContent.JsonFields.CredentialType.field -> credentialType,
+      CredentialContent.JsonFields.IssuerDid.field -> s"did:prism:${issuerDID.suffix}",
+      CredentialContent.JsonFields.IssuanceKeyId.field -> issuanceKeyId,
+      CredentialContent.JsonFields.CredentialSubject.field -> claims
+    )
   }
 
   @silent("never used")

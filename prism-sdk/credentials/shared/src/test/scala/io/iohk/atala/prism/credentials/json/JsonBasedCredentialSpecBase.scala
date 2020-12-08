@@ -1,77 +1,40 @@
 package io.iohk.atala.prism.credentials.json
 
-import io.circe.Decoder
-
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.EitherValues
+import org.scalatest.{EitherValues, Inside}
 
 import io.iohk.atala.prism.crypto.{ECTrait, ECSignature}
 
 import io.iohk.atala.prism.credentials.errors.CredentialParsingError
-import io.iohk.atala.prism.credentials.CredentialContent
+import io.iohk.atala.prism.credentials.content.CredentialContent
 
-import io.iohk.atala.prism.credentials.json.implicits._
-
-abstract class JsonBasedCredentialSpecBase(implicit ec: ECTrait) extends AnyWordSpec with Matchers with EitherValues {
+abstract class JsonBasedCredentialSpecBase(implicit ec: ECTrait)
+    extends AnyWordSpec
+    with Matchers
+    with EitherValues
+    with Inside {
 
   "JsonBasedCredential" should {
     "reconstruct the original credential form signed string" in new Fixtures {
-      JsonBasedCredential.fromString[CredentialContent[Nothing]](signedCredentialString) mustBe Right(
+      JsonBasedCredential.fromString(signedCredentialString) mustBe Right(
         JsonBasedCredential(
           contentBytes = emptyCredentialBytes,
           content = emptyCredentialContent,
           signature = Some(ECSignature("signature".getBytes))
-        )
-      )
-    }
-
-    "reconstruct the original credential form signed string to custom subject type" in new Fixtures {
-      JsonBasedCredential
-        .fromString[CredentialContent[CustomCredentialSubject]](signedCredentialString) mustBe Right(
-        JsonBasedCredential(
-          contentBytes = emptyCredentialBytes,
-          content = emptyCredentialContent,
-          signature = Some(ECSignature("signature".getBytes))
-        )
-      )
-    }
-
-    "reconstruct the original credential form unsigned string" in new Fixtures {
-      JsonBasedCredential.fromString[CredentialContent[Nothing]](emptyCredential) mustBe Right(
-        JsonBasedCredential(
-          contentBytes = emptyCredentialBytes,
-          content = emptyCredentialContent,
-          signature = None
         )
       )
     }
 
     "allow to parse custom credential subject" in new Fixtures {
       val credential =
-        JsonBasedCredential.unsafeFromString[CredentialContent[CustomCredentialSubject]](customCredential)
+        JsonBasedCredential.fromString(customCredential)
 
-      credential.content.credentialSubject mustBe
-        Some(
-          CustomCredentialSubject(id = 1)
-        )
-    }
-
-    "allow to use custom credential content" in new Fixtures {
-      case class CustomCredentialContent(view: String)
-      implicit val decodeCustomCredentialContent: Decoder[CustomCredentialContent] =
-        Decoder.forProduct1("view")(CustomCredentialContent.apply)
-      val credentialString = """{ "view": "html" }"""
-
-      JsonBasedCredential.unsafeFromString[CustomCredentialContent](credentialString) mustBe JsonBasedCredential(
-        contentBytes = credentialString.getBytes.toIndexedSeq,
-        content = CustomCredentialContent("html"),
-        signature = None
-      )
+      credential.map(_.content.getSubFields("credentialSubject")) mustBe Right(Right(Vector("id" -> 1)))
     }
 
     "fail to construct when bytes are not from a valid JSON" in new Fixtures {
-      JsonBasedCredential.fromString[CredentialContent[Nothing]]("invalid").left.value mustBe a[CredentialParsingError]
+      JsonBasedCredential.fromString("invalid").left.value mustBe a[CredentialParsingError]
     }
 
     "sign credential" in new Fixtures {
@@ -110,14 +73,11 @@ abstract class JsonBasedCredentialSpecBase(implicit ec: ECTrait) extends AnyWord
 
     lazy val emptyCredential = "{}"
     lazy val emptyCredentialBytes = emptyCredential.getBytes.toIndexedSeq // e30=
-    lazy val emptyCredentialContent = CredentialContent(Nil, None, None, None, None, None)
+    lazy val emptyCredentialContent = CredentialContent.empty
 
     lazy val signedCredentialString = "e30=.c2lnbmF0dXJl" // {}.signature
 
-    val customCredential = """{ "credentialSubject": { "id": 1 } }"""
-    case class CustomCredentialSubject(id: Int)
-
-    implicit val decodeCustomCredentialSubject: Decoder[CustomCredentialSubject] =
-      Decoder.forProduct1("id")(CustomCredentialSubject.apply)
+    // { "credentialSubject": { "id": 1 } }.signature
+    val customCredential = "eyAiY3JlZGVudGlhbFN1YmplY3QiOiB7ICJpZCI6IDEgfSB9.c2lnbmF0dXJl"
   }
 }

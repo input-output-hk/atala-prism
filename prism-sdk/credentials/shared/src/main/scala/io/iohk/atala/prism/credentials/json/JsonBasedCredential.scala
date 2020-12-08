@@ -1,66 +1,48 @@
 package io.iohk.atala.prism.credentials.json
 
-import io.circe.{Decoder, Encoder, Json, parser}
+import java.util.Base64
+
+import io.circe.parser
 import io.circe.syntax._
-import io.iohk.atala.prism.crypto._
+import io.iohk.atala.prism.crypto.{ECTrait, ECSignature, ECPrivateKey}
 import io.iohk.atala.prism.util.ArrayOps._
-import io.iohk.atala.prism.credentials.ECCredential
+import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.credentials.errors.CredentialParsingError
+import io.iohk.atala.prism.credentials.content.CredentialContent
 
-case class JsonBasedCredential[+C](
+import io.iohk.atala.prism.credentials.json.implicits._
+
+case class JsonBasedCredential(
     contentBytes: IndexedSeq[Byte],
-    content: C,
+    content: CredentialContent,
     signature: Option[ECSignature]
-) extends ECCredential[C] {
+) extends Credential {
 
-  def canonicalForm: String = {
-    signature match {
-      case Some(signature) =>
-        s"${encoder.encode(contentBytes.toByteArray).asString}$SEPARATOR${encoder.encode(signature.data).asString}"
-      case None => contentBytes.toByteArray.asString
-    }
-  }
-
-  def hash: SHA256Digest = SHA256Digest.compute(canonicalForm.getBytes)
-
-  override def sign(sign: IndexedSeq[Byte] => ECSignature): JsonBasedCredential[C] = {
+  override def sign(privateKey: ECPrivateKey)(implicit ec: ECTrait): JsonBasedCredential = {
     copy(
-      signature = Some(sign(contentBytes))
+      signature = Some(ec.sign(contentBytes.toByteArray, privateKey))
     )
   }
 
-  def sign(privateKey: ECPrivateKey)(implicit ec: ECTrait): JsonBasedCredential[C] = {
-    sign { contentBytes =>
-      ec.sign(contentBytes.toByteArray, privateKey)
-    }
-  }
-
-  override def isValidSignature(verify: (IndexedSeq[Byte], ECSignature) => Boolean): Boolean = {
+  override def canonicalForm: String = {
     signature match {
-      case Some(signature) => verify(contentBytes, signature)
-      case None => false
+      case Some(signature) =>
+        s"${JsonBasedCredential.base64Encoder.encode(contentBytes.toByteArray).asString}" +
+          s"${JsonBasedCredential.SEPARATOR}" +
+          s"${JsonBasedCredential.base64Encoder.encode(signature.data).asString}"
+      case None => contentBytes.toByteArray.asString
     }
-  }
-
-  def isValidSignature(publicKey: ECPublicKey)(implicit ec: ECTrait): Boolean = {
-    isValidSignature { (contentBytes, signature) =>
-      ec.verify(contentBytes.toByteArray, publicKey, signature)
-    }
-  }
-
-  lazy val json: Either[CredentialParsingError, Json] = parser.parse(contentBytes.toByteArray.asString) match {
-    case Left(error) =>
-      Left(CredentialParsingError(s"Failed to parse signed credential content: ${error.getMessage}"))
-    case Right(json) =>
-      Right(json)
   }
 
 }
 
 object JsonBasedCredential {
-  def fromCredentialContent[C: Encoder](
-      credentialContent: C
-  ): JsonBasedCredential[C] = {
+
+  val SEPARATOR = '.'
+  val base64Decoder = Base64.getUrlDecoder
+  val base64Encoder = Base64.getUrlEncoder
+
+  def fromCredentialContent(credentialContent: CredentialContent): JsonBasedCredential = {
     JsonBasedCredential(
       contentBytes = credentialContent.asJson.noSpaces.getBytes.toIndexedSeq,
       content = credentialContent,
@@ -68,22 +50,20 @@ object JsonBasedCredential {
     )
   }
 
-  def fromString[C](credential: String)(implicit
-      dc: Decoder[C]
-  ): Either[CredentialParsingError, JsonBasedCredential[C]] = {
-    parser.decode[C](credential) match {
+  def fromString(credential: String): Either[CredentialParsingError, JsonBasedCredential] = {
+    parser.decode[CredentialContent](credential) match {
       case Left(_) =>
         credential.split(SEPARATOR).toList match {
           case content :: signature :: Nil =>
-            parser.decode[C](decoder.decode(content).asString) match {
+            parser.decode[CredentialContent](base64Decoder.decode(content).asString) match {
               case Left(error) =>
                 Left(CredentialParsingError(s"Failed to parse signed credential content: ${error.getMessage}"))
               case Right(credentialContent) =>
                 Right(
                   JsonBasedCredential(
-                    contentBytes = decoder.decode(content).toIndexedSeq,
+                    contentBytes = base64Decoder.decode(content).toIndexedSeq,
                     content = credentialContent,
-                    signature = Some(ECSignature(decoder.decode(signature)))
+                    signature = Some(ECSignature(base64Decoder.decode(signature)))
                   )
                 )
             }
@@ -105,30 +85,6 @@ object JsonBasedCredential {
           )
         )
     }
-  }
-
-  /**
-    * @throws CredentialParsingError
-    */
-  def unsafeFromString[C](
-      credential: String
-  )(implicit dc: Decoder[C]): JsonBasedCredential[C] = {
-    fromString(credential) match {
-      case Left(error) => throw error
-      case Right(credential) => credential
-    }
-  }
-
-  object JsonFields {
-    sealed abstract class Field(val name: String)
-    case object CredentialType extends Field("type")
-    case object Issuer extends Field("issuer")
-    case object IssuerDid extends Field("id")
-    case object IssuerName extends Field("name")
-    case object IssuanceKeyId extends Field("keyId")
-    case object IssuanceDate extends Field("issuanceDate")
-    case object ExpiryDate extends Field("expiryDate")
-    case object CredentialSubject extends Field("credentialSubject")
   }
 
 }

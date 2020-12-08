@@ -1,20 +1,30 @@
 package io.iohk.atala.prism.credentials.japi
 
-import java.time.LocalDate
 import java.util.Optional
 
-import io.iohk.atala.prism.credentials.{CredentialContent => SCredentialContent}
+import io.iohk.atala.prism.credentials.content.{CredentialContent => SCredentialContent}
+import io.iohk.atala.prism.credentials.content.CredentialContent.{CredentialContentException, FieldNotFoundException}
 
-private[japi] class CredentialContentFacade(wrapped: SCredentialContent[_]) extends CredentialContent {
-  import io.iohk.atala.prism.util.ArrayOps._
+private[japi] class CredentialContentFacade(wrapped: SCredentialContent) extends CredentialContent {
 
-  def getCredentialType: Array[String] = wrapped.credentialType.toStringArray
-  def getIssuerDid: Optional[String] = Optional.ofNullable(wrapped.issuerDid.map(_.value).orNull)
-  def getIssuanceKeyId: Optional[String] = Optional.ofNullable(wrapped.issuanceKeyId.orNull)
-  def getIssuanceDate: Optional[LocalDate] = Optional.ofNullable(wrapped.issuanceDate.orNull)
-  def getExpiryDate: Optional[LocalDate] = Optional.ofNullable(wrapped.expiryDate.orNull)
+  @throws(classOf[CredentialContentException])
+  def getString(field: String): Optional[String] = toOptional(wrapped.getString(field))
+
+  @throws(classOf[CredentialContentException])
+  def getInt(field: String): Optional[Int] = toOptional(wrapped.getInt(field))
+
+  // TODO: Implement methods for `getSeq` and `getSubFields`.
+
+  @throws(classOf[CredentialContentException])
+  private def toOptional[T](value: Either[CredentialContentException, T]): Optional[T] = {
+    value match {
+      case Right(value) => Optional.of(value)
+      case Left(_: FieldNotFoundException) => Optional.empty
+      case Left(ex) => throw ex
+    }
+  }
 }
 
-object CredentialContentFacade extends CredentialContentFacadeFactory[SCredentialContent[_]] {
-  override def wrap(content: SCredentialContent[_]): CredentialContent = new CredentialContentFacade(content)
+object CredentialContentFacade extends CredentialContentFacadeFactory {
+  override def wrap(content: SCredentialContent): CredentialContent = new CredentialContentFacade(content)
 }

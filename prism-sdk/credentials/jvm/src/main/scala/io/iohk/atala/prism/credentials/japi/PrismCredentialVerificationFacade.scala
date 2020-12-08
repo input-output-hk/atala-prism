@@ -61,7 +61,7 @@ private[japi] object PrismCredentialVerificationFacade {
     implicit val ecTrait: ECTrait = ECFacade.unwrap(ec)
 
     val ecCredential = credential match {
-      case c: JsonBasedCredentialFacade[_] => c
+      case c: JsonBasedCredentialFacade => c
       case c => throw new IllegalArgumentException(s"Cannot verify credential of type ${c.getClass.getName}")
     }
 

@@ -14,7 +14,7 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
 import io.iohk.atala.mirror.models._
-import io.iohk.atala.prism.credentials.{CredentialContent, SlayerCredentialId, TimestampInfo}
+import io.iohk.atala.prism.credentials.{SlayerCredentialId, TimestampInfo}
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
 import io.iohk.atala.prism.mirror.payid._
@@ -22,17 +22,18 @@ import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.protos.credential_models.Credential
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
 import io.iohk.atala.prism.protos.credential_models
 import io.circe.syntax._
 import io.iohk.atala.mirror.config.{GrpcConfig, HttpConfig, MirrorConfig}
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.jose.implicits._
-import io.iohk.atala.mirror.models.RedlandIdCredential._
+import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
+import io.circe.generic.auto._
 
 trait MirrorFixtures {
 
@@ -167,7 +168,9 @@ trait MirrorFixtures {
     val rawMessage: ByteString = createRawMessage("{}")
 
     def createRawMessage(json: String): ByteString = {
-      Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = json).toByteString
+      credential_models
+        .Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = json)
+        .toByteString
     }
 
     lazy val redlandIdCredential1 = RedlandIdCredential(
@@ -185,23 +188,22 @@ trait MirrorFixtures {
     )
 
     lazy val jsonBasedCredential1 =
-      JsonBasedCredential
+      Credential
         .fromCredentialContent(makeCredentialContent(redlandIdCredential1))
         .sign(keys.privateKey)
 
     lazy val jsonBasedCredential2 =
-      JsonBasedCredential
+      Credential
         .fromCredentialContent(makeCredentialContent(redlandIdCredential2))
         .sign(keys.privateKey)
 
-    def makeCredentialContent(redlandIdCredential: RedlandIdCredential): CredentialContent[RedlandIdCredential] =
+    def makeCredentialContent(redlandIdCredential: RedlandIdCredential): CredentialContent =
       CredentialContent(
-        credentialType = Seq("VerifiableCredential", "RedlandIdCredential"),
-        Some(issuerDID), //cannot use named argument here, as it's the same as issuerDID
-        issuanceKeyId = Some(issuanceKeyId),
-        issuanceDate = None,
-        expiryDate = None,
-        credentialSubject = Some(redlandIdCredential)
+        CredentialContent.JsonFields.CredentialType.field -> CredentialContent
+          .Values("VerifiableCredential", "RedlandIdCredential"),
+        CredentialContent.JsonFields.IssuerDid.field -> issuerDID.value,
+        CredentialContent.JsonFields.IssuanceKeyId.field -> issuanceKeyId,
+        CredentialContent.JsonFields.CredentialSubject.field -> redlandIdCredential.asJson.noSpaces
       )
   }
 
@@ -273,20 +275,24 @@ trait MirrorFixtures {
       id = "id1",
       received = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
       connectionId = connectionId1.uuid.toString,
-      message = Credential(
-        typeId = "VerifiableCredential/RedlandIdCredential",
-        credentialDocument = jsonBasedCredential1.canonicalForm
-      ).toByteString
+      message = credential_models
+        .Credential(
+          typeId = "VerifiableCredential/RedlandIdCredential",
+          credentialDocument = jsonBasedCredential1.canonicalForm
+        )
+        .toByteString
     )
 
     lazy val credentialMessage2 = ReceivedMessage(
       id = "id2",
       received = LocalDateTime.of(2020, 6, 14, 0, 0).toEpochSecond(ZoneOffset.UTC),
       connectionId = connectionId2.uuid.toString,
-      message = Credential(
-        typeId = "VerifiableCredential/RedlandIdCredential",
-        credentialDocument = jsonBasedCredential2.canonicalForm
-      ).toByteString
+      message = credential_models
+        .Credential(
+          typeId = "VerifiableCredential/RedlandIdCredential",
+          credentialDocument = jsonBasedCredential2.canonicalForm
+        )
+        .toByteString
     )
 
     val cardanoAddress1 = "cardanoAddress1"

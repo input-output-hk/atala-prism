@@ -29,8 +29,8 @@ import io.iohk.atala.mirror.protos.mirror_models.MirrorError.ADDRESS_NOT_FOUND
 import io.iohk.atala.mirror.protos.mirror_models.{CredentialData, GetCredentialForAddressData}
 import cats.implicits._
 import doobie.ConnectionIO
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
-import io.iohk.atala.mirror.models.RedlandIdCredential.redlandIdCredentialContentDecoder
+import io.iohk.atala.prism.credentials.Credential
+import io.circe.generic.auto._
 
 class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientService) {
 
@@ -83,11 +83,11 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
         credentials
           .sortBy(_.messageReceivedDate.date)
           .flatMap(credential =>
-            JsonBasedCredential
-              .fromString(credential.rawCredential.rawCredential)(redlandIdCredentialContentDecoder)
+            Credential
+              .fromString(credential.rawCredential.rawCredential)
               .toOption
           )
-          .flatMap(_.content.credentialSubject)
+          .flatMap(credential => RedlandIdCredential.fromCredentialContent(credential.content).toOption)
           .lastOption
           .toOptionT[ConnectionIO]
 

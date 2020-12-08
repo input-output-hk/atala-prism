@@ -4,7 +4,6 @@ import cats.implicits._
 import cats.data._
 
 import io.iohk.atala.prism.crypto.ECTrait
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 
 object PrismCredentialVerification {
 
@@ -24,10 +23,10 @@ object PrismCredentialVerification {
     * @param credentialData the credential information extracted from the node
     * @param credential the credential to verify
     */
-  def verify[C](
+  def verify(
       keyData: KeyData,
       credentialData: CredentialData,
-      credential: JsonBasedCredential[C]
+      credential: Credential
   )(implicit ec: ECTrait): ValidatedNel[VerificationError, Unit] = {
 
     // Scala's type system is evil, so we need this type alias to currify things for the

@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.node.poc.NodeSDK
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
@@ -25,8 +25,8 @@ import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
-import io.iohk.atala.prism.credentials.json.implicits._
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.node.poc.{Wallet, GenericCredentialsSDK}
 
 class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
   implicit val ecTrait = EC
@@ -171,7 +171,7 @@ class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
 
       // ... later ...
       // 8. a verifier receives the credential through the connector
-      val verifyMe = JsonBasedCredential.unsafeFromString(connector.receivedCredential())
+      val verifyMe = Credential.unsafeFromString(connector.receivedCredential())
 
       // 9. he gives the signed credential to the wallet to verify it
       //    and the wallet queries the node and verify stuff and succeeds

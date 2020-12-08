@@ -3,7 +3,6 @@ package io.iohk.atala.prism.credentials
 import java.time.Instant
 
 import io.circe.Json
-import io.iohk.atala.prism.credentials.json.implicits._
 import io.iohk.atala.prism.credentials.VerificationError.{
   BatchWasRevoked,
   CredentialWasRevoked,
@@ -11,13 +10,14 @@ import io.iohk.atala.prism.credentials.VerificationError.{
   KeyWasNotValid,
   KeyWasRevoked
 }
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
 import io.iohk.atala.prism.identity.DID
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 
 abstract class CredentialVerificationSpecBase extends AnyWordSpec with ValidatedValues {
   implicit def ec: ECTrait
@@ -28,14 +28,10 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
     claims = Json.obj()
   )
 
-  private val unsignedCredentialV03 = JsonBasedCredential.fromCredentialContent(
-    CredentialContent[Nothing](
-      credentialType = Seq(),
-      issuerDid = Some(DID.buildPrismDID("123456678abcdefg")),
-      issuanceKeyId = Some("Issuance-0"),
-      issuanceDate = None,
-      expiryDate = None,
-      credentialSubject = None
+  private val unsignedCredentialV03 = Credential.fromCredentialContent(
+    CredentialContent(
+      "issuerDid" -> DID.buildPrismDID("123456678abcdefg").value,
+      "issuanceKeyId" -> "Issuance-0"
     )
   )
 
@@ -143,7 +139,7 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
   }
 
   "verifyCredential (0.3)" should {
-    def rootAndProofFor[C](cred: JsonBasedCredential[C]): (MerkleRoot, MerkleInclusionProof) = {
+    def rootAndProofFor(cred: Credential): (MerkleRoot, MerkleInclusionProof) = {
       CredentialBatches.batch(List(cred)) match {
         case (root, List(proof)) => (root, proof)
       }

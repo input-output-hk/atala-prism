@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.credentials.japi
 
-private[japi] trait CredentialContentFacadeFactory[-T] {
-  def wrap(credentialContent: T): CredentialContent
+import io.iohk.atala.prism.credentials.content.{CredentialContent => SCredentialContent}
+
+private[japi] trait CredentialContentFacadeFactory {
+  def wrap(credentialContent: SCredentialContent): CredentialContent
 }
