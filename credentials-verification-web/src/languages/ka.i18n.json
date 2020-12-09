@@ -256,6 +256,7 @@
       "downloadButton": "Download Credential",
       "dateCreated": "Date Created",
       "dateSigned": "Date Signed",
+      "notPublished": "Not Signed",
       "validity": "Validity: ",
       "valid": "Valid",
       "source": "Source:",

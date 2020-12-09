@@ -71,7 +71,11 @@ const getCredentialsIssuedColumns = (
     render: ({ publicationstoredat }) => (
       <CellRenderer
         title={tp('dateSigned')}
-        value={publicationstoredat ? dateFormat(publicationstoredat) : '-'}
+        value={
+          publicationstoredat
+            ? dateFormat(publicationstoredat)
+            : i18n.t('credentials.detail.notPublished')
+        }
       />
     )
   },

@@ -45,7 +45,11 @@ const CredentialDetail = ({ credential, credentialTypes }) => {
       <div className="credentialDataContainer">
         <div className="credentialData">
           <p>{t('credentials.detail.dateSigned')}</p>
-          <span>{publicationstoredat ? dateFormat(publicationstoredat) : '-'}</span>
+          <span>
+            {publicationstoredat
+              ? dateFormat(publicationstoredat)
+              : t('credentials.detail.notPublished')}
+          </span>
         </div>
         <div>
           <CustomButton
