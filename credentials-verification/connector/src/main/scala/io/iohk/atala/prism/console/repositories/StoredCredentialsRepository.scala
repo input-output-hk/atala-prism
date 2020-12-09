@@ -14,10 +14,10 @@ import scala.concurrent.ExecutionContext
 class StoredCredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getCredentialsFor(
       verifierId: Institution.Id,
-      contactId: Contact.Id
+      maybeContactId: Option[Contact.Id]
   ): FutureEither[Nothing, Seq[StoredSignedCredential]] = {
     StoredCredentialsDAO
-      .getStoredCredentialsFor(verifierId, contactId)
+      .getStoredCredentialsFor(verifierId, maybeContactId)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

@@ -25,13 +25,22 @@ object StoredCredentialsDAO {
 
   def getStoredCredentialsFor(
       verifierId: Institution.Id,
-      contactId: Contact.Id
+      maybeContactId: Option[Contact.Id]
   ): ConnectionIO[Seq[StoredSignedCredential]] = {
-    sql"""SELECT contact_id, encoded_signed_credential, stored_at
-         |FROM stored_credentials JOIN contacts USING (connection_id)
-         |WHERE created_by = $verifierId AND contact_id = $contactId
-         |ORDER BY stored_at
+    maybeContactId match {
+      case Some(contactId) =>
+        sql"""SELECT contact_id, encoded_signed_credential, stored_at
+             |FROM stored_credentials JOIN contacts USING (connection_id)
+             |WHERE created_by = $verifierId AND contact_id = $contactId
+             |ORDER BY stored_at
        """.stripMargin.query[StoredSignedCredential].to[Seq]
+      case None =>
+        sql"""SELECT contact_id, encoded_signed_credential, stored_at
+             |FROM stored_credentials JOIN contacts USING (connection_id)
+             |WHERE created_by = $verifierId
+             |ORDER BY stored_at
+       """.stripMargin.query[StoredSignedCredential].to[Seq]
+    }
   }
 
   def getLatestCredentialExternalId(

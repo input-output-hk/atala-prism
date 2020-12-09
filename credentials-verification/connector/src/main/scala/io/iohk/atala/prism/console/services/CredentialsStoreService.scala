@@ -89,12 +89,15 @@ class CredentialsStoreService(
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> institutionId)
 
       for {
-        contactId <- Future.fromTry(
-          Try { Contact.Id(UUID.fromString(request.individualId)) }
+        maybeContactId <- Future.fromTry(
+          Try {
+            if (request.individualId.isEmpty) None
+            else Some(Contact.Id(UUID.fromString(request.individualId)))
+          }
         )
         response <-
           storedCredentials
-            .getCredentialsFor(institutionId, contactId)
+            .getCredentialsFor(institutionId, maybeContactId)
             .wrapExceptions
             .successMap { credentials =>
               cstore_api.GetStoredCredentialsForResponse(

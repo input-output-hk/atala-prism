@@ -11,10 +11,10 @@ import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.DataPreparation
-import io.iohk.atala.prism.console.models.{Institution, CredentialExternalId}
+import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution}
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, StoredCredentialsDAO}
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
@@ -83,6 +83,35 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
        """.stripMargin.update.run.map(_ => ())
   }
 
+  def storeCredentialFor(
+      keyPair: ECKeyPair,
+      did: DID,
+      verifierId: ParticipantId,
+      connectionId: ConnectionId,
+      contactId: Contact.Id,
+      encodedSignedCredential: String
+  ): Unit = {
+    val connectionToken =
+      DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
+    ContactsDAO
+      .setConnectionAsAccepted(Institution.Id(verifierId.uuid), connectionToken, connectionId)
+      .transact(database)
+      .unsafeToFuture()
+      .futureValue
+
+    val mockCredentialExternalId = CredentialExternalId.random()
+    val storeRequest = cstore_api.StoreCredentialRequest(
+      connectionId.id.toString,
+      encodedSignedCredential,
+      mockCredentialExternalId.value
+    )
+    val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
+    usingApiAs(rpcStoreRequest) { serviceStub =>
+      serviceStub.storeCredential(storeRequest)
+    }
+    ()
+  }
+
   "storeCredential" should {
     "store credential in the database" in {
       lazy val keyPair = EC.generateKeyPair()
@@ -113,7 +142,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         serviceStub.storeCredential(request)
 
         val credential = StoredCredentialsDAO
-          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), contactId)
+          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -153,7 +182,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         serviceStub.storeCredential(request)
 
         val credential = StoredCredentialsDAO
-          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), contactId)
+          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -176,7 +205,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         serviceStub.storeCredential(request2)
 
         val credentials = StoredCredentialsDAO
-          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), contactId)
+          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -194,44 +223,69 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
   }
 
   "getCredentialsFor" should {
-    "get credentials for individual" in {
+    "get credentials for a specific contact" in {
       lazy val keyPair = EC.generateKeyPair()
       lazy val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId
+      val contactId1 =
+        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "").contactId
+      val contactId2 =
+        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 2", None, "").contactId
+      val encodedSignedCredential1 = "1a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential2 = "2a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val connectionId1 = ConnectionId(UUID.randomUUID())
+      val connectionId2 = ConnectionId(UUID.randomUUID())
 
-      val connectionToken =
-        DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
-      val mockConnectionId = ConnectionId(UUID.randomUUID())
-      ContactsDAO
-        .setConnectionAsAccepted(Institution.Id(verifierId.uuid), connectionToken, mockConnectionId)
-        .transact(database)
-        .unsafeToFuture()
-        .futureValue
+      storeCredentialFor(keyPair, did, verifierId, connectionId1, contactId1, encodedSignedCredential1)
+      storeCredentialFor(keyPair, did, verifierId, connectionId2, contactId2, encodedSignedCredential2)
 
-      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
-      val mockCredentialExternalId = CredentialExternalId.random()
-      val storeRequest = cstore_api.StoreCredentialRequest(
-        mockConnectionId.id.toString,
-        encodedSignedCredential,
-        mockCredentialExternalId.value
-      )
-      val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
-      usingApiAs(rpcStoreRequest) { serviceStub =>
-        serviceStub.storeCredential(storeRequest)
-      }
-
-      val getStoredRequest = cstore_api.GetStoredCredentialsForRequest(contactId.value.toString)
+      val getStoredRequest = cstore_api.GetStoredCredentialsForRequest(contactId1.value.toString)
       val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
       usingApiAs(rpcGetStoreRequest) { serviceStub =>
         val response = serviceStub.getStoredCredentialsFor(getStoredRequest)
 
         response.credentials.size mustBe 1
         val credential = response.credentials.head
-        credential.individualId mustBe contactId.value.toString
-        credential.encodedSignedCredential mustBe encodedSignedCredential
+        credential.individualId mustBe contactId1.value.toString
+        credential.encodedSignedCredential mustBe encodedSignedCredential1
+      }
+    }
+
+    "get credentials for all contacts" in {
+      lazy val keyPair = EC.generateKeyPair()
+      lazy val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      updateDid(verifierId, did).transact(database).unsafeRunSync()
+
+      val contactId1 =
+        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "").contactId
+      val contactId2 =
+        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 2", None, "").contactId
+      val encodedSignedCredential1 = "1a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential2 = "2a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val connectionId1 = ConnectionId(UUID.randomUUID())
+      val connectionId2 = ConnectionId(UUID.randomUUID())
+
+      storeCredentialFor(keyPair, did, verifierId, connectionId1, contactId1, encodedSignedCredential1)
+      storeCredentialFor(keyPair, did, verifierId, connectionId2, contactId2, encodedSignedCredential2)
+
+      val getStoredRequest = cstore_api.GetStoredCredentialsForRequest()
+      val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
+      usingApiAs(rpcGetStoreRequest) { serviceStub =>
+        val response = serviceStub.getStoredCredentialsFor(getStoredRequest)
+
+        response.credentials.size mustBe 2
+
+        val credentials = response.credentials.map { cred =>
+          (cred.individualId, cred.encodedSignedCredential)
+        }
+
+        credentials must contain theSameElementsAs List(
+          (contactId1.value.toString, encodedSignedCredential1),
+          (contactId2.value.toString, encodedSignedCredential2)
+        )
       }
     }
   }
