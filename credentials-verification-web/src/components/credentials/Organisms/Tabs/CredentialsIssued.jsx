@@ -54,7 +54,7 @@ const CredentialsIssued = ({
   const renderEmptyComponent = !credentials.length || showEmpty;
 
   const renderContent = () => {
-    if (initialLoading) return <SimpleLoading size="md" />;
+    if (initialLoading && !loading) return <SimpleLoading size="md" />;
     if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
     return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
   };

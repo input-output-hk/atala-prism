@@ -82,7 +82,8 @@ const ContactContainer = ({ api }) => {
   }, []);
 
   useEffect(() => {
-    if (contact) getReceivedCredentials();
+    if (contact?.connectionid) getReceivedCredentials();
+    else setLoadingByKey('receivedCredentials', false);
   }, [contact]);
 
   return (

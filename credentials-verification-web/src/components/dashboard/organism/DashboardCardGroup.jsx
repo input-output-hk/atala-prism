@@ -30,14 +30,17 @@ const DashboardCardGroup = ({ loading, data }) => {
 };
 
 DashboardCardGroup.defaultProps = {
-  loading: false
+  loading: false,
+  data: {
+    numberofgroups: 0
+  }
 };
 
 DashboardCardGroup.propTypes = {
   loading: PropTypes.bool,
   data: PropTypes.shape({
     numberofgroups: PropTypes.number
-  }).isRequired
+  })
 };
 
 export default DashboardCardGroup;

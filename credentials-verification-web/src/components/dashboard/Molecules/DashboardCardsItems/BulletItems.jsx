@@ -18,7 +18,7 @@ const BulletItems = ({ bulletClass, title, value, loading }) => (
 BulletItems.defaultProps = {
   loading: false,
   bulletClass: '',
-  value: '-'
+  value: 0
 };
 
 BulletItems.propTypes = {

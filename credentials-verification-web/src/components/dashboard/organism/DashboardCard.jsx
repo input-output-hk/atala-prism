@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { isNumber } from 'lodash';
 import { Divider } from 'antd';
 import PropTypes from 'prop-types';
 import imgCard from '../../../images/contactIcon.svg';
@@ -9,7 +10,6 @@ import { useTranslationWithPrefix } from '../../../hooks/useTranslationWithPrefi
 const DashboardCard = ({ loading, data }) => {
   const tp = useTranslationWithPrefix('dashboard.analytics');
 
-  // TODO: remove and use backend data when it's well calculated
   const contactsPendingConnection = data.numberofcontacts - data.numberofcontactsconnected;
 
   return (
@@ -46,7 +46,12 @@ const DashboardCard = ({ loading, data }) => {
 };
 
 DashboardCard.defaultProps = {
-  loading: false
+  loading: false,
+  data: {
+    numberofcontactspendingconnection: 0,
+    numberofcontactsconnected: 0,
+    numberofcontacts: 0
+  }
 };
 
 DashboardCard.propTypes = {
@@ -55,7 +60,7 @@ DashboardCard.propTypes = {
     numberofcontactspendingconnection: PropTypes.number,
     numberofcontactsconnected: PropTypes.number,
     numberofcontacts: PropTypes.number
-  }).isRequired
+  })
 };
 
 export default DashboardCard;

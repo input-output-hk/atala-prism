@@ -17,9 +17,9 @@ import { longDateFormatter } from '../../helpers/formatters';
 const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
-  const [contactsStats, setContactsStats] = useState({});
-  const [groupsStats, setGroupsStats] = useState({});
-  const [credentialsStats, setCredentialsStats] = useState({});
+  const [contactsStats, setContactsStats] = useState();
+  const [groupsStats, setGroupsStats] = useState();
+  const [credentialsStats, setCredentialsStats] = useState();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

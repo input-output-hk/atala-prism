@@ -19,7 +19,7 @@ const IconItems = ({ icon, title, value, loading }) => (
 
 IconItems.defaultProps = {
   loading: false,
-  value: '-'
+  value: 0
 };
 
 IconItems.propTypes = {

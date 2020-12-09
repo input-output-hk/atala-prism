@@ -47,7 +47,12 @@ const DashboardCardCredential = ({ loading, data }) => {
 };
 
 DashboardCardCredential.defaultProps = {
-  loading: false
+  loading: false,
+  data: {
+    numberofcredentialsindraft: 0,
+    numberofcredentialspublished: 0,
+    numberofcredentialsreceived: 0
+  }
 };
 
 DashboardCardCredential.propTypes = {
@@ -56,7 +61,7 @@ DashboardCardCredential.propTypes = {
     numberofcredentialsindraft: PropTypes.number,
     numberofcredentialspublished: PropTypes.number,
     numberofcredentialsreceived: PropTypes.number
-  }).isRequired
+  })
 };
 
 export default DashboardCardCredential;

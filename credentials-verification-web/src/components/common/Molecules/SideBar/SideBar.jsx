@@ -31,8 +31,6 @@ const SideMenu = ({ location: { pathname } }) => {
 
   const iconsByRole = icons.filter(({ restrictedTo }) => restrictedTo.includes(role));
 
-  const bottomIcons = [{ icon: supportIcon, name: 'support' }];
-
   // Tried to move it to a new component but it
   // lost the styles therefore making it hideous
   const getMenuItem = ({ icon, name }) => {
@@ -63,9 +61,6 @@ const SideMenu = ({ location: { pathname } }) => {
       <ReactTooltip place="right" />
       <Menu mode="inline" defaultSelectedKeys={[pathname]}>
         {iconsByRole.map(item => getMenuItem(item))}
-      </Menu>
-      <Menu mode="inline" defaultSelectedKeys={[pathname]}>
-        {bottomIcons.map(item => getMenuItem(item))}
       </Menu>
     </Sider>
   );

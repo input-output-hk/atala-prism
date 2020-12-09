@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Papa from 'papaparse';
+import chardet from 'jschardet';
 import { useTranslation } from 'react-i18next';
 import { Icon, Upload, message, Button } from 'antd';
 import GenericStep from './GenericStep';
 import { downloadTemplateCsv } from '../../../../helpers/fileHelpers';
-import { COMPLETE_SPREADSHEET_STEP } from '../../../../helpers/constants';
+import {
+  COMPLETE_SPREADSHEET_STEP,
+  ENCODING_UTF,
+  ENCODING_ISO
+} from '../../../../helpers/constants';
 import './_style.scss';
 
 const CompleteSpreadSheetStep = ({
@@ -32,8 +37,25 @@ const CompleteSpreadSheetStep = ({
 
   const handleRemoveFile = () => setSelectedFileList(null);
 
-  const parseFile = ({ onSuccess, onError, file }) => {
+  function handleFileRequest(params) {
+    const reader = new FileReader();
+    const blob = new Blob([params.file], { type: 'text/csv' });
+
+    reader.readAsText(blob);
+    reader.onload = e => {
+      const detection = chardet.detect(e.target.result);
+      // If jschardet determine 'pure ascii' means that it contains special ascii characters such as "�", this aren't expected as a result of parsing
+      // This is because with UTF-8 doesn't parse file correctly, after this retry with ISO format
+      // ENCODING_ISO corresponds to default excel format (if before file saving it doesn't specified UTF-8)
+      // ENCODING_UTF corresponds to default web (google sheet for example) format
+      const encoding = detection.encoding.includes('ascii') ? ENCODING_ISO : ENCODING_UTF;
+      parseFile({ ...params, encoding });
+    };
+  }
+
+  const parseFile = ({ onSuccess, onError, file, encoding = '' }) => {
     Papa.parse(file, {
+      encoding,
       skipEmptyLines: true,
       complete: result => {
         setFileData({
@@ -61,7 +83,7 @@ const CompleteSpreadSheetStep = ({
     fileList: selectedFileList,
     onRemove: handleRemoveFile,
     onChange: handleChange,
-    customRequest: parseFile
+    customRequest: handleFileRequest
   };
 
   const props = {
