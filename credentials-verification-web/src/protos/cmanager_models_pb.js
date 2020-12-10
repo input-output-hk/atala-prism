@@ -15,6 +15,8 @@ var global = Function('return this')();
 
 var console_models_pb = require('./console_models_pb.js');
 goog.object.extend(proto, console_models_pb);
+var common_models_pb = require('./common_models_pb.js');
+goog.object.extend(proto, common_models_pb);
 goog.exportSymbol('proto.io.iohk.atala.prism.protos.CManagerGenericCredential', null, global);
 goog.exportSymbol('proto.io.iohk.atala.prism.protos.Group', null, global);
 /**
@@ -324,7 +326,8 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.toObject = function(i
     publicationstoredat: jspb.Message.getFieldWithDefault(msg, 11, 0),
     externalid: jspb.Message.getFieldWithDefault(msg, 12, ""),
     connectionstatus: jspb.Message.getFieldWithDefault(msg, 13, 0),
-    sharedat: jspb.Message.getFieldWithDefault(msg, 14, 0)
+    sharedat: jspb.Message.getFieldWithDefault(msg, 14, 0),
+    issuanceproof: (f = msg.getIssuanceproof()) && common_models_pb.TransactionInfo.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -416,6 +419,11 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.deserializeBinaryFrom
     case 14:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setSharedat(value);
+      break;
+    case 15:
+      var value = new common_models_pb.TransactionInfo;
+      reader.readMessage(value,common_models_pb.TransactionInfo.deserializeBinaryFromReader);
+      msg.setIssuanceproof(value);
       break;
     default:
       reader.skipField();
@@ -542,6 +550,14 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.serializeBinaryToWrit
     writer.writeUint64(
       14,
       f
+    );
+  }
+  f = message.getIssuanceproof();
+  if (f != null) {
+    writer.writeMessage(
+      15,
+      f,
+      common_models_pb.TransactionInfo.serializeBinaryToWriter
     );
   }
 };
@@ -820,6 +836,43 @@ proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.getSharedat
  */
 proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.setSharedat = function(value) {
   return jspb.Message.setProto3IntField(this, 14, value);
+};
+
+
+/**
+ * optional TransactionInfo issuanceProof = 15;
+ * @return {?proto.io.iohk.atala.prism.protos.TransactionInfo}
+ */
+proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.getIssuanceproof = function() {
+  return /** @type{?proto.io.iohk.atala.prism.protos.TransactionInfo} */ (
+    jspb.Message.getWrapperField(this, common_models_pb.TransactionInfo, 15));
+};
+
+
+/**
+ * @param {?proto.io.iohk.atala.prism.protos.TransactionInfo|undefined} value
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential} returns this
+*/
+proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.setIssuanceproof = function(value) {
+  return jspb.Message.setWrapperField(this, 15, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.atala.prism.protos.CManagerGenericCredential} returns this
+ */
+proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.clearIssuanceproof = function() {
+  return this.setIssuanceproof(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.io.iohk.atala.prism.protos.CManagerGenericCredential.prototype.hasIssuanceproof = function() {
+  return jspb.Message.getField(this, 15) != null;
 };
 
 

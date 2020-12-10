@@ -31,6 +31,9 @@ service CredentialsService {
     // NOTE: This doesn't send the actual credential to the related contact, but is supposed to be
     //       invoked everytime such credential is sent.
     rpc ShareCredential (ShareCredentialRequest) returns (ShareCredentialResponse) {}
+
+    // Retrieves node information associated to a credential
+    rpc GetBlockchainData (GetBlockchainDataRequest) returns (GetBlockchainDataResponse) {}
 }
 
 // The Groups API
@@ -144,4 +147,14 @@ message GetContactCredentialsRequest {
 // Response with the contact credentials
 message GetContactCredentialsResponse {
     repeated CManagerGenericCredential genericCredentials = 1; // the credentials found
+}
+
+// Request to get blokchain related information for a credential
+message GetBlockchainDataRequest {
+    string encodedSignedCredential = 1; // encoded credential for which we want to retreive information
+}
+
+// Response with the information found in the blockchain
+message GetBlockchainDataResponse {
+    TransactionInfo issuanceProof = 1; // transaction information associated to the credential issuance event
 }

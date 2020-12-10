@@ -5,6 +5,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.console.models._
 import io.iohk.atala.prism.console.repositories.daos.CredentialsDAO
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -64,6 +65,16 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def markAsShared(issuerId: Institution.Id, credentialId: GenericCredential.Id): FutureEither[Nothing, Unit] = {
     CredentialsDAO
       .markAsShared(issuerId, credentialId)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  // TODO: Should be removed when we get a node RPC to get this data
+  def getTransactionInfo(encodedSignedCredential: String): FutureEither[Nothing, Option[TransactionInfo]] = {
+    CredentialsDAO
+      .getTransactionInfo(encodedSignedCredential)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

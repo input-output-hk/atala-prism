@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.console.models
 import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
 import io.iohk.atala.prism.console.models.GenericCredential
+import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.{cmanager_models, common_models, console_models}
 import io.scalaland.chimney.Transformer
 
@@ -48,6 +49,7 @@ object ProtoCodecs {
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withPublicationStoredAt(data.storedAt.toEpochMilli)
+        .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
     }
   }
 

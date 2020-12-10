@@ -6,6 +6,7 @@ option java_package = "io.iohk.atala.prism.protos";
 package io.iohk.atala.prism.protos;
 
 import "console_models.proto";
+import "common_models.proto";
 
 // Represents a group, where contacts can be assigned to.
 //
@@ -52,4 +53,5 @@ message CManagerGenericCredential {
     string externalId = 12; // the id provided by the institution at contact creation time
     ContactConnectionStatus connectionStatus = 13; // used to know if contact has accepted the connection
     uint64 sharedAt = 14; // the last time when the credential was sent to the related contact
+    TransactionInfo issuanceProof = 15; // underlying transaction information related to the credential issuance
 }

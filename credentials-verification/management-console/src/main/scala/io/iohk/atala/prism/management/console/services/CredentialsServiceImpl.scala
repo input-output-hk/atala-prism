@@ -225,4 +225,8 @@ class CredentialsServiceImpl(
       f(participantId)
     }
   }
+
+  /** Retrieves node information associated to a credential
+    */
+  override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = ???
 }
