@@ -638,6 +638,7 @@ workflows:
             - build-credentials-verification-webextension
 
       - rebuild-prism-env:
+          name: rebuild-intdemo-and-geud
           intdemo-enabled: true
           geud-enabled: true
           filters:
@@ -647,6 +648,7 @@ workflows:
           requires:
             - deploy-ecr-images
       - rebuild-prism-env:
+          name: rebuild-intdemo-only
           intdemo-enabled: true
           geud-enabled: false
           filters:
@@ -656,6 +658,7 @@ workflows:
           requires:
             - deploy-ecr-images
       - rebuild-prism-env:
+          name: rebuild-geud-only
           intdemo-enabled: false
           geud-enabled: true
           filters:
@@ -669,3 +672,5 @@ workflows:
             branches:
               only:
                 - develop
+          requires:
+            - rebuild-intdemo-and-geud
