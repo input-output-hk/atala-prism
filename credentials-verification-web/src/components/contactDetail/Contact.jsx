@@ -50,13 +50,17 @@ const Contact = ({
               <p>{t('contacts.table.columns.externalid')}</p>
               <span>{loading.contact ? <SimpleLoading size="xs" /> : externalid}</span>
             </div>
+            <CustomButton
+              buttonText={t('groups.table.buttons.edit')}
+              buttonProps={{ className: 'theme-link buttonEdit' }}
+            />
           </div>
-          <p className="subtitle">{tp('detailSection.credentialSubtitle')}</p>
+          <p className="subtitleCredentials">{tp('detailSection.groupsSubtitle')}</p>
           <DetailBox groups={groups} loading={loading.groups} />
         </div>
         <Tabs defaultActiveKey={ISSUED} className="CredentialInfo">
           <TabPane key={ISSUED} tab={`${tp('credIssued')} (${issuedCredentials.length})`}>
-            <p>{tp('detailSection.groupsSubtitle')}</p>
+            <p>{tp('detailSection.credentialsSubtitle')}</p>
             <div className="CredentialsContainer">
               {loading.issuedCredentials ? (
                 <SimpleLoading size="xs" />
@@ -68,7 +72,7 @@ const Contact = ({
             </div>
           </TabPane>
           <TabPane key={RECEIVED} tab={`${tp('credReceived')} (${receivedCredentials.length})`}>
-            <p>{tp('detailSection.groupsSubtitle')}</p>
+            <p>{tp('detailSection.credentialsSubtitle')}</p>
             <div className="CredentialsContainer">
               {loading.receivedCredentials ? (
                 <SimpleLoading size="xs" />

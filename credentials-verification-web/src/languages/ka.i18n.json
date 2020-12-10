@@ -120,8 +120,8 @@
       "detailSection": {
         "title": "Contact Detail",
         "subtitle": "General Information",
-        "groupsSubtitle": "View the credentials that you have sent to the contact.",
-        "credentialSubtitle": "These are all the groups this contact is in."
+        "groupsSubtitle": "Groups where this contact belongs",
+        "credentialsSubtitle": "View the credentials that you have sent to the contact"
       }
     }
   },

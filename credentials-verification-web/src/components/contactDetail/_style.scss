@@ -35,6 +35,13 @@
     @include primary-text($body, $dark-grey);
     margin: 20px 0 10px 0;
   }
+  .subtitleCredentials {
+    margin: 20px 0 0 0 !important;
+    @include primary-text($h3, $secondary-color);
+  }
+  .buttonEdit {
+    margin-left: auto;
+  }
   .detailSection {
     display: flex;
     padding: 0 3em;
@@ -45,17 +52,27 @@
     }
     .ContactInfo {
       width: 45%;
+      padding-top: 14px;
     }
     .CredentialInfo {
-      padding: 2em 3em;
-      margin: 2em 0;
+      .ant-tabs-ink-bar {
+        background-color: $primary-color;
+        height: 3px;
+      }
+      .ant-tabs-tab {
+        @include primary-text($h3, #728099);
+      }
+      .ant-tabs-nav .ant-tabs-tab-active {
+        @include primary-text($h3, #303034);
+      }
+      padding: 0 3em 2em 3em;
       width: 55%;
       h3 {
         @include primary-text($h3, $black);
       }
       p {
         @include primary-text($body, $dark-grey);
-        margin: 20px 0;
+        margin: 0 0 20px 0;
       }
       .credentialInfoContainer {
         display: flex;
