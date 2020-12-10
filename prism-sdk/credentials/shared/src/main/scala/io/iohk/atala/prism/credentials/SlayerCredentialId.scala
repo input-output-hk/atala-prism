@@ -34,7 +34,7 @@ object SlayerCredentialId {
     new SlayerCredentialId(string)
   }
 
-  def compute(credential: SignedCredential, did: DID): SlayerCredentialId =
-    compute(CredentialsCryptoSDKImpl.hash(credential), did)
+  def compute(credential: Credential, did: DID): SlayerCredentialId =
+    compute(credential.hash, did)
 
 }

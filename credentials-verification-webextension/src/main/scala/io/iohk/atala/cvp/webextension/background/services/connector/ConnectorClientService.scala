@@ -21,7 +21,6 @@ import scalapb.grpc.Channels
 
 import scala.concurrent.Future
 import scala.scalajs.js.JSConverters._
-import scala.util.{Failure, Success}
 
 class ConnectorClientService(url: String) {
   private val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
@@ -44,25 +43,20 @@ class ConnectorClientService(url: String) {
       credentialId: String, //Credential Manager Id
       credentialClaims: String
   ): Future[PublishCredentialResponse] = {
-    val inputTry = for {
-      (issuanceOperation, signedCredential, signedCredentialHash) <-
-        issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims).toTry
-      operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
-      atalaOperationSHA256 = SHA256Digest.compute(issuanceOperation.toByteArray)
-      slayerId = SlayerCredentialId.compute(signedCredentialHash, did)
-      request = PublishCredentialRequest()
-        .withCmanagerCredentialId(credentialId)
-        .withEncodedSignedCredential(signedCredential)
-        .withIssueCredentialOperation(operation)
-        .withOperationHash(ByteString.copyFrom(atalaOperationSHA256.value.toArray))
-        .withNodeCredentialId(slayerId.string)
-      metadata = metadataForRequest(ecKeyPair, did, request)
-    } yield (request, metadata)
+    val (issuanceOperation, signedCredential, signedCredentialHash) =
+      issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims)
+    val operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
+    val atalaOperationSHA256 = SHA256Digest.compute(issuanceOperation.toByteArray)
+    val slayerId = SlayerCredentialId.compute(signedCredentialHash, did)
+    val request = PublishCredentialRequest()
+      .withCmanagerCredentialId(credentialId)
+      .withEncodedSignedCredential(signedCredential)
+      .withIssueCredentialOperation(operation)
+      .withOperationHash(ByteString.copyFrom(atalaOperationSHA256.value.toArray))
+      .withNodeCredentialId(slayerId.string)
+    val metadata = metadataForRequest(ecKeyPair, did, request)
 
-    inputTry match {
-      case Success((request, metadata)) => credentialsServiceApi.publishCredential(request, metadata.toJSDictionary)
-      case Failure(error) => Future.failed(error)
-    }
+    credentialsServiceApi.publishCredential(request, metadata.toJSDictionary)
   }
 
   def getMessageStream(

@@ -7,7 +7,7 @@ import io.iohk.atala.prism.credentials.{
   CredentialBatchId,
   BatchData,
   KeyData,
-  CredentialVerification,
+  PrismCredentialVerification,
   VerificationError
 }
 import io.iohk.atala.prism.credentials.content.CredentialContent
@@ -210,8 +210,8 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       credentialRevocationTimeResponse.revocationDate
         .map(ProtoCodecs.fromTimestampInfoProto)
 
-    CredentialVerification
-      .verifyCredential(
+    PrismCredentialVerification
+      .verify(
         keyData,
         batchData,
         credentialRevocationTime,

@@ -19,7 +19,9 @@ libraryDependencies += "io.iohk" %% "prism-credentials" % "@VERSION@" // needed 
 Import the PRISM modules:
 
 ```scala mdoc
-import io.iohk.atala.prism.credentials._
+import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.identity._
 ```
@@ -53,39 +55,38 @@ Then, we need to get some details before being able to sign a credential, the [D
 
 
 ## Generate a credential
-Then, generating a credential requires defining the claims payload, which is a JSON, let's define a simple one:
+Then, generating a credential requires defining credential content (with optional credentialSubject), 
+let's define a simple one:
 
 ```scala mdoc
-  val credentialClaimsStr = """
-                              |{
-                              |  "name": "Jorge Lopez Portillo",
-                              |  "degree": "Bachelor's in Self-Sovereign Identity Development"
-                              |}""".stripMargin
 
-  val credentialClaimsJson = io.circe.parser
-    .parse(credentialClaimsStr)
-    .getOrElse(throw new RuntimeException("Invalid json"))
+  lazy val credentialContent: CredentialContent =
+      CredentialContent(
+        CredentialContent.JsonFields.CredentialType.field -> CredentialContent
+          .Values("VerifiableCredential", "RedlandIdCredential"),
+        CredentialContent.JsonFields.IssuerDid.field -> DID.buildPrismDID("123456678abcdefg").value,
+        CredentialContent.JsonFields.IssuanceKeyId.field -> "Issuance-0",
+        CredentialContent.JsonFields.CredentialSubject.field -> CredentialContent.Fields(
+          "name" -> "Jorge Lopez Portillo",
+          "degree" -> "Bachelor's in Self-Sovereign Identity Development"
+        )
+      )
 ```
 
-The claims are what you are certifying in the credential, in this case, you certify that the given person holds the given bachelor's degree.
+You can add additional claims as credential subject.
 
-As you see, the claims do not include information about the issuer, to do so, we can proceed to create an `UnsignedCredential` object, where we take the claims, the issuer DID, and the key that needs to sign such credential: 
+We're ready to create credential now:
 
 
 ```scala mdoc
-  val unsignedCredential = UnsignedCredentialBuilder[JsonBasedUnsignedCredential]
-    .buildFrom(
-      issuerDID = did,
-      issuanceKeyId = firstPublicKey.id,
-      claims = credentialClaimsJson
-    )
+  lazy val credential: Credential = Credential.fromCredentialContent(credentialContent)
 ```
 
 
 At last, we can proceed to sign the actual credential:
 
 ```scala mdoc
-  val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, masterKeyPair.privateKey)(EC)
+  val signedCredential = credential.sign(masterKeyPair.privateKey)(EC)
 ```
 
 That's it, until know you were able to create and sign a credential, on the next steps, you will learn how to get it published to the Cardano network.

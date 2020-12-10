@@ -1,12 +1,9 @@
 package io.iohk.atala.cvp.webextension.common
 
 import com.google.protobuf.ByteString
-import io.circe.ParsingFailure
-import io.iohk.atala.prism.credentials.{
-  CredentialsCryptoSDKImpl,
-  JsonBasedUnsignedCredential,
-  UnsignedCredentialBuilder
-}
+import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_models._
@@ -43,25 +40,25 @@ object ECKeyOperation {
       signingKeyId: String,
       signingKey: ECKeyPair,
       claimsString: String
-  ): Either[ParsingFailure, (AtalaOperation, String, SHA256Digest)] = {
-    io.circe.parser.parse(claimsString) map { claims =>
-      val unsignedCreedential =
-        UnsignedCredentialBuilder[JsonBasedUnsignedCredential].buildFrom(
-          issuerDID = issuerDID,
-          issuanceKeyId = signingKeyId,
-          claims = claims
-        )
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCreedential, signingKey.privateKey)
-      val signedCredentialHash = CredentialsCryptoSDKImpl.hash(signedCredential)
-      val contentHash = ByteString.copyFrom(signedCredentialHash.value.toArray)
-      val credentialData = CredentialData(issuer = issuerDID.suffix.value, contentHash = contentHash)
-      val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
-      (
-        AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation)),
-        signedCredential.canonicalForm,
-        signedCredentialHash
+  ): (AtalaOperation, String, SHA256Digest) = {
+    val credentialContent: CredentialContent =
+      CredentialContent(
+        CredentialContent.JsonFields.IssuerDid.field -> issuerDID.value,
+        CredentialContent.JsonFields.IssuanceKeyId.field -> signingKeyId,
+        CredentialContent.JsonFields.CredentialSubject.field -> claimsString
       )
-    }
+
+    val unsignedCredential = Credential.fromCredentialContent(credentialContent)
+    val signedCredential = unsignedCredential.sign(signingKey.privateKey)
+    val signedCredentialHash = signedCredential.hash
+    val contentHash = ByteString.copyFrom(signedCredentialHash.value.toArray)
+    val credentialData = CredentialData(issuer = issuerDID.suffix.value, contentHash = contentHash)
+    val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
+    (
+      AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation)),
+      signedCredential.canonicalForm,
+      signedCredentialHash
+    )
   }
 
   def signedAtalaOperation(ecKeyPair: ECKeyPair, func: => AtalaOperation): SignedAtalaOperation = {

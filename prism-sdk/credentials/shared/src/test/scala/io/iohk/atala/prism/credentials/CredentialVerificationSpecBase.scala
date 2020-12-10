@@ -2,7 +2,6 @@ package io.iohk.atala.prism.credentials
 
 import java.time.Instant
 
-import io.circe.Json
 import io.iohk.atala.prism.credentials.VerificationError.{
   BatchWasRevoked,
   CredentialWasRevoked,
@@ -12,23 +11,17 @@ import io.iohk.atala.prism.credentials.VerificationError.{
 }
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.identity.DID
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
+import io.iohk.atala.prism.identity.DID
 
 abstract class CredentialVerificationSpecBase extends AnyWordSpec with ValidatedValues {
   implicit def ec: ECTrait
 
-  private val unsignedCredential = JsonBasedUnsignedCredential.jsonBasedUnsignedCredential.buildFrom(
-    issuerDID = DID.buildPrismDID("123456678abcdefg"),
-    issuanceKeyId = "Issuance-0",
-    claims = Json.obj()
-  )
-
-  private val unsignedCredentialV03 = Credential.fromCredentialContent(
+  private val unsignedCredential = Credential.fromCredentialContent(
     CredentialContent(
       "issuerDid" -> DID.buildPrismDID("123456678abcdefg").value,
       "issuanceKeyId" -> "Issuance-0"
@@ -44,18 +37,18 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = None)
       val credentialData = CredentialData(issuedOn = now, revokedOn = None)
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
 
-      CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).isValid mustBe true
+      PrismCredentialVerification.verify(keyData, credentialData, signedCredential).isValid mustBe true
     }
 
     "return false when credential is revoked" in {
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = None)
       val credentialData = CredentialData(issuedOn = now, revokedOn = Some(after))
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
 
-      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      val e = PrismCredentialVerification.verify(keyData, credentialData, signedCredential).invalid
       e.size must be(1)
       e.toList must contain(CredentialWasRevoked(credentialData.revokedOn.value))
     }
@@ -64,9 +57,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = now, revokedOn = None)
       val credentialData = CredentialData(issuedOn = before, revokedOn = None)
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
 
-      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      val e = PrismCredentialVerification.verify(keyData, credentialData, signedCredential).invalid
       e.size must be(1)
       e.toList must contain(KeyWasNotValid(keyData.addedOn, credentialData.issuedOn))
     }
@@ -75,9 +68,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = Some(now))
       val credentialData = CredentialData(issuedOn = after, revokedOn = None)
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
 
-      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      val e = PrismCredentialVerification.verify(keyData, credentialData, signedCredential).invalid
       e.size must be(1)
       e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
     }
@@ -88,9 +81,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val credentialData = CredentialData(issuedOn = now, revokedOn = None)
       // Sign with different key
       val signedCredential =
-        CredentialsCryptoSDKImpl.signCredential(unsignedCredential, ec.generateKeyPair().privateKey)
+        unsignedCredential.sign(ec.generateKeyPair().privateKey)
 
-      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      val e = PrismCredentialVerification.verify(keyData, credentialData, signedCredential).invalid
       e.size must be(1)
       e.toList must contain(InvalidSignature)
     }
@@ -100,9 +93,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = now, revokedOn = Some(after))
       // note that the key was revoked AFTER the credential is issued, this leads to not return a KeyWasRevoked
       val credentialData = CredentialData(issuedOn = before, revokedOn = Some(after))
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
 
-      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      val e = PrismCredentialVerification.verify(keyData, credentialData, signedCredential).invalid
       e.size must be(2)
       e.toList must contain(KeyWasNotValid(keyData.addedOn, credentialData.issuedOn))
       e.toList must contain(CredentialWasRevoked(credentialData.revokedOn.value))
@@ -113,9 +106,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = Some(before))
       // note that the key was revoked BEFORE the credential is issued, this leads to return a KeyWasRevoked
       val credentialData = CredentialData(issuedOn = now, revokedOn = Some(after))
-      val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
 
-      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      val e = PrismCredentialVerification.verify(keyData, credentialData, signedCredential).invalid
       e.size must be(2)
       e.toList must contain(CredentialWasRevoked(credentialData.revokedOn.value))
       e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
@@ -128,9 +121,9 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val credentialData = CredentialData(issuedOn = now, revokedOn = Some(after))
       // Sign with different key
       val signedCredential =
-        CredentialsCryptoSDKImpl.signCredential(unsignedCredential, ec.generateKeyPair().privateKey)
+        unsignedCredential.sign(ec.generateKeyPair().privateKey)
 
-      val e = CredentialVerification.verifyCredential(keyData, credentialData, signedCredential).invalid
+      val e = PrismCredentialVerification.verify(keyData, credentialData, signedCredential).invalid
       e.size must be(3)
       e.toList must contain(CredentialWasRevoked(credentialData.revokedOn.value))
       e.toList must contain(KeyWasRevoked(credentialData.issuedOn, keyData.revokedOn.value))
@@ -149,12 +142,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = None)
       val batchData = BatchData(issuedOn = now, revokedOn = None)
-      val signedCredential = unsignedCredentialV03.sign(keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      CredentialVerification
-        .verifyCredential(
+      PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -169,12 +162,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = None)
       val batchData = BatchData(issuedOn = now, revokedOn = None)
-      val signedCredential = unsignedCredentialV03.sign(keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = Some(now)
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -191,12 +184,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = None)
       val batchData = BatchData(issuedOn = now, revokedOn = Some(after))
-      val signedCredential = unsignedCredentialV03.sign(keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -213,12 +206,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = now, revokedOn = None)
       val batchData = BatchData(issuedOn = before, revokedOn = None)
-      val signedCredential = unsignedCredentialV03.sign(keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -235,12 +228,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keys = ec.generateKeyPair()
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = Some(now))
       val batchData = BatchData(issuedOn = after, revokedOn = None)
-      val signedCredential = unsignedCredentialV03.sign(keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -258,12 +251,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = None)
       val batchData = BatchData(issuedOn = now, revokedOn = None)
       // Sign with different key
-      val signedCredential = unsignedCredentialV03.sign(ec.generateKeyPair().privateKey)
+      val signedCredential = unsignedCredential.sign(ec.generateKeyPair().privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -281,12 +274,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = now, revokedOn = Some(after))
       // note that the key was revoked AFTER the credential is issued, this leads to not return a KeyWasRevoked
       val batchData = BatchData(issuedOn = before, revokedOn = Some(after))
-      val signedCredential = unsignedCredentialV03.sign(keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -305,12 +298,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = Some(before))
       // note that the key was revoked BEFORE the credential is issued, this leads to return a KeyWasRevoked
       val batchData = BatchData(issuedOn = now, revokedOn = Some(after))
-      val signedCredential = unsignedCredentialV03.sign(keys.privateKey)
+      val signedCredential = unsignedCredential.sign(keys.privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,
@@ -330,12 +323,12 @@ abstract class CredentialVerificationSpecBase extends AnyWordSpec with Validated
       // note that the key was revoked BEFORE the credential is issued, this leads to return a KeyWasRevoked
       val batchData = BatchData(issuedOn = now, revokedOn = Some(after))
       // Sign with different key
-      val signedCredential = unsignedCredentialV03.sign(ec.generateKeyPair().privateKey)
+      val signedCredential = unsignedCredential.sign(ec.generateKeyPair().privateKey)
       val (root, proof) = rootAndProofFor(signedCredential)
       val revokedAt: Option[TimestampInfo] = None
 
-      val e = CredentialVerification
-        .verifyCredential(
+      val e = PrismCredentialVerification
+        .verify(
           keyData,
           batchData,
           revokedAt,

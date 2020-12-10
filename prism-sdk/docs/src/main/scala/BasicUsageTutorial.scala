@@ -1,4 +1,6 @@
-import io.iohk.atala.prism.credentials._
+import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.identity._
 
@@ -23,22 +25,19 @@ object BasicUsageTutorial {
     .flatMap(_.publicKeys.headOption)
     .getOrElse(throw new RuntimeException("Impossible as we used a key to create the DID"))
 
-  val credentialClaimsStr = """
-                              |{
-                              |  "name": "Jorge Lopez Portillo",
-                              |  "degree": "Bachelor's in Self-Sovereign Identity Development"
-                              |}""".stripMargin
-
-  val credentialClaimsJson = io.circe.parser
-    .parse(credentialClaimsStr)
-    .getOrElse(throw new RuntimeException("Invalid json"))
-
-  val unsignedCredential = UnsignedCredentialBuilder[JsonBasedUnsignedCredential]
-    .buildFrom(
-      issuerDID = did,
-      issuanceKeyId = firstPublicKey.id,
-      claims = credentialClaimsJson
+  lazy val credentialContent: CredentialContent =
+    CredentialContent(
+      CredentialContent.JsonFields.CredentialType.field -> CredentialContent
+        .Values("VerifiableCredential", "RedlandIdCredential"),
+      CredentialContent.JsonFields.IssuerDid.field -> DID.buildPrismDID("123456678abcdefg").value,
+      CredentialContent.JsonFields.IssuanceKeyId.field -> "Issuance-0",
+      CredentialContent.JsonFields.CredentialSubject.field -> CredentialContent.Fields(
+        "name" -> "Jorge Lopez Portillo",
+        "degree" -> "Bachelor's in Self-Sovereign Identity Development"
+      )
     )
 
-  val signedCredential = CredentialsCryptoSDKImpl.signCredential(unsignedCredential, masterKeyPair.privateKey)(EC)
+  lazy val credential: Credential = Credential.fromCredentialContent(credentialContent)
+
+  val signedCredential = credential.sign(masterKeyPair.privateKey)(EC)
 }

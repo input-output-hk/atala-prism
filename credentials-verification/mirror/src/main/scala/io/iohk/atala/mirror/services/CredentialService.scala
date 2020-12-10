@@ -17,12 +17,12 @@ import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageRece
 import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
 import io.iohk.atala.prism.credentials.{
+  Credential,
   CredentialData,
   PrismCredentialVerification,
   SlayerCredentialId,
   VerificationError
 }
-import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models

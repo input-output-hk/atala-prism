@@ -74,8 +74,13 @@ private[japi] object PrismCredentialVerificationFacade {
       convertTimestampInfo(credentialData.getIssuedOn),
       Option(credentialData.getRevokedOn.orElse(null)).map(convertTimestampInfo)
     )
+
     SPrismCredentialVerification
-      .verify(_keyData, _credentialData, ecCredential.wrapped)
+      .verify(
+        _keyData,
+        _credentialData,
+        ecCredential.wrapped
+      )
       .fold(
         { errors =>
           new VerificationResult(errors.map(convertError).toList.asJava)

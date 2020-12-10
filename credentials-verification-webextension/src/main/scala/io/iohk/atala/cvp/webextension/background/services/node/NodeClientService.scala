@@ -3,10 +3,10 @@ package io.iohk.atala.cvp.webextension.background.services.node
 import cats.data.ValidatedNel
 import io.iohk.atala.cvp.webextension.background.services.node.NodeUtils._
 import io.iohk.atala.prism.credentials.{
+  Credential,
   CredentialData,
-  CredentialVerification,
   KeyData,
-  SignedCredentialDetails,
+  PrismCredentialVerification,
   SlayerCredentialId,
   VerificationError
 }
@@ -28,17 +28,27 @@ class NodeClientService(url: String) {
   )(implicit executionContext: ExecutionContext): Future[ValidatedNel[VerificationError, Unit]] = {
 
     for {
-      data <- Future.fromTry {
-        SignedCredentialDetails
-          .compute(signedCredentialStringRepresentation)
-          .left
-          .map(e => new RuntimeException(e.msg))
-          .toTry
-      }
+      credential <-
+        Credential
+          .fromString(signedCredentialStringRepresentation)
+          .fold(
+            error => Future.failed(new RuntimeException(error.message)),
+            Future.successful
+          )
 
-      keyData <- getKeyData(issuerDID = data.issuerDID, issuanceKeyId = data.issuanceKeyId)
-      credentialData <- getCredentialData(data.slayerCredentialId)
-    } yield CredentialVerification.verifyCredential(keyData, credentialData, data.credential)
+      issuerDid <-
+        credential.content.issuerDid
+          .map(Future.successful)
+          .getOrElse(Future.failed(new Throwable(s"Cannot verify credential: $credential, issuerDID is empty")))
+
+      issuanceKeyId <-
+        credential.content.issuanceKeyId
+          .map(Future.successful)
+          .getOrElse(Future.failed(new Throwable(s"Cannot verify credential: $credential, issuanceKeyId is empty")))
+
+      keyData <- getKeyData(issuerDID = issuerDid, issuanceKeyId = issuanceKeyId)
+      credentialData <- getCredentialData(SlayerCredentialId.compute(credential.hash, issuerDid))
+    } yield PrismCredentialVerification.verify(keyData, credentialData, credential)
   }
 
   private def getKeyData(issuerDID: DID, issuanceKeyId: String)(implicit ec: ExecutionContext): Future[KeyData] = {
