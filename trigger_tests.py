@@ -3,92 +3,107 @@ import os
 import time
 import requests
 
+CIRCLE_CI_URL = "https://circleci.com/api/v2"
+GITHUB = "gh"
+ORG_NAME = "input-output-hk"
+PROJECT_ENDPOINT = "/project"
+HEADERS = {"Content-Type": "application/json"}
+
 
 def get_env_variable(variable_name):
     variable_value = os.getenv(variable_name)
     if variable_value is None or variable_value == "":
-        raise NotImplementedError("There were no env variable exported for [{}]".format(variable_name))
+        raise NotImplementedError(f"There were no env variable exported for [{variable_name}]")
     return variable_value
 
 
-def trigger_new_build(project_name, branch):
-    all_builds_url = "https://circleci.com/api/v1.1/project/github/input-output-hk/{}/build?circle-token={}"\
-        .format(project_name, token)
+def handle_error_response(response):
+    raise ValueError(f"Wrong response, {response.status_code} received instead. Error: {response.text}")
+
+
+def get_new_pipeline_id(branch):
+    new_build_url = f"{project_url}/pipeline"
     build_parameters = {"branch": branch}
-    headers = {"Content-Type": "application/json"}
-    new_build_response = requests.post(
-        all_builds_url, data=json.dumps(build_parameters), timeout=10, headers=headers
+    new_pipeline_response = requests.post(
+        new_build_url, auth=(token, ""), data=json.dumps(build_parameters), timeout=10, headers=HEADERS
     )
-    if new_build_response.ok:
-        print("A new build was triggered!")
+    if new_pipeline_response.ok:
+        text_response = json.loads(new_pipeline_response.text)
+        pipeline_id = text_response["id"]
+        print(f"New pipeline id [{pipeline_id}] was triggered!")
+        return pipeline_id
     else:
-        raise ValueError("Wrong response, {} received instead. Error: {}".format(new_build_response.status_code,
-                                                                                 new_build_response.text))
+        handle_error_response(new_pipeline_response)
 
 
-def get_builds_numbers(branch):
-    all_builds_url = "https://circleci.com/api/v1.1/projects?circle-token={}".format(token)
-    branch = branch.replace("/", "%2F")
-    is_empty = True
-    while is_empty:
-        all_projects_details_response = requests.get(all_builds_url, timeout=10)
-        text_response = all_projects_details_response.text
-        status_code = all_projects_details_response.status_code
-        if status_code != 200:
-            raise ValueError("ERROR: 200 was not returned, [{}] received instead. Error: {}"
-                             .format(status_code, text_response))
-        all_projects_details = json.loads(text_response)
-        for projects_details in all_projects_details:
-            if projects_details["reponame"] == project_name_to_trigger:
-                running_builds_list = projects_details["branches"][branch]["running_builds"]
-                list_size = len(running_builds_list)
-                if list_size == 0:
-                    print("Still waiting for build numbers...")
-                    time.sleep(1)
-                    continue
-                else:
-                    return running_builds_list
+def get_workflow_id(pipeline_id):
+    workflow_url = f"{CIRCLE_CI_URL}/pipeline/{pipeline_id}/workflow"
+    workflow_details_response = requests.get(workflow_url, auth=(token, ""), timeout=10, headers=HEADERS)
+    if workflow_details_response.ok:
+        text_response = json.loads(workflow_details_response.text)
+        return text_response["items"][0]["id"]
+    else:
+        handle_error_response(workflow_details_response)
 
 
-def get_jobs_results(project_name, builds_list):
-    build_numbers = [build["build_num"] for build in builds_list]
-    print("Getting {} jobs results from [{}] builds list".format(len(build_numbers), build_numbers))
-    results = []
-    for build_number in build_numbers:
-        public_build_url = "https://circleci.com/gh/input-output-hk/{}/{}".format(project_name, build_number)
-        print("URL for the build is: {}".format(public_build_url))
-        build_url = "https://circleci.com/api/v1.1/project/github/input-output-hk/{}/{}?circle-token={}"\
-            .format(project_name, build_number, token)
-        text_response = None
-        job_status = None
+def get_workflows_jobs_numbers(workflow_id):
+    workflow_jobs_url = f"{CIRCLE_CI_URL}/workflow/{workflow_id}/job"
+    workflow_jobs_details_response = requests.get(workflow_jobs_url, auth=(token, ""), timeout=10, headers=HEADERS)
+    if workflow_jobs_details_response.ok:
+        job_numbers = []
+        text_response = json.loads(workflow_jobs_details_response.text)
+        all_jobs = text_response["items"]
+        for job in all_jobs:
+            job_numbers.append(job["job_number"])
+        return job_numbers
+    else:
+        handle_error_response(workflow_jobs_details_response)
+
+
+def get_all_jobs_details(jobs_numbers):
+    seconds_to_wait = 10
+    jobs_details = []
+    for job_number in jobs_numbers:
+        job_url = f"{project_url}/job/{job_number}"
+        finished = False
         iteration = 1
-        while job_status == "running" or job_status is None:
-            build_response = requests.get(build_url, timeout=10)
-            status_code = build_response.status_code
-            text_response = json.loads(build_response.text)
-            if status_code != 200:
-                raise ValueError("ERROR: 200 was not returned, {} received instead. Error: {}"
-                                 .format(status_code, text_response))
-            job_status = text_response["outcome"]
-            print("Job status for build [{}] is [{}] for iteration nr {}".format(build_number, job_status, iteration))
-            iteration += 1
-            time.sleep(1)
-        results.append(text_response["outcome"])
-    return results
+        while not finished:
+            job_details_response = requests.get(job_url, auth=(token, ""), timeout=10, headers=HEADERS)
+            if job_details_response.ok:
+                text_response = json.loads(job_details_response.text)
+                finished = False if text_response["stopped_at"] is None else True
+                name = text_response["name"]
+                if finished:
+                    web_url = text_response["web_url"]
+                    status = text_response["status"]
+                    jobs_details.append((name, web_url, status))
+                    continue
+                time.sleep(seconds_to_wait)
+                print(f"Waiting for [{name}] to be finished. Iteration nr: [{iteration}]. "
+                      f"Waiting another [{seconds_to_wait}] seconds...")
+                iteration += 1
+            else:
+                handle_error_response(job_details_response)
+    return jobs_details
 
 
 def check_jobs_results(results):
-    if all(result == "success" for result in results):
+    if all(result[2] == "success" for result in results):
         print("All jobs ended up successfully!")
     else:
+        [print(f"Build name: [{result[0]}], url: [{result[1]}] resulted in [{result[2]}]") for result in results]
         raise ValueError("ERROR: A least one of the jobs did not return in success! See the logs above.")
 
 
 token = get_env_variable("CIRCLE_CI_TOKEN")
 branch_to_trigger = get_env_variable("BRANCH_TO_TRIGGER")
-project_name_to_trigger = get_env_variable("PROJECT_NAME_TO_TRIGGER")
+project_name = get_env_variable("PROJECT_NAME_TO_TRIGGER")
 
-trigger_new_build(project_name_to_trigger, branch_to_trigger)
-builds_numbers = get_builds_numbers(branch_to_trigger)
-jobs_results = get_jobs_results(project_name_to_trigger, builds_numbers)
+project_slug = f"/{GITHUB}/{ORG_NAME}/{project_name}"
+project_url = f"{CIRCLE_CI_URL}{PROJECT_ENDPOINT}{project_slug}"
+
+new_pipeline_id = get_new_pipeline_id(branch_to_trigger)
+new_workflow_id = get_workflow_id(new_pipeline_id)
+created_jobs_numbers = get_workflows_jobs_numbers(new_workflow_id)
+jobs_results = get_all_jobs_details(created_jobs_numbers)
 check_jobs_results(jobs_results)

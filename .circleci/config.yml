@@ -358,7 +358,7 @@ jobs:
       BRANCH_TO_TRIGGER: "master"
       PROJECT_NAME_TO_TRIGGER: "atala-qa-automation"
     docker:
-      - image: circleci/python:2.7-jessie
+      - image: circleci/python:3.8.6
     steps:
       - checkout
       - run:
