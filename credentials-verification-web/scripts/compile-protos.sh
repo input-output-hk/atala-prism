@@ -17,6 +17,8 @@ protoc -I=$OUT_DIR \
     node_models.proto \
     connector_models.proto \
     connector_api.proto \
+    cstore_models.proto \
+    cstore_api.proto \
     cmanager_models.proto \
     cmanager_api.proto \
     credential_models.proto \

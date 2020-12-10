@@ -38,7 +38,6 @@ const CredentialContainer = ({ api }) => {
   const [credentialsIssued, setCredentialsIssued] = useState([]);
   const [hasMoreIssued, setHasMoreIssued] = useState(true);
   const [credentialsReceived, setCredentialsReceived] = useState([]);
-  const [hasMoreReceived, setHasMoreReceived] = useState(true);
   const [selectedCredentials, setSelectedCredentials] = useState([]);
 
   const [selectAll, setSelectAll] = useState(false);
@@ -109,18 +108,13 @@ const CredentialContainer = ({ api }) => {
 
   const fetchCredentialsReceived = async () => {
     try {
-      const { messageid } = getLastArrayElementOrEmpty(credentialsReceived);
+      setLoadingByKey('received', true);
+      const newlyFetchedCredentials = await api.credentialsReceivedManager.getReceivedCredentials();
 
-      const newlyFetchedCredentials = await api.connector.getCredentialsReceived(
-        CREDENTIAL_PAGE_SIZE,
-        messageid
+      const credentialTypes = api.credentialsManager.getCredentialTypes();
+      const mappedCredentials = newlyFetchedCredentials.map(cred =>
+        credentialReceivedMapper(cred, credentialTypes)
       );
-
-      if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) {
-        setHasMoreReceived(false);
-      }
-
-      const mappedCredentials = newlyFetchedCredentials.map(credentialReceivedMapper);
       const updatedCredentialsReceived = credentialsReceived.concat(mappedCredentials);
       setCredentialsReceived(updatedCredentialsReceived);
       setNoReceivedCredentials(!updatedCredentialsReceived.length);
@@ -333,8 +327,7 @@ const CredentialContainer = ({ api }) => {
     },
     [CREDENTIALS_RECEIVED]: {
       tableProps: {
-        credentials: credentialsReceived,
-        hasMore: hasMoreReceived
+        credentials: credentialsReceived
       },
       fetchCredentials: fetchCredentialsReceived,
       bulkActionsProps: {},
@@ -365,11 +358,13 @@ CredentialContainer.propTypes = {
       getCredentialTypes: PropTypes.func.isRequired,
       markAsSent: PropTypes.func.isRequired
     }).isRequired,
+    credentialsReceivedManager: PropTypes.shape({
+      getReceivedCredentials: PropTypes.func.isRequired
+    }),
     wallet: PropTypes.shape({
       signCredentials: PropTypes.func.isRequired
     }).isRequired,
     connector: PropTypes.shape({
-      getCredentialsReceived: PropTypes.func.isRequired,
       sendCredential: PropTypes.func.isRequired
     }).isRequired,
     getCredentialTypes: PropTypes.func.isRequired,

@@ -62,8 +62,8 @@ const ContactContainer = ({ api }) => {
       .finally(() => setLoadingByKey('issuedCredentials', false));
 
   const getReceivedCredentials = () =>
-    api.connector
-      .getMessagesForConnection(contact.connectionid)
+    api.credentialsReceivedManager
+      .getReceivedCredentials(id)
       .then(setReceivedCredentials)
       .catch(error => {
         Logger.error(
@@ -106,7 +106,7 @@ ContactContainer.propTypes = {
       getContactCredentials: PropTypes.func,
       getCredentialTypes: PropTypes.func
     }),
-    connector: PropTypes.shape({ getMessagesForConnection: PropTypes.func })
+    credentialsReceivedManager: PropTypes.shape({ getReceivedCredentials: PropTypes.func })
   }).isRequired
 };
 

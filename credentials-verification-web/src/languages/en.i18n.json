@@ -272,7 +272,10 @@
       "educational": "Educational Degree",
       "proofOfEmployment": "Proof of Employment",
       "healthInsurance": "Health Insurance",
-      "transcript": "Educational Transcript"
+      "transcript": "Educational Transcript",
+      "GeorgiaNationalID": "Government ID",
+      "GeorgiaEducationalDegree": "Educational Degree",
+      "GeorgiaEducationalDegreeTranscript": "Educational Transcript"
     },
     "status": {
       "credentialDraft": "Credential Draft",

@@ -48,14 +48,14 @@ function getCredentialStatus(credential) {
   return CREDENTIAL_STATUSES.credentialDraft;
 }
 
-export function credentialReceivedMapper(credentialReceived) {
-  const { credentialSubject, ...rest } = credentialReceived;
-
+export function credentialReceivedMapper(credentialReceived, credentialTypes) {
+  const { externalid, contactName, credentialType, ...rest } = credentialReceived;
   return {
     contactData: {
-      externalid: credentialSubject.identityNumber,
-      contactName: credentialSubject.name
+      externalid,
+      contactName
     },
+    credentialType: credentialTypes[credentialType],
     ...rest
   };
 }
