@@ -14,7 +14,7 @@ import io.iohk.atala.prism.console.models.{
   Institution,
   PublishCredential
 }
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 
 object CredentialsDAO {
   def create(data: CreateGenericCredential): doobie.ConnectionIO[GenericCredential] = {
@@ -172,10 +172,15 @@ object CredentialsDAO {
 
   // TODO: Remove once the node can provide this data
   def getTransactionInfo(encodedSignedCredential: String): doobie.ConnectionIO[Option[TransactionInfo]] = {
-    sql"""
+    val query = sql"""
          |SELECT transaction_id, ledger
          |FROM published_credentials
          |WHERE encoded_signed_credential = $encodedSignedCredential
-         |""".stripMargin.query[TransactionInfo].option
+         |""".stripMargin
+
+    query
+      .query[(TransactionId, Ledger)]
+      .map { case (id, ledger) => TransactionInfo(id, ledger) }
+      .option
   }
 }

@@ -20,8 +20,8 @@ import io.iohk.atala.prism.console.repositories.{ContactsRepository, Credentials
 import io.iohk.atala.prism.credentials.SlayerCredentialId
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.protos.cmanager_api.CredentialsServiceGrpc
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo, ProtoCodecs => CommonProtoCodecs}
+import io.iohk.atala.prism.protos.cmanager_api.{CredentialsServiceGrpc, GetBlockchainDataRequest}
 import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
 import io.iohk.atala.prism.protos.{cmanager_api, common_models, node_api, node_models}
 import org.mockito.MockitoSugar
@@ -576,6 +576,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         }
         cleanCredentials must be(expectedCleanCredentials)
         credentialsJsons must be(expectedCredentialsJsons)
+        returnedCredentials.forall(_.issuanceProof.isEmpty) must be(true)
       }
     }
 
@@ -607,7 +608,14 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
       val contactId = createContact(issuerId, "IOHK Student", None, "").contactId
       val credentialId = createGenericCredential(issuerId, contactId, "A").credentialId
-      publish(issuerId, credentialId)
+      val mockCredential = "mockEncodedSignedCredential"
+      val mockTransactionInfo = TransactionInfo(
+        TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+        Ledger.InMemory,
+        None
+      )
+
+      publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
 
       val request = cmanager_api.ShareCredentialRequest(
         cmanagerCredentialId = credentialId.value.toString
@@ -620,7 +628,67 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
     }
   }
 
-  private def publish(issuerId: Institution.Id, id: GenericCredential.Id): Unit = {
+  "getBlockchainData" should {
+    "return the expected transaction info when the credential is found" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val contactId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val credentialId = createGenericCredential(issuerId, contactId, "A").credentialId
+      val mockCredential = "mockEncodedSignedCredential"
+      val mockTransactionInfo = TransactionInfo(
+        TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+        Ledger.InMemory,
+        None
+      )
+
+      publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
+
+      val request = GetBlockchainDataRequest(mockCredential)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.getBlockchainData(request)
+
+        val issuanceProof = response.issuanceProof.value
+        issuanceProof mustBe CommonProtoCodecs.toTransactionInfo(mockTransactionInfo)
+      }
+    }
+
+    "return empty transaction info when the credential is not present" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val contactId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val credentialId = createGenericCredential(issuerId, contactId, "A").credentialId
+      val mockCredential = "mockEncodedSignedCredential"
+      val mockTransactionInfo = TransactionInfo(
+        TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+        Ledger.InMemory,
+        None
+      )
+
+      publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
+
+      val mockAnotherCredential = "aDifferentMockEncodedSignedCredential"
+      val request = GetBlockchainDataRequest(mockAnotherCredential)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.getBlockchainData(request)
+        response.issuanceProof mustBe empty
+      }
+    }
+  }
+
+  private def publish(
+      issuerId: Institution.Id,
+      id: GenericCredential.Id,
+      encodedSignedCredential: String,
+      mockTransactionInfo: TransactionInfo
+  ): Unit = {
     val _ = credentialsRepository
       .storePublicationData(
         issuerId,
@@ -628,12 +696,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
           id,
           SHA256Digest.compute("test".getBytes),
           "mockNodeCredentialId",
-          "mockEncodedSignedCredential",
-          TransactionInfo(
-            TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
-            Ledger.InMemory,
-            None
-          )
+          encodedSignedCredential,
+          mockTransactionInfo
         )
       )
       .value

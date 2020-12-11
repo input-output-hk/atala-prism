@@ -251,7 +251,7 @@ class CredentialsServiceImpl(
   /** Retrieves node information associated to a credential
     */
   override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = {
-    authenticator.authenticated("getStatistics", request) { _ =>
+    authenticator.authenticated("getBlockchainData", request) { _ =>
       // TODO: The node currently does not store the transaction data in a useful way.
       //       Hence, we will have this workaround: We will return the data from the
       //       published_credentials table to unlock the flow.
