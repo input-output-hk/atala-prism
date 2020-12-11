@@ -461,14 +461,24 @@ class ConnectorService(
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] = {
 
     def f(userId: ParticipantId) = {
-      Future {
-        implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
-        messages
-          .insertMessage(userId, ConnectionId(request.connectionId), request.message.toByteArray)
-          .wrapExceptions
-          .successMap(_ => connector_api.SendMessageResponse())
-      }.flatten
+      for {
+        connectionId <- Try { ConnectionId(request.connectionId) }
+          .fold(
+            _ =>
+              Future.failed(
+                InvalidArgumentError("connectionId", "invalid connectionOd", request.connectionId).toStatus
+                  .asRuntimeException()
+              ),
+            Future.successful
+          )
+        response <-
+          messages
+            .insertMessage(userId, connectionId, request.message.toByteArray)
+            .wrapExceptions
+            .successMap(_ => connector_api.SendMessageResponse())
+      } yield response
     }
 
     authenticator.authenticated("sendMessage", request) { participantId =>
