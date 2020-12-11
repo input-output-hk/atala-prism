@@ -105,7 +105,8 @@ class CredentialsStoreService(
                   cstore_models.StoredSignedCredential(
                     individualId = credential.individualId.value.toString,
                     encodedSignedCredential = credential.encodedSignedCredential,
-                    storedAt = credential.storedAt.toEpochMilli
+                    storedAt = credential.storedAt.toEpochMilli,
+                    externalId = credential.externalId.value
                   )
                 }
               )

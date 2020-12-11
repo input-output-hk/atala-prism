@@ -29,13 +29,13 @@ object StoredCredentialsDAO {
   ): ConnectionIO[Seq[StoredSignedCredential]] = {
     maybeContactId match {
       case Some(contactId) =>
-        sql"""SELECT contact_id, encoded_signed_credential, stored_at
+        sql"""SELECT contact_id, encoded_signed_credential, stored_at, external_id
              |FROM stored_credentials JOIN contacts USING (connection_id)
              |WHERE created_by = $verifierId AND contact_id = $contactId
              |ORDER BY stored_at
        """.stripMargin.query[StoredSignedCredential].to[Seq]
       case None =>
-        sql"""SELECT contact_id, encoded_signed_credential, stored_at
+        sql"""SELECT contact_id, encoded_signed_credential, stored_at, external_id
              |FROM stored_credentials JOIN contacts USING (connection_id)
              |WHERE created_by = $verifierId
              |ORDER BY stored_at

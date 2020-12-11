@@ -13,4 +13,5 @@ message StoredSignedCredential {
 
     string encodedSignedCredential = 2; // The signed credential encoded as a string
     int64 storedAt = 3; // the time when the credential was stored in the database
+    string externalId = 4; // the external id associated to the contact that sent the credential
 }

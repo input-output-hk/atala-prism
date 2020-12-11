@@ -229,10 +229,11 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId1 =
-        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "").contactId
-      val contactId2 =
-        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 2", None, "").contactId
+      val contact1 = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "")
+      val contactId1 = contact1.contactId
+      val contact2 = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 2", None, "")
+      val contactId2 = contact2.contactId
+
       val encodedSignedCredential1 = "1a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val encodedSignedCredential2 = "2a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val connectionId1 = ConnectionId(UUID.randomUUID())
@@ -250,6 +251,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         val credential = response.credentials.head
         credential.individualId mustBe contactId1.value.toString
         credential.encodedSignedCredential mustBe encodedSignedCredential1
+        credential.externalId mustBe contact1.externalId.value
       }
     }
 
@@ -259,10 +261,10 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId1 =
-        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "").contactId
-      val contactId2 =
-        DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 2", None, "").contactId
+      val contact1 = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "")
+      val contactId1 = contact1.contactId
+      val contact2 = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 2", None, "")
+      val contactId2 = contact2.contactId
       val encodedSignedCredential1 = "1a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val encodedSignedCredential2 = "2a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val connectionId1 = ConnectionId(UUID.randomUUID())
@@ -279,12 +281,12 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         response.credentials.size mustBe 2
 
         val credentials = response.credentials.map { cred =>
-          (cred.individualId, cred.encodedSignedCredential)
+          (cred.individualId, cred.encodedSignedCredential, cred.externalId)
         }
 
         credentials must contain theSameElementsAs List(
-          (contactId1.value.toString, encodedSignedCredential1),
-          (contactId2.value.toString, encodedSignedCredential2)
+          (contactId1.value.toString, encodedSignedCredential1, contact1.externalId.value),
+          (contactId2.value.toString, encodedSignedCredential2, contact2.externalId.value)
         )
       }
     }

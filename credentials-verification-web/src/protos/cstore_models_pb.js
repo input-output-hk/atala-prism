@@ -69,7 +69,8 @@ proto.io.iohk.atala.prism.protos.StoredSignedCredential.toObject = function(incl
   var f, obj = {
     individualid: jspb.Message.getFieldWithDefault(msg, 1, ""),
     encodedsignedcredential: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    storedat: jspb.Message.getFieldWithDefault(msg, 3, 0)
+    storedat: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    externalid: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -118,6 +119,10 @@ proto.io.iohk.atala.prism.protos.StoredSignedCredential.deserializeBinaryFromRea
       var value = /** @type {number} */ (reader.readInt64());
       msg.setStoredat(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExternalid(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -165,6 +170,13 @@ proto.io.iohk.atala.prism.protos.StoredSignedCredential.serializeBinaryToWriter 
   if (f !== 0) {
     writer.writeInt64(
       3,
+      f
+    );
+  }
+  f = message.getExternalid();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -222,6 +234,24 @@ proto.io.iohk.atala.prism.protos.StoredSignedCredential.prototype.getStoredat = 
  */
 proto.io.iohk.atala.prism.protos.StoredSignedCredential.prototype.setStoredat = function(value) {
   return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string externalId = 4;
+ * @return {string}
+ */
+proto.io.iohk.atala.prism.protos.StoredSignedCredential.prototype.getExternalid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.atala.prism.protos.StoredSignedCredential} returns this
+ */
+proto.io.iohk.atala.prism.protos.StoredSignedCredential.prototype.setExternalid = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 

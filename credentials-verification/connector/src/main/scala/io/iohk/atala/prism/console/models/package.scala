@@ -53,7 +53,8 @@ package object models {
   case class StoredSignedCredential(
       individualId: Contact.Id,
       encodedSignedCredential: String,
-      storedAt: Instant
+      storedAt: Instant,
+      externalId: Contact.ExternalId
   )
 
   case class IssuerGroup(
