@@ -8,6 +8,7 @@ GITHUB = "gh"
 ORG_NAME = "input-output-hk"
 PROJECT_ENDPOINT = "/project"
 HEADERS = {"Content-Type": "application/json"}
+SECONDS_TO_WAIT = 10
 
 
 def get_env_variable(variable_name):
@@ -37,13 +38,23 @@ def get_new_pipeline_id(branch):
 
 
 def get_workflow_id(pipeline_id):
+    iteration = 1
+    max_iteration = 10
     workflow_url = f"{CIRCLE_CI_URL}/pipeline/{pipeline_id}/workflow"
-    workflow_details_response = requests.get(workflow_url, auth=(token, ""), timeout=10, headers=HEADERS)
-    if workflow_details_response.ok:
-        text_response = json.loads(workflow_details_response.text)
-        return text_response["items"][0]["id"]
-    else:
-        handle_error_response(workflow_details_response)
+    while iteration < max_iteration:
+        workflow_details_response = requests.get(workflow_url, auth=(token, ""), timeout=10, headers=HEADERS)
+        if workflow_details_response.ok:
+            text_response = json.loads(workflow_details_response.text)
+            all_items = text_response["items"]
+            if not all_items:
+                print(f"Pipeline has no workflow ready yet, waiting... Iteration nr: [{iteration}]")
+            else:
+                return text_response["items"][0]["id"]
+        else:
+            handle_error_response(workflow_details_response)
+        time.sleep(SECONDS_TO_WAIT)
+        iteration += 1
+    raise RuntimeError("ERROR! There were no possibility to get workflow")
 
 
 def get_workflows_jobs_numbers(workflow_id):
@@ -61,7 +72,6 @@ def get_workflows_jobs_numbers(workflow_id):
 
 
 def get_all_jobs_details(jobs_numbers):
-    seconds_to_wait = 10
     jobs_details = []
     for job_number in jobs_numbers:
         job_url = f"{project_url}/job/{job_number}"
@@ -78,9 +88,9 @@ def get_all_jobs_details(jobs_numbers):
                     status = text_response["status"]
                     jobs_details.append((name, web_url, status))
                     continue
-                time.sleep(seconds_to_wait)
+                time.sleep(SECONDS_TO_WAIT)
                 print(f"Waiting for [{name}] to be finished. Iteration nr: [{iteration}]. "
-                      f"Waiting another [{seconds_to_wait}] seconds...")
+                      f"Waiting another [{SECONDS_TO_WAIT}] seconds...")
                 iteration += 1
             else:
                 handle_error_response(job_details_response)
