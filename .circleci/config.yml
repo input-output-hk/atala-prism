@@ -364,7 +364,7 @@ jobs:
       - run:
           # TODO: remove this part when https://jira.iohk.io/browse/ATA-3535 is implemented
           name: wait till environment is fully operable
-          command: sleep 10m
+          command: sleep 9m
       - run:
           name: trigger a job in atala-qa-automation project
           command: python trigger_tests.py
