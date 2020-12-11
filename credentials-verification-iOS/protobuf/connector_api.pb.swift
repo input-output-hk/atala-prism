@@ -188,6 +188,62 @@ extension Io_Iohk_Atala_Prism_Protos_Ledger: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+enum Io_Iohk_Atala_Prism_Protos_TransactionStatus: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  /// The transaction is not an Atala PRISM transaction
+  case unknown // = 0
+
+  /// The transaction is pending to be accepted by the blockchain
+  case pending // = 1
+
+  /// The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM
+  case inLedger // = 2
+
+  /// The transaction has been confirmed by Atala PRISM and is now considered immutable
+  case confirmed // = 3
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .unknown
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unknown
+    case 1: self = .pending
+    case 2: self = .inLedger
+    case 3: self = .confirmed
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .unknown: return 0
+    case .pending: return 1
+    case .inLedger: return 2
+    case .confirmed: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension Io_Iohk_Atala_Prism_Protos_TransactionStatus: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Io_Iohk_Atala_Prism_Protos_TransactionStatus] = [
+    .unknown,
+    .pending,
+    .inLedger,
+    .confirmed,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 /// For now Universites and schools.
 enum Io_Iohk_Atala_Prism_Protos_IssuerType: SwiftProtobuf.Enum {
   typealias RawValue = Int
@@ -517,10 +573,10 @@ struct Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// returned credentials will have been received after the given message (if any)
+  /// returned messages will have been received after the given message (if any)
   var lastSeenMessageID: String = String()
 
-  /// maximum number of credentials to return, must be > 0
+  /// maximum number of messages to return, must be > 0
   var limit: Int32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -540,6 +596,40 @@ struct Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+}
+
+struct Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Last message seen by the client, so only newer messages are returned
+  var lastSeenMessageID: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var message: Io_Iohk_Atala_Prism_Protos_ReceivedMessage {
+    get {return _storage._message ?? Io_Iohk_Atala_Prism_Protos_ReceivedMessage()}
+    set {_uniqueStorage()._message = newValue}
+  }
+  /// Returns true if `message` has been explicitly set.
+  var hasMessage: Bool {return _storage._message != nil}
+  /// Clears the value of `message`. Subsequent reads from it will return its default value.
+  mutating func clearMessage() {_uniqueStorage()._message = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 struct Io_Iohk_Atala_Prism_Protos_GetMessagesForConnectionRequest {
@@ -915,7 +1005,7 @@ struct Io_Iohk_Atala_Prism_Protos_GetBuildInfoResponse {
 
   var scalaVersion: String = String()
 
-  var millVersion: String = String()
+  var sbtVersion: String = String()
 
   var buildTime: String = String()
 
@@ -1495,6 +1585,60 @@ struct Io_Iohk_Atala_Prism_Protos_RevokeCredentialOperation {
   init() {}
 }
 
+struct Io_Iohk_Atala_Prism_Protos_CredentialBatchData {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var issuerDid: String = String()
+
+  var merkleRoot: Data = SwiftProtobuf.Internal.emptyData
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var credentialBatchData: Io_Iohk_Atala_Prism_Protos_CredentialBatchData {
+    get {return _storage._credentialBatchData ?? Io_Iohk_Atala_Prism_Protos_CredentialBatchData()}
+    set {_uniqueStorage()._credentialBatchData = newValue}
+  }
+  /// Returns true if `credentialBatchData` has been explicitly set.
+  var hasCredentialBatchData: Bool {return _storage._credentialBatchData != nil}
+  /// Clears the value of `credentialBatchData`. Subsequent reads from it will return its default value.
+  mutating func clearCredentialBatchData() {_uniqueStorage()._credentialBatchData = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+struct Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// the hash of the operation that issued the batch
+  var previousOperationHash: Data = SwiftProtobuf.Internal.emptyData
+
+  /// the corresponding batch id, as returned in IssueCredentialBatchResponse
+  var credentialBatchID: String = String()
+
+  /// hashes of the credentials to revoke. If empty, the full batch is revoked
+  var credentialsToRevoke: [Data] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct Io_Iohk_Atala_Prism_Protos_AtalaOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -1537,6 +1681,22 @@ struct Io_Iohk_Atala_Prism_Protos_AtalaOperation {
     set {_uniqueStorage()._operation = .revokeCredential(newValue)}
   }
 
+  var issueCredentialBatch: Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation {
+    get {
+      if case .issueCredentialBatch(let v)? = _storage._operation {return v}
+      return Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation()
+    }
+    set {_uniqueStorage()._operation = .issueCredentialBatch(newValue)}
+  }
+
+  var revokeCredentials: Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation {
+    get {
+      if case .revokeCredentials(let v)? = _storage._operation {return v}
+      return Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation()
+    }
+    set {_uniqueStorage()._operation = .revokeCredentials(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Operation: Equatable {
@@ -1544,6 +1704,8 @@ struct Io_Iohk_Atala_Prism_Protos_AtalaOperation {
     case updateDid(Io_Iohk_Atala_Prism_Protos_UpdateDIDOperation)
     case issueCredential(Io_Iohk_Atala_Prism_Protos_IssueCredentialOperation)
     case revokeCredential(Io_Iohk_Atala_Prism_Protos_RevokeCredentialOperation)
+    case issueCredentialBatch(Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation)
+    case revokeCredentials(Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation)
 
   #if !swift(>=4.1)
     static func ==(lhs: Io_Iohk_Atala_Prism_Protos_AtalaOperation.OneOf_Operation, rhs: Io_Iohk_Atala_Prism_Protos_AtalaOperation.OneOf_Operation) -> Bool {
@@ -1552,6 +1714,8 @@ struct Io_Iohk_Atala_Prism_Protos_AtalaOperation {
       case (.updateDid(let l), .updateDid(let r)): return l == r
       case (.issueCredential(let l), .issueCredential(let r)): return l == r
       case (.revokeCredential(let l), .revokeCredential(let r)): return l == r
+      case (.issueCredentialBatch(let l), .issueCredentialBatch(let r)): return l == r
+      case (.revokeCredentials(let l), .revokeCredentials(let r)): return l == r
       default: return false
       }
     }
@@ -1594,6 +1758,26 @@ struct Io_Iohk_Atala_Prism_Protos_SignedAtalaOperation {
   init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+struct Io_Iohk_Atala_Prism_Protos_HealthCheckRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct Io_Iohk_Atala_Prism_Protos_HealthCheckResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
 }
 
 struct Io_Iohk_Atala_Prism_Protos_Date {
@@ -2027,6 +2211,95 @@ struct Io_Iohk_Atala_Prism_Protos_EncryptedMessage {
   init() {}
 }
 
+struct Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var cardanoAddress: String = String()
+
+  var cardanoNetwork: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct Io_Iohk_Atala_Prism_Protos_PayIdMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var paymentInformation: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct Io_Iohk_Atala_Prism_Protos_MirrorMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var message: OneOf_Message? {
+    get {return _storage._message}
+    set {_uniqueStorage()._message = newValue}
+  }
+
+  var registerAddressMessage: Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage {
+    get {
+      if case .registerAddressMessage(let v)? = _storage._message {return v}
+      return Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage()
+    }
+    set {_uniqueStorage()._message = .registerAddressMessage(newValue)}
+  }
+
+  var payIDMessage: Io_Iohk_Atala_Prism_Protos_PayIdMessage {
+    get {
+      if case .payIDMessage(let v)? = _storage._message {return v}
+      return Io_Iohk_Atala_Prism_Protos_PayIdMessage()
+    }
+    set {_uniqueStorage()._message = .payIDMessage(newValue)}
+  }
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  enum OneOf_Message: Equatable {
+    case registerAddressMessage(Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage)
+    case payIDMessage(Io_Iohk_Atala_Prism_Protos_PayIdMessage)
+
+  #if !swift(>=4.1)
+    static func ==(lhs: Io_Iohk_Atala_Prism_Protos_MirrorMessage.OneOf_Message, rhs: Io_Iohk_Atala_Prism_Protos_MirrorMessage.OneOf_Message) -> Bool {
+      switch (lhs, rhs) {
+      case (.registerAddressMessage(let l), .registerAddressMessage(let r)): return l == r
+      case (.payIDMessage(let l), .payIDMessage(let r)): return l == r
+      default: return false
+      }
+    }
+  #endif
+  }
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+/// ATA-3250: Until we implement e2e encryption, we will share
+/// credentials using this message
+struct Io_Iohk_Atala_Prism_Protos_PlainTextCredential {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// the encoded signed credential
+  var encodedCredential: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct Io_Iohk_Atala_Prism_Protos_AtalaMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -2069,6 +2342,22 @@ struct Io_Iohk_Atala_Prism_Protos_AtalaMessage {
     set {_uniqueStorage()._message = .encryptedMessage(newValue)}
   }
 
+  var mirrorMessage: Io_Iohk_Atala_Prism_Protos_MirrorMessage {
+    get {
+      if case .mirrorMessage(let v)? = _storage._message {return v}
+      return Io_Iohk_Atala_Prism_Protos_MirrorMessage()
+    }
+    set {_uniqueStorage()._message = .mirrorMessage(newValue)}
+  }
+
+  var plainCredential: Io_Iohk_Atala_Prism_Protos_PlainTextCredential {
+    get {
+      if case .plainCredential(let v)? = _storage._message {return v}
+      return Io_Iohk_Atala_Prism_Protos_PlainTextCredential()
+    }
+    set {_uniqueStorage()._message = .plainCredential(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Message: Equatable {
@@ -2076,6 +2365,8 @@ struct Io_Iohk_Atala_Prism_Protos_AtalaMessage {
     case holderSentCredential(Io_Iohk_Atala_Prism_Protos_HolderSentCredential)
     case proofRequest(Io_Iohk_Atala_Prism_Protos_ProofRequest)
     case encryptedMessage(Io_Iohk_Atala_Prism_Protos_EncryptedMessage)
+    case mirrorMessage(Io_Iohk_Atala_Prism_Protos_MirrorMessage)
+    case plainCredential(Io_Iohk_Atala_Prism_Protos_PlainTextCredential)
 
   #if !swift(>=4.1)
     static func ==(lhs: Io_Iohk_Atala_Prism_Protos_AtalaMessage.OneOf_Message, rhs: Io_Iohk_Atala_Prism_Protos_AtalaMessage.OneOf_Message) -> Bool {
@@ -2084,6 +2375,8 @@ struct Io_Iohk_Atala_Prism_Protos_AtalaMessage {
       case (.holderSentCredential(let l), .holderSentCredential(let r)): return l == r
       case (.proofRequest(let l), .proofRequest(let r)): return l == r
       case (.encryptedMessage(let l), .encryptedMessage(let r)): return l == r
+      case (.mirrorMessage(let l), .mirrorMessage(let r)): return l == r
+      case (.plainCredential(let l), .plainCredential(let r)): return l == r
       default: return false
       }
     }
@@ -2126,6 +2419,15 @@ extension Io_Iohk_Atala_Prism_Protos_Ledger: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "BITCOIN_MAINNET"),
     4: .same(proto: "CARDANO_TESTNET"),
     5: .same(proto: "CARDANO_MAINNET"),
+  ]
+}
+
+extension Io_Iohk_Atala_Prism_Protos_TransactionStatus: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNKNOWN"),
+    1: .same(proto: "PENDING"),
+    2: .same(proto: "IN_LEDGER"),
+    3: .same(proto: "CONFIRMED"),
   ]
 }
 
@@ -2720,6 +3022,96 @@ extension Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse: SwiftProtobuf
 
   static func ==(lhs: Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse, rhs: Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse) -> Bool {
     if lhs.messages != rhs.messages {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".GetMessageStreamRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "lastSeenMessageId"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.lastSeenMessageID)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.lastSeenMessageID.isEmpty {
+      try visitor.visitSingularStringField(value: self.lastSeenMessageID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest, rhs: Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest) -> Bool {
+    if lhs.lastSeenMessageID != rhs.lastSeenMessageID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".GetMessageStreamResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "message"),
+  ]
+
+  fileprivate class _StorageClass {
+    var _message: Io_Iohk_Atala_Prism_Protos_ReceivedMessage? = nil
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _message = source._message
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        switch fieldNumber {
+        case 1: try decoder.decodeSingularMessageField(value: &_storage._message)
+        default: break
+        }
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if let v = _storage._message {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      }
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse, rhs: Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._message != rhs_storage._message {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3387,7 +3779,7 @@ extension Io_Iohk_Atala_Prism_Protos_GetBuildInfoResponse: SwiftProtobuf.Message
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "scalaVersion"),
-    3: .same(proto: "millVersion"),
+    3: .same(proto: "sbtVersion"),
     4: .same(proto: "buildTime"),
     5: .same(proto: "nodeVersion"),
   ]
@@ -3397,7 +3789,7 @@ extension Io_Iohk_Atala_Prism_Protos_GetBuildInfoResponse: SwiftProtobuf.Message
       switch fieldNumber {
       case 1: try decoder.decodeSingularStringField(value: &self.version)
       case 2: try decoder.decodeSingularStringField(value: &self.scalaVersion)
-      case 3: try decoder.decodeSingularStringField(value: &self.millVersion)
+      case 3: try decoder.decodeSingularStringField(value: &self.sbtVersion)
       case 4: try decoder.decodeSingularStringField(value: &self.buildTime)
       case 5: try decoder.decodeSingularStringField(value: &self.nodeVersion)
       default: break
@@ -3412,8 +3804,8 @@ extension Io_Iohk_Atala_Prism_Protos_GetBuildInfoResponse: SwiftProtobuf.Message
     if !self.scalaVersion.isEmpty {
       try visitor.visitSingularStringField(value: self.scalaVersion, fieldNumber: 2)
     }
-    if !self.millVersion.isEmpty {
-      try visitor.visitSingularStringField(value: self.millVersion, fieldNumber: 3)
+    if !self.sbtVersion.isEmpty {
+      try visitor.visitSingularStringField(value: self.sbtVersion, fieldNumber: 3)
     }
     if !self.buildTime.isEmpty {
       try visitor.visitSingularStringField(value: self.buildTime, fieldNumber: 4)
@@ -3427,7 +3819,7 @@ extension Io_Iohk_Atala_Prism_Protos_GetBuildInfoResponse: SwiftProtobuf.Message
   static func ==(lhs: Io_Iohk_Atala_Prism_Protos_GetBuildInfoResponse, rhs: Io_Iohk_Atala_Prism_Protos_GetBuildInfoResponse) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs.scalaVersion != rhs.scalaVersion {return false}
-    if lhs.millVersion != rhs.millVersion {return false}
+    if lhs.sbtVersion != rhs.sbtVersion {return false}
     if lhs.buildTime != rhs.buildTime {return false}
     if lhs.nodeVersion != rhs.nodeVersion {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -4648,6 +5040,143 @@ extension Io_Iohk_Atala_Prism_Protos_RevokeCredentialOperation: SwiftProtobuf.Me
   }
 }
 
+extension Io_Iohk_Atala_Prism_Protos_CredentialBatchData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".CredentialBatchData"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "issuerDID"),
+    2: .same(proto: "merkleRoot"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.issuerDid)
+      case 2: try decoder.decodeSingularBytesField(value: &self.merkleRoot)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.issuerDid.isEmpty {
+      try visitor.visitSingularStringField(value: self.issuerDid, fieldNumber: 1)
+    }
+    if !self.merkleRoot.isEmpty {
+      try visitor.visitSingularBytesField(value: self.merkleRoot, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_CredentialBatchData, rhs: Io_Iohk_Atala_Prism_Protos_CredentialBatchData) -> Bool {
+    if lhs.issuerDid != rhs.issuerDid {return false}
+    if lhs.merkleRoot != rhs.merkleRoot {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".IssueCredentialBatchOperation"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "credentialBatchData"),
+  ]
+
+  fileprivate class _StorageClass {
+    var _credentialBatchData: Io_Iohk_Atala_Prism_Protos_CredentialBatchData? = nil
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _credentialBatchData = source._credentialBatchData
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        switch fieldNumber {
+        case 1: try decoder.decodeSingularMessageField(value: &_storage._credentialBatchData)
+        default: break
+        }
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if let v = _storage._credentialBatchData {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      }
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation, rhs: Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._credentialBatchData != rhs_storage._credentialBatchData {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".RevokeCredentialsOperation"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "previousOperationHash"),
+    2: .same(proto: "credentialBatchId"),
+    3: .same(proto: "credentialsToRevoke"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularBytesField(value: &self.previousOperationHash)
+      case 2: try decoder.decodeSingularStringField(value: &self.credentialBatchID)
+      case 3: try decoder.decodeRepeatedBytesField(value: &self.credentialsToRevoke)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.previousOperationHash.isEmpty {
+      try visitor.visitSingularBytesField(value: self.previousOperationHash, fieldNumber: 1)
+    }
+    if !self.credentialBatchID.isEmpty {
+      try visitor.visitSingularStringField(value: self.credentialBatchID, fieldNumber: 2)
+    }
+    if !self.credentialsToRevoke.isEmpty {
+      try visitor.visitRepeatedBytesField(value: self.credentialsToRevoke, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation, rhs: Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation) -> Bool {
+    if lhs.previousOperationHash != rhs.previousOperationHash {return false}
+    if lhs.credentialBatchID != rhs.credentialBatchID {return false}
+    if lhs.credentialsToRevoke != rhs.credentialsToRevoke {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Io_Iohk_Atala_Prism_Protos_AtalaOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".AtalaOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -4655,6 +5184,8 @@ extension Io_Iohk_Atala_Prism_Protos_AtalaOperation: SwiftProtobuf.Message, Swif
     2: .same(proto: "updateDid"),
     3: .same(proto: "issueCredential"),
     4: .same(proto: "revokeCredential"),
+    5: .same(proto: "issueCredentialBatch"),
+    6: .same(proto: "revokeCredentials"),
   ]
 
   fileprivate class _StorageClass {
@@ -4713,6 +5244,22 @@ extension Io_Iohk_Atala_Prism_Protos_AtalaOperation: SwiftProtobuf.Message, Swif
           }
           try decoder.decodeSingularMessageField(value: &v)
           if let v = v {_storage._operation = .revokeCredential(v)}
+        case 5:
+          var v: Io_Iohk_Atala_Prism_Protos_IssueCredentialBatchOperation?
+          if let current = _storage._operation {
+            try decoder.handleConflictingOneOf()
+            if case .issueCredentialBatch(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._operation = .issueCredentialBatch(v)}
+        case 6:
+          var v: Io_Iohk_Atala_Prism_Protos_RevokeCredentialsOperation?
+          if let current = _storage._operation {
+            try decoder.handleConflictingOneOf()
+            if case .revokeCredentials(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._operation = .revokeCredentials(v)}
         default: break
         }
       }
@@ -4730,6 +5277,10 @@ extension Io_Iohk_Atala_Prism_Protos_AtalaOperation: SwiftProtobuf.Message, Swif
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       case .revokeCredential(let v)?:
         try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      case .issueCredentialBatch(let v)?:
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      case .revokeCredentials(let v)?:
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       case nil: break
       }
     }
@@ -4823,6 +5374,44 @@ extension Io_Iohk_Atala_Prism_Protos_SignedAtalaOperation: SwiftProtobuf.Message
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_HealthCheckRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".HealthCheckRequest"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_HealthCheckRequest, rhs: Io_Iohk_Atala_Prism_Protos_HealthCheckRequest) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_HealthCheckResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".HealthCheckResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_HealthCheckResponse, rhs: Io_Iohk_Atala_Prism_Protos_HealthCheckResponse) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -5635,6 +6224,180 @@ extension Io_Iohk_Atala_Prism_Protos_EncryptedMessage: SwiftProtobuf.Message, Sw
   }
 }
 
+extension Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".RegisterAddressMessage"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "cardanoAddress"),
+    2: .same(proto: "cardanoNetwork"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.cardanoAddress)
+      case 2: try decoder.decodeSingularStringField(value: &self.cardanoNetwork)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.cardanoAddress.isEmpty {
+      try visitor.visitSingularStringField(value: self.cardanoAddress, fieldNumber: 1)
+    }
+    if !self.cardanoNetwork.isEmpty {
+      try visitor.visitSingularStringField(value: self.cardanoNetwork, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage, rhs: Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage) -> Bool {
+    if lhs.cardanoAddress != rhs.cardanoAddress {return false}
+    if lhs.cardanoNetwork != rhs.cardanoNetwork {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_PayIdMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PayIdMessage"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "paymentInformation"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.paymentInformation)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.paymentInformation.isEmpty {
+      try visitor.visitSingularStringField(value: self.paymentInformation, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_PayIdMessage, rhs: Io_Iohk_Atala_Prism_Protos_PayIdMessage) -> Bool {
+    if lhs.paymentInformation != rhs.paymentInformation {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_MirrorMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".MirrorMessage"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "registerAddressMessage"),
+    2: .same(proto: "payIdMessage"),
+  ]
+
+  fileprivate class _StorageClass {
+    var _message: Io_Iohk_Atala_Prism_Protos_MirrorMessage.OneOf_Message?
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _message = source._message
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        switch fieldNumber {
+        case 1:
+          var v: Io_Iohk_Atala_Prism_Protos_RegisterAddressMessage?
+          if let current = _storage._message {
+            try decoder.handleConflictingOneOf()
+            if case .registerAddressMessage(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._message = .registerAddressMessage(v)}
+        case 2:
+          var v: Io_Iohk_Atala_Prism_Protos_PayIdMessage?
+          if let current = _storage._message {
+            try decoder.handleConflictingOneOf()
+            if case .payIDMessage(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._message = .payIDMessage(v)}
+        default: break
+        }
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      switch _storage._message {
+      case .registerAddressMessage(let v)?:
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      case .payIDMessage(let v)?:
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      case nil: break
+      }
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_MirrorMessage, rhs: Io_Iohk_Atala_Prism_Protos_MirrorMessage) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._message != rhs_storage._message {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Atala_Prism_Protos_PlainTextCredential: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PlainTextCredential"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "encodedCredential"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.encodedCredential)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.encodedCredential.isEmpty {
+      try visitor.visitSingularStringField(value: self.encodedCredential, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Atala_Prism_Protos_PlainTextCredential, rhs: Io_Iohk_Atala_Prism_Protos_PlainTextCredential) -> Bool {
+    if lhs.encodedCredential != rhs.encodedCredential {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Io_Iohk_Atala_Prism_Protos_AtalaMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".AtalaMessage"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -5642,6 +6405,8 @@ extension Io_Iohk_Atala_Prism_Protos_AtalaMessage: SwiftProtobuf.Message, SwiftP
     2: .same(proto: "holderSentCredential"),
     3: .same(proto: "proofRequest"),
     4: .same(proto: "encryptedMessage"),
+    5: .same(proto: "mirrorMessage"),
+    6: .same(proto: "plainCredential"),
   ]
 
   fileprivate class _StorageClass {
@@ -5700,6 +6465,22 @@ extension Io_Iohk_Atala_Prism_Protos_AtalaMessage: SwiftProtobuf.Message, SwiftP
           }
           try decoder.decodeSingularMessageField(value: &v)
           if let v = v {_storage._message = .encryptedMessage(v)}
+        case 5:
+          var v: Io_Iohk_Atala_Prism_Protos_MirrorMessage?
+          if let current = _storage._message {
+            try decoder.handleConflictingOneOf()
+            if case .mirrorMessage(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._message = .mirrorMessage(v)}
+        case 6:
+          var v: Io_Iohk_Atala_Prism_Protos_PlainTextCredential?
+          if let current = _storage._message {
+            try decoder.handleConflictingOneOf()
+            if case .plainCredential(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._message = .plainCredential(v)}
         default: break
         }
       }
@@ -5717,6 +6498,10 @@ extension Io_Iohk_Atala_Prism_Protos_AtalaMessage: SwiftProtobuf.Message, SwiftP
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       case .encryptedMessage(let v)?:
         try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      case .mirrorMessage(let v)?:
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      case .plainCredential(let v)?:
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       case nil: break
       }
     }

@@ -45,6 +45,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     var activityLogs: [ActivityHistory]?
 
+    private let fetchLock = NSLock()
+    @Atomic var isFetching = false
+
     // MARK: Modes
 
     func getMode() -> CredentialsMode {
@@ -155,9 +158,16 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func fetchElements() {
 
+        fetchLock.lock()
+        if isFetching {
+            fetchLock.unlock()
+            return
+        }
+        isFetching = true
+        fetchLock.unlock()
+
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContacts()
-
         // Call the service
         ApiService.call(async: {
             do {
@@ -170,12 +180,22 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData: message.message) {
-                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
-                                let credential = credentialsDao.createCredential(sentCredential:
+                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                            message.message) {
+                            var cred: (Credential, Bool)?
+                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
+                                cred = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
                                                                                messageId: message.id,
-                                                                               connectionId: message.connectionID) {
+                                                                               connectionId: message.connectionID)
+                            } else if !atalaMssg.plainCredential.encodedCredential.isEmpty {
+                                let issuer = contacts?.first(where: { $0.connectionId == message.connectionID})
+                                cred = credentialsDao.createCredential(message: atalaMssg,
+                                                                       viewed: false, messageId: message.id,
+                                                                       connectionId: message.connectionID,
+                                                                       issuerName: issuer?.name ?? "")
+                            }
+                            if let credential = cred {
                                 contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
                                 if credential.1 {
                                     historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
@@ -196,12 +216,14 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             return nil
         }, success: {
             self.startListing()
+            self.isFetching = false
         }, error: { _ in
             self.cleanData()
             let credentialsDao = CredentialDAO()
             let credentials = credentialsDao.listNewCredentials() ?? []
             self.makeDegreeRows(credentials: credentials)
             self.startListing()
+            self.isFetching = false
         })
     }
 
@@ -238,27 +260,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             return
         }
 
-        var title = ""
-        var placeholder = ""
-        switch CredentialType(rawValue: credential.type) {
-        case .univerityDegree:
-            title = "credentials_university_degree".localize()
-            placeholder = "icon_university"
-        case .governmentIssuedId:
-            title = "credentials_government_id".localize()
-            placeholder = "icon_id"
-        case .proofOfEmployment:
-            title = "credentials_proof_employment".localize()
-            placeholder = "icon_proof_employment"
-        case .certificatOfInsurance:
-            title = "credentials_certificate_insurance".localize()
-            placeholder = "icon_insurance"
-        default:
-            print("Unrecognized type")
-        }
-
-        cell.config(title: title, subtitle: credential.issuerName, logoData: nil,
-                    logoPlaceholderNamed: placeholder, date: credential.dateReceived)
+        cell.config(title: credential.credentialName, subtitle: credential.issuerName, logoData: nil,
+                    logoPlaceholderNamed: credential.logoPlaceholder, date: credential.dateReceived)
     }
 
     func tappedAction(for cell: NotificationViewCell) {
@@ -284,31 +287,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
         let cellRow = degreeRows?[cell.indexPath!.row]
         // Config for a Degree
-        if let degree = cellRow?.value as? Degree {
-            var title = ""
-            var placeholder = ""
-            switch degree.type {
-            case .univerityDegree:
-                title = "credentials_university_degree".localize()
-                placeholder = "icon_university"
-            case .governmentIssuedId:
-                title = "credentials_government_id".localize()
-                placeholder = "icon_id"
-            case .proofOfEmployment:
-                title = "credentials_proof_employment".localize()
-                placeholder = "icon_proof_employment"
-            case .certificatOfInsurance:
-                title = "credentials_certificate_insurance".localize()
-                placeholder = "icon_insurance"
-            default:
-                print("Unrecognized type")
-            }
-            cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil, logoPlaceholderNamed: placeholder)
-        }
-        // Config for an Id
-        else if cellRow?.value is LoggedUser {
-            cell.config(title: "credentials_document_title".localize(), subtitle: nil,
-                        logoData: nil, logoPlaceholderNamed: "ico_placeholder_credential")
+        if let credential = cellRow?.value as? Credential {
+            cell.config(title: credential.credentialName, subtitle: credential.issuerName, logoData: nil,
+                        logoPlaceholderNamed: credential.logoPlaceholder)
         }
     }
 

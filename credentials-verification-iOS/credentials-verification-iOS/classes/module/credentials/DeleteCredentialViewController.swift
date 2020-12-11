@@ -30,18 +30,7 @@ class DeleteCredentialViewController: UIViewController {
         buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
 
         credentialName.text = credential?.credentialName
-        switch credential?.credentialType {
-        case .governmentIssuedId:
-            credentialIcon.image = #imageLiteral(resourceName: "icon_id")
-        case .univerityDegree:
-            credentialIcon.image = #imageLiteral(resourceName: "icon_university")
-        case .proofOfEmployment:
-            credentialIcon.image = #imageLiteral(resourceName: "icon_proof_employment")
-        case .certificatOfInsurance:
-            credentialIcon.image = #imageLiteral(resourceName: "icon_insurance")
-        default:
-            print("Unrecognized type")
-        }
+        credentialIcon.image = UIImage(named: credential?.logoPlaceholder ?? "")
     }
 
     static func makeThisView() -> DeleteCredentialViewController {

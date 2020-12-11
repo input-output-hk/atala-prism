@@ -19,14 +19,20 @@ public class Credential: NSManagedObject {
 
     var credentialName: String {
         switch credentialType {
-        case .univerityDegree:
+        case .demoUniversityDegree, .univerityDegree:
             return "credentials_university_degree".localize()
-        case .governmentIssuedId:
+        case .demoGovernmentIssuedId, .governmentIssuedId:
             return "credentials_government_id".localize()
-        case .proofOfEmployment:
+        case .demoProofOfEmployment, .proofOfEmployment:
             return "credentials_proof_employment".localize()
-        case .certificatOfInsurance:
+        case .demoCertificateOfInsurance, .certificatOfInsurance:
             return "credentials_certificate_insurance".localize()
+        case .georgiaNationalID:
+            return "credentials_georgia_national_id".localize()
+        case .georgiaEducationalDegree:
+            return "credentials_georgia_educational_degree".localize()
+        case .georgiaEducationalDegreeTranscript:
+            return "credentials_georgia_educational_degree_transcript".localize()
         default:
             return ""
         }
@@ -34,14 +40,20 @@ public class Credential: NSManagedObject {
 
     var logoPlaceholder: String {
         switch credentialType {
-        case .univerityDegree:
+        case .demoUniversityDegree, .univerityDegree:
             return "icon_university"
-        case .governmentIssuedId:
+        case .demoGovernmentIssuedId, .governmentIssuedId:
             return "icon_id"
-        case .proofOfEmployment:
+        case .demoProofOfEmployment, .proofOfEmployment:
             return "icon_proof_employment"
-        case .certificatOfInsurance:
+        case .demoCertificateOfInsurance, .certificatOfInsurance:
             return "icon_insurance"
+        case .georgiaNationalID:
+            return "icon_national_id"
+        case .georgiaEducationalDegree:
+            return "icon_educational_degree"
+        case .georgiaEducationalDegreeTranscript:
+            return "icon_educational_degree_transcript"
         default:
             return "icon_id"
         }

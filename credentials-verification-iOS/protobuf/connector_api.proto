@@ -70,6 +70,9 @@ service ConnectorService {
   // Available to: Issuer, Holder, Validator
   rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
 
+  // Stream the messages received after the given optional message
+  rpc GetMessageStream (GetMessageStreamRequest) returns (stream GetMessageStreamResponse) {}
+
   // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
   rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
 
@@ -162,13 +165,22 @@ message GenerateConnectionTokenResponse {
 
 // Request to return messages for us after the given known message (if any)
 message GetMessagesPaginatedRequest {
-  string lastSeenMessageId = 1; // returned credentials will have been received after the given message (if any)
-  int32 limit = 2; // maximum number of credentials to return, must be > 0
+  string lastSeenMessageId = 1; // returned messages will have been received after the given message (if any)
+  int32 limit = 2; // maximum number of messages to return, must be > 0
 }
 
 // Response with messages
 message GetMessagesPaginatedResponse {
   repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+}
+
+message GetMessageStreamRequest {
+  // Last message seen by the client, so only newer messages are returned
+  string lastSeenMessageId = 1;
+}
+
+message GetMessageStreamResponse {
+  io.iohk.atala.prism.protos.ReceivedMessage message = 1;
 }
 
 message GetMessagesForConnectionRequest {
@@ -262,10 +274,11 @@ message GetBuildInfoRequest {}
 message GetBuildInfoResponse {
   string version = 1;
   string scalaVersion = 2;
-  string millVersion = 3;
+  string sbtVersion = 3;
   string buildTime = 4;
   string nodeVersion = 5;
 }
+
 
 
 // MARK: - connector_models.proto
@@ -447,12 +460,29 @@ message RevokeCredentialOperation {
     string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
 }
 
+message CredentialBatchData {
+    string issuerDID = 1;
+    bytes merkleRoot = 2;
+}
+
+message IssueCredentialBatchOperation {
+    CredentialBatchData credentialBatchData = 1;
+}
+
+message RevokeCredentialsOperation {
+    bytes previousOperationHash = 1; // the hash of the operation that issued the batch
+    string credentialBatchId = 2; // the corresponding batch id, as returned in IssueCredentialBatchResponse
+    repeated bytes credentialsToRevoke = 3; // hashes of the credentials to revoke. If empty, the full batch is revoked
+}
+
 message AtalaOperation {
     oneof operation {
         CreateDIDOperation createDid = 1;
         UpdateDIDOperation updateDid = 2;
         IssueCredentialOperation issueCredential = 3;
         RevokeCredentialOperation revokeCredential = 4;
+        IssueCredentialBatchOperation issueCredentialBatch = 5;
+        RevokeCredentialsOperation revokeCredentials = 6;
     };
 }
 
@@ -462,8 +492,10 @@ message SignedAtalaOperation {
     AtalaOperation operation = 3;
 }
 
-
 // MARK: - common_models.proto
+
+message HealthCheckRequest {}
+message HealthCheckResponse {}
 
 message Date {
     int32 year = 1; // positive value
@@ -492,6 +524,12 @@ message TransactionInfo {
     BlockInfo block = 3; // Block the transaction was included in
 }
 
+enum TransactionStatus {
+    UNKNOWN = 0; // The transaction is not an Atala PRISM transaction
+    PENDING = 1; // The transaction is pending to be accepted by the blockchain
+    IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM
+    CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable
+}
 
 // MARK: - credential_models.proto
 
@@ -644,12 +682,36 @@ message EncryptedMessage {
     bytes encryptedContent = 2;
 }
 
+message RegisterAddressMessage {
+    string cardanoAddress = 1;
+    string cardanoNetwork = 2;
+}
+
+message PayIdMessage {
+    string paymentInformation = 1;
+}
+
+message MirrorMessage {
+    oneof message {
+        RegisterAddressMessage registerAddressMessage = 1;
+        PayIdMessage payIdMessage = 2;
+    }
+}
+
+// ATA-3250: Until we implement e2e encryption, we will share
+// credentials using this message
+message PlainTextCredential {
+    string encodedCredential = 1; // the encoded signed credential
+}
+
 message AtalaMessage {
     oneof message {
         IssuerSentCredential issuerSentCredential = 1;
         HolderSentCredential holderSentCredential = 2;
         ProofRequest proofRequest = 3;
         EncryptedMessage encryptedMessage = 4;
+        MirrorMessage mirrorMessage = 5;
+        PlainTextCredential plainCredential = 6;
     }
 }
 

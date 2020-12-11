@@ -46,18 +46,6 @@ class ConnectionProofRequestCell: BaseTableViewCell, SwitchCustomDelegate {
         self.checkbox.changeState(newState: false)
         checkbox.delegate = self
         self.credential = credential
-        switch credential.credentialType {
-        case .governmentIssuedId:
-            labelTitle.text = "credentials_detail_title_type_government_id".localize()
-        case .univerityDegree:
-            labelTitle.text = "credentials_detail_title_type_university".localize()
-        case .proofOfEmployment:
-            labelTitle.text = "credentials_detail_title_type_employment".localize()
-        case .certificatOfInsurance:
-            labelTitle.text = "credentials_detail_title_type_insurance".localize()
-        case .none:
-            print("Undefined credential type")
-        }
-
+        labelTitle.text = credential.credentialName
     }
 }

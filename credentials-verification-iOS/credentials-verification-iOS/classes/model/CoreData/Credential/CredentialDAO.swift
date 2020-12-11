@@ -68,17 +68,54 @@ class CredentialDAO: BaseDAO {
                           viewed: Bool, messageId: String, connectionId: String) -> (Credential, Bool)? {
 
         if let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument) {
-
+            var jsonStr = ""
+            if let jsonData = sentCredential.credentialDocument.data(using: String.Encoding.utf8) {
+                var jsonObject = try? JSONSerialization.jsonObject(with: jsonData,
+                                                                   options: .allowFragments) as? [String: Any]
+                jsonObject?.removeValue(forKey: "view")
+                let prettyJsonData = try? JSONSerialization.data(withJSONObject: jsonObject!, options: .prettyPrinted)
+                let prettyPrintedJson = String(data: prettyJsonData!, encoding: String.Encoding.utf8)
+                jsonStr = prettyPrintedJson ?? ""
+            }
             return try? createCredential(type: sentCredential.typeID, credentialId: messageId,
                                          issuerId: connectionId, issuerName: (credential.issuer?.name)!,
                                          htmlView: (credential.view?.html)!, dateReceived: Date(),
-                                         viewed: viewed, encoded: sentCredential.serializedData())
+                                         viewed: viewed, encoded: sentCredential.serializedData(), json: jsonStr)
+        }
+        return nil
+    }
+
+    func createCredential(message: Io_Iohk_Atala_Prism_Protos_AtalaMessage,
+                          viewed: Bool, messageId: String, connectionId: String,
+                          issuerName: String) -> (Credential, Bool)? {
+        let plainCredential = message.plainCredential
+        let base64 =  String(plainCredential.encodedCredential.split(separator: ".")[0])
+        if let jsonData = Data(base64Encoded: base64),
+        let jsonStr = String(data: jsonData, encoding: .utf8),
+        let credential = Mapper<Degree>().map(JSONString: jsonStr) {
+
+            var jsonObject = try? JSONSerialization.jsonObject(with: jsonData,
+                                                               options: .allowFragments) as? [String: Any]
+            var claims = jsonObject?["claims"] as? [String: Any]
+            claims?.removeValue(forKey: "html")
+            jsonObject?["claims"] = claims
+            let prettyJsonData = (try? JSONSerialization.data(withJSONObject: jsonObject!,
+                                                              options: .prettyPrinted)) ?? Data()
+            let prettyPrintedJson = String(data: prettyJsonData, encoding: String.Encoding.utf8) ?? ""
+            let credentialType = credential.claims?.credentialType ?? ""
+            let htmlView = String(htmlEncodedString: (credential.claims?.html)) ?? ""
+
+            return try? createCredential(type: credentialType, credentialId: messageId,
+                                         issuerId: connectionId, issuerName: issuerName,
+                                         htmlView: htmlView, dateReceived: Date(), viewed: viewed,
+                                         encoded: message.serializedData(), json: prettyPrintedJson)
         }
         return nil
     }
 
     func createCredential(type: String, credentialId: String, issuerId: String, issuerName: String,
-                          htmlView: String, dateReceived: Date, viewed: Bool, encoded: Data) -> (Credential, Bool)? {
+                          htmlView: String, dateReceived: Date, viewed: Bool, encoded: Data,
+                          json: String) -> (Credential, Bool)? {
         guard let managedContext = getManagedContext() else { return nil }
         let fetchRequest = Credential.createFetchRequest()
         fetchRequest.predicate = NSPredicate(format: "credentialId == %@", credentialId)
@@ -97,7 +134,8 @@ class CredentialDAO: BaseDAO {
             credential.dateReceived = dateReceived
             credential.viewed = viewed
             credential.encoded = encoded
-            
+            credential.json = json
+
             do {
                 try managedContext.save()
                 return (credential, true)

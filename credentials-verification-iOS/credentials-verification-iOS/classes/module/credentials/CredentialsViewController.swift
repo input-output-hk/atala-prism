@@ -213,7 +213,7 @@ class CredentialsViewController: ListingBaseViewController {
         customPresentViewController(confirmation.presentr, viewController: confirmation, animated: true)
 
     }
-    
+
     // MARK: Verify credential
 
     func showCredentialVerify() {

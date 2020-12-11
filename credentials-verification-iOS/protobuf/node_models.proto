@@ -78,12 +78,29 @@ message RevokeCredentialOperation {
     string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
 }
 
+message CredentialBatchData {
+    string issuerDID = 1;
+    bytes merkleRoot = 2;
+}
+
+message IssueCredentialBatchOperation {
+    CredentialBatchData credentialBatchData = 1;
+}
+
+message RevokeCredentialsOperation {
+    bytes previousOperationHash = 1; // the hash of the operation that issued the batch
+    string credentialBatchId = 2; // the corresponding batch id, as returned in IssueCredentialBatchResponse
+    repeated bytes credentialsToRevoke = 3; // hashes of the credentials to revoke. If empty, the full batch is revoked
+}
+
 message AtalaOperation {
     oneof operation {
         CreateDIDOperation createDid = 1;
         UpdateDIDOperation updateDid = 2;
         IssueCredentialOperation issueCredential = 3;
         RevokeCredentialOperation revokeCredential = 4;
+        IssueCredentialBatchOperation issueCredentialBatch = 5;
+        RevokeCredentialsOperation revokeCredentials = 6;
     };
 }
 

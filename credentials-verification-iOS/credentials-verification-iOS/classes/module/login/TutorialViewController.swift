@@ -97,7 +97,7 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
     @IBAction func tappedButtonContinue(_ sender: Any) {
         presenterImpl.tappedRegisterButton()
     }
-    
+
     @IBAction func tappedButtonRestoreAccount(_ sender: Any) {
         presenterImpl.tappedRestoreAccountButton()
     }

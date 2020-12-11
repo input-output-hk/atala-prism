@@ -28,9 +28,9 @@ class ImageBank: Mappable {
         if SharedMemory.global.imageBank == nil {
             SharedMemory.global.imageBank = ImageBank()
         }
-        
+
         SharedMemory.global.imageBank?.logos?[key] = logo
-        
+
         SharedMemory.global.imageBank = SharedMemory.global.imageBank
     }
 }

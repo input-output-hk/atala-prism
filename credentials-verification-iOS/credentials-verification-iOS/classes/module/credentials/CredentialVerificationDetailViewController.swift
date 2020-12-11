@@ -81,22 +81,14 @@ class CredentialVerificationDetailViewController: UIViewController {
     }
 
     func setData() {
-        guard let encoded = credential?.encoded else { return }
-        
+
         txHashLbl.text = "#a4b412fdf47dfd457djhgf3bftjtyhn6hw45hwhw45gg345"
         dateLbl.text = "credentials_verify_date_time".localize()?
             .appending(credential?.dateReceived.dateTimeString() ?? "")
 
-        let proto  = try? Io_Iohk_Atala_Prism_Protos_Credential(serializedData: encoded)
-        guard let jsonData = proto?.credentialDocument.data(using: String.Encoding.utf8)! else { return }
-        var jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: .allowFragments) as? [String: Any]
-        jsonObject?.removeValue(forKey: "view")
-        let prettyJsonData = try? JSONSerialization.data(withJSONObject: jsonObject!, options: .prettyPrinted)
-        let prettyPrintedJson = String(data: prettyJsonData!, encoding: String.Encoding.utf8)
-        fileTv.text = prettyPrintedJson
+        fileTv.text = credential?.json
 
-        if let planeJsonData = try? JSONSerialization.data(withJSONObject: jsonObject!,
-                                                           options: .withoutEscapingSlashes) {
+        if let planeJsonData = credential?.json.data(using: .utf8) {
             let hash = CryptoUtils.global.sha256(data: planeJsonData)
             let data = Data(bytes: hash, count: hash.count)
             fileHashLbl.text = "#\(data.hex)"

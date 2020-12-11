@@ -2,15 +2,23 @@
 import ObjectMapper
 
 enum CredentialType: String {
-    case univerityDegree = "VerifiableCredential/AirsideDegreeCredential"
-    case governmentIssuedId  = "VerifiableCredential/RedlandIdCredential"
-    case proofOfEmployment = "VerifiableCredential/AtalaEmploymentCredential"
-    case certificatOfInsurance = "VerifiableCredential/AtalaCertificateOfInsurance"
+    case demoUniversityDegree = "VerifiableCredential/AirsideDegreeCredential"
+    case demoGovernmentIssuedId  = "VerifiableCredential/RedlandIdCredential"
+    case demoProofOfEmployment = "VerifiableCredential/AtalaEmploymentCredential"
+    case demoCertificateOfInsurance = "VerifiableCredential/AtalaCertificateOfInsurance"
+    case univerityDegree = "educational"
+    case governmentIssuedId  = "governmentId"
+    case proofOfEmployment = "proofOfEmployment"
+    case certificatOfInsurance = "healthIsurance"
+    case georgiaEducationalDegree = "GeorgiaEducationalDegree"
+    case georgiaEducationalDegreeTranscript = "GeorgiaEducationalDegreeTranscript"
+    case georgiaNationalID = "GeorgiaNationalID"
 }
 
 class CredentialView: Mappable {
 
     var html: String?
+    var credentialType: String?
 
     init() {}
 
@@ -19,6 +27,7 @@ class CredentialView: Mappable {
     // Mappable
     func mapping(map: Map) {
         html <- map["html"]
+        credentialType <- map["credentialType"]
     }
 
 }
@@ -87,6 +96,8 @@ class Degree: Mappable {
     var isNew: Bool?
     var messageId: String?
     var view: CredentialView?
+    var issuerStr: String?
+    var claims: CredentialView?
 
     init() {}
 
@@ -105,9 +116,12 @@ class Degree: Mappable {
         policyNumber <- map["policyNumber"]
         productClass <- map["productClass"]
         view <- map["view"]
+        issuerStr <- map["issuer"]
+        claims <- map["claims"]
     }
 
-    static func build(_ sentCredential: Io_Iohk_Atala_Prism_Protos_Credential, messageId: String, isNew: Bool) -> Degree? {
+    static func build(_ sentCredential: Io_Iohk_Atala_Prism_Protos_Credential, messageId: String,
+                      isNew: Bool) -> Degree? {
 
         let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument)
 

@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package io.iohk.atala.prism.protos;
 
+message HealthCheckRequest {}
+message HealthCheckResponse {}
+
 message Date {
     int32 year = 1; // positive value
     int32 month = 2; // value in the [1, 12] interval
@@ -27,4 +30,11 @@ message TransactionInfo {
     string transactionId = 1; // ID of the transaction
     Ledger ledger = 2; // Ledger the transaction was published to
     BlockInfo block = 3; // Block the transaction was included in
+}
+
+enum TransactionStatus {
+    UNKNOWN = 0; // The transaction is not an Atala PRISM transaction
+    PENDING = 1; // The transaction is pending to be accepted by the blockchain
+    IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM
+    CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable
 }

@@ -47,6 +47,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var credentials: [Credential] = []
     var filteredCredentials: [Credential] = []
 
+    private let fetchLock = NSLock()
+    @Atomic var isFetching = false
+
     // MARK: Modes
 
     func getMode() -> CredentialsMode {
@@ -154,6 +157,14 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func fetchElements() {
 
+        fetchLock.lock()
+        if isFetching {
+            fetchLock.unlock()
+            return
+        }
+        isFetching = true
+        fetchLock.unlock()
+
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContacts()
 
@@ -170,12 +181,22 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 // Parse the messages
                 for response in responses {
                     for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData: message.message) {
-                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty,
-                                let credential = credentialsDao.createCredential(sentCredential:
+                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                            message.message) {
+                            var cred: (Credential, Bool)?
+                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
+                                cred = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
                                                                                messageId: message.id,
-                                                                               connectionId: message.connectionID) {
+                                                                               connectionId: message.connectionID)
+                            } else if !atalaMssg.plainCredential.encodedCredential.isEmpty {
+                                let issuer = contacts?.first(where: { $0.connectionId == message.connectionID})
+                                cred = credentialsDao.createCredential(message: atalaMssg,
+                                                                       viewed: false, messageId: message.id,
+                                                                       connectionId: message.connectionID,
+                                                                       issuerName: issuer?.name ?? "")
+                            }
+                            if let credential = cred {
                                 contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
                                 if credential.1 {
                                     historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
@@ -196,6 +217,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.startListing()
+            self.isFetching = false
         }, error: { _ in
             self.cleanData()
             let credentialsDao = CredentialDAO()
@@ -203,6 +225,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             self.filteredCredentials.append(self.credentials)
             self.makeDegreeRows()
             self.startListing()
+            self.isFetching = false
         })
     }
 

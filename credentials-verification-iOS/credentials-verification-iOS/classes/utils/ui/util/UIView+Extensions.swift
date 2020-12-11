@@ -24,7 +24,7 @@ extension UIView {
         }
         self.addGestureRecognizer(gesture)
     }
-    
+
     func addOnLongPressListener(action: SelectorAction?) {
 
         let gesture = UILongPressGestureRecognizer(target: action, action: #selector(action?.action(_:)))

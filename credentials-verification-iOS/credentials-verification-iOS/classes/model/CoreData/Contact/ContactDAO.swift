@@ -52,6 +52,7 @@ class ContactDAO: BaseDAO {
         return nil
     }
 
+    @discardableResult
     func updateContact() -> Bool? {
         guard let managedContext = getManagedContext() else { return nil }
         do {

@@ -82,7 +82,7 @@ class ConnectionsViewController: ListingBaseViewController {
         viewEmpty.isHidden = !isEmpty
         viewScanQr.isHidden = !isScanningQr
         viewTable.isHidden = isEmpty || isScanningQr
-        
+
         // Search Bar
         searchBar.isHidden = isDetail
         tableTopMarginCtrt.constant = isDetail ? -56 : 0

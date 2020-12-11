@@ -27,6 +27,7 @@
 		B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */; };
 		B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16F24BF89F100AF70DF /* ContactDAO.swift */; };
 		B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */; };
+		B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31F0922257AB98800BCA71C /* AtomicProperty.swift */; };
 		B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */; };
 		B32A7B72243288A500B52586 /* ConnectionProofRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */; };
 		B32B6352250AAA8900162A49 /* BaseDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B6351250AAA8900162A49 /* BaseDAO.swift */; };
@@ -297,6 +298,7 @@
 		B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialDAO.swift; sourceTree = "<group>"; };
 		B309C16F24BF89F100AF70DF /* ContactDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDAO.swift; sourceTree = "<group>"; };
 		B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryDAO.swift; sourceTree = "<group>"; };
+		B31F0922257AB98800BCA71C /* AtomicProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicProperty.swift; sourceTree = "<group>"; };
 		B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConnectionProofRequest.storyboard; sourceTree = "<group>"; };
 		B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestViewController.swift; sourceTree = "<group>"; };
 		B32B6351250AAA8900162A49 /* BaseDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseDAO.swift; sourceTree = "<group>"; };
@@ -1098,6 +1100,7 @@
 				EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */,
 				EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */,
 				B3C760172489777C00AC46DC /* Env.swift */,
+				B31F0922257AB98800BCA71C /* AtomicProperty.swift */,
 			);
 			path = general;
 			sourceTree = "<group>";
@@ -1934,6 +1937,7 @@
 				EE7D4CFC236759A1007C31A8 /* DashboardViewController.swift in Sources */,
 				EE7D4C012366B9C4007C31A8 /* BasePresenter.swift in Sources */,
 				EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */,
+				B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */,
 				EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */,
 				EE7D4CEF23673C39007C31A8 /* UITextView+Extensions2.swift in Sources */,
 				EE7D4C032366B9C4007C31A8 /* BaseView.swift in Sources */,
@@ -2192,7 +2196,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 109;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -2218,7 +2222,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 109;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

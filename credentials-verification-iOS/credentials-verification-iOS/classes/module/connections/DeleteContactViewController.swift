@@ -37,18 +37,7 @@ class DeleteContactViewController: UIViewController {
         contactIcon.applyDataImage(data: contact?.logo, placeholderNamed: "ico_placeholder_credential")
         var credentialsList = ""
         for credential in credentials ?? [] {
-            switch credential.credentialType {
-            case .governmentIssuedId:
-                credentialsList.append("• \("contacts_id_credential".localize() ?? "")")
-            case .univerityDegree:
-                credentialsList.append("• \("contacts_university_credential".localize() ?? "")")
-            case .proofOfEmployment:
-                credentialsList.append("• \("contacts_employment_credential".localize() ?? "")")
-            case .certificatOfInsurance:
-                credentialsList.append("• \("contacts_insurance_credential".localize() ?? "")")
-            default:
-                print("Unrecognized type")
-            }
+            credentialsList.append("• \(credential.credentialName)")
         }
         credentialsLbl.text = credentialsList
         let emptyCredentials = credentials?.isEmpty ?? true

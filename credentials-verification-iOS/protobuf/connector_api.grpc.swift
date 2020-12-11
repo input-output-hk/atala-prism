@@ -79,6 +79,22 @@ fileprivate final class Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesPa
   override class var method: String { return "/io.iohk.atala.prism.protos.ConnectorService/GetMessagesPaginated" }
 }
 
+internal protocol Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCall: ClientCallServerStreaming {
+  /// Do not call this directly, call `receive()` in the protocol extension below instead.
+  func _receive(timeout: DispatchTime) throws -> Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse?
+  /// Call this to wait for a result. Nonblocking.
+  func receive(completion: @escaping (ResultOrRPCError<Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse?>) -> Void) throws
+}
+
+internal extension Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCall {
+  /// Call this to wait for a result. Blocking.
+  func receive(timeout: DispatchTime = .distantFuture) throws -> Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse? { return try self._receive(timeout: timeout) }
+}
+
+fileprivate final class Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCallBase: ClientCallServerStreamingBase<Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest, Io_Iohk_Atala_Prism_Protos_GetMessageStreamResponse>, Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCall {
+  override class var method: String { return "/io.iohk.atala.prism.protos.ConnectorService/GetMessageStream" }
+}
+
 internal protocol Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesForConnectionCall: ClientCallUnary {}
 
 fileprivate final class Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesForConnectionCallBase: ClientCallUnaryBase<Io_Iohk_Atala_Prism_Protos_GetMessagesForConnectionRequest, Io_Iohk_Atala_Prism_Protos_GetMessagesForConnectionResponse>, Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesForConnectionCall {
@@ -183,6 +199,11 @@ internal protocol Io_Iohk_Atala_Prism_Protos_ConnectorServiceService: ServiceCli
   /// Asynchronous. Unary.
   @discardableResult
   func getMessagesPaginated(_ request: Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest, metadata customMetadata: Metadata, completion: @escaping (Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse?, CallResult) -> Void) throws -> Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesPaginatedCall
+
+  /// Asynchronous. Server-streaming.
+  /// Send the initial message.
+  /// Use methods on the returned object to get streamed responses.
+  func getMessageStream(_ request: Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest, metadata customMetadata: Metadata, completion: ((CallResult) -> Void)?) throws -> Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCall
 
   /// Synchronous. Unary.
   func getMessagesForConnection(_ request: Io_Iohk_Atala_Prism_Protos_GetMessagesForConnectionRequest, metadata customMetadata: Metadata) throws -> Io_Iohk_Atala_Prism_Protos_GetMessagesForConnectionResponse
@@ -323,6 +344,11 @@ internal extension Io_Iohk_Atala_Prism_Protos_ConnectorServiceService {
   @discardableResult
   func getMessagesPaginated(_ request: Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest, completion: @escaping (Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse?, CallResult) -> Void) throws -> Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesPaginatedCall {
     return try self.getMessagesPaginated(request, metadata: self.metadata, completion: completion)
+  }
+
+  /// Asynchronous. Server-streaming.
+  func getMessageStream(_ request: Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest, completion: ((CallResult) -> Void)?) throws -> Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCall {
+    return try self.getMessageStream(request, metadata: self.metadata, completion: completion)
   }
 
   /// Synchronous. Unary.
@@ -513,6 +539,14 @@ internal final class Io_Iohk_Atala_Prism_Protos_ConnectorServiceServiceClient: S
   @discardableResult
   internal func getMessagesPaginated(_ request: Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest, metadata customMetadata: Metadata, completion: @escaping (Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse?, CallResult) -> Void) throws -> Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesPaginatedCall {
     return try Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessagesPaginatedCallBase(channel)
+      .start(request: request, metadata: customMetadata, completion: completion)
+  }
+
+  /// Asynchronous. Server-streaming.
+  /// Send the initial message.
+  /// Use methods on the returned object to get streamed responses.
+  internal func getMessageStream(_ request: Io_Iohk_Atala_Prism_Protos_GetMessageStreamRequest, metadata customMetadata: Metadata, completion: ((CallResult) -> Void)?) throws -> Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCall {
+    return try Io_Iohk_Atala_Prism_Protos_ConnectorServiceGetMessageStreamCallBase(channel)
       .start(request: request, metadata: customMetadata, completion: completion)
   }
 
