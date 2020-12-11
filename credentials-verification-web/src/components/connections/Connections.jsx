@@ -36,7 +36,8 @@ const Connections = ({
 
   const emptyProps = {
     photoSrc: noContacts,
-    model: t('contacts.title')
+    model: t('contacts.title'),
+    isFilter: filterProps.searchText || filterProps.status
   };
 
   const onQRClosed = () => {
