@@ -60,7 +60,7 @@ const Contact = ({
         </div>
         <Tabs defaultActiveKey={ISSUED} className="CredentialInfo">
           <TabPane key={ISSUED} tab={`${tp('credIssued')} (${issuedCredentials.length})`}>
-            <p>{tp('detailSection.credentialsSubtitle')}</p>
+            <p>{tp('detailSection.credentialsIssuedSubtitle')}</p>
             <div className="CredentialsContainer">
               {loading.issuedCredentials ? (
                 <SimpleLoading size="xs" />
@@ -72,7 +72,7 @@ const Contact = ({
             </div>
           </TabPane>
           <TabPane key={RECEIVED} tab={`${tp('credReceived')} (${receivedCredentials.length})`}>
-            <p>{tp('detailSection.credentialsSubtitle')}</p>
+            <p>{tp('detailSection.credentialsReceivedSubtitle')}</p>
             <div className="CredentialsContainer">
               {loading.receivedCredentials ? (
                 <SimpleLoading size="xs" />

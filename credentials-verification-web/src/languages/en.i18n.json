@@ -121,7 +121,8 @@
         "title": "Contact Detail",
         "subtitle": "General Information",
         "groupsSubtitle": "Groups where this contact belongs",
-        "credentialsSubtitle": "View the credentials that you have sent to the contact"
+        "credentialsIssuedSubtitle": "View the credentials that you have issued for this contact",
+        "credentialsReceivedSubtitle": "View the credentials that you have received from this contact"
       }
     }
   },
@@ -650,12 +651,10 @@
     }
   },
   "importContacts": {
-    "title": "Import Contacts",
-    "info": "Choose between this two options: Bulk Import or Mannual Import",
     "success": "Contact(s) successfully created",
     "importTypeSelection": {
       "title": "Import Contacts",
-      "info": "Choose between this two options: Bulk Import or Mannual Import"
+      "info": "Choose between this two options: Bulk Import or Manual Import"
     },
     "bulkImportCard": {
       "title": "Bulk Import",
@@ -667,7 +666,7 @@
     },
     "bulkImportStep": {
       "title": "Import Contacts Bulk Import",
-      "info": "Follow this steps first upload the spreadsheet, fill it with the required information and then upload it to check the fields."
+      "info": "Follow these steps; first upload the spreadsheet, populate it with the required information and then upload it to check the fields."
     },
     "buttons": {
       "previous": "Back",
@@ -675,11 +674,9 @@
     }
   },
   "bulkImport": {
-    "title": "Import Contacts Bulk Import",
-    "info": "Follow this steps first upload the spreadsheet, fill it with the required information and then upload it to check the fields.",
     "completeSpreadsheet": {
       "title": "Complete Spreadsheet",
-      "info": "Credential template process: first download template .csv file, then enter credential information and finally Re-upload .csv file.",
+      "info": "First download template .csv file, enter credential information and finally re-upload .csv file.",
       "downloadText": "Download",
       "uploadText": "Upload"
     },
