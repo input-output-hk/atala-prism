@@ -1,15 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Avatar, Col } from 'antd';
+import { Avatar, Col, Tooltip } from 'antd';
 import SettingsMenu from '../SettingsMenu/SettingsMenu';
 import { getInitials } from '../../../../helpers/genericHelpers';
 import { useSession } from '../../../providers/SessionContext';
 
 import './_style.scss';
 
+const MAX_DISPLAY_LENGTH = 10;
+
 const UserAvatar = ({ logo }) => {
   const { session, logout } = useSession();
   const organisationName = session?.organisationName;
+  const orgNameIsTruncated = organisationName?.length > MAX_DISPLAY_LENGTH;
 
   return (
     <Col lg={4} className="UserAvatar">
@@ -21,7 +24,9 @@ const UserAvatar = ({ logo }) => {
             {getInitials(organisationName)}
           </Avatar>
         )}
-        <p className="UserLabel">{organisationName}</p>
+        <Tooltip title={orgNameIsTruncated ? organisationName : ''}>
+          <p className="UserLabel">{organisationName}</p>
+        </Tooltip>
       </div>
       <SettingsMenu logout={logout} />
     </Col>
