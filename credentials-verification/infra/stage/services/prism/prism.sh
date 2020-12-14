@@ -200,6 +200,10 @@ state_key="infra/stage/services/prism/$env_name_short/terraform.tfstate"
 intdemo_enabled=${INTDEMO_ENABLED:-"false"}
 geud_enabled=${GEUD_ENABLED:-"false"}
 
+if [ -z ${TF_VAR_cardano_confirmation_blocks:-} ] && [ -n "${NODE_CARDANO_CONFIRMATION_BLOCKS:-}" ]; then
+  export TF_VAR_cardano_confirmation_blocks=$NODE_CARDANO_CONFIRMATION_BLOCKS
+fi
+
 if [ -z ${TF_VAR_cardano_wallet_id:-} ] && [ -n "${NODE_CARDANO_WALLET_ID:-}" ]; then
   export TF_VAR_cardano_wallet_id=$NODE_CARDANO_WALLET_ID
 fi

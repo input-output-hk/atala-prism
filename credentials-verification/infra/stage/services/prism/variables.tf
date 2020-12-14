@@ -115,6 +115,12 @@ variable postgres_password {
   type        = string
 }
 
+variable cardano_confirmation_blocks {
+  description = "Number of blocks to wait for a particular Cardano block to be confirmed by PRISM"
+  type        = number
+  default     = 31
+}
+
 variable cardano_wallet_id {
   description = "Cardano wallet id to use for PRISM transactions"
   default     = ""

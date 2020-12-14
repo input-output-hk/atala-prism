@@ -40,6 +40,7 @@ module "node" {
   psql_username = var.node_psql_username
   psql_password = var.node_psql_password
 
+  cardano_confirmation_blocks   = var.cardano_confirmation_blocks
   cardano_db_sync_psql_host     = var.cardano_db_sync_psql_host
   cardano_db_sync_psql_username = var.cardano_db_sync_psql_username
   cardano_db_sync_psql_password = var.cardano_db_sync_psql_password

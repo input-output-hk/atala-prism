@@ -259,6 +259,7 @@ module "prism_service" {
   node_psql_username      = local.node_psql_username
   node_psql_password      = local.node_psql_password
 
+  cardano_confirmation_blocks   = var.cardano_confirmation_blocks
   cardano_db_sync_psql_host     = local.cardano_db_sync_psql_host
   cardano_db_sync_psql_username = local.cardano_db_sync_psql_username
   cardano_db_sync_psql_password = local.cardano_db_sync_psql_password
@@ -536,4 +537,3 @@ resource aws_route53_record grpc_console_dns_entry {
   ttl     = "300"
   records = [module.prism_service.envoy_lb_dns_name]
 }
-
