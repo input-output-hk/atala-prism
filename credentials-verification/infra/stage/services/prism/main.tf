@@ -337,10 +337,14 @@ locals {
   # intdemo www
   env_prod = "www"
   # prism console develop
-  env_develop = "develop"
+  envs = ["develop", "demo"]
+  # cloud front is enabled to redirect traffic
+  is_cf_enabled = (contains(local.envs,var.env_name_short))
+  # cloud front enabled geud
+  cf_enabled_geud = local.is_cf_enabled && var.geud_enabled
   # cloud front will be used only for develop or prod environment server for http to https redirection
-  endpoint_cf_or_lb = (var.env_name_short == local.env_develop) ? data.dns_cname_record_set.console_cf_dns[0].host : module.prism_service.envoy_lb_dns_name
-  cf_cname_prefix = (var.geud_enabled && var.env_name_short == local.env_develop) ? "console-${local.env_develop}" : "console-${var.env_name_short}"
+  endpoint_cf_or_lb = local.is_cf_enabled ? data.dns_cname_record_set.console_cf_dns[0].host : module.prism_service.envoy_lb_dns_name
+  cf_cname_prefix = "console-${var.env_name_short}"
 }
 
 resource aws_cloudfront_distribution intdemo_cf_dist {
@@ -405,7 +409,7 @@ resource aws_cloudfront_distribution intdemo_cf_dist {
 
 # management console cloud front distribution
 resource aws_cloudfront_distribution console_cf_dist {
-  count = var.geud_enabled && var.env_name_short == local.env_develop ? 1 : 0
+  count =  local.cf_enabled_geud ? 1 : 0
 
   origin {
     domain_name = module.prism_service.envoy_lb_dns_name
@@ -486,7 +490,7 @@ data dns_a_record_set cf_dns {
 # for management console , use the domain console-{var.env_name_short}.atalaprism.io
 # query CNAME record for cloudfront domain
 data dns_cname_record_set console_cf_dns {
-  count = var.geud_enabled && var.env_name_short == local.env_develop ? 1 : 0
+  count = local.cf_enabled_geud ? 1 : 0
   host  = aws_cloudfront_distribution.console_cf_dist[0].domain_name
 }
 
@@ -520,13 +524,16 @@ resource aws_route53_record docs_dns_entry {
   records = [module.prism_service.envoy_lb_dns_name]
 }
 
+
 # public DNS record for the PRISM grpc console
+# public DNS record for the browser wallet / management / mobile grpc calls
 # This is required to bypass the cloud front for grpc calls
 resource aws_route53_record grpc_console_dns_entry {
-  count   = var.geud_enabled ? 1 : 0
+  count   = var.geud_enabled  ? 1 : 0
   zone_id = var.atala_prism_zoneid
-  name    = "grpc-console-${var.env_name_short}.${var.atala_prism_domain}"
+  name    = "grpc-${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
   ttl     = "300"
   records = [module.prism_service.envoy_lb_dns_name]
 }
+

@@ -111,7 +111,6 @@ commands:
               mkdir -p $dest
               cp $reports/* $dest
             done
-
 jobs:
   deploy-ecr-images:
     working_directory: ~/repo
@@ -426,7 +425,12 @@ jobs:
 
       - run:
           name: Set environment variables
-          command: echo export CHROME_VERSION=\"$(google-chrome --version)\" >> $BASH_ENV
+          command: |
+            echo export CHROME_VERSION=\"$(google-chrome --version)\" >> $BASH_ENV
+            branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+            connectorUrl="https://grpc-$branchPrefix.atalaprism.io:4433"
+            echo "export CONNECTOR_URL=$connectorUrl" >> $BASH_ENV;
+            
 
       # Download and cache dependencies
       - restore_cache:
@@ -634,12 +638,33 @@ workflows:
                 - /develop.*/
                 - /test.*/
                 - /geud-test.*/
+                - /demo.*/
           requires:
             - build-credentials-verification-web
             - build-credentials-verification-landing
             - build-credentials-verification
             - build-prism-sdk
             - build-credentials-verification-webextension
+
+      - slack/approval-notification:
+          message: Approval required for managment console demo deployment Ask Mark / Jacek / Christos
+          webhook: '${DEMO_DEPLOYMENT_SLACK_HOOK}'
+          channel: "G01HD55ND6U"
+          filters:
+            branches:
+              only:
+                - demo
+          requires:
+            - deploy-ecr-images
+          
+      - hold: # <<< A job that will require manual approval in the CircleCI web application.
+          type: approval # <<< demo deployment "On Hold"
+          filters:
+            branches:
+              only:
+                - demo
+          requires: # We only run the "hold" job when deploy-ecr-images has succeeded
+            - slack/approval-notification
 
       - rebuild-prism-env:
           name: rebuild-intdemo-and-geud
@@ -671,6 +696,17 @@ workflows:
                 - /geud-test.*/
           requires:
             - deploy-ecr-images
+      - rebuild-prism-env:
+          name: rebuild-management-console-demo-only
+          intdemo-enabled: false
+          geud-enabled: true
+          filters:
+            branches:
+              only:
+                - demo
+          requires:
+            - deploy-ecr-images
+            - hold
       - trigger-integration-tests:
           filters:
             branches:

@@ -96,7 +96,7 @@ module "console" {
 
   prism_console_docker_image = var.prism_console_docker_image
   port                       = var.prism_console_port
-  connector_grpc_url         = "https://${var.env_name_short}.${var.atala_prism_domain}:4433"
+  connector_grpc_url         = "https://grpc-${var.env_name_short}.${var.atala_prism_domain}:4433"
 
   parent_name               = "prism-${var.env_name_short}"
   aws_region                = var.aws_region

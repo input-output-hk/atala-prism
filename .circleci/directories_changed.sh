@@ -22,7 +22,7 @@ fi
 echo "Current branch is '$branch'"
 
 # Branches that deploy an image should be fully tested
-ALWAYS_TEST_BRANCH_REGEX="^(develop|test|geud-test)"
+ALWAYS_TEST_BRANCH_REGEX="^(develop|test|geud-test|demo)"
 if [[ $branch =~ $ALWAYS_TEST_BRANCH_REGEX ]] ; then
     echo "Branch '$branch' should always be tested"
     exit 1
