@@ -51,7 +51,7 @@ const CredentialDetail = ({ credential, credentialTypes }) => {
               : t('credentials.detail.notPublished')}
           </span>
         </div>
-        <div>
+        <div className="ml">
           <CustomButton
             buttonProps={{
               className: 'theme-link',

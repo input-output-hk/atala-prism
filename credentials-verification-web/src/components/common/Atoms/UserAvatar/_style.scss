@@ -11,7 +11,6 @@
     .UserLabel {
       @include primary-text($body, $white);
       margin-left: 1em;
-      margin-right: 1em;
       width: 85px;
       white-space: nowrap;
       overflow: hidden !important;
