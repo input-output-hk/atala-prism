@@ -108,6 +108,13 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     message.warn(t('credentials.messages.notImplementedYet'));
   };
 
+  const cardanoExplorerHeader = (
+    <div className="CardanoExplorerHeader">
+      <img className="CardanoLogo" src={cardanoLogo} alt="CardanoLogo" />
+      <span>{t('credentials.detail.viewCardanoExplorer')}</span>
+    </div>
+  );
+
   const { transactionid, ledger } = credentialData?.issuanceproof || {};
 
   return (
@@ -145,34 +152,16 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
               contentPopOver={content}
             />
           </CardDetail>
-          <CardDetail title={t('credentials.detail.notarizationTitle')} info={infoSecondCard}>
-            <DataDetail
-              img={hashed}
-              title={t('credentials.detail.fileHash')}
-              data="#a4b412fdf47dfd457djhgf3..."
-              contentPopOver={contentSecondCard}
+          <CardDetail title={cardanoExplorerHeader}>
+            <CustomButton
+              buttonProps={{
+                className: 'GoToCardanoBtn theme-primary',
+                target: '_blank',
+                href: getCardanoExplorerUrl(transactionid, ledger),
+                disabled: !transactionid
+              }}
+              buttonText={t('credentials.detail.goToCardano')}
             />
-            <DataDetail
-              img={hashed}
-              title={t('credentials.detail.hashTitle')}
-              data={transactionid ? `#${transactionid}` : '-'}
-              contentPopOver={contentSecondCard}
-            />
-
-            <Button
-              className="cardanoContainer"
-              href={getCardanoExplorerUrl(transactionid, ledger)}
-              target="_blank"
-              disabled={!transactionid}
-            >
-              <div>
-                <img src={cardanoLogo} alt="CardanoLogo" />
-                <span>{t('credentials.detail.viewCardanoExplorer')}</span>
-              </div>
-              <div>
-                <img src={arrow} alt="arrow" />
-              </div>
-            </Button>
           </CardDetail>
         </TabPane>
       </Tabs>

@@ -148,6 +148,13 @@
 
 .CredentialStatusCard {
   margin-top: 20px;
+  .CardanoExplorerHeader {
+    display: flex;
+    align-items: center;
+  }
+  .CardanoLogo {
+    margin: 0 1em 0 0;
+  }
   .ant-card-bordered {
     border-radius: 8px;
     border: 1px solid #e0e0e0;
@@ -176,9 +183,6 @@
     }
   }
 
-  .popOverStyle {
-    width: 450px;
-  }
   .credentialStatusContent {
     display: flex;
     h5 {
@@ -241,21 +245,12 @@
   margin-top: 20px;
 }
 
-.cardanoContainer {
+.GoToCardanoBtn {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
   min-height: 3.5em;
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
-  padding: 0 10px;
-  margin-top: 10px;
   align-items: center;
-  cursor: pointer;
-  span {
-    margin-left: 15px !important;
-    @include body-text($label, $secondary-color, 600);
-  }
 }
 
 .moreButton {

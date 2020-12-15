@@ -271,6 +271,7 @@
       "integrity": "Integrity: ",
       "hashedFile": "Hashed File",
       "rawCredential": "Raw Credential",
+      "goToCardano": "Go to Cardano",
       "fileHash": "File Hash",
       "transactionTimestamp": "Transaction Timestamp: ",
       "viewCardanoExplorer": "View in Cardano Explorer"
