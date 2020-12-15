@@ -86,10 +86,16 @@ const Groups = ({
 
   const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
 
+  const emptyProps = {
+    photoSrc: noGroups,
+    model: t('groups.title')
+  };
+
   const renderContent = () => {
     if (loading) return <SimpleLoading size="md" />;
+    if (groups.length && !filteredGroups.length) return <EmptyComponent {...emptyProps} isFilter />;
     if (groups.length) return <GroupsTable {...tableProps} groups={filteredGroups} />;
-    return <EmptyComponent photoSrc={noGroups} model={t('groups.title')} button={newGroupButton} />;
+    return <EmptyComponent {...emptyProps} button={newGroupButton} />;
   };
 
   return (
