@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import imgLogo from '../../images/logo-instructions.svg';
-import imgScreenshots from '../../images/img-instructions.png';
+import imgScreenshots from '../../images/screenshots.png';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import './style.scss';
 
