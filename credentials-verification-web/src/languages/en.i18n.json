@@ -188,6 +188,13 @@
       },
       "details": {
         "title": "Verification Details"
+      },
+      "raw": {
+        "title": "Raw credential",
+        "important": "Important",
+        "downloadFile": "Download file",
+        "descriptionFirst": "Download the file, which is in raw JSON using the download option below.",
+        "descriptionSecond": "You can unzip the file and read instructions on how to independently verify the authenticity of the credential."
       }
     },
     "modal": {

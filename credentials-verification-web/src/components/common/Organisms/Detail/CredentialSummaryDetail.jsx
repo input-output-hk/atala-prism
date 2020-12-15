@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import _ from 'lodash';
 import { Drawer, message, Tabs, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import hashedFile from '../../../../images/hashedFile.svg';
 import CardDetail from './DetailCard';
 import DataDetail from './DataDetail';
 import { sanitizeView } from '../../../../helpers/credentialView';
+import CredentialRawDetail from './CredentialRawDetail/CredentialRawDetail';
 
 const { TabPane } = Tabs;
 
@@ -29,6 +30,7 @@ const getCardanoExplorerUrl = (txId, ledger) => {
 
 const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
   const { t } = useTranslation();
+  const [rawVisible, setRawVisible] = useState(false);
 
   const tabs = {
     summary: {
@@ -51,7 +53,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
       />
       <CustomButton
         buttonProps={{
-          className: 'theme-link'
+          className: 'theme-link',
+          onClick: () => setRawVisible(true)
         }}
         buttonText="View"
       />
@@ -135,14 +138,12 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
             info={infoFirstCard}
             badge={extraJsx}
           >
-            {
-              <DataDetail
-                img={hashedFile}
-                title={t('credentials.detail.hashedFile')}
-                data={t('credentials.detail.rawCredential')}
-                contentPopOver={content}
-              />
-            }
+            <DataDetail
+              img={hashedFile}
+              title={t('credentials.detail.hashedFile')}
+              data={t('credentials.detail.rawCredential')}
+              contentPopOver={content}
+            />
           </CardDetail>
           <CardDetail title={t('credentials.detail.notarizationTitle')} info={infoSecondCard}>
             <DataDetail
@@ -175,6 +176,12 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
           </CardDetail>
         </TabPane>
       </Tabs>
+
+      <CredentialRawDetail
+        visible={rawVisible}
+        credentialString={credentialData.credentialdata}
+        onClose={() => setRawVisible(false)}
+      />
     </Drawer>
   );
 };
@@ -183,6 +190,7 @@ CredentialSummaryDetail.propTypes = {
   drawerInfo: PropTypes.shape().isRequired,
   credentialData: PropTypes.shape({
     html: PropTypes.string,
+    credentialdata: PropTypes.string,
     issuanceproof: PropTypes.shape({ transactionid: PropTypes.string })
   }).isRequired
 };

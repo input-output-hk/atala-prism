@@ -1,0 +1,10 @@
+.react-json-view {
+  padding: 1em;
+  border-radius: 8px;
+  .variable-value {
+    width: 100%;
+    & > div {
+      width: 100%;
+    }
+  }
+}
