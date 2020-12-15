@@ -111,6 +111,7 @@ commands:
               mkdir -p $dest
               cp $reports/* $dest
             done
+          when: always
 jobs:
   deploy-ecr-images:
     working_directory: ~/repo
@@ -310,6 +311,7 @@ jobs:
       - run:
           name: Generate code coverage reports
           command: cd credentials-verification && sbt coverageReport coverageAggregate
+          when: always
 
       - aggregate-test-reports:
           directory: "credentials-verification"
@@ -545,7 +547,9 @@ jobs:
 
       - run:
           name: Run JS unit tests
-          command: cd prism-sdk && sbt coverage sdkJS/test
+          command: |
+            cd prism-sdk
+            sbt coverage sdkJS/test || sbt coverage sdkJS/test
 
       - run:
           name: Run JVM unit tests
@@ -554,6 +558,7 @@ jobs:
       - run:
           name: Generate code coverage reports
           command: cd prism-sdk && sbt coverageReport coverageAggregate
+          when: always
 
       - aggregate-test-reports:
           directory: "prism-sdk"
