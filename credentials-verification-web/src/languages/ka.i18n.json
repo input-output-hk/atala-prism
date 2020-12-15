@@ -569,7 +569,8 @@
       "pendingConnection": "Pending Connection",
       "signed": "Signed",
       "sent": "Sent",
-      "received": "Received"
+      "received": "Received",
+      "draft": "Draft"
     }
   },
   "payment": {

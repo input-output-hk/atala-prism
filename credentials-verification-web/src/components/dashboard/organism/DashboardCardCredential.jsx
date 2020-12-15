@@ -6,7 +6,7 @@ import { useTranslationWithPrefix } from '../../../hooks/useTranslationWithPrefi
 import imgCard from '../../../images/credentialIcon.svg';
 import IconItems from '../Molecules/DashboardCardsItems/IconItems';
 import iconSigned from '../../../images/iconSigned.svg';
-import iconSent from '../../../images/iconArrowRight.svg';
+import iconDraft from '../../../images/iconDraft.svg';
 import iconReceived from '../../../images/iconArrowLeft.svg';
 
 const DashboardCardCredential = ({ loading, data }) => {
@@ -24,16 +24,15 @@ const DashboardCardCredential = ({ loading, data }) => {
         <Divider />
       </div>
       <IconItems
-        icon={iconSigned}
-        title={tp('signed')}
-        value={data.numberofcredentialspublished}
+        icon={iconDraft}
+        title={tp('draft')}
+        value={data.numberofcredentialsindraft}
         loading={loading}
       />
       <IconItems
-        icon={iconSent}
-        title={tp('sent')}
-        // TODO: review this field
-        value={0}
+        icon={iconSigned}
+        title={tp('signed')}
+        value={data.numberofcredentialspublished}
         loading={loading}
       />
       <IconItems
