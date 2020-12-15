@@ -321,6 +321,7 @@ const CredentialContainer = ({ api }) => {
       },
       fetchCredentials: fetchCredentialsIssued,
       bulkActionsProps: {
+        refreshCredentials: refreshCredentialsIssued,
         signSelectedCredentials,
         sendSelectedCredentials,
         selectAll,

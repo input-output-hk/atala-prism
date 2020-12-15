@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withRedirector } from '../../../providers/withRedirector';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import refreshIcon from '../../../../images/Refresh.svg';
+
 import './_style.scss';
 
 const CredentialsButtons = ({
+  refreshCredentials,
   signSelectedCredentials,
   sendSelectedCredentials,
   disableSign,
@@ -31,6 +35,10 @@ const CredentialsButtons = ({
   return (
     <div className="ControlButtons CredentialsOptions">
       <div className="BulkOptions">
+        <Button className="RefreshButton" onClick={refreshCredentials}>
+          <img src={refreshIcon} alt="refresh" />
+          Refresh Table
+        </Button>
         <CustomButton
           buttonProps={{
             className: 'buttonSignSelected theme-outline',
@@ -60,6 +68,7 @@ CredentialsButtons.defaultProps = {
 };
 
 CredentialsButtons.propTypes = {
+  refreshCredentials: PropTypes.func.isRequired,
   signSelectedCredentials: PropTypes.func.isRequired,
   sendSelectedCredentials: PropTypes.func.isRequired,
   disableSign: PropTypes.bool,
