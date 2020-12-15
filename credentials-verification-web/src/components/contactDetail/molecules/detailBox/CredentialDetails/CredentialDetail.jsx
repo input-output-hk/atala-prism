@@ -9,7 +9,7 @@ import { credentialTypesShape } from '../../../../../helpers/propShapes';
 
 import './style.scss';
 
-const CredentialDetail = ({ credential, credentialTypes }) => {
+const CredentialDetail = ({ credential, credentialTypes, isCredentialIssued }) => {
   const { credentialType, publicationstoredat } = credential;
   const { t } = useTranslation();
 
@@ -22,6 +22,17 @@ const CredentialDetail = ({ credential, credentialTypes }) => {
   };
 
   const { name, logo: credentialLogo } = credentialTypes[credentialType];
+
+  const renderDateSigned = () => (
+    <div className="credentialData">
+      <p>{t('credentials.detail.dateSigned')}</p>
+      <span>
+        {publicationstoredat
+          ? dateFormat(publicationstoredat)
+          : t('credentials.detail.notPublished')}
+      </span>
+    </div>
+  );
 
   return (
     <div className="credentialDetailContainer">
@@ -43,14 +54,7 @@ const CredentialDetail = ({ credential, credentialTypes }) => {
         </div>
       </div>
       <div className="credentialDataContainer">
-        <div className="credentialData">
-          <p>{t('credentials.detail.dateSigned')}</p>
-          <span>
-            {publicationstoredat
-              ? dateFormat(publicationstoredat)
-              : t('credentials.detail.notPublished')}
-          </span>
-        </div>
+        {isCredentialIssued && renderDateSigned()}
         <div className="ml">
           <CustomButton
             buttonProps={{
@@ -71,7 +75,10 @@ const mockCredential = {
   html: mockHtmlCredential
 };
 
-CredentialDetail.defaultProps = { credential: mockCredential };
+CredentialDetail.defaultProps = {
+  credential: mockCredential,
+  isCredentialIssued: false
+};
 
 CredentialDetail.propTypes = {
   credential: PropTypes.shape({
@@ -79,7 +86,8 @@ CredentialDetail.propTypes = {
     publicationstoredat: PropTypes.number,
     html: PropTypes.string
   }),
-  credentialTypes: PropTypes.shape(credentialTypesShape).isRequired
+  credentialTypes: PropTypes.shape(credentialTypesShape).isRequired,
+  isCredentialIssued: PropTypes.bool
 };
 
 export default CredentialDetail;

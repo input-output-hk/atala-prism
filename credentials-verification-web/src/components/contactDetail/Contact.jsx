@@ -66,7 +66,11 @@ const Contact = ({
                 <SimpleLoading size="xs" />
               ) : (
                 issuedCredentials.map(credential => (
-                  <CredentialDetail credential={credential} credentialTypes={credentialTypes} />
+                  <CredentialDetail
+                    credential={credential}
+                    credentialTypes={credentialTypes}
+                    isCredentialIssued
+                  />
                 ))
               )}
             </div>
