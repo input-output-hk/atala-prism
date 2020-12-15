@@ -184,7 +184,7 @@ const CredentialContainer = ({ api }) => {
 
     const sendCredentialsRequests = credentials.map(handleSendCredential);
 
-    return Promise.all(sendCredentialsRequests);
+    return Promise.all(sendCredentialsRequests).then(() => setShowConfirmationModal(false));
   };
 
   const showSignSuccess = () => {
@@ -297,10 +297,7 @@ const CredentialContainer = ({ api }) => {
     setShowConfirmationModal(true);
   };
 
-  const handleConfirmSend = () => {
-    setShowConfirmationModal(false);
-    performBackendAction(SEND_CREDENTIALS);
-  };
+  const handleConfirmSend = () => performBackendAction(SEND_CREDENTIALS);
 
   const handleCancel = () => {
     setShowConfirmationModal(false);

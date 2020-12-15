@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,14 @@ import './style.scss';
 
 const SendCredentialConfirmationModal = ({ selected, targetCredentials, ...modalProps }) => {
   const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
   const { onOk, onCancel } = modalProps;
+
+  const onConfirm = async () => {
+    setLoading(true);
+    return onOk().finally(() => setLoading(false));
+  };
+
   return (
     <Modal className="Modal" width={450} centered destroyOnClose footer={null} {...modalProps}>
       <div className="SentModalContainer">
@@ -40,9 +47,10 @@ const SendCredentialConfirmationModal = ({ selected, targetCredentials, ...modal
         <CustomButton
           buttonProps={{
             className: 'theme-primary',
-            onClick: onOk,
+            onClick: onConfirm,
             disabled: !targetCredentials.length
           }}
+          loading={loading}
           buttonText={t('credentials.actions.confirm')}
         />
       </div>
