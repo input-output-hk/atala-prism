@@ -42,10 +42,10 @@
   "contacts": {
     "title": "Contacts",
     "status": {
-      "invitationMissing": "Pending connection",
-      "connectionMissing": "Pending connection",
+      "invitationMissing": "Pending Connection",
+      "connectionMissing": "Pending Connection",
       "connectionAccepted": "Connected",
-      "connectionRevoked": "Connection revoked"
+      "connectionRevoked": "Connection Revoked"
     },
     "filters": {
       "identityNumber": "Identity Number",
@@ -662,7 +662,7 @@
     "success": "Contact(s) successfully created",
     "importTypeSelection": {
       "title": "Import Contacts",
-      "info": "Choose between this two options: Bulk Import or Manual Import"
+      "info": "Choose between these two options: Bulk Import or Manual Import"
     },
     "bulkImportCard": {
       "title": "Bulk Import",
