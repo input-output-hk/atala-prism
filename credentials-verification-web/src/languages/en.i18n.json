@@ -26,7 +26,7 @@
   "generic": {
     "step": "Step {{step}}",
     "underConstruction": "Under construction",
-    "template": "Template"
+    "contactsTemplate": "Contacts"
   },
   "sidebar": {
     "itemAlt": "{{itemName}} Icon"
