@@ -430,7 +430,7 @@ jobs:
             branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
             connectorUrl="https://grpc-$branchPrefix.atalaprism.io:4433"
             echo "export CONNECTOR_URL=$connectorUrl" >> $BASH_ENV;
-            
+
 
       # Download and cache dependencies
       - restore_cache:
@@ -573,10 +573,27 @@ jobs:
     steps:
       - checkout
 
-      # this is for the public api, hence, the admin/intdemo APIs are removed
+      # this is for the public api, hence, only the exposed APIs/models get included
       - run:
           name: Move the protos to the proper folder
-          command: mv prism-sdk/protos protos && rm -rf protos/admin_api.proto protos/intdemo protos/*internal.proto
+          command: |
+            mkdir protos
+            cd prism-sdk/protos
+            mv cmanager_api.proto \
+              cmanager_models.proto \
+              common_models.proto \
+              connector_api.proto \
+              connector_models.proto \
+              console_api.proto \
+              console_models.proto \
+              credential_models.proto \
+              cstore_api.proto \
+              cstore_models.proto \
+              cviews_api.proto \
+              cviews_models.proto \
+              node_api.proto \
+              node_models.proto \
+              ../../protos/
 
       # apparently, the argument to set the destination folder doesn't work
       - run:
@@ -656,7 +673,7 @@ workflows:
                 - demo
           requires:
             - deploy-ecr-images
-          
+
       - hold: # <<< A job that will require manual approval in the CircleCI web application.
           type: approval # <<< demo deployment "On Hold"
           filters:
