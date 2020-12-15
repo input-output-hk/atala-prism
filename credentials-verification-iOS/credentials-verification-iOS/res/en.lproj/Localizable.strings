@@ -125,14 +125,16 @@
 "credentials_history_date" = "Shared: %1$@";
 "credentials_history_shared" = "SHARED WITH";
 "credentials_history_requested" = "REQUESTED BY";
-"credentials_verify_verified"= "Verified";
-"credentials_verify_original_file"= "Original File";
-"credentials_verify_blockchain_notarization"= "Blockchain Notarization";
-"credentials_verify_file_hash"= "File Hash";
-"credentials_verify_tx_hash"= "Tx Hash";
-"credentials_verify_date_time"= "Date & Time ";
-"credentials_verify_close"= "Close";
-"credentials_verify_download"= "Download";
+"credentials_verify_verified" = "Verified";
+"credentials_verify_original_file" = "Original File";
+"credentials_verify_blockchain_notarization" = "Blockchain Notarization";
+"credentials_verify_file_hash" = "File Hash";
+"credentials_verify_tx_hash" = "Tx Hash";
+"credentials_verify_date_time" = "Date & Time ";
+"credentials_verify_close" = "Close";
+"credentials_verify_download" = "Download";
+"credentials_verify_download_success" = "File downloaded";
+"credentials_verify_download_error" = "Error downloading file";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";

@@ -88,11 +88,36 @@ class CredentialVerificationDetailViewController: UIViewController {
 
         fileTv.text = credential?.json
 
-        if let planeJsonData = credential?.json.data(using: .utf8) {
-            let hash = CryptoUtils.global.sha256(data: planeJsonData)
+        if let plainJsonData = credential?.json.data(using: .utf8) {
+            let hash = CryptoUtils.global.sha256(data: plainJsonData)
             let data = Data(bytes: hash, count: hash.count)
             fileHashLbl.text = "#\(data.hex)"
         }
+    }
+
+    func saveFile() {
+        showLoading(doShow: true)
+        do {
+            let documentsUrl = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask,
+                                                           appropriateFor: nil, create: true)
+            var fileName: String = "\(credential?.credentialName ?? "")_\(credential?.credentialId ?? "")"
+            var fileToSave = ""
+            if let credentialStr = credential?.plainCredential {
+                fileToSave = credentialStr
+                fileName.append(".txt")
+            } else {
+                fileToSave = fileTv.text
+                fileName.append(".json")
+            }
+            // Destination file url
+            let destination = documentsUrl.appendingPathComponent(fileName)
+            try fileToSave.write(to: destination, atomically: true, encoding: .utf8)
+            let successMsg = "\("credentials_verify_download_success".localize() ?? "")\n\(fileName)"
+            showSuccessMessage(doShow: true, message: successMsg)
+        } catch {
+            showErrorMessage(doShow: true, message: "credentials_verify_download_error".localize())
+        }
+        showLoading(doShow: false)
     }
 
     // MARK: ButtonActions
@@ -114,7 +139,7 @@ class CredentialVerificationDetailViewController: UIViewController {
     }
 
     @IBAction func downloadFileTapped(_ sender: Any) {
-
+        self.saveFile()
     }
 
     @IBAction func dismissTapped(_ sender: Any) {

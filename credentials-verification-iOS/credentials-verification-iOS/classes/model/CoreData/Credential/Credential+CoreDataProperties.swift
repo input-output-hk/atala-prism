@@ -25,5 +25,6 @@ extension Credential {
     @NSManaged public var viewed: Bool
     @NSManaged public var encoded: Data
     @NSManaged public var json: String
+    @NSManaged public var plainCredential: String?
 
 }
