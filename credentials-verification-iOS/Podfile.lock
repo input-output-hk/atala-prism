@@ -5,6 +5,7 @@ PODS:
   - AlamofireObjectMapper (5.2.1):
     - Alamofire (~> 4.7)
     - ObjectMapper (~> 3.4)
+  - bitcoin-secp256k1 (0.1.0)
   - BitcoinKit (1.1.0)
   - BoringSSL-GRPC (0.0.3):
     - BoringSSL-GRPC/Implementation (= 0.0.3)
@@ -235,6 +236,9 @@ PODS:
   - ObjectMapper (3.5.2)
   - Pageboy (3.6.0)
   - Presentr (1.9)
+  - prism_kotlin_sdk (0.1-SNAPSHOT):
+    - bitcoin-secp256k1 (= 0.1.0)
+    - BitcoinKit
   - PromisesObjC (1.2.8)
   - Protobuf (3.11.4)
   - SwiftGRPC (0.10.0):
@@ -260,6 +264,7 @@ DEPENDENCIES:
   - MBProgressHUD (~> 1.0.0)
   - ObjectMapper (~> 3.1)
   - Presentr (~> 1.9.0)
+  - prism_kotlin_sdk (from `../prism-kotlin-sdk`)
   - SwiftGRPC (~> 0.10.0)
   - SwiftLint
   - SwiftProtobuf (~> 1.7.0)
@@ -268,6 +273,8 @@ DEPENDENCIES:
   - Toast-Swift (~> 5.0.0)
 
 SPEC REPOS:
+  https://github.com/itegulov/Specs.git:
+    - bitcoin-secp256k1
   trunk:
     - Alamofire
     - AlamofireImage
@@ -311,10 +318,15 @@ SPEC REPOS:
     - Tabman
     - Toast-Swift
 
+EXTERNAL SOURCES:
+  prism_kotlin_sdk:
+    :path: "../prism-kotlin-sdk"
+
 SPEC CHECKSUMS:
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
+  bitcoin-secp256k1: ef8eca90d844cb16fbb9ab81c9b0bb2be98b4503
   BitcoinKit: a8c198d2a57caf64dc43271901f8c5a2309aced2
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 586e4d274398fabe9d70ab790eefca41660b8a17
@@ -345,6 +357,7 @@ SPEC CHECKSUMS:
   ObjectMapper: b53ae947d370bf89423e86be7d4e2d2b2a8d3f40
   Pageboy: 490c26be405987158660bb45ee2f404567395007
   Presentr: 7078d7eb5d1661ebeaae60c9e42a1e534de1b993
+  prism_kotlin_sdk: beee361ec2aba18271351ee4c2d5da3e9b1b8535
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   SwiftGRPC: f8fcfecb547c96cc6913de619f95fa3cd09838ee
@@ -354,6 +367,6 @@ SPEC CHECKSUMS:
   Tabman: 55d3d18f393ce5119515cd0349c841a07774c895
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: 71815573d5d4bad83aa476ee3c71c7efa645b6a0
+PODFILE CHECKSUM: 4e98498c78e75d1262a409c650f86377fc21ad5b
 
 COCOAPODS: 1.10.0

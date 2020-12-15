@@ -1,6 +1,9 @@
 # Uncomment the next line to define a global platform for your project
 platform :ios, '13.0'
 
+source 'https://cdn.cocoapods.org'
+source 'https://github.com/itegulov/Specs.git'
+
 target 'credentials-verification-iOS' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
@@ -32,6 +35,8 @@ target 'credentials-verification-iOS' do
   pod 'BitcoinKit', '~> 1.1.0'
   # Linter
   pod 'SwiftLint'
+  # PRISM SDK
+  pod 'prism_kotlin_sdk', :path => '../prism-kotlin-sdk'
   
   target 'credentials-verification-iOSTests' do
     inherit! :search_paths
