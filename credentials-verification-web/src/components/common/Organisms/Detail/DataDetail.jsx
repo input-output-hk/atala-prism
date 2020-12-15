@@ -3,7 +3,7 @@ import PopOver from './PopOver';
 
 const DataDetail = ({ img, title, data, contentPopOver }) => (
   <div className="hashedFileContainer">
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', width: '70%' }}>
       <img src={img} alt="" />
       <div className="hashedFileContainerText">
         <span>{title}</span>

@@ -7,7 +7,8 @@ const {
   GetGenericCredentialsRequest,
   CreateGenericCredentialRequest,
   GetContactCredentialsRequest,
-  ShareCredentialRequest
+  ShareCredentialRequest,
+  GetBlockchainDataRequest
 } = require('../../protos/cmanager_api_pb');
 const { AtalaMessage, PlainTextCredential } = require('../../protos/credential_models_pb');
 
@@ -139,6 +140,18 @@ async function markAsSent(credentialid) {
   return res;
 }
 
+async function getBlockchainData(credential) {
+  const getBlockchainDataRequest = new GetBlockchainDataRequest();
+  getBlockchainDataRequest.setEncodedsignedcredential(credential);
+
+  const metadata = await this.auth.getMetadata(getBlockchainDataRequest);
+
+  const res = await this.client.getBlockchainData(getBlockchainDataRequest, metadata);
+  const issuanceProof = res.getIssuanceproof().toObject();
+  Logger.info('Got issuance proof:', issuanceProof);
+  return issuanceProof;
+}
+
 function CredentialsManager(config, auth) {
   this.config = config;
   this.auth = auth;
@@ -152,5 +165,6 @@ CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 CredentialsManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialsManager.prototype.getContactCredentials = getContactCredentials;
 CredentialsManager.prototype.markAsSent = markAsSent;
+CredentialsManager.prototype.getBlockchainData = getBlockchainData;
 
 export default CredentialsManager;

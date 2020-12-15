@@ -1,4 +1,4 @@
-@import "../../../../css/general_styling";
+@import '../../../../css/general_styling';
 
 .CredentialSummaryDetail {
   .CredentialSummaryHeader {
@@ -176,7 +176,7 @@
     }
   }
 
-  .popOverStyle{
+  .popOverStyle {
     width: 450px;
   }
   .credentialStatusContent {
@@ -197,11 +197,16 @@
   }
   .hashedFileContainerText {
     margin-left: 15px;
+    width: 80%;
     span {
       @include body-text($label, #728099, 400);
     }
     p {
       @include body-text($label, $secondary-color, 600);
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
   }
   .hashedFileContainer {
@@ -212,6 +217,7 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
+    overflow: hidden;
   }
   .FilesContainer {
     display: flex;
@@ -239,10 +245,12 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
+  min-height: 3.5em;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.15);
   border-radius: 6px;
-  padding: 10px;
+  padding: 0 10px;
   margin-top: 10px;
+  align-items: center;
   cursor: pointer;
   span {
     margin-left: 15px !important;

@@ -110,9 +110,15 @@ const CredentialContainer = ({ api }) => {
     try {
       setLoadingByKey('received', true);
       const newlyFetchedCredentials = await api.credentialsReceivedManager.getReceivedCredentials();
+      const credentialWithIssuanceProofPromises = newlyFetchedCredentials.map(credential =>
+        api.credentialsManager
+          .getBlockchainData(credential.encodedsignedcredential)
+          .then(issuanceproof => Object.assign({ issuanceproof }, credential))
+      );
+      const credentialsWithIssuanceProof = await Promise.all(credentialWithIssuanceProofPromises);
 
       const credentialTypes = api.credentialsManager.getCredentialTypes();
-      const mappedCredentials = newlyFetchedCredentials.map(cred =>
+      const mappedCredentials = credentialsWithIssuanceProof.map(cred =>
         credentialReceivedMapper(cred, credentialTypes)
       );
       const updatedCredentialsReceived = credentialsReceived.concat(mappedCredentials);
@@ -356,7 +362,8 @@ CredentialContainer.propTypes = {
       getCredentialBinary: PropTypes.func.isRequired,
       getCredentials: PropTypes.func.isRequired,
       getCredentialTypes: PropTypes.func.isRequired,
-      markAsSent: PropTypes.func.isRequired
+      markAsSent: PropTypes.func.isRequired,
+      getBlockchainData: PropTypes.func.isRequired
     }).isRequired,
     credentialsReceivedManager: PropTypes.shape({
       getReceivedCredentials: PropTypes.func.isRequired

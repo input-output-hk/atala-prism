@@ -64,6 +64,14 @@ const ContactContainer = ({ api }) => {
   const getReceivedCredentials = () =>
     api.credentialsReceivedManager
       .getReceivedCredentials(id)
+      .then(credentials => {
+        const credentialPromises = credentials.map(credential =>
+          api.credentialsManager
+            .getBlockchainData(credential.encodedsignedcredential)
+            .then(issuanceproof => Object.assign({ issuanceproof }, credential))
+        );
+        return Promise.all(credentialPromises);
+      })
       .then(setReceivedCredentials)
       .catch(error => {
         Logger.error(
@@ -104,7 +112,8 @@ ContactContainer.propTypes = {
     groupsManager: PropTypes.shape({ getGroups: PropTypes.func }),
     credentialsManager: PropTypes.shape({
       getContactCredentials: PropTypes.func,
-      getCredentialTypes: PropTypes.func
+      getCredentialTypes: PropTypes.func,
+      getBlockchainData: PropTypes.func
     }),
     credentialsReceivedManager: PropTypes.shape({ getReceivedCredentials: PropTypes.func })
   }).isRequired

@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import { Drawer, message, Tabs } from 'antd';
+import { Drawer, message, Tabs, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
@@ -15,6 +15,17 @@ import DataDetail from './DataDetail';
 import { sanitizeView } from '../../../../helpers/credentialView';
 
 const { TabPane } = Tabs;
+
+const CARDANO_MAINNET_LEDGER = 5;
+
+const isMainnet = ledger => ledger === CARDANO_MAINNET_LEDGER;
+
+const getCardanoExplorerUrl = (txId, ledger) => {
+  const baseUrl = isMainnet(ledger)
+    ? 'https://explorer.cardano.org/en/transaction?id='
+    : 'https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=';
+  return baseUrl.concat(txId);
+};
 
 const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
   const { t } = useTranslation();
@@ -94,6 +105,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     message.warn(t('credentials.messages.notImplementedYet'));
   };
 
+  const { transactionid, ledger } = credentialData?.issuanceproof || {};
+
   return (
     <Drawer
       className="credentialDetailDrawer"
@@ -141,11 +154,16 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
             <DataDetail
               img={hashed}
               title={t('credentials.detail.hashTitle')}
-              data="#a4b412fdf47dfd457djhgf3..."
+              data={transactionid ? `#${transactionid}` : '-'}
               contentPopOver={contentSecondCard}
             />
 
-            <div className="cardanoContainer">
+            <Button
+              className="cardanoContainer"
+              href={getCardanoExplorerUrl(transactionid, ledger)}
+              target="_blank"
+              disabled={!transactionid}
+            >
               <div>
                 <img src={cardanoLogo} alt="CardanoLogo" />
                 <span>{t('credentials.detail.viewCardanoExplorer')}</span>
@@ -153,7 +171,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
               <div>
                 <img src={arrow} alt="arrow" />
               </div>
-            </div>
+            </Button>
           </CardDetail>
         </TabPane>
       </Tabs>
@@ -164,7 +182,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
 CredentialSummaryDetail.propTypes = {
   drawerInfo: PropTypes.shape().isRequired,
   credentialData: PropTypes.shape({
-    html: PropTypes.string
+    html: PropTypes.string,
+    issuanceproof: PropTypes.shape({ transactionid: PropTypes.string })
   }).isRequired
 };
 
