@@ -10,6 +10,9 @@ import "node_models.proto";
 
 // The Node API
 service NodeService {
+    // Checks if the service is healthy
+    rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+
     // Retrieves a DID Document
     rpc GetDidDocument(GetDidDocumentRequest) returns (GetDidDocumentResponse) {}
 

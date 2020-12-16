@@ -11,6 +11,8 @@ package io.iohk.atala.prism.protos;
 
 // The Connector API
 service ConnectorService {
+  // Checks if the service is healthy
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
 
   // Retrieves a connection for a given connection token.
   rpc GetConnectionByToken (GetConnectionByTokenRequest) returns (GetConnectionByTokenResponse) {}

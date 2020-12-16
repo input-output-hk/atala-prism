@@ -14,6 +14,7 @@ import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.CredentialBatchesRepository
 import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
 import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
   GetBatchStateResponse,
@@ -48,6 +49,9 @@ class NodeServiceImpl(
   import NodeServiceImpl._
 
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
+    Future.successful(HealthCheckResponse())
 
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
     implicit val didService: DIDDataService = didDataService

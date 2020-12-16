@@ -24,6 +24,7 @@ import io.iohk.atala.prism.connector.services.{
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.connector_api.{GetMessageStreamRequest, GetMessageStreamResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
@@ -52,6 +53,9 @@ class ConnectorService(
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private implicit val contextSwitch: ContextShift[IO] = IO.contextShift(executionContext)
+
+  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
+    Future.successful(HealthCheckResponse())
 
   /** Retrieve a connection for a given connection token.
     *
