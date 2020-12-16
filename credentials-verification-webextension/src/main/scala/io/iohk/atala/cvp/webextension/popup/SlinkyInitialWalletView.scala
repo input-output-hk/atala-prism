@@ -18,7 +18,7 @@ import slinky.web.html._
         id := "title_container"
       )(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
-        h3(className := "h3_title", id := "h3_title", "Welcome to your"),
+        h2(className := "h3_title", id := "h3_title", "Welcome to your"),
         h1(
           className := "h1_title",
           id := "h1_title",

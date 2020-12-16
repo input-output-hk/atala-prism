@@ -80,7 +80,10 @@ import scala.util.{Failure, Success}
 
   private def templateElement(signingRequest: SigningRequest) = {
     div(
-      div(dangerouslySetInnerHTML := js.Dynamic.literal(__html = renderTemplate(signingRequest))),
+      div(
+        className := "credentialContainer",
+        dangerouslySetInnerHTML := js.Dynamic.literal(__html = renderTemplate(signingRequest))
+      ),
       br(),
       alertMessage(),
       if (state.isLoading) {
