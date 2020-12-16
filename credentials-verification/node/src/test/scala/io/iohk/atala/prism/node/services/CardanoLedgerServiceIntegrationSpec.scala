@@ -29,7 +29,7 @@ class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
   private val scheduler: TestScheduler = TestScheduler()
 
   "CardanoLedgerService" should {
-    "notify on published PRISM transactions" in {
+    "notify on published PRISM transactions" ignore {
       assume(shouldTestCardanoIntegration(), "The integration test was cancelled because it hasn't been configured")
 
       // Set up
