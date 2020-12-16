@@ -598,6 +598,8 @@ jobs:
               cviews_models.proto \
               node_api.proto \
               node_models.proto \
+              vault_api.proto \
+              vault_models.proto \
               ../../protos/
 
       # apparently, the argument to set the destination folder doesn't work

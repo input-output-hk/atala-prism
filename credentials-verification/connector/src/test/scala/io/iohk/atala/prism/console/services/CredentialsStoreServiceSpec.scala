@@ -222,7 +222,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
     }
   }
 
-  "getCredentialsFor" should {
+  "getStoredCredentialsFor" should {
     "get credentials for a specific contact" in {
       lazy val keyPair = EC.generateKeyPair()
       lazy val publicKey = keyPair.publicKey

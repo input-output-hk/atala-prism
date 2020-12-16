@@ -647,18 +647,18 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
           .withStatus(common_models.TransactionStatus.PENDING)
       )
     }
-  }
 
-  "return the same transaction and UNKNOWN status when unknown" in {
-    doReturn(Future.successful(None)).when(objectManagementService).getLatestTransactionAndStatus(*)
+    "return the same transaction and UNKNOWN status when unknown" in {
+      doReturn(Future.successful(None)).when(objectManagementService).getLatestTransactionAndStatus(*)
 
-    val response =
-      service.getTransactionStatus(GetTransactionStatusRequest().withTransactionInfo(testTransactionInfoProto))
+      val response =
+        service.getTransactionStatus(GetTransactionStatusRequest().withTransactionInfo(testTransactionInfoProto))
 
-    response must be(
-      GetTransactionStatusResponse()
-        .withTransactionInfo(testTransactionInfoProto)
-        .withStatus(common_models.TransactionStatus.UNKNOWN)
-    )
+      response must be(
+        GetTransactionStatusResponse()
+          .withTransactionInfo(testTransactionInfoProto)
+          .withStatus(common_models.TransactionStatus.UNKNOWN)
+      )
+    }
   }
 }

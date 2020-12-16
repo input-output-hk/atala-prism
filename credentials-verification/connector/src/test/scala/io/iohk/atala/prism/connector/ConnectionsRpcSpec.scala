@@ -262,7 +262,9 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         status.getDescription must include("uaoen")
       }
     }
+  }
 
+  "getConnectionCommunicationKeys" should {
     "return non-revoked keys for a DID owning participant" in {
       val earlierTimestamp = LocalDateTime.of(2020, 5, 12, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1000L
       val laterTimestamp = LocalDateTime.of(2020, 5, 13, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1000L
