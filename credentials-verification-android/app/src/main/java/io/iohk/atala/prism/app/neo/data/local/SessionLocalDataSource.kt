@@ -23,6 +23,12 @@ class SessionLocalDataSource(context: Context) : BaseLocalDataSource(context), S
         editor.apply()
     }
 
+    override fun getSessionData(): List<String>? {
+        return preferences.getString(MNEMONIC_LIST_PREFERENCE, null)?.let { value ->
+            value.split(",".toRegex())
+        }
+    }
+
     override fun storeLastSyncedIndex(index: Int) {
         val editor = preferences.edit()
         editor.putInt(LAST_SYNCED_INDEX, index)

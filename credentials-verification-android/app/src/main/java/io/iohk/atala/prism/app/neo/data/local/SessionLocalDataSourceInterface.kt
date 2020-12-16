@@ -10,6 +10,8 @@ interface SessionLocalDataSourceInterface {
 
     fun storeSessionData(mnemonicList: List<String>)
 
+    fun getSessionData(): List<String>?
+
     fun storeLastSyncedIndex(index: Int)
 
     fun getLastSyncedIndex(): Int

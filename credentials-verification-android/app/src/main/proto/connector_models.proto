@@ -5,9 +5,11 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
-
+// @exclude
 // GENERAL
+
 // just an EC public key represented with big integers as strings
+//
 // TODO: merge with the node PublicKey
 message ConnectorPublicKey {
     string x = 1;
@@ -15,10 +17,12 @@ message ConnectorPublicKey {
 }
 // Public key ECPoint uncompressed encoded
 message EncodedPublicKey {
-    bytes publicKey = 1;
+    bytes publicKey = 1; // the bytes representing the EC Point encoded without compression
 }
 
 // Information on an Issuer
+//
+// TODO: Remove deprecated value
 message IssuerInfo {
     string DID = 1;
     string name = 2;
@@ -26,6 +30,8 @@ message IssuerInfo {
 }
 
 // Information on a Verifier
+//
+// TODO: Remove deprecated value
 message VerifierInfo {
     string DID = 1;
     string name = 2;
@@ -33,6 +39,7 @@ message VerifierInfo {
 }
 
 // Information on a Holder
+// @exclude TODO: Remove deprecated value
 message HolderInfo {
     string DID = 1;
     string name = 2;
@@ -40,6 +47,8 @@ message HolderInfo {
 
 // Type representing generic participant in the system, alternative of IssuerInfo, HolderInfo, or VerifierInfo.
 message ParticipantInfo {
+    // @exclude
+    // TODO: Remove roles, they no longer exist
     oneof participant {
         IssuerInfo issuer = 1;
         HolderInfo holder = 2;
@@ -48,36 +57,55 @@ message ParticipantInfo {
 }
 
 
+// @exclude
 // CONNECTIONS
 
-// A connection between two parties authorizing
-// the use of the connector as a messaging channel.
+// A connection between two parties authorizing the use of the connector as a messaging channel.
 message Connection {
     // the connection token used to initialize the connection with the wallet
     string connectionToken = 1;
+
+    // the connector-generated connection id
     string connectionId = 2;
 }
 
 // Information on the connection; both sides see the same connectionId and creation time, but each sees different participantInfo
 message ConnectionInfo {
-    string connectionId = 1;
+    string connectionId = 1; // the connection identifier
     int64 created = 2; // moment of instantiation as milliseconds since the Unix Epoch
-    ParticipantInfo participantInfo = 3; // information about the participant at the other end
+    ParticipantInfo participantInfo = 3; // [Will be deprecated] information about the participant at the other end
     string token = 4; // the token used to generate the connection
+    string participantName = 5; // same value as the one contained in `participantInfo`
+    bytes participantLogo = 6; // same value as the one contained in `participantInfo`
+    string participantDID = 7; // same value as the one contained in `participantInfo`
+}
+
+// Communication key for connection participant.
+//
+// TODO: Remove this when unpublished DIDs are integrated on the apps.
+message ConnectionKey {
+  // identifier of the key; can be empty if participant uses one key only
+  string keyId = 1;
+
+  // the actual public key
+  EncodedPublicKey key = 2;
 }
 
 
+// @exclude
 // MESSAGES
 
 // Message received via a connection
 message ReceivedMessage {
-    string id = 1;
+    string id = 1; // the unique id for this message
     int64 received = 2; // time when Connector received the message as milliseconds since the Unix Epoch
     string connectionId = 3; // connection where the message has been received
-    bytes message = 4; // raw message
+    bytes message = 4; // raw message, which needs to be parsed to get something meaningful, AtalaMessage is the common choice
 }
 
 // Enumeration representing billing plan of Issuer. Possible values are hardcoded as new billing options would require implementation changes anyway.
+//
+// TODO: Remove unnecessary model
 enum BillingPlan {
     NO_PLAN = 0; // participant not able to generate connection tokens
     FREE_PLAN = 1; // connections are created for free
@@ -85,6 +113,8 @@ enum BillingPlan {
     RECEIVER_PAYS = 3; // side receiving the token and using it to instantiate connection pays for it
 }
 
+// @exclude
+// TODO: Remote unnecessary model
 message Payment {
     string id = 1;
     string amount = 2;

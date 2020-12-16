@@ -99,4 +99,16 @@ class AppDbHelper @Inject constructor(private val mAppDatabase: AppDatabase) : D
     override fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>> {
         return mAppDatabase.credentialDao().activityHistories()
     }
+
+    override fun allProofRequest(): LiveData<List<ProofRequestWithCredentials>> {
+        return mAppDatabase.proofRequestDao().allWithCredentials()
+    }
+
+    override suspend fun getProofRequestById(id: Long): ProofRequestWithCredentials? {
+        return mAppDatabase.proofRequestDao().getProofRequestById(id)
+    }
+
+    override suspend fun removeProofRequest(proofRequest: ProofRequest) {
+        mAppDatabase.proofRequestDao().delete(proofRequest)
+    }
 }

@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.app.views.activities;
 
+import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
@@ -23,7 +25,6 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -31,7 +32,10 @@ import javax.inject.Inject;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithCredentials;
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult;
+import io.iohk.atala.prism.app.neo.common.EventWrapperObserver;
+import io.iohk.atala.prism.app.neo.sync.AuthenticatorService;
 import io.iohk.atala.prism.app.viewmodel.dtos.CredentialsToShare;
 import io.iohk.atala.prism.app.views.fragments.NotificationsFragment;
 import io.iohk.atala.prism.app.views.fragments.ProofRequestDialogFragment;
@@ -109,6 +113,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     private FirebaseAnalytics mFirebaseAnalytics;
 
+    private Account genericSyncAccount;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
@@ -125,20 +131,27 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         Preferences prefs = new Preferences(this);
         if (prefs.isPinConfigured())
             navigator.showUnlockScreen(this);
+        genericSyncAccount = AuthenticatorService.Companion.buildGenericAccountForSync(this);
     }
 
     private void init() {
         onNavigation(BottomAppBarOption.NOTIFICATIONS);
+
         // handle when exist a message with a proof requests
-        viewModel.getCredentialsRequests().observe(this, credentialsRequests -> {
-            if (!credentialsRequests.isEmpty()) {
-                // TODO this code only shows the dialog of the first message, it needs to fix this so that it can handle more than one
-                CredentialsToShare data = credentialsRequests.get(0);
-                String messageId = data.getMessageId();
-                List<String> requestedCredentialsIds = data.getCredentialsIds();
-                String connectionId = data.getConnection().connectionId;
-                ProofRequestDialogFragment dialog = ProofRequestDialogFragment.Companion.build(messageId, connectionId, requestedCredentialsIds);
+        viewModel.getProofRequest().observe(this, event -> {
+            if (event == null) {
+                return;
+            }
+            ProofRequestWithCredentials proofRequestWithCredentials = event.getContentIfNotHandled();
+            if (proofRequestWithCredentials != null) {
+                ProofRequestDialogFragment dialog = ProofRequestDialogFragment.Companion.build(proofRequestWithCredentials.getProofRequest().getId());
                 dialog.show(getSupportFragmentManager(), null);
+            }
+        });
+
+        viewModel.getRequestSync().observe(this, event -> {
+            if (event.getContentIfNotHandled()) {
+                requestForSync();
             }
         });
     }
@@ -327,7 +340,24 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
             onNavigation(CONTACTS);
             bottomAppBar.setItemColors(CONTACTS);
             // request for a message sync
-            viewModel.syncMessages();
+            //viewModel.syncMessages();
         }
+    }
+
+    /*
+     * Is a temporary solution this will be discarded when there is a stream of events in the backend or we have
+     * the appropriate data repositories in this application.
+     * */
+    private void requestForSync() {
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        /*
+         * Request the sync for the generic account, authority, and
+         * manual sync settings
+         */
+        ContentResolver.requestSync(genericSyncAccount, AuthenticatorService.ACCOUNT_AUTHORITY, settingsBundle);
     }
 }

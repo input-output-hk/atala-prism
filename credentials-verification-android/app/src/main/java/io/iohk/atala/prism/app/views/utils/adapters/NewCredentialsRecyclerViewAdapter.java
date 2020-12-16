@@ -60,13 +60,13 @@ public class NewCredentialsRecyclerViewAdapter extends
 
             holder.credentialType.setText(credentialType);
 
-            if (credentialType.equals(CredentialType.ID_CREDENTIAL.getValue())) {
+            if (credentialType.equals(CredentialType.DEMO_ID_CREDENTIAL.getValue())) {
                 holder.credentialType.setText(context.getResources().getString(R.string.credential_government_name));
                 holder.issuerLogo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_id_government));
-            } else if (credentialType.equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
+            } else if (credentialType.equals(CredentialType.DEMO_DEGREE_CREDENTIAL.getValue())) {
                 holder.credentialType.setText(context.getResources().getString(R.string.credential_degree_name));
                 holder.issuerLogo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_id_university));
-            } else if (credentialType.equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
+            } else if (credentialType.equals(CredentialType.DEMO_EMPLOYMENT_CREDENTIAL.getValue())) {
                 holder.credentialType.setText(context.getResources().getString(R.string.credential_employment_name));
                 holder.issuerLogo.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_id_proof));
             } else {

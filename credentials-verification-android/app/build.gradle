@@ -199,6 +199,7 @@ dependencies {
 
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
     // For Kotlin use kapt instead of annotationProcessor
     implementation "androidx.room:room-rxjava2:$roomVersion"

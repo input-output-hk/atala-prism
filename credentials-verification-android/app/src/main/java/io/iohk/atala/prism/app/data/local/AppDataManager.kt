@@ -7,6 +7,7 @@ import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.DbHelper
 import io.iohk.atala.prism.app.data.local.db.model.*
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.data.local.preferences.PreferencesHelper
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.data.local.remote.ApiHelper
@@ -173,5 +174,17 @@ class AppDataManager @Inject constructor(dbHelper: DbHelper, private var apiHelp
 
     override fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>> {
         return mDbHelper.activityHistories()
+    }
+
+    override fun allProofRequest(): LiveData<List<ProofRequestWithCredentials>> {
+        return mDbHelper.allProofRequest()
+    }
+
+    override suspend fun getProofRequestById(id: Long): ProofRequestWithCredentials? {
+        return mDbHelper.getProofRequestById(id)
+    }
+
+    override suspend fun removeProofRequest(proofRequest: ProofRequest) {
+        mDbHelper.removeProofRequest(proofRequest)
     }
 }

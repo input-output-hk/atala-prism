@@ -38,6 +38,9 @@ abstract class ContactDao : ActivityHistoryDao() {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun rawInsertAll(contacts: List<Contact?>): List<Long>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract fun rawInsertAllSync(contacts: List<Contact?>): List<Long>
+
     /**
      * Insert a list of contacts with the necessary [ActivityHistory] inside a transaction.
      *
@@ -51,6 +54,22 @@ abstract class ContactDao : ActivityHistoryDao() {
             ActivityHistory(it.connectionId, null, it.dateCreated, ActivityHistory.Type.ContactAdded)
         }
         insertActivityHistories(activityHistories)
+        return ids
+    }
+
+    /**
+     * Insert a list of contacts with the necessary [ActivityHistory] inside a transaction.
+     *
+     * @param contacts [List<Contact>]
+     * @return returns the generated id´s [List] of [Long] the created contacts.
+     */
+    @Transaction
+    open fun insertAllSync(contacts: List<Contact>): List<Long> {
+        val ids = rawInsertAllSync(contacts)
+        val activityHistories: List<ActivityHistory> = contacts.map {
+            ActivityHistory(it.connectionId, null, it.dateCreated, ActivityHistory.Type.ContactAdded)
+        }
+        insertActivityHistoriesSync(activityHistories)
         return ids
     }
 
@@ -69,6 +88,14 @@ abstract class ContactDao : ActivityHistoryDao() {
      */
     @Query("SELECT * FROM contacts WHERE deleted = 0 order by id asc")
     abstract suspend fun getAll(): List<Contact>
+
+    /**
+     * Find all non-deleted contacts
+     *
+     * @return All non-deleted contacts [List] of [Contact].
+     */
+    @Query("SELECT * FROM contacts WHERE deleted = 0 order by id asc")
+    abstract fun getAllSync(): List<Contact>
 
     /**
      * Make a [LiveData] where the results of all contacts not deleted are reflected
@@ -99,6 +126,36 @@ abstract class ContactDao : ActivityHistoryDao() {
      */
     @Update
     abstract suspend fun updateContact(contact: Contact?)
+
+    /**
+     * Update a [Contact]
+     */
+    @Update
+    abstract fun updateContactSync(contact: Contact?)
+
+    /**
+     * Update a [Contact] and their issued [Credential]´s with the necessary [ActivityHistory] inside a transaction.
+     *
+     * @throws <InvalidObjectException>, @InvalidObjectException when trying to insert a credential with different connection id than the contact
+     * @param contact [Contact]
+     * @param issuedCredentials [List] of [Credential]
+     * @return returns the generated id [Long] of the created contact.
+     */
+    @Transaction
+    open fun updateContactSync(contact: Contact, issuedCredentials: List<Credential>) {
+        issuedCredentials.find {
+            it.connectionId != contact.connectionId
+        }?.let {
+            throw InvalidObjectException("The contact and the credential issued must have the same connectionId")
+        }
+        val contactId = updateContactSync(contact)
+        insertCredentialsSync(issuedCredentials)
+        val activityHistories: List<ActivityHistory> = issuedCredentials.map {
+            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
+        }
+        insertActivityHistoriesSync(activityHistories)
+        return contactId
+    }
 
     /**
      * Completely delete all [Contact] records and in turn delete all [Credential] data and [ActivityHistory] by cascading.
@@ -237,6 +294,9 @@ abstract class ContactDao : ActivityHistoryDao() {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertCredentials(credentials: List<Credential>): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract fun insertCredentialsSync(credentials: List<Credential>): List<Long>
 
     @Query("SELECT COUNT(*) FROM contacts ORDER BY id")
     abstract fun totalOfContacts(): LiveData<Int>

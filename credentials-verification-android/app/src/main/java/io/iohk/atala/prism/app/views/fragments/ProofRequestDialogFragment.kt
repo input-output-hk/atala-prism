@@ -22,23 +22,20 @@ import io.iohk.atala.prism.app.views.utils.dialogs.SuccessDialog
 import io.iohk.cvp.databinding.DialogFragmentProofRequestBinding
 import javax.inject.Inject
 import io.iohk.cvp.R
+import kotlin.properties.Delegates
 
 class ProofRequestDialogFragment : DaggerDialogFragment(), OnSelectItem<Credential> {
 
     companion object {
         // TODO this has to be removed when the Android navigation components are implemented
-        fun build(messageId: String, connectionId: String, requestedCredentialsIds: List<String>): ProofRequestDialogFragment {
+        fun build(proofRequestId: Long): ProofRequestDialogFragment {
             val fragment = ProofRequestDialogFragment()
-            fragment.messageId = messageId
-            fragment.connectionId = connectionId
-            fragment.requestedCredentialsIds = requestedCredentialsIds
+            fragment.proofRequestId = proofRequestId
             return fragment
         }
     }
-    
-    private lateinit var messageId: String
-    private lateinit var connectionId: String
-    private lateinit var requestedCredentialsIds: List<String>
+
+    private var proofRequestId by Delegates.notNull<Long>()
 
     @Inject
     lateinit var viewModelFactory: ProofRequestDialogViewModelFactory
@@ -67,7 +64,7 @@ class ProofRequestDialogFragment : DaggerDialogFragment(), OnSelectItem<Credenti
         isCancelable = false
         // TODO find how to set this style within the app theme (R.style.AppTheme)
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.AlertDialogTheme)
-        viewModel.fetchProofRequestInfo(messageId, connectionId, requestedCredentialsIds)
+        viewModel.fetchProofRequestInfo(proofRequestId)
     }
 
     private fun configureRecyclerView() {

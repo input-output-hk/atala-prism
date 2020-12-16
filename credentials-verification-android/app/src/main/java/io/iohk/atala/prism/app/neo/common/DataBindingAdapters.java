@@ -60,8 +60,12 @@ public class DataBindingAdapters {
     @BindingAdapter({"iohk:imageInBytes", "iohk:failImage"})
     public static void image(ImageView imageView, byte[] imageInBytes, Drawable failImage) {
         try {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageInBytes, 0, imageInBytes.length);
-            imageView.setImageBitmap(bitmap);
+            if (imageInBytes.length == 0) {
+                imageView.setImageDrawable(failImage);
+            } else {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imageInBytes, 0, imageInBytes.length);
+                imageView.setImageBitmap(bitmap);
+            }
         } catch (Exception ex) {
             imageView.setImageDrawable(failImage);
             Log.e("iohk:imageInBytes", ex.getLocalizedMessage());

@@ -15,6 +15,9 @@
     <string name="credential_degree_type_title">\n• University Credential </string>
     <string name="credential_employed_type_title">\n• Employment Credential </string>
     <string name="credential_insurance_type_title">\n• Insurance Credential </string>
+    <string name="credential_georgia_educational_degree_type_title">\n• Educational Degree</string>
+    <string name="credential_georgia_educational_degree_transcript_type_title">\n• Educational Degree Transcript</string>
+    <string name="credential_georgia_national_id_type_title">\n• National ID</string>
 
     <!-- Terms and Conditions -->
     <string name="account_creation">Account Creation</string>
@@ -47,6 +50,9 @@
     <string name="credential_government_name">Government ID</string>
     <string name="credential_employment_name">Proof of Employment</string>
     <string name="credential_insurance_name">Health Insurance</string>
+    <string name="credential_georgia_educational_degree_name">Educational Degree</string>
+    <string name="credential_georgia_educational_degree_transcript_name">Educational Degree Transcript</string>
+    <string name="credential_georgia_national_id_name">National ID</string>
 
     <!-- Credential Detail -->
     <string name="degree_name">Degree Name</string>

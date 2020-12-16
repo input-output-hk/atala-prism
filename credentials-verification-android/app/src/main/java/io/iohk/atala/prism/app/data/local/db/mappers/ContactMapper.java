@@ -9,14 +9,12 @@ import io.iohk.atala.prism.protos.VerifierInfo;
 public class ContactMapper {
 
     static public Contact mapToContact(ConnectionInfo connectionInfo, String keyDerivationPath) {
-
         Contact contact = new Contact();
         IssuerInfo issuerInfo = connectionInfo.getParticipantInfo().getIssuer();
         HolderInfo holderInfo = connectionInfo.getParticipantInfo().getHolder();
         VerifierInfo verifierInfo = connectionInfo.getParticipantInfo().getVerifier();
-
         contact.connectionId = connectionInfo.getConnectionId();
-        contact.dateCreated = System.currentTimeMillis();
+        contact.dateCreated = connectionInfo.getCreated();
         if (!issuerInfo.getDID().isEmpty()) {
             contact.did = issuerInfo.getDID();
             contact.name = issuerInfo.getName();
@@ -33,5 +31,4 @@ public class ContactMapper {
         contact.keyDerivationPath = keyDerivationPath;
         return contact;
     }
-
 }

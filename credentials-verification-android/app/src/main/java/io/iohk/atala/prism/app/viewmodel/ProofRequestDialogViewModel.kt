@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
 import kotlinx.coroutines.Dispatchers
@@ -13,8 +14,7 @@ import java.util.stream.Collectors
 
 class ProofRequestDialogViewModel(private val dataManager: DataManager) : ViewModel() {
 
-    // id of the proof request message
-    private lateinit var messageId: String
+    private var proofRequest: ProofRequest? = null
 
     private val _contact = MutableLiveData<Contact>()
 
@@ -40,17 +40,21 @@ class ProofRequestDialogViewModel(private val dataManager: DataManager) : ViewMo
 
     val showError: LiveData<EventWrapper<Boolean>> = _showError
 
-    fun fetchProofRequestInfo(messageId: String, connectionId: String, requestedCredentialsIds: List<String>) {
-        this.messageId = messageId
+    fun fetchProofRequestInfo(proofRequestId: Long) {
         _showLoading.value = true
         viewModelScope.launch(Dispatchers.IO) {
-            val contact = dataManager.getContactByConnectionId(connectionId)
-            _contact.postValue(contact)
-            val checkableCredentials = dataManager.getCredentialsByCredentialsIds(requestedCredentialsIds).map {
-                CheckableData(it)
+            dataManager.getProofRequestById(proofRequestId)?.let { proofRequestWhitCredentials ->
+                proofRequest = proofRequestWhitCredentials.proofRequest
+                val contact = dataManager.getContactByConnectionId(proofRequestWhitCredentials.proofRequest.connectionId)
+                _contact.postValue(contact)
+                val checkableCredentials = proofRequestWhitCredentials.credentials.map {
+                    CheckableData(it)
+                }
+                _requestedCredentials.postValue(checkableCredentials)
+                _showLoading.postValue(false)
+            } ?: kotlin.run {
+
             }
-            _requestedCredentials.postValue(checkableCredentials)
-            _showLoading.postValue(false)
         }
     }
 
@@ -66,10 +70,8 @@ class ProofRequestDialogViewModel(private val dataManager: DataManager) : ViewMo
             _showLoading.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 // TODO this logic requires an appropriate repository
-                // the message with the proof request is set as a seen
-                contact.lastMessageId = messageId
-                dataManager.updateContact(contact)
                 _proofRequestAccepted.postValue(EventWrapper(false))
+                dataManager.removeProofRequest(proofRequest!!)
                 _showLoading.postValue(false)
             }
         }
@@ -88,6 +90,7 @@ class ProofRequestDialogViewModel(private val dataManager: DataManager) : ViewMo
                 try {
                     dataManager.sendMultipleMessage(keyPath, contact.connectionId, messages)
                     dataManager.insertRequestedCredentialActivities(contact, credentials)
+                    dataManager.removeProofRequest(proofRequest!!)
                     _proofRequestAccepted.postValue(EventWrapper(true))
                 } catch (ex: Exception) {
                     ex.printStackTrace()

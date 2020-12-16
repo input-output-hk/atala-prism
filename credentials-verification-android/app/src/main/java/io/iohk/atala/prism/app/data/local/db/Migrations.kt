@@ -94,3 +94,34 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
                 "ADD COLUMN needs_to_be_notified INTEGER NOT NULL DEFAULT false")
     }
 }
+
+/*
+* Added proofRequests and proofRequestCredential tables
+* */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+
+        // proofRequests
+        database.execSQL("CREATE TABLE IF NOT EXISTS proofRequests (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "connection_id TEXT NOT NULL, " +
+                "message_id TEXT NOT NULL, " +
+                "FOREIGN KEY(connection_id) " +
+                "REFERENCES contacts(connection_id) ON UPDATE NO ACTION ON DELETE CASCADE )")
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_proofRequests_connection_id ON proofRequests (connection_id)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_proofRequests_message_id ON proofRequests (message_id)")
+
+        //proofRequestCredential relation
+        database.execSQL("CREATE TABLE IF NOT EXISTS proofRequestCredential (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "credential_id TEXT NOT NULL, " +
+                "proof_request_id INTEGER NOT NULL, " +
+                "FOREIGN KEY(credential_id) " +
+                "REFERENCES credentials(credential_id) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                "FOREIGN KEY(proof_request_id) REFERENCES proofRequests(id) ON UPDATE NO ACTION ON DELETE CASCADE )")
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_proofRequestCredential_credential_id ON proofRequestCredential (credential_id)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_proofRequestCredential_proof_request_id ON proofRequestCredential (proof_request_id)")
+    }
+}

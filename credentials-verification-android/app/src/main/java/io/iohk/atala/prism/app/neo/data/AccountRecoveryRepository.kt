@@ -15,7 +15,6 @@ import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.protos.AtalaMessage
-import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
@@ -96,17 +95,13 @@ class AccountRecoveryRepository(private val sessionLocalDataSource: SessionLocal
 
     private fun loadCredentialsFromContact(contact: Contact, keyPair: ECKeyPair): List<Credential> {
         val paginatedMessagesResponse = connectorApi.getAllMessages(keyPair, contact.lastMessageId)
-        val credentialsMessages = paginatedMessagesResponse.messagesList.filter {
-            val message = AtalaMessage.parseFrom(it.message)
-            message.proofRequest.typeIdsList.isEmpty()
-        }.toList()
-
-        if (credentialsMessages.isNotEmpty()) {
-            contact.lastMessageId = credentialsMessages.last().id
-            return credentialsMessages.map { receivedMessage: ReceivedMessage? ->
-                return@map CredentialMapper.mapToCredential(receivedMessage)
-            }.toList()
-        }
-        return emptyList()
+        return paginatedMessagesResponse.messagesList.map { receivedMessage ->
+            val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
+            contact.lastMessageId = receivedMessage.id
+            return@map if (CredentialMapper.isACredentialMessage(atalaMessage))
+                CredentialMapper.mapToCredential(atalaMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received, contact)
+            else
+                null
+        }.filterNotNull()
     }
 }

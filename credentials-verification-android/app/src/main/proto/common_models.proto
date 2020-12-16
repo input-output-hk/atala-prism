@@ -5,8 +5,48 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+// Request to check the service's health
+message HealthCheckRequest {}
+// Response after checking the service's health
+message HealthCheckResponse {}
+
+// Represents a date broken by its pieces, used to avoid format issues on different languages
 message Date {
-  int32 year = 1; // positive value
-  int32 month = 2; // value in the [1, 12] interval
-  int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
+    int32 year = 1; // positive value
+    int32 month = 2; // value in the [1, 12] interval
+    int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
+}
+
+// The supported ledger types, commonly used for linking on-chain transactions
+enum Ledger {
+    UNKNOWN_LEDGER = 0; // Invalid default value
+    IN_MEMORY = 1; // This is used only for development
+    BITCOIN_TESTNET = 2; // Bitcoin testnet (used for testing, deprecated)
+    BITCOIN_MAINNET = 3; // Bitcoin mainnet (deprecated)
+    CARDANO_TESTNET = 4; // Cardano testnet (used for testing)
+    CARDANO_MAINNET = 5; // Cardano mainnet, used in production
+}
+
+// Information about a ledger block.
+//
+// TODO: Consider renaming to TransactionInBlockInfo given that it includes information about the transaction.
+message BlockInfo {
+    int32 number = 1; // Number of the block in the ledger
+    int64 timestamp = 2; // Millis since epoch when the block was created
+    int32 index = 3; // Index of the transaction within the block
+}
+
+// Information about a ledger transaction, as well as the block it is inclded in
+message TransactionInfo {
+    string transactionId = 1; // ID of the transaction
+    Ledger ledger = 2; // Ledger the transaction was published to
+    BlockInfo block = 3; // Block the transaction was included in
+}
+
+// The status for a PRISM transaction
+enum TransactionStatus {
+    UNKNOWN = 0; // The transaction is not an Atala PRISM transaction
+    PENDING = 1; // The transaction is pending to be accepted by the blockchain
+    IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM
+    CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable
 }

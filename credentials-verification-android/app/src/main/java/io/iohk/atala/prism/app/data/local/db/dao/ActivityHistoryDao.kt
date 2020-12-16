@@ -16,6 +16,9 @@ abstract class ActivityHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertActivityHistories(activityHistories: List<ActivityHistory>): List<Long>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract fun insertActivityHistoriesSync(activityHistories: List<ActivityHistory>): List<Long>
+
     @Query("SELECT * FROM activityHistories ORDER BY id ASC")
     abstract suspend fun getAllActivityHistories(): List<ActivityHistory>
 

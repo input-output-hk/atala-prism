@@ -3,19 +3,13 @@ package io.iohk.atala.prism.app.viewmodel
 import androidx.lifecycle.*
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.app.data.DataManager
-import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
-import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.app.viewmodel.dtos.ConnectionDataDto
-import io.iohk.atala.prism.protos.AtalaMessage
-import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 class ShareCredentialDialogViewModel(private val dataManager: DataManager) : ViewModel() {
 
@@ -107,12 +101,6 @@ class ShareCredentialDialogViewModel(private val dataManager: DataManager) : Vie
                     dataManager.sendMessageToMultipleConnections(connections, credentialByteArray!!)
                     val selectedContacts = selectedCheckableContacts.map { it.data }
                     dataManager.insertShareCredentialActivityHistories(credential, selectedContacts)
-                    /* TODO - When connection is created server take a few milliseconds to create all messages,
-                    added a delay to avoid getting empty messages. This should be changed when server implement stream connections */
-                    delay(TimeUnit.SECONDS.toMillis(1))
-                    connections.forEach { connectionDataDto: ConnectionDataDto ->
-                        updateStoredMessages(connectionDataDto.connectionId)
-                    }
                     _credentialHasBeenShared.postValue(EventWrapper(true))
                 } catch (ex: Exception) {
                     _error.postValue(EventWrapper(ErrorType.CantShareCredentialError))
@@ -121,39 +109,6 @@ class ShareCredentialDialogViewModel(private val dataManager: DataManager) : Vie
                 }
             }
         }
-    }
-
-    /*
-    * TODO - move this business logic into a repository
-    * updateStoredMessages, storeCredentials, updateContactLastMessageSeenId
-    * */
-
-    private suspend fun updateStoredMessages(connectionId: String) {
-        val contact = dataManager.getContactByConnectionId(connectionId)!!
-        val messagesList = dataManager.getAllMessages(CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, dataManager.getMnemonicList()), contact.lastMessageId).messagesList
-        val credentialList = messagesList.filter {
-            val newMessage: AtalaMessage = AtalaMessage.parseFrom(it.message)
-            newMessage.proofRequest.typeIdsList.isEmpty()
-        }
-        if (credentialList.isNotEmpty()) {
-            storeCredentials(contact.id, credentialList)
-            updateContactLastMessageSeenId(connectionId, credentialList.last().id)
-        } else {
-            updateContactLastMessageSeenId(connectionId, contact.lastMessageId)
-        }
-    }
-
-    private suspend fun storeCredentials(contactId: Long, credentialList: List<ReceivedMessage>) {
-        val credentialToStore = credentialList.map { receivedMessage: ReceivedMessage? ->
-            return@map CredentialMapper.mapToCredential(receivedMessage)
-        }.toList()
-        dataManager.insertIssuedCredentialsToAContact(contactId, credentialToStore)
-    }
-
-    private suspend fun updateContactLastMessageSeenId(connectionId: String, messageId: String?) {
-        val contact = dataManager.getContactByConnectionId(connectionId)
-        contact?.lastMessageId = messageId
-        dataManager.updateContact(contact!!)
     }
 }
 

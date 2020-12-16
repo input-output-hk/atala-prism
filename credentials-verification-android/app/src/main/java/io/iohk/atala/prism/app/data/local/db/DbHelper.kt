@@ -27,4 +27,7 @@ interface DbHelper {
     fun allIssuedCredentialsNotifications(): LiveData<List<ActivityHistoryWithCredential>>
     suspend fun clearCredentialNotifications(credentialId: String)
     fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>>
+    fun allProofRequest(): LiveData<List<ProofRequestWithCredentials>>
+    suspend fun getProofRequestById(id: Long): ProofRequestWithCredentials?
+    suspend fun removeProofRequest(proofRequest: ProofRequest)
 }

@@ -9,24 +9,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import javax.inject.Inject;
 
-import butterknife.BindView;
+import io.iohk.atala.prism.app.neo.common.DateFormatsKt;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.data.local.db.model.Credential;
-import io.iohk.atala.prism.app.utils.CredentialParse;
 import io.iohk.atala.prism.app.utils.IntentDataConstants;
 import io.iohk.atala.prism.app.viewmodel.CredentialsViewModel;
-import io.iohk.atala.prism.app.viewmodel.dtos.CredentialDto;
 import io.iohk.atala.prism.app.views.fragments.utils.AppBarConfigurator;
 import io.iohk.atala.prism.app.views.fragments.utils.StackedAppBar;
+import io.iohk.cvp.databinding.FragmentCredentialDetailBinding;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -42,10 +41,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     private Credential credential;
 
-    private CredentialDto credentialDto;
-
-    @BindView(R.id.web_view)
-    WebView webView;
+    private FragmentCredentialDetailBinding binding;
 
     @Override
     protected int getViewId() {
@@ -56,8 +52,8 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     protected AppBarConfigurator getAppBarConfigurator() {
         setHasOptionsMenu(true);
 
-        if (credentialDto != null) {
-            return new StackedAppBar(CredentialUtil.getNameResource(credentialDto.getCredentialType()));
+        if (credential != null) {
+            return new StackedAppBar(CredentialUtil.getNameResource(credential.credentialType));
         }
         return new StackedAppBar(R.string.education);
     }
@@ -108,9 +104,11 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        binding = DataBindingUtil.inflate(inflater, getViewId(), container, false);
+        binding.setLifecycleOwner(this);
         fillData(credential);
-        return view;
+        setObservers();
+        return binding.getRoot();
     }
 
 
@@ -121,10 +119,18 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     }
 
     private void fillData(Credential credential) {
-        credentialDto = CredentialParse.parse(credential.credentialType, credential.credentialDocument);
-        String credentialHtmlView = credentialDto.getView().getHtml();
+        String credentialHtmlView = CredentialUtil.getHtml(credential);
         String encodedHtml = Base64.encodeToString(credentialHtmlView.getBytes(), Base64.NO_PADDING);
-        webView.loadData(encodedHtml, "text/html", "base64");
+        binding.webView.loadData(encodedHtml, "text/html", "base64");
+    }
+
+    private void setObservers() {
+        viewModel.getCustomDateFormat().observe(getViewLifecycleOwner(), customFormat -> {
+            if (customFormat != null && credential != null) {
+                String formattedDate = customFormat.getDateFormat().format(credential.dateReceived);
+                binding.setFormattedIssuedDate(getString(R.string.received, formattedDate));
+            }
+        });
     }
 
     @Override

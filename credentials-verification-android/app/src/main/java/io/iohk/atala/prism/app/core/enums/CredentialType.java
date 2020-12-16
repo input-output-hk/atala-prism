@@ -4,10 +4,13 @@ import java.util.Optional;
 
 public enum CredentialType {
 
-    ID_CREDENTIAL(1, "VerifiableCredential/RedlandIdCredential"),
-    DEGREE_CREDENTIAL(2, "VerifiableCredential/AirsideDegreeCredential"),
-    EMPLOYMENT_CREDENTIAL(3, "VerifiableCredential/AtalaEmploymentCredential"),
-    INSURANCE_CREDENTIAL(4, "VerifiableCredential/AtalaCertificateOfInsurance");
+    DEMO_ID_CREDENTIAL(1, "VerifiableCredential/RedlandIdCredential"),
+    DEMO_DEGREE_CREDENTIAL(2, "VerifiableCredential/AirsideDegreeCredential"),
+    DEMO_EMPLOYMENT_CREDENTIAL(3, "VerifiableCredential/AtalaEmploymentCredential"),
+    DEMO_INSURANCE_CREDENTIAL(4, "VerifiableCredential/AtalaCertificateOfInsurance"),
+    GEORGIA_EDUCATIONAL_DEGREE(5, "GeorgiaEducationalDegree"),
+    GEORGIA_EDUCATIONAL_DEGREE_TRANSCRIPT(6, "GeorgiaEducationalDegreeTranscript"),
+    GEORGIA_NATIONAL_ID(7, "GeorgiaNationalID");
 
     private String value;
 

@@ -3,112 +3,104 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "io.iohk.atala.prism.protos";
 
-package io.iohk.atala.prism.protos;
-
+import "common_models.proto";
 import "connector_models.proto";
 import "node_models.proto";
 
+package io.iohk.atala.prism.protos;
+
+// The Connector API
 service ConnectorService {
 
-  // Retrieve a connection for a given connection token.
-  //
-  // Available to: Holder, Issuer, Validator
+  // Retrieves a connection for a given connection token.
   rpc GetConnectionByToken (GetConnectionByTokenRequest) returns (GetConnectionByTokenResponse) {}
 
-  // Get active connections for current participant
-  //
-  // Available to: Holder, Issuer, Validator
+  // Get active connections for the authenticated user
   rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {}
 
-  // Return info about connection token such as creator info
-  //
-  // Available to: Holder
-  //
-  // Errors:
-  // Token does not exist (UNKNOWN)
+  // Return info about connection token such as creator info.
+  // This is commonly used to verify if you want to accept the connection or not.
   rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {}
 
-  // Instantiate connection from connection token
-  //
-  // Available to: Holder
-  //
-  // Errors:
-  // Token does not exist (UNKNOWN)
+  // Instantiate connection from connection token.
   rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {}
 
-  // Delete active connection
-  //
-  // Available to: Holder, Issuer, Validator
-  //
-  // Errors:
-  // Connection does not exist (UNKNOWN)
+  // Delete active connection.
   rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {}
 
-  // Bind DID to issuer
-  //
-  // Available to: Issuer
-  //
+  // Bind DID to institution.
+  // This is commonly expected for institutions that need to use a public DID, the method
+  // invokes the node to publish the DID to the blockchain.
+  // TODO: Delete method, we should not register the DID but receive the registered one.
   // Errors:
-  // Invalid DID (INVALID_ARGUMENT)
-  // Invalid DID document (INVALID_ARGUMENT)
-  // DID Document does not match DID (INVALID_ARGUMENT)
+  // Invalid DID (INVALID_ARGUMENT).
+  // Invalid DID document (INVALID_ARGUMENT).
+  // DID Document does not match DID (INVALID_ARGUMENT).
   rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
 
-  // Change billing plan of participant who wants to generate connection tokens
-  //
-  // Available to: Issuer, Validator
-  //
+  // Change billing plan of participant who wants to generate connection tokens.
+  // TODO: Remove, this is not useful anymore.
   // Errors:
-  // Unknown billing plan (UNKNOWN)
-  // User not allowed to set this billing plan (PERMISSION_DENIED)
+  // Unknown billing plan (UNKNOWN).
+  // User not allowed to set this billing plan (PERMISSION_DENIED).
   rpc ChangeBillingPlan (ChangeBillingPlanRequest) returns (ChangeBillingPlanResponse) {}
 
-  // Generate connection token that can be used to instantiate connection
-  //
-  // Available to: Issuer, Validator
-  //
+  // Generate connection token that can be used to instantiate connection.
   // Errors:
-  // Billing plan doesn't allow token generation (PERMISSION_DENIED)
+  // Billing plan doesn't allow token generation (PERMISSION_DENIED).
   rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
 
   // Return messages received after given time moment, sorted in ascending order by receive time
-  //
-  // Available to: Issuer, Holder, Validator
   rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
+
+  // Stream the messages received after the given optional message
+  rpc GetMessageStream (GetMessageStreamRequest) returns (stream GetMessageStreamResponse) {}
 
   // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
   rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
 
-  // Send message over a connection
-  //
-  // Available to: Issuer, Holder, Validator
-  //
+  // Returns public keys that can be used for secure communication with the other end of connection
+  rpc GetConnectionCommunicationKeys (GetConnectionCommunicationKeysRequest) returns (GetConnectionCommunicationKeysResponse) {}
+
+  // Send message over a connection.
   // Errors:
-  // Unknown connection (UNKNOWN)
-  // Connection closed (FAILED_PRECONDITION)
+  // Unknown connection (UNKNOWN).
+  // Connection closed (FAILED_PRECONDITION).
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
 
-  // Generate a URL that can be used to do a payment
+  // Generate a URL that can be used to do a payment.
   rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
+
+  // @exclude
+  // TODO: Remove unnecessary method
   rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
+
+  // @exclude
+  // TODO: Remove unnecessary method
   rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
 
   // Return the information about the Connector and Node builds
   rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
+
+  // Return the details for the authenticated user
+  rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
 }
 
+// Finds a connection by the given token
 message GetConnectionByTokenRequest {
-  string token = 1;
+  string token = 1; // the token related to the connection, it must not be empty
 }
-
+// The response while finding a connection by token
 message GetConnectionByTokenResponse {
-  io.iohk.atala.prism.protos.Connection connection = 1;
+	io.iohk.atala.prism.protos.Connection connection = 1;
 }
 
-// Request connections instantiated by us / with us possibly after a known connection
+// Request connections instantiated by us / with us possibly after a known connection.
+//
+// The results are sorted by the time the connection was created in ascending order.
 message GetConnectionsPaginatedRequest {
-  string lastSeenConnectionId = 1; // returned credentials will have been created after the last seen connection (optional field)
-  int32 limit = 2; // maximum number of credentials to return; must be > 0
+  string lastSeenConnectionId = 1; // returned connections will have been created after the last seen connection (optional field)
+  int32 limit = 2; // maximum number of connections to return; must be > 0
 }
 
 // Result with connections instantiated
@@ -123,22 +115,30 @@ message GetConnectionTokenInfoRequest {
 
 // Result with information on connection token
 message GetConnectionTokenInfoResponse {
-  io.iohk.atala.prism.protos.ParticipantInfo creator = 1; // participant who generated the code
+  io.iohk.atala.prism.protos.ParticipantInfo creator = 1; // [Will be deprecated] participant who generated the code
+  string creatorName = 2; // same value as the one contained in `creator`
+  bytes creatorLogo = 3; // same value as the one contained in `creator`
+  string creatorDID = 4; // same value as the one contained in `creator` (if any)
 }
 
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
+  // this used to allow the holder public key as (x, y), it was replaced by the holderEncodedPublicKey field
+  reserved 2;
+  reserved "holderPublicKey";
+
   string token = 1; // token to instantiate connection
-  io.iohk.atala.prism.protos.ConnectorPublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
-  // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
   io.iohk.atala.prism.protos.EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
 }
 
 // Confirmation of connection instantiation
 message AddConnectionFromTokenResponse {
   io.iohk.atala.prism.protos.ConnectionInfo connection = 1; // instantiated connection info
-  string userId = 2; // your generated user id
+  // your generated user id
+  // @exclude
+  // TODO: Remove useless field, we are replacing user ids by DIDs
+  string userId = 2;
 }
 
 // Request to delete a connection
@@ -160,9 +160,10 @@ message GenerateConnectionTokenResponse {
 }
 
 // Request to return messages for us after the given known message (if any)
+// Sorted in ascending order by receiving time.
 message GetMessagesPaginatedRequest {
-  string lastSeenMessageId = 1; // returned credentials will have been received after the given message (if any)
-  int32 limit = 2; // maximum number of credentials to return, must be > 0
+  string lastSeenMessageId = 1; // returned messages will have been received after the given message (if any)
+  int32 limit = 2; // maximum number of messages to return, must be > 0
 }
 
 // Response with messages
@@ -170,11 +171,36 @@ message GetMessagesPaginatedResponse {
   repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
 }
 
+// Request to stream new messages, which starts the stream from messages that where received after the given lastSeenMessageId
+message GetMessageStreamRequest {
+  // Last message seen by the client, so only newer messages are returned
+  string lastSeenMessageId = 1;
+}
+
+// Response for the new messages stream
+message GetMessageStreamResponse {
+  io.iohk.atala.prism.protos.ReceivedMessage message = 1; // the received message
+}
+
+// Finds the available messages from the given connection
+// @exclude
+// TODO: Remove unnecessary method, it was used before to parse received credentials but this is not required anymore
 message GetMessagesForConnectionRequest {
   string connectionId = 1;
 }
 message GetMessagesForConnectionResponse {
   repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1;
+}
+
+// Finds the available keys to send end-to-end encrypted messages
+message GetConnectionCommunicationKeysRequest {
+  string connectionId = 1; // the connection we are interested in sending a message to
+}
+
+message GetConnectionCommunicationKeysResponse {
+  // keys that can be used for communication with the other end of connection with their ids.
+  // keyId inside might be empty if there is just one key in the collection.
+  repeated io.iohk.atala.prism.protos.ConnectionKey keys = 1;
 }
 
 // Request to send message
@@ -187,14 +213,41 @@ message SendMessageRequest {
 message SendMessageResponse {
 }
 
+// @exclude
 // REGISTRATION AND ACCOUNT MANAGEMENT
 
-// Request to register DID
+// Request to register DID.
+// @exclude
+// TODO: Use the method to not register the DID on the blockchain.
 message RegisterDIDRequest {
+  // The necessary operation to publish the DID to the blockchain
   io.iohk.atala.prism.protos.SignedAtalaOperation createDIDOperation = 1;
+
+  // The user's role.
+  // @exclude
+  // TODO: Remove, we don't use roles anymore.
   Role role = 2;
+
+  // The way to identify the institution
   string name = 3;
+
+  // The logo linked to the institution
   bytes logo = 4;
+
+  enum Role {
+    issuer = 0;
+    verifier = 1;
+  }
+}
+
+// Request to get the authenticated user details
+message GetCurrentUserRequest {}
+
+// The authenticated user details
+message GetCurrentUserResponse {
+  Role role = 1;
+  string name = 2;
+  bytes logo = 3;
 
   enum Role {
     issuer = 0;
@@ -205,9 +258,12 @@ message RegisterDIDRequest {
 // Confirmation of DID registration
 message RegisterDIDResponse {
   string did = 1;
+  TransactionInfo transactionInfo = 2;
 }
 
-// Request to change the billing plan
+// Request to change the billing plan.
+//
+// TODO: Remove unnecessary method.
 message ChangeBillingPlanRequest {
   io.iohk.atala.prism.protos.BillingPlan billingPlan = 1; // new billing plan
 }
@@ -216,11 +272,15 @@ message ChangeBillingPlanRequest {
 message ChangeBillingPlanResponse {
 }
 
+// @exclude
+// TODO: Remove unnecessary method
 message GetBraintreePaymentsConfigRequest {}
 message GetBraintreePaymentsConfigResponse {
   string tokenizationKey = 1;
 }
 
+// @exclude
+// TODO: Remove unnecessary method
 message ProcessPaymentRequest {
   string amount = 1; // exact decimal amount
   string nonce = 2; // client nonce
@@ -229,16 +289,21 @@ message ProcessPaymentResponse {
   io.iohk.atala.prism.protos.Payment payment = 1;
 }
 
+// @exclude
+// TODO: Remove unnecessary method
 message GetPaymentsRequest {}
 message GetPaymentsResponse {
   repeated io.iohk.atala.prism.protos.Payment payments = 1;
 }
 
+// Request to get information about this service
 message GetBuildInfoRequest {}
+
+// The actual service's information
 message GetBuildInfoResponse {
-  string version = 1;
-  string scalaVersion = 2;
-  string millVersion = 3;
-  string buildTime = 4;
-  string nodeVersion = 5;
+  string version = 1; // the service's version
+  string scalaVersion = 2; // the scala's version used by the service
+  string sbtVersion = 3; // the sbt's version used to compile the service
+  string buildTime = 4; // the time when the service was compiled
+  string nodeVersion = 5; // the node service version
 }

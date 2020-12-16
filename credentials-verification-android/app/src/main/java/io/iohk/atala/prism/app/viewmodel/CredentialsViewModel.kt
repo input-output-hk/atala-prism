@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult
 import io.iohk.atala.prism.app.views.utils.SingleLiveEvent
 import kotlinx.coroutines.*
@@ -17,7 +18,7 @@ import javax.inject.Inject
 *  and [HomeFragment] it is necessary to split this into 3 independent ViewModel´s.
 **/
 class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : NewConnectionsViewModel(dataManager) {
-    
+
     private val _credentialDeletedLiveData = MutableLiveData<Boolean>(false)
 
     private val _showErrorMessageLiveData = SingleLiveEvent<Boolean>()
@@ -25,6 +26,15 @@ class CredentialsViewModel @Inject constructor(val dataManager: DataManager) : N
     fun setCredentialViewed(credential: Credential) {
         viewModelScope.launch(Dispatchers.IO) {
             dataManager.clearCredentialNotifications(credential.credentialId)
+        }
+    }
+
+    /*
+    * TODO this is for [CredentialDetailFragment] delete this when there is an appropriate ViewModel for that fragment
+    * */
+    val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
+        viewModelScope.launch {
+            value = dataManager.getCurrentDateFormat()
         }
     }
 
