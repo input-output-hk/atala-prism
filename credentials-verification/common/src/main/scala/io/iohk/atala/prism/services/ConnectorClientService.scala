@@ -1,17 +1,18 @@
-package io.iohk.atala.mirror.services
+package io.iohk.atala.prism.services
 
 import scala.concurrent.duration.FiniteDuration
 import monix.eval.Task
 import fs2.Stream
+import io.grpc.ManagedChannelBuilder
 import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.connector_api._
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, ProofRequest}
+import io.iohk.atala.prism.protos.credential_models.{StartAcuantProcess, AtalaMessage, ProofRequest, KycBridgeMessage}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-import io.iohk.atala.mirror.config.ConnectorConfig
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
-import io.iohk.atala.mirror.models.{ConnectorMessageId, CredentialProofRequestType}
-import io.iohk.atala.mirror.Utils.parseUUID
+import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
+import io.iohk.atala.prism.models.{ConnectorMessageId, CredentialProofRequestType}
+import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 
 trait ConnectorClientService {
 
@@ -44,6 +45,11 @@ trait ConnectorClientService {
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, ConnectionInfo]
+
+  def sendStartAcuantProcess(
+      connectionId: ConnectionId,
+      startAcuantProcess: StartAcuantProcess
+  ): Task[SendMessageResponse]
 
 }
 
@@ -157,4 +163,32 @@ class ConnectorClientServiceImpl(
       .flatMap(Stream.emits) // convert Seq[ConnectionInfo] to ConnectionInfo
   }
 
+  def sendStartAcuantProcess(
+      connectionId: ConnectionId,
+      startAcuantProcess: StartAcuantProcess
+  ): Task[SendMessageResponse] = {
+    val kycBridgeMessage =
+      AtalaMessage().withKycBridgeMessage(
+        KycBridgeMessage(KycBridgeMessage.Message.StartAcuantProcess(startAcuantProcess))
+      )
+
+    val request = SendMessageRequest(connectionId.uuid.toString, kycBridgeMessage.toByteString)
+
+    authenticatedCall(request, _.sendMessage)
+  }
+
+}
+
+object ConnectorClientService {
+
+  def createConnectorGrpcStub(
+      connectorConfig: ConnectorConfig
+  ): ConnectorServiceGrpc.ConnectorServiceStub = {
+    val channel = ManagedChannelBuilder
+      .forAddress(connectorConfig.host, connectorConfig.port)
+      .usePlaintext()
+      .build()
+
+    ConnectorServiceGrpc.stub(channel)
+  }
 }

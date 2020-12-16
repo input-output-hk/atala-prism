@@ -31,16 +31,18 @@ import cats.implicits._
 import doobie.ConnectionIO
 import io.iohk.atala.prism.credentials.Credential
 import io.circe.generic.auto._
+import io.iohk.atala.prism.models.{ConnectionState, ConnectionToken}
+import io.iohk.atala.prism.services.ConnectorClientService
 
 class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientService) {
 
   def createAccount: Task[CreateAccountResponse] = {
     connectorService.generateConnectionToken
       .flatMap(response => {
-        val newToken = Connection.ConnectionToken(response.token)
+        val newToken = ConnectionToken(response.token)
 
         ConnectionDao
-          .insert(Connection(newToken, None, Connection.ConnectionState.Invited, None, None))
+          .insert(Connection(newToken, None, ConnectionState.Invited, None, None))
           .transact(tx)
           .map(_ => CreateAccountResponse(newToken.token))
       })

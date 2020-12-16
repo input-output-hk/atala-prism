@@ -1,6 +1,7 @@
-package io.iohk.atala.mirror.services
+package io.iohk.atala.prism.services
 
 import java.util.Base64
+
 import scala.concurrent.Future
 import io.grpc.Metadata
 import io.grpc.stub.{AbstractStub, MetadataUtils}
@@ -8,13 +9,14 @@ import scalapb.GeneratedMessage
 import monix.eval.Task
 import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.mirror.services.BaseGrpcClientService.{
+import io.iohk.atala.prism.services.BaseGrpcClientService.{
   AuthHeaders,
   BaseGrpcAuthConfig,
   DidBasedAuthConfig,
   PublicKeyBasedAuthConfig
 }
 import io.iohk.atala.prism.identity.DID
+import org.slf4j.LoggerFactory
 
 /**
   * Abstract service which provides support for DID based authentication for gRPC
@@ -25,6 +27,8 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
     requestAuthenticator: RequestAuthenticator,
     authConfig: BaseGrpcAuthConfig
 ) {
+
+  private val logger = LoggerFactory.getLogger(BaseGrpcClientService.getClass)
 
   /**
     * Perform gRPC call with DID based authentication.
@@ -38,7 +42,12 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
   ): Task[Response] = {
     val newStub = MetadataUtils.attachHeaders(stub, signRequest(request))
 
-    Task.fromFuture(call(newStub)(request))
+    Task
+      .fromFuture(call(newStub)(request))
+      .onErrorHandleWith { error =>
+        logger.error(s"Error occurred when calling grpc service: ${error.getMessage} cause: ${error.getCause}")
+        Task.raiseError(error)
+      }
   }
 
   private[services] def signRequest[Request <: GeneratedMessage](request: Request): Metadata = {

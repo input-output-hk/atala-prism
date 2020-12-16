@@ -2,15 +2,12 @@ package io.iohk.atala.mirror
 
 import scala.concurrent.duration._
 import scala.util.Try
-
 import monix.eval.Task
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
 import org.slf4j.LoggerFactory
-
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
-
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.connector.RequestAuthenticator
@@ -20,20 +17,22 @@ import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.mirror.services._
-import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
-import io.iohk.atala.mirror.config._
+import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.mirror.db.UserCredentialDao
-import io.iohk.atala.mirror.models.{Connection, CredentialProofRequestType, UserCredential}
+import io.iohk.atala.mirror.models.UserCredential
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
-
 import cats.implicits._
 import doobie.implicits._
+import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
+import io.iohk.atala.prism.models.{ConnectionToken, CredentialProofRequestType}
 import monix.execution.Scheduler.Implicits.global
-import io.iohk.atala.mirror.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
+import io.iohk.atala.prism.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
+import io.iohk.atala.prism.services.{BaseGrpcClientService, ConnectorClientServiceImpl, ConnectorMessagesService}
 
 class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpec with MirrorFixtures {
 
@@ -116,15 +115,15 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         // Mirror: process incoming messages
         cardanoAddressService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig, nodeService)
         connectorMessageService = new ConnectorMessagesService(
-          databaseTask,
-          connectorClientService,
-          List(credentialService.credentialMessageProcessor, cardanoAddressService.cardanoAddressInfoMessageProcessor)
+          connectorService = connectorClientService,
+          List(credentialService.credentialMessageProcessor, cardanoAddressService.cardanoAddressInfoMessageProcessor),
+          findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(databaseTask),
+          saveMessageOffset = ConnectorMessageOffsetDao.updateLastMessageOffset(_).transact(databaseTask).map(_ => ())
         )
         _ <- connectorMessageService.messagesUpdatesStream.interruptAfter(5.second).compile.drain
 
         // verify result
-        result <-
-          UserCredentialDao.findBy(Connection.ConnectionToken(connectionToken)).transact(databaseTask).map(_.head)
+        result <- UserCredentialDao.findBy(ConnectionToken(connectionToken)).transact(databaseTask).map(_.head)
       } yield result).runSyncUnsafe(1.minute).status mustBe UserCredential.CredentialStatus.Valid
     }
   }

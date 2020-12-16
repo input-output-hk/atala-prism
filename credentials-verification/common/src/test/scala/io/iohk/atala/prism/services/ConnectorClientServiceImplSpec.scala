@@ -1,4 +1,4 @@
-package io.iohk.atala.mirror.services
+package io.iohk.atala.prism.services
 
 import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
@@ -12,23 +12,17 @@ import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.connector_api._
-import io.iohk.atala.mirror.config.ConnectorConfig
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
-import io.iohk.atala.mirror.models.CredentialProofRequestType
+import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
+import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
 import io.iohk.atala.prism.protos.connector_models.ConnectionInfo
-import io.iohk.atala.mirror.MirrorFixtures
 
 import monix.execution.Scheduler.Implicits.global
 
-// sbt "project mirror" "testOnly *services.ConnectorClientServiceImplSpec"
-class ConnectorClientServiceImplSpec
-    extends AnyWordSpec
-    with Matchers
-    with MockitoSugar
-    with ArgumentMatchersSugar
-    with MirrorFixtures {
+// sbt "project common" "testOnly *services.ConnectorClientServiceImplSpec"
+class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
 
   "connectorClientService" should {
     "generate connection token" in new ConnectorStubs {
@@ -67,7 +61,7 @@ class ConnectorClientServiceImplSpec
           val receivedMessage = ReceivedMessage(
             "id1",
             LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
-            ConnectionFixtures.connectionId1.uuid.toString,
+            "0a66fcef-4d50-4a67-a365-d4dbebcf22d3",
             AtalaMessage().withIssuerSentCredential(IssuerSentCredential()).toByteString
           )
           val response = GetMessagesPaginatedResponse(Seq(receivedMessage))

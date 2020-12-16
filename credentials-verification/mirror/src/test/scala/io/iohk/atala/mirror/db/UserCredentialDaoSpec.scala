@@ -2,10 +2,10 @@ package io.iohk.atala.mirror.db
 
 import scala.concurrent.duration._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.mirror.models.Connection.ConnectionToken
+import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.mirror.MirrorFixtures
 import doobie.implicits._
-import io.iohk.atala.mirror.models.ConnectorMessageId
+import io.iohk.atala.prism.models.ConnectorMessageId
 
 // sbt "project mirror" "testOnly *db.UserCredentialDaoSpec"
 class UserCredentialDaoSpec extends PostgresRepositorySpec with MirrorFixtures {

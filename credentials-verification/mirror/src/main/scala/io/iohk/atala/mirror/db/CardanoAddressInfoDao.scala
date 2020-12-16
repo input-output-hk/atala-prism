@@ -2,10 +2,10 @@ package io.iohk.atala.mirror.db
 
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.mirror.models.{CardanoAddressInfo, ConnectorMessageId}
+import io.iohk.atala.mirror.models.CardanoAddressInfo
 import doobie.implicits._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
-import io.iohk.atala.mirror.models.Connection.ConnectionToken
+import io.iohk.atala.prism.models.{ConnectionToken, ConnectorMessageId}
 import doobie.implicits.legacy.instant._
 import doobie.util.meta.Meta
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress

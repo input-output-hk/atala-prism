@@ -3,7 +3,7 @@ package io.iohk.atala.mirror.models
 import java.time.Instant
 
 import enumeratum.{DoobieEnum, Enum, EnumEntry}
-import io.iohk.atala.mirror.models.Connection.ConnectionToken
+import io.iohk.atala.prism.models.{ConnectionToken, ConnectorMessageId}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.prism.identity.DID
 

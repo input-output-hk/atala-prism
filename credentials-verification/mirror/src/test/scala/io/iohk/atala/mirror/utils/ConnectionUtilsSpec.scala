@@ -2,7 +2,7 @@ package io.iohk.atala.mirror.utils
 
 import java.util.UUID
 
-import io.iohk.atala.mirror.models.Connection.ConnectionId
+import io.iohk.atala.prism.models.ConnectionId
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

@@ -3,7 +3,7 @@ package io.iohk.atala.mirror.models
 import java.time.Instant
 
 import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
-import io.iohk.atala.mirror.models.Connection.ConnectionToken
+import io.iohk.atala.prism.models.{ConnectionToken, ConnectorMessageId}
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 
 case class CardanoAddressInfo(

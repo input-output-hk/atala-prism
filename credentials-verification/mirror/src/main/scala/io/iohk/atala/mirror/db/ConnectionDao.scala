@@ -3,7 +3,8 @@ package io.iohk.atala.mirror.db
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.Connection
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken, PayIdName}
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
+import io.iohk.atala.mirror.models.Connection.PayIdName
 import io.iohk.atala.prism.daos.BaseDAO.didMeta
 import cats.data.NonEmptyList
 import doobie.Fragments

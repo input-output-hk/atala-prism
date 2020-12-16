@@ -1,34 +1,32 @@
 package io.iohk.atala.mirror
 
-import java.util.concurrent.TimeUnit
-
-import scala.concurrent.blocking
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import cats.effect.{ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
-import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder, ServerServiceDefinition}
-import io.grpc.protobuf.services.ProtoReflectionService
+import io.grpc.{ManagedChannelBuilder, Server}
 import org.flywaydb.core.Flyway
 import doobie.hikari.HikariTransactor
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
-import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
-import io.iohk.atala.mirror.config.{ConnectorConfig, MirrorConfig, NodeConfig}
+import io.iohk.atala.mirror.config.{MirrorConfig, NodeConfig}
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
 import io.iohk.atala.mirror.services.{
   CardanoAddressInfoService,
-  ConnectorClientServiceImpl,
-  ConnectorMessagesService,
   CredentialService,
   MirrorService,
   NodeClientServiceImpl
 }
+import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.mirror.models.CredentialProofRequestType
+import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.repositories.TransactorFactory
+import io.iohk.atala.prism.services.{ConnectorClientService, ConnectorClientServiceImpl, ConnectorMessagesService}
+import io.iohk.atala.prism.utils.GrpcUtils
+import doobie.syntax.ConnectionIOOps
 
 object MirrorApp extends TaskApp {
 
@@ -70,7 +68,7 @@ object MirrorApp extends TaskApp {
       _ <- Resource.liftF(runMigrations(tx, classLoader))
 
       // connector
-      connector <- Resource.pure(createConnector(connectorConfig))
+      connector <- Resource.pure(ConnectorClientService.createConnectorGrpcStub(connectorConfig))
 
       // node
       node <- Resource.pure(createNode(nodeConfig))
@@ -84,14 +82,17 @@ object MirrorApp extends TaskApp {
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
 
       connectorMessageService = new ConnectorMessagesService(
-        tx,
-        connectorService,
-        List(
+        connectorService = connectorService,
+        messageProcessors = List(
           credentialService.credentialMessageProcessor,
           cardanoAddressInfoService.cardanoAddressInfoMessageProcessor,
           cardanoAddressInfoService.payIdMessageProcessor,
           cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
-        )
+        ),
+        //import doobie.imlicits._ causes problems with ambiguous implicit values
+        findLastMessageOffset = new ConnectionIOOps(ConnectorMessageOffsetDao.findLastMessageOffset()).transact(tx),
+        saveMessageOffset = messageId =>
+          new ConnectionIOOps(ConnectorMessageOffsetDao.updateLastMessageOffset(messageId)).transact(tx).map(_ => ())
       )
 
       // background streams
@@ -109,8 +110,8 @@ object MirrorApp extends TaskApp {
       _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       // gRPC server
-      grpcServer <- createGrpcServer(
-        mirrorConfig,
+      grpcServer <- GrpcUtils.createGrpcServer(
+        mirrorConfig.grpcConfig,
         MirrorServiceGrpc.bindService(mirrorGrpcService, scheduler)
       )
 
@@ -118,33 +119,6 @@ object MirrorApp extends TaskApp {
       apiServer = new ApiServer(paymentsEndpoint, mirrorConfig.httpConfig)
       _ <- apiServer.payIdServer.resource
     } yield grpcServer
-
-  /**
-    * Wrap a [[Server]] into a bracketed resource. The server stops when the
-    * resource is released. With the following scenarios:
-    *   - Server is shut down when there aren't any requests left.
-    *   - We wait for 30 seconds to allow finish pending requests and
-    *     then force quit the server.
-    */
-  def createGrpcServer(mirrorConfig: MirrorConfig, services: ServerServiceDefinition*): Resource[Task, Server] = {
-    val builder = ServerBuilder.forPort(mirrorConfig.grpcConfig.port)
-
-    builder.addService(
-      ProtoReflectionService.newInstance()
-    ) // TODO: Decide before release if we should keep this (or guard it with a config flag)
-    services.foreach(builder.addService(_))
-
-    val shutdown = (server: Server) =>
-      Task {
-        logger.info("Stopping GRPC server")
-        server.shutdown()
-        if (!blocking(server.awaitTermination(30, TimeUnit.SECONDS))) {
-          server.shutdownNow()
-        }
-      }.void
-
-    Resource.make(Task(builder.build()))(shutdown)
-  }
 
   /**
     * Run db migrations with Flyway.
@@ -162,20 +136,6 @@ object MirrorApp extends TaskApp {
           .migrationsExecuted
       )
     )
-
-  /**
-    * Create a connector gRPC service stub.
-    */
-  def createConnector(
-      connectorConfig: ConnectorConfig
-  ): ConnectorServiceGrpc.ConnectorServiceStub = {
-    val channel = ManagedChannelBuilder
-      .forAddress(connectorConfig.host, connectorConfig.port)
-      .usePlaintext()
-      .build()
-
-    ConnectorServiceGrpc.stub(channel)
-  }
 
   /**
     * Create a node gRPC service stub.

@@ -6,7 +6,7 @@ import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.mirror.NodeUtils
-import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
+import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.identity.DID
 
 trait NodeClientService {

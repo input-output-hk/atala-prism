@@ -4,7 +4,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.db.ConnectionDao
 import org.mockito.scalatest.MockitoSugar
 import monix.execution.Scheduler.Implicits.global
-import io.iohk.atala.mirror.models.Connection.ConnectionToken
+import io.iohk.atala.prism.models.{ConnectionState, ConnectionToken}
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.Connection
@@ -13,7 +13,7 @@ import io.iohk.atala.mirror.protos.mirror_api.{
   GetCredentialForAddressRequest,
   GetIdentityInfoForAddressRequest
 }
-import io.iohk.atala.mirror.stubs.ConnectorClientServiceStub
+import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 
 import scala.concurrent.duration.DurationInt
 
@@ -36,9 +36,9 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with Mi
     // then
     connection mustBe CreateAccountResponse(token) -> Some(
       Connection(
-        Connection.ConnectionToken(token),
+        ConnectionToken(token),
         None,
-        Connection.ConnectionState.Invited,
+        ConnectionState.Invited,
         None,
         None
       )

@@ -2,9 +2,9 @@ package io.iohk.atala.mirror.utils
 
 import cats.free.Free
 import doobie.ConnectionIO
-import io.iohk.atala.mirror.Utils.parseUUID
+import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 import io.iohk.atala.mirror.db.ConnectionDao
-import io.iohk.atala.mirror.models.Connection.ConnectionId
+import io.iohk.atala.prism.models.ConnectionId
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import org.slf4j.Logger
 import io.iohk.atala.mirror.models.Connection

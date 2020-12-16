@@ -1,17 +1,16 @@
 package io.iohk.atala.mirror.config
 
 import com.typesafe.config.Config
+import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
 
 case class HttpConfig(payIdPort: Int, payIdHostAddress: String)
-
-case class GrpcConfig(port: Int)
 
 case class MirrorConfig(grpcConfig: GrpcConfig, httpConfig: HttpConfig)
 
 object MirrorConfig {
 
   def apply(globalConfig: Config): MirrorConfig = {
-    val grpcConfig = GrpcConfig(globalConfig.getInt("grpc.port"))
+    val grpcConfig = GrpcConfig(globalConfig)
 
     val http = globalConfig.getConfig("http")
     val httpConfig = HttpConfig(

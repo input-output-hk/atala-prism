@@ -6,24 +6,31 @@ import java.util.UUID
 import cats.data.ValidatedNel
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.models.{ConnectorMessageId, CredentialProofRequestType, UserCredential}
+import io.iohk.atala.mirror.models.UserCredential
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.prism.credentials.{Credential, SlayerCredentialId, VerificationError}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
 import io.iohk.atala.prism.crypto.{EC, ECTrait, SHA256Digest}
-import io.iohk.atala.mirror.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
+import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationInt
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
+import io.iohk.atala.prism.models.{
+  ConnectionId,
+  ConnectionState,
+  ConnectionToken,
+  ConnectorMessageId,
+  CredentialProofRequestType
+}
 
 // sbt "project mirror" "testOnly *services.CredentialServiceSpec"
 class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {

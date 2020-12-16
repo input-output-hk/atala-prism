@@ -1,4 +1,4 @@
-package io.iohk.atala.mirror.services
+package io.iohk.atala.prism.services
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -13,7 +13,7 @@ import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPrivateKey}
 import io.iohk.atala.prism.connector.{RequestAuthenticator, SignedConnectorRequest}
-import io.iohk.atala.mirror.services.BaseGrpcClientService.AuthHeaders
+import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
 import io.iohk.atala.prism.identity.DID
 import monix.execution.Scheduler.Implicits.global
 

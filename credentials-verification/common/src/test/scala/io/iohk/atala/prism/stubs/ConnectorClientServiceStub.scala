@@ -1,9 +1,9 @@
-package io.iohk.atala.mirror.stubs
+package io.iohk.atala.prism.stubs
 
 import scala.concurrent.duration.FiniteDuration
 import fs2.Stream
-import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType}
-import io.iohk.atala.mirror.services.ConnectorClientService
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken, ConnectorMessageId, CredentialProofRequestType}
+import io.iohk.atala.prism.services.ConnectorClientService
 import io.iohk.atala.prism.protos.connector_api.{
   GenerateConnectionTokenResponse,
   GetConnectionsPaginatedResponse,
@@ -11,6 +11,7 @@ import io.iohk.atala.prism.protos.connector_api.{
   SendMessageResponse
 }
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+import io.iohk.atala.prism.protos.credential_models.StartAcuantProcess
 import monix.eval.Task
 
 class ConnectorClientServiceStub(
@@ -23,8 +24,8 @@ class ConnectorClientServiceStub(
     Task.pure(GenerateConnectionTokenResponse(connectionToken))
 
   def requestCredential(
-      connectionId: Connection.ConnectionId,
-      connectionToken: Connection.ConnectionToken,
+      connectionId: ConnectionId,
+      connectionToken: ConnectionToken,
       credentialProofRequestTypes: Seq[CredentialProofRequestType]
   ): Task[SendMessageResponse] = Task.pure(SendMessageResponse())
 
@@ -40,14 +41,19 @@ class ConnectorClientServiceStub(
   ): Stream[Task, Seq[ReceivedMessage]] = Stream(receivedMessages)
 
   def getConnectionsPaginated(
-      lastSeenConnectionId: Option[Connection.ConnectionId],
+      lastSeenConnectionId: Option[ConnectionId],
       limit: Int
   ): Task[GetConnectionsPaginatedResponse] = Task.pure(GetConnectionsPaginatedResponse(connectionInfos))
 
   def getConnectionsPaginatedStream(
-      lastSeenConnectionId: Option[Connection.ConnectionId],
+      lastSeenConnectionId: Option[ConnectionId],
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, ConnectionInfo] = Stream.emits(connectionInfos)
+
+  def sendStartAcuantProcess(
+      connectionId: ConnectionId,
+      startAcuantProcess: StartAcuantProcess
+  ): Task[SendMessageResponse] = Task.pure(SendMessageResponse())
 
 }

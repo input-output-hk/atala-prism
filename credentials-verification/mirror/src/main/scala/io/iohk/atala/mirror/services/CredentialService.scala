@@ -11,11 +11,17 @@ import fs2.Stream
 import monix.eval.Task
 import org.slf4j.LoggerFactory
 import io.iohk.atala.mirror.NodeUtils.fromTimestampInfoProto
-import io.iohk.atala.mirror.Utils.parseUUID
+import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionState, ConnectionToken}
-import io.iohk.atala.mirror.models.{Connection, ConnectorMessageId, CredentialProofRequestType, UserCredential}
+import io.iohk.atala.prism.models.{
+  ConnectionId,
+  ConnectionState,
+  ConnectionToken,
+  ConnectorMessageId,
+  CredentialProofRequestType
+}
+import io.iohk.atala.mirror.models.{Connection, UserCredential}
 import io.iohk.atala.prism.credentials.{
   Credential,
   CredentialData,
@@ -32,6 +38,7 @@ import doobie.implicits._
 import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.mirror.utils.ConnectionUtils
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor}
 
 class CredentialService(
     tx: Transactor[Task],

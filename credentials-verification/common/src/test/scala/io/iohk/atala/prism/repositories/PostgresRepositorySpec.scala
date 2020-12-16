@@ -90,8 +90,10 @@ trait PostgresRepositorySpec
     _releaseDatabase.foreach(_.unsafeRunSync())
   }
 
+  protected def migrationScriptsLocation = "db/migration"
+
   protected def migrate(): Unit = {
-    val _ = SchemaMigrations.migrate(transactorConfig)
+    val _ = SchemaMigrations.migrate(transactorConfig, migrationScriptsLocation)
   }
 
   override def beforeEach(): Unit = {

@@ -68,12 +68,13 @@ object PrismBuild {
             Seq(
               diffx,
               enumeratum,
+              enumeratumDoobie,
               flyway,
               monix,
               typesafeConfig
             )
       )
-      .dependsOn(cryptoLib, protosLib, credentialsLib)
+      .dependsOn(cryptoLib, protosLib, credentialsLib, connectorLib)
 
   def commonServerProject(name: String): Project =
     commonProject(Project(name, file(name)))

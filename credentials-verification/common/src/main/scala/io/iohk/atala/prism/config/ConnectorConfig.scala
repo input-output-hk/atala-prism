@@ -1,10 +1,10 @@
-package io.iohk.atala.mirror.config
+package io.iohk.atala.prism.config
 
 import java.util.Base64
 
 import com.typesafe.config.Config
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
-import io.iohk.atala.mirror.services.BaseGrpcClientService.DidBasedAuthConfig
+import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.identity.DID
 
 case class ConnectorConfig(host: String, port: Int, authConfig: DidBasedAuthConfig)

@@ -1,14 +1,11 @@
-package io.iohk.atala.mirror.services
+package io.iohk.atala.prism.services
 
-import doobie.util.transactor.Transactor
 import fs2.Stream
-import io.iohk.atala.mirror.db.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import monix.eval.Task
 
 import scala.concurrent.duration.DurationInt
-import doobie.implicits._
-import io.iohk.atala.mirror.models.ConnectorMessageId
+import io.iohk.atala.prism.models.ConnectorMessageId
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -18,9 +15,10 @@ trait MessageProcessor {
 }
 
 class ConnectorMessagesService(
-    tx: Transactor[Task],
     connectorService: ConnectorClientService,
-    messageProcessors: List[MessageProcessor] = List.empty
+    messageProcessors: List[MessageProcessor] = List.empty,
+    findLastMessageOffset: Task[Option[ConnectorMessageId]],
+    saveMessageOffset: ConnectorMessageId => Task[Unit]
 ) {
 
   private val logger = LoggerFactory.getLogger(classOf[ConnectorMessagesService])
@@ -30,7 +28,7 @@ class ConnectorMessagesService(
 
   val messagesUpdatesStream: Stream[Task, Unit] = {
     Stream
-      .eval(ConnectorMessageOffsetDao.findLastMessageOffset().transact(tx))
+      .eval(findLastMessageOffset)
       .flatMap { lastSeenMessageId =>
         connectorService.getMessagesPaginatedStream(
           lastSeenMessageId,
@@ -48,7 +46,7 @@ class ConnectorMessagesService(
             )
             Task.unit
           }
-          _ <- ConnectorMessageOffsetDao.updateLastMessageOffset(ConnectorMessageId(receivedMessage.id)).transact(tx)
+          _ <- saveMessageOffset(ConnectorMessageId(receivedMessage.id))
         } yield ()
       }
       .drain

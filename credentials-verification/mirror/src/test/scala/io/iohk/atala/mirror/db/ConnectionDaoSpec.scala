@@ -6,7 +6,7 @@ import cats.data.NonEmptyList
 
 import scala.concurrent.duration._
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.mirror.models.Connection.{ConnectionId, ConnectionToken}
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
 import io.iohk.atala.mirror.MirrorFixtures
 import doobie.implicits._
 import io.iohk.atala.prism.identity.DID

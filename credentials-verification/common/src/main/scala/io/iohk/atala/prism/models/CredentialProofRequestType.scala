@@ -1,4 +1,4 @@
-package io.iohk.atala.mirror.models
+package io.iohk.atala.prism.models
 
 sealed trait CredentialProofRequestType {
   val typeId: String

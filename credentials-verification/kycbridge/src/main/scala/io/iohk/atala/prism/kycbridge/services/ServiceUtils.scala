@@ -24,12 +24,16 @@ object ServiceUtils {
       request: Task[Request[Task]],
       client: Client[Task]
   ): Task[Either[Exception, A]] = {
-    request.flatMap(client.run(_).use {
-      case Status.Successful(r) => r.attemptAs[A].value
-      case r =>
-        r.as[String]
-          .map(b => Left(new Exception(s"Request failed with status ${r.status.code} ${r.status.reason} and body $b")))
-    })
+    request
+      .flatMap(client.run(_).use {
+        case Status.Successful(r) => r.attemptAs[A].value
+        case r =>
+          r.as[String]
+            .map(b =>
+              Left(new Exception(s"Request failed with status ${r.status.code} ${r.status.reason} and body $b"))
+            )
+      })
+      .onErrorHandle(throwable => Left(new Exception(throwable.getMessage)))
   }
 
 }

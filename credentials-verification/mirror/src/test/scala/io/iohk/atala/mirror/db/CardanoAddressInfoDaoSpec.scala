@@ -5,7 +5,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
-import io.iohk.atala.mirror.models.ConnectorMessageId
+import io.iohk.atala.prism.models.ConnectorMessageId
 
 // sbt "project mirror" "testOnly *db.CardanoAddressInfoDaoSpec"
 class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtures {

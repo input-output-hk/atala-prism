@@ -27,13 +27,15 @@ import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
 import io.iohk.atala.prism.protos.credential_models
 import io.circe.syntax._
-import io.iohk.atala.mirror.config.{GrpcConfig, HttpConfig, MirrorConfig}
+import io.iohk.atala.mirror.config.{HttpConfig, MirrorConfig}
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.jose.implicits._
 import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import io.circe.generic.auto._
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken, ConnectorMessageId}
+import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
 
 trait MirrorFixtures {
 

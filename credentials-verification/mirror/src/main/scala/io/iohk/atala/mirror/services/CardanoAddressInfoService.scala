@@ -14,7 +14,7 @@ import doobie.implicits._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
 import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.prism.mirror.payid.{Address, AddressDetails, CryptoAddressDetails, PayID, PaymentInformation}
-import io.iohk.atala.mirror.models.{CardanoAddressInfo, Connection, ConnectorMessageId}
+import io.iohk.atala.mirror.models.{CardanoAddressInfo, Connection}
 import io.iohk.atala.mirror.utils.ConnectionUtils
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{
@@ -31,6 +31,8 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.models.ConnectorMessageId
+import io.iohk.atala.prism.services.MessageProcessor
 
 import scala.util.Try
 

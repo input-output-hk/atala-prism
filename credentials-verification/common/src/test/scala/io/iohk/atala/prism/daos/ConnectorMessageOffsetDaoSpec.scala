@@ -1,12 +1,13 @@
-package io.iohk.atala.mirror.db
+package io.iohk.atala.prism.daos
 
-import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.models.ConnectorMessageId
+import io.iohk.atala.prism.models.ConnectorMessageId
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import doobie.implicits._
 
-// sbt "project mirror" "testOnly *db.ConnectorMessageOffsetDaoSpec"
-class ConnectorMessageOffsetDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
+// sbt "project common" "testOnly *daos.ConnectorMessageOffsetDaoSpec"
+class ConnectorMessageOffsetDaoSpec extends PostgresRepositorySpec {
+
+  override protected def migrationScriptsLocation: String = "common/db/migration"
 
   "ConnectorMessageOffsetDao" should {
     "update and return last seen message id" in {
