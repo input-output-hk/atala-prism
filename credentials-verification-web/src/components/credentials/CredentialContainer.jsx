@@ -7,9 +7,7 @@ import Credentials from './Credentials';
 import SendCredentialsConfirmationModal from './Molecules/Modals/SendCredentialConfirmationModal';
 import { withApi } from '../providers/withApi';
 import { credentialMapper, credentialReceivedMapper } from '../../APIs/helpers/credentialHelpers';
-import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 import {
-  CREDENTIAL_PAGE_SIZE,
   CREDENTIAL_STATUSES,
   CREDENTIAL_STATUSES_TRANSLATOR,
   MAX_CREDENTIALS,
@@ -17,6 +15,7 @@ import {
   CREDENTIALS_RECEIVED,
   CONNECTION_STATUSES
 } from '../../helpers/constants';
+import { useCredentialsIssuedListWithFilters } from '../../hooks/useCredentials';
 
 const SEND_CREDENTIALS = 'SEND_CREDENTIALS';
 const SIGN_CREDENTIALS = 'SIGN_CREDENTIALS';
@@ -27,59 +26,32 @@ const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
   // This field is used to know if there are no credentials on
   // the database, independently of the filters
-  const [noIssuedCredentials, setNoIssuedCredentials] = useState(true);
   const [noReceivedCredentials, setNoReceivedCredentials] = useState(true);
 
-  // These are the arrays from options
-  const [categories, setCategories] = useState([]);
-  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState({ issued: true, received: true });
 
-  // These are the credentials returned from the "backend"
-  const [credentialsIssued, setCredentialsIssued] = useState([]);
-  const [hasMoreIssued, setHasMoreIssued] = useState(true);
+  const {
+    credentialsIssued,
+    fetchCredentialsIssued,
+    setCredentialsIssued,
+    filteredCredentialsIssued,
+    filtersIssued,
+    hasMoreIssued,
+    noIssuedCredentials
+  } = useCredentialsIssuedListWithFilters(api.credentialsManager, setLoading);
+
   const [credentialsReceived, setCredentialsReceived] = useState([]);
+
   const [selectedCredentials, setSelectedCredentials] = useState([]);
 
   const [selectAll, setSelectAll] = useState(false);
   const [indeterminateSelectAll, setIndeterminateSelectAll] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
-  const [loading, setLoading] = useState({ issued: true, received: true });
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const setLoadingByKey = (key, value) =>
     setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
-
-  const fetchCredentialsIssued = async () => {
-    try {
-      const { credentialid } = getLastArrayElementOrEmpty(credentialsIssued);
-
-      const newlyFetchedCredentials = await api.credentialsManager.getCredentials(
-        CREDENTIAL_PAGE_SIZE,
-        credentialid
-      );
-
-      if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) {
-        setHasMoreIssued(false);
-      }
-
-      const credentialTypes = api.credentialsManager.getCredentialTypes();
-      const mappedCredentials = newlyFetchedCredentials.map(cred =>
-        credentialMapper(cred, credentialTypes)
-      );
-      const updatedCredentialsIssued = credentialsIssued.concat(mappedCredentials);
-      setCredentialsIssued(updatedCredentialsIssued);
-      setNoIssuedCredentials(!updatedCredentialsIssued.length);
-    } catch (error) {
-      Logger.error(
-        '[CredentialContainer.getCredentialsIssued] Error while getting Credentials',
-        error
-      );
-      message.error(t('errors.errorGetting', { model: 'Credentials' }));
-    } finally {
-      setLoadingByKey('issued', false);
-    }
-  };
 
   const refreshCredentialsIssued = async () => {
     try {
@@ -138,10 +110,6 @@ const CredentialContainer = ({ api }) => {
   useEffect(() => {
     fetchCredentialsIssued();
   }, []);
-
-  useEffect(() => {
-    if (!credentialsIssued.length && hasMoreIssued) fetchCredentialsIssued();
-  }, [credentialsIssued, hasMoreIssued]);
 
   const getAllCredentialsIssued = async () => {
     const allCredentials = await api.credentialsManager.getCredentials(MAX_CREDENTIALS, null);
@@ -306,7 +274,7 @@ const CredentialContainer = ({ api }) => {
   const tabProps = {
     [CREDENTIALS_ISSUED]: {
       tableProps: {
-        credentials: credentialsIssued,
+        credentials: filteredCredentialsIssued,
         hasMore: hasMoreIssued,
         signSingleCredential,
         sendSingleCredential,
@@ -325,8 +293,9 @@ const CredentialContainer = ({ api }) => {
         indeterminateSelectAll,
         toggleSelectAll
       },
-      filterProps: {},
+      filterProps: filtersIssued,
       showEmpty: noIssuedCredentials,
+      credentialsTypes: api.credentialsManager.getCredentialTypes(),
       loadingSelection
     },
     [CREDENTIALS_RECEIVED]: {

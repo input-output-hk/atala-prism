@@ -43,7 +43,7 @@ const Credentials = ({ tabProps, setActiveTab, loading }) => {
       </div>
       <Tabs defaultActiveKey={CREDENTIALS_ISSUED} onChange={setActiveTab}>
         <TabPane key={CREDENTIALS_ISSUED} tab={t('credentials.tabs.credentialsIssued')}>
-          <CredentialsFilter {...tabProps[CREDENTIALS_ISSUED]} />
+          <CredentialsFilter {...tabProps[CREDENTIALS_ISSUED]} isIssued />
           <CredentialsIssued
             {...tabProps[CREDENTIALS_ISSUED]}
             showCredentialData={showCredentialData}
@@ -51,7 +51,8 @@ const Credentials = ({ tabProps, setActiveTab, loading }) => {
           />
         </TabPane>
         <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
-          <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} />
+          {/* disabled for now */}
+          {/* <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} /> */}
           <CredentialsReceived
             {...tabProps[CREDENTIALS_RECEIVED]}
             showCredentialData={showCredentialData}

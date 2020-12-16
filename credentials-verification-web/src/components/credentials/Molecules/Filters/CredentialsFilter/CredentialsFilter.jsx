@@ -1,119 +1,144 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { DatePicker, Row, Col, Input, Icon, Select } from 'antd';
-import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
-import { DEFAULT_DATE_FORMAT } from '../../../../../helpers/constants';
+import { Row, Col, Input, Icon, Select } from 'antd';
 import CustomDatePicker from '../../../../common/Atoms/CustomDatePicker/CustomDatePicker';
+import CustomInputGroup from '../../../../common/Atoms/CustomInputGroup/CustomInputGroup';
+import {
+  NORMALIZED_CONNECTION_STATUSES,
+  VALID_CREDENTIAL_STATUSES
+} from '../../../../../helpers/constants';
 
-const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, groups }) => {
+const credentialStatuses = Object.keys(VALID_CREDENTIAL_STATUSES);
+
+const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
   const { t } = useTranslation();
 
-  const [credentialId, setCredentialId] = useState('');
-  const [name, setName] = useState('');
-  const [credentialType, setCredentialType] = useState('');
-  const [category, setCategory] = useState('');
-  const [group, setGroup] = useState('');
-  const [date, setDate] = useState('');
-
-  useEffect(() => {
-    fetchCredentials(false, [], credentialId, name, credentialType, category, group, date);
-  }, [credentialId, name, credentialType, category, group, date]);
-
-  const clearFilters = () => {
-    setCredentialId('');
-    setName('');
-    setCredentialType('');
-    setCategory('');
-    setGroup('');
-    setDate();
-  };
+  const CREDENTIALS_TYPES_ENABLED = Object.values(credentialsTypes).filter(item => item.enabled);
 
   const datePickerProps = {
-    disabled: true,
-    placeholder: t('credentials.filters.date'),
+    placeholder: t('credentials.filters.dateSigned'),
     suffixIcon: <Icon type="down" />,
-    onChange: (_, dateString) => setDate(dateString)
+    onChange: (_, dateString) => filterProps.setDate(dateString)
   };
+
+  const datePickerReceivedProps = {
+    placeholder: t('credentials.filters.dateReceived'),
+    suffixIcon: <Icon type="down" />,
+    onChange: (_, dateString) => filterProps.setDate(dateString)
+  };
+
+  const renderBaseFilters = () => (
+    <>
+      <Col span={4}>
+        <Input
+          id="nameFilter"
+          placeholder={t('credentials.filters.search')}
+          prefix={<Icon type="search" />}
+          onChange={({ target: { value } }) => filterProps.setName(value)}
+          allowClear
+          value={filterProps.name}
+        />
+      </Col>
+      <Col span={4}>
+        <Select
+          id="credentialTypeFilter"
+          value={filterProps.credentialType}
+          placeholder={t('credentials.filters.credentialType')}
+          allowClear
+          onChange={filterProps.setCredentialType}
+        >
+          {CREDENTIALS_TYPES_ENABLED.map(aCredentialType => (
+            <Select.Option key={aCredentialType.id} value={aCredentialType.id}>
+              {t(aCredentialType.name)}
+            </Select.Option>
+          ))}
+        </Select>
+      </Col>
+    </>
+  );
+
+  const renderIssuedFilters = () => (
+    <>
+      <Col span={4}>
+        <Select
+          id="credentialStatusFilter"
+          value={filterProps.credentialStatus}
+          placeholder={t('credentials.filters.credentialStatus')}
+          allowClear
+          onChange={filterProps.setCredentialStatus}
+        >
+          {credentialStatuses.map(aCredentialStatus => (
+            <Select.Option
+              key={VALID_CREDENTIAL_STATUSES[aCredentialStatus]}
+              value={VALID_CREDENTIAL_STATUSES[aCredentialStatus]}
+            >
+              {t(`credentials.filters.types.credentialStatus.${aCredentialStatus}`)}
+            </Select.Option>
+          ))}
+        </Select>
+      </Col>
+      <Col span={4}>
+        <Select
+          id="contactStateFilter"
+          value={filterProps.contactStatus}
+          placeholder={t('credentials.filters.contactStatus')}
+          allowClear
+          onChange={filterProps.setContactStatus}
+        >
+          {NORMALIZED_CONNECTION_STATUSES.map(aContactState => (
+            <Select.Option key={aContactState} value={aContactState}>
+              {t(`credentials.filters.types.contactStatus.${aContactState}`)}
+            </Select.Option>
+          ))}
+        </Select>
+      </Col>
+      <Col span={4}>
+        <CustomInputGroup prefixIcon="calendar">
+          <CustomDatePicker {...datePickerProps} />
+        </CustomInputGroup>
+      </Col>
+    </>
+  );
+
+  const renderReceivedFilters = () => (
+    <Col span={4}>
+      <CustomInputGroup prefixIcon="calendar">
+        <CustomDatePicker {...datePickerReceivedProps} />
+      </CustomInputGroup>
+    </Col>
+  );
 
   return (
     <div className="FilterControls">
-      <Row gutter={16}>
-        <Col span={3}>
-          <Select
-            disabled
-            id="credentialTypeFilter"
-            value={credentialType}
-            onChange={setCredentialType}
-          >
-            <Select.Option value="">{t('credentials.filters.credentialType')}</Select.Option>
-            {credentialTypes.map(aCredentialType => (
-              <Select.Option key={aCredentialType} value={aCredentialType}>
-                {t(`credentials.filters.types.credentialType.${aCredentialType}`)}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-        <Col span={3}>
-          <Select disabled id="categoryFilter" value={category} onChange={setCategory}>
-            <Select.Option value="">{t('credentials.filters.category')}</Select.Option>
-            {categories.map(categoryType => (
-              <Select.Option key={categoryType} value={categoryType}>
-                {t(`credentials.filters.types.category.${categoryType}`)}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-        <Col span={3}>
-          <Select disabled id="groupFilter" value={group} onChange={setGroup}>
-            <Select.Option value="">{t('credentials.filters.group')}</Select.Option>
-            {groups.map(groupType => (
-              <Select.Option key={groupType} value={groupType}>
-                {t(`credentials.filters.types.group.${groupType}`)}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-        <Col span={3}>
-          <CustomDatePicker {...datePickerProps} />
-        </Col>
-        <Col span={3}>
-          <Input
-            disabled
-            id="nameFilter"
-            placeholder={t('credentials.filters.name')}
-            prefix={<Icon type="search" />}
-            onChange={({ target: { value } }) => setName(value)}
-            allowClear
-            value={name}
-          />
-        </Col>
-        <Col span={3}>
-          <CustomButton
-            buttonProps={{
-              disabled: true,
-              onClick: clearFilters,
-              className: 'theme-filter'
-            }}
-            buttonText={t('credentials.filters.clearFilters')}
-          />
-        </Col>
+      <Row gutter={16} className="w-100">
+        {renderBaseFilters()}
+        {isIssued ? renderIssuedFilters() : renderReceivedFilters()}
       </Row>
     </div>
   );
 };
 
 CredentialsFilter.defaultProps = {
-  credentialTypes: [],
-  categories: [],
-  groups: []
+  isIssued: false,
+  credentialsTypes: []
 };
 
 CredentialsFilter.propTypes = {
-  fetchCredentials: PropTypes.func.isRequired,
-  credentialTypes: PropTypes.arrayOf(PropTypes.string),
-  categories: PropTypes.arrayOf(PropTypes.string),
-  groups: PropTypes.arrayOf(PropTypes.string)
+  credentialsTypes: PropTypes.arrayOf(PropTypes.string),
+  isIssued: PropTypes.bool,
+  filterProps: PropTypes.shape({
+    name: PropTypes.string,
+    setName: PropTypes.func,
+    credentialType: PropTypes.string,
+    setCredentialType: PropTypes.func,
+    credentialStatus: PropTypes.number,
+    setCredentialStatus: PropTypes.func,
+    contactStatus: PropTypes.string,
+    setContactStatus: PropTypes.func,
+    date: PropTypes.string,
+    setDate: PropTypes.func
+  }).isRequired
 };
 
 export default CredentialsFilter;

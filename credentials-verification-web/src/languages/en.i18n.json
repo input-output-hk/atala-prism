@@ -219,20 +219,27 @@
     },
     "filters": {
       "ID": "ID",
-      "credentialType": "Credential",
+      "credentialType": "Credential Type",
+      "credentialStatus": "Credential Status",
+      "contactStatus": "Contact Status",
       "category": "Category",
       "group": "Group",
-      "date": "Date",
-      "name": "Search",
+      "dateSigned": "Date Signed",
+      "dateReceived": "Date Received",
+      "search": "Search",
       "types": {
         "credentialType": {
           "Mock Credentials": "Mock Credential"
         },
-        "category": {
-          "Mock Categories": "Mock Category"
+        "contactStatus": {
+          "PENDING_CONNECTION": "Pending Connection",
+          "CONNECTED": "Connected"
         },
-        "group": {
-          "Mock Groups": "Mock Group"
+        "credentialStatus": {
+          "credentialDraft": "Draft",
+          "credentialSigned": "Signed",
+          "credentialSent": "Sent",
+          "credentialRevoked": "Revoked"
         }
       },
       "clearFilters": "Clear Filters"

@@ -37,6 +37,8 @@ export const CONNECTION_STATUSES = {
   connectionRevoked: 4
 };
 
+export const NORMALIZED_CONNECTION_STATUSES = [CONNECTED, PENDING_CONNECTION];
+
 export const CONNECTION_STATUSES_TRANSLATOR = __.invert(CONNECTION_STATUSES);
 
 export const INDIVIDUAL_STATUSES = {
@@ -52,6 +54,12 @@ export const CREDENTIAL_STATUSES = {
   credentialSigned: 2,
   credentialSent: 3,
   credentialRevoked: 4
+};
+
+export const VALID_CREDENTIAL_STATUSES = {
+  credentialDraft: 1,
+  credentialSigned: 2,
+  credentialSent: 3
 };
 
 export const CREDENTIAL_STATUSES_TRANSLATOR = __.invert(CREDENTIAL_STATUSES);
