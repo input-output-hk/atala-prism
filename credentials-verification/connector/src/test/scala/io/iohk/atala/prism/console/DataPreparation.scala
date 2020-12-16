@@ -86,6 +86,10 @@ object DataPreparation {
       groupName = s"Computer Science $tag".trim
     )
 
+    // Add a millisecond delay to guarantee credentials are not created at the same time and ordering is guaranteed,
+    // i.e., avoid test flakiness
+    Thread.sleep(1)
+
     CredentialsDAO.create(request).transact(database).unsafeRunSync()
   }
 
