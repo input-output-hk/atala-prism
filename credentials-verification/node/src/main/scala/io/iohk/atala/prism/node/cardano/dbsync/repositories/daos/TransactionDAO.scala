@@ -9,7 +9,7 @@ private[repositories] object TransactionDAO {
     sql"""
          |SELECT tx.hash, block.hash, tx.block_index, tx_metadata.key, tx_metadata.json
          |FROM tx
-         |JOIN block ON block.id = tx.block
+         |JOIN block ON block.id = tx.block_id
          |LEFT OUTER JOIN tx_metadata
          |  ON tx_metadata.tx_id = tx.id
          |    AND tx_metadata.key = ${AtalaObjectMetadata.METADATA_PRISM_INDEX}

@@ -189,7 +189,7 @@ class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
             "c" -> Json.arr(
               atalaObject.toByteArray
                 .grouped(64)
-                .map(bytes => Json.obj("hex" -> Json.fromString(BytesOps.bytesToHex(bytes))))
+                .map(bytes => Json.fromString(BytesOps.bytesToHex(bytes)))
                 .toSeq: _*
             )
           )

@@ -33,14 +33,14 @@ object TestCardanoBlockRepository {
          |    id SERIAL,
          |    hash public.hash32type NOT NULL,
          |    block_no public.uinteger,
-         |    previous BIGINT,
+         |    previous_id BIGINT,
          |    "time" TIMESTAMP WITHOUT TIME ZONE NOT NULL
          |);
          |
          |CREATE TABLE public.tx (
          |    id SERIAL,
          |    hash public.hash32type NOT NULL,
-         |    block bigint NOT NULL,
+         |    block_id bigint NOT NULL,
          |    block_index INT4 NOT NULL
          |);
          |
@@ -58,7 +58,7 @@ object TestCardanoBlockRepository {
     // Queries are meant to ignore null block numbers, so we nullify them when they are zero
     val blockNoOption = if (block.header.blockNo == 0) None else Some(block.header.blockNo)
     sql"""
-         |INSERT INTO block (hash, block_no, previous, time)
+         |INSERT INTO block (hash, block_no, previous_id, time)
          |  VALUES (
          |    ${block.header.hash.value},
          |    $blockNoOption,
@@ -72,7 +72,7 @@ object TestCardanoBlockRepository {
   def insertTransaction(transaction: Transaction, blockIndex: Int)(implicit database: Transactor[IO]): Unit = {
     // Insert the transaction
     sql"""
-         |INSERT INTO tx (hash, block, block_index)
+         |INSERT INTO tx (hash, block_id, block_index)
          |  VALUES (
          |    ${transaction.id.value},
          |    (SELECT id FROM block WHERE hash = ${transaction.blockHash.value}),

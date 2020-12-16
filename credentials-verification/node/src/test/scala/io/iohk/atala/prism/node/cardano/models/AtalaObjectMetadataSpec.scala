@@ -60,12 +60,8 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
              |  "21325" : {
              |    "v" : 1,
              |    "c" : [
-             |      {
-             |        "hex": "${atalaObjectByteStrings(0)}"
-             |      },
-             |      {
-             |        "hex": "${atalaObjectByteStrings(1)}"
-             |      }
+             |      "${atalaObjectByteStrings(0)}",
+             |      "${atalaObjectByteStrings(1)}"
              |    ]
              |  }
              |}""".stripMargin
@@ -152,10 +148,30 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
       metadata.json.spaces2 must be(
         s"""{
           |  "21325" : {
-          |    "v" : 1,
-          |    "c" : [
-          |      "0x${atalaObjectByteStrings(0)}",
-          |      "0x${atalaObjectByteStrings(1)}"
+          |    "map" : [
+          |      {
+          |        "k" : {
+          |          "string" : "v"
+          |        },
+          |        "v" : {
+          |          "int" : 1
+          |        }
+          |      },
+          |      {
+          |        "k" : {
+          |          "string" : "c"
+          |        },
+          |        "v" : {
+          |          "list" : [
+          |            {
+          |              "bytes" : "${atalaObjectByteStrings(0)}"
+          |            },
+          |            {
+          |              "bytes" : "${atalaObjectByteStrings(1)}"
+          |            }
+          |          ]
+          |        }
+          |      }
           |    ]
           |  }
           |}""".stripMargin

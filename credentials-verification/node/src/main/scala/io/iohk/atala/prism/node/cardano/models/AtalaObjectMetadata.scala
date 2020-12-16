@@ -13,14 +13,19 @@ object AtalaObjectMetadata {
 
   private val VERSION_KEY = "v"
   private val CONTENT_KEY = "c"
-  // Key to denote that a JSON object actually represents a string of bytes in hexadecimal format
-  // (used by Cardano DB Sync)
-  private val BYTE_STRING_KEY = "hex"
   // Prefix to denote that the following characters represent a string of bytes in hexadecimal format
   // (needed by Cardano Wallet)
   private val BYTE_STRING_PREFIX = "0x"
   // Maximum number of bytes that can be represented by a byte string (enforced by Cardano Node)
   private val BYTE_STRING_LIMIT = 64
+
+  private val MAP_KEY = "k"
+  private val MAP_VALUE = "v"
+  private val MAP_TYPE = "map"
+  private val LIST_TYPE = "list"
+  private val INT_TYPE = "int"
+  private val STRING_TYPE = "string"
+  private val BYTES_TYPE = "bytes"
 
   def fromTransactionMetadata(metadata: TransactionMetadata): Option[node_internal.AtalaObject] = {
     val prismMetadata = metadata.json.hcursor
@@ -52,10 +57,8 @@ object AtalaObjectMetadata {
   }
 
   private def parseByteString(byteString: Json): Array[Byte] = {
-    byteString.hcursor
-      .downField(BYTE_STRING_KEY)
-      .focus
-      .flatMap(_.asString)
+    byteString.asString
+      .map(_.stripPrefix(BYTE_STRING_PREFIX))
       .map(hex => Try(BytesOps.hexToBytes(hex)).getOrElse(Array()))
       .getOrElse(Array())
   }
@@ -64,19 +67,25 @@ object AtalaObjectMetadata {
     TransactionMetadata(
       Json.obj(
         METADATA_PRISM_INDEX.toString -> Json.obj(
-          VERSION_KEY -> Json.fromInt(1),
-          CONTENT_KEY -> Json.arr(
-            atalaObject.toByteArray
-              .grouped(BYTE_STRING_LIMIT)
-              .map(bytes => Json.fromString(toByteString(bytes)))
-              .toSeq: _*
+          MAP_TYPE -> Json.arr(
+            Json.obj(
+              MAP_KEY -> Json.obj(STRING_TYPE -> Json.fromString(VERSION_KEY)),
+              MAP_VALUE -> Json.obj(INT_TYPE -> Json.fromInt(1))
+            ),
+            Json.obj(
+              MAP_KEY -> Json.obj(STRING_TYPE -> Json.fromString(CONTENT_KEY)),
+              MAP_VALUE -> Json.obj(
+                LIST_TYPE -> Json.arr(
+                  atalaObject.toByteArray
+                    .grouped(BYTE_STRING_LIMIT)
+                    .map(bytes => Json.obj(BYTES_TYPE -> Json.fromString(BytesOps.bytesToHex(bytes))))
+                    .toSeq: _*
+                )
+              )
+            )
           )
         )
       )
     )
-  }
-
-  private def toByteString(bytes: Array[Byte]): String = {
-    BYTE_STRING_PREFIX + BytesOps.bytesToHex(bytes)
   }
 }
