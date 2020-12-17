@@ -22,17 +22,15 @@ const CredentialsIssued = ({
   const [loading, setLoading] = useState(false);
   const [selectedLength, setSelectedLength] = useState();
 
-  const emptyProps = {
-    photoSrc: noCredentialsPicture,
-    model: t('credentials.title'),
-    isFilter: showEmpty,
-    button: <CreateCredentialsButton />
-  };
-
   useEffect(() => {
     const keys = Object.keys(selectedRowKeys);
     setSelectedLength(keys.length);
   }, [tableProps.selectionType.selectedRowKeys]);
+
+  const getMoreData = () => {
+    setLoading(true);
+    return fetchCredentials().finally(() => setLoading(false));
+  };
 
   const { credentials, selectionType } = tableProps;
   const { selectedRowKeys } = selectionType || {};
@@ -43,9 +41,11 @@ const CredentialsIssued = ({
     onView: showCredentialData
   };
 
-  const getMoreData = () => {
-    setLoading(true);
-    return fetchCredentials().finally(() => setLoading(false));
+  const emptyProps = {
+    photoSrc: noCredentialsPicture,
+    model: t('credentials.title'),
+    isFilter: !showEmpty && !credentials.length,
+    button: showEmpty && <CreateCredentialsButton />
   };
 
   const renderEmptyComponent = !credentials.length || showEmpty;

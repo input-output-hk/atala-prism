@@ -14,7 +14,7 @@ const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initia
   const emptyProps = {
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
-    isFilter: showEmpty
+    isFilter: !showEmpty && !tableProps.credentials.length
   };
 
   const expandedTableProps = {

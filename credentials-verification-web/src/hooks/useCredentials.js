@@ -57,7 +57,7 @@ export const useCredentialsIssuedListWithFilters = (credentialsManager, setLoadi
   useEffect(() => {
     const newFilteredCredentials = applyFilters(credentials);
     setFilteredCredentials(newFilteredCredentials);
-    setNoCredentials(!newFilteredCredentials.length);
+    setNoCredentials(!credentials.length);
   }, [credentials, ...Object.values(filters.values)]);
 
   useEffect(() => {
