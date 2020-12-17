@@ -4,29 +4,29 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import cats.effect.{ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
-import io.grpc.{ManagedChannelBuilder, Server}
+import io.grpc.Server
 import org.flywaydb.core.Flyway
 import doobie.hikari.HikariTransactor
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
-import io.iohk.atala.mirror.config.{MirrorConfig, NodeConfig}
+import io.iohk.atala.mirror.config.MirrorConfig
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
-import io.iohk.atala.mirror.services.{
-  CardanoAddressInfoService,
-  CredentialService,
-  MirrorService,
-  NodeClientServiceImpl
-}
-import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.mirror.services.{CardanoAddressInfoService, CredentialService, MirrorService}
+import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
-import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.repositories.TransactorFactory
-import io.iohk.atala.prism.services.{ConnectorClientService, ConnectorClientServiceImpl, ConnectorMessagesService}
+import io.iohk.atala.prism.services.{
+  ConnectorClientService,
+  NodeClientService,
+  NodeClientServiceImpl,
+  ConnectorClientServiceImpl,
+  ConnectorMessagesService
+}
 import io.iohk.atala.prism.utils.GrpcUtils
-import doobie.syntax.ConnectionIOOps
+import doobie.implicits._
 
 object MirrorApp extends TaskApp {
 
@@ -68,10 +68,10 @@ object MirrorApp extends TaskApp {
       _ <- Resource.liftF(runMigrations(tx, classLoader))
 
       // connector
-      connector <- Resource.pure(ConnectorClientService.createConnectorGrpcStub(connectorConfig))
+      connector <- Resource.liftF(Task.pure(ConnectorClientService.createConnectorGrpcStub(connectorConfig)))
 
       // node
-      node <- Resource.pure(createNode(nodeConfig))
+      node <- Resource.liftF(Task.pure(NodeClientService.createNode(nodeConfig)))
 
       // services
       connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), connectorConfig)
@@ -89,10 +89,8 @@ object MirrorApp extends TaskApp {
           cardanoAddressInfoService.payIdMessageProcessor,
           cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
         ),
-        //import doobie.imlicits._ causes problems with ambiguous implicit values
-        findLastMessageOffset = new ConnectionIOOps(ConnectorMessageOffsetDao.findLastMessageOffset()).transact(tx),
-        saveMessageOffset = messageId =>
-          new ConnectionIOOps(ConnectorMessageOffsetDao.updateLastMessageOffset(messageId)).transact(tx).map(_ => ())
+        findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(tx),
+        saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
       )
 
       // background streams
@@ -136,19 +134,4 @@ object MirrorApp extends TaskApp {
           .migrationsExecuted
       )
     )
-
-  /**
-    * Create a node gRPC service stub.
-    */
-  def createNode(
-      nodeConfig: NodeConfig
-  ): NodeServiceGrpc.NodeServiceStub = {
-    val channel = ManagedChannelBuilder
-      .forAddress(nodeConfig.host, nodeConfig.port)
-      .usePlaintext()
-      .build()
-
-    NodeServiceGrpc.stub(channel)
-  }
-
 }

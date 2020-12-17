@@ -1,26 +1,78 @@
-package io.iohk.atala.mirror
+package io.iohk.atala.prism.services
 
 import java.time.Instant
 
-import com.google.protobuf.ByteString
-import io.iohk.atala.prism.credentials
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.protos.node_models.AtalaOperation
 import cats.data.EitherT
-import io.iohk.atala.mirror.services.NodeClientService
-import io.iohk.atala.prism.credentials.KeyData
 import monix.eval.Task
+import com.google.protobuf.ByteString
+import io.grpc.ManagedChannelBuilder
+
+import io.iohk.atala.prism.config.NodeConfig
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.protos.node_api._
+import io.iohk.atala.prism.protos.node_models._
+import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
+import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.credentials
+import io.iohk.atala.prism.protos.node_models
+
 import cats.implicits._
 
-object NodeUtils {
+trait NodeClientService {
+
+  def getDidDocument(did: DID): Task[Option[DIDData]]
+
+  def getCredentialState(credentialId: String): Task[GetCredentialStateResponse]
+
+  def issueCredential(content: String): Task[IssueCredentialResponse]
+
+}
+
+class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: DidBasedAuthConfig)
+    extends NodeClientService {
+
+  def getDidDocument(did: DID): Task[Option[DIDData]] =
+    Task.fromFuture(node.getDidDocument(GetDidDocumentRequest(did.value))).map(_.document)
+
+  def getCredentialState(credentialId: String): Task[GetCredentialStateResponse] =
+    Task.fromFuture(node.getCredentialState(GetCredentialStateRequest(credentialId)))
+
+  def issueCredential(content: String): Task[IssueCredentialResponse] = {
+    val operation =
+      NodeClientService.issueCredentialOperation(SHA256Digest.compute(content.getBytes), authConfig.did)
+
+    val signedAtalaOperation =
+      SignedAtalaOperation(
+        signedWith = authConfig.didKeyId,
+        operation = Some(operation),
+        signature = ByteString.copyFrom(EC.sign(operation.toByteArray, authConfig.didKeyPair.privateKey).data)
+      )
+
+    Task.fromFuture(node.issueCredential(IssueCredentialRequest().withSignedOperation(signedAtalaOperation)))
+  }
+
+}
+object NodeClientService {
+
+  /**
+    * Create a node gRPC service stub.
+    */
+  def createNode(
+      nodeConfig: NodeConfig
+  ): NodeServiceGrpc.NodeServiceStub = {
+    val channel = ManagedChannelBuilder
+      .forAddress(nodeConfig.host, nodeConfig.port)
+      .usePlaintext()
+      .build()
+
+    NodeServiceGrpc.stub(channel)
+  }
 
   def getKeyData(
       issuerDID: DID,
       issuanceKeyId: String,
       nodeService: NodeClientService
-  ): EitherT[Task, String, KeyData] = {
+  ): EitherT[Task, String, credentials.KeyData] = {
     for {
       didData <- EitherT(
         nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID ${issuerDID.value}"))
@@ -43,7 +95,7 @@ object NodeUtils {
           .toEitherT[Task]
 
       revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
-    } yield KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
+    } yield credentials.KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
   }
 
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {

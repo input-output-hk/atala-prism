@@ -15,9 +15,8 @@ import io.iohk.atala.prism.credentials.{Credential, SlayerCredentialId, Verifica
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
 import io.iohk.atala.prism.crypto.{EC, ECTrait, SHA256Digest}
-import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
+import io.iohk.atala.prism.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
 

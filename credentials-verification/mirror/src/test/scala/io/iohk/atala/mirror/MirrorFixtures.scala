@@ -19,7 +19,6 @@ import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.mirror.payid.implicits._
-import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
@@ -36,6 +35,8 @@ import io.iohk.atala.prism.credentials.content.syntax._
 import io.circe.generic.auto._
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken, ConnectorMessageId}
 import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
+import io.iohk.atala.prism.services.NodeClientService
+import io.iohk.atala.prism.stubs.NodeClientServiceStub
 
 trait MirrorFixtures {
 
@@ -133,16 +134,16 @@ trait MirrorFixtures {
     val publicKey: PublicKey = PublicKey(
       id = issuanceKeyId,
       usage = KeyUsage.AUTHENTICATION_KEY,
-      addedOn = Some(NodeUtils.toInfoProto(keyAddedDate)),
+      addedOn = Some(NodeClientService.toInfoProto(keyAddedDate)),
       revokedOn = None,
-      keyData = EcKeyData(NodeUtils.toTimestampInfoProto(keys.publicKey))
+      keyData = EcKeyData(NodeClientService.toTimestampInfoProto(keys.publicKey))
     )
 
     val didData: DIDData = DIDData("", Seq(publicKey))
     val getCredentialStateResponse: GetCredentialStateResponse =
       GetCredentialStateResponse(
         issuerDID = issuerDID.value,
-        publicationDate = Some(NodeUtils.toInfoProto(credentialIssueDate)),
+        publicationDate = Some(NodeClientService.toInfoProto(credentialIssueDate)),
         revocationDate = None
       )
 

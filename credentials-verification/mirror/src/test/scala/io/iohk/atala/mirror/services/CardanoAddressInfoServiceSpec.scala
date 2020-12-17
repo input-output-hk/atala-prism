@@ -11,11 +11,11 @@ import io.iohk.atala.mirror.models.Connection
 import io.iohk.atala.mirror.models.Connection.PayIdName
 
 import scala.concurrent.duration.DurationInt
-import io.iohk.atala.mirror.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import org.scalatest.Assertion
+import io.iohk.atala.prism.stubs.NodeClientServiceStub
 
 // sbt "project mirror" "testOnly *services.CardanoAddressInfoServiceSpec"
 class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {

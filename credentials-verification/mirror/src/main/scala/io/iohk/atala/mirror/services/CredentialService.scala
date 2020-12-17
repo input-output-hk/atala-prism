@@ -10,7 +10,6 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import monix.eval.Task
 import org.slf4j.LoggerFactory
-import io.iohk.atala.mirror.NodeUtils.fromTimestampInfoProto
 import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
@@ -35,9 +34,8 @@ import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
 import cats.implicits._
 import doobie.implicits._
-import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor}
+import io.iohk.atala.prism.services.{ConnectorClientService, NodeClientService, MessageProcessor}
 import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, MessageProcessorException}
 
 class CredentialService(
@@ -182,7 +180,7 @@ class CredentialService(
       credential <- Credential.fromString(signedCredentialStringRepresentation).left.map(_.message).toEitherT[Task]
       issuerDid <- credential.content.issuerDid.left.map(_.getMessage).toEitherT[Task]
       issuanceKeyId <- credential.content.issuanceKeyId.left.map(_.getMessage).toEitherT[Task]
-      keyData <- NodeUtils.getKeyData(issuerDid, issuanceKeyId, nodeService)
+      keyData <- NodeClientService.getKeyData(issuerDid, issuanceKeyId, nodeService)
       credentialData <- getCredentialData(SlayerCredentialId.compute(credential.hash, issuerDid))
     } yield PrismCredentialVerification.verify(keyData, credentialData, credential)).value
   }
@@ -194,11 +192,11 @@ class CredentialService(
       )
       publishedOn <-
         response.publicationDate
-          .map(fromTimestampInfoProto)
+          .map(NodeClientService.fromTimestampInfoProto)
           .toRight(s"Missing publication date ${id.string}")
           .toEitherT[Task]
 
-      revokedOn = response.revocationDate map fromTimestampInfoProto
+      revokedOn = response.revocationDate map NodeClientService.fromTimestampInfoProto
     } yield CredentialData(issuedOn = publishedOn, revokedOn = revokedOn)
   }
 }

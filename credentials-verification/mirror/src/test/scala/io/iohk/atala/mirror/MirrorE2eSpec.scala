@@ -32,7 +32,13 @@ import io.iohk.atala.prism.models.{ConnectionToken, CredentialProofRequestType}
 import monix.execution.Scheduler.Implicits.global
 import io.iohk.atala.prism.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
-import io.iohk.atala.prism.services.{BaseGrpcClientService, ConnectorClientServiceImpl, ConnectorMessagesService}
+import io.iohk.atala.prism.services.{
+  BaseGrpcClientService,
+  ConnectorClientServiceImpl,
+  NodeClientService,
+  NodeClientServiceImpl,
+  ConnectorMessagesService
+}
 
 class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpec with MirrorFixtures {
 
@@ -177,7 +183,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
                 id = keyId,
                 usage = KeyUsage.MASTER_KEY,
                 keyData = PublicKey.KeyData.EcKeyData(
-                  NodeUtils.toTimestampInfoProto(keys.publicKey)
+                  NodeClientService.toTimestampInfoProto(keys.publicKey)
                 )
               )
             )

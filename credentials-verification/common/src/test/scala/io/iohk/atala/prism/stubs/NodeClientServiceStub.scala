@@ -1,7 +1,7 @@
-package io.iohk.atala.mirror.stubs
+package io.iohk.atala.prism.stubs
 
 import monix.eval.Task
-import io.iohk.atala.mirror.services.NodeClientService
+import io.iohk.atala.prism.services.NodeClientService
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_api.{GetCredentialStateResponse, IssueCredentialResponse}
 import io.iohk.atala.prism.protos.node_models.DIDData

@@ -12,7 +12,6 @@ import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
 import monix.eval.Task
 import doobie.implicits._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
-import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.prism.mirror.payid.{Address, AddressDetails, CryptoAddressDetails, PayID, PaymentInformation}
 import io.iohk.atala.mirror.models.{CardanoAddressInfo, Connection}
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
@@ -31,7 +30,7 @@ import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ConnectorMessageId
-import io.iohk.atala.prism.services.MessageProcessor
+import io.iohk.atala.prism.services.{NodeClientService, MessageProcessor}
 import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, MessageProcessorException}
 
 import scala.util.Try
@@ -246,7 +245,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
           .toOptionT[Task]
 
       keyData <-
-        NodeUtils
+        NodeClientService
           .getKeyData(did, keyId, nodeService)
           .leftMap(error => logger.warn(s"Cannot verify address signature, $error"))
           .toOption
