@@ -1,17 +1,23 @@
 package io.iohk.atala.prism.services
 
-import fs2.Stream
-import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import monix.eval.Task
-
+import scala.annotation.tailrec
 import scala.concurrent.duration.DurationInt
-import io.iohk.atala.prism.models.ConnectorMessageId
+import scala.util.control.NoStackTrace
+
+import fs2.Stream
+import monix.eval.Task
 import org.slf4j.LoggerFactory
 
-import scala.annotation.tailrec
+import io.iohk.atala.prism.models.ConnectorMessageId
+import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, MessageProcessorException}
 
-trait MessageProcessor {
-  def attemptProcessMessage(receivedMessage: ReceivedMessage): Option[Task[Unit]]
+trait MessageProcessor extends (ReceivedMessage => Option[MessageProcessorResult])
+object MessageProcessor {
+  type MessageProcessorResult = Task[Either[MessageProcessorException, Unit]]
+  case class MessageProcessorException(message: String) extends Exception(message) with NoStackTrace
+  def successful: MessageProcessorResult = Task.pure(Right(()))
+  def failed(error: MessageProcessorException): MessageProcessorResult = Task.pure(Left(error))
 }
 
 class ConnectorMessagesService(
@@ -39,12 +45,18 @@ class ConnectorMessagesService(
       .flatMap(Stream.emits)
       .evalTap { receivedMessage =>
         for {
-          _ <- tryToProcessMessage(messageProcessors, receivedMessage).getOrElse {
-            logger.warn(
-              s"Connector message with id: ${receivedMessage.id} and content: ${receivedMessage.message.toString} " +
-                s"cannot be processed by any processor, skipping it"
+          result <- tryToProcessMessage(messageProcessors, receivedMessage).getOrElse(
+            MessageProcessor.failed(
+              MessageProcessorException(
+                s"Connector message with id: ${receivedMessage.id} and content: ${receivedMessage.message.toString} " +
+                  "cannot be processed by any processor, skipping it"
+              )
             )
-            Task.unit
+          )
+
+          _ <- result match {
+            case Left(error) => Task(logger.warn(error.getMessage))
+            case Right(_) => Task.unit
           }
           _ <- saveMessageOffset(ConnectorMessageId(receivedMessage.id))
         } yield ()
@@ -56,10 +68,10 @@ class ConnectorMessagesService(
   private def tryToProcessMessage(
       messageProcessors: List[MessageProcessor],
       receivedMessage: ReceivedMessage
-  ): Option[Task[Unit]] = {
+  ): Option[MessageProcessorResult] = {
     messageProcessors match {
       case head :: tail =>
-        head.attemptProcessMessage(receivedMessage) match {
+        head(receivedMessage) match {
           case None => tryToProcessMessage(tail, receivedMessage)
           case task => task
         }

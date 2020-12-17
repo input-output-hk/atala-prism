@@ -4,7 +4,7 @@ import java.time.Instant
 
 import scala.concurrent.duration.DurationInt
 import scala.util.Try
-import cats.data.{EitherT, OptionT, ValidatedNel}
+import cats.data.{EitherT, ValidatedNel}
 import cats.data.Validated.{Invalid, Valid}
 import doobie.util.transactor.Transactor
 import fs2.Stream
@@ -36,9 +36,9 @@ import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
 import cats.implicits._
 import doobie.implicits._
 import io.iohk.atala.mirror.NodeUtils
-import io.iohk.atala.mirror.utils.ConnectionUtils
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor}
+import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, MessageProcessorException}
 
 class CredentialService(
     tx: Transactor[Task],
@@ -102,18 +102,23 @@ class CredentialService(
       )
   }
 
-  val credentialMessageProcessor: MessageProcessor = new MessageProcessor {
-    def attemptProcessMessage(receivedMessage: ReceivedMessage): Option[Task[Unit]] = {
-      parseCredential(receivedMessage).map(rawCredential => saveMessage(receivedMessage, rawCredential))
-    }
+  val credentialMessageProcessor: MessageProcessor = { receivedMessage =>
+    parseCredential(receivedMessage)
+      .map(saveMessage(receivedMessage, _))
   }
 
-  private def saveMessage(receivedMessage: ReceivedMessage, rawCredential: RawCredential): Task[Unit] = {
+  private def saveMessage(receivedMessage: ReceivedMessage, rawCredential: RawCredential): MessageProcessorResult = {
     (for {
-      connection <- OptionT(ConnectionUtils.findConnection(receivedMessage, logger).transact(tx))
-      userCredentials <- OptionT.liftF(createUserCredential(receivedMessage, connection.token, rawCredential))
-      _ <- OptionT.liftF(UserCredentialDao.insert(userCredentials).transact(tx))
-    } yield ()).value.map(_ => ())
+      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
+      userCredentials <-
+        EitherT
+          .liftF(createUserCredential(receivedMessage, connection.token, rawCredential))
+          .leftMap(error => MessageProcessorException(error))
+      _ <-
+        EitherT
+          .liftF(UserCredentialDao.insert(userCredentials).transact(tx))
+          .leftMap(error => MessageProcessorException(error))
+    } yield ()).value
   }
 
   private[services] def parseCredential(message: ReceivedMessage): Option[RawCredential] = {

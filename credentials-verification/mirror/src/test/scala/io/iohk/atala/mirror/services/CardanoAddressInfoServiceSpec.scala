@@ -29,7 +29,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val cardanoAddressInfoOption = (for {
-        _ <- cardanoAddressMessageProcessor.attemptProcessMessage(cardanoAddressInfoMessage1).get
+        _ <- cardanoAddressMessageProcessor(cardanoAddressInfoMessage1).get
         cardanoAddress <- CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddress1)).transact(databaseTask)
       } yield cardanoAddress).runSyncUnsafe(1.minute)
 
@@ -38,7 +38,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
     }
 
     "return None if ReceivedMessage is not CardanoAddressMessage" in new CardanoAddressInfoServiceFixtures {
-      cardanoAddressMessageProcessor.attemptProcessMessage(credentialMessage1) mustBe None
+      cardanoAddressMessageProcessor(credentialMessage1) mustBe None
     }
   }
 
@@ -49,7 +49,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor.attemptProcessMessage(paymentInformationMessage1).get
+        _ <- paymentInformationMessageProcessor(paymentInformationMessage1).get
         cardanoAddressInfoOption <-
           CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
@@ -73,7 +73,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor.attemptProcessMessage(messageWithWrongHolder).get
+        _ <- paymentInformationMessageProcessor(messageWithWrongHolder).get
         cardanoAddressInfoOption <-
           CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
@@ -94,7 +94,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor.attemptProcessMessage(messageWithWrongNetwork).get
+        _ <- paymentInformationMessageProcessor(messageWithWrongNetwork).get
         cardanoAddressInfoOption <-
           CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
@@ -114,7 +114,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor.attemptProcessMessage(paymentInformationMessage1).get
+        _ <- paymentInformationMessageProcessor(paymentInformationMessage1).get
         cardanoAddressInfoOption <-
           CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
@@ -124,7 +124,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
     }
 
     "return None if ReceivedMessage is not PaymentInformationMessage" in new CardanoAddressInfoServiceFixtures {
-      cardanoAddressMessageProcessor.attemptProcessMessage(credentialMessage1) mustBe None
+      cardanoAddressMessageProcessor(credentialMessage1) mustBe None
     }
   }
 
@@ -192,7 +192,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
       // when
       val updatedConnectionOption = (for {
-        _ <- fixtures.payIdNameRegistrationMessageProcessor.attemptProcessMessage(message).get
+        _ <- fixtures.payIdNameRegistrationMessageProcessor(message).get
         updatedConnection <- ConnectionDao.findByConnectionToken(connectionToUpdate.token).transact(databaseTask)
       } yield updatedConnection).runSyncUnsafe(1.minute)
 
@@ -201,7 +201,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
     }
 
     "return None if ReceivedMessage is not PayIdNameRegistrationMessage" in new CardanoAddressInfoServiceFixtures {
-      payIdNameRegistrationMessageProcessor.attemptProcessMessage(credentialMessage1) mustBe None
+      payIdNameRegistrationMessageProcessor(credentialMessage1) mustBe None
     }
   }
 

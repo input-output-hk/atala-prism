@@ -40,7 +40,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
   "credentialMessageProcessor" should {
     "return None if ReceivedMessage is not CredentialMessage" in new ConnectionServiceFixtures {
-      credentialService.credentialMessageProcessor.attemptProcessMessage(cardanoAddressInfoMessage1) mustBe None
+      credentialService.credentialMessageProcessor(cardanoAddressInfoMessage1) mustBe None
     }
 
     "upsert valid credentials" in {
@@ -67,8 +67,8 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
       // when
       val (userCredentials1, userCredentials2) = (for {
-        _ <- credentialService.credentialMessageProcessor.attemptProcessMessage(credentialMessage1).get
-        _ <- credentialService.credentialMessageProcessor.attemptProcessMessage(credentialMessage2).get
+        _ <- credentialService.credentialMessageProcessor(credentialMessage1).get
+        _ <- credentialService.credentialMessageProcessor(credentialMessage2).get
         userCredentials1 <- UserCredentialDao.findBy(connection1.token).transact(databaseTask)
         userCredentials2 <- UserCredentialDao.findBy(connection2.token).transact(databaseTask)
       } yield (userCredentials1, userCredentials2)).runSyncUnsafe(1.minute)
@@ -113,7 +113,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
       // when
       val userCredentials1 = (for {
-        _ <- credentialService.credentialMessageProcessor.attemptProcessMessage(receivedMessage).get
+        _ <- credentialService.credentialMessageProcessor(receivedMessage).get
         userCredentials1 <- UserCredentialDao.findBy(connection1.token).transact(databaseTask)
       } yield userCredentials1).runSyncUnsafe(1.minute)
 
@@ -126,7 +126,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
     "ignore credentials without corresponding connection" in new ConnectionServiceFixtures {
       // when
       val userCredentials1 = (for {
-        _ <- credentialService.credentialMessageProcessor.attemptProcessMessage(credentialMessage1).get
+        _ <- credentialService.credentialMessageProcessor(credentialMessage1).get
         userCredentials1 <- UserCredentialDao.findBy(connection1.token).transact(databaseTask)
       } yield userCredentials1).runSyncUnsafe(1.minute)
 
@@ -140,7 +140,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
 
       // when
       val userCredentials1 = (for {
-        _ <- credentialService.credentialMessageProcessor.attemptProcessMessage(receivedMessage).get
+        _ <- credentialService.credentialMessageProcessor(receivedMessage).get
         userCredentials1 <- UserCredentialDao.findBy(connection1.token).transact(databaseTask)
       } yield userCredentials1).runSyncUnsafe(1.minute)
 

@@ -2,7 +2,7 @@ package io.iohk.atala.mirror.services
 
 import java.time.Instant
 
-import cats.data.OptionT
+import cats.data.{EitherT, OptionT}
 import cats.free.Free
 import cats.implicits._
 import doobie.free.connection
@@ -15,7 +15,6 @@ import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
 import io.iohk.atala.mirror.NodeUtils
 import io.iohk.atala.prism.mirror.payid.{Address, AddressDetails, CryptoAddressDetails, PayID, PaymentInformation}
 import io.iohk.atala.mirror.models.{CardanoAddressInfo, Connection}
-import io.iohk.atala.mirror.utils.ConnectionUtils
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{
   AtalaMessage,
@@ -33,6 +32,7 @@ import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ConnectorMessageId
 import io.iohk.atala.prism.services.MessageProcessor
+import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, MessageProcessorException}
 
 import scala.util.Try
 
@@ -46,21 +46,18 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
   private val PAY_ID_NAME_MAXIMUM_LENGTH = 60
   private val PAY_ID_NAME_ALLOWED_CHARACTERS = "[a-zA-Z0-9-.]+".r
 
-  val cardanoAddressInfoMessageProcessor: MessageProcessor = new MessageProcessor {
-    def attemptProcessMessage(receivedMessage: ReceivedMessage): Option[Task[Unit]] = {
-      parseCardanoAddressInfoMessage(receivedMessage).map(addressMessage =>
-        saveCardanoAddressInfo(receivedMessage, addressMessage)
-      )
-    }
+  val cardanoAddressInfoMessageProcessor: MessageProcessor = { receivedMessage =>
+    parseCardanoAddressInfoMessage(receivedMessage)
+      .map(saveCardanoAddressInfo(receivedMessage, _))
   }
 
   private def saveCardanoAddressInfo(
       receivedMessage: ReceivedMessage,
       addressMessage: RegisterAddressMessage
-  ): Task[Unit] = {
+  ): MessageProcessorResult = {
 
     (for {
-      connection <- OptionT(ConnectionUtils.findConnection(receivedMessage, logger).transact(tx))
+      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
       cardanoAddress = CardanoAddressInfo(
         cardanoAddress = CardanoAddressInfo.CardanoAddress(addressMessage.cardanoAddress),
         payidVerifiedAddress = None,
@@ -69,8 +66,8 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
         registrationDate = CardanoAddressInfo.RegistrationDate(Instant.now()),
         messageId = ConnectorMessageId(receivedMessage.id)
       )
-      _ <- OptionT.liftF(saveCardanoAddress(cardanoAddress).transact(tx))
-    } yield ()).value.map(_ => ())
+      _ <- EitherT.right[MessageProcessorException](saveCardanoAddress(cardanoAddress).transact(tx))
+    } yield ()).value
   }
 
   private def parseCardanoAddressInfoMessage(message: ReceivedMessage): Option[RegisterAddressMessage] = {
@@ -99,10 +96,9 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
     } yield (connection, cardanoAddressesInfo)).value.transact(tx)
   }
 
-  val payIdMessageProcessor: MessageProcessor = new MessageProcessor {
-    def attemptProcessMessage(receivedMessage: ReceivedMessage): Option[Task[Unit]] = {
-      parsePayIdMessage(receivedMessage).map(payIdMessage => savePaymentInformation(receivedMessage, payIdMessage))
-    }
+  val payIdMessageProcessor: MessageProcessor = { receivedMessage =>
+    parsePayIdMessage(receivedMessage)
+      .map(savePaymentInformation(receivedMessage, _))
   }
 
   private[services] def parsePayIdMessage(message: ReceivedMessage): Option[PayIdMessage] = {
@@ -114,70 +110,64 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
   private[services] def savePaymentInformation(
       receivedMessage: ReceivedMessage,
       payIdMessage: PayIdMessage
-  ): Task[Unit] = {
+  ): MessageProcessorResult = {
 
     (for {
-      paymentInformation <-
-        decode[PaymentInformation](payIdMessage.paymentInformation).left
-          .map { error =>
-            logger.warn(
-              s"Could not parse payment information: ${payIdMessage.paymentInformation} error: ${error.getMessage}"
-            )
+      paymentInformation <- EitherT.fromEither[Task](
+        decode[PaymentInformation](payIdMessage.paymentInformation).leftMap(error =>
+          MessageProcessorException(
+            s"Could not parse payment information: ${payIdMessage.paymentInformation} error: ${error.getMessage}"
+          )
+        )
+      )
+
+      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
+
+      splittedPayId <- EitherT.fromOption[Task](
+        paymentInformation.payId.flatMap(splitPayId),
+        MessageProcessorException(s"Cannot split payId to prefix and host address: ${paymentInformation.payId}")
+      )
+      (payIdPrefix, payIdHostAddress) =
+        splittedPayId // we don't use better-monadic-for, so I had to split the above line into two
+
+      holderDID <-
+        EitherT.fromOption[Task](DID.fromString(payIdPrefix), MessageProcessorException("Invalid holder DID."))
+
+      _ <- EitherT.cond[Task](
+        connection.holderDID.contains(holderDID) || connection.payIdName.contains(PayIdName(payIdPrefix)),
+        (), {
+          val message = connection.holderDID match {
+            case Some(_) =>
+              s"holderDID from connection: ${connection.holderDID} doesn't match holderDID parsed from paymentId: $holderDID"
+            case None => "holderDID from connection is not defined"
           }
-          .toOption
-          .toOptionT[Task]
+          MessageProcessorException(
+            s"$message and payIdName from connection ${connection.payIdName} doesn't match payIdName parsed from paymentId $payIdPrefix"
+          )
+        }
+      )
 
-      connection <- OptionT(ConnectionUtils.findConnection(receivedMessage, logger).transact(tx))
+      _ <- EitherT.cond[Task](
+        httpConfig.payIdHostAddress == payIdHostAddress,
+        (),
+        MessageProcessorException(
+          s"payIdHostAddress from config: ${httpConfig.payIdHostAddress} " +
+            s"doesn't match host address from payment information: $payIdHostAddress"
+        )
+      )
 
-      (payIdPrefix, payIdHostAddress) <- (paymentInformation.payId
-          .flatMap(splitPayId)
-          .orElse {
-            logger.warn(s"Cannot split payId to prefix and host address: ${paymentInformation.payId}")
-            None
-          })
-        .toOptionT[Task]
-
-      holderDID = DID.fromString(payIdPrefix)
-
-      _ <-
-        (if (
-           (connection.holderDID.isDefined && connection.holderDID == holderDID)
-           || connection.payIdName.contains(PayIdName(payIdPrefix))
-         ) Some(())
-         else {
-           val holderDidUndefined = "holderDID from connection is not defined"
-           val holderDidNotMatch =
-             s"holderDID from connection: ${connection.holderDID} doesn't match holderDID parsed from paymentId: $holderDID "
-           val payIdNameNotMatch =
-             s"and payIdName from connection ${connection.payIdName} doesn't match payIdName parsed from paymentId $payIdPrefix"
-
-           val errorMessage =
-             (if (connection.holderDID.isEmpty) holderDidUndefined else holderDidNotMatch) + payIdNameNotMatch
-
-           logger.warn(errorMessage)
-           None
-         }).toOptionT[Task]
-
-      _ <-
-        (if (httpConfig.payIdHostAddress == payIdHostAddress) Some(())
-         else {
-           logger.warn(
-             s"payIdHostAddress from config: ${httpConfig.payIdHostAddress} " +
-               s"doesn't match host address from payment information: $payIdHostAddress "
-           )
-           None
-         }).toOptionT[Task]
-
-      addressWithVerifiedSignature <- OptionT.liftF(paymentInformation.verifiedAddresses.toList.traverseFilter {
-        address =>
-          verifySignature(address).map { isValidSignature =>
-            if (isValidSignature) Some(address)
-            else {
-              logger.warn(s"Address: $address signature is not valid")
-              None
+      addressWithVerifiedSignature <-
+        EitherT
+          .liftF(paymentInformation.verifiedAddresses.toList.traverseFilter { address =>
+            verifySignature(address).map { isValidSignature =>
+              if (isValidSignature) Some(address)
+              else {
+                logger.warn(s"Address: $address signature is not valid")
+                None
+              }
             }
-          }
-      })
+          })
+          .leftMap(error => MessageProcessorException(error))
 
       cardanoAddressesWithVerifiedSignature = addressWithVerifiedSignature.flatMap(verifiedAddress =>
         parseAddress(receivedMessage, verifiedAddress.content.payload.payIdAddress, Some(verifiedAddress), connection)
@@ -186,11 +176,14 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       cardanoAddresses =
         paymentInformation.addresses.flatMap(address => parseAddress(receivedMessage, address, None, connection))
 
-      _ <- OptionT.liftF(
-        (cardanoAddresses ++ cardanoAddressesWithVerifiedSignature).toList.traverse(saveCardanoAddress).transact(tx)
-      )
+      _ <-
+        EitherT
+          .liftF(
+            (cardanoAddresses ++ cardanoAddressesWithVerifiedSignature).toList.traverse(saveCardanoAddress).transact(tx)
+          )
+          .leftMap(error => MessageProcessorException(error))
 
-    } yield ()).value.map(_ => ())
+    } yield ()).value
   }
 
   private[services] def splitPayId(payId: PayID): Option[(String, String)] =
@@ -282,12 +275,9 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
           CardanoAddressInfoDao.insert(cardanoAddress)
     } yield ()
 
-  val payIdNameRegistrationMessageProcessor: MessageProcessor = new MessageProcessor {
-    def attemptProcessMessage(receivedMessage: ReceivedMessage): Option[Task[Unit]] = {
-      parsePayIdNameRegistrationMessage(receivedMessage).map(payIdMessage =>
-        processPayIdNameRegistrationMessage(receivedMessage, payIdMessage)
-      )
-    }
+  val payIdNameRegistrationMessageProcessor: MessageProcessor = { receivedMessage =>
+    parsePayIdNameRegistrationMessage(receivedMessage)
+      .map(processPayIdNameRegistrationMessage(receivedMessage, _))
   }
 
   private[services] def parsePayIdNameRegistrationMessage(
@@ -301,57 +291,61 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
   def processPayIdNameRegistrationMessage(
       receivedMessage: ReceivedMessage,
       payIdMessage: PayIdNameRegistrationMessage
-  ): Task[Unit] = {
+  ): MessageProcessorResult = {
     val payIdName = PayIdName(payIdMessage.name)
     (for {
-      connection <- OptionT(ConnectionUtils.findConnection(receivedMessage, logger))
-      connectionWithTheSamePayIdName <- OptionT.liftF(ConnectionDao.findByPayIdName(payIdName))
+      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage))
+      connectionWithTheSamePayIdName <- EitherT.liftF(ConnectionDao.findByPayIdName(payIdName))
+
+      _ <- EitherT.fromEither[ConnectionIO](verifyPayIdString(payIdName.name))
+
+      _ <- EitherT.cond[ConnectionIO](
+        connection.payIdName.isEmpty,
+        (),
+        MessageProcessorException(
+          s"Cannot register pay id name: $payIdName, " +
+            s"connection: ${connection.token} has already registered name: ${connection.payIdName}"
+        )
+      )
+
+      _ <- EitherT.cond[ConnectionIO](
+        connectionWithTheSamePayIdName.isEmpty,
+        (),
+        MessageProcessorException(
+          s"Cannot register pay id name: $payIdName, " +
+            s"name has already been registered by connection token: ${connectionWithTheSamePayIdName.map(_.token)}"
+        )
+      )
 
       _ <-
-        if (verifyPayIdString(payIdName.name)) OptionT.pure[ConnectionIO](())
-        else OptionT.fromOption[ConnectionIO](None)
-
-      _ <-
-        if (connection.payIdName.isEmpty) OptionT.pure[ConnectionIO](())
-        else {
-          logger.warn(
-            s"Cannot register pay id name: $payIdName, " +
-              s"connection: ${connection.token} has already registered name: ${connection.payIdName}"
-          )
-          OptionT.fromOption[ConnectionIO](None)
-        }
-
-      _ <-
-        if (connectionWithTheSamePayIdName.isEmpty) OptionT.pure[ConnectionIO](())
-        else {
-          logger.warn(
-            s"Cannot register pay id name: $payIdName, " +
-              s"name has already been registered by connection token: ${connectionWithTheSamePayIdName.map(_.token)}"
-          )
-          OptionT.fromOption[ConnectionIO](None)
-        }
-
-      _ <- OptionT.liftF(ConnectionDao.update(connection.copy(payIdName = Some(payIdName))))
-    } yield ()).value.transact(tx).map(_ => ())
+        EitherT
+          .liftF(ConnectionDao.update(connection.copy(payIdName = Some(payIdName))))
+          .leftMap(error => MessageProcessorException(error))
+    } yield ()).value.transact(tx)
   }
 
-  private def verifyPayIdString(payIdName: String): Boolean = {
+  private def verifyPayIdString(payIdName: String): Either[MessageProcessorException, Boolean] = {
     val onlyAllowedCharacters = PAY_ID_NAME_ALLOWED_CHARACTERS.matches(payIdName)
     val requiredLength =
       payIdName.length >= PAY_ID_NAME_MINIMUM_LENGTH && payIdName.length <= PAY_ID_NAME_MAXIMUM_LENGTH
 
-    if (!onlyAllowedCharacters)
-      logger.warn(
-        s"Cannot register pay id name: $payIdName, name contains not allowed characters. " +
-          s"Allowed characters regex: $PAY_ID_NAME_ALLOWED_CHARACTERS"
-      )
-    if (!requiredLength)
-      logger.warn(
-        s"Cannot register pay id name: $payIdName, " +
-          s"name's length must be between $PAY_ID_NAME_MINIMUM_LENGTH and $PAY_ID_NAME_MAXIMUM_LENGTH characters long"
-      )
-
-    onlyAllowedCharacters && requiredLength
+    (onlyAllowedCharacters, requiredLength) match {
+      case (false, _) =>
+        Left(
+          MessageProcessorException(
+            s"Cannot register pay id name: $payIdName, name contains not allowed characters. " +
+              s"Allowed characters regex: $PAY_ID_NAME_ALLOWED_CHARACTERS"
+          )
+        )
+      case (_, false) =>
+        Left(
+          MessageProcessorException(
+            s"Cannot register pay id name: $payIdName, " +
+              s"name's length must be between $PAY_ID_NAME_MINIMUM_LENGTH and $PAY_ID_NAME_MAXIMUM_LENGTH characters long"
+          )
+        )
+      case _ => Right(true)
+    }
   }
 
 }

@@ -2,17 +2,18 @@ package io.iohk.atala.prism.services
 
 import java.time.{LocalDateTime, ZoneOffset}
 
+import scala.concurrent.duration.DurationInt
+
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import monix.execution.Scheduler.Implicits.global
-import doobie.implicits._
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.ConnectorMessageId
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
-import monix.eval.Task
+import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorResult
 
-import scala.concurrent.duration.DurationInt
+import doobie.implicits._
+import monix.execution.Scheduler.Implicits.global
 
 // sbt "project common" "testOnly *services.ConnectorMessageServiceSpec"
 class ConnectorMessageServiceSpec extends PostgresRepositorySpec {
@@ -22,9 +23,9 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec {
   class SpyMessageProcessor extends MessageProcessor {
     var processedMessages = List.empty[ReceivedMessage]
 
-    override def attemptProcessMessage(receivedMessage: ReceivedMessage): Option[Task[Unit]] = {
+    override def apply(receivedMessage: ReceivedMessage): Option[MessageProcessorResult] = {
       processedMessages = receivedMessage :: processedMessages
-      Some(Task.unit)
+      Some(MessageProcessor.successful)
     }
   }
 
