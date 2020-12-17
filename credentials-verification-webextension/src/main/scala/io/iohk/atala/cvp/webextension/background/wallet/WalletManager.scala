@@ -399,7 +399,11 @@ private[background] class WalletManager(
     } yield ()
 
     result.onComplete {
-      case Success(_) => println("Successfully created wallet")
+      case Success(_) =>
+        val retrievedWalletData = walletData.getOrElse(throw new RuntimeException("Failed to load wallet"))
+        subscribeForReceivedCredentials(retrievedWalletData)
+        println("Successfully created wallet")
+
       case Failure(exception) => println("Failed creating wallet"); exception.printStackTrace()
     }
 
@@ -418,8 +422,13 @@ private[background] class WalletManager(
     } yield ()
 
     result.onComplete {
-      case Success(_) => println("Successfully recovered wallet")
-      case Failure(exception) => println("Failed recovering wallet"); exception.printStackTrace()
+      case Success(_) =>
+        val retrievedWalletData = walletData.getOrElse(throw new RuntimeException("Failed to load wallet"))
+        subscribeForReceivedCredentials(retrievedWalletData)
+        println("Successfully recovered wallet")
+
+      case Failure(exception) =>
+        println("Failed recovering wallet"); exception.printStackTrace()
     }
     result
   }
@@ -450,10 +459,7 @@ private[background] class WalletManager(
     result.onComplete {
       case Success(_) =>
         val retrievedWalletData = walletData.getOrElse(throw new RuntimeException("Failed to load wallet"))
-        credentialsCopyJob.start(
-          ecKeyPairFromSeed(retrievedWalletData.mnemonic),
-          retrievedWalletData.did
-        )
+        subscribeForReceivedCredentials(retrievedWalletData)
         println("Successfully loaded wallet")
       case Failure(exception) =>
         println("Failed loading wallet")
@@ -512,5 +518,12 @@ private[background] class WalletManager(
         logo = res.logo.bytes
       )
     }
+  }
+
+  private def subscribeForReceivedCredentials(data: WalletData): Unit = {
+    credentialsCopyJob.start(
+      ecKeyPairFromSeed(data.mnemonic),
+      data.did
+    )
   }
 }

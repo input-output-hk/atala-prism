@@ -3,12 +3,15 @@ package io.iohk.atala.cvp.webextension.background
 import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.console.ConsoleClientService
+import io.iohk.atala.cvp.webextension.util.RetryableFuture
+import io.iohk.atala.cvp.webextension.util.Scheduler.Implicits.jsScheduler
 import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage.Message
 import io.iohk.atala.prism.protos.{connector_api, connector_models, credential_models, cstore_api}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class CredentialsCopyJob(
@@ -27,12 +30,39 @@ class CredentialsCopyJob(
   private def safeCleanClientObserver(): Unit =
     synchronized {
       // if present, we cancel the current observer
-      clientCallStreamObserver.foreach(_.cancel())
+      clientCallStreamObserver.foreach { stream =>
+        Logger.log("Canceling the new credentials stream")
+        stream.cancel()
+      }
       clientCallStreamObserver = None
     }
 
   def start(ecKeys: ECKeyPair, did: DID)(implicit ec: ExecutionContext): Unit = {
-    val streamStart = for {
+    // everything is retried to solve the case when the DID creation tx hasn't been confirmed by Cardano
+    val shouldRetry: Try[ClientCallStreamObserver] => Boolean = {
+      case Success(_) => false
+      case Failure(ex) =>
+        Logger.log(s"Failed to connect to the new credentials stream, retrying..., error = ${ex.getMessage}")
+        true
+    }
+
+    RetryableFuture
+      .withExponentialBackoff[ClientCallStreamObserver](initialDelay = 1.second, maxDelay = 20.minutes)(shouldRetry) {
+        startWithoutRetries(ecKeys, did)
+      }
+      .onComplete {
+        case Failure(exception) =>
+          Logger.log("Failed to initialize credentials copy stream: " + exception.getMessage)
+        case Success(clientCallStreamObserver) =>
+          safeSetClientObserver(clientCallStreamObserver)
+          Logger.log("Successfully initialized credentials copy job")
+      }
+  }
+
+  private def startWithoutRetries(ecKeys: ECKeyPair, did: DID)(implicit
+      ec: ExecutionContext
+  ): Future[ClientCallStreamObserver] = {
+    for {
       latestCredentialExternalIdResponse <- consoleClientService.getLatestCredentialExternalId(ecKeys, did)
       lastSeenMessageId = latestCredentialExternalIdResponse.latestCredentialExternalId
       _ = Logger.log(s"Last credential external id identified $lastSeenMessageId")
@@ -42,14 +72,6 @@ class CredentialsCopyJob(
       CredentialsCopyJob.streamObserver(ecKeys, did, consoleClientService),
       lastSeenMessageId
     )
-
-    streamStart.onComplete {
-      case Failure(exception) =>
-        Logger.log("Failed to initialize credentials copy stream: " + exception.getMessage)
-      case Success(clientCallStreamObserver) =>
-        safeSetClientObserver(clientCallStreamObserver)
-        Logger.log("Successfully initialized credentials copy job")
-    }
   }
 
   def stop(): Unit = safeCleanClientObserver()
