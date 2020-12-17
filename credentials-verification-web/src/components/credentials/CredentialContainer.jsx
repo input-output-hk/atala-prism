@@ -109,6 +109,7 @@ const CredentialContainer = ({ api }) => {
 
   useEffect(() => {
     fetchCredentialsIssued();
+    fetchCredentialsReceived();
   }, []);
 
   const getAllCredentialsIssued = async () => {
@@ -302,7 +303,6 @@ const CredentialContainer = ({ api }) => {
       tableProps: {
         credentials: credentialsReceived
       },
-      fetchCredentials: fetchCredentialsReceived,
       bulkActionsProps: {},
       filterProps: {},
       showEmpty: noReceivedCredentials

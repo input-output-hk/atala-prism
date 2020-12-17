@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
@@ -9,15 +8,8 @@ import { CREDENTIALS_RECEIVED } from '../../../../helpers/constants';
 import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
-const CredentialsReceived = ({
-  showEmpty,
-  tableProps,
-  fetchCredentials,
-  showCredentialData,
-  initialLoading
-}) => {
+const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initialLoading }) => {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
 
   const emptyProps = {
     photoSrc: noCredentialsPicture,
@@ -31,17 +23,12 @@ const CredentialsReceived = ({
     onView: showCredentialData
   };
 
-  const getMoreData = () => {
-    setLoading(true);
-    return fetchCredentials().finally(() => setLoading(false));
-  };
-
   const renderEmptyComponent = !tableProps.credentials.length || showEmpty;
 
   const renderContent = () => {
-    if (initialLoading && !loading) return <SimpleLoading size="md" />;
+    if (initialLoading) return <SimpleLoading size="md" />;
     if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-    return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
+    return <CredentialsTable {...expandedTableProps} />;
   };
 
   return <Row>{renderContent()}</Row>;
