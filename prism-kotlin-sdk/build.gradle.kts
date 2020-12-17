@@ -9,7 +9,7 @@ plugins {
 val versionDetails: groovy.lang.Closure<VersionDetails> by extra
 
 group = "io.iohk.atala.prism"
-version = versionDetails().gitHash.substring(0, 8)
+version = "0.1-" + versionDetails().gitHash.substring(0, 8)
 
 repositories {
     mavenCentral()
@@ -62,7 +62,6 @@ kotlin {
         // This is a self-written Pod hosted in a custom spec repository (see definition below):
         // https://github.com/itegulov/Specs/blob/main/bitcoin-secp256k1/0.1.0/bitcoin-secp256k1.podspec.json
         pod("bitcoin-secp256k1", version = "0.1.0")
-        pod("BitcoinKit")
         
         specRepos { 
             url("https://github.com/itegulov/Specs")
