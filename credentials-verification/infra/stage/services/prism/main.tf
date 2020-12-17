@@ -337,6 +337,7 @@ data aws_acm_certificate cf-tls-cert {
 locals {
   # intdemo www
   env_prod = "www"
+  env_demo = "demo"
   # prism console develop
   envs = ["develop", "demo"]
   # cloud front is enabled to redirect traffic
@@ -408,10 +409,15 @@ resource aws_cloudfront_distribution intdemo_cf_dist {
   }
 }
 
+data "aws_lambda_function" "basic_auth" {
+  provider = aws.us-east-1
+  function_name = var.function_name
+  qualifier = 1 # version
+}
+
 # management console cloud front distribution
 resource aws_cloudfront_distribution console_cf_dist {
-  count =  local.cf_enabled_geud ? 1 : 0
-
+  count =  local.cf_enabled_geud  ? 1 : 0
   origin {
     domain_name = module.prism_service.envoy_lb_dns_name
     origin_id   = "${local.cf_cname_prefix}-origin-id"
@@ -440,6 +446,15 @@ resource aws_cloudfront_distribution console_cf_dist {
       headers      = ["*"]
       cookies {
         forward = "all"
+      }
+    }
+
+    dynamic "lambda_function_association" { # only for demo
+      for_each = var.env_name_short == local.env_demo ? [{}] : []
+      content {
+        event_type   = "viewer-request"
+        lambda_arn   = data.aws_lambda_function.basic_auth.qualified_arn
+        include_body = true
       }
     }
 

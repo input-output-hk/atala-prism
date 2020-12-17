@@ -175,3 +175,8 @@ variable monitoring_alerts_enabled {
   type        = number
   default     = 0
 }
+
+variable "function_name" {
+  type = string
+  default = "basic_auth"
+}
