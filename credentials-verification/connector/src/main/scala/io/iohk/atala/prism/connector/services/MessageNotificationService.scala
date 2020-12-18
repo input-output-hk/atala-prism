@@ -82,7 +82,11 @@ class MessageNotificationService private (
           // restarted, we can ignore it
           streamQueues.values().forEach(enqueue(_, None))
           streamQueues.clear()
-        case Left(e) => logger.error("Message stream from DB has failed", e)
+        case Left(e) =>
+          // Only log failures when the service is not being shut down
+          if (!dbNotificationStreamer.isStopped) {
+            logger.error("Message stream from DB has failed", e)
+          }
       }
   }
 

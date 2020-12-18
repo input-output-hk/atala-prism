@@ -47,6 +47,8 @@ class DbNotificationStreamer private (channelName: String)(implicit timer: Timer
     notificationStream.unNoneTerminate.map(notification => DbNotification(payload = notification.getParameter))
   }
 
+  def isStopped: Boolean = stopped.get()
+
   def stopStreaming(): Unit = {
     logger.info(s"Stopping all open DB notification streams for channel $channelName")
     stopped.set(true)
