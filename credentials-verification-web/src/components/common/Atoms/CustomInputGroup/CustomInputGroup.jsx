@@ -10,7 +10,7 @@ const CustomInputGroup = ({ prefixIcon, children }) => {
       <span className="InputPrefix">
         <Icon type={prefixIcon} />
       </span>
-      <span className="w-100 NoBorder">{children}</span>
+      <span className="ChildrenContainer">{children}</span>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import localeKa from 'moment/locale/ka';
 import localeEn from 'moment/locale/en-gb';
 import { getCurrentLanguage } from '../../../../helpers/languageUtils';
 import { DEFAULT_DATE_FORMAT } from '../../../../helpers/constants';
+import './_style.scss';
 
 const CustomDatePicker = props => {
   const locale = getCurrentLanguage() === 'en' ? localeEn : localeKa;
