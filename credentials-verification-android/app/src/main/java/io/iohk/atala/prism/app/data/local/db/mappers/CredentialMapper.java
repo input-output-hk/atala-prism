@@ -2,10 +2,8 @@ package io.iohk.atala.prism.app.data.local.db.mappers;
 
 import android.util.Base64;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +15,6 @@ import io.iohk.atala.prism.protos.AtalaMessage;
 import io.iohk.atala.prism.protos.Credential;
 import io.iohk.atala.prism.protos.IssuerSentCredential;
 import io.iohk.atala.prism.protos.PlainTextCredential;
-import io.iohk.atala.prism.protos.ReceivedMessage;
 
 public class CredentialMapper {
 
@@ -33,10 +30,24 @@ public class CredentialMapper {
 
     static public io.iohk.atala.prism.app.data.local.db.model.Credential mapToCredential(AtalaMessage atalaMessage, String credentialId, String connectionId, Long received, Contact issuer) {
         switch (atalaMessage.getMessageCase()) {
-            case ISSUERSENTCREDENTIAL:
-                return mapToCredential(atalaMessage.getIssuerSentCredential(), credentialId, connectionId, received);
             case PLAINCREDENTIAL:
-                return mapToCredential(atalaMessage.getPlainCredential(), credentialId, connectionId, received, issuer);
+                PlainTextCredential plainTextCredential = atalaMessage.getPlainCredential();
+                String encodedCredential = plainTextCredential.getEncodedCredential();
+                PlainTextCredentialJson plainTextCredentialJson = parsePlainTextCredential(encodedCredential);
+                io.iohk.atala.prism.app.data.local.db.model.Credential credentialModel = new io.iohk.atala.prism.app.data.local.db.model.Credential();
+                credentialModel.credentialId = credentialId;
+                credentialModel.dateReceived = received;
+                credentialModel.credentialEncoded = atalaMessage.toByteString();
+                credentialModel.issuerName = issuer.name;
+                credentialModel.issuerId = issuer.did;
+                credentialModel.credentialType = plainTextCredentialJson.getCredentialType();
+                credentialModel.connectionId = connectionId;
+                credentialModel.credentialDocument = encodedCredential;
+                credentialModel.htmlView = getHtmlFromCredential(plainTextCredential);
+                return credentialModel;
+            case ISSUERSENTCREDENTIAL:
+                // support for int demo credentials
+                return mapToCredential(atalaMessage.getIssuerSentCredential(), credentialId, connectionId, received);
             default:
                 return new io.iohk.atala.prism.app.data.local.db.model.Credential();
         }
@@ -54,21 +65,6 @@ public class CredentialMapper {
         credentialModel.credentialType = credential.getTypeId();
         credentialModel.connectionId = connectionId;
         credentialModel.credentialDocument = credential.getCredentialDocument();
-        return credentialModel;
-    }
-
-    static private io.iohk.atala.prism.app.data.local.db.model.Credential mapToCredential(PlainTextCredential plainTextCredential, String credentialId, String connectionId, Long received, Contact issuer) {
-        String encodedCredential = plainTextCredential.getEncodedCredential();
-        PlainTextCredentialJson plainTextCredentialJson = parsePlainTextCredential(encodedCredential);
-        io.iohk.atala.prism.app.data.local.db.model.Credential credentialModel = new io.iohk.atala.prism.app.data.local.db.model.Credential();
-        credentialModel.credentialId = credentialId;
-        credentialModel.dateReceived = received;
-        credentialModel.credentialEncoded = plainTextCredential.getEncodedCredentialBytes();
-        credentialModel.issuerName = issuer.name;
-        credentialModel.issuerId = issuer.did;
-        credentialModel.credentialType = plainTextCredentialJson.getCredentialType();
-        credentialModel.connectionId = connectionId;
-        credentialModel.credentialDocument = encodedCredential;
         return credentialModel;
     }
 
@@ -98,6 +94,11 @@ public class CredentialMapper {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    private static String getHtmlFromCredential(PlainTextCredential plainTextCredential) {
+        PlainTextCredentialJson plainTextCredentialJson = parsePlainTextCredential(plainTextCredential.getEncodedCredentialBytes().toStringUtf8());
+        return plainTextCredentialJson.getHtml();
     }
 
     private static class IssuerInfo {

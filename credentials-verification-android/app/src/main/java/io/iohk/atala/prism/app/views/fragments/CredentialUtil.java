@@ -9,8 +9,6 @@ import org.json.JSONObject;
 
 import java.util.Optional;
 
-import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper;
-import io.iohk.atala.prism.app.data.local.db.mappers.PlainTextCredentialJson;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.enums.CredentialType;
 import io.iohk.atala.prism.app.data.local.db.model.Credential;
@@ -104,9 +102,7 @@ public class CredentialUtil {
             if (isADemoCredential(credential)) {
                 return getHtmlDemoSupport(credential);
             }
-            PlainTextCredentialJson plainTextCredentialJson = CredentialMapper.parsePlainTextCredential(credential.credentialEncoded.toStringUtf8());
-            String html = plainTextCredentialJson.getHtml();
-            return Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT).toString();
+            return Html.fromHtml(credential.htmlView, Html.FROM_HTML_MODE_COMPACT).toString();
         } catch (JSONException ex) {
             ex.printStackTrace();
         }
