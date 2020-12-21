@@ -1,5 +1,5 @@
 package io.iohk.atala.prism.kotlin.crypto.keys
 
-import java.math.BigInteger
+import com.ionspin.kotlin.bignum.integer.BigInteger
 
 data class ECPoint(val x: BigInteger, val y: BigInteger)

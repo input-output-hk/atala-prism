@@ -1,8 +1,8 @@
 import com.palantir.gradle.gitversion.VersionDetails
 
 plugins {
-    kotlin("multiplatform") version "1.4.20"
-    kotlin("native.cocoapods") version "1.4.20"
+    kotlin("multiplatform") version "1.4.21"
+    kotlin("native.cocoapods") version "1.4.21"
     id("maven-publish")
     id("com.palantir.git-version") version "0.12.3"
 }
@@ -20,11 +20,20 @@ kotlin {
             kotlinOptions.jvmTarget = "1.8"
         }
     }
-    ios()
+    iosX64("ios") {
+        binaries.all {
+            // Linker options required to link to libsecp256k1.
+            linkerOpts("-L../credentials-verification-iOS/Pods/BitcoinKit/Libraries/secp256k1/lib", "-lsecp256k1")
+        }
+    }
 
     
     sourceSets {
-        val commonMain by getting
+        val commonMain by getting {
+            dependencies {
+                implementation("com.ionspin.kotlin:bignum:0.2.3")
+            }
+        }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-common"))
@@ -40,6 +49,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
             }
         }
         val iosMain by getting
@@ -67,4 +77,10 @@ kotlin {
             url("https://github.com/itegulov/Specs")
         }
     }
+}
+
+tasks {
+    "jvmTest"(Test::class) {
+        useJUnitPlatform()
+    }    
 }

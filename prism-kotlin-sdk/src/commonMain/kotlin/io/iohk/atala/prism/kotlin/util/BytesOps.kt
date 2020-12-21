@@ -1,5 +1,20 @@
 package io.iohk.atala.prism.kotlin.util
 
+@ExperimentalUnsignedTypes
+fun List<Byte>.toUByteArray(): UByteArray {
+    return this.toByteArray().toUByteArray()
+}
+
+@ExperimentalUnsignedTypes
+fun ByteArray.toUByteArray(): UByteArray {
+    return this.map { it.toUByte() }.toUByteArray()
+}
+
+@ExperimentalUnsignedTypes
+fun List<UByte>.toByteArray(): ByteArray {
+    return this.map { it.toByte() }.toByteArray()
+}
+
 object BytesOps {
     private val HEX_ARRAY = "0123456789abcdef".toCharArray()
 
