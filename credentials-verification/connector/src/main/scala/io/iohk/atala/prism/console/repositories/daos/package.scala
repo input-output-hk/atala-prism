@@ -5,6 +5,7 @@ import java.util.UUID
 
 import doobie.{Meta, Read, Write}
 import doobie.implicits.legacy.instant._
+import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution, PublicationData}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.daos.BaseDAO
@@ -42,7 +43,7 @@ package object daos extends BaseDAO {
 
   implicit val contactIdMeta: Meta[Contact.Id] = Meta[UUID].timap(Contact.Id.apply)(_.value)
   implicit val contactExternalIdMeta: Meta[Contact.ExternalId] = Meta[String].timap(Contact.ExternalId.apply)(_.value)
-  implicit val contactConnectionStatusMeta: Meta[Contact.ConnectionStatus] =
-    Meta[String].timap(Contact.ConnectionStatus.withNameInsensitive)(_.entryName)
+  implicit val contactConnectionStatusMeta: Meta[ConnectionStatus] =
+    Meta[String].timap(ConnectionStatus.withNameInsensitive)(_.entryName)
   implicit val institutionIdMeta: Meta[Institution.Id] = Meta[UUID].timap(Institution.Id.apply)(_.value)
 }

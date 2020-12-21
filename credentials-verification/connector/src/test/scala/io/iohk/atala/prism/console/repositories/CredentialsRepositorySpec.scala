@@ -2,11 +2,10 @@ package io.iohk.atala.prism.console.repositories
 
 import java.time.LocalDate
 import java.util.UUID
-
 import io.circe.Json
 import io.circe.syntax._
+import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.DataPreparation._
-import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
 import io.iohk.atala.prism.console.models.{
   CreateGenericCredential,
   GenericCredential,

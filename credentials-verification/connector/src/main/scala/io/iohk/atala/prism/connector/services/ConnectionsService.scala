@@ -108,4 +108,10 @@ class ConnectionsService(
       }
     } yield keys
   }
+
+  def getAcceptorConnections(
+      acceptorIds: List[ParticipantId]
+  ): FutureEither[ConnectorError, List[ContactConnection]] = {
+    connectionsRepository.getAcceptorConnections(acceptorIds)
+  }
 }

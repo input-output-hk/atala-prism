@@ -2,10 +2,8 @@ package io.iohk.atala.prism.console
 
 import java.time.Instant
 import java.util.UUID
-
-import enumeratum.{Enum, EnumEntry}
 import io.circe.Json
-import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
+import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, TokenString}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 
@@ -26,18 +24,6 @@ package object models {
     object ExternalId {
       def random(): ExternalId = ExternalId(UUID.randomUUID().toString)
     }
-
-    sealed abstract class ConnectionStatus(value: String) extends EnumEntry {
-      override def entryName: String = value
-    }
-    object ConnectionStatus extends Enum[ConnectionStatus] {
-      lazy val values = findValues
-
-      final case object InvitationMissing extends ConnectionStatus("INVITATION_MISSING")
-      final case object ConnectionMissing extends ConnectionStatus("CONNECTION_MISSING")
-      final case object ConnectionAccepted extends ConnectionStatus("CONNECTION_ACCEPTED")
-      final case object ConnectionRevoked extends ConnectionStatus("CONNECTION_REVOKED")
-    }
   }
 
   case class Contact(
@@ -45,7 +31,7 @@ package object models {
       externalId: Contact.ExternalId,
       data: Json,
       createdAt: Instant,
-      connectionStatus: Contact.ConnectionStatus,
+      connectionStatus: ConnectionStatus,
       connectionToken: Option[TokenString],
       connectionId: Option[ConnectionId]
   )
@@ -80,7 +66,7 @@ package object models {
       externalId: Contact.ExternalId,
       issuerName: String,
       subjectData: Json,
-      connectionStatus: Contact.ConnectionStatus,
+      connectionStatus: ConnectionStatus,
       publicationData: Option[PublicationData],
       sharedAt: Option[Instant]
   )

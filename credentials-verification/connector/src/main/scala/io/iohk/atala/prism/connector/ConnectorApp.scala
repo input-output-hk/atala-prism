@@ -9,6 +9,7 @@ import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{
   ConnectionsService,
+  ContactConnectionService,
   MessageNotificationService,
   MessagesService,
   RegistrationService
@@ -38,6 +39,7 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
 import io.iohk.atala.prism.protos.admin_api.AdminServiceGrpc
 import io.iohk.atala.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc}
 import io.iohk.atala.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.console_api.ConsoleServiceGrpc
 import io.iohk.atala.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
@@ -112,6 +114,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, node)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
     val registrationService = new RegistrationService(participantsRepository, node)(executionContext)
+    val contactConnectionService = new ContactConnectionService(connectionsService, authenticator)(executionContext)
     val connectorService = new ConnectorService(
       connectionsService,
       messagesService,
@@ -178,6 +181,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
       .addService(AdminServiceGrpc.bindService(adminService, executionContext))
       .addService(ConsoleServiceGrpc.bindService(consoleService, executionContext))
+      .addService(ContactConnectionServiceGrpc.bindService(contactConnectionService, executionContext))
       .build()
       .start()
 

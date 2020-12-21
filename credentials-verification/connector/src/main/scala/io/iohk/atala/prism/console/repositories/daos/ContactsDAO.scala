@@ -9,16 +9,15 @@ import doobie.free.connection
 import doobie.implicits.toSqlInterpolator
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments.{in, whereAnd}
-import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
+import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, TokenString}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
-import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
 
 object ContactsDAO {
 
   def createContact(data: CreateContact): ConnectionIO[Contact] = {
     val contactId = Contact.Id(UUID.randomUUID())
     val createdAt = Instant.now()
-    val connectionStatus: Contact.ConnectionStatus = Contact.ConnectionStatus.InvitationMissing
+    val connectionStatus: ConnectionStatus = ConnectionStatus.InvitationMissing
     sql"""
          |INSERT INTO contacts
          |  (contact_id, contact_data, created_at, connection_status, created_by, external_id)

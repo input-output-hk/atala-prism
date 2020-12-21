@@ -20,7 +20,7 @@ final case class Contact(
 
 object Contact {
   final case class Id(value: UUID) extends AnyVal
-  case class ExternalId(value: String) extends AnyVal
+  final case class ExternalId(value: String) extends AnyVal
   object ExternalId {
     def random(): ExternalId = ExternalId(UUID.randomUUID().toString)
   }

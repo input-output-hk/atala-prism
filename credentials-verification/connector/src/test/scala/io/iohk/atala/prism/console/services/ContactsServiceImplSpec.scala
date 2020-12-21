@@ -9,7 +9,7 @@ import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.console.grpc.ProtoCodecs.toContactProto
 import io.iohk.atala.prism.console.DataPreparation.{createContact, createIssuer, createIssuerGroup}
-import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.connector.model.{ConnectionStatus, TokenString}
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.console.models.{Contact, IssuerGroup}
@@ -453,7 +453,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         storedContact.contactId must be(contact.contactId)
         storedContact.data must be(contact.data)
         storedContact.createdAt must be(contact.createdAt)
-        storedContact.connectionStatus must be(Contact.ConnectionStatus.ConnectionMissing)
+        storedContact.connectionStatus must be(ConnectionStatus.ConnectionMissing)
         storedContact.connectionToken.value must be(token)
         storedContact.connectionId must be(contact.connectionId)
       }

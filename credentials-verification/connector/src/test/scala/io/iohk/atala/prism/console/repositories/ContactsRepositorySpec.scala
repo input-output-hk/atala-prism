@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.console.repositories
 
 import java.time.LocalDate
-
 import io.circe.Json
+import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
@@ -271,7 +271,7 @@ class ContactsRepositorySpec extends PostgresRepositorySpec {
       updatedSubject.contactId must be(subject.contactId)
       updatedSubject.data must be(subject.data)
       updatedSubject.createdAt must be(subject.createdAt)
-      updatedSubject.connectionStatus must be(Contact.ConnectionStatus.ConnectionMissing)
+      updatedSubject.connectionStatus must be(ConnectionStatus.ConnectionMissing)
       updatedSubject.connectionToken.value must be(token)
       updatedSubject.connectionId must be(subject.connectionId)
     }

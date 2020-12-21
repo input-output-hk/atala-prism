@@ -12,7 +12,7 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
-abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
+trait ConnectorRepositorySpecBase extends PostgresRepositorySpec {
   protected def createParticipant(
       tpe: ParticipantType,
       name: String,
@@ -39,17 +39,19 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
   }
 
   protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {
-    createConnection(initiatorId, acceptorId, createToken(initiatorId))
+    createConnection(initiatorId, acceptorId, createToken(initiatorId), ConnectionStatus.InvitationMissing)
   }
 
   protected def createConnection(
       initiatorId: ParticipantId,
       acceptorId: ParticipantId,
-      token: TokenString
+      token: TokenString,
+      status: ConnectionStatus
   ): ConnectionId = {
     sql"""
-         |INSERT INTO connections (id, initiator, acceptor, instantiated_at, token)
-         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, now(), $token)
+         |INSERT INTO connections (id, initiator, acceptor, instantiated_at, token, status)
+         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId,
+         |       now(), $token, $status::CONTACT_CONNECTION_STATUS_TYPE)
          |RETURNING id""".stripMargin.runUnique[ConnectionId]()
   }
 
@@ -59,9 +61,11 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
       instantiatedAt: Instant
   ): ConnectionId = {
     val token = createToken(initiatorId)
+    val status: ConnectionStatus = ConnectionStatus.InvitationMissing
     sql"""
-         |INSERT INTO connections (id, initiator, acceptor, instantiated_at, token)
-         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, $instantiatedAt, $token)
+         |INSERT INTO connections (id, initiator, acceptor, instantiated_at, token, status)
+         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId,
+         |       $instantiatedAt, $token, $status::CONTACT_CONNECTION_STATUS_TYPE)
          |RETURNING id""".stripMargin.runUnique[ConnectionId]()
   }
 

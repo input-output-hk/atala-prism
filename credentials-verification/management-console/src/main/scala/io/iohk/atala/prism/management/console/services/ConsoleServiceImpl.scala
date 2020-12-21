@@ -9,8 +9,11 @@ import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, StatisticsRepository}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.protos.connector_api.{ConnectionsStatusRequest, ContactConnectionServiceGrpc}
+import io.iohk.atala.prism.protos.{console_api, connector_models}
 import io.iohk.atala.prism.protos.console_api._
+import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -20,7 +23,8 @@ import scala.util.Try
 class ConsoleServiceImpl(
     contactsRepository: ContactsRepository,
     statisticsRepository: StatisticsRepository,
-    authenticator: ManagementConsoleAuthenticator
+    authenticator: ManagementConsoleAuthenticator,
+    contactConnectionService: ContactConnectionServiceGrpc.ContactConnectionService
 )(implicit
     ec: ExecutionContext
 ) extends ConsoleServiceGrpc.ConsoleService
@@ -64,7 +68,14 @@ class ConsoleServiceImpl(
         reponse <-
           contactsRepository
             .create(model, maybeGroupName)
-            .map(ProtoCodecs.toContactProto)
+            .map(contact =>
+              ProtoCodecs.toContactProto(
+                contact,
+                connector_models.ContactConnection(
+                  connectionStatus = ContactConnectionStatus.INVITATION_MISSING
+                )
+              )
+            )
             .map(console_api.CreateContactResponse().withContact)
             .wrapExceptions(implicitly, loggingContext)
             .flatten
@@ -91,8 +102,22 @@ class ConsoleServiceImpl(
 
       contactsRepository
         .getBy(participantId, lastSeenContact, groupName, request.limit)
-        .map { list =>
-          console_api.GetContactsResponse(list.map(ProtoCodecs.toContactProto))
+        .flatMap { list =>
+          contactConnectionService
+            .getConnectionStatus(
+              ConnectionsStatusRequest(acceptorIds = list.map(_.contactId.value.toString))
+            )
+            .map { connectionStatusResponse =>
+              Right(
+                console_api.GetContactsResponse(
+                  list.zip(connectionStatusResponse.connections).map {
+                    case (contact, connection) =>
+                      ProtoCodecs.toContactProto(contact, connection)
+                  }
+                )
+              )
+            }
+            .toFutureEither
         }
         .wrapExceptions
         .flatten
@@ -119,8 +144,22 @@ class ConsoleServiceImpl(
         response <-
           contactsRepository
             .find(participantId, contactId)
-            .map { maybeContact =>
-              console_api.GetContactResponse(maybeContact.map(ProtoCodecs.toContactProto))
+            .flatMap { maybeContact =>
+              contactConnectionService
+                .getConnectionStatus(
+                  ConnectionsStatusRequest(acceptorIds = List(contactId.value.toString))
+                )
+                .map { connectionStatusResponse =>
+                  Right(
+                    console_api.GetContactResponse(
+                      maybeContact.zip(connectionStatusResponse.connections.headOption).map {
+                        case (contact, connection) =>
+                          ProtoCodecs.toContactProto(contact, connection)
+                      }
+                    )
+                  )
+                }
+                .toFutureEither
             }
             .wrapExceptions
             .flatten

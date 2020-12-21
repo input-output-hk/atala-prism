@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics}
-import io.iohk.atala.prism.protos.{cmanager_models, common_models, console_api, console_models}
+import io.iohk.atala.prism.protos.{cmanager_models, common_models, console_api, console_models, connector_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
@@ -39,13 +39,16 @@ object ProtoCodecs {
     }
   }
 
-  def toContactProto(contact: Contact): console_models.Contact = {
+  def toContactProto(contact: Contact, connection: connector_models.ContactConnection): console_models.Contact = {
     console_models
       .Contact()
       .withContactId(contact.contactId.value.toString)
       .withExternalId(contact.externalId.value)
       .withJsonData(contact.data.noSpaces)
       .withCreatedAt(contact.createdAt.toEpochMilli)
+      .withConnectionId(connection.connectionId)
+      .withConnectionToken(connection.connectionToken)
+      .withConnectionStatus(connection.connectionStatus)
   }
 
   def toStatisticsProto(statistics: Statistics): console_api.GetStatisticsResponse = {

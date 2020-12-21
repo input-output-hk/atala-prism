@@ -3,6 +3,8 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "io.iohk.atala.prism.protos";
 
+import "console_models.proto";
+
 package io.iohk.atala.prism.protos;
 
 // @exclude
@@ -121,4 +123,10 @@ message Payment {
     int64 createdOn = 3;
     string status = 4;
     string failureReason = 5;
+}
+
+message ContactConnection {
+    string connectionId = 1;
+    string connectionToken = 2;
+    ContactConnectionStatus connectionStatus = 3;
 }

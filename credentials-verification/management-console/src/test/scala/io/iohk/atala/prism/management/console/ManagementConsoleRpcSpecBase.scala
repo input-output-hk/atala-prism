@@ -30,6 +30,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val statisticsRepository = new StatisticsRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  lazy val connectorMock =
+    mock[io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc.ContactConnectionService]
   lazy val authenticator =
     new ManagementConsoleAuthenticator(
       participantsRepository,
@@ -41,7 +43,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val consoleService = new ConsoleServiceImpl(
     contactsRepository,
     statisticsRepository,
-    authenticator
+    authenticator,
+    connectorMock
   )(
     executionContext
   )

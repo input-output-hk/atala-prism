@@ -41,6 +41,8 @@ trait ConnectionsRepository {
   ): FutureEither[ConnectorError, Option[ParticipantInfo]]
 
   def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]]
+
+  def getAcceptorConnections(acceptorIds: List[ParticipantId]): FutureEither[ConnectorError, List[ContactConnection]]
 }
 
 object ConnectionsRepository {
@@ -99,11 +101,17 @@ object ConnectionsRepository {
         }
 
         ciia <- EitherT.right[ConnectorError](
-          ConnectionsDAO.insert(initiator = initiator.id, acceptor = acceptorInfo.id, token = token)
+          ConnectionsDAO.insert(
+            initiator = initiator.id,
+            acceptor = acceptorInfo.id,
+            token = token,
+            connectionStatus = ConnectionStatus.ConnectionAccepted
+          )
         )
         (connectionId, instantiatedAt) = ciia
 
-        // hack to add the connectionId to the student (if any), TODO: this should be moved to another layer
+        // Kept for the sake of backward compatibility with the existing management console
+        // TODO: Remove it when management console is fully decoupled from connector
         _ <- EitherT.right[ConnectorError] {
           ContactsDAO.setConnectionAsAccepted(
             Institution.Id(initiator.id.uuid),
@@ -113,7 +121,13 @@ object ConnectionsRepository {
         }
 
         _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))
-      } yield acceptorInfo.id -> ConnectionInfo(connectionId, instantiatedAt, initiator, token)
+      } yield acceptorInfo.id -> ConnectionInfo(
+        connectionId,
+        instantiatedAt,
+        initiator,
+        token,
+        ConnectionStatus.ConnectionAccepted
+      )
 
       query
         .transact(xa)
@@ -160,6 +174,17 @@ object ConnectionsRepository {
     override def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
       ConnectionsDAO
         .getConnectionByToken(token)
+        .transact(xa)
+        .unsafeToFuture()
+        .map(Right(_))
+        .toFutureEither
+    }
+
+    override def getAcceptorConnections(
+        acceptorIds: List[ParticipantId]
+    ): FutureEither[ConnectorError, List[ContactConnection]] = {
+      ConnectionsDAO
+        .getAcceptorConnections(acceptorIds)
         .transact(xa)
         .unsafeToFuture()
         .map(Right(_))

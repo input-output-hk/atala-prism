@@ -1592,5 +1592,137 @@ proto.io.iohk.atala.prism.protos.ConnectorServicePromiseClient.prototype.getCurr
 };
 
 
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?Object} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.io.iohk.atala.prism.protos.ContactConnectionServiceClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options['format'] = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?Object} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.io.iohk.atala.prism.protos.ContactConnectionServicePromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options['format'] = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.atala.prism.protos.ConnectionsStatusRequest,
+ *   !proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse>}
+ */
+const methodDescriptor_ContactConnectionService_GetConnectionStatus = new grpc.web.MethodDescriptor(
+  '/io.iohk.atala.prism.protos.ContactConnectionService/GetConnectionStatus',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.atala.prism.protos.ConnectionsStatusRequest,
+  proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.ConnectionsStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.atala.prism.protos.ConnectionsStatusRequest,
+ *   !proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse>}
+ */
+const methodInfo_ContactConnectionService_GetConnectionStatus = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse,
+  /**
+   * @param {!proto.io.iohk.atala.prism.protos.ConnectionsStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.ConnectionsStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.atala.prism.protos.ContactConnectionServiceClient.prototype.getConnectionStatus =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ContactConnectionService/GetConnectionStatus',
+      request,
+      metadata || {},
+      methodDescriptor_ContactConnectionService_GetConnectionStatus,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.atala.prism.protos.ConnectionsStatusRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.atala.prism.protos.ConnectionsStatusResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.atala.prism.protos.ContactConnectionServicePromiseClient.prototype.getConnectionStatus =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.atala.prism.protos.ContactConnectionService/GetConnectionStatus',
+      request,
+      metadata || {},
+      methodDescriptor_ContactConnectionService_GetConnectionStatus);
+};
+
+
 module.exports = proto.io.iohk.atala.prism.protos;
 

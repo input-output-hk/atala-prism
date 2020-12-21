@@ -2,13 +2,14 @@ package io.iohk.atala.prism.console.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toSqlInterpolator
-import io.iohk.atala.prism.console.models.{Contact, Institution, Statistics}
+import io.iohk.atala.prism.connector.model.ConnectionStatus
+import io.iohk.atala.prism.console.models.{Institution, Statistics}
 
 object StatisticsDAO {
 
   def query(institutionId: Institution.Id): ConnectionIO[Statistics] = {
-    val missingConnectionStatus: Contact.ConnectionStatus = Contact.ConnectionStatus.ConnectionMissing
-    val connectedConnectionStatus: Contact.ConnectionStatus = Contact.ConnectionStatus.ConnectionAccepted
+    val missingConnectionStatus: ConnectionStatus = ConnectionStatus.ConnectionMissing
+    val connectedConnectionStatus: ConnectionStatus = ConnectionStatus.ConnectionAccepted
     sql"""
          |SELECT
          |  (SELECT COUNT(*) FROM contacts WHERE created_by = $institutionId) AS numberOfContacts,

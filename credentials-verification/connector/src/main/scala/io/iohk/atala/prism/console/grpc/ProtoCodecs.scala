@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.console.grpc
 
 import java.time.LocalDate
-
 import com.google.protobuf.ByteString
+import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models
-import io.iohk.atala.prism.console.models.Contact.ConnectionStatus
 import io.iohk.atala.prism.console.models.GenericCredential
 import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.{cmanager_models, common_models, console_models}

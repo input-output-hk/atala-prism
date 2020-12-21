@@ -140,13 +140,47 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val h1 = createHolder("h1", None)
       val h2 = createHolder("h2", None)
       val token = createToken(h1)
-      val connectionId: ConnectionId = createConnection(h1, h2, token)
+      val connectionId: ConnectionId = createConnection(h1, h2, token, ConnectionStatus.InvitationMissing)
 
       val connection: Connection =
         connectionsRepository.getConnectionByToken(token).value.futureValue.toOption.value.get
 
       connection.connectionId mustBe connectionId
       connection.connectionToken mustBe token
+    }
+  }
+
+  "getConnectionStatuses" should {
+    "return correct list of connection statuses" in {
+      val initiator1 = createHolder("initiator1", None)
+      val acceptor1 = createHolder("acceptor1", None)
+      val token1 = createToken(initiator1)
+      val connectionId1 = createConnection(initiator1, acceptor1, token1, ConnectionStatus.InvitationMissing)
+
+      val initiator2 = createHolder("initiator2", None)
+      val acceptor2 = createHolder("acceptor2", None)
+      val token2 = createToken(initiator2)
+      val connectionId2 = createConnection(initiator2, acceptor2, token2, ConnectionStatus.ConnectionAccepted)
+
+      val connectionStatuses =
+        connectionsRepository.getAcceptorConnections(List(acceptor1, acceptor2)).value.futureValue.toOption.get
+
+      val contactConnection1 = ContactConnection(Some(connectionId1), Some(token1), ConnectionStatus.InvitationMissing)
+      val contactConnection2 = ContactConnection(Some(connectionId2), Some(token2), ConnectionStatus.ConnectionAccepted)
+
+      connectionStatuses mustBe List(contactConnection1, contactConnection2)
+    }
+
+    "return invitation missing for non-existing connections" in {
+      val acceptor1 = createHolder("acceptor1", None)
+      val acceptor2 = createHolder("acceptor2", None)
+      val connectionStatuses =
+        connectionsRepository.getAcceptorConnections(List(acceptor1, acceptor2)).value.futureValue.toOption.get
+
+      val contactConnection1 = ContactConnection(None, None, ConnectionStatus.InvitationMissing)
+      val contactConnection2 = ContactConnection(None, None, ConnectionStatus.InvitationMissing)
+
+      connectionStatuses mustBe List(contactConnection1, contactConnection2)
     }
   }
 }

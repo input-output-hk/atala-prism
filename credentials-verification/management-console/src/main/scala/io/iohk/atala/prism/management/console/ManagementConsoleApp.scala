@@ -19,6 +19,7 @@ import io.iohk.atala.prism.management.console.services.{
   CredentialsStoreServiceImpl,
   GroupsServiceImpl
 }
+import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.{cmanager_api, console_api, cstore_api}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -66,6 +67,16 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
       .build()
     val node = NodeServiceGrpc.stub(nodeChannel)
 
+    // connector client
+    val connectorChannel = ManagedChannelBuilder
+      .forAddress(
+        globalConfig.getConfig("connector").getString("host"),
+        globalConfig.getConfig("connector").getInt("port")
+      )
+      .usePlaintext()
+      .build()
+    val connector = ContactConnectionServiceGrpc.stub(connectorChannel)
+
     // Vault repositories
     val contactsRepository = new ContactsRepository(transactor)(executionContext)
     val participantsRepository = new ParticipantsRepository(transactor)(executionContext)
@@ -87,7 +98,7 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     val credentialsStoreService =
       new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)(executionContext)
     val groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)(executionContext)
-    val consoleService = new ConsoleServiceImpl(contactsRepository, statisticsRepository, authenticator)(
+    val consoleService = new ConsoleServiceImpl(contactsRepository, statisticsRepository, authenticator, connector)(
       executionContext
     )
 

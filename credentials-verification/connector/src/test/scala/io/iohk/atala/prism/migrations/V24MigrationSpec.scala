@@ -8,10 +8,9 @@ import doobie.util.invariant.InvalidEnum
 import doobie.Meta
 import enumeratum.{Enum, EnumEntry}
 import enumeratum.EnumEntry.UpperSnakecase
-import io.iohk.atala.prism.connector.model.ParticipantType
+import io.iohk.atala.prism.connector.model.{ConnectionStatus, ParticipantType}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.connector.repositories.daos._
-import io.iohk.atala.prism.console.models.Contact
 import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
@@ -78,15 +77,15 @@ class V24MigrationSpec extends PostgresMigrationSpec("V24") with BaseDAO {
          |""".stripMargin.runUpdate()
   }
 
-  private def contactStatusFor(contactId: UUID): Contact.ConnectionStatus = {
-    implicit val contactConnectionStatusMeta: Meta[Contact.ConnectionStatus] =
-      Meta[String].timap(Contact.ConnectionStatus.withNameInsensitive)(_.entryName)
+  private def contactStatusFor(contactId: UUID): ConnectionStatus = {
+    implicit val contactConnectionStatusMeta: Meta[ConnectionStatus] =
+      Meta[String].timap(ConnectionStatus.withNameInsensitive)(_.entryName)
 
     sql"""
          |SELECT connection_status
          |FROM contacts
          |WHERE contact_id = $contactId
-         |""".stripMargin.runUnique[Contact.ConnectionStatus]()
+         |""".stripMargin.runUnique[ConnectionStatus]()
   }
 
   private def setHolderStatus(holderId: UUID, status: IndividualConnectionStatus): Unit = {
@@ -264,11 +263,11 @@ class V24MigrationSpec extends PostgresMigrationSpec("V24") with BaseDAO {
       val allRows = sql"SELECT * FROM contacts_per_group".queryList[UUID]()
       allRows.size mustBe 8
 
-      contactStatusFor(subjectId1) mustBe Contact.ConnectionStatus.InvitationMissing
-      contactStatusFor(subjectId2) mustBe Contact.ConnectionStatus.InvitationMissing
-      contactStatusFor(subjectId3) mustBe Contact.ConnectionStatus.ConnectionMissing
-      contactStatusFor(subjectId4) mustBe Contact.ConnectionStatus.ConnectionAccepted
-      contactStatusFor(subjectId5) mustBe Contact.ConnectionStatus.ConnectionRevoked
+      contactStatusFor(subjectId1) mustBe ConnectionStatus.InvitationMissing
+      contactStatusFor(subjectId2) mustBe ConnectionStatus.InvitationMissing
+      contactStatusFor(subjectId3) mustBe ConnectionStatus.ConnectionMissing
+      contactStatusFor(subjectId4) mustBe ConnectionStatus.ConnectionAccepted
+      contactStatusFor(subjectId5) mustBe ConnectionStatus.ConnectionRevoked
 
       credentialIdIssuedFor(subjectId1) mustBe credentialId1
       credentialIdIssuedFor(subjectId5) mustBe credentialId2
@@ -280,11 +279,11 @@ class V24MigrationSpec extends PostgresMigrationSpec("V24") with BaseDAO {
       assignedVerifierForHolder(holderId4) mustBe verifierId3
       assignedVerifierForHolder(holderId5) mustBe verifierId3
 
-      contactStatusFor(holderId1) mustBe Contact.ConnectionStatus.InvitationMissing
-      contactStatusFor(holderId2) mustBe Contact.ConnectionStatus.InvitationMissing
-      contactStatusFor(holderId3) mustBe Contact.ConnectionStatus.ConnectionMissing
-      contactStatusFor(holderId4) mustBe Contact.ConnectionStatus.ConnectionAccepted
-      contactStatusFor(holderId5) mustBe Contact.ConnectionStatus.ConnectionRevoked
+      contactStatusFor(holderId1) mustBe ConnectionStatus.InvitationMissing
+      contactStatusFor(holderId2) mustBe ConnectionStatus.InvitationMissing
+      contactStatusFor(holderId3) mustBe ConnectionStatus.ConnectionMissing
+      contactStatusFor(holderId4) mustBe ConnectionStatus.ConnectionAccepted
+      contactStatusFor(holderId5) mustBe ConnectionStatus.ConnectionRevoked
     }
   )
 }

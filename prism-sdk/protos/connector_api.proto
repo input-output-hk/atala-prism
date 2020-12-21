@@ -88,6 +88,10 @@ service ConnectorService {
   rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
 }
 
+service ContactConnectionService {
+  rpc GetConnectionStatus (ConnectionsStatusRequest) returns (ConnectionsStatusResponse) {}
+}
+
 // Finds a connection by the given token
 message GetConnectionByTokenRequest {
   string token = 1; // the token related to the connection, it must not be empty
@@ -309,4 +313,12 @@ message GetBuildInfoResponse {
   string scalaVersion = 2; // the scala's version used by the service
   string sbtVersion = 3; // the sbt's version used to compile the service
   string nodeVersion = 5; // the node service version
+}
+
+message ConnectionsStatusRequest {
+  repeated string acceptorIds = 1;
+}
+
+message ConnectionsStatusResponse {
+  repeated ContactConnection connections = 1;
 }
