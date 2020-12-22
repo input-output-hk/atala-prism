@@ -7,20 +7,30 @@ plugins {
     id("com.palantir.git-version") version "0.12.3"
 }
 val versionDetails: groovy.lang.Closure<VersionDetails> by extra
+val pbandkVersion by extra("0.9.0-SNAPSHOT")
 
 group = "io.iohk.atala.prism"
 version = "0.1-" + versionDetails().gitHash.substring(0, 8)
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions {
+                jvmTarget = "1.8"
+                freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+            }
         }
     }
     iosX64("ios") {
+        compilations.all {
+            kotlinOptions {
+                freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+            }
+        }
         binaries.all {
             // Linker options required to link to libsecp256k1.
             linkerOpts("-L../credentials-verification-iOS/Pods/BitcoinKit/Libraries/secp256k1/lib", "-lsecp256k1")
@@ -30,8 +40,10 @@ kotlin {
     
     sourceSets {
         val commonMain by getting {
+            kotlin.srcDir("${project(":protos").buildDir}/generated/source/proto/main/kotlin")
             dependencies {
                 implementation("com.ionspin.kotlin:bignum:0.2.3")
+                implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
             }
         }
         val commonTest by getting {
@@ -82,5 +94,15 @@ kotlin {
 tasks {
     "jvmTest"(Test::class) {
         useJUnitPlatform()
-    }    
+    }
+
+    project(":protos").tasks
+        .matching { it.name == "generateProto" }
+        .all {
+            val task = compileKotlinMetadata.get()
+            task.dependsOn(this)
+            task.kotlinOptions {
+                freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+            }
+        }
 }

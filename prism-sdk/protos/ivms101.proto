@@ -42,7 +42,7 @@ package io.iohk.atala.mirror.protos;
 
 message Person {
 
-  oneof person {
+  oneof internal {
 
     // Definition: refers to a uniquely distinguishable individual; one single person.
     NaturalPerson natural_person = 1;

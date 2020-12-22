@@ -137,6 +137,6 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
       dateAndPlaceOfBirth = Some(dateAndPlaceOfBirth)
     )
 
-    Person(Person.Person.NaturalPerson(naturalPerson))
+    Person(Person.Internal.NaturalPerson(naturalPerson))
   }
 }

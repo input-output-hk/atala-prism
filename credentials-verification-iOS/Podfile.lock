@@ -236,7 +236,7 @@ PODS:
   - ObjectMapper (3.5.2)
   - Pageboy (3.6.0)
   - Presentr (1.9)
-  - prism_kotlin_sdk (0.1-950f30c2):
+  - prism_kotlin_sdk (0.1-157d9afe):
     - bitcoin-secp256k1 (= 0.1.0)
   - PromisesObjC (1.2.8)
   - Protobuf (3.11.4)
@@ -356,7 +356,7 @@ SPEC CHECKSUMS:
   ObjectMapper: b53ae947d370bf89423e86be7d4e2d2b2a8d3f40
   Pageboy: 490c26be405987158660bb45ee2f404567395007
   Presentr: 7078d7eb5d1661ebeaae60c9e42a1e534de1b993
-  prism_kotlin_sdk: 67265da792bf2f2a4b65b785894d17c7f5879bf4
+  prism_kotlin_sdk: 6b12ff5bdfcbff5df2287596762e5efecf9b73b1
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   SwiftGRPC: f8fcfecb547c96cc6913de619f95fa3cd09838ee
