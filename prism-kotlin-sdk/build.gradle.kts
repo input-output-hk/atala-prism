@@ -15,7 +15,17 @@ version = "0.1-" + versionDetails().gitHash.substring(0, 8)
 repositories {
     mavenCentral()
     mavenLocal()
+    maven { setUrl("https://dl.bintray.com/itegulov/maven") }
 }
+
+dependencies {
+    // This is our own fork of better-parse that is published to bintray/itegulov.
+    // The source code repository is https://github.com/itegulov/better-parse.
+    // TODO: Replace with the mainstream version once https://github.com/h0tk3y/better-parse/pull/33
+    //       is merged.
+    commonMainImplementation("com.github.h0tk3y.betterParse:better-parse-ng:0.5.0-M1")
+}
+
 kotlin {
     jvm {
         compilations.all {
