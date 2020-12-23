@@ -13,7 +13,6 @@ import kotlinx.cinterop.*
 import platform.posix.fclose
 import platform.posix.fopen
 import platform.posix.fread
-import platform.posix.size_tVar
 
 @ExperimentalUnsignedTypes
 actual object EC {
@@ -23,15 +22,29 @@ actual object EC {
         val privateKey = memScope.allocArray<UByteVar>(ECConfig.PRIVATE_KEY_BYTE_SIZE)
         val privateKeyPtr = privateKey.getPointer(memScope)
         val urandom = fopen("/dev/urandom", "rb") ?: error("No /dev/urandom on this device")
-        fread(privateKeyPtr, 1.convert(), ECConfig.PRIVATE_KEY_BYTE_SIZE.convert(), urandom)
-        for (n in 0 until ECConfig.PRIVATE_KEY_BYTE_SIZE) privateKey[n] = privateKeyPtr[n]
-        fclose(urandom)
+        try {
+            fread(privateKeyPtr, 1.convert(), ECConfig.PRIVATE_KEY_BYTE_SIZE.convert(), urandom)
+            for (n in 0 until ECConfig.PRIVATE_KEY_BYTE_SIZE) privateKey[n] = privateKeyPtr[n]
+        } finally {
+            fclose(urandom)
+        }
         return privateKey
     }
 
+    private fun createContext(memScope: MemScope, options: Int): CPointer<secp256k1_context>? {
+        val context = secp256k1_context_create(options.convert())
+
+        // Clean-up context by destroying it on scope closure
+        memScope.defer {
+            secp256k1_context_destroy(context)
+        }
+
+        return context
+    }
+
     actual fun generateKeyPair(): ECKeyPair {
-        return memScoped { 
-            val context = secp256k1_context_create((SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY).convert())
+        return memScoped {
+            val context = createContext(this, SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY)
             val privateKey = generatePrivateKey(this)
             val publicKey = alloc<secp256k1_pubkey>()
             if (secp256k1_ec_pubkey_create(context, publicKey.ptr, privateKey) != 1) {
@@ -62,7 +75,7 @@ actual object EC {
         }
         
         return memScoped {
-            val context = secp256k1_context_create((SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY).convert())
+            val context = createContext(this, SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY)
             val pubkey = alloc<secp256k1_pubkey>()
             val input = encoded.toUByteArray().toCArrayPointer(this)
             val result = secp256k1_ec_pubkey_parse(context, pubkey.ptr, input, encoded.size.convert())
@@ -85,7 +98,7 @@ actual object EC {
     
     actual fun toPublicKeyFromPrivateKey(privateKey: ECPrivateKey): ECPublicKey {
         return memScoped {
-            val context = secp256k1_context_create((SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY).convert())
+            val context = createContext(this, SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY)
             val privkey = privateKey.getEncoded().toUByteArray().toCArrayPointer(this)
             val publicKey = alloc<secp256k1_pubkey>()
             if (secp256k1_ec_pubkey_create(context, publicKey.ptr, privkey) != 1) {
@@ -99,7 +112,7 @@ actual object EC {
     
     actual fun toSignature(encoded: List<Byte>): ECSignature {
         return memScoped {
-            val context = secp256k1_context_create(SECP256K1_CONTEXT_SIGN.convert())
+            val context = createContext(this, SECP256K1_CONTEXT_SIGN)
             val sig = alloc<secp256k1_ecdsa_signature>()
             val data = encoded.toUByteArray().toCArrayPointer(this)
             val result = secp256k1_ecdsa_signature_parse_der(context, sig.ptr, data, encoded.size.convert())
@@ -116,13 +129,13 @@ actual object EC {
 
     actual fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature {
         return memScoped {
-            val ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN.convert())
+            val context = createContext(this, SECP256K1_CONTEXT_SIGN)
             
             val sig = alloc<secp256k1_ecdsa_signature>()
             val data32 = SHA256.compute(data.toUByteArray()).toCArrayPointer(this)
             val privateKeyPtr = privateKey.key.toCArrayPointer(this)
             
-            val result = secp256k1_ecdsa_sign(ctx, sig.ptr, data32, privateKeyPtr, null, null)
+            val result = secp256k1_ecdsa_sign(context, sig.ptr, data32, privateKeyPtr, null, null)
             if (result != 1) {
                 error("Could not sign data")
             }
@@ -137,7 +150,7 @@ actual object EC {
 
     actual fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean {
         return memScoped {
-            val ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY.convert())
+            val context = createContext(this, SECP256K1_CONTEXT_VERIFY)
             
             val sigBytes = signature.data.toUByteArray().toCArrayPointer(this)
             val sig = alloc<secp256k1_ecdsa_signature>()
@@ -147,7 +160,7 @@ actual object EC {
             
             val pubkey = publicKey.toSecpPubkey(this)
             
-            val result = secp256k1_ecdsa_verify(ctx, sig.ptr, data32, pubkey.ptr)
+            val result = secp256k1_ecdsa_verify(context, sig.ptr, data32, pubkey.ptr)
             
             result == 1
         }
