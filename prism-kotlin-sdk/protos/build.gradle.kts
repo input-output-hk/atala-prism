@@ -95,8 +95,6 @@ tasks {
         useJUnitPlatform()
     }
 
-
-
     project(":protos").tasks
         .matching { it.name == "generateProto" }
         .all {
@@ -105,8 +103,8 @@ tasks {
                 named<KotlinNativeCompile>("compileKotlinIos").get(),
                 named<KotlinCompileCommon>("compileKotlinMetadata").get()
             )
-            
-            compileTasks.forEach { 
+
+            compileTasks.forEach {
                 it.dependsOn(this)
                 it.kotlinOptions {
                     freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"

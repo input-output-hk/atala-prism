@@ -29,19 +29,19 @@ object BytesOps {
         }
         return hexChars.concatToString()
     }
-    
+
     @ExperimentalUnsignedTypes
     fun hexToBytes(string: String): List<UByte> {
         val result = MutableList(string.length / 2) { UByte.MIN_VALUE }
 
         for (i in string.indices step 2) {
-            val firstIndex = HEX_ARRAY.indexOf(string[i]);
-            val secondIndex = HEX_ARRAY.indexOf(string[i + 1]);
+            val firstIndex = HEX_ARRAY.indexOf(string[i])
+            val secondIndex = HEX_ARRAY.indexOf(string[i + 1])
 
             val octet = firstIndex.shl(4).or(secondIndex)
             result[i.shr(1)] = octet.toUByte()
         }
-        
+
         return result
     }
 }

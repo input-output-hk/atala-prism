@@ -112,6 +112,27 @@ commands:
               cp $reports/* $dest
             done
           when: always
+
+  aggregate-gradle-test-reports:
+    description: "Aggregate all test reports under a gradle directory"
+    parameters:
+      directory:
+        type: string
+      target:
+        type: string
+        default: "build/test-results"
+    steps:
+      - run:
+          name: Aggregate test reports
+          command: |
+            cd << parameters.directory >>
+            for reports in `find -name test-results`; do
+              project=${reports%/build/*}
+              dest=<< parameters.target >>/$project/jvmTest
+              mkdir -p $dest
+              cp $reports/jvmTest/*.xml $dest
+            done
+          when: always
 jobs:
   deploy-ecr-images:
     working_directory: ~/repo
@@ -651,6 +672,10 @@ jobs:
             - prism-kotlin-sdk-cache-
 
       - run:
+          name: Test Kotlin code is properly formatted
+          command: cd prism-kotlin-sdk && ./gradlew ktlintCheck
+
+      - run:
           name: Compile SDK and its tests
           command: |
             cd prism-kotlin-sdk
@@ -667,8 +692,11 @@ jobs:
             cd prism-kotlin-sdk
             ./gradlew jvmTest
 
+      - aggregate-gradle-test-reports:
+          directory: "prism-kotlin-sdk"
+
       - store_test_results:
-          path: prism-kotlin-sdk/build/test-results/jvmTest
+          path: prism-kotlin-sdk/build/test-results
 
 workflows:
   version: 2.1

@@ -31,7 +31,7 @@ expect object EC {
      * Returns the public key represented by the given coordinates as byte arrays.
      */
     fun toPublicKey(x: List<Byte>, y: List<Byte>): ECPublicKey
-    
+
     /**
      * Returns the public key represented by the given coordinates.
      */

@@ -50,7 +50,7 @@ actual object EC {
             if (secp256k1_ec_pubkey_create(context, publicKey.ptr, privateKey) != 1) {
                 error("Invalid private key")
             }
-            
+
             val publicKeyBytes = publicKey.data.toUByteArray(ECConfig.PUBLIC_KEY_BYTE_SIZE)
             val privateKeyBytes = privateKey.toUByteArray(ECConfig.PRIVATE_KEY_BYTE_SIZE)
             ECKeyPair(ECPublicKey(publicKeyBytes), ECPrivateKey(privateKeyBytes))
@@ -61,10 +61,10 @@ actual object EC {
         assert(encoded.size == ECConfig.PRIVATE_KEY_BYTE_SIZE) {
             "Encoded byte array's expected length is ${ECConfig.PRIVATE_KEY_BYTE_SIZE}, but got ${encoded.size}"
         }
-        
+
         return ECPrivateKey(encoded.toUByteArray())
     }
-    
+
     actual fun toPrivateKey(d: BigInteger): ECPrivateKey {
         return toPrivateKey(d.toByteArray().toList())
     }
@@ -73,7 +73,7 @@ actual object EC {
         assert(encoded.size == ECConfig.PUBLIC_KEY_BYTE_SIZE) {
             "Encoded byte array's expected length is ${ECConfig.PUBLIC_KEY_BYTE_SIZE}, but got ${encoded.size}"
         }
-        
+
         return memScoped {
             val context = createContext(this, SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY)
             val pubkey = alloc<secp256k1_pubkey>()
@@ -87,15 +87,15 @@ actual object EC {
             ECPublicKey(publicKeyBytes)
         }
     }
-    
+
     actual fun toPublicKey(x: List<Byte>, y: List<Byte>): ECPublicKey {
         return toPublicKey(listOf<Byte>(0x04) + x + y)
     }
-    
+
     actual fun toPublicKey(x: BigInteger, y: BigInteger): ECPublicKey {
         return toPublicKey(x.toByteArray().toList(), y.toByteArray().toList())
     }
-    
+
     actual fun toPublicKeyFromPrivateKey(privateKey: ECPrivateKey): ECPublicKey {
         return memScoped {
             val context = createContext(this, SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY)
@@ -109,7 +109,7 @@ actual object EC {
             ECPublicKey(publicKeyBytes)
         }
     }
-    
+
     actual fun toSignature(encoded: List<Byte>): ECSignature {
         return memScoped {
             val context = createContext(this, SECP256K1_CONTEXT_SIGN)
@@ -130,16 +130,16 @@ actual object EC {
     actual fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature {
         return memScoped {
             val context = createContext(this, SECP256K1_CONTEXT_SIGN)
-            
+
             val sig = alloc<secp256k1_ecdsa_signature>()
             val data32 = SHA256.compute(data.toUByteArray()).toCArrayPointer(this)
             val privateKeyPtr = privateKey.key.toCArrayPointer(this)
-            
+
             val result = secp256k1_ecdsa_sign(context, sig.ptr, data32, privateKeyPtr, null, null)
             if (result != 1) {
                 error("Could not sign data")
             }
-            
+
             ECSignature(sig.data.toUByteArray(ECConfig.SIGNATURE_BYTE_SIZE).toList())
         }
     }
@@ -151,17 +151,17 @@ actual object EC {
     actual fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean {
         return memScoped {
             val context = createContext(this, SECP256K1_CONTEXT_VERIFY)
-            
+
             val sigBytes = signature.data.toUByteArray().toCArrayPointer(this)
             val sig = alloc<secp256k1_ecdsa_signature>()
             for (i in 0 until ECConfig.SIGNATURE_BYTE_SIZE) sig.data[i] = sigBytes[i]
-            
+
             val data32 = SHA256.compute(data.toUByteArray()).toCArrayPointer(this)
-            
+
             val pubkey = publicKey.toSecpPubkey(this)
-            
+
             val result = secp256k1_ecdsa_verify(context, sig.ptr, data32, pubkey.ptr)
-            
+
             result == 1
         }
     }

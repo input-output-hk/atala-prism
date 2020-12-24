@@ -23,6 +23,6 @@ data class SHA256Digest(val value: List<UByte>) {
             return fromHex(bytes.toByteArray().decodeToString())
         }
     }
-    
+
     fun hexValue(): String = BytesOps.bytesToHex(value)
 }

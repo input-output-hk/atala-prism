@@ -9,7 +9,7 @@ class DIDUrlTest {
 
     @Test
     fun testSupportAPlainValidDid() {
-        assertEquals(DIDUrl(did, emptyList(), emptyMap(), null), DIDUrl.fromString(did.value)) 
+        assertEquals(DIDUrl(did, emptyList(), emptyMap(), null), DIDUrl.fromString(did.value))
     }
 
     @Test
@@ -33,7 +33,6 @@ class DIDUrlTest {
     fun testSupportFragments() {
         val expectedDidUrl = DIDUrl(did, emptyList(), emptyMap(), "fragment")
         assertEquals(expectedDidUrl, DIDUrl.fromString("${did.value}#fragment"))
-                
     }
 
     @Test

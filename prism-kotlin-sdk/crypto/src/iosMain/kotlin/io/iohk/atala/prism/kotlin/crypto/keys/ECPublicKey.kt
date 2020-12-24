@@ -32,16 +32,16 @@ actual class ECPublicKey(internal val key: UByteArray) : ECKey() {
         val x = BigInteger.fromByteArray(xBytes.toByteArray(), Sign.POSITIVE)
         val yBytes = encoded.slice(33..64)
         val y = BigInteger.fromByteArray(yBytes.toByteArray(), Sign.POSITIVE)
-        
+
         return ECPoint(x, y)
     }
-    
+
     fun toSecpPubkey(memScope: MemScope): secp256k1_pubkey {
         val pubkey = memScope.alloc<secp256k1_pubkey>()
         for (i in 0 until ECConfig.PUBLIC_KEY_BYTE_SIZE) {
             pubkey.data[i] = key[i]
         }
-        
+
         return pubkey
     }
 }

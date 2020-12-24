@@ -5,7 +5,6 @@ import io.iohk.atala.prism.kotlin.identity.util.Base64Utils
 import io.iohk.atala.prism.protos.AtalaOperation
 import pbandk.decodeFromByteArray
 
-
 data class ValidatedLongForm(val stateHash: String, val encodedState: String, val initialState: AtalaOperation) {
     fun suffix(): DIDSuffix = DIDSuffix.fromString("$stateHash:$encodedState")
 }
@@ -15,7 +14,7 @@ sealed class DIDFormat {
         val longFormRegex = Regex("^did:prism:[0-9a-f]{64}:[A-Za-z0-9_-]+[=]*$")
         val shortFormRegex = Regex("^did:prism:[0-9a-f]{64}$")
     }
-    
+
     data class Canonical(val suffix: String) : DIDFormat()
     data class LongForm(val stateHash: String, val encodedState: String) : DIDFormat() {
         @ExperimentalUnsignedTypes

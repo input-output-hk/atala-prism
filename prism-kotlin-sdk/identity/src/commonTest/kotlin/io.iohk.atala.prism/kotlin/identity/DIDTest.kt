@@ -81,7 +81,7 @@ class DIDTest {
             is DIDFormat.Unknown -> {
                 // do nothing, the test would fail on the other cases
             }
-            else -> fail ("unexpected format for unknown DID")
+            else -> fail("unexpected format for unknown DID")
         }
     }
 

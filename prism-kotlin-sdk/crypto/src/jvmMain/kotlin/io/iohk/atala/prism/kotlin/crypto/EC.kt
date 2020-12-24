@@ -69,7 +69,7 @@ actual object EC {
     actual fun toPublicKey(x: List<Byte>, y: List<Byte>): ECPublicKey {
         return toPublicKey(x.toByteArray().toBigInteger(), y.toByteArray().toBigInteger())
     }
-    
+
     actual fun toPublicKey(x: BigInteger, y: BigInteger): ECPublicKey {
         val ecPoint = ECPoint(x.toJavaBigInteger(), y.toJavaBigInteger())
         val spec = ECPublicKeySpec(ecPoint, ecNamedCurveSpec)
@@ -81,12 +81,12 @@ actual object EC {
         val pubSpec = org.spongycastle.jce.spec.ECPublicKeySpec(q, ecParameterSpec)
         return ECPublicKey(keyFactory.generatePublic(pubSpec))
     }
-    
+
     @ExperimentalUnsignedTypes
     actual fun toSignature(encoded: List<Byte>): ECSignature {
         return ECSignature(encoded.map { it.toUByte() })
     }
-    
+
     @ExperimentalUnsignedTypes
     actual fun sign(text: String, privateKey: ECPrivateKey): ECSignature {
         return sign(text.toByteArray().toList(), privateKey)
@@ -99,7 +99,7 @@ actual object EC {
         signer.update(data.toByteArray())
         return ECSignature(signer.sign().toUByteArray().toList())
     }
-    
+
     @ExperimentalUnsignedTypes
     actual fun verify(text: String, publicKey: ECPublicKey, signature: ECSignature): Boolean {
         return verify(text.toByteArray().toList(), publicKey, signature)
