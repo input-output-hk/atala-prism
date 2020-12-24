@@ -1,4 +1,6 @@
 import com.palantir.gradle.gitversion.VersionDetails
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
 plugins {
     kotlin("multiplatform") version "1.4.21"
@@ -7,7 +9,7 @@ plugins {
     id("com.palantir.git-version") version "0.12.3"
 }
 val versionDetails: groovy.lang.Closure<VersionDetails> by extra
-val pbandkVersion by extra("0.9.0-SNAPSHOT")
+val pbandkVersion by extra("0.10.0-M1")
 
 group = "io.iohk.atala.prism"
 version = "0.1-" + versionDetails().gitHash.substring(0, 8)
@@ -109,9 +111,15 @@ tasks {
     project(":protos").tasks
         .matching { it.name == "generateProto" }
         .all {
-            val task = compileKotlinMetadata.get()
-            task.dependsOn(this)
-            task.kotlinOptions {
+            val taskCompileJvm = named<KotlinCompile>("compileKotlinJvm").get()
+            taskCompileJvm.dependsOn(this)
+            taskCompileJvm.kotlinOptions {
+                freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+            }
+            
+            val taskCompileIos = named<KotlinNativeCompile>("compileKotlinIos").get()
+            taskCompileIos.dependsOn(this)
+            taskCompileIos.kotlinOptions {
                 freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
             }
         }

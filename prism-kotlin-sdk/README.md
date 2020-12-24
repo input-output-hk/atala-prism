@@ -4,16 +4,7 @@ This is a proof of concept PRISM SDK that is cross-compiled to JVM/JS/iOS-ARM64.
 
 ## How to build the SDK
 
-SDK uses [pbandk](https://github.com/streem/pbandk) to generate code for PRISM protobuf models. Unfortunately, pbandk does not support Kotlin 1.4 yet and does not produce builds for iosx64 on jcenter yet (see [pbandk#97](https://github.com/streem/pbandk/issues/97)). Hence, you need to build and publish a local copy of pbandk based on a fork that includes the necessary fixes to support Kotlin 1.4:
-
-```
-$ git clone https://github.com/itegulov/pbandk
-...
-$ cd pbandk
-$ ./gradlew publish
-```
-
-Next, make sure that you have cocoapods and cocoapods-generate installed:
+Make sure that you have cocoapods and cocoapods-generate installed:
 ```
 $ sudo gem install cocoapods
 $ sudo gem install cocoapods-generate

@@ -630,10 +630,51 @@ jobs:
       - store_artifacts:
           path: ./grpc-docs
 
+  build-prism-kotlin-sdk:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/openjdk:8-jdk-node
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: ./workspace
+
+      - halt-step-if-not-changed:
+          directories: "prism-kotlin-sdk"
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/settings.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/protos/build.gradle.kts" }}
+            # fallback to using the latest cache if no exact match is found
+            - prism-kotlin-sdk-cache-
+
+      - run:
+          name: Compile SDK and its tests
+          command: |
+            cd prism-kotlin-sdk
+            ./gradlew build
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/settings.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/protos/build.gradle.kts" }}
+
+      - run:
+          name: Run JVM tests
+          command: |
+            cd prism-kotlin-sdk
+            ./gradlew jvmTest
+
+      - store_test_results:
+          path: prism-kotlin-sdk/build/test-results/jvmTest
+
 workflows:
   version: 2.1
   build-and-deploy:
     jobs:
+      - build-prism-kotlin-sdk
       - build-prism-sdk-proto-docs
       - build-prism-sdk:
           requires:
