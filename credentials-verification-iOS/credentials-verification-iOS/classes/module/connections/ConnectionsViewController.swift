@@ -15,7 +15,7 @@ class ConnectionsViewController: ListingBaseViewController {
     @IBOutlet weak var viewTableDivider: UIView!
     // Scan QR
     @IBOutlet weak var viewQrScannerContainer: UIView!
-    let scanner = QRCode()
+    lazy var scanner: QRCode = { QRCode() }()
 
     var navBar: NavBarCustomStyle = NavBarCustomStyle(hasNavBar: true)
     override func navBarCustomStyle() -> NavBarCustomStyle {
@@ -35,13 +35,6 @@ class ConnectionsViewController: ListingBaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.presenterImpl.actionPullToRefresh()
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        // Setup (views thar require others to be resized first)
-        setupQrScanner()
     }
 
     @discardableResult
@@ -166,6 +159,7 @@ class ConnectionsViewController: ListingBaseViewController {
     // MARK: Buttons
 
     lazy var actionScan = SelectorAction(action: { [weak self] in
+        self?.setupQrScanner()
         self?.presenterImpl.tappedScanButton()
     })
 
