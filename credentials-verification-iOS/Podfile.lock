@@ -5,7 +5,6 @@ PODS:
   - AlamofireObjectMapper (5.2.1):
     - Alamofire (~> 4.7)
     - ObjectMapper (~> 3.4)
-  - bitcoin-secp256k1 (0.1.0)
   - BitcoinKit (1.1.0)
   - BoringSSL-GRPC (0.0.3):
     - BoringSSL-GRPC/Implementation (= 0.0.3)
@@ -263,7 +262,6 @@ DEPENDENCIES:
   - MBProgressHUD (~> 1.0.0)
   - ObjectMapper (~> 3.1)
   - Presentr (~> 1.9.0)
-  - prism_kotlin_sdk (from `../prism-kotlin-sdk`)
   - SwiftGRPC (~> 0.10.0)
   - SwiftLint
   - SwiftProtobuf (~> 1.7.0)
@@ -272,8 +270,6 @@ DEPENDENCIES:
   - Toast-Swift (~> 5.0.0)
 
 SPEC REPOS:
-  https://github.com/itegulov/Specs.git:
-    - bitcoin-secp256k1
   trunk:
     - Alamofire
     - AlamofireImage
@@ -317,15 +313,10 @@ SPEC REPOS:
     - Tabman
     - Toast-Swift
 
-EXTERNAL SOURCES:
-  prism_kotlin_sdk:
-    :path: "../prism-kotlin-sdk"
-
 SPEC CHECKSUMS:
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
-  bitcoin-secp256k1: ef8eca90d844cb16fbb9ab81c9b0bb2be98b4503
   BitcoinKit: a8c198d2a57caf64dc43271901f8c5a2309aced2
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 586e4d274398fabe9d70ab790eefca41660b8a17
@@ -366,6 +357,6 @@ SPEC CHECKSUMS:
   Tabman: 55d3d18f393ce5119515cd0349c841a07774c895
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: 4e98498c78e75d1262a409c650f86377fc21ad5b
+PODFILE CHECKSUM: f95b7df1b71d3af0f41d1801439345dc1bb22d9e
 
 COCOAPODS: 1.10.0

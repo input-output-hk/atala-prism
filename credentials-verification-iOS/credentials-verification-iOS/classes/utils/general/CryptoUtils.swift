@@ -112,7 +112,7 @@ class CryptoUtils: NSObject {
 
     func getUsedRandomIndexes(count: Int) -> [Int] {
         let indexes = Array(0 ..< CryptoUtils.SEED_COUNT)
-        return Array(indexes.randomPick(count))
+        return Array(indexes.randomPick(count)).sorted()
     }
 
     func checkWordsValidity(indexes: [Int], words: [String]) -> Bool {

@@ -46,7 +46,7 @@ class ContactHistoryHeaderViewCell: BaseTableViewCell {
         labelSubtitle.text = String(format: "contacts_detail_did".localize(), subtitle)
         // Logo image
         imageLogo.applyDataImage(data: icon, placeholderNamed: "icon_id")
-        labelDate.text = String(format: "credentials_detail_date".localize(),
+        labelDate.text = String(format: "contacts_detail_date_connected".localize(),
                                 date.dateTimeString())
     }
 
