@@ -41,7 +41,11 @@ const useCredentialsFilters = () => {
   };
 };
 
-export const useCredentialsIssuedListWithFilters = (credentialsManager, setLoading) => {
+export const useCredentialsIssuedListWithFilters = (
+  credentialsManager,
+  setLoading,
+  setSearching
+) => {
   const { t } = useTranslation();
   const [credentials, setCredentials] = useState([]);
   const [filteredCredentials, setFilteredCredentials] = useState([]);
@@ -65,12 +69,16 @@ export const useCredentialsIssuedListWithFilters = (credentialsManager, setLoadi
     there might be unfetched credentials that match the filters to show */
     const isSomeFilterSet = Object.values(filters.values).some(val => val);
     if (isSomeFilterSet && filteredCredentials.length < CREDENTIAL_PAGE_SIZE && hasMore) {
+      setSearchingByKey('issued', true);
       getCredentials();
     }
   }, [filteredCredentials, ...Object.values(filters.values)]);
 
   const setLoadingByKey = (key, value) =>
     setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
+
+  const setSearchingByKey = (key, value) =>
+    setSearching(previousSearching => ({ ...previousSearching, [key]: value }));
 
   const applyFilters = aCredentialsList =>
     aCredentialsList.filter(item => {
@@ -119,6 +127,7 @@ export const useCredentialsIssuedListWithFilters = (credentialsManager, setLoadi
       );
       message.error(t('errors.errorGetting', { model: 'Credentials' }));
     } finally {
+      setSearchingByKey('issued', false);
       setLoadingByKey('issued', false);
     }
   };

@@ -114,6 +114,7 @@ export const credentialTabShape = {
     selectionType: shape({
       selectedRowKeys: arrayOf(string)
     }),
+    searching: bool,
     hasMore: bool.isRequired
   }).isRequired,
   bulkActionsProps: shape({

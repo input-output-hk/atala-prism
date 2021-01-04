@@ -32,7 +32,7 @@ const CredentialsIssued = ({
     return fetchCredentials().finally(() => setLoading(false));
   };
 
-  const { credentials, selectionType } = tableProps;
+  const { credentials, selectionType, searching } = tableProps;
   const { selectedRowKeys } = selectionType || {};
 
   const expandedTableProps = {
@@ -51,7 +51,7 @@ const CredentialsIssued = ({
   const renderEmptyComponent = !credentials.length || showEmpty;
 
   const renderContent = () => {
-    if (initialLoading && !loading) return <SimpleLoading size="md" />;
+    if (!credentials.length && (initialLoading || searching)) return <SimpleLoading size="md" />;
     if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
     return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
   };

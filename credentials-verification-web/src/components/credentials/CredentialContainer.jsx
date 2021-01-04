@@ -29,6 +29,7 @@ const CredentialContainer = ({ api }) => {
   const [noReceivedCredentials, setNoReceivedCredentials] = useState(true);
 
   const [loading, setLoading] = useState({ issued: true, received: true });
+  const [searching, setSearching] = useState({ issued: false, received: false });
 
   const {
     credentialsIssued,
@@ -38,7 +39,7 @@ const CredentialContainer = ({ api }) => {
     filtersIssued,
     hasMoreIssued,
     noIssuedCredentials
-  } = useCredentialsIssuedListWithFilters(api.credentialsManager, setLoading);
+  } = useCredentialsIssuedListWithFilters(api.credentialsManager, setLoading, setSearching);
 
   const [credentialsReceived, setCredentialsReceived] = useState([]);
 
@@ -277,6 +278,7 @@ const CredentialContainer = ({ api }) => {
       tableProps: {
         credentials: filteredCredentialsIssued,
         hasMore: hasMoreIssued,
+        searching: searching.issued,
         signSingleCredential,
         sendSingleCredential,
         selectionType: {
