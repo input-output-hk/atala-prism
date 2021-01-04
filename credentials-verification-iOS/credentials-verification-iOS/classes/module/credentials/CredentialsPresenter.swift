@@ -285,13 +285,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.viewImpl?.config(isLoading: false)
-            let actions = [UIAlertAction(title: "ok".localize(), style: .default, handler: { _ in
-                self.tappedBackButton()
-                self.actionPullToRefresh()
-            })]
             self.viewImpl?.showSuccessMessage(doShow: true,
-                                              message: "credentials_detail_share_success".localize(),
-                                              actions: actions)
+                                              message: "credentials_detail_share_success".localize())
         }, error: { _ in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
