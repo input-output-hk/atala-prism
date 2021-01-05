@@ -103,7 +103,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func fetchData() {
 
-        state = .fetching
         fetchingQueue = 1
 
         fetchElements()
@@ -168,13 +167,19 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContacts()
+
+        self.cleanData()
+        let credentialsDao = CredentialDAO()
+        let credentials = credentialsDao.listNewCredentials() ?? []
+        self.makeDegreeRows(credentials: credentials)
+        self.startListing()
+
         // Call the service
         ApiService.call(async: {
             do {
                 let responses = try ApiService.global.getCredentials(contacts: contacts)
                 Logger.d("getCredentials responses: \(responses)")
 
-                let credentialsDao = CredentialDAO()
                 let historyDao = ActivityHistoryDAO()
 
                 // Parse the messages

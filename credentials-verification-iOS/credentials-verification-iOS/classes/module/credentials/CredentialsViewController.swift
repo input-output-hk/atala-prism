@@ -34,6 +34,7 @@ class CredentialsViewController: ListingBaseViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.searchBar.textField?.text = ""
         self.presenterImpl.actionPullToRefresh()
     }
 
