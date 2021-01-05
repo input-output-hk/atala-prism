@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
 plugins {
     kotlin("multiplatform")
+    `maven-publish`
     `java-library`
     id("com.google.protobuf")
 }
@@ -34,8 +35,24 @@ protobuf {
                 remove("java")
             }
             task.plugins {
-                id("kotlin")
+                id("kotlin") {
+                    option("kotlin_package=io.iohk.atala.prism.kotlin.protos")
+                }
             }
+        }
+    }
+}
+
+sourceSets {
+    main {
+        proto {
+            setSrcDirs(listOf("src/main/proto"))
+            setIncludes(
+                listOf(
+                    "common_*.proto",
+                    "node_*.proto"
+                )
+            )
         }
     }
 }
@@ -65,7 +82,7 @@ kotlin {
         val commonMain by getting {
             kotlin.srcDir("$buildDir/generated/source/proto/main/kotlin")
             dependencies {
-                implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
+                api("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
             }
         }
         val commonTest by getting {
@@ -83,6 +100,12 @@ kotlin {
         }
         val iosMain by getting
         val iosTest by getting
+    }
+
+    publishing {
+        repositories {
+            mavenLocal()
+        }
     }
 }
 

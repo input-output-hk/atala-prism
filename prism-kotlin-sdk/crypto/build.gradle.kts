@@ -23,7 +23,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.ionspin.kotlin:bignum:0.2.3")
+                api("com.ionspin.kotlin:bignum:0.2.3")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
             }
         }

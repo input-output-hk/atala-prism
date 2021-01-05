@@ -2,10 +2,11 @@ package io.iohk.atala.prism.app.data.local
 
 import androidx.lifecycle.LiveData
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.DbHelper
 import io.iohk.atala.prism.app.data.local.db.model.*
+import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.data.local.preferences.PreferencesHelper

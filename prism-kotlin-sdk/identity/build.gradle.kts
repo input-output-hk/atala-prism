@@ -36,10 +36,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":protos"))
-                implementation(project(":crypto"))
-                implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
-                implementation("com.ionspin.kotlin:bignum:0.2.3")
+                api(project(":protos"))
+                api(project(":crypto"))
             }
         }
         val commonTest by getting {
@@ -51,7 +49,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("com.madgag.spongycastle:prov:1.58.0.0")
-                implementation("org.bitcoinj:bitcoinj-core:0.15.8")
+                api("org.bitcoinj:bitcoinj-core:0.15.8")
             }
         }
         val jvmTest by getting {

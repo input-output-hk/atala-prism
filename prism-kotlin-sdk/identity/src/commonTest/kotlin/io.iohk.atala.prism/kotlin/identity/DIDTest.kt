@@ -2,7 +2,7 @@ package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.identity.util.toProto
-import io.iohk.atala.prism.protos.*
+import io.iohk.atala.prism.kotlin.protos.*
 import kotlin.test.*
 
 @ExperimentalUnsignedTypes

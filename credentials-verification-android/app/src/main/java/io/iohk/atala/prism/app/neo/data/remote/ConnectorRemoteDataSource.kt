@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.app.neo.data.remote
 
 import io.grpc.stub.MetadataUtils
-import io.iohk.atala.prism.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.protos.*

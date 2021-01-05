@@ -12,7 +12,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.iohk.atala.prism.crypto.japi.ECKeyPair;
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair;
 import io.iohk.atala.prism.app.utils.CryptoUtils;
 import io.iohk.atala.prism.app.utils.GrpcUtils;
 import io.iohk.atala.prism.protos.AddConnectionFromTokenRequest;

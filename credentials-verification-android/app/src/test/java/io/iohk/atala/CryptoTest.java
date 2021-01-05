@@ -1,5 +1,6 @@
 package io.iohk.atala;
 
+import com.google.common.primitives.Bytes;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -7,12 +8,10 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
-import io.iohk.atala.prism.crypto.EC;
-import io.iohk.atala.prism.crypto.ECKeyPair;
-import io.iohk.atala.prism.crypto.ECSignature;
-import io.iohk.atala.prism.crypto.MnemonicChecksumException;
-import io.iohk.atala.prism.crypto.MnemonicLengthException;
-import io.iohk.atala.prism.crypto.MnemonicWordException;
+import io.iohk.atala.prism.kotlin.crypto.EC;
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair;
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature;
+import io.iohk.atala.prism.kotlin.crypto.derivation.*;
 import io.iohk.atala.prism.app.utils.CryptoUtils;
 
 import static org.junit.Assert.assertFalse;
@@ -36,9 +35,9 @@ public class CryptoTest {
     public void checkStringIntegrityCorrect() {
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(stringData, keyPair.privateKey());
+        ECSignature signedEC = EC.sign(stringData, keyPair.getPrivateKey());
 
-        boolean result = EC.verify(stringData, keyPair.publicKey(), signedEC);
+        boolean result = EC.verify(stringData, keyPair.getPublicKey(), signedEC);
         assertTrue(result);
     }
 
@@ -46,9 +45,9 @@ public class CryptoTest {
     public void checkStringIntegrityWrong() {
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(stringData, keyPair.privateKey());
+        ECSignature signedEC = EC.sign(stringData, keyPair.getPrivateKey());
 
-        boolean result = EC.verify(otherStringData, keyPair.publicKey(), signedEC);
+        boolean result = EC.verify(otherStringData, keyPair.getPublicKey(), signedEC);
         assertFalse(result);
     }
 
@@ -57,9 +56,9 @@ public class CryptoTest {
 
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(randomBytes, keyPair.privateKey());
+        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
 
-        boolean result = EC.verify(randomBytes, keyPair.publicKey(), signedEC);
+        boolean result = EC.verify(Bytes.asList(randomBytes), keyPair.getPublicKey(), signedEC);
         assertTrue(result);
     }
 
@@ -68,10 +67,10 @@ public class CryptoTest {
 
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(randomBytes, keyPair.privateKey());
+        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
         ECKeyPair keyPair2 = EC.generateKeyPair();
 
-        boolean result = EC.verify(randomBytes, keyPair2.publicKey(), signedEC);
+        boolean result = EC.verify(Bytes.asList(randomBytes), keyPair2.getPublicKey(), signedEC);
         assertFalse(result);
     }
 
@@ -79,9 +78,9 @@ public class CryptoTest {
     public void checkDataIntegrityWrongData() throws Exception {
 
         ECKeyPair keyPair = EC.generateKeyPair();
-        ECSignature signedEC = EC.sign(randomBytes, keyPair.privateKey());
+        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
 
-        boolean result = EC.verify(randomBytes2, keyPair.publicKey(), signedEC);
+        boolean result = EC.verify(Bytes.asList(randomBytes2), keyPair.getPublicKey(), signedEC);
         assertFalse(result);
     }
 

@@ -4,7 +4,7 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.identity.util.Base64Utils
 import io.iohk.atala.prism.kotlin.identity.util.toProto
-import io.iohk.atala.prism.protos.*
+import io.iohk.atala.prism.kotlin.protos.*
 import pbandk.encodeToByteArray
 import kotlin.jvm.JvmStatic
 
@@ -79,7 +79,7 @@ class DID private constructor(val value: String) {
             else -> DIDFormat.Unknown
         }
 
-    private fun stripPrismPrefix(): String = value.removePrefix(prismPrefix)
+    fun stripPrismPrefix(): String = value.removePrefix(prismPrefix)
 
     // the method assumes that the DID is a PRISM DID
     val suffix: DIDSuffix

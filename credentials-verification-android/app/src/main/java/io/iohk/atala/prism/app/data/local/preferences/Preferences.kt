@@ -9,7 +9,7 @@ import io.iohk.atala.prism.app.data.local.preferences.models.customDateFormatFro
 import io.iohk.atala.prism.app.neo.common.extensions.Bitmap
 import io.iohk.atala.prism.app.neo.common.extensions.toEncodedBase64String
 import io.iohk.atala.prism.app.utils.CryptoUtils.Companion.getKeyPairFromPath
-import io.iohk.atala.prism.crypto.japi.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
