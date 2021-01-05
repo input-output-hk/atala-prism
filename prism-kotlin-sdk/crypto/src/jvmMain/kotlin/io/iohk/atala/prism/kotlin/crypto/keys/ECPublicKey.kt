@@ -3,7 +3,7 @@ package io.iohk.atala.prism.kotlin.crypto.keys
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
-import io.iohk.atala.prism.kotlin.crypto.util.toBigInteger
+import io.iohk.atala.prism.kotlin.crypto.util.toKotlinBigInteger
 import io.iohk.atala.prism.kotlin.crypto.util.toUnsignedByteArray
 import java.lang.IllegalStateException
 import java.security.PublicKey
@@ -38,7 +38,7 @@ actual class ECPublicKey(internal val key: PublicKey) : ECKey() {
         return when (key) {
             is org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey -> {
                 val point = key.w
-                ECPoint(point.affineX.toBigInteger(), point.affineY.toBigInteger())
+                ECPoint(point.affineX.toKotlinBigInteger(), point.affineY.toKotlinBigInteger())
             }
             else -> throw IllegalStateException("Unexpected public key implementation")
         }

@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kotlin.crypto
 
 import io.iohk.atala.prism.kotlin.util.BytesOps
+import kotlin.jvm.JvmStatic
 
 @ExperimentalUnsignedTypes
 data class SHA256Digest(val value: List<UByte>) {
@@ -9,15 +10,18 @@ data class SHA256Digest(val value: List<UByte>) {
         val HEX_STRING_RE = Regex("^(?:[0-9a-fA-F]{2})+$")
         val HEX_STRING_LENGTH = 64
 
+        @JvmStatic
         fun compute(bytes: List<Byte>): SHA256Digest {
             return SHA256Digest(SHA256.compute(bytes.toByteArray().toUByteArray()).toList())
         }
 
+        @JvmStatic
         fun fromHex(string: String): SHA256Digest {
             require(HEX_STRING_RE.matches(string))
             return SHA256Digest(BytesOps.hexToBytes(string))
         }
 
+        @JvmStatic
         fun fromHex(bytes: List<Byte>): SHA256Digest {
             require(bytes.size == HEX_STRING_LENGTH)
             return fromHex(bytes.toByteArray().decodeToString())

@@ -6,6 +6,7 @@ import io.iohk.atala.prism.kotlin.identity.util.Base64Utils
 import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.protos.*
 import pbandk.encodeToByteArray
+import kotlin.jvm.JvmStatic
 
 class DID private constructor(val value: String) {
     companion object {
@@ -15,6 +16,7 @@ class DID private constructor(val value: String) {
         // This is the prefix we currently use in IntDemo TODO: Remove once possible
         val testRegex = Regex("^did:test(:[A-Za-z0-9_-]+)+$")
 
+        @JvmStatic
         fun buildPrismDID(stateHash: String, encodedState: String? = null): DID =
             if (encodedState == null) {
                 DID("$prismPrefix$stateHash")
@@ -22,9 +24,11 @@ class DID private constructor(val value: String) {
                 DID("$prismPrefix${buildSuffix(stateHash, encodedState)}")
             }
 
+        @JvmStatic
         fun buildPrismDID(suffix: DIDSuffix): DID =
             DID("$prismPrefix${suffix.value}")
 
+        @JvmStatic
         fun fromString(string: String): DID =
             if (prismRegex.matches(string) or testRegex.matches(string)) {
                 DID(string)
@@ -36,6 +40,7 @@ class DID private constructor(val value: String) {
             "$stateHash:$encodedState"
 
         @ExperimentalUnsignedTypes
+        @JvmStatic
         fun createUnpublishedDID(masterKey: ECPublicKey): DID {
             val createDidOp = CreateDIDOperation(
                 didData = DIDData(

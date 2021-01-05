@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.kotlin.crypto.keys
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
-import io.iohk.atala.prism.kotlin.crypto.util.toBigInteger
+import io.iohk.atala.prism.kotlin.crypto.util.toKotlinBigInteger
 import io.iohk.atala.prism.kotlin.crypto.util.toUnsignedByteList
 import java.lang.IllegalStateException
 import java.security.PrivateKey
@@ -17,7 +17,7 @@ actual class ECPrivateKey(internal val key: PrivateKey) : ECKey() {
 
     actual fun getD(): BigInteger {
         return when (key) {
-            is org.spongycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey -> key.d.toBigInteger()
+            is org.spongycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey -> key.d.toKotlinBigInteger()
             else -> throw IllegalStateException("Unexpected private key implementation")
         }
     }

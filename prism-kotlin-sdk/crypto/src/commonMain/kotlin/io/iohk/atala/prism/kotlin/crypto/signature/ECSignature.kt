@@ -2,6 +2,8 @@ package io.iohk.atala.prism.kotlin.crypto.signature
 
 @ExperimentalUnsignedTypes
 expect class ECSignature {
+    fun getEncoded(): List<Byte>
+
     fun getHexEncoded(): String
 
     /**

@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization")
     kotlin("native.cocoapods")
     `maven-publish`
 }
@@ -23,6 +24,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("com.ionspin.kotlin:bignum:0.2.3")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
             }
         }
         val commonTest by getting {
@@ -35,6 +37,7 @@ kotlin {
             dependencies {
                 implementation("com.madgag.spongycastle:prov:1.58.0.0")
                 implementation("org.bitcoinj:bitcoinj-core:0.15.8")
+                api("com.google.guava:guava:30.1-jre")
             }
         }
         val jvmTest by getting {

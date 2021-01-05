@@ -12,11 +12,11 @@ fun BigInteger.toUnsignedByteList(): List<Byte> {
     return toByteArray().dropWhile { it == 0.toByte() }
 }
 
-fun ByteArray.toBigInteger(): com.ionspin.kotlin.bignum.integer.BigInteger {
+fun ByteArray.toKotlinBigInteger(): com.ionspin.kotlin.bignum.integer.BigInteger {
     return com.ionspin.kotlin.bignum.integer.BigInteger.fromByteArray(this, Sign.POSITIVE)
 }
 
-fun BigInteger.toBigInteger(): com.ionspin.kotlin.bignum.integer.BigInteger {
+fun BigInteger.toKotlinBigInteger(): com.ionspin.kotlin.bignum.integer.BigInteger {
     val sign = when (this.signum()) {
         -1 -> Sign.NEGATIVE
         0 -> Sign.ZERO

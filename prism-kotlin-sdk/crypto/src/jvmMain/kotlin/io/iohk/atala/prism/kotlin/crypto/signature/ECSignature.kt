@@ -6,6 +6,9 @@ import kotlin.experimental.and
 
 @ExperimentalUnsignedTypes
 actual data class ECSignature(val data: List<UByte>) {
+    actual fun getEncoded(): List<Byte> =
+        data.map { it.toByte() }
+
     actual fun getHexEncoded(): String {
         return bytesToHex(data)
     }
