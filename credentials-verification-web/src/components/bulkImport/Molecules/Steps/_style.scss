@@ -13,11 +13,13 @@
     border-radius: 20px;
     border: none;
     color: $primary-color;
+    
   }
   .ant-select-selection--multiple {
     padding: 7px;
   }
   .anticon {
+    margin-top: 3px;
     color: $primary-color;
   }
   &:focus {
@@ -154,9 +156,11 @@
       color: $primary-color;
       background-color: pink;
       border-radius: 4px;
+      vertical-align: text-top;
     }
     .ant-upload-list-item-done * {
       @include primary-text($body, #4a2dff);
+      vertical-align: text-top;
     }
   }
 }

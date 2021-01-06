@@ -12,6 +12,7 @@
   @include primary-text($body, $black);
   font-weight: bold;
   margin-top: 5px;
+  word-spacing: -0.3em;
   &.light {
     @include primary-text($body, $dark-grey);
   }

@@ -200,8 +200,13 @@ const CredentialsTable = ({
     [CREDENTIALS_RECEIVED]: getCredentialsReceivedColumns(t('actions.view'), onView)
   };
 
+  const tableClassName = {
+    [CREDENTIALS_ISSUED]: 'credentialsIssued',
+    [CREDENTIALS_RECEIVED]: 'credentialsReceived'
+  };
+
   return (
-    <div className="CredentialsTable">
+    <div className={`CredentialsTable ${tableClassName[tab]}`}>
       <InfiniteScrollTable
         columns={columns[tab]}
         data={credentials}

@@ -54,6 +54,7 @@ $height-sizes: (
 
 // Fonts
 
+
 @mixin primary-text($font-size, $font-color) {
   margin: 0;
   font-family: 'Circular-book';
@@ -92,9 +93,6 @@ $height-sizes: (
 .ant-popover-content {
   .ant-popover-arrow {
     display: none !important;
-  }
-  .ant-popover-inner-content {
-    width: 400px;
   }
 }
 
@@ -138,7 +136,29 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
-
+.ant-select-selection__placeholder{
+  color: #989898;
+}
+.ant-input, .ant-select-selection{
+  border: 1px solid #3e3e3e;
+}
+.ant-input::placeholder{
+  color: #989898; 
+}
+.ant-input:focus{
+  border-color: $primary-color;
+  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2)
+}
+.ant-select-selection:hover{
+  border-color: $primary-color;
+}
+.ant-input-affix-wrapper:hover .ant-input:not(.ant-input-disabled){
+  border-color: $primary-color;
+}
+.ant-select-selection:focus{
+  border-color: $primary-color;
+  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2)
+}
 // Responsive
 
 $screen-sm-min: 425px;

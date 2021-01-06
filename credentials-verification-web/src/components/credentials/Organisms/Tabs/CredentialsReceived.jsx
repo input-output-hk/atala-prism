@@ -1,5 +1,4 @@
 import React from 'react';
-import { Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
@@ -25,13 +24,9 @@ const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initia
 
   const renderEmptyComponent = !tableProps.credentials.length || showEmpty;
 
-  const renderContent = () => {
-    if (initialLoading) return <SimpleLoading size="md" />;
-    if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-    return <CredentialsTable {...expandedTableProps} />;
-  };
-
-  return <Row>{renderContent()}</Row>;
+  if (initialLoading) return <SimpleLoading size="md" />;
+  if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
+  return <CredentialsTable {...expandedTableProps} />;
 };
 
 CredentialsReceived.defaultProps = {

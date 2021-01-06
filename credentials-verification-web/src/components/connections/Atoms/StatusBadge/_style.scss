@@ -10,6 +10,7 @@
   text-align: center;
   padding: 3px 6px;
   width: max-content;
+  word-spacing: -0.3em;
 
   p {
     @include secondary-text($label, $white);
