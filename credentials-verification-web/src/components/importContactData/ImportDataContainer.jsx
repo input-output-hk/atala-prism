@@ -10,6 +10,7 @@ import ImportTypeSelectionContainer from '../ImportTypeSelection/ImportTypeSelec
 import BulkImport from '../bulkImport/BulkImport';
 import { arrayOfArraysToObjects } from '../../helpers/fileHelpers';
 import UnderContsructionMessage from '../common/Atoms/UnderContsructionMessage/UnderContsructionMessage';
+import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 
 const showGroupSelection = {
   [IMPORT_CONTACTS]: true,
@@ -26,7 +27,8 @@ const ImportDataContainer = ({
   onFinish,
   onCancel,
   useCase,
-  getTargets,
+  recipients,
+  credentialType,
   headersMapping,
   loading
 }) => {
@@ -63,7 +65,8 @@ const ImportDataContainer = ({
         <BulkImport
           onUpload={handleBulkImport}
           cancelImport={resetSelection}
-          getTargets={getTargets}
+          recipients={recipients}
+          credentialType={credentialType}
           showGroupSelection={showGroupSelection[useCase]}
           useCase={useCase}
           headersMapping={headersMapping}
@@ -88,14 +91,16 @@ const ImportDataContainer = ({
 };
 
 ImportDataContainer.defaultProps = {
-  getTargets: null,
+  recipients: null,
+  credentialType: null,
   bulkValidator: null,
   loading: false,
   useCase: IMPORT_CONTACTS
 };
 
 ImportDataContainer.propTypes = {
-  getTargets: PropTypes.func,
+  recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)),
+  credentialType: PropTypes.shape(credentialTypeShape),
   bulkValidator: PropTypes.func,
   onFinish: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,

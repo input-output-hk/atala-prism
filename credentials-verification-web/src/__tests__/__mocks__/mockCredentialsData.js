@@ -1,3 +1,86 @@
+export const contacts = [
+  {
+    externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
+    contactName: 'contact name'
+  },
+  {
+    externalid: 'd920875f-ddec-4c0b-ab1c-5c2b9c8ee415',
+    contactName: 'contact name'
+  },
+  {
+    externalid: 'a84b5652-99d4-41d4-9595-ce4d349baa90',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '1708bfa5-4c8c-4c0c-b358-06fd088c0a89',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '0718e98c-56d8-404d-9f14-37cf3c6c2f77',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '03ada254-dbcf-4fa1-a914-fa6585fb50a2',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '976396d0-d812-4f66-8117-491e0536a439',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '4291fbfb-2f01-460e-8909-15e2d1db9dfc',
+    contactName: 'contact name'
+  },
+  {
+    externalid: 'a96e5db3-cd10-4571-9690-00a0e7caa664',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '5fdcda7e-d492-4371-b028-c5fe67455762',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '6a7a4484-fb43-43f6-8978-7d1197b254e3',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '9565ba89-da3f-4cbe-9218-ab38f5c8bb30',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '3676ad24-66a4-44e6-82eb-df9a456c3538',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '7bdde45f-8840-4fc2-b43e-471db1e1748f',
+    contactName: 'contact name'
+  },
+  {
+    externalid: 'd3795d9e-32cf-48f6-8a4b-14517049c172',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '1527aad2-c4af-4ca8-8c62-4b6e82f77609',
+    contactName: 'contact name'
+  },
+  {
+    externalid: '682373fc-f13b-4e39-9b3e-e46c5c234499',
+    contactName: 'contact name'
+  },
+  {
+    externalid: 'a96953c3-5ddc-4c61-bdb2-f4bd87d1d58e',
+    contactName: 'contact name'
+  }
+];
+
 export const validCredentials = {
   inputAoA: [
     [
@@ -547,7 +630,8 @@ export const invalidCredentialsData = {
       '12/08/91',
       '17/12/49',
       ''
-    ]
+    ],
+    ['incorrectExternalId', 'contact name', '779028', 'full name', '12/08/91', '17/12/49', '']
   ],
   expectedErrors: [
     [],
@@ -580,7 +664,14 @@ export const invalidCredentialsData = {
         col: { index: 4, name: 'Date Of Birth' }
       }
     ],
-    []
+    [],
+    [
+      {
+        error: 'unexpectedValue',
+        row: { index: 3 },
+        col: { index: 0, name: 'External ID' }
+      }
+    ]
   ],
   expectedParse: [
     {
@@ -608,6 +699,15 @@ export const invalidCredentialsData = {
       fullname: 'full name',
       dateOfBirth: '12/08/91',
       expirationDate: '17/12/49',
+      photo: ''
+    },
+    {
+      contactName: 'contact name',
+      dateOfBirth: '12/08/91',
+      expirationDate: '17/12/49',
+      externalid: 'incorrectExternalId',
+      fullname: 'full name',
+      idNumber: '779028',
       photo: ''
     }
   ]

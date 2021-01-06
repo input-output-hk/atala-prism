@@ -7,37 +7,11 @@ import { withRedirector } from '../providers/withRedirector';
 import { withApi } from '../providers/withApi';
 import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
-import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
-import { credentialTypeShape } from '../../helpers/propShapes';
+import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 
-const ImportCredentialsData = ({
-  selectedGroups,
-  selectedSubjects,
-  subjects,
-  credentialType,
-  onCancel,
-  onFinish,
-  getContactsFromGroups
-}) => {
+const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish }) => {
   const { t } = useTranslation();
-
-  const getTargetsData = async () => {
-    const targetsFromGroups = selectedGroups.length ? (await getContactsFromGroups()).flat() : [];
-    const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
-
-    const cherryPickedSubjects = subjects.filter(({ contactid }) =>
-      selectedSubjects.includes(contactid)
-    );
-
-    const targetSubjects = [...targetsFromGroupsWithKeys, ...cherryPickedSubjects];
-    const noRepeatedTargets = _.uniqBy(targetSubjects, 'externalid');
-
-    return {
-      contacts: noRepeatedTargets,
-      credentialType
-    };
-  };
 
   const generateHeadersMapping = () => {
     const credentialTypeHeaders = credentialType.fields.map(f => f.key);
@@ -65,11 +39,18 @@ const ImportCredentialsData = ({
 
   // append credential type to validator function arguments
   const validatorWithCredentialType = (credentialsData, headers) =>
-    validateCredentialDataBulk(credentialType, credentialsData, headers, headersMapping);
+    validateCredentialDataBulk(
+      credentialType,
+      credentialsData,
+      headers,
+      headersMapping,
+      recipients
+    );
 
   return (
     <ImportDataContainer
-      getTargets={getTargetsData}
+      recipients={recipients}
+      credentialType={credentialType}
       bulkValidator={validatorWithCredentialType}
       onFinish={unapplyTranslationToKeys}
       onCancel={onCancel}
@@ -80,13 +61,10 @@ const ImportCredentialsData = ({
 };
 
 ImportCredentialsData.propTypes = {
-  selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
-  selectedSubjects: PropTypes.arrayOf(PropTypes.string).isRequired,
-  subjects: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string })).isRequired,
+  recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)).isRequired,
   credentialType: PropTypes.shape(credentialTypeShape).isRequired,
   onCancel: PropTypes.func.isRequired,
-  onFinish: PropTypes.func.isRequired,
-  getContactsFromGroups: PropTypes.func.isRequired
+  onFinish: PropTypes.func.isRequired
 };
 
 export default withApi(withRedirector(ImportCredentialsData));

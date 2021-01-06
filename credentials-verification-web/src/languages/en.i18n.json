@@ -716,6 +716,7 @@
       },
       "errors": {
         "required": "{{headerName}} is required",
+        "unexpectedValue": "Unexpected value found",
         "emptyFile": "File is empty",
         "emptyRow": "Row contains no values",
         "invalidHeaderPosition": "Expected [ {{headerName}} ] header to be in column {{expectedHeaderPosition}}",

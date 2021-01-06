@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import CompleteSpreadSheetStep from '../Molecules/Steps/CompleteSpreadSheetStep';
 import AssignToGroupsStep from '../Molecules/Steps/AssignToGroupsStep';
 import StepsFooter from '../../common/Molecules/StepFooter/StepFooter';
+import { contactShape, credentialTypeShape } from '../../../helpers/propShapes';
 import {
   COMPLETE_SPREADSHEET_STEP,
   ASSIGN_TO_GROUPS,
@@ -22,7 +23,8 @@ const BulkImportSteps = ({
   showGroupSelection,
   onFinish,
   cancelImport,
-  getTargets,
+  recipients,
+  credentialType,
   useCase,
   headersMapping,
   loading
@@ -65,7 +67,8 @@ const BulkImportSteps = ({
           currentStep={currentStep}
           setCurrentStep={setCurrentStep}
           setFileData={setFileData}
-          getTargets={getTargets}
+          recipients={recipients}
+          credentialType={credentialType}
           showStepNumber={showStepNumber[useCase]}
           headersMapping={headersMapping}
           isEmbedded={isEmbedded[useCase]}
@@ -103,11 +106,13 @@ BulkImportSteps.defaultProps = {
   selectedGroups: [],
   onFinish: () => {},
   cancelImport: () => {},
-  getTargets: null
+  recipients: null,
+  credentialType: null
 };
 
 BulkImportSteps.propTypes = {
-  getTargets: PropTypes.func,
+  recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)),
+  credentialType: PropTypes.shape(credentialTypeShape),
   fileData: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
     errors: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.shape({ type: PropTypes.string })))

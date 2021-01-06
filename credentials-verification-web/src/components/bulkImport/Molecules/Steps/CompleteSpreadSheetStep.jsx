@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Icon, Upload, message, Button } from 'antd';
 import GenericStep from './GenericStep';
 import { downloadTemplateCsv } from '../../../../helpers/fileHelpers';
+import { contactShape, credentialTypeShape } from '../../../../helpers/propShapes';
 import {
   COMPLETE_SPREADSHEET_STEP,
   ENCODING_UTF,
@@ -16,7 +17,8 @@ import './_style.scss';
 const CompleteSpreadSheetStep = ({
   currentStep,
   setCurrentStep,
-  getTargets,
+  recipients,
+  credentialType,
   setFileData,
   showStepNumber,
   headersMapping,
@@ -25,12 +27,6 @@ const CompleteSpreadSheetStep = ({
   const { t } = useTranslation();
 
   const [selectedFileList, setSelectedFileList] = useState();
-
-  const handleDownload = async () => {
-    const targets = getTargets ? await getTargets() : null;
-
-    downloadTemplateCsv(targets, headersMapping);
-  };
 
   // fileList's length is checked to avoid reading a removed file
   const handleChange = ({ file, fileList }) => setSelectedFileList(fileList.length ? [file] : null);
@@ -93,7 +89,12 @@ const CompleteSpreadSheetStep = ({
     info: t('bulkImport.completeSpreadsheet.info'),
     actions: (
       <>
-        <Button className="fileActionButton" onClick={handleDownload}>
+        <Button
+          className="fileActionButton"
+          onClick={() =>
+            downloadTemplateCsv({ contacts: recipients, credentialType }, headersMapping)
+          }
+        >
           {t('bulkImport.completeSpreadsheet.downloadText')}
           <Icon className="Icon" type="download" />
         </Button>
@@ -116,12 +117,14 @@ const CompleteSpreadSheetStep = ({
 CompleteSpreadSheetStep.defaultProps = {
   inputData: null,
   setCurrentStep: undefined,
-  getTargets: null,
+  recipients: null,
+  credentialType: null,
   showStepNumber: true
 };
 
 CompleteSpreadSheetStep.propTypes = {
-  getTargets: PropTypes.func,
+  recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)),
+  credentialType: PropTypes.shape(credentialTypeShape),
   currentStep: PropTypes.number.isRequired,
   setCurrentStep: PropTypes.func,
   inputData: PropTypes.shape({

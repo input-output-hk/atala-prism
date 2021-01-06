@@ -49,6 +49,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
 
+  const [recipients, setRecipients] = useState([]);
+
   const [importedData, setImportedData] = useState([]);
 
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
@@ -119,6 +121,23 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       setSelectedSubjects([]);
     }
   }, [shouldSelectRecipients]);
+
+  const getRecipients = async () => {
+    const groupContactsPromises = selectedGroups.map(group =>
+      api.contactsManager.getContacts(null, MAX_CONTACTS, group)
+    );
+    const targetsFromGroups = (await Promise.all(groupContactsPromises)).flat();
+    const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
+
+    const cherryPickedSubjects = subjects.filter(({ contactid }) =>
+      selectedSubjects.includes(contactid)
+    );
+
+    const targetSubjects = [...targetsFromGroupsWithKeys, ...cherryPickedSubjects];
+    const noRepeatedTargets = _.uniqBy(targetSubjects, 'externalid');
+
+    setRecipients(noRepeatedTargets);
+  };
 
   const parseMultiRowCredentials = (dataObjects, multiRowKey, fields) => {
     const groupedData = _.groupBy(dataObjects, 'externalid');
@@ -212,6 +231,15 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     }
   };
 
+  const changeStep = nextStep => {
+    if (nextStep !== IMPORT_CREDENTIAL_DATA_STEP) return setCurrentStep(nextStep);
+
+    setIsLoading(true);
+    return getRecipients()
+      .then(() => setCurrentStep(nextStep))
+      .finally(() => setIsLoading(false));
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case SELECT_CREDENTIAL_TYPE_STEP:
@@ -244,14 +272,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       case IMPORT_CREDENTIAL_DATA_STEP: {
         return (
           <ImportCredentialsData
-            subjects={subjects}
+            recipients={recipients}
             credentialType={credentialTypes[credentialType]}
-            selectedGroups={selectedGroups}
-            selectedSubjects={selectedSubjects}
             onCancel={() => setCurrentStep(currentStep - 1)}
             onFinish={handleImportedData}
             getContactsFromGroups={getContactsFromGroups}
-            goToCredentialsPreview={goToCredentialsPreview}
           />
         );
       }
@@ -273,7 +298,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   return (
     <NewCredential
       currentStep={currentStep}
-      changeStep={setCurrentStep}
+      changeStep={changeStep}
       renderStep={renderStep}
       credentialType={credentialType}
       hasSelectedRecipients={hasSelectedRecipients}

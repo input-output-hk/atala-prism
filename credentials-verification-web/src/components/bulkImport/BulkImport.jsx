@@ -3,12 +3,14 @@ import PropTypes from 'prop-types';
 import BulkImportResult from './Organisms/BulkImportResults';
 import BulkImportSteps from './Organisms/BulkImportSteps';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
+import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 
 const BulkImport = ({
   onUpload,
   cancelImport,
   showGroupSelection,
-  getTargets,
+  recipients,
+  credentialType,
   useCase,
   headersMapping,
   loading
@@ -28,7 +30,8 @@ const BulkImport = ({
     showGroupSelection,
     onFinish: () => onUpload(fileData, skipGroupsAssignment ? [] : selectedGroups, setResults),
     cancelImport,
-    getTargets,
+    recipients,
+    credentialType,
     useCase,
     headersMapping,
     loading
@@ -55,12 +58,14 @@ const BulkImport = ({
 BulkImport.defaultProps = {
   cancelImport: () => {},
   showGroupSelection: false,
-  getTargets: null,
+  recipients: null,
+  credentialType: null,
   loading: false
 };
 
 BulkImport.propTypes = {
-  getTargets: PropTypes.func,
+  recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)),
+  credentialType: PropTypes.shape(credentialTypeShape),
   onUpload: PropTypes.func.isRequired,
   cancelImport: PropTypes.func,
   showGroupSelection: PropTypes.bool,

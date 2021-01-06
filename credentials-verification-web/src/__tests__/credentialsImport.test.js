@@ -3,6 +3,7 @@ import { arrayOfArraysToObjects } from '../helpers/fileHelpers';
 import { validateCredentialDataBulk } from '../helpers/credentialDataValidation';
 import { mockGovernmentId } from './__mocks__/mockCredentialTypes';
 import {
+  contacts,
   validCredentials,
   extraHeaders,
   invalidHeadersOrder,
@@ -22,7 +23,8 @@ const parseAndValidate = input => {
     mockGovernmentId,
     parsedAoA,
     input[0],
-    mockGovernmentIdHeadersMapping
+    mockGovernmentIdHeadersMapping,
+    contacts
   );
 
   const translatedBackCredentials = translateBackSpreadsheetNamesToContactKeys(

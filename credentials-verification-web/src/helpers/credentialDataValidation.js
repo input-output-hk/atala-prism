@@ -8,7 +8,8 @@ export const validateCredentialDataBulk = (
   credentialType,
   credentialsData,
   inputHeaders,
-  headersMapping
+  headersMapping,
+  recipients
 ) => {
   // trim last empty rows
   const trimmedCredentials = trimEmptyRows(credentialsData);
@@ -26,7 +27,8 @@ export const validateCredentialDataBulk = (
       trimmedCredentials,
       credentialType.fields,
       expectedHeaders,
-      headersMapping
+      headersMapping,
+      recipients
     );
   }
 
@@ -61,14 +63,16 @@ const validateCredentialsData = (
   credentialsData,
   fieldsValidations,
   expectedHeaders,
-  headersMapping
+  headersMapping,
+  recipients
 ) =>
   credentialsData.map((dataRow, index) =>
     credentialDataValidation(
       { ...dataRow, index },
       fieldsValidations,
       expectedHeaders,
-      headersMapping
+      headersMapping,
+      recipients
     )
   );
 
@@ -89,10 +93,21 @@ const trimLastEmptyElements = array => {
 };
 
 // validate that parsed-csv contains correct credential data
-const credentialDataValidation = (dataRow, fieldsValidations, expectedHeaders, headersMapping) => {
+const credentialDataValidation = (
+  dataRow,
+  fieldsValidations,
+  expectedHeaders,
+  headersMapping,
+  recipients
+) => {
   if (isEmptyRow(dataRow)) return generateEmptyRowError(dataRow.index);
 
-  const commonFieldsErrors = validateCommonFields(dataRow, expectedHeaders);
+  const commonFieldsErrors = validateCommonFields(
+    dataRow,
+    expectedHeaders,
+    recipients,
+    headersMapping
+  );
 
   const specificFieldsErrors = validateCredentialFields(
     dataRow,
@@ -106,11 +121,23 @@ const credentialDataValidation = (dataRow, fieldsValidations, expectedHeaders, h
   return [...commonFieldsErrors, ...specificFieldsErrors, ...extraFieldsErrors];
 };
 
-const validateCommonFields = (dataRow, { expectedCommonHeaders, allExpectedHeaders }) =>
+const validateCommonFields = (
+  dataRow,
+  { expectedCommonHeaders, allExpectedHeaders },
+  recipients,
+  headersMapping
+) =>
   expectedCommonHeaders
-    .map(header =>
-      dataRow[header] ? null : generateCommonFieldError(dataRow, header, allExpectedHeaders)
-    )
+    .map(header => {
+      const { key } = headersMapping.find(({ translation }) => translation === header);
+      const importedValue = dataRow[header];
+      if (!importedValue)
+        return generateCommonFieldError('required', dataRow, header, allExpectedHeaders);
+
+      return recipients.some(({ [key]: expectedValue }) => importedValue === expectedValue)
+        ? null
+        : generateCommonFieldError('unexpectedValue', dataRow, header, allExpectedHeaders);
+    })
     .filter(Boolean);
 
 const generateInvalidHeadersError = (input, allExpectedHeaders) =>
@@ -317,8 +344,8 @@ const generateExtraFieldsErrors = (rowIdx, data, lastValidIndex) =>
     )
     .filter(Boolean);
 
-const generateCommonFieldError = (dataRow, translatedKey, allExpectedHeaders) => ({
-  error: 'required',
+const generateCommonFieldError = (error, dataRow, translatedKey, allExpectedHeaders) => ({
+  error,
   row: { index: dataRow.index },
   col: { index: allExpectedHeaders.indexOf(translatedKey), name: translatedKey }
 });
