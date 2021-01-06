@@ -10,7 +10,7 @@ import {
   filterByUnixDate,
   filterContactByStatus
 } from '../helpers/filterHelpers';
-import { credentialMapper } from '../APIs/helpers/credentialHelpers';
+import { credentialMapper, credentialReceivedMapper } from '../APIs/helpers/credentialHelpers';
 import { useSession } from '../components/providers/SessionContext';
 
 const useCredentialsFilters = () => {
@@ -55,6 +55,7 @@ export const useCredentialsIssuedListWithFilters = (
   const filters = useCredentialsFilters();
   const { name, credentialStatus, credentialType, contactStatus, date } = filters.values;
 
+  const credentialTypes = credentialsManager.getCredentialTypes();
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
   useEffect(() => {
@@ -77,8 +78,8 @@ export const useCredentialsIssuedListWithFilters = (
     }
   }, [filteredCredentials, ...Object.values(filters.values)]);
 
-  const setLoadingByKey = (key, value) =>
-    setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
+  const setIssuedLoading = value =>
+    setLoading(previousLoading => ({ ...previousLoading, issued: value }));
 
   const setSearchingByKey = (key, value) =>
     setSearching(previousSearching => ({ ...previousSearching, [key]: value }));
@@ -114,7 +115,6 @@ export const useCredentialsIssuedListWithFilters = (
         setHasMore(false);
       }
 
-      const credentialTypes = credentialsManager.getCredentialTypes();
       const mappedCredentials = newlyFetchedCredentials.map(cred =>
         credentialMapper(cred, credentialTypes)
       );
@@ -136,8 +136,7 @@ export const useCredentialsIssuedListWithFilters = (
         message.error(t('errors.errorGetting', { model: 'Credentials' }));
       }
     } finally {
-      setSearchingByKey('issued', false);
-      setLoadingByKey('issued', false);
+      setIssuedLoading(false);
     }
   };
 
@@ -152,5 +151,79 @@ export const useCredentialsIssuedListWithFilters = (
     filteredCredentialsIssued: filteredCredentials,
     noIssuedCredentials: noCredentials,
     hasMoreIssued: hasMore
+  };
+};
+
+export const useCredentialsReceivedListWithFilters = (api, setLoading) => {
+  const { t } = useTranslation();
+  const [credentials, setCredentials] = useState([]);
+  const [filteredCredentials, setFilteredCredentials] = useState([]);
+  const [noCredentials, setNoCredentials] = useState(true);
+  const filters = useCredentialsFilters();
+  const { name, credentialType, date } = filters.values;
+
+  const credentialTypes = api.credentialsManager.getCredentialTypes();
+
+  useEffect(() => {
+    const newFilteredCredentials = applyFilters(credentials);
+    setFilteredCredentials(newFilteredCredentials);
+    setNoCredentials(!credentials.length);
+  }, [credentials, ...Object.values(filters.values)]);
+
+  const setReceivedLoading = value =>
+    setLoading(previousLoading => ({ ...previousLoading, received: value }));
+
+  const applyFilters = aCredentialsList =>
+    aCredentialsList.filter(item => {
+      const matchName = filterByInclusion(name, item.contactData.contactName);
+      const matchExternalId = filterByInclusion(name, item.contactData.externalid);
+      const matchType = filterByExactMatch(credentialType, item.credentialType?.id);
+      const matchDate = filterByUnixDate(date, item.storedat);
+
+      return (matchName || matchExternalId) && matchType && matchDate;
+    });
+
+  const getCredentials = async () => {
+    try {
+      setReceivedLoading(true);
+      const newlyFetchedCredentials = await api.credentialsReceivedManager.getReceivedCredentials();
+      const credentialWithIssuanceProofPromises = newlyFetchedCredentials.map(credential =>
+        api.credentialsManager
+          .getBlockchainData(credential.encodedsignedcredential)
+          .then(issuanceproof => Object.assign({ issuanceproof }, credential))
+      );
+      const credentialsWithIssuanceProof = await Promise.all(credentialWithIssuanceProofPromises);
+
+      const mappedCredentials = credentialsWithIssuanceProof.map(cred =>
+        credentialReceivedMapper(cred, credentialTypes)
+      );
+
+      const updatedCredentials = credentials.concat(mappedCredentials);
+      const newFilteredCredentials = applyFilters(updatedCredentials);
+
+      setCredentials(updatedCredentials);
+      setFilteredCredentials(newFilteredCredentials);
+      setNoCredentials(!updatedCredentials.length);
+    } catch (error) {
+      Logger.error(
+        '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
+        error
+      );
+      message.error(t('errors.errorGetting', { model: 'Credentials' }));
+    } finally {
+      setReceivedLoading(false);
+    }
+  };
+
+  return {
+    fetchCredentialsReceived: getCredentials,
+    credentialsReceived: credentials,
+    setCredentialsReceived: setCredentials,
+    filtersReceived: {
+      ...filters.values,
+      ...filters.setters
+    },
+    filteredCredentialsReceived: filteredCredentials,
+    noReceivedCredentials: noCredentials
   };
 };

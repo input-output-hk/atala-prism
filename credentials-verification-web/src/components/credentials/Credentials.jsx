@@ -56,8 +56,7 @@ const Credentials = ({ tabProps, setActiveTab, loading }) => {
           />
         </TabPane>
         <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
-          {/* disabled for now */}
-          {/* <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} /> */}
+          <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} />
           <CredentialsReceived
             {...tabProps[CREDENTIALS_RECEIVED]}
             showCredentialData={showCredentialData}

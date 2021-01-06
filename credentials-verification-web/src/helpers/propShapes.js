@@ -114,8 +114,8 @@ export const credentialTabShape = {
     selectionType: shape({
       selectedRowKeys: arrayOf(string)
     }),
-    searching: bool,
-    hasMore: bool.isRequired
+    hasMore: bool,
+    searching: bool
   }).isRequired,
   bulkActionsProps: shape({
     signSelectedCredentials: func,

@@ -16,7 +16,10 @@ import {
   CONNECTION_STATUSES,
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../../helpers/constants';
-import { useCredentialsIssuedListWithFilters } from '../../hooks/useCredentials';
+import {
+  useCredentialsIssuedListWithFilters,
+  useCredentialsReceivedListWithFilters
+} from '../../hooks/useCredentials';
 import { useSession } from '../providers/SessionContext';
 
 const SEND_CREDENTIALS = 'SEND_CREDENTIALS';
@@ -28,7 +31,6 @@ const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
   // This field is used to know if there are no credentials on
   // the database, independently of the filters
-  const [noReceivedCredentials, setNoReceivedCredentials] = useState(true);
 
   const [loading, setLoading] = useState({ issued: true, received: true });
   const [searching, setSearching] = useState({ issued: false, received: false });
@@ -45,7 +47,12 @@ const CredentialContainer = ({ api }) => {
 
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
-  const [credentialsReceived, setCredentialsReceived] = useState([]);
+  const {
+    fetchCredentialsReceived,
+    filteredCredentialsReceived,
+    filtersReceived,
+    noReceivedCredentials
+  } = useCredentialsReceivedListWithFilters(api, setLoading);
 
   const [selectedCredentials, setSelectedCredentials] = useState([]);
 
@@ -86,41 +93,6 @@ const CredentialContainer = ({ api }) => {
       }
     } finally {
       setLoadingByKey('issued', false);
-    }
-  };
-
-  const fetchCredentialsReceived = async () => {
-    try {
-      setLoadingByKey('received', true);
-      const newlyFetchedCredentials = await api.credentialsReceivedManager.getReceivedCredentials();
-      const credentialWithIssuanceProofPromises = newlyFetchedCredentials.map(credential =>
-        api.credentialsManager
-          .getBlockchainData(credential.encodedsignedcredential)
-          .then(issuanceproof => Object.assign({ issuanceproof }, credential))
-      );
-      const credentialsWithIssuanceProof = await Promise.all(credentialWithIssuanceProofPromises);
-
-      const credentialTypes = api.credentialsManager.getCredentialTypes();
-      const mappedCredentials = credentialsWithIssuanceProof.map(cred =>
-        credentialReceivedMapper(cred, credentialTypes)
-      );
-      const updatedCredentialsReceived = credentialsReceived.concat(mappedCredentials);
-      setCredentialsReceived(updatedCredentialsReceived);
-      setNoReceivedCredentials(!updatedCredentialsReceived.length);
-      removeUnconfirmedAccountError();
-    } catch (error) {
-      Logger.error(
-        '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
-        error
-      );
-      if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-        showUnconfirmedAccountError();
-      } else {
-        removeUnconfirmedAccountError();
-        message.error(t('errors.errorGetting', { model: 'Credentials' }));
-      }
-    } finally {
-      setLoadingByKey('received', false);
     }
   };
 
@@ -318,11 +290,13 @@ const CredentialContainer = ({ api }) => {
     },
     [CREDENTIALS_RECEIVED]: {
       tableProps: {
-        credentials: credentialsReceived
+        credentials: filteredCredentialsReceived
       },
+      fetchCredentials: fetchCredentialsReceived,
       bulkActionsProps: {},
-      filterProps: {},
-      showEmpty: noReceivedCredentials
+      filterProps: filtersReceived,
+      showEmpty: noReceivedCredentials,
+      credentialsTypes: api.credentialsManager.getCredentialTypes()
     }
   };
 

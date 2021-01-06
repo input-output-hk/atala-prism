@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Row } from 'antd';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
@@ -10,10 +11,12 @@ import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initialLoading }) => {
   const { t } = useTranslation();
 
+  const { credentials } = tableProps;
+
   const emptyProps = {
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
-    isFilter: !showEmpty && !tableProps.credentials.length
+    isFilter: !showEmpty && !credentials.length
   };
 
   const expandedTableProps = {
@@ -22,11 +25,15 @@ const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initia
     onView: showCredentialData
   };
 
-  const renderEmptyComponent = !tableProps.credentials.length || showEmpty;
+  const renderEmptyComponent = !credentials.length || showEmpty;
 
-  if (initialLoading) return <SimpleLoading size="md" />;
-  if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-  return <CredentialsTable {...expandedTableProps} />;
+  const renderContent = () => {
+    if (!credentials.length && initialLoading) return <SimpleLoading size="md" />;
+    if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
+    return <CredentialsTable {...expandedTableProps} />;
+  };
+
+  return <Row>{renderContent()}</Row>;
 };
 
 CredentialsReceived.defaultProps = {
