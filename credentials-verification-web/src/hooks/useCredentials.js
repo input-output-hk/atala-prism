@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { CREDENTIAL_PAGE_SIZE } from '../helpers/constants';
+import { CREDENTIAL_PAGE_SIZE, UNKNOWN_DID_SUFFIX_ERROR_CODE } from '../helpers/constants';
 import Logger from '../helpers/Logger';
 import { getLastArrayElementOrEmpty } from '../helpers/genericHelpers';
 import {
@@ -11,6 +11,7 @@ import {
   filterContactByStatus
 } from '../helpers/filterHelpers';
 import { credentialMapper } from '../APIs/helpers/credentialHelpers';
+import { useSession } from '../components/providers/SessionContext';
 
 const useCredentialsFilters = () => {
   const [name, setName] = useState();
@@ -53,6 +54,8 @@ export const useCredentialsIssuedListWithFilters = (
   const [hasMore, setHasMore] = useState(true);
   const filters = useCredentialsFilters();
   const { name, credentialStatus, credentialType, contactStatus, date } = filters.values;
+
+  const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
   useEffect(() => {
     if (!credentials.length && hasMore) getCredentials();
@@ -120,12 +123,18 @@ export const useCredentialsIssuedListWithFilters = (
 
       setCredentials(updatedCredentials);
       setFilteredCredentials(newFilteredCredentials);
+      removeUnconfirmedAccountError();
     } catch (error) {
       Logger.error(
-        '[CredentialContainer.getCredentialsIssued] Error while getting Credentials',
+        '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
         error
       );
-      message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+        showUnconfirmedAccountError();
+      } else {
+        removeUnconfirmedAccountError();
+        message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      }
     } finally {
       setSearchingByKey('issued', false);
       setLoadingByKey('issued', false);

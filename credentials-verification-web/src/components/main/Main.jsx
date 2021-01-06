@@ -5,12 +5,12 @@ import PropTypes from 'prop-types';
 import Router from '../Router';
 import { APIContext } from '../providers/ApiContext';
 import { SessionProvider, useSession } from '../providers/SessionContext';
-import '../../App.scss';
-import './_main.scss';
 import { getThemeByRole } from '../../helpers/themeHelper';
 import i18nInitialise from '../../i18nInitialisator';
 import I18nError from '../I18nError';
 import Logger from '../../helpers/Logger';
+import '../../App.scss';
+import './_main.scss';
 
 const MESSAGE_DURATION = 3;
 const MAX_MESSAGES_TO_SHOW = 3;

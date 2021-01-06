@@ -5,15 +5,18 @@ import {
   CONNECTED,
   CONNECTION_STATUSES,
   CONTACT_PAGE_SIZE,
-  PENDING_CONNECTION
+  PENDING_CONNECTION,
+  UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../helpers/constants';
 import { getLastArrayElementOrEmpty } from '../helpers/genericHelpers';
 import { contactMapper } from '../APIs/helpers/contactHelpers';
 import Logger from '../helpers/Logger';
 import { filterByInclusion } from '../helpers/filterHelpers';
+import { useSession } from '../components/providers/SessionContext';
 
 const useGetContacts = (contactsManager, setContacts, setLoading, setSearching) => {
   const [hasMore, setHasMore] = useState(true);
+  const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
   const getContacts = ({ pageSize, lastId, oldContacts = [], isRefresh = false }) =>
     (hasMore || isRefresh ? contactsManager.getContacts(lastId, pageSize) : Promise.resolve([]))
@@ -30,10 +33,16 @@ const useGetContacts = (contactsManager, setContacts, setLoading, setSearching) 
         const updatedContacts = oldContacts.concat(contactsWithKey);
 
         setContacts(updatedContacts);
+        removeUnconfirmedAccountError();
       })
       .catch(error => {
-        Logger.error('[Contacts.getContacts] Error while getting contacts', error);
-        message.error(i18n.t('errors.errorGetting', { model: 'Contacts' }));
+        if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+          showUnconfirmedAccountError();
+        } else {
+          removeUnconfirmedAccountError();
+          Logger.error('[Contacts.getContacts] Error while getting contacts', error);
+          message.error(i18n.t('errors.errorGetting', { model: 'Contacts' }));
+        }
       })
       .finally(() => {
         if (setLoading) setLoading(false);

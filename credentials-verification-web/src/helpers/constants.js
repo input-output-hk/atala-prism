@@ -159,3 +159,6 @@ export const LONG_DATE_FORMAT = 'DD MMMM YYYY';
 // credentials tabs
 export const CREDENTIALS_ISSUED = 'CREDENTIALS_ISSUED';
 export const CREDENTIALS_RECEIVED = 'CREDENTIALS_RECEIVED';
+
+// error codes
+export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;

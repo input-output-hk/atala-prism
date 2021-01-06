@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { pick } from 'lodash';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { withApi } from '../providers/withApi';
@@ -13,6 +12,9 @@ import Logger from '../../helpers/Logger';
 import './_style.scss';
 import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
 import { longDateFormatter } from '../../helpers/formatters';
+import { UNKNOWN_DID_SUFFIX_ERROR_CODE } from '../../helpers/constants';
+import WaitBanner from './Atoms/WaitBanner/WaitBanner';
+import { useSession } from '../providers/SessionContext';
 
 const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
@@ -21,6 +23,12 @@ const Dashboard = ({ api, name, bundle }) => {
   const [groupsStats, setGroupsStats] = useState();
   const [credentialsStats, setCredentialsStats] = useState();
   const [loading, setLoading] = useState(false);
+
+  const {
+    showUnconfirmedAccountError,
+    removeUnconfirmedAccountError,
+    accountIsConfirmed
+  } = useSession();
 
   useEffect(() => {
     getStatistics();
@@ -33,9 +41,15 @@ const Dashboard = ({ api, name, bundle }) => {
       setContactsStats(statistics.contacts);
       setGroupsStats(statistics.groups);
       setCredentialsStats(statistics.credentials);
+      removeUnconfirmedAccountError();
     } catch (error) {
       Logger.error('Error getting statistics: ', error);
-      message.error(t('errors.errorGetting', { model: 'statistics' }));
+      if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+        showUnconfirmedAccountError();
+      } else {
+        removeUnconfirmedAccountError();
+        message.error(t('errors.errorGetting', { model: 'statistics' }));
+      }
     } finally {
       setLoading(false);
     }
@@ -48,7 +62,11 @@ const Dashboard = ({ api, name, bundle }) => {
         <p>{longDateFormatter()}</p>
       </div>
       <div className="DashboardContent">
-        <Welcome name={name} importantInfo={tp('welcome.subtitle')} />
+        {accountIsConfirmed ? (
+          <Welcome name={name} importantInfo={tp('welcome.subtitle')} />
+        ) : (
+          <WaitBanner />
+        )}
         {false && <CurrentBundle bundle={bundle} />}
       </div>
       <div className="DashboardContentBottom">

@@ -13,9 +13,11 @@ import {
   MAX_CREDENTIALS,
   CREDENTIALS_ISSUED,
   CREDENTIALS_RECEIVED,
-  CONNECTION_STATUSES
+  CONNECTION_STATUSES,
+  UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../../helpers/constants';
 import { useCredentialsIssuedListWithFilters } from '../../hooks/useCredentials';
+import { useSession } from '../providers/SessionContext';
 
 const SEND_CREDENTIALS = 'SEND_CREDENTIALS';
 const SIGN_CREDENTIALS = 'SIGN_CREDENTIALS';
@@ -40,6 +42,8 @@ const CredentialContainer = ({ api }) => {
     hasMoreIssued,
     noIssuedCredentials
   } = useCredentialsIssuedListWithFilters(api.credentialsManager, setLoading, setSearching);
+
+  const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
   const [credentialsReceived, setCredentialsReceived] = useState([]);
 
@@ -68,12 +72,18 @@ const CredentialContainer = ({ api }) => {
       );
 
       setCredentialsIssued(mappedCredentials);
+      removeUnconfirmedAccountError();
     } catch (error) {
       Logger.error(
         '[CredentialContainer.refreshCredentialsIssued] Error while getting Credentials',
         error
       );
-      message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+        showUnconfirmedAccountError();
+      } else {
+        removeUnconfirmedAccountError();
+        message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      }
     } finally {
       setLoadingByKey('issued', false);
     }
@@ -97,19 +107,24 @@ const CredentialContainer = ({ api }) => {
       const updatedCredentialsReceived = credentialsReceived.concat(mappedCredentials);
       setCredentialsReceived(updatedCredentialsReceived);
       setNoReceivedCredentials(!updatedCredentialsReceived.length);
+      removeUnconfirmedAccountError();
     } catch (error) {
       Logger.error(
         '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
         error
       );
-      message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+        showUnconfirmedAccountError();
+      } else {
+        removeUnconfirmedAccountError();
+        message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      }
     } finally {
       setLoadingByKey('received', false);
     }
   };
 
   useEffect(() => {
-    fetchCredentialsIssued();
     fetchCredentialsReceived();
   }, []);
 

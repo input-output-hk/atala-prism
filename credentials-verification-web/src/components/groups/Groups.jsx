@@ -13,6 +13,8 @@ import { withRedirector } from '../providers/withRedirector';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import { backendDateFormat } from '../../helpers/formatters';
 import { filterByInclusion } from '../../helpers/filterHelpers';
+import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
+import { useSession } from '../providers/SessionContext';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -43,6 +45,8 @@ const Groups = ({
 
   const [groupToDelete, setGroupToDelete] = useState({});
   const [filteredGroups, setFilteredGroups] = useState([]);
+
+  const { accountIsConfirmed } = useSession();
 
   const closeModal = () => {
     setGroupToDelete({});
@@ -95,18 +99,19 @@ const Groups = ({
     if (loading) return <SimpleLoading size="md" />;
     if (groups.length && !filteredGroups.length) return <EmptyComponent {...emptyProps} isFilter />;
     if (groups.length) return <GroupsTable {...tableProps} groups={filteredGroups} />;
-    return <EmptyComponent {...emptyProps} button={newGroupButton} />;
+    return <EmptyComponent {...emptyProps} button={accountIsConfirmed && newGroupButton} />;
   };
 
   return (
     <div className="Wrapper">
+      {!accountIsConfirmed && <WaitBanner />}
       <DeleteGroupModal {...modalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
-        {newGroupButton}
+        {accountIsConfirmed && newGroupButton}
       </div>
       <GroupFilters updateGroups={handleUpdateGroups} />
-      <Row>{renderContent()}</Row>
+      {renderContent()}
     </div>
   );
 };

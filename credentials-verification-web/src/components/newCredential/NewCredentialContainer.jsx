@@ -78,7 +78,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       .then(handleGetGroups)
       .catch(error => {
         Logger.error('[NewCredentailContainer.getGroups] Error: ', error);
-        message.error(t('errors.errorGettingHolders'));
+        message.error(message.error(t('errors.errorGetting', { model: 'groups' })));
       });
 
   const getSubjects = async () => {

@@ -9,8 +9,10 @@ import CreateCredentialsButton from './Atoms/Buttons/CreateCredentialsButton';
 import CredentialsIssued from './Organisms/Tabs/CredentialsIssued';
 import CredentialsReceived from './Organisms/Tabs/CredentialsReceived';
 import { CREDENTIALS_ISSUED, CREDENTIALS_RECEIVED } from '../../helpers/constants';
+import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 
 import './_style.scss';
+import { useSession } from '../providers/SessionContext';
 
 const { TabPane } = Tabs;
 
@@ -19,6 +21,8 @@ const Credentials = ({ tabProps, setActiveTab, loading }) => {
   const [currentCredential, setCurrentCredential] = useState({});
   const [showDrawer, setShowDrawer] = useState(false);
 
+  const { accountIsConfirmed } = useSession();
+
   const showCredentialData = credential => {
     setCurrentCredential(credential);
     setShowDrawer(true);
@@ -26,6 +30,7 @@ const Credentials = ({ tabProps, setActiveTab, loading }) => {
 
   return (
     <div className="Wrapper PageContainer CredentialsTableContainer">
+      {!accountIsConfirmed && <WaitBanner />}
       <CredentialSummaryDetail
         drawerInfo={{
           title: t('credentials.detail.title'),
@@ -39,7 +44,7 @@ const Credentials = ({ tabProps, setActiveTab, loading }) => {
           <h1>{t('credentials.title')}</h1>
           <h3>{t('credentials.info')}</h3>
         </div>
-        <CreateCredentialsButton />
+        {accountIsConfirmed && <CreateCredentialsButton />}
       </div>
       <Tabs defaultActiveKey={CREDENTIALS_ISSUED} onChange={setActiveTab}>
         <TabPane key={CREDENTIALS_ISSUED} tab={t('credentials.tabs.credentialsIssued')}>

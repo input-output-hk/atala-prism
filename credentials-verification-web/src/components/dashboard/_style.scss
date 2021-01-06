@@ -44,7 +44,6 @@
   .DashboardContentBottom {
     display: flex;
     flex-flow: column;
-    margin-top: 2em;
     h3 {
       @include primary-text($h3, #728099);
     }

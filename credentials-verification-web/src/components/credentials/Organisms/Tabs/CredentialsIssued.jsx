@@ -8,6 +8,7 @@ import { CREDENTIALS_ISSUED } from '../../../../helpers/constants';
 import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
+import { useSession } from '../../../providers/SessionContext';
 
 const CredentialsIssued = ({
   showEmpty,
@@ -21,6 +22,8 @@ const CredentialsIssued = ({
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [selectedLength, setSelectedLength] = useState();
+
+  const { accountIsConfirmed } = useSession();
 
   useEffect(() => {
     const keys = Object.keys(selectedRowKeys);
@@ -45,7 +48,7 @@ const CredentialsIssued = ({
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
     isFilter: !showEmpty && !credentials.length,
-    button: showEmpty && <CreateCredentialsButton />
+    button: showEmpty && accountIsConfirmed && <CreateCredentialsButton />
   };
 
   const renderEmptyComponent = !credentials.length || showEmpty;
