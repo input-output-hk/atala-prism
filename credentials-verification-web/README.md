@@ -4,7 +4,7 @@
 
 ### Integration with grpc backends
 
-First of all, ensure you have .protos compiled. For more information go to [Compile .protos section](#Compile-.protos)
+The .protos are compiled any time you run/build the app/tests. For more information go to [Compile .protos section](#Compile-.protos)
 
 ### Actual instructions to run the project
 
@@ -28,7 +28,7 @@ In order to compile the .protos you need to install
         $ chmod +x /usr/local/bin/protoc-gen-grpc-web
     #
 
-Then run `./scripts/compile-protos.sh`
+The script `./scripts/compile-protos.sh` will run before running or building the app or the tests.
 
 ## Configurations
 
