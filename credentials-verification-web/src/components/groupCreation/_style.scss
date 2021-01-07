@@ -61,6 +61,9 @@
 .addContactsContainer {
   overflow-y: hidden;
   height: map-get($height-sizes, 'md');
+  .ConnectionsTable {
+    height: calc(100% - 10px);
+  }
   .textContactData {
     margin-right: 40px;
     h4 {

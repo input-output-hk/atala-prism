@@ -15,6 +15,7 @@ const ConnectionsTable = ({
   handleContactsRequest,
   hasMore,
   viewContactDetail,
+  columns,
   searching
 }) => {
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ const ConnectionsTable = ({
   return (
     <div className="ConnectionsTable">
       <InfiniteScrollTable
-        columns={getContactColumns({ inviteContact, viewContactDetail })}
+        columns={columns || getContactColumns({ inviteContact, viewContactDetail })}
         data={contacts}
         loading={loading}
         getMoreData={getMoreData}
@@ -52,7 +53,9 @@ ConnectionsTable.defaultProps = {
   setSelectedContacts: null,
   selectedContacts: [],
   inviteContact: null,
-  searching: false
+  searching: false,
+  columns: undefined,
+  handleContactsRequest: null
 };
 
 ConnectionsTable.propTypes = {
@@ -61,9 +64,10 @@ ConnectionsTable.propTypes = {
   selectedContacts: PropTypes.arrayOf(PropTypes.string),
   inviteContact: PropTypes.func,
   viewContactDetail: PropTypes.func,
-  handleContactsRequest: PropTypes.func.isRequired,
+  handleContactsRequest: PropTypes.func,
   hasMore: PropTypes.bool.isRequired,
-  searching: PropTypes.bool
+  searching: PropTypes.bool,
+  columns: PropTypes.arrayOf(PropTypes.any)
 };
 
 export default ConnectionsTable;

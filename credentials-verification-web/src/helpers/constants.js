@@ -160,5 +160,13 @@ export const LONG_DATE_FORMAT = 'DD MMMM YYYY';
 export const CREDENTIALS_ISSUED = 'CREDENTIALS_ISSUED';
 export const CREDENTIALS_RECEIVED = 'CREDENTIALS_RECEIVED';
 
+// groups
+export const GROUP_NAME_STATES = {
+  initial: null,
+  loading: 'loading',
+  possible: 'possible',
+  failed: 'failed'
+};
+
 // error codes
 export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;

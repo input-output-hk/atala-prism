@@ -770,6 +770,28 @@
     "groupName": "Group Name",
     "addContacts": "Add Contacts"
   },
+  "groupEditing": {
+    "title": "Edit Group",
+    "subtitle": "Edit group name, add or remove contacts.",
+    "contacts": "Contacts",
+    "selectContacts": "Select contacts to add",
+    "removeContacts": "Remove Contacts",
+    "wantToRemoveOne": "Do you want to remove this contact?",
+    "wantToRemoveMany": "Do you want to remove these contacts?",
+    "buttons": {
+      "save": "Save",
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "addContacts": "Add Contacts",
+      "remove": "Remove"
+    },
+    "success": "Successfully updated",
+    "errors": {
+      "grpc": "Error editing group",
+      "gettingGroups": "Error getting groups"
+    },
+    "selectAll": "Select All"
+  },
   "theme": {
     "title": {
       "issuer": "MANAGEMENT CONSOLE",

@@ -1,0 +1,48 @@
+$header-height: 56px;
+$description-height: 124px;
+
+.Wrapper {
+  height: calc(100% - #{$header-height}) !important;
+  .ant-btn.custom {
+    float: right;
+    width: 100%;
+  }
+  .GroupEditingContent {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - #{$header-height});
+    .ContactsContainer {
+      height: calc(100% - #{$description-height});
+      padding: 1em 0;
+      & > div,
+      .GroupContacts,
+      .ConnectionsTable {
+        height: 100%;
+      }
+      .SaveButtonContainer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+      }
+    }
+    .GroupNameContainer {
+      margin: 1em 0;
+      .GroupName {
+        display: flex;
+        align-items: center;
+        font-size: 18px;
+        font-family: 'Circular-bold';
+        .GroupNameForm {
+          display: inline-flex;
+          margin-bottom: 0px !important;
+          .FormContainer {
+            width: 84%;
+          }
+        }
+      }
+    }
+  }
+  .ContactFilters {
+    width: 64%;
+  }
+}

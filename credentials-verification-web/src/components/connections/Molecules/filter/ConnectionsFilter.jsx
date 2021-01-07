@@ -47,15 +47,16 @@ const ConnectionsFilter = ({ searchText, setSearchText, status, setStatus, withS
 ConnectionsFilter.defaultProps = {
   searchText: undefined,
   status: undefined,
+  setStatus: undefined,
   withStatus: true
 };
 
 ConnectionsFilter.propTypes = {
-  searchText: PropTypes.string,
   setSearchText: PropTypes.func.isRequired,
+  searchText: PropTypes.string,
   status: PropTypes.string,
   withStatus: PropTypes.bool,
-  setStatus: PropTypes.func.isRequired
+  setStatus: PropTypes.func
 };
 
 export default ConnectionsFilter;

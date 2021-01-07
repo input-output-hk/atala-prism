@@ -1,0 +1,45 @@
+@import '../../../css/general_styling';
+
+.ant-popover {
+  &-inner-content {
+    width: auto !important;
+  }
+}
+
+.AddContactsModal {
+  height: 80vh;
+  .ContactFilters {
+    width: 100% !important;
+  }
+  .ant-modal {
+    &-title {
+      font-family: 'Circular-bold';
+      font-size: 21px;
+      color: $secondary-color;
+    }
+    &-body {
+      height: 75%;
+    }
+    &-content {
+      height: 100%;
+    }
+    &-footer {
+      height: 80px;
+    }
+  }
+
+  .ModalContactsContainer {
+    height: 100%;
+    & > div {
+      height: 100%;
+    }
+    .ConnectionsTable {
+      height: 92%;
+    }
+  }
+
+  .FooterContainer {
+    display: flex;
+    justify-content: center;
+  }
+}

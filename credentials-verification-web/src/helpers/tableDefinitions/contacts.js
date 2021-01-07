@@ -6,6 +6,7 @@ import CellRenderer from '../../components/common/Atoms/CellRenderer/CellRendere
 import StatusBadge from '../../components/connections/Atoms/StatusBadge/StatusBadge';
 import holderDefaultAvatar from '../../images/holder-default-avatar.svg';
 import ActionButtons from '../../components/connections/Atoms/ActionButtons/ActionButtons';
+import ActionGroupButtons from '../../components/groupEditing/ActionButtons';
 import { dayMonthYearBackendFormatter } from '../formatters';
 
 const translationKeyPrefix = 'contacts.table.columns';
@@ -66,8 +67,20 @@ const getExtendedColumns = ({ inviteContact, viewContactDetail }) => [
   }
 ];
 
+const getSpecialGroupContactsColumns = onDelete => [
+  {
+    key: 'actions',
+    render: contact => (
+      <PopOver content={<ActionGroupButtons contact={contact} onDelete={onDelete} />} />
+    )
+  }
+];
+
 export const getContactColumns = ({ inviteContact, viewContactDetail }) => {
   const basicColumns = getBasicContactColumns();
   if (!viewContactDetail) return basicColumns;
   return basicColumns.concat(getExtendedColumns({ viewContactDetail, inviteContact }));
 };
+
+export const getGroupContactColumns = onDelete =>
+  getBasicContactColumns().concat(getSpecialGroupContactsColumns(onDelete));

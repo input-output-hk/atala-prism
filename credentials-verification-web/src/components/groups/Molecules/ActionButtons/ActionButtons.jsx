@@ -9,8 +9,7 @@ import './_style.scss';
 
 const baseProps = {
   type: 'link',
-  style: { color: '#FF2D3B' },
-  disabled: true
+  style: { color: '#FF2D3B' }
 };
 
 const ActionButtons = ({ id, setGroupToDelete, fullInfo }) => {
@@ -18,12 +17,14 @@ const ActionButtons = ({ id, setGroupToDelete, fullInfo }) => {
 
   const menu = (
     <>
-      <Button {...baseProps}>
+      <Button {...baseProps} disabled>
         <Link to={`group/${id}`}>{t('groups.table.buttons.view')}</Link>
       </Button>
-      <Button {...baseProps}>{t('groups.table.buttons.edit')}</Button>
+      <Button {...baseProps}>
+        <Link to={`/groups/${id}/edit`}>{t('groups.table.buttons.edit')}</Link>
+      </Button>
       {fullInfo && (
-        <Button {...baseProps} onClick={setGroupToDelete}>
+        <Button {...baseProps} disabled onClick={setGroupToDelete}>
           {t('groups.table.buttons.delete')}
         </Button>
       )}

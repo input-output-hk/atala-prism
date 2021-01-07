@@ -18,13 +18,14 @@ const CellRenderer = ({ title, value, firstValue, children, light }) => {
 
 CellRenderer.defaultProps = {
   children: null,
-  light: false
+  light: false,
+  firstValue: ''
 };
 
 CellRenderer.propTypes = {
   title: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  firstValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  firstValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   children: PropTypes.arrayOf(PropTypes.element),
   light: PropTypes.bool
 };

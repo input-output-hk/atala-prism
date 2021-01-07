@@ -1,51 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Input, Checkbox, Row, Col, Icon, message } from 'antd';
+import { Checkbox, Row, Col } from 'antd';
 import { withApi } from '../providers/withApi';
 import { useContactsWithFilteredList } from '../../hooks/useContacts';
-import { useDebounce } from '../../hooks/useDebounce';
-import { noEmptyInput } from '../../helpers/formRules';
-import CustomForm from '../common/Organisms/Forms/CustomForm';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { MAX_CONTACTS } from '../../helpers/constants';
-import { colors } from '../../helpers/colors';
+import { MAX_CONTACTS, GROUP_NAME_STATES } from '../../helpers/constants';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
-import Logger from '../../helpers/Logger';
-import { exactValueExists } from '../../helpers/filterHelpers';
 import './_style.scss';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
-
-const { Search } = Input;
-
-const i18nPrefix = 'groupCreation.form.';
-
-const getInput = (key, initialValue, t, onChange) => ({
-  fieldDecoratorData: {
-    rules: [noEmptyInput(t('errors.form.emptyField'))],
-    initialValue
-  },
-  key,
-  className: '',
-  input: <Input onChange={onChange} placeholder={t(`${i18nPrefix}${key}`)} allowClear />
-});
-
-const GroupForm = React.forwardRef(({ updateForm, groupName }, ref) => {
-  const { t } = useTranslation();
-
-  const items = [getInput('groupName', groupName, t, ({ target: { value } }) => updateForm(value))];
-
-  return <CustomForm items={items} ref={ref} />;
-});
-
-const NAME_STATES = {
-  initial: null,
-  loading: 'loading',
-  possible: 'possible',
-  failed: 'failed'
-};
+import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 
 const GroupCreation = ({
   api,
@@ -57,10 +23,11 @@ const GroupCreation = ({
   isIssuer,
   isSaving
 }) => {
-  const [nameState, setNameState] = useState(NAME_STATES.initial);
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [loadingContacts, setLoadingContacts] = useState(false);
   const [searching, setSearching] = useState(true);
+  const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
+
   const {
     contacts,
     filteredContacts,
@@ -82,33 +49,6 @@ const GroupCreation = ({
     updateMembers(selectedContacts);
   }, [selectedContacts]);
 
-  const handleUpdateForm = async value => {
-    updateForm(value);
-    if (value) {
-      setNameState(NAME_STATES.loading);
-      checkIfGroupExists(value);
-    } else {
-      setNameState(NAME_STATES.initial);
-    }
-  };
-
-  const groupExists = async value => {
-    try {
-      const groups = await api.groupsManager.getGroups();
-      if (exactValueExists(groups, value, 'name')) {
-        setNameState(NAME_STATES.failed);
-      } else {
-        setNameState(NAME_STATES.possible);
-      }
-    } catch (error) {
-      setNameState(NAME_STATES.failed);
-      message.error(t('groupCreation.errors.gettingGroups'));
-      Logger.error('groupCreation.errors.gettingGroups', error);
-    }
-  };
-
-  const checkIfGroupExists = useDebounce(groupExists);
-
   const handleSelectAll = async e => {
     const { checked } = e.target;
     if (checked) {
@@ -116,19 +56,6 @@ const GroupCreation = ({
       setSelectedContacts(allContacts.map(contact => contact.contactid));
     } else {
       setSelectedContacts([]);
-    }
-  };
-
-  const renderNameState = () => {
-    switch (nameState) {
-      case NAME_STATES.loading:
-        return <Icon type="loading" />;
-      case NAME_STATES.failed:
-        return <Icon type="close-circle" theme="filled" style={{ color: colors.error }} />;
-      case NAME_STATES.possible:
-        return <Icon type="check-circle" theme="filled" style={{ color: colors.success }} />;
-      default:
-        return null;
     }
   };
 
@@ -142,14 +69,13 @@ const GroupCreation = ({
       <div className="GroupCreationContent">
         <div className="box">
           <h3>{t('groupCreation.groupName')}</h3>
-          <Row type="flex" gutter={12} className="ai-center mb-3">
-            <Col sm={20} md={8}>
-              <GroupForm ref={formRef} updateForm={handleUpdateForm} formValues={formValues} />
-            </Col>
-            <Col sm={2} md={2}>
-              {renderNameState()}
-            </Col>
-          </Row>
+          <GroupName
+            updateForm={updateForm}
+            formValues={formValues}
+            ref={formRef}
+            setNameState={setNameState}
+            nameState={nameState}
+          />
           <h3>{t('groupCreation.addContacts')}</h3>
           <Row className="UtilsContainer mb-0">
             <Col span={3}>
@@ -184,7 +110,7 @@ const GroupCreation = ({
                 <CustomButton
                   buttonProps={{
                     className: 'theme-primary',
-                    disabled: nameState === NAME_STATES.failed,
+                    disabled: nameState === GROUP_NAME_STATES.failed,
                     onClick: () => createGroup(groupName)
                   }}
                   buttonText={t('groupCreation.form.buttonText')}
@@ -197,15 +123,6 @@ const GroupCreation = ({
       </div>
     </div>
   );
-};
-
-GroupForm.defaultProps = {
-  groupName: ''
-};
-
-GroupForm.propTypes = {
-  updateForm: PropTypes.func.isRequired,
-  groupName: PropTypes.string
 };
 
 GroupCreation.defaultProps = {

@@ -18,6 +18,7 @@ import Contact from './contactDetail/ContactContainer';
 import GroupCreationContainer from './groupCreation/GroupCreationContainer';
 import Instructions from './instructions/instructions';
 import ImportContactsContainer from './importContacts/ImportContactsContainer';
+import GroupEditingContainer from './groupEditing/GroupEditingContainer';
 
 const issuer = [ISSUER];
 const verifier = [VERIFIER];
@@ -97,6 +98,12 @@ const groupCreationRoute = {
   key: 'groupsCreation',
   component: withLoggedValidation(withSideBar(GroupCreationContainer), allRoles)
 };
+const groupEditingRoute = {
+  exact: true,
+  path: '/groups/:id/edit',
+  key: 'groupsEditing',
+  component: withLoggedValidation(withSideBar(GroupEditingContainer), allRoles)
+};
 const instructions = {
   exact: true,
   path: '/instructions',
@@ -117,6 +124,7 @@ const routes = [
   importContacts,
   contact,
   groupCreationRoute,
+  groupEditingRoute,
   groups,
   credential,
   newCredential,
