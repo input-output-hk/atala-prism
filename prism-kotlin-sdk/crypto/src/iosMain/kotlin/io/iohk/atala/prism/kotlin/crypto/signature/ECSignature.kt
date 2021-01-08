@@ -11,7 +11,7 @@ import kotlinx.cinterop.*
 import platform.posix.size_tVar
 
 @ExperimentalUnsignedTypes
-actual data class ECSignature(val data: List<UByte>) {
+actual data class ECSignature actual constructor(val data: List<UByte>) {
     actual fun getEncoded(): List<Byte> =
         data.map { it.toByte() }
 

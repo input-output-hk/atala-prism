@@ -39,8 +39,10 @@ kotlin {
             dependencies {
                 implementation(project(":protos"))
                 implementation(project(":crypto"))
+                implementation(project(":identity"))
                 implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
                 implementation("com.ionspin.kotlin:bignum:0.2.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
             }
         }
         val commonTest by getting {

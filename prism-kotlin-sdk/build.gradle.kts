@@ -20,6 +20,7 @@ allprojects {
         mavenLocal()
         maven("https://plugins.gradle.org/m2/")
         maven { setUrl("https://dl.bintray.com/itegulov/maven") }
+        maven(url = "https://kotlin.bintray.com/kotlinx/")
     }
 
     apply(plugin = "org.jlleitschuh.gradle.ktlint")

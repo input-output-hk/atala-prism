@@ -45,8 +45,8 @@ data class CredentialContent(val fields: JsonObject) {
     }
 
     companion object {
-        fun fromString(value: String): CredentialContent? =
-            CredentialContent(Json.parseToJsonElement(value)?.jsonObject)
+        fun fromString(value: String): CredentialContent =
+            CredentialContent(Json.parseToJsonElement(value).jsonObject)
     }
 }
 
