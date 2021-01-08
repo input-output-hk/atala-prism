@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.connector
 
 import java.time.Instant
-
 import cats.effect.{ContextShift, IO, Timer}
 import doobie.implicits._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -27,6 +26,7 @@ import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 
+import java.util.UUID
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationLong
 
@@ -217,13 +217,13 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   }
 
   protected def createExampleMessages(recipientId: ParticipantId): Seq[(MessageId, ConnectionId)] = {
-    val acceptedConnections = for (i <- 1 to 6) yield {
-      val issuer = createIssuer(s"Issuer$i")
+    val acceptedConnections = for (_ <- 1 to 6) yield {
+      val issuer = createIssuer(s"Issuer-${randomId()}")
       (createConnection(issuer, recipientId), issuer)
     }
 
-    val initiatedConnections = for (i <- 1 to 2) yield {
-      val holder = createHolder(s"Holder$i")
+    val initiatedConnections = for (_ <- 1 to 2) yield {
+      val holder = createHolder(s"Holder-${randomId()}")
       (createConnection(recipientId, holder), holder)
     }
 
@@ -231,8 +231,9 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
 
     for (i <- 1 to 30) yield {
       val (connection, sender) = connections((i - 1) % connections.size)
-      (createMessage(sender, connection, s"message$i".getBytes), connection)
+      (createMessage(sender, connection, s"message-${randomId()}".getBytes), connection)
     }
   }
 
+  private def randomId(): String = UUID.randomUUID().toString
 }

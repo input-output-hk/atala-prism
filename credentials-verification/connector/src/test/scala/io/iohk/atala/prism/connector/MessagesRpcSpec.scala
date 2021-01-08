@@ -211,23 +211,38 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       usingAsyncApiAs(getMessageStreamRequest1) { service =>
         service.getMessageStream(getMessageStreamRequest1.request, streamObserver1)
       }
-      // Connect second observer
-      val getMessageStreamRequest2 = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+
+      // Send some messages to guarantee first observer is properly connected and avoid race conditions (in test)
+      // with the second observer
+      val firstMessageIds = generateMessageIds(participantId)
+
+      // Verify first observer got the messages
+      verify(streamObserver1, eventually.atLeast(firstMessageIds.size)).onNext(any)
+
+      // Connect second observer, requesting new messages only
+      val getMessageStreamRequest2 = SignedRpcRequest.generate(
+        keyPair,
+        did,
+        connector_api.GetMessageStreamRequest(lastSeenMessageId = firstMessageIds.last)
+      )
       val streamObserver2 = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
       usingAsyncApiAs(getMessageStreamRequest2) { service =>
         service.getMessageStream(getMessageStreamRequest2.request, streamObserver2)
       }
 
-      // Insert new messages
-      val messageIds = generateMessageIds(participantId)
+      // Insert second messages
+      val secondMessageIds = generateMessageIds(participantId)
 
       // Verify second observer received all messages and remains open
       val responseCaptor2 = ArgCaptor[connector_api.GetMessageStreamResponse]
-      verify(streamObserver2, eventually.atLeast(messageIds.size)).onNext(responseCaptor2.capture)
-      asMessageIds(responseCaptor2.values) mustBe messageIds
+      verify(streamObserver2, eventually.atLeast(secondMessageIds.size)).onNext(responseCaptor2.capture)
+      asMessageIds(responseCaptor2.values) mustBe secondMessageIds
       verify(streamObserver2, never).onCompleted()
-      // Verify first observer received no messages and was closed (this is checked last to ensure time has past)
-      verify(streamObserver1, never).onNext(any)
+
+      // Verify first observer received the first messages only and was closed
+      val responseCaptor1 = ArgCaptor[connector_api.GetMessageStreamResponse]
+      verify(streamObserver1, eventually.atLeast(firstMessageIds.size)).onNext(responseCaptor1.capture)
+      asMessageIds(responseCaptor1.values) mustBe firstMessageIds
       verify(streamObserver1).onCompleted()
     }
 
