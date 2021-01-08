@@ -143,6 +143,8 @@ jobs:
 
       - setup_remote_docker
 
+      - install-protoc
+
       - attach_workspace:
           at: ./workspace
 
