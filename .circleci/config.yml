@@ -143,10 +143,13 @@ jobs:
 
       - setup_remote_docker
 
-      - install-protoc
-
       - attach_workspace:
           at: ./workspace
+
+      - run:
+          name: Install sudo
+          command: apt-get install -y sudo
+      - install-protoc
 
       - restore_cache:
           key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
