@@ -1,5 +1,9 @@
 package io.iohk.atala.cvp.webextension.popup
 
+import com.alexitc.materialui.facade.materialUiCore.anon.PartialClassNameMapCircul
+import com.alexitc.materialui.facade.materialUiCore.materialUiCoreStrings.indeterminate
+import com.alexitc.materialui.facade.materialUiCore.{components => mui}
+import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.Role
@@ -11,10 +15,6 @@ import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
-import typings.materialUiCore.anon.PartialClassNameMapCircul
-import typings.materialUiCore.materialUiCoreStrings.indeterminate
-import typings.materialUiCore.{components => mui}
-import typings.materialUiIcons.{components => muiIcons}
 import typings.std.global.console
 
 import scala.concurrent.ExecutionContext.Implicits.global

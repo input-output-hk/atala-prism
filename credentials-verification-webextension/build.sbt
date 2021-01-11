@@ -136,6 +136,7 @@ libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % scalaJsJavaTimeV
 libraryDependencies += "me.shadaj" %%% "slinky-core" % slinkyVersion // core React functionality, no React DOM
 libraryDependencies += "me.shadaj" %%% "slinky-web" % slinkyVersion // React DOM, HTML and SVG tags
 libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % slinkyIjextVerion // Intellij plugin for slinky
+libraryDependencies += "com.alexitc" %%% "sjs-material-ui-facade" % "0.1.2" // material-ui bindings
 
 // Test
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
@@ -155,7 +156,9 @@ npmDependencies in Compile ++= Seq(
   "@material-ui/icons" -> "3.0.2"
 )
 
-stIgnore := List(
+// material-ui is provided by a pre-packaged library
+stIgnore ++= List("@material-ui/core", "@material-ui/styles", "@material-ui/icons")
+stIgnore ++= List(
   "chromedriver",
   "grpc-web",
   "react-dom"

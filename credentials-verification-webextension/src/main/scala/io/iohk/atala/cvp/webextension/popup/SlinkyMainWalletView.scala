@@ -1,5 +1,11 @@
 package io.iohk.atala.cvp.webextension.popup
 
+import com.alexitc.materialui.facade.materialUiCore.anon.PartialClassNameMapCircul
+import com.alexitc.materialui.facade.materialUiCore.buttonButtonMod.ButtonProps
+import com.alexitc.materialui.facade.materialUiCore.materialUiCoreStrings.indeterminate
+import com.alexitc.materialui.facade.materialUiCore.mod.PropTypes.Color
+import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
+import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.background.wallet.SigningRequest
 import io.iohk.atala.cvp.webextension.popup.models.View
@@ -10,12 +16,6 @@ import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 import typings.dompurify.mod.{^ => dompurify}
-import typings.materialUiCore.anon.PartialClassNameMapCircul
-import typings.materialUiCore.buttonButtonMod.ButtonProps
-import typings.materialUiCore.materialUiCoreStrings.indeterminate
-import typings.materialUiCore.mod.PropTypes.Color
-import typings.materialUiCore.{materialUiCoreStrings, components => mui}
-import typings.materialUiIcons.{components => muiIcons}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
