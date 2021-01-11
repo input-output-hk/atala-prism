@@ -17,6 +17,18 @@ package object assureId {
     implicit val deviceEncoder: Encoder[Device] = deriveConfiguredEncoder
     implicit val deviceDecoder: Decoder[Device] = deriveConfiguredDecoder
 
+    implicit val documentBiographicEncoder: Encoder[DocumentBiographic] = deriveConfiguredEncoder
+    implicit val documentBiographicDecoder: Decoder[DocumentBiographic] = deriveConfiguredDecoder
+
+    implicit val documentClassificationEncoder: Encoder[DocumentClassification] = deriveConfiguredEncoder
+    implicit val documentClassificationDecoder: Decoder[DocumentClassification] = deriveConfiguredDecoder
+
+    implicit val documentClassificationTypeEncoder: Encoder[DocumentClassificationType] = deriveConfiguredEncoder
+    implicit val documentClassificationTypeDecoder: Decoder[DocumentClassificationType] = deriveConfiguredDecoder
+
+    implicit val documentEncoder: Encoder[Document] = deriveConfiguredEncoder
+    implicit val documentDecoder: Decoder[Document] = deriveConfiguredDecoder
+
     implicit val newDocumentInstanceRequestBodyEncoder: Encoder[NewDocumentInstanceRequestBody] =
       deriveConfiguredEncoder
     implicit val newDocumentInstanceRequestBodyDecoder: Decoder[NewDocumentInstanceRequestBody] =

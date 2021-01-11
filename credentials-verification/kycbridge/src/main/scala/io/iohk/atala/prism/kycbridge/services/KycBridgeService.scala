@@ -17,7 +17,15 @@ class KycBridgeService(tx: Transactor[Task], connectorService: ConnectorClientSe
         val newToken = ConnectionToken(response.token)
 
         ConnectionDao
-          .insert(Connection(newToken, None, ConnectionState.Invited, None))
+          .insert(
+            Connection(
+              token = newToken,
+              id = None,
+              state = ConnectionState.Invited,
+              acuantDocumentInstanceId = None,
+              acuantDocumentStatus = None
+            )
+          )
           .transact(tx)
           .map(_ => CreateAccountResponse(newToken.token))
       })

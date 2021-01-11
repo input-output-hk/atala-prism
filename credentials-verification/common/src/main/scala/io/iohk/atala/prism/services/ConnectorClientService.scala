@@ -18,6 +18,10 @@ trait ConnectorClientService {
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse]
 
+  def sendMessage(
+      message: SendMessageRequest
+  ): Task[SendMessageResponse]
+
   def requestCredential(
       connectionId: ConnectionId,
       connectionToken: ConnectionToken,
@@ -61,6 +65,9 @@ class ConnectorClientServiceImpl(
     with ConnectorClientService {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
+
+  def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] =
+    authenticatedCall(message, _.sendMessage)
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse] =
     authenticatedCall(GenerateConnectionTokenRequest(), _.generateConnectionToken)

@@ -5,7 +5,7 @@ import cats.effect.{ExitCode, Resource}
 import com.typesafe.config.ConfigFactory
 import doobie.hikari.HikariTransactor
 import io.grpc.Server
-import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.kycbridge.config.KycBridgeConfig
@@ -19,7 +19,12 @@ import io.iohk.atala.prism.kycbridge.services.{
   KycBridgeService
 }
 import io.iohk.atala.prism.repositories.TransactorFactory
-import io.iohk.atala.prism.services.{ConnectorClientService, ConnectorClientServiceImpl}
+import io.iohk.atala.prism.services.{
+  ConnectorClientService,
+  ConnectorClientServiceImpl,
+  NodeClientService,
+  NodeClientServiceImpl
+}
 import org.flywaydb.core.Flyway
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.slf4j.LoggerFactory
@@ -27,8 +32,14 @@ import io.iohk.atala.kycbridge.protos.kycbridge_api.KycBridgeServiceGrpc
 import io.iohk.atala.prism.utils.GrpcUtils
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import io.iohk.atala.prism.services.ConnectorMessagesService
+import doobie.implicits._
+import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
+import io.iohk.atala.prism.kycbridge.processors.DocumentUploadedMessageProcessor
 
 object KycBridgeApp extends TaskApp {
+
+  implicit val ec = EC
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -69,6 +80,7 @@ object KycBridgeApp extends TaskApp {
 
       kycBridgeConfig = KycBridgeConfig(globalConfig)
       connectorConfig = ConnectorConfig(globalConfig)
+      nodeConfig = NodeConfig(globalConfig)
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
 
       tx <- TransactorFactory.transactorTask(transactorConfig)
@@ -77,13 +89,28 @@ object KycBridgeApp extends TaskApp {
       // connector
       connector = ConnectorClientService.createConnectorGrpcStub(connectorConfig)
 
-      connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), connectorConfig)
+      // node
+      node = NodeClientService.createNode(nodeConfig)
+
+      connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(ec), connectorConfig)
+      nodeService = new NodeClientServiceImpl(node, connectorConfig.authConfig)
       kycBridgeService = new KycBridgeService(tx, connectorService)
       kycBridgeGrpcService = new KycBridgeGrpcService(kycBridgeService)(scheduler)
       assureIdService = new AssureIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       acasService = new AcasServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       connectionService = new ConnectionService(tx, connectorService)
       acuantService = new AcuantService(tx, assureIdService, acasService, connectorService)
+
+      // connector message processors
+      documentUploadedMessageProcessor =
+        new DocumentUploadedMessageProcessor(tx, nodeService, connectorService, assureIdService, connectorConfig)
+
+      connectorMessageService = new ConnectorMessagesService(
+        connectorService = connectorService,
+        messageProcessors = List(documentUploadedMessageProcessor.processor),
+        findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(tx),
+        saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
+      )
 
       _ <- Resource.liftF(connectionService.connectionUpdateStream.compile.drain.start)
       _ <- Resource.liftF(acuantService.acuantDataStream.compile.drain.start)

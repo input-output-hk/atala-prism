@@ -1,11 +1,5 @@
 package io.iohk.atala.prism.kycbridge.services
 
-import io.iohk.atala.prism.kycbridge.config.AcuantConfig
-import io.iohk.atala.prism.kycbridge.models.assureId.{
-  Device,
-  NewDocumentInstanceRequestBody,
-  NewDocumentInstanceResponseBody
-}
 import monix.eval.Task
 import org.http4s.Method._
 import org.http4s.client._
@@ -13,13 +7,23 @@ import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.headers._
 import org.http4s.{MediaType, Uri}
 import io.circe.syntax._
-import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
 import org.http4s.circe._
 import ServiceUtils._
 
+import io.iohk.atala.prism.kycbridge.config.AcuantConfig
+import io.iohk.atala.prism.kycbridge.models.assureId.{
+  Device,
+  NewDocumentInstanceRequestBody,
+  NewDocumentInstanceResponseBody,
+  Document,
+  DocumentStatus
+}
+import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
+
 trait AssureIdService {
   def createNewDocumentInstance(device: Device): Task[Either[Exception, NewDocumentInstanceResponseBody]]
-  def getDocumentStatus(id: String): Task[Either[Exception, Int]]
+  def getDocument(id: String): Task[Either[Exception, Document]]
+  def getDocumentStatus(id: String): Task[Either[Exception, DocumentStatus]]
 }
 
 class AssureIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
@@ -46,13 +50,23 @@ class AssureIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
     runRequestToEither[String](request, client).map(result => result.map(NewDocumentInstanceResponseBody))
   }
 
-  def getDocumentStatus(id: String): Task[Either[Exception, Int]] = {
+  def getDocument(id: String): Task[Either[Exception, Document]] = {
     val request = GET(
-      baseUri / s"AssureIDService.svc/Document/$id/Status",
+      baseUri / "AssureIDService.svc/Document" / id,
       authorization,
       Accept(MediaType.application.json)
     )
 
-    runRequestToEither[Int](request, client)
+    runRequestToEither[Document](request, client)
+  }
+
+  def getDocumentStatus(id: String): Task[Either[Exception, DocumentStatus]] = {
+    val request = GET(
+      baseUri / "AssureIDService.svc/Document" / id / "Status",
+      authorization,
+      Accept(MediaType.application.json)
+    )
+
+    runRequestToEither[Int](request, client).map(_.flatMap(DocumentStatus.fromInt))
   }
 }

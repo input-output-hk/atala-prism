@@ -25,14 +25,16 @@ trait KycBridgeFixtures {
         token = ConnectionToken("token1"),
         id = Some(connectionId1),
         state = ConnectionState.Invited,
-        acuantDocumentInstanceId = None
+        acuantDocumentInstanceId = None,
+        acuantDocumentStatus = None
       )
     lazy val connection2: Connection =
       Connection(
         token = ConnectionToken("token2"),
         id = Some(connectionId2),
         state = ConnectionState.Invited,
-        acuantDocumentInstanceId = Some(AcuantDocumentInstanceId("920dacc8-9d6d-4a11-aa02-c1dede4729cd"))
+        acuantDocumentInstanceId = Some(AcuantDocumentInstanceId("920dacc8-9d6d-4a11-aa02-c1dede4729cd")),
+        acuantDocumentStatus = None
       )
 
     def insertAll[F[_]: Sync](database: Transactor[F]): F[Unit] = {

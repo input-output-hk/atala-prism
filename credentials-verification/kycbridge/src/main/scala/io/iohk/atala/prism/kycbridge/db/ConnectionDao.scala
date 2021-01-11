@@ -11,7 +11,7 @@ object ConnectionDao {
 
   def findByConnectionToken(token: ConnectionToken): ConnectionIO[Option[Connection]] = {
     sql"""
-         | SELECT token, id, state, acuant_document_instance_id
+         | SELECT token, id, state, acuant_document_instance_id, acuant_document_status
          | FROM connections
          | WHERE token = $token
     """.stripMargin.query[Connection].option
@@ -19,7 +19,7 @@ object ConnectionDao {
 
   def findByConnectionId(id: ConnectionId): ConnectionIO[Option[Connection]] = {
     sql"""
-         | SELECT token, id, state, acuant_document_instance_id
+         | SELECT token, id, state, acuant_document_instance_id, acuant_document_status
          | FROM connections
          | WHERE id = $id
     """.stripMargin.query[Connection].option
@@ -37,7 +37,7 @@ object ConnectionDao {
 
   val findConnectionWithoutDocumentId: ConnectionIO[Option[Connection]] = {
     sql"""
-         | SELECT token, id, state, acuant_document_instance_id
+         | SELECT token, id, state, acuant_document_instance_id, acuant_document_status
          | FROM connections
          | WHERE
          | id IS NOT NULL
@@ -64,7 +64,8 @@ object ConnectionDao {
          | id = ${connection.id},
          | state = ${connection.state}::CONNECTION_STATE,
          | updated_at = now(),
-         | acuant_document_instance_id = ${connection.acuantDocumentInstanceId}
+         | acuant_document_instance_id = ${connection.acuantDocumentInstanceId},
+         | acuant_document_status = ${connection.acuantDocumentStatus}::ACUANT_DOCUMENT_STATUS
          | WHERE token = ${connection.token}
     """.stripMargin.update.run
 
@@ -83,8 +84,9 @@ object ConnectionDao {
         | token, 
         | id, 
         | state,
-        | acuant_document_instance_id)
-        | values (?, ?, ?::CONNECTION_STATE, ?)""".stripMargin
+        | acuant_document_instance_id,
+        | acuant_document_status)
+        | values (?, ?, ?::CONNECTION_STATE, ?, ?::ACUANT_DOCUMENT_STATUS)""".stripMargin
     )
 
 }

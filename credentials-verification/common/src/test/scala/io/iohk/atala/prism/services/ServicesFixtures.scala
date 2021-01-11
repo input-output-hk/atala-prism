@@ -18,10 +18,24 @@ import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.services.NodeClientService
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
+import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 
 trait ServicesFixtures {
 
   private implicit def ec = EC
+
+  object ConnectorClientServiceFixtures {
+    val defaultConnectorConfig = ConnectorConfig(
+      host = "localhost",
+      port = 9999,
+      DidBasedAuthConfig(
+        did = DID.buildPrismDID("did"),
+        didKeyId = "master",
+        didKeyPair = EC.generateKeyPair()
+      )
+    )
+  }
 
   object CredentialFixtures {
 

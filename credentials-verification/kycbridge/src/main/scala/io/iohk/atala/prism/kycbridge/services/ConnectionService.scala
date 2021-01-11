@@ -36,7 +36,8 @@ class ConnectionService(tx: Transactor[Task], connectorService: ConnectorClientS
               token = ConnectionToken(connectionInfo.token),
               id = parseUUID(connectionInfo.connectionId).map(ConnectionId),
               state = ConnectionState.Connected,
-              acuantDocumentInstanceId = None
+              acuantDocumentInstanceId = None,
+              acuantDocumentStatus = None
             )
 
             logger.info(s"Connection accepted: ${connection}")

@@ -8,7 +8,8 @@ import io.iohk.atala.prism.protos.connector_api.{
   GenerateConnectionTokenResponse,
   GetConnectionsPaginatedResponse,
   GetMessagesPaginatedResponse,
-  SendMessageResponse
+  SendMessageResponse,
+  SendMessageRequest
 }
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import io.iohk.atala.prism.protos.credential_models.StartAcuantProcess
@@ -17,8 +18,11 @@ import monix.eval.Task
 class ConnectorClientServiceStub(
     connectionToken: String = "token",
     receivedMessages: Seq[ReceivedMessage] = Nil,
-    connectionInfos: Seq[ConnectionInfo] = Nil
+    connectionInfos: Seq[ConnectionInfo] = Nil,
+    messageResponse: SendMessageResponse = SendMessageResponse()
 ) extends ConnectorClientService {
+
+  def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] = Task.pure(messageResponse)
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse] =
     Task.pure(GenerateConnectionTokenResponse(connectionToken))
