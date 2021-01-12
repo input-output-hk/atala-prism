@@ -136,7 +136,7 @@ libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % scalaJsJavaTimeV
 libraryDependencies += "me.shadaj" %%% "slinky-core" % slinkyVersion // core React functionality, no React DOM
 libraryDependencies += "me.shadaj" %%% "slinky-web" % slinkyVersion // React DOM, HTML and SVG tags
 libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % slinkyIjextVerion // Intellij plugin for slinky
-libraryDependencies += "com.alexitc" %%% "sjs-material-ui-facade" % "0.1.2" // material-ui bindings
+libraryDependencies += "com.alexitc" %%% "sjs-material-ui-facade" % "0.1.3" // material-ui bindings
 
 // Test
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
