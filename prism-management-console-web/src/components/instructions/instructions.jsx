@@ -26,7 +26,7 @@ const Instructions = ({ name, bundle, credentials, proofRequests }) => {
             {t('instructions.descriptionPartTwo')}
           </p>
           <div>
-            <a href="/prism-wallet.zip" download="prism-wallet">
+            <a href="/prism-web-wallet.zip" download="prism-web-wallet">
               <CustomButton
                 buttonProps={{ className: 'theme-outline' }}
                 buttonText={t('instructions.button')}

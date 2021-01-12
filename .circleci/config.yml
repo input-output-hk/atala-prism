@@ -165,17 +165,17 @@ jobs:
             echo "export ENV=$branchPrefix" >> $BASH_ENV;
             . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
-      # the prism-wallet.zip is needed so that the website can allow downloading it
+      # the prism-web-wallet.zip is needed so that the website can allow downloading it
       - run:
           name: Create management console web assembly
           command: |
-            cp ./workspace/prism-wallet.zip prism-manamgenemt-console-frontend/public/
-            cd prism-manamgenemt-console-frontend
+            cp ./workspace/prism-web-wallet.zip prism-management-console-web/public/
+            cd prism-management-console-web
             npm ci --production
             CI=false GENERATE_SOURCEMAP=false npm run build
 
       - run:
-          name: Create landing assembly
+          name: Create prism-interactive-demo-web assembly
           command: |
             cd prism-interactive-demo-web
             npm ci --production
@@ -197,15 +197,15 @@ jobs:
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG}
 
       - run:
-          name: Build and push prism-manamgenemt-console-frontend
+          name: Build and push prism-management-console-web
           command: |
-            docker build -f prism-manamgenemt-console-frontend/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} credentials-verification-web
+            docker build -f prism-management-console-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} prism-management-console-web
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
 
       - run:
           name: Build and push prism-interactive-demo-web
           command: |
-            docker build -f prism-interactive-demo-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} credentials-verification-landing
+            docker build -f prism-interactive-demo-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} prism-interactive-demo-web
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG}
 
       - run:
