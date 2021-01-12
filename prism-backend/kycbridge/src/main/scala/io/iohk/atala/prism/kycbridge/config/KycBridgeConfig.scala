@@ -6,6 +6,7 @@ import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
 case class AcuantConfig(
     assureIdUrl: String,
     acasUrl: String,
+    faceIdUrl: String,
     username: String,
     password: String,
     subscriptionId: String
@@ -22,6 +23,7 @@ object KycBridgeConfig {
       acuantConfig = AcuantConfig(
         assureIdUrl = acuantConfig.getString("assureIdUrl"),
         acasUrl = acuantConfig.getString("acasUrl"),
+        faceIdUrl = acuantConfig.getString("faceId"),
         username = acuantConfig.getString("username"),
         password = acuantConfig.getString("password"),
         subscriptionId = acuantConfig.getString("subscriptionId")

@@ -24,6 +24,7 @@ trait AssureIdService {
   def createNewDocumentInstance(device: Device): Task[Either[Exception, NewDocumentInstanceResponseBody]]
   def getDocument(id: String): Task[Either[Exception, Document]]
   def getDocumentStatus(id: String): Task[Either[Exception, DocumentStatus]]
+  def getFrontImageFromDocument(id: String): Task[Either[Exception, Array[Byte]]]
 }
 
 class AssureIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
@@ -68,5 +69,15 @@ class AssureIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
     )
 
     runRequestToEither[Int](request, client).map(_.flatMap(DocumentStatus.fromInt))
+  }
+
+  def getFrontImageFromDocument(id: String): Task[Either[Exception, Array[Byte]]] = {
+    val request = GET(
+      baseUri / "AssureIDService.svc/Document" / id / "Field/Image?key=Photo",
+      authorization,
+      Accept(MediaType.application.json)
+    )
+
+    fetchBinaryData(request, client)
   }
 }

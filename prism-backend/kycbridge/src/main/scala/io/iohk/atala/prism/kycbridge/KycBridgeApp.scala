@@ -15,6 +15,7 @@ import io.iohk.atala.prism.kycbridge.services.{
   AcuantService,
   AssureIdServiceImpl,
   ConnectionService,
+  FaceIdServiceImpl,
   KycBridgeGrpcService,
   KycBridgeService
 }
@@ -98,12 +99,19 @@ object KycBridgeApp extends TaskApp {
       kycBridgeGrpcService = new KycBridgeGrpcService(kycBridgeService)(scheduler)
       assureIdService = new AssureIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       acasService = new AcasServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
+      faceIdService = new FaceIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       connectionService = new ConnectionService(tx, connectorService)
       acuantService = new AcuantService(tx, assureIdService, acasService, connectorService)
 
       // connector message processors
-      documentUploadedMessageProcessor =
-        new DocumentUploadedMessageProcessor(tx, nodeService, connectorService, assureIdService, connectorConfig)
+      documentUploadedMessageProcessor = new DocumentUploadedMessageProcessor(
+        tx,
+        nodeService,
+        connectorService,
+        assureIdService,
+        faceIdService,
+        connectorConfig
+      )
 
       connectorMessageService = new ConnectorMessagesService(
         connectorService = connectorService,
@@ -114,6 +122,7 @@ object KycBridgeApp extends TaskApp {
 
       _ <- Resource.liftF(connectionService.connectionUpdateStream.compile.drain.start)
       _ <- Resource.liftF(acuantService.acuantDataStream.compile.drain.start)
+      _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer(

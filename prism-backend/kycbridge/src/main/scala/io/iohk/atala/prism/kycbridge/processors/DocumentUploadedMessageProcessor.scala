@@ -1,28 +1,25 @@
 package io.iohk.atala.prism.kycbridge.processors
 
 import scala.util.Try
-
 import monix.eval.Task
 import cats.data.EitherT
 import doobie.util.transactor.Transactor
 import io.circe.syntax._
-
 import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor, NodeClientService}
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, AcuantProcessFinished}
+import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage}
 import io.iohk.atala.prism.protos.connector_api.SendMessageRequest
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.kycbridge.models.assureId.Document
-import io.iohk.atala.prism.kycbridge.services.AssureIdService
+import io.iohk.atala.prism.kycbridge.services.{AssureIdService, FaceIdService}
 import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.config.ConnectorConfig
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
-import io.iohk.atala.prism.kycbridge.models.Connection
-
+import io.iohk.atala.prism.kycbridge.models.{Connection, faceId}
 import doobie.implicits._
 import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
 
@@ -31,6 +28,7 @@ class DocumentUploadedMessageProcessor(
     nodeService: NodeClientService,
     connectorService: ConnectorClientService,
     assureIdService: AssureIdService,
+    faceIdService: FaceIdService,
     connectorConfig: ConnectorConfig
 )(implicit ec: ECTrait) {
 
@@ -50,6 +48,28 @@ class DocumentUploadedMessageProcessor(
           // update connection with new document status
           _ <- EitherT.right[MessageProcessorException](
             ConnectionDao.update(connection.copy(acuantDocumentStatus = Some(documentStatus))).transact(tx)
+          )
+
+          frontScannedImage <- EitherT(assureIdService.getFrontImageFromDocument(document.instanceId)).leftMap(e =>
+            MessageProcessorException(
+              s"Cannot fetch image extracted from document from assured id service: ${e.getMessage}"
+            )
+          )
+
+          faceMatchData = faceId.Data(frontScannedImage, message.selfieImage.toByteArray)
+
+          faceMatchResult <- EitherT(faceIdService.faceMatch(faceMatchData)).leftMap(e =>
+            MessageProcessorException(
+              s"Cannot check if user's selfie and photo extracted from document match: ${e.getMessage}"
+            )
+          )
+
+          _ <- EitherT.cond[Task](
+            faceMatchResult.isMatch,
+            (),
+            MessageProcessorException(
+              s"User's selfie doesn't match photo extracted from document, face id score ${faceMatchResult.score}"
+            )
           )
 
           // create credential with the document

@@ -24,4 +24,8 @@ class AssureIdServiceStub(
   def getDocumentStatus(id: String): Task[Either[Exception, DocumentStatus]] =
     Task.pure(documentStatus)
 
+  def getFrontImageFromDocument(id: String): Task[Either[Exception, Array[Byte]]] = {
+    Task.pure(Right(Array()))
+  }
+
 }

@@ -1,23 +1,24 @@
 package io.iohk.atala.prism.kycbridge.processors
 
 import scala.concurrent.duration.DurationInt
-
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
-import io.iohk.atala.prism.kycbridge.stubs.AssureIdServiceStub
+import io.iohk.atala.prism.kycbridge.stubs.{AssureIdServiceStub, FaceIdServiceStub}
 import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import io.iohk.atala.prism.services.ServicesFixtures
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
+
 import java.time.{LocalDateTime, ZoneOffset}
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, KycBridgeMessage, AcuantProcessFinished}
+import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage, KycBridgeMessage}
 import io.iohk.atala.prism.kycbridge.KycBridgeFixtures
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.kycbridge.models.assureId.DocumentStatus
-
 import monix.execution.Scheduler.Implicits.global
 import doobie.implicits._
+import io.iohk.atala.prism.kycbridge.models.faceId.FaceMatchResponse
 
+//sbt "project kycbridge" "testOnly *processors.DocumentUploadedMessageProcessorSpec"
 class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with KycBridgeFixtures with ServicesFixtures {
   import ConnectorClientServiceFixtures._, ConnectionFixtures._
 
@@ -54,6 +55,28 @@ class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with K
       // then
       result mustBe Right(())
     }
+
+    "do not create create credential if face match is unsuccessful" in new Fixtures {
+      // given
+      val faceIdServiceStubWithFailedMatch = new FaceIdServiceStub(FaceMatchResponse(score = 0, isMatch = false))
+      val processorWithFailingFaceIdMatch =
+        new DocumentUploadedMessageProcessor(
+          databaseTask,
+          nodeClientService,
+          connectorClientService,
+          assureIdServiceStub,
+          faceIdServiceStubWithFailedMatch,
+          defaultConnectorConfig
+        )
+
+      // when
+      val result = (for {
+        result <- processorWithFailingFaceIdMatch.processor(receivedMessage).get
+      } yield result).runSyncUnsafe(1.minute)
+
+      // then
+      result mustBe a[Left[_, _]]
+    }
   }
 
   trait Fixtures {
@@ -62,12 +85,14 @@ class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with K
     val assureIdServiceStub = new AssureIdServiceStub(
       documentStatus = Right(DocumentStatus.Complete)
     )
+    val faceIdServiceStub = new FaceIdServiceStub()
     val processor =
       new DocumentUploadedMessageProcessor(
         databaseTask,
         nodeClientService,
         connectorClientService,
         assureIdServiceStub,
+        faceIdServiceStub,
         defaultConnectorConfig
       )
 
