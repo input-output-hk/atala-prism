@@ -1,3 +1,0 @@
-include ':app', ':CustomUI'
-includeBuild '../prism-kotlin-sdk'
-rootProject.name = 'cvp'

@@ -1,0 +1,3 @@
+include ':app', ':CustomUI'
+includeBuild '../prism-kotlin-sdk'
+rootProject.name = 'prism-android-wallet'

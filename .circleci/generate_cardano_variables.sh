@@ -4,7 +4,7 @@ set -euo pipefail
 
 current_dir=$(pwd)
 
-pushd $(dirname $0)/../credentials-verification/infra/stage/base/cardano/ > /dev/null
+pushd $(dirname $0)/../prism-backend/infra/stage/base/cardano/ > /dev/null
 temp_file=$(mktemp)
 ./cardano.sh -s > $temp_file
 

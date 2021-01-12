@@ -152,7 +152,7 @@ jobs:
       - install-protoc
 
       - restore_cache:
-          key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
+          key: cv-cache-v5-{{ checksum "prism-backend/build.sbt" }}-{{ checksum "prism-backend/project/PrismBuild.scala" }}-{{ checksum "prism-backend/project/Dependencies.scala" }}-{{ checksum "prism-backend/project/plugins.sbt" }}
 
       - run:
           name: Set tag convention
@@ -167,17 +167,17 @@ jobs:
 
       # the prism-wallet.zip is needed so that the website can allow downloading it
       - run:
-          name: Create web assembly
+          name: Create management console web assembly
           command: |
-            cp ./workspace/prism-wallet.zip credentials-verification-web/public/
-            cd credentials-verification-web
+            cp ./workspace/prism-wallet.zip prism-manamgenemt-console-frontend/public/
+            cd prism-manamgenemt-console-frontend
             npm ci --production
             CI=false GENERATE_SOURCEMAP=false npm run build
 
       - run:
           name: Create landing assembly
           command: |
-            cd credentials-verification-landing
+            cd prism-interactive-demo-web
             npm ci --production
             CI=false GENERATE_SOURCEMAP=false npm run build
 
@@ -197,45 +197,45 @@ jobs:
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG}
 
       - run:
-          name: Build and push credentials-verification-web
+          name: Build and push prism-manamgenemt-console-frontend
           command: |
-            docker build -f credentials-verification-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} credentials-verification-web
+            docker build -f prism-manamgenemt-console-frontend/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} credentials-verification-web
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
 
       - run:
-          name: Build and push credentials-verification-landing
+          name: Build and push prism-interactive-demo-web
           command: |
-            docker build -f credentials-verification-landing/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} credentials-verification-landing
+            docker build -f prism-interactive-demo-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} credentials-verification-landing
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG}
 
       - run:
-          name: Build and push credentials-verification/node
+          name: Build and push prism-backend/node
           command: |
-            cd credentials-verification
+            cd prism-backend
             sbt node/dockerBuildAndPush
 
       - run:
-          name: Build and push credentials-verification/connector
+          name: Build and push prism-backend/connector
           command: |
-            cd credentials-verification
+            cd prism-backend
             sbt connector/dockerBuildAndPush
 
       - run:
-          name: Build and push credentials-verification/vault
+          name: Build and push prism-backend/vault
           command: |
-            cd credentials-verification
+            cd prism-backend
             sbt vault/dockerBuildAndPush
 
       - run:
-          name: Build and push credentials-verification/management-console
+          name: Build and push prism-backend/management-console
           command: |
-            cd credentials-verification
+            cd prism-backend
             sbt management-console/dockerBuildAndPush
 
       - run:
           name: Build and push prism-lb-envoy
           command: |
-            cd credentials-verification/infra/docker/prism-lb-envoy
+            cd prism-backend/infra/docker/prism-lb-envoy
             ./build.sh -b
             ./build.sh -p
 
@@ -256,7 +256,7 @@ jobs:
       - setup_remote_docker
 
       - restore_cache:
-          key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
+          key: cv-cache-v5-{{ checksum "prism-backend/build.sbt" }}-{{ checksum "prism-backend/project/PrismBuild.scala" }}-{{ checksum "prism-backend/project/Dependencies.scala" }}-{{ checksum "prism-backend/project/plugins.sbt" }}
 
       - run:
           name: Set tag convention
@@ -274,11 +274,11 @@ jobs:
       - run:
           name: Rebuild prism environment
           command: |
-            cd credentials-verification/infra/stage/services/prism/
+            cd prism-backend/infra/stage/services/prism/
             ./prism.sh -t $ENV
             ./prism.sh -A $ENV
 
-  build-credentials-verification:
+  build-prism-backend:
     working_directory: ~/repo
     docker:
       - image: << pipeline.parameters.prism-scala-common-docker-image >>
@@ -291,11 +291,11 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification prism-sdk"
+          directories: "prism-backend prism-sdk"
 
       - restore_cache:
           keys:
-            - cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
+            - cv-cache-v5-{{ checksum "prism-backend/build.sbt" }}-{{ checksum "prism-backend/project/PrismBuild.scala" }}-{{ checksum "prism-backend/project/Dependencies.scala" }}-{{ checksum "prism-backend/project/plugins.sbt" }}
             - cv-cache-v5
 
       - install-coursier
@@ -320,64 +320,64 @@ jobs:
             . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
       - run:
-          name: Compile credentials-verification components
-          command: cd credentials-verification && sbt compile test:compile
+          name: Compile prism-backend components
+          command: cd prism-backend && sbt compile test:compile
 
       - run:
-          name: Test credentials-verification components
-          command: cd credentials-verification && sbt coverage test
+          name: Test prism-backend components
+          command: cd prism-backend && sbt coverage test
 
       - save_cache:
           paths:
             - ~/.cache/coursier
             - ~/.ivy2
             - ~/.m2
-          key: cv-cache-v5-{{ checksum "credentials-verification/build.sbt" }}-{{ checksum "credentials-verification/project/PrismBuild.scala" }}-{{ checksum "credentials-verification/project/Dependencies.scala" }}-{{ checksum "credentials-verification/project/plugins.sbt" }}
+          key: cv-cache-v5-{{ checksum "prism-backend/build.sbt" }}-{{ checksum "prism-backend/project/PrismBuild.scala" }}-{{ checksum "prism-backend/project/Dependencies.scala" }}-{{ checksum "prism-backend/project/plugins.sbt" }}
 
       - run:
           name: Generate code coverage reports
-          command: cd credentials-verification && sbt coverageReport coverageAggregate
+          command: cd prism-backend && sbt coverageReport coverageAggregate
           when: always
 
       - aggregate-test-reports:
-          directory: "credentials-verification"
+          directory: "prism-backend"
 
       - store_test_results:
-          path: credentials-verification/target/test-reports
+          path: prism-backend/target/test-reports
 
       # Store code coverage reports
       - store_artifacts:
-          path: credentials-verification/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
+          path: prism-backend/target/scala-<< pipeline.parameters.scala-version >>/scoverage-report
 
-  build-credentials-verification-landing:
+  build-prism-interactive-demo-web:
     working_directory: ~/repo
     docker:
       - image: circleci/node:10-browsers
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "credentials-verification credentials-verification-landing"
+          directories: "prism-backend prism-interactive-demo-web"
       - install-protoc
       - run:
           name: Move to target folder then run tests
-          command: cd credentials-verification-landing && ./web-testing-script.sh
+          command: cd prism-interactive-demo-web && ./web-testing-script.sh
 
-  build-credentials-verification-web:
+  build-prism-management-console-web:
     working_directory: ~/repo
     docker:
       - image: circleci/node:10-browsers
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "credentials-verification credentials-verification-web"
+          directories: "prism-backend prism-management-console-web"
       - setup_remote_docker
       - install-protoc
       - run:
           name: Move to target folder then run tests
-          command: cd credentials-verification-web && ./web-testing-script.sh
+          command: cd prism-management-console-web && ./web-testing-script.sh
       - run:
           name: Move to target folder then run linting validation script
-          command: cd credentials-verification-web && ./web-linting-validation-script.sh
+          command: cd prism-management-console-web && ./web-linting-validation-script.sh
 
   trigger-integration-tests:
     working_directory: ~/repo
@@ -400,7 +400,7 @@ jobs:
           mentions: 'UFHNXC9RC,UGFJQ5ZBN'
           only_for_branches: 'develop'
 
-  build-credentials-verification-android:
+  build-prism-android-wallet:
     working_directory: ~/repo
     docker:
       - image: circleci/android:api-29
@@ -409,37 +409,37 @@ jobs:
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "credentials-verification-android prism-sdk"
+          directories: "prism-android-wallet prism-sdk"
       - run: yes | sdkmanager --licenses || exit 0
       - run: yes | sdkmanager --update || exit 0
 
       - restore_cache:
-          key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
+          key: jars-{{ checksum "prism-android-wallet/build.gradle" }}-{{ checksum  "prism-android-wallet/app/build.gradle" }}
       - install-sbt
       - run:
           name: Download Dependencies
-          command: cd credentials-verification-android && ./gradlew androidDependencies
+          command: cd prism-android-wallet && ./gradlew androidDependencies
       - save_cache:
           paths:
             - ~/.gradle
-          key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
+          key: jars-{{ checksum "prism-android-wallet/build.gradle" }}-{{ checksum  "prism-android-wallet/app/build.gradle" }}
       - run:
           name: Run Lint Tests
-          command: cd credentials-verification-android && ./gradlew lint test
+          command: cd prism-android-wallet && ./gradlew lint test
       - run:
           name: Run Unit Tests
-          command: cd credentials-verification-android && ./gradlew test
+          command: cd prism-android-wallet && ./gradlew test
       - run:
           name: Assemble APK
-          command: cd credentials-verification-android && ./gradlew assembleDebug
+          command: cd prism-android-wallet && ./gradlew assembleDebug
 
       - store_test_results:
-          path: credentials-verification-android/app/build/test-results
+          path: prism-android-wallet/app/build/test-results
       # Upload APK
       - store_artifacts:
-          path: credentials-verification-android/app/build/outputs/apk/debug/app-debug.apk
+          path: prism-android-wallet/app/build/outputs/apk/debug/app-debug.apk
 
-  build-credentials-verification-webextension:
+  build-prism-web-wallet:
     working_directory: ~/repo
     docker:
       - image: circleci/openjdk:8-jdk-node-browsers
@@ -449,7 +449,7 @@ jobs:
       - checkout
 
       - halt-step-if-not-changed:
-          directories: "credentials-verification credentials-verification-webextension prism-sdk"
+          directories: "prism-backend prism-web-wallet prism-sdk"
 
       - run:
           name: Set environment variables
@@ -463,7 +463,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - webextension-cache-v2-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
+            - webextension-cache-v2-{{ checksum "prism-web-wallet/build.sbt" }}-{{ checksum "prism-web-wallet/project/plugins.sbt" }}
             # fallback to using the latest cache if no exact match is found
             - webextension-cache-v2-
 
@@ -475,16 +475,16 @@ jobs:
 
       - run:
           name: Compile extension and its tests
-          command: cd credentials-verification-webextension && sbt test:compile
+          command: cd prism-web-wallet && sbt test:compile
 
       - save_cache:
           paths:
             - ~/.cache/coursier
             - ~/.ivy2
             - ~/.m2
-            - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/main/node_modules
-            - credentials-verification-webextension/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/test/node_modules
-          key: webextension-cache-v2-{{ checksum "credentials-verification-webextension/build.sbt" }}-{{ checksum "credentials-verification-webextension/project/plugins.sbt" }}
+            - prism-web-wallet/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/main/node_modules
+            - prism-web-wallet/target/scala-<< pipeline.parameters.scala-version >>/scalajs-bundler/test/node_modules
+          key: webextension-cache-v2-{{ checksum "prism-web-wallet/build.sbt" }}-{{ checksum "prism-web-wallet/project/plugins.sbt" }}
 
       - run:
           name: Install test dependencies
@@ -495,24 +495,24 @@ jobs:
       - run:
           name: Run Unit Tests
           command: |
-            cd credentials-verification-webextension
+            cd prism-web-wallet
             sbt test || sbt test
 
       - run:
           name: Package the extension to release
-          command: cd credentials-verification-webextension && PROD=true sbt chromePackage
+          command: cd prism-web-wallet && PROD=true sbt chromePackage
 
       - store_test_results:
-          path: credentials-verification-webextension/target/test-reports
+          path: prism-web-wallet/target/test-reports
 
       - store_artifacts:
-          path: credentials-verification-webextension/target/chrome/prism-wallet.zip
+          path: prism-web-wallet/target/chrome/prism-web-wallet.zip
 
       # persist the wallet, so that it can be deployed by another job
       - persist_to_workspace:
-          root: credentials-verification-webextension/target/chrome
+          root: prism-web-wallet/target/chrome
           paths:
-            - prism-wallet.zip
+            - prism-web-wallet.zip
 
   build-prism-sdk:
     working_directory: ~/repo
@@ -712,21 +712,21 @@ workflows:
       - build-prism-sdk:
           requires:
             - build-prism-sdk-proto-docs
-      - build-credentials-verification:
+      - build-prism-backend:
           requires:
             - build-prism-sdk
-      - build-credentials-verification-android:
+      - build-prism-android-wallet:
           requires:
-            - build-credentials-verification
-      - build-credentials-verification-landing:
+            - build-prism-backend
+      - build-prism-interactive-demo-web:
           requires:
-            - build-credentials-verification
-      - build-credentials-verification-web:
+            - build-prism-backend
+      - build-prism-management-console-web:
           requires:
-            - build-credentials-verification
-      - build-credentials-verification-webextension:
+            - build-prism-backend
+      - build-prism-web-wallet:
           requires:
-            - build-credentials-verification
+            - build-prism-backend
 
       - deploy-ecr-images:
           filters:
@@ -738,11 +738,11 @@ workflows:
                 - /geud-test.*/
                 - /demo.*/
           requires:
-            - build-credentials-verification-web
-            - build-credentials-verification-landing
-            - build-credentials-verification
+            - build-prism-management-console-web
+            - build-prism-interactive-demo-web
+            - build-prism-backend
             - build-prism-sdk
-            - build-credentials-verification-webextension
+            - build-prism-web-wallet
 
       - slack/approval-notification:
           message: Approval required for managment console demo deployment Ask Mark / Jacek / Christos

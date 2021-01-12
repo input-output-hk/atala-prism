@@ -11,7 +11,7 @@ Two main branches will be maintained: `develop` and `master`. `master` contains 
 
 ## Working with the codebase
 
-This is a monorepo and each of the `credentials-verification-XYZ` folders refers to a different part of the platform. Check the specific READMEs for more details.
+This is a monorepo and each of the `prism-XYZ` folders refers to a different part of the platform. Check the specific READMEs for more details.
 
 Be sure to follow our [contributing guidelines](CONTRIBUTING.md).
 
@@ -24,7 +24,7 @@ In order to keep the code format consistent, we use scalafmt and git hooks, foll
 ## More docs
 
 * Documentation about operational aspects of the team and the services we use can be found in [Confluence](https://input-output.atlassian.net/wiki/spaces/CE/pages/606371843/Code+and+Infrastructure+Setup).
-* The general guideline and ultimate goal is to have the [repository](credentials-verification/docs/README.md) as the source of truth for all technical documentation.
+* The general guideline and ultimate goal is to have the [repository](prism-backend/docs/README.md) as the source of truth for all technical documentation.
 
 ## How to run
 
@@ -35,13 +35,13 @@ We use [nvm](https://github.com/nvm-sh/nvm) to handle the node versions.
 To ensure the node version standardized:
 
 ```
-$ cd credentials-verification-web
+$ cd prism-management-console-web
 ```
 
 and run 
 
 ```
-credentials-verification-web$ nvm use
+prism-management-console-web$ nvm use
 ```
 
 which will set the node version to 10.16.3, if installed, otherwise install it and then run the command again.
@@ -50,13 +50,13 @@ If the file `.env.local` is not present, copy `.env` file to `.env.local` (it sh
 Then, install dependencies with 
 
 ```
-credentials-verification-web$ npm install
+prism-management-console-web$ npm install
 ```
 
 and run the front-end with
 
 ```
-credentials-verification-web$ npm start
+prism-management-console-web$ npm start
 ```
 
 ### Back-end and PRISM wallet
@@ -98,45 +98,45 @@ Steps
    You will need three more terminals/tabs to run this.
    Run the commands in sequence (i.e. wait for each one to finish before running the next one).
 
-   **NOTE:** If you are a *linux* user, you could alternatively go to `credentials-verification-webextension`, and run
+   **NOTE:** If you are a *linux* user, you could alternatively go to `prism-web-wallet`, and run
    `$ ./run_local.sh`, and move directly to step 4.
 
    Connector
    ```
    [terminal 1]
-   atala$ cd credentials-verification
-   credentials-verification$ sbt "connector/run"
+   atala$ cd prism-backend
+   prism-backend$ sbt "connector/run"
    ```
 
    Node
    ```
    [terminal 2]
-   atala$ cd credentials-verification
-   credentials-verification$ sbt "node/run"
+   atala$ cd prism-backend
+   prism-backend$ sbt "node/run"
    ```
 
    Envoy
 
    **NOTE FOR MAC USERS:** There seems to be a problem to run envoy on docker.
-   There is an `envoy.yaml` file in `credentials-verification-web/envoy` that instruct in comments an attempt to
+   There is an `envoy.yaml` file in `prism-management-console-web/envoy` that instruct in comments an attempt to
    fix the problem. Some Mac users suggested to install envoy locally and avoid docker completely.
    ```
    [terminal 3]
-   atala$ cd credentials-verification-web/envoy
+   atala$ cd prism-management-console-web/envoy
    envoy$ docker run --rm -ti --net=host -v $PWD/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.12.1
    ```
 
 3. Now it is time to compile the web extension (the wallet)
 
    ``` 
-   atala$ cd credentials-verification-webextension
-   credentials-verification-webextension$ sbt chromeUnpackedFast
+   atala$ cd prism-web-wallet
+   prism-web-wallet$ sbt chromeUnpackedFast
    ```
 
 4. Now let's install the wallet on chrome. Open chrome and go to [chrome://extensions/](chrome://extensions/)
 
 Activate the developer mode (top right corner of the page) and click on `Load unpacked` (top left visible in developer
-mode), in the dialog opened go to `atala/credentials-verification-webextension/target/chrome`, select `unpacked-fast`
+mode), in the dialog opened go to `atala/prism-web-wallet/target/chrome`, select `unpacked-fast`
 folder and click `Open`. Now the wallet should be found in your plugins. Do not open the wallet yet.
 
 At this point, you have all the needed components up to run the wallet locally.

@@ -1,0 +1,67 @@
+{
+  "name": "prism-interactive-demo-web",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "antd": "3.23.6",
+    "atala-prism-demo": "git+ssh://git@github.com/input-output-hk/atala-prism-demo.git",
+    "env-cmd": "10.0.1",
+    "faker": "4.1.0",
+    "firebase": "7.14.5",
+    "google-protobuf": "3.9.2",
+    "grpc-web": "1.0.6",
+    "i18next": "17.0.18",
+    "jsonp": "^0.2.1",
+    "lodash": "4.17.15",
+    "md5-hex": "3.0.1",
+    "moment": "2.24.0",
+    "node-sass": "4.12.0",
+    "prop-types": "15.7.2",
+    "qrcode.react": "0.9.3",
+    "query-string": "6.12.1",
+    "react": "16.10.1",
+    "react-dom": "16.10.1",
+    "react-i18next": "10.13.1",
+    "react-router-dom": "5.1.2",
+    "react-scripts": "3.2.0",
+    "reactfire": "2.0.3"
+  },
+  "devDependencies": {
+    "env-cmd": "10.0.1",
+    "eslint": "6.1.0",
+    "eslint-config-airbnb": "17.1.0",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-config-prettier": "6.0.0",
+    "eslint-import-resolver-meteor": "0.4.0",
+    "eslint-plugin-chai-friendly": "0.4.1",
+    "eslint-plugin-css-modules": "2.11.0",
+    "eslint-plugin-cypress": "2.7.0",
+    "eslint-plugin-import": "2.18.0",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-prettier": "3.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-react": "7.14.2",
+    "prettier": "1.16.1"
+  },
+  "scripts": {
+    "start": "./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/ && react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
