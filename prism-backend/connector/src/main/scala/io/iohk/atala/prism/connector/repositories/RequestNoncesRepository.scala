@@ -8,11 +8,13 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.connector.repositories.daos.RequestNoncesDAO
+import io.iohk.atala.prism.identity.DID
 
 import scala.concurrent.ExecutionContext
 
 trait RequestNoncesRepository {
   def burn(participantId: ParticipantId, requestNonce: RequestNonce): FutureEither[Nothing, Unit]
+  def burn(did: DID, requestNonce: RequestNonce): FutureEither[Nothing, Unit]
 }
 
 object RequestNoncesRepository {
@@ -20,6 +22,15 @@ object RequestNoncesRepository {
     override def burn(participantId: ParticipantId, requestNonce: RequestNonce): FutureEither[Nothing, Unit] = {
       RequestNoncesDAO
         .burn(participantId, requestNonce)
+        .transact(xa)
+        .unsafeToFuture()
+        .map(Right(_))
+        .toFutureEither
+    }
+
+    override def burn(did: DID, requestNonce: RequestNonce): FutureEither[Nothing, Unit] = {
+      RequestNoncesDAO
+        .burn(did, requestNonce)
         .transact(xa)
         .unsafeToFuture()
         .map(Right(_))

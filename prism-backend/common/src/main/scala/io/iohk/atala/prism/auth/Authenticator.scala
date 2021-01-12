@@ -15,7 +15,7 @@ import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.DIDFormat
-import io.iohk.atala.prism.protos.node_models.CreateDIDOperation
+import io.iohk.atala.prism.protos.node_models.{CreateDIDOperation, DIDData}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
@@ -28,6 +28,12 @@ import scala.util.{Failure, Success}
 
 trait Authenticator[Id] {
   def logger: Logger
+
+  def whitelistedDid[Request <: GeneratedMessage, Response](
+      whitelist: Set[DID],
+      methodName: String,
+      request: Request
+  )(f: DID => Future[Response])(implicit ec: ExecutionContext): Future[Response]
 
   def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
@@ -56,6 +62,11 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     * Burns given nonce for user id, so that the request can not be cloned by a malicious agent
     */
   def burnNonce(id: Id, requestNonce: RequestNonce)(implicit ec: ExecutionContext): FutureEither[AuthError, Unit]
+
+  /**
+    * Burns given nonce for DID, so that the request can not be cloned by a malicious agent
+    */
+  def burnNonce(did: DID, requestNonce: RequestNonce)(implicit ec: ExecutionContext): FutureEither[AuthError, Unit]
 
   /**
     * Finds a user associated with the given public key
@@ -110,6 +121,23 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         )
     }
 
+  private def verifyRequestSignature(
+      publicKey: ECPublicKey,
+      request: Array[Byte],
+      requestNonce: model.RequestNonce,
+      signature: ECSignature
+  )(implicit ec: ExecutionContext): FutureEither[AuthError, Unit] = {
+    val payload = SignedRequestsHelper.merge(requestNonce, request).toArray
+    Future {
+      Either
+        .cond[AuthError, Unit](
+          EC.verify(payload, publicKey, signature),
+          (),
+          SignatureVerificationError()
+        )
+    }.toFutureEither
+  }
+
   /**
     * A request must be signed by prepending the nonce, let's say requestNonce|request
     *
@@ -124,19 +152,23 @@ abstract class SignedRequestsAuthenticatorBase[Id](
       requestNonce: model.RequestNonce,
       signature: ECSignature
   )(implicit ec: ExecutionContext): FutureEither[AuthError, Id] = {
-    val payload = SignedRequestsHelper.merge(requestNonce, request).toArray
-    val verificationResultF = Future {
-      Either
-        .cond[AuthError, Unit](
-          EC.verify(payload, publicKey, signature),
-          (),
-          SignatureVerificationError()
-        )
-    }
     for {
-      _ <- verificationResultF.toFutureEither
+      _ <- verifyRequestSignature(publicKey, request, requestNonce, signature)
       _ <- burnNonce(id, requestNonce)
     } yield id
+  }
+
+  private def verifyRequestSignature(
+      did: DID,
+      publicKey: ECPublicKey,
+      request: Array[Byte],
+      requestNonce: model.RequestNonce,
+      signature: ECSignature
+  )(implicit ec: ExecutionContext): FutureEither[AuthError, DID] = {
+    for {
+      _ <- verifyRequestSignature(publicKey, request, requestNonce, signature)
+      _ <- burnNonce(did, requestNonce)
+    } yield did
   }
 
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(implicit
@@ -212,10 +244,8 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     } yield id
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.UnpublishedDIDBased)(
-      implicit ec: ExecutionContext
-  ): FutureEither[AuthError, Id] = {
-    authenticationHeader.did.getFormat match {
+  def validateDid(did: DID): FutureEither[AuthError, DIDData] = {
+    did.getFormat match {
       case longFormDid: DIDFormat.LongForm =>
         longFormDid.validate match {
           case Left(DIDFormat.CanonicalSuffixMatchStateError) =>
@@ -225,22 +255,30 @@ abstract class SignedRequestsAuthenticatorBase[Id](
           case Right(validatedLongForm) =>
             validatedLongForm.initialState.operation.createDid match {
               case Some(CreateDIDOperation(Some(didData), _)) =>
-                for {
-                  publicKey <- findPublicKey(didData, authenticationHeader.keyId)
-                  id <- findByDid(authenticationHeader.did)
-                  _ <- verifyRequestSignature(
-                    id = id,
-                    publicKey = publicKey,
-                    signature = authenticationHeader.signature,
-                    request = request,
-                    requestNonce = authenticationHeader.requestNonce
-                  )
-                } yield id
+                Future.successful(Right(didData)).toFutureEither
               case _ =>
                 Future.successful(Left(NoCreateDidOperationError)).toFutureEither
             }
         }
       case _ => throw new IllegalStateException("Unreachable state")
+    }
+  }
+
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.UnpublishedDIDBased)(
+      implicit ec: ExecutionContext
+  ): FutureEither[AuthError, Id] = {
+    validateDid(authenticationHeader.did).flatMap { didData =>
+      for {
+        publicKey <- findPublicKey(didData, authenticationHeader.keyId)
+        id <- findByDid(authenticationHeader.did)
+        _ <- verifyRequestSignature(
+          id = id,
+          publicKey = publicKey,
+          signature = authenticationHeader.signature,
+          request = request,
+          requestNonce = authenticationHeader.requestNonce
+        )
+      } yield id
     }
   }
 
@@ -279,4 +317,48 @@ abstract class SignedRequestsAuthenticatorBase[Id](
       request: Request
   )(f: => Future[Response])(implicit ec: ExecutionContext): Future[Response] =
     withLogging(methodName, request)(f)
+
+  override def whitelistedDid[Request <: GeneratedMessage, Response](
+      whitelist: Set[DID],
+      methodName: String,
+      request: Request
+  )(f: DID => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
+    val ctx = Context.current()
+    val result = grpcAuthenticationHeaderParser.parse(ctx)
+    result match {
+      case Some(GrpcAuthenticationHeader.UnpublishedDIDBased(requestNonce, did, keyId, signature))
+          if whitelist.contains(did) =>
+        val result = validateDid(did)
+          .flatMap { didData =>
+            for {
+              publicKey <- findPublicKey(didData, keyId)
+              _ <- verifyRequestSignature(
+                did = did,
+                publicKey = publicKey,
+                signature = signature,
+                request = request.toByteArray,
+                requestNonce = requestNonce
+              )
+            } yield did
+          }
+          .map(_ => f(did))
+          .successMap(identity)
+          .flatten
+
+        result.onComplete {
+          case Success(_) => () // This case is already handled above on the `withLogging` call
+          case Failure(ex) => logger.error(s"$methodName FAILED request = ${request.toProtoString}", ex)
+        }
+        result
+      case Some(GrpcAuthenticationHeader.UnpublishedDIDBased(_, _, _, _)) =>
+        logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+        Future.failed(throw new RuntimeException("The supplied DID is not whitelisted"))
+      case Some(_) =>
+        logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+        Future.failed(throw new RuntimeException("Invalid authentication method: unpublished DID is required"))
+      case None =>
+        logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+        Future.failed(throw new RuntimeException("Missing or bad authentication"))
+    }
+  }
 }

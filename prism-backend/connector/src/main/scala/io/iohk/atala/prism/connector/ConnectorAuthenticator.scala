@@ -4,6 +4,7 @@ import io.iohk.atala.prism.auth.errors.{AuthError, UnexpectedError}
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
@@ -25,6 +26,14 @@ class ConnectorAuthenticator(
       requestNonce: auth.model.RequestNonce
   )(implicit ec: ExecutionContext): FutureEither[AuthError, Unit] =
     requestNoncesRepository.burn(id, requestNonce)
+
+  override def burnNonce(
+      did: DID,
+      requestNonce: RequestNonce
+  )(implicit
+      ec: ExecutionContext
+  ): FutureEither[AuthError, Unit] =
+    requestNoncesRepository.burn(did, requestNonce)
 
   override def findByPublicKey(
       publicKey: ECPublicKey

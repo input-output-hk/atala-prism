@@ -27,6 +27,11 @@ class ManagementConsoleAuthenticator(
   ): FutureEither[AuthError, Unit] =
     requestNoncesRepository.burn(id, requestNonce)
 
+  override def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
+      ec: ExecutionContext
+  ): FutureEither[AuthError, Unit] =
+    throw new NotImplementedError()
+
   override def findByPublicKey(publicKey: ECPublicKey)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, ParticipantId] =

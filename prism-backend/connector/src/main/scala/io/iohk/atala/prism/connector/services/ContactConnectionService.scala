@@ -5,6 +5,7 @@ import io.iohk.atala.prism.connector.errors.ConnectorErrorSupport
 import io.iohk.atala.prism.connector.grpc.ProtoCodecs
 import io.iohk.atala.prism.connector.services.ConnectionsService
 import io.iohk.atala.prism.errors.LoggingContext
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{
   ConnectionsStatusRequest,
@@ -17,7 +18,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ContactConnectionService(
     connectionsService: ConnectionsService,
-    authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId]
+    authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
+    didWhitelist: Set[DID]
 )(implicit
     executionContext: ExecutionContext
 ) extends ContactConnectionServiceGrpc.ContactConnectionService
@@ -25,9 +27,9 @@ class ContactConnectionService(
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def getConnectionStatus(request: ConnectionsStatusRequest): Future[ConnectionsStatusResponse] = {
-    def f(participantId: ParticipantId): Future[ConnectionsStatusResponse] = {
+    def f(did: DID): Future[ConnectionsStatusResponse] = {
       implicit val loggingContext: LoggingContext =
-        LoggingContext("request" -> request, "participantId" -> participantId)
+        LoggingContext("request" -> request, "did" -> did)
 
       connectionsService
         .getAcceptorConnections(request.acceptorIds.map(id => ParticipantId(id)).to(List))
@@ -39,8 +41,8 @@ class ContactConnectionService(
         }
     }
 
-    authenticator.authenticated("getConnectionStatus", request) { participantId =>
-      f(participantId)
+    authenticator.whitelistedDid(didWhitelist, "getConnectionStatus", request) { did =>
+      f(did)
     }
   }
 }

@@ -9,6 +9,7 @@ import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, ContactConnectionService}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.{connector_api, connector_models, console_models}
 import org.mockito.MockitoSugar.mock
 
@@ -28,6 +29,10 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
 
+  val keyPair = EC.generateKeyPair()
+  val publicKey = keyPair.publicKey
+  val did = DID.createUnpublishedDID(publicKey)
+
   lazy val connectionsService =
     new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, nodeMock)
 
@@ -42,15 +47,11 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
   override def services =
     Seq(
       connector_api.ContactConnectionServiceGrpc
-        .bindService(new ContactConnectionService(connectionsService, authenticator), executionContext)
+        .bindService(new ContactConnectionService(connectionsService, authenticator, Set(did)), executionContext)
     )
 
   "ContactConnectionService" should {
     "return correct connection status for acceptors" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-
       DataPreparation.createIssuer("Issuer", "", Some(publicKey), Some(did))
 
       val initiator1 = createHolder("initiator1", None)
@@ -83,10 +84,6 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
     }
 
     "return invitation missing for non-existing connections" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-
       DataPreparation.createIssuer("Issuer", "", Some(publicKey), Some(did))
 
       val acceptor1 = createHolder("acceptor1", None)

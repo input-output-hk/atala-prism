@@ -82,6 +82,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val braintreePayments =
       BraintreePayments(braintreePaymentsConfig(globalConfig.getConfig("braintreePayments")))(executionContext)
 
+    logger.info("Loading DID whitelist")
+    val didWhitelist = DidWhitelistLoader.load(globalConfig)
+
     // node client
     val configLoader = new ConfigLoader
     val nodeConfig = configLoader.nodeClientConfig(globalConfig.getConfig("node"))
@@ -114,7 +117,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, node)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
     val registrationService = new RegistrationService(participantsRepository, node)(executionContext)
-    val contactConnectionService = new ContactConnectionService(connectionsService, authenticator)(executionContext)
+    val contactConnectionService = new ContactConnectionService(connectionsService, authenticator, didWhitelist)(
+      executionContext
+    )
     val connectorService = new ConnectorService(
       connectionsService,
       messagesService,
