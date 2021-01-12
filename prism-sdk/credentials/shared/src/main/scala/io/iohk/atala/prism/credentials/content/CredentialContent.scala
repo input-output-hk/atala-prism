@@ -14,11 +14,13 @@ case class CredentialContent(fields: Fields) {
 
   /**
     * Access credential field by name.
-    *
-    * TODO: Allow to get nested fields by 'dot'.
     */
   def getValue(field: String): Either[CredentialContentException, Value] = {
-    fields.find(_.name == field).map(_.value) match {
+    val path = field.split('.')
+    path.drop(1).foldLeft(fields.find(_.name == path(0)).map(_.value)) {
+      case (Some(sf: SubFields), key) => sf.value.find(_.name == key).map(_.value)
+      case _ => None
+    } match {
       case Some(value) => Right(value)
       case None => Left(FieldNotFoundException(s"Field not found: $field"))
     }
@@ -27,28 +29,35 @@ case class CredentialContent(fields: Fields) {
   def getString(field: String): Either[CredentialContentException, String] = {
     getValue(field).flatMap {
       case StringValue(value) => Right(value)
-      case _ => Left(FieldNotFoundException(s"$field is not a String."))
+      case _ => Left(WrongTypeException(s"$field is not a String."))
     }
   }
 
   def getInt(field: String): Either[CredentialContentException, Int] = {
     getValue(field).flatMap {
       case IntValue(value) => Right(value)
-      case _ => Left(FieldNotFoundException(s"$field is not an Int."))
+      case _ => Left(WrongTypeException(s"$field is not an Int."))
+    }
+  }
+
+  def getBoolean(field: String): Either[CredentialContentException, Boolean] = {
+    getValue(field).flatMap {
+      case BooleanValue(value) => Right(value)
+      case _ => Left(WrongTypeException(s"$field is not an Boolean."))
     }
   }
 
   def getSeq(field: String): Either[CredentialContentException, Seq[Any]] = {
     getValue(field).flatMap {
       case SeqValue(values) => Right(values.map(getValue))
-      case _ => Left(FieldNotFoundException(s"$field is not an Int."))
+      case _ => Left(WrongTypeException(s"$field is not an Int."))
     }
   }
 
   def getSubFields(field: String): Either[CredentialContentException, IndexedSeq[(String, Any)]] = {
     getValue(field).flatMap {
       case SubFields(fields) => Right(fields.map(f => (f.name, getValue(f.value))))
-      case _ => Left(FieldNotFoundException(s"$field is not an Int."))
+      case _ => Left(WrongTypeException(s"$field is not an Int."))
     }
   }
 

@@ -36,6 +36,25 @@ class CredentialContentSpec extends AnyWordSpec with Matchers with EitherValues 
       )
     }
 
+    "allow to access nested fields" in new Fixtures {
+      val content = CredentialContent(
+        "credentialSubject" -> Fields(
+          "fieldName" -> true,
+          "nested" -> Fields(
+            "key1" -> "value",
+            "key2" -> 123
+          )
+        )
+      )
+
+      content.getBoolean("credentialSubject.fieldName") mustBe Right(true)
+      content.getString("credentialSubject.nested.key1") mustBe Right("value")
+      content.getInt("credentialSubject.nested.key2") mustBe Right(123)
+
+      content.getValue("credentialSubject.nonexistent") mustBe a[Left[FieldNotFoundException, _]]
+      content.getValue("nonexistent.nonexistent2.nonexistent3") mustBe a[Left[FieldNotFoundException, _]]
+    }
+
     "render html template if provided" in new Fixtures {
       val content = CredentialContent(
         "variable" -> "Hello World",
