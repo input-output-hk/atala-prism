@@ -409,7 +409,7 @@ jobs:
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "prism-android-wallet prism-sdk"
+          directories: "prism-android-wallet prism-kotlin-sdk"
       - run: yes | sdkmanager --licenses || exit 0
       - run: yes | sdkmanager --update || exit 0
 
@@ -718,6 +718,7 @@ workflows:
       - build-prism-android-wallet:
           requires:
             - build-prism-backend
+            - build-prism-kotlin-sdk
       - build-prism-interactive-demo-web:
           requires:
             - build-prism-backend
