@@ -59,19 +59,27 @@ trait MirrorFixtures {
     records.toList.sequence.transact(database).void
 
   object ConnectionFixtures {
-    lazy val connectionId1: ConnectionId = ConnectionId(UUID.fromString("0a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
-    lazy val connectionId2: ConnectionId = ConnectionId(UUID.fromString("36325aef-d937-41b2-9a6c-b654e02b273d"))
+    lazy val connectionId1: ConnectionId = ConnectionId(UUID.fromString("3a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
+    lazy val connectionId2: ConnectionId = ConnectionId(UUID.fromString("06325aef-d937-41b2-9a6c-b654e02b273d"))
     lazy val connectionPayIdName2 = PayIdName("payIdName2")
     lazy val connectionHolderDid2 = DID.buildPrismDID("did2")
     lazy val connection1: Connection =
-      Connection(ConnectionToken("token1"), Some(connectionId1), ConnectionState.Invited, None, None)
+      Connection(
+        token = ConnectionToken("token1"),
+        id = Some(connectionId1),
+        state = ConnectionState.Invited,
+        updatedAt = LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC),
+        holderDID = None,
+        payIdName = None
+      )
     lazy val connection2: Connection =
       Connection(
-        ConnectionToken("token2"),
-        Some(connectionId2),
-        ConnectionState.Invited,
-        Some(connectionHolderDid2),
-        Some(connectionPayIdName2)
+        token = ConnectionToken("token2"),
+        id = Some(connectionId2),
+        state = ConnectionState.Invited,
+        updatedAt = LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC),
+        holderDID = Some(connectionHolderDid2),
+        payIdName = Some(connectionPayIdName2)
       )
 
     def insertAll[F[_]: Sync](database: Transactor[F]) = {

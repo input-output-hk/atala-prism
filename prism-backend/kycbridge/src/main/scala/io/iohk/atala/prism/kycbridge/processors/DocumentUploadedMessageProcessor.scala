@@ -22,6 +22,7 @@ import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
 import io.iohk.atala.prism.kycbridge.models.{Connection, faceId}
 import doobie.implicits._
 import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
+import org.slf4j.LoggerFactory
 
 class DocumentUploadedMessageProcessor(
     tx: Transactor[Task],
@@ -32,9 +33,12 @@ class DocumentUploadedMessageProcessor(
     connectorConfig: ConnectorConfig
 )(implicit ec: ECTrait) {
 
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   val processor: MessageProcessor = { receivedMessage =>
     parseAcuantProcessFinishedMessage(receivedMessage)
       .map { message =>
+        logger.info(s"Processing message with document instance id: ${message.documentInstanceId}")
         (for {
           // get required informations
           connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
@@ -75,7 +79,7 @@ class DocumentUploadedMessageProcessor(
           // create credential with the document
           connectionId <- EitherT.fromOption[Task](connection.id, MessageProcessorException("Empty connection id."))
           credential = createCredential(document)
-          _ <- EitherT.right[MessageProcessorException](
+          credentialResponse <- EitherT.right[MessageProcessorException](
             nodeService.issueCredential(credential.canonicalForm)
           )
 
@@ -88,6 +92,9 @@ class DocumentUploadedMessageProcessor(
             SendMessageRequest(connectionId = connectionId.uuid.toString, message = credentialMessage.toByteString)
 
           _ <- EitherT.right[MessageProcessorException](connectorService.sendMessage(sendMessageRequest))
+          _ = logger.info(
+            s"Credential created for document instance id: ${message.documentInstanceId} with credential id: ${credentialResponse.id}"
+          )
         } yield ()).value
       }
   }

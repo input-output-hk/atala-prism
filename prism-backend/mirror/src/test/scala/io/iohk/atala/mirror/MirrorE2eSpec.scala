@@ -11,13 +11,11 @@ import org.scalatest.matchers.must.Matchers
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.mirror.services._
-import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.mirror.db.UserCredentialDao
 import io.iohk.atala.mirror.models.UserCredential
 import io.iohk.atala.prism.identity.DID
@@ -31,14 +29,13 @@ import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.{ConnectionToken, CredentialProofRequestType}
 import monix.execution.Scheduler.Implicits.global
 import io.iohk.atala.prism.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
-import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
 import io.iohk.atala.prism.services.{
   BaseGrpcClientService,
   ConnectorClientServiceImpl,
-  NodeClientService,
   NodeClientServiceImpl,
   ConnectorMessagesService
 }
+import io.iohk.atala.prism.E2ETestUtils._
 
 class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpec with MirrorFixtures {
 
@@ -59,7 +56,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         // Mirror: create new DID
         did <-
           Task
-            .fromFuture(connectorStub.registerDID(createDid(masterKey)))
+            .fromFuture(connectorStub.registerDID(createDid(masterKey, keyId, masterKey)))
             .map(response => DID.unsafeFromString(response.did))
         _ = logger.info(s"DID: ${did.value}")
 
@@ -95,7 +92,7 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         // Wallet: create connection from token and add it as header to the connector stub
         connection <-
           walletConnectorClientService
-            .authenticatedCall(addConnectionFromTokenRequest(connectionToken), _.addConnectionFromToken)
+            .authenticatedCall(addConnectionFromTokenRequest(connectionToken, walletKey), _.addConnectionFromToken)
         _ = logger.info(s"Connection: $connection")
         connectionId = connection.connection.map(_.connectionId).getOrElse("")
 
@@ -152,13 +149,6 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         .sign(masterKey.privateKey)
     }
 
-    def addConnectionFromTokenRequest(token: String) = {
-      AddConnectionFromTokenRequest(
-        token = token,
-        holderEncodedPublicKey = Some(EncodedPublicKey(ByteString.copyFrom(walletKey.publicKey.getEncoded)))
-      )
-    }
-
     def sendMessageRequest(connectionId: String, message: ByteString) =
       SendMessageRequest(connectionId = connectionId, message = message)
 
@@ -174,47 +164,11 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
       } yield sendMessageRequest(connectionId, credential.toByteString)
     }
 
-    def createDid(keys: ECKeyPair) = {
-      val createDidOp = CreateDIDOperation(
-        didData = Some(
-          DIDData(
-            publicKeys = Seq(
-              PublicKey(
-                id = keyId,
-                usage = KeyUsage.MASTER_KEY,
-                keyData = PublicKey.KeyData.EcKeyData(
-                  NodeClientService.toTimestampInfoProto(keys.publicKey)
-                )
-              )
-            )
-          )
-        )
-      )
-
-      val atalaOperation = AtalaOperation(operation = AtalaOperation.Operation.CreateDid(createDidOp))
-
-      val signedAtalaOperation = SignedAtalaOperation(
-        signedWith = keyId,
-        operation = Some(atalaOperation),
-        signature = ByteString.copyFrom(ecTrait.sign(atalaOperation.toByteArray, masterKey.privateKey).data)
-      )
-
-      RegisterDIDRequest()
-        .withCreateDIDOperation(signedAtalaOperation)
-        .withLogo(ByteString.EMPTY)
-        .withName("mirror")
-        .withRole(RegisterDIDRequest.Role.issuer)
-    }
-
     def createConnectorConfig(did: DID, keys: ECKeyPair) = {
       ConnectorConfig(
         host = "localhost",
         port = 50051,
-        authConfig = DidBasedAuthConfig(
-          did = did,
-          didKeyId = keyId,
-          didKeyPair = keys
-        )
+        authConfig = createAuthConfig(did, keys, keyId)
       )
     }
   }

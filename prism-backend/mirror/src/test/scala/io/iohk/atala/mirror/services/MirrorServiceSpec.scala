@@ -1,5 +1,7 @@
 package io.iohk.atala.mirror.services
 
+import java.time.Instant
+
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.db.ConnectionDao
 import org.mockito.scalatest.MockitoSugar
@@ -26,12 +28,14 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with Mi
     val token = "token"
     val connectorClientStub = new ConnectorClientServiceStub(token)
     val mirrorService = new MirrorService(databaseTask, connectorClientStub)
+    val updatedAt = Instant.now()
 
     // when
     val connection = (for {
       response <- mirrorService.createAccount
       connection <- ConnectionDao.findByConnectionToken(ConnectionToken(token)).transact(databaseTask)
-    } yield response -> connection).runSyncUnsafe(1.minute)
+      updatedConnection = connection.map(_.copy(updatedAt = updatedAt))
+    } yield response -> updatedConnection).runSyncUnsafe(1.minute)
 
     // then
     connection mustBe CreateAccountResponse(token) -> Some(
@@ -39,6 +43,7 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with Mi
         ConnectionToken(token),
         None,
         ConnectionState.Invited,
+        updatedAt,
         None,
         None
       )

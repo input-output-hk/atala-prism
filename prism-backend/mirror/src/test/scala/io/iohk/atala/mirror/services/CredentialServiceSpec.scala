@@ -173,7 +173,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
       } yield result).runSyncUnsafe(1.minute)
 
       // then
-      result mustBe Some(
+      result.map(_.copy(updatedAt = connection1.updatedAt)) mustBe Some(
         connection1.copy(
           id = Some(ConnectionId(uuid)),
           state = ConnectionState.Connected,

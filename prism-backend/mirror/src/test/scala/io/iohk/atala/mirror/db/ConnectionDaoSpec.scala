@@ -31,7 +31,11 @@ class ConnectionDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
         _ <- ConnectionDao.insert(connection1)
         _ <- ConnectionDao.update(connectionWithNewId)
         connection <- ConnectionDao.findByConnectionToken(connection1.token)
-      } yield connection).transact(database).unsafeRunSync() mustBe Some(connectionWithNewId)
+      } yield connection)
+        .transact(database)
+        .unsafeRunSync()
+        //ignore updated at
+        .map(_.copy(updatedAt = connectionWithNewId.updatedAt)) mustBe Some(connectionWithNewId)
     }
 
     "return connection by the token" in {

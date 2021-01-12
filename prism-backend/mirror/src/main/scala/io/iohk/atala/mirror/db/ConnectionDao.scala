@@ -11,12 +11,13 @@ import doobie.Fragments
 import doobie.implicits._
 import doobie.postgres.implicits._
 import io.iohk.atala.prism.identity.DID
+import doobie.implicits.legacy.instant._
 
 object ConnectionDao {
 
   def findByConnectionToken(token: ConnectionToken): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state, holder_did, pay_id_name
+    | SELECT token, id, state, updated_at, holder_did, pay_id_name
     | FROM connections
     | WHERE token = $token
     """.stripMargin.query[Connection].option
@@ -24,7 +25,7 @@ object ConnectionDao {
 
   def findByConnectionId(id: ConnectionId): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state, holder_did, pay_id_name
+    | SELECT token, id, state, updated_at, holder_did, pay_id_name
     | FROM connections
     | WHERE id = $id
     """.stripMargin.query[Connection].option
@@ -32,7 +33,7 @@ object ConnectionDao {
 
   def findByHolderDID(holderDID: DID): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state, holder_did, pay_id_name
+    | SELECT token, id, state, updated_at, holder_did, pay_id_name
     | FROM connections
     | WHERE holder_did = $holderDID
     """.stripMargin.query[Connection].option
@@ -40,7 +41,7 @@ object ConnectionDao {
 
   def findByPayIdName(payIdName: PayIdName): ConnectionIO[Option[Connection]] = {
     sql"""
-    | SELECT token, id, state, holder_did, pay_id_name
+    | SELECT token, id, state, updated_at, holder_did, pay_id_name
     | FROM connections
     | WHERE pay_id_name = $payIdName
     """.stripMargin.query[Connection].option
@@ -49,7 +50,7 @@ object ConnectionDao {
   def findBy(ids: NonEmptyList[ConnectionId]): ConnectionIO[List[Connection]] = {
     val sql =
       fr"""
-      | SELECT token, id, state, holder_did, pay_id_name
+      | SELECT token, id, state, updated_at, holder_did, pay_id_name
       | FROM connections
       | WHERE
       """.stripMargin ++ Fragments.in(fr"id", ids)
@@ -62,7 +63,7 @@ object ConnectionDao {
     | SELECT id
     | FROM connections
     | WHERE id IS NOT NULL
-    | ORDER BY updated_at, id DESC
+    | ORDER BY updated_at DESC, id DESC
     | LIMIT 1
     """.stripMargin.query[ConnectionId].option
   }
@@ -99,7 +100,7 @@ object ConnectionDao {
     */
   private def insertMany: Update[Connection] =
     Update[Connection](
-      "INSERT INTO connections(token, id, state, holder_did, pay_id_name) values (?, ?, ?::CONNECTION_STATE, ?, ?)"
+      "INSERT INTO connections(token, id, state, updated_at, holder_did, pay_id_name) values (?, ?, ?::CONNECTION_STATE, ?, ?, ?)"
     )
 
 }

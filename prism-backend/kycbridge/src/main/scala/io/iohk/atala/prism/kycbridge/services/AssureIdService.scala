@@ -73,9 +73,8 @@ class AssureIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
 
   def getFrontImageFromDocument(id: String): Task[Either[Exception, Array[Byte]]] = {
     val request = GET(
-      baseUri / "AssureIDService.svc/Document" / id / "Field/Image?key=Photo",
-      authorization,
-      Accept(MediaType.application.json)
+      (baseUri / "AssureIDService.svc/Document" / id / "Field/Image").+?("key", "Photo"),
+      authorization
     )
 
     fetchBinaryData(request, client)

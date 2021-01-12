@@ -190,9 +190,15 @@ object ConnectorClientService {
 
   def createConnectorGrpcStub(
       connectorConfig: ConnectorConfig
+  ): ConnectorServiceGrpc.ConnectorServiceStub =
+    createConnectorGrpcStub(connectorConfig.host, connectorConfig.port)
+
+  def createConnectorGrpcStub(
+      host: String,
+      port: Int
   ): ConnectorServiceGrpc.ConnectorServiceStub = {
     val channel = ManagedChannelBuilder
-      .forAddress(connectorConfig.host, connectorConfig.port)
+      .forAddress(host, port)
       .usePlaintext()
       .build()
 

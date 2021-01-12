@@ -1,8 +1,9 @@
 package io.iohk.atala.mirror.models
 
+import java.time.Instant
+
 import cats.data.EitherT
 import doobie.ConnectionIO
-
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken}
@@ -15,6 +16,7 @@ case class Connection(
     token: ConnectionToken,
     id: Option[ConnectionId],
     state: ConnectionState,
+    updatedAt: Instant = Instant.now(),
     holderDID: Option[DID],
     payIdName: Option[PayIdName]
 )

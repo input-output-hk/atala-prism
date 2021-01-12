@@ -1,5 +1,7 @@
 package io.iohk.atala.mirror.services
 
+import java.time.Instant
+
 import cats.data.OptionT
 import monix.eval.Task
 import doobie.util.transactor.Transactor
@@ -42,7 +44,7 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
         val newToken = ConnectionToken(response.token)
 
         ConnectionDao
-          .insert(Connection(newToken, None, ConnectionState.Invited, None, None))
+          .insert(Connection(newToken, None, ConnectionState.Invited, Instant.now(), None, None))
           .transact(tx)
           .map(_ => CreateAccountResponse(newToken.token))
       })
