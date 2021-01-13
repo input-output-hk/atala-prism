@@ -8,6 +8,7 @@ import io.iohk.atala.prism.app.data.local.db.AppDatabase
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
+import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSource
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSource
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.app.utils.CryptoUtils
@@ -30,7 +31,7 @@ class SyncAdapter @JvmOverloads constructor(
     }
 
     private val connectorApi: ConnectorRemoteDataSource by lazy {
-        ConnectorRemoteDataSource(sessionLocalDataSource)
+        ConnectorRemoteDataSource(PreferencesLocalDataSource(context))
     }
 
     override fun onPerformSync(account: Account?, extras: Bundle?, authority: String?, provider: ContentProviderClient?, syncResult: SyncResult?) {

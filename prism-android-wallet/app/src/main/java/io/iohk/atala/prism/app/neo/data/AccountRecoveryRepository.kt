@@ -11,6 +11,7 @@ import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWord
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWordsLength
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSourceInterface
+import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.app.utils.CryptoUtils
@@ -19,9 +20,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
 
-class AccountRecoveryRepository(private val sessionLocalDataSource: SessionLocalDataSourceInterface,
+class AccountRecoveryRepository(sessionLocalDataSource: SessionLocalDataSourceInterface,
+                                preferencesLocalDataSource: PreferencesLocalDataSourceInterface,
                                 private val contactsLocalDataSource: ContactsLocalDataSourceInterface,
-                                private val connectorApi: ConnectorRemoteDataSource) {
+                                private val connectorApi: ConnectorRemoteDataSource) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
 
     suspend fun recoverAccount(words: List<String>) {
         return withContext(Dispatchers.IO) {

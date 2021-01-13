@@ -5,20 +5,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.analytics.FirebaseAnalytics
+import dagger.android.support.DaggerFragment
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoFragmentWalletSetupBinding
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
+import javax.inject.Inject
 
-class WalletSetupFragment : Fragment() {
+class WalletSetupFragment : DaggerFragment() {
 
-    private val viewModel: WalletSetupViewModel by viewModels { WalletSetupViewModelFactory }
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel: WalletSetupViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(WalletSetupViewModel::class.java)
+    }
 
     private lateinit var binding: NeoFragmentWalletSetupBinding
 
@@ -33,7 +40,6 @@ class WalletSetupFragment : Fragment() {
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         // configure words recyclerView adapter
-
         val layoutManager = GridLayoutManager(requireContext(), 3)
         binding.recyclerViewSeedPhrase.layoutManager = layoutManager
         binding.recyclerViewSeedPhrase.adapter = mnemonicAdapter

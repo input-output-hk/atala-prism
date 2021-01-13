@@ -4,12 +4,8 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 
 import dagger.android.AndroidInjector;
 import dagger.android.support.DaggerApplication;
-import io.iohk.atala.prism.app.neo.di.modules.ApplicationModule;
-import io.iohk.atala.prism.app.neo.di.modules.RoomDataBaseModule;
 import io.iohk.atala.prism.app.dagger.components.DaggerCvpComponent;
-import io.iohk.atala.prism.app.neo.di.ApplicationComponent;
-import io.iohk.atala.prism.app.neo.di.DaggerApplicationComponent;
-import io.iohk.atala.prism.app.views.utils.ForegroundBackgroundListener;
+import io.iohk.atala.prism.app.ui.utils.ForegroundBackgroundListener;
 
 public class PrismApplication extends DaggerApplication {
 
@@ -28,25 +24,10 @@ public class PrismApplication extends DaggerApplication {
                 .getLifecycle()
                 .addObserver(
                         new ForegroundBackgroundListener(getApplicationContext()));
-        buildApplicationComponent();
     }
 
     @Override
     protected AndroidInjector<? extends DaggerApplication> applicationInjector() {
         return DaggerCvpComponent.builder().create(this);
-    }
-
-    /*
-     *  Handle new Application components for a Code Refactor
-     * */
-    public static ApplicationComponent applicationComponent;
-
-    private void buildApplicationComponent() {
-        applicationComponent = DaggerApplicationComponent
-                .builder()
-                .applicationModule(new ApplicationModule(this))
-                .roomDataBaseModule(new RoomDataBaseModule(this))
-                .build();
-        applicationComponent.inject(this);
     }
 }

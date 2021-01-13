@@ -5,7 +5,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import io.iohk.atala.prism.app.neo.ui.commondialogs.LoadingDialog
 import io.iohk.atala.prism.app.utils.IntentDataConstants
-import io.iohk.atala.prism.app.views.fragments.PopUpFragment
+import io.iohk.atala.prism.app.ui.commondialogs.PopUpFragment
 import io.iohk.cvp.R
 
 /*

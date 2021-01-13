@@ -3,19 +3,27 @@ package io.iohk.atala.prism.app.neo.ui.launch
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import dagger.android.support.DaggerAppCompatActivity
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoActivityLaunchBinding
 import io.iohk.atala.prism.app.neo.ui.onboarding.OnBoardingNavActivity
-import io.iohk.atala.prism.app.views.activities.MainActivity
-import io.iohk.atala.prism.app.views.utils.ForegroundBackgroundListener
+import io.iohk.atala.prism.app.ui.main.MainActivity
+import io.iohk.atala.prism.app.ui.utils.ForegroundBackgroundListener
+import javax.inject.Inject
 
-class LaunchActivity : AppCompatActivity() {
+class LaunchActivity : DaggerAppCompatActivity() {
 
-    private val viewModel: LaunchViewModel by viewModels { LaunchViewModelFactory }
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+
+    private val viewModel: LaunchViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(LaunchViewModel::class.java)
+    }
 
     private lateinit var binding: NeoActivityLaunchBinding
 

@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.atala.prism.app.viewmodel.ActivityLogViewModel" />
+            type="io.iohk.atala.prism.app.ui.main.notifications.ActivityLogViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -37,7 +37,6 @@
 
             <include
                 layout="@layout/include_generic_empty_view"
-                app:text="@{}"
                 app:title="@{@string/you_dont_have_activities_yet}" />
         </FrameLayout>
 

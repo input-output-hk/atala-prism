@@ -4,8 +4,9 @@ import androidx.lifecycle.*
 import io.iohk.atala.prism.app.core.PrismApplication
 import io.iohk.atala.prism.app.neo.data.SessionRepository
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LaunchViewModel(private val sessionRepository: SessionRepository) : ViewModel() {
+class LaunchViewModel @Inject constructor(private val sessionRepository: SessionRepository) : ViewModel() {
 
     val sessionDataHasStored: LiveData<Boolean> = sessionRepository.sessionDataHasStored
 
@@ -18,7 +19,7 @@ class LaunchViewModel(private val sessionRepository: SessionRepository) : ViewMo
         }
     }
 }
-
+/*
 /**
  * Factory for [LaunchViewModel].
  * */
@@ -30,4 +31,4 @@ object LaunchViewModelFactory : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         return LaunchViewModel(sessionRepository) as T
     }
-}
+}*/

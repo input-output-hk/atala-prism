@@ -5,23 +5,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import dagger.android.support.DaggerFragment
 import io.iohk.cvp.databinding.NeoFragmentRestoreAccountBinding
 import io.iohk.cvp.R
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.ui.commondialogs.LoadingDialog
+import javax.inject.Inject
 
-class RestoreAccountFragment : Fragment() {
+class RestoreAccountFragment : DaggerFragment() {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private lateinit var binding: NeoFragmentRestoreAccountBinding
 
     private var loadingDialog: LoadingDialog? = null
 
-    private val viewModel: RestoreAccountViewModel by viewModels {
-        RestoreAccountViewModelFactory()
+    private val viewModel: RestoreAccountViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(RestoreAccountViewModel::class.java)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

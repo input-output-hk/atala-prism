@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.atala.prism.app.viewmodel.ProofRequestDialogViewModel" />
+            type="io.iohk.atala.prism.app.ui.commondialogs.ProofRequestDialogViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

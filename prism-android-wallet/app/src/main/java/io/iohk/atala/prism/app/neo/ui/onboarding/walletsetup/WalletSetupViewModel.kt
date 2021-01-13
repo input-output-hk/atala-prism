@@ -1,13 +1,13 @@
 package io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.core.PrismApplication
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.extensions.randomIndexes
 import io.iohk.atala.prism.app.neo.data.SessionRepository
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class WalletSetupViewModel(sessionRepository: SessionRepository) : ViewModel() {
+class WalletSetupViewModel @Inject constructor(sessionRepository: SessionRepository) : ViewModel() {
 
     companion object {
         private val MNEMONIC_LIST_PLACE_HOLDER = (1..12).map { "------" }
@@ -55,18 +55,5 @@ class WalletSetupViewModel(sessionRepository: SessionRepository) : ViewModel() {
 
     private fun computeAcceptButtonEnabled(): Boolean {
         return _mnemonicList.value != null && mnemonicListAccepted.value == true
-    }
-}
-
-/**
- * Factory for [WalletSetupViewModel].
- * */
-object WalletSetupViewModelFactory : ViewModelProvider.Factory {
-
-    private val sessionRepository = PrismApplication.applicationComponent.sessionRepository()
-
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        @Suppress("UNCHECKED_CAST")
-        return WalletSetupViewModel(sessionRepository) as T
     }
 }

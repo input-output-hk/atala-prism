@@ -40,26 +40,23 @@
             android:name="io.iohk.atala.prism.app.neo.ui.onboarding.OnBoardingNavActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.atala.prism.app.views.activities.MainActivity"
+            android:name="io.iohk.atala.prism.app.ui.main.MainActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name="io.iohk.atala.prism.app.views.activities.UnlockActivity"
+            android:name="io.iohk.atala.prism.app.ui.UnlockActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
 
         <activity
-            android:name="io.iohk.atala.prism.app.views.activities.WebTermsAndConditionsActivity"
+            android:name="io.iohk.atala.prism.app.ui.main.settings.WebTermsAndConditionsActivity"
             android:theme="@style/mytransparent.windowNoTitle" />
         <activity
-            android:name="io.iohk.atala.prism.app.views.activities.AccountCreatedActivity"
+            android:name="io.iohk.atala.prism.app.ui.QrCodeScannerActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="io.iohk.atala.prism.app.views.activities.QrCodeScanner"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="io.iohk.atala.prism.app.views.activities.WebViewActivity"
+            android:name="io.iohk.atala.prism.app.ui.WebViewActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"

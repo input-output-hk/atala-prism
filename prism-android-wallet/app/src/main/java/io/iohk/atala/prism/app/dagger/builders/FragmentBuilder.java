@@ -2,83 +2,60 @@ package io.iohk.atala.prism.app.dagger.builders;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
-import io.iohk.atala.prism.app.dagger.modules.AcceptConnectionDialogModule;
-import io.iohk.atala.prism.app.dagger.modules.ActivityLogFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.ContactDetailFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.ContactsFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.CredentialHistoryFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.CredentialsFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.DeleteCredentialDialogModule;
-import io.iohk.atala.prism.app.dagger.modules.NotificationsFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.DeleteContactAlertDialogModule;
-import io.iohk.atala.prism.app.dagger.modules.MyCredentialsFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.PaymentsModule;
-import io.iohk.atala.prism.app.dagger.modules.ProfileFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.SettingsDateFormatFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.ProofRequestDialogModule;
-import io.iohk.atala.prism.app.dagger.modules.SettingsFragmentModule;
-import io.iohk.atala.prism.app.dagger.modules.ShareCredentialDialogModule;
-import io.iohk.atala.prism.app.views.activities.UnlockActivity;
-import io.iohk.atala.prism.app.views.fragments.AboutFragment;
-import io.iohk.atala.prism.app.views.fragments.AcceptConnectionDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.ActivityLogFragment;
-import io.iohk.atala.prism.app.views.fragments.AddQrCodeDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.AlreadyConnectedDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.BackendIpFragment;
-import io.iohk.atala.prism.app.views.fragments.ContactDetailFragment;
-import io.iohk.atala.prism.app.views.fragments.ContactsFragment;
-import io.iohk.atala.prism.app.views.fragments.CredentialDetailFragment;
-import io.iohk.atala.prism.app.views.fragments.CredentialHistoryFragment;
-import io.iohk.atala.prism.app.views.fragments.DeleteAllConnectionsDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.DeleteContactAlertDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.DeleteCredentialDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.LargeDescriptionDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.MyCredentialsFragment;
-import io.iohk.atala.prism.app.views.fragments.NotificationsFragment;
-import io.iohk.atala.prism.app.views.fragments.PaymentCongratsFragment;
-import io.iohk.atala.prism.app.views.fragments.PaymentFragment;
-import io.iohk.atala.prism.app.views.fragments.PaymentHistoryFragment;
-import io.iohk.atala.prism.app.views.fragments.ProfileFragment;
-import io.iohk.atala.prism.app.views.fragments.ProofRequestDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.SecurityChangePinFragment;
-import io.iohk.atala.prism.app.views.fragments.SecurityFragment;
-import io.iohk.atala.prism.app.views.fragments.SecuritySettingsStep1Fragment;
-import io.iohk.atala.prism.app.views.fragments.SecuritySettingsStep2Fragment;
-import io.iohk.atala.prism.app.views.fragments.SettingsDateFormatFragment;
-import io.iohk.atala.prism.app.views.fragments.SettingsFragment;
-import io.iohk.atala.prism.app.views.fragments.ShareCredentialDialogFragment;
-import io.iohk.atala.prism.app.views.fragments.WalletFragment;
-import io.iohk.atala.prism.app.views.utils.ForegroundBackgroundListener;
+import io.iohk.atala.prism.app.neo.ui.onboarding.phraseverification.PhraseVerificationFragment;
+import io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccount.RestoreAccountFragment;
+import io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup.WalletSetupFragment;
+import io.iohk.atala.prism.app.ui.UnlockActivity;
+import io.iohk.atala.prism.app.ui.main.settings.AboutFragment;
+import io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogFragment;
+import io.iohk.atala.prism.app.ui.main.notifications.ActivityLogFragment;
+import io.iohk.atala.prism.app.ui.commondialogs.AddQrCodeDialogFragment;
+import io.iohk.atala.prism.app.ui.main.settings.BackendIpFragment;
+import io.iohk.atala.prism.app.ui.main.contacts.ContactDetailFragment;
+import io.iohk.atala.prism.app.ui.main.contacts.ContactsFragment;
+import io.iohk.atala.prism.app.ui.main.credentials.CredentialDetailFragment;
+import io.iohk.atala.prism.app.ui.main.credentials.CredentialHistoryFragment;
+import io.iohk.atala.prism.app.ui.main.settings.DeleteAllConnectionsDialogFragment;
+import io.iohk.atala.prism.app.ui.main.contacts.DeleteContactAlertDialogFragment;
+import io.iohk.atala.prism.app.ui.main.credentials.DeleteCredentialDialogFragment;
+import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsFragment;
+import io.iohk.atala.prism.app.ui.main.notifications.NotificationsFragment;
+import io.iohk.atala.prism.app.ui.main.payments.PaymentCongratsFragment;
+import io.iohk.atala.prism.app.ui.main.payments.PaymentFragment;
+import io.iohk.atala.prism.app.ui.main.profile.ProfileFragment;
+import io.iohk.atala.prism.app.ui.commondialogs.ProofRequestDialogFragment;
+import io.iohk.atala.prism.app.ui.main.settings.SecurityChangePinFragment;
+import io.iohk.atala.prism.app.ui.main.settings.SecurityFragment;
+import io.iohk.atala.prism.app.ui.main.settings.SecuritySettingsStep1Fragment;
+import io.iohk.atala.prism.app.ui.main.settings.SecuritySettingsStep2Fragment;
+import io.iohk.atala.prism.app.ui.main.settings.SettingsDateFormatFragment;
+import io.iohk.atala.prism.app.ui.main.settings.SettingsFragment;
+import io.iohk.atala.prism.app.ui.main.credentials.ShareCredentialDialogFragment;
+import io.iohk.atala.prism.app.ui.utils.ForegroundBackgroundListener;
 
 @Module
 public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector
-    abstract LargeDescriptionDialogFragment contributeLargeDescription();
-
-    @ContributesAndroidInjector(modules = MyCredentialsFragmentModule.class)
     abstract MyCredentialsFragment contributeMyCredentialsFragment();
 
-    @ContributesAndroidInjector(modules = ProfileFragmentModule.class)
+    @ContributesAndroidInjector
     abstract ProfileFragment contributeProfileFragment();
 
-    @ContributesAndroidInjector(modules = NotificationsFragmentModule.class)
+    @ContributesAndroidInjector
     abstract NotificationsFragment contributeNotificationsFragment();
 
-    @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
+    @ContributesAndroidInjector
     abstract CredentialDetailFragment contributeCredentialFragment();
 
-    @ContributesAndroidInjector(modules = ShareCredentialDialogModule.class)
+    @ContributesAndroidInjector
     abstract ShareCredentialDialogFragment contributeShareCredentialDialogFragment();
 
-    @ContributesAndroidInjector(modules = ContactsFragmentModule.class)
+    @ContributesAndroidInjector
     abstract ContactsFragment contributeContactsFragment();
 
-    @ContributesAndroidInjector(modules = SettingsFragmentModule.class)
+    @ContributesAndroidInjector
     abstract SettingsFragment contributeSettingsFragment();
-
-    @ContributesAndroidInjector(modules = PaymentsModule.class)
-    abstract WalletFragment contributeWalletFragment();
 
     @ContributesAndroidInjector
     abstract PaymentFragment contributePaymenFragment();
@@ -86,10 +63,7 @@ public abstract class FragmentBuilder {
     @ContributesAndroidInjector
     abstract PaymentCongratsFragment contributePaymenCongratsFragment();
 
-    @ContributesAndroidInjector(modules = PaymentsModule.class)
-    abstract PaymentHistoryFragment contributePaymentHistoryFragment();
-
-    @ContributesAndroidInjector(modules = AcceptConnectionDialogModule.class)
+    @ContributesAndroidInjector
     abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragmentRefactored();
 
     @ContributesAndroidInjector
@@ -120,29 +94,35 @@ public abstract class FragmentBuilder {
     abstract DeleteAllConnectionsDialogFragment deleteAllConnectionsDialogFragment();
 
     @ContributesAndroidInjector
-    abstract AlreadyConnectedDialogFragment alreadyConnectedDialogFragment();
-
-    @ContributesAndroidInjector
     abstract AddQrCodeDialogFragment addQrCodeDialogFragment();
 
-    @ContributesAndroidInjector(modules = DeleteCredentialDialogModule.class)
+    @ContributesAndroidInjector
     abstract DeleteCredentialDialogFragment deleteCredentialDialogFragment();
 
-    @ContributesAndroidInjector(modules = DeleteContactAlertDialogModule.class)
+    @ContributesAndroidInjector
     abstract DeleteContactAlertDialogFragment deleteContactDialogFragment();
 
-    @ContributesAndroidInjector(modules = ContactDetailFragmentModule.class)
+    @ContributesAndroidInjector
     abstract ContactDetailFragment contributeContactDetailFragment();
 
-    @ContributesAndroidInjector(modules = CredentialHistoryFragmentModule.class)
+    @ContributesAndroidInjector
     abstract CredentialHistoryFragment contributeCredentialHistoryFragment();
 
-    @ContributesAndroidInjector(modules = ActivityLogFragmentModule.class)
+    @ContributesAndroidInjector
     abstract ActivityLogFragment contributeActivityLogFragment();
 
-    @ContributesAndroidInjector(modules = SettingsDateFormatFragmentModule.class)
+    @ContributesAndroidInjector
     abstract SettingsDateFormatFragment contributeSettingsDateFormatFragment();
 
-    @ContributesAndroidInjector(modules = ProofRequestDialogModule.class)
+    @ContributesAndroidInjector
     abstract ProofRequestDialogFragment contributeProofRequestDialogFragment();
+
+    @ContributesAndroidInjector
+    abstract WalletSetupFragment contributeWalletSetupFragment();
+
+    @ContributesAndroidInjector
+    abstract PhraseVerificationFragment contributePhraseVerificationFragment();
+
+    @ContributesAndroidInjector
+    abstract RestoreAccountFragment contributeRestoreAccountFragment();
 }

@@ -12,7 +12,7 @@ import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.data.local.preferences.PreferencesHelper
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.data.local.remote.ApiHelper
-import io.iohk.atala.prism.app.viewmodel.dtos.ConnectionDataDto
+import io.iohk.atala.prism.app.data.dtos.ConnectionDataDto
 import io.iohk.atala.prism.protos.*
 import javax.inject.Inject
 

@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccount
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.core.PrismApplication
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWord
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWordsLength
 import io.iohk.atala.prism.app.neo.data.AccountRecoveryRepository
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RestoreAccountViewModel(private val accountRecoveryRepository: AccountRecoveryRepository) : ViewModel() {
+class RestoreAccountViewModel @Inject constructor(private val accountRecoveryRepository: AccountRecoveryRepository) : ViewModel() {
 
     enum class ErrorType { InvalidSecurityWordsLength, InvalidSecurityWord, UnknownError }
 
@@ -47,18 +47,5 @@ class RestoreAccountViewModel(private val accountRecoveryRepository: AccountReco
                 _isLoading.value = false
             }
         }
-    }
-}
-
-/**
- * Factory for [RestoreAccountViewModel].
- * */
-class RestoreAccountViewModelFactory() : ViewModelProvider.Factory {
-
-    private val accountRecoveryRepository = PrismApplication.applicationComponent.accountRecoveryRepository()
-
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        @Suppress("UNCHECKED_CAST")
-        return RestoreAccountViewModel(accountRecoveryRepository) as T
     }
 }

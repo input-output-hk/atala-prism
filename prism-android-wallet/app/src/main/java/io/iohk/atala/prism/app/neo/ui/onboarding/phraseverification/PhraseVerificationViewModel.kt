@@ -1,23 +1,27 @@
 package io.iohk.atala.prism.app.neo.ui.onboarding.phraseverification
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.core.PrismApplication
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.data.SessionRepository
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PhraseVerificationViewModel(private val sessionRepository: SessionRepository,
-                                  private val mnemonicList: List<String>,
-                                  val verificationIndex1: Int,
-                                  val verificationIndex2: Int) : ViewModel() {
+class PhraseVerificationViewModel @Inject constructor(private val sessionRepository: SessionRepository) : ViewModel() {
+
+    private lateinit var mnemonicList: List<String>
+    var verificationIndex1: Int = -1
+    var verificationIndex2: Int = -1
 
     private val _showInvalidWordsError = MutableLiveData<Boolean>(false)
 
     val showInvalidWordsError: LiveData<Boolean> = _showInvalidWordsError
 
-    private val expectedWord1: String = mnemonicList[verificationIndex1].toLowerCase()
+    private val expectedWord1: String
+        get() = mnemonicList[verificationIndex1].toLowerCase()
 
-    private val expectedWord2: String = mnemonicList[verificationIndex2].toLowerCase()
+
+    private val expectedWord2: String
+        get() = mnemonicList[verificationIndex2].toLowerCase()
 
     // handle two way binding for the first word TextInputEditText
     val firstWord = MutableLiveData<String>().apply { observeForever { _showInvalidWordsError.value = false } }
@@ -41,6 +45,12 @@ class PhraseVerificationViewModel(private val sessionRepository: SessionReposito
 
     val shouldNavigateToNextScreen: LiveData<EventWrapper<Boolean>> = _shouldNavigateToNextScreen
 
+    fun setArguments(mnemonicList: List<String>, verificationIndex1: Int, verificationIndex2: Int) {
+        this.mnemonicList = mnemonicList
+        this.verificationIndex1 = verificationIndex1
+        this.verificationIndex2 = verificationIndex2
+    }
+
     fun verifyButtonTaped() {
         // Validate words
         if (!expectedWord1.equals(firstWord.value, ignoreCase = true) || !expectedWord2.equals(secondWord.value, ignoreCase = true)) {
@@ -63,22 +73,5 @@ class PhraseVerificationViewModel(private val sessionRepository: SessionReposito
             return false
         }
         return (firstWord.value ?: "").isNotBlank() && (secondWord.value ?: "").isNotBlank()
-    }
-}
-
-/**
- * Factory for [PhraseVerificationViewModel].
- * */
-class PhraseVerificationViewModelFactory(private val mnemonicList: List<String>,
-                                         private val verificationIndex1: Int,
-                                         private val verificationIndex2: Int) : ViewModelProvider.Factory {
-
-    private val sessionRepository = PrismApplication.applicationComponent.sessionRepository()
-
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        @Suppress("UNCHECKED_CAST")
-        return PhraseVerificationViewModel(sessionRepository, mnemonicList,
-                verificationIndex1,
-                verificationIndex2) as T
     }
 }

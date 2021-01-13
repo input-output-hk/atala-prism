@@ -2,7 +2,7 @@ package io.iohk.atala.prism.app.data.local.remote
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.app.viewmodel.dtos.ConnectionDataDto
+import io.iohk.atala.prism.app.data.dtos.ConnectionDataDto
 import io.iohk.atala.prism.protos.*
 
 interface ApiHelper {

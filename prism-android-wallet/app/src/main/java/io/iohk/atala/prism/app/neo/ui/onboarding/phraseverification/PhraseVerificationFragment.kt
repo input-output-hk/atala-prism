@@ -6,25 +6,32 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.firebase.analytics.FirebaseAnalytics
+import dagger.android.support.DaggerFragment
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoFragmentPhraseVerificationBinding
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.lowerCaseInputFilter
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents
+import javax.inject.Inject
 
-class PhraseVerificationFragment : Fragment() {
+class PhraseVerificationFragment : DaggerFragment() {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private lateinit var binding: NeoFragmentPhraseVerificationBinding
 
     private val args: PhraseVerificationFragmentArgs by navArgs()
 
-    private val viewModel: PhraseVerificationViewModel by viewModels {
-        PhraseVerificationViewModelFactory(args.mnemonicList.toList(), args.verificationIndex1, args.verificationIndex2)
+    private val viewModel: PhraseVerificationViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(PhraseVerificationViewModel::class.java).apply {
+            setArguments(args.mnemonicList.toList(), args.verificationIndex1, args.verificationIndex2)
+        }
     }
 
     private val firebaseAnalytics: FirebaseAnalytics by lazy {

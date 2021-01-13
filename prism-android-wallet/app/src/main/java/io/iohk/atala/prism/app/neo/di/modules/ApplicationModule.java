@@ -9,6 +9,8 @@ import io.iohk.atala.prism.app.neo.data.AccountRecoveryRepository;
 import io.iohk.atala.prism.app.neo.data.SessionRepository;
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSourceInterface;
+import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSource;
+import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource;
@@ -28,6 +30,15 @@ public class ApplicationModule {
     }
 
     /*
+     *  [PreferencesLocalDataSource] providers
+     * */
+
+    @Provides
+    public PreferencesLocalDataSourceInterface providePreferencesLocalDataSource() {
+        return new PreferencesLocalDataSource(context);
+    }
+
+    /*
      *  SessionRepository providers
      * */
 
@@ -37,8 +48,8 @@ public class ApplicationModule {
     }
 
     @Provides
-    public SessionRepository provideSessionRepository(SessionLocalDataSourceInterface sessionLocalDataSource) {
-        return new SessionRepository(sessionLocalDataSource);
+    public SessionRepository provideSessionRepository(SessionLocalDataSourceInterface sessionLocalDataSource, PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
+        return new SessionRepository(sessionLocalDataSource, preferencesLocalDataSource);
     }
 
     /*
@@ -46,8 +57,8 @@ public class ApplicationModule {
      * */
 
     @Provides
-    public ConnectorRemoteDataSource provideConnectorRemoteDataSource(SessionLocalDataSourceInterface sessionLocalDataSource) {
-        return new ConnectorRemoteDataSource(sessionLocalDataSource);
+    public ConnectorRemoteDataSource provideConnectorRemoteDataSource(PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
+        return new ConnectorRemoteDataSource(preferencesLocalDataSource);
     }
 
     /*
@@ -61,8 +72,9 @@ public class ApplicationModule {
 
     @Provides
     public AccountRecoveryRepository provideSessionLocalDataSourceInterface(SessionLocalDataSourceInterface sessionLocalDataSource,
+                                                                            PreferencesLocalDataSourceInterface preferencesLocalDataSource,
                                                                             ContactsLocalDataSourceInterface contactsLocalDataSource,
                                                                             ConnectorRemoteDataSource connectorRemoteDataSource) {
-        return new AccountRecoveryRepository(sessionLocalDataSource, contactsLocalDataSource, connectorRemoteDataSource);
+        return new AccountRecoveryRepository(sessionLocalDataSource, preferencesLocalDataSource, contactsLocalDataSource, connectorRemoteDataSource);
     }
 }

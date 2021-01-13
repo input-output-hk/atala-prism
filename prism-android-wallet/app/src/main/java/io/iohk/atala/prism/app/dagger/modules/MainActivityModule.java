@@ -1,17 +1,12 @@
 package io.iohk.atala.prism.app.dagger.modules;
 
-import androidx.lifecycle.ViewModelProvider;
-
 import dagger.Module;
 import dagger.Provides;
-import io.iohk.atala.prism.app.utils.ViewModelProviderFactory;
-import io.iohk.atala.prism.app.viewmodel.MainViewModel;
-import io.iohk.atala.prism.app.views.fragments.ContactsFragment;
-import io.iohk.atala.prism.app.views.fragments.MyCredentialsFragment;
-import io.iohk.atala.prism.app.views.fragments.NotificationsFragment;
-import io.iohk.atala.prism.app.views.fragments.ProfileFragment;
-import io.iohk.atala.prism.app.views.fragments.SettingsFragment;
-import io.iohk.atala.prism.app.views.fragments.WalletFragment;
+import io.iohk.atala.prism.app.ui.main.contacts.ContactsFragment;
+import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsFragment;
+import io.iohk.atala.prism.app.ui.main.notifications.NotificationsFragment;
+import io.iohk.atala.prism.app.ui.main.profile.ProfileFragment;
+import io.iohk.atala.prism.app.ui.main.settings.SettingsFragment;
 
 @Module
 public class MainActivityModule {
@@ -32,11 +27,6 @@ public class MainActivityModule {
     }
 
     @Provides
-    WalletFragment provideWalletFragment() {
-        return new WalletFragment();
-    }
-
-    @Provides
     ProfileFragment provideProfileFragment() {
         return new ProfileFragment();
     }
@@ -44,10 +34,5 @@ public class MainActivityModule {
     @Provides
     ContactsFragment provideContactsFragment() {
         return new ContactsFragment();
-    }
-
-    @Provides
-    ViewModelProvider.Factory provideViewModelProvider(MainViewModel viewModel) {
-        return new ViewModelProviderFactory<>(viewModel);
     }
 }

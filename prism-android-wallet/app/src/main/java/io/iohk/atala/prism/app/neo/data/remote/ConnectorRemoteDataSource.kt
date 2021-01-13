@@ -2,11 +2,11 @@ package io.iohk.atala.prism.app.neo.data.remote
 
 import io.grpc.stub.MetadataUtils
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
+import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.protos.*
 
-class ConnectorRemoteDataSource(sessionLocalDataSource: SessionLocalDataSourceInterface) : BaseRemoteDataSource(sessionLocalDataSource) {
+class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalDataSourceInterface) : BaseRemoteDataSource(preferencesLocalDataSource) {
 
     private fun getChannel(ecKeyPair: ECKeyPair?, requestByteArray: ByteArray): ConnectorServiceGrpc.ConnectorServiceFutureStub {
         val mainChannel = getMainChannel()

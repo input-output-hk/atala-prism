@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.atala.prism.app.viewmodel.NotificationsViewModel" />
+            type="io.iohk.atala.prism.app.ui.main.notifications.NotificationsViewModel" />
 
         <variable
             name="scanQrBtnOnClick"
