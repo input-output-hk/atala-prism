@@ -14,12 +14,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 @react class WalletView extends Component {
+
   case class Props(
       backgroundAPI: BackgroundAPI,
       blockchainExplorerUrl: String,
       termsUrl: String,
       privacyPolicyUrl: String
   )
+
   case class State(walletStatus: WalletStatus, view: View)
 
   override def componentDidMount(): Unit = {
@@ -52,32 +54,56 @@ import scala.util.{Failure, Success}
   override def render(): ReactElement = {
     (state.walletStatus, state.view) match {
       case (WalletStatus.Missing, Default) =>
-        SlinkyInitialWalletView(props.backgroundAPI, (view: View) => updateView(view))
+        InitialWalletView(props.backgroundAPI, (view: View) => updateView(view))
       case (WalletStatus.Missing, Register) =>
-        SlinkyRegisterWalletView(
+        RegisterWalletView(
           props.backgroundAPI,
           props.termsUrl,
           props.privacyPolicyUrl,
+          (view: View) => updateView(view)
+        )
+      case (WalletStatus.Missing, DisplayMnemonic) =>
+        RegisterWalletView(
+          props.backgroundAPI,
+          props.termsUrl,
+          props.privacyPolicyUrl,
+          (view: View) => updateView(view)
+        )
+      case (WalletStatus.Missing, VerifyMnemonic(data)) =>
+        VerifyMnemonicWalletView(
+          props.backgroundAPI,
+          data,
+          (view: View) => updateView(view)
+        )
+      case (WalletStatus.Missing, OrganizationDetails(data)) =>
+        OrganisationDetailsWalletView(
+          props.backgroundAPI,
+          props.termsUrl,
+          props.privacyPolicyUrl,
+          data,
           (view: View) => updateView(view)
         )
       case (WalletStatus.Missing | WalletStatus.Locked, Recover) =>
-        SlinkyRecoverWalletView(
+        RecoverWalletView(
           props.backgroundAPI,
           props.termsUrl,
           props.privacyPolicyUrl,
           (view: View) => updateView(view)
         )
-      case (WalletStatus.Unlocked, Register) =>
-        SlinkyWelcomeRegisterView(props.backgroundAPI, props.blockchainExplorerUrl, (view: View) => updateView(view))
+      case (WalletStatus.Unlocked, Welcome) =>
+        WelcomeRegisterView(
+          props.backgroundAPI,
+          props.blockchainExplorerUrl,
+          (view: View) => updateView(view)
+        )
       case (WalletStatus.Unlocked, Recover) =>
-        SlinkyWelcomeRecoverView(props.backgroundAPI, (view: View) => updateView(view))
+        WelcomeRecoverView(props.backgroundAPI, (view: View) => updateView(view))
       case (WalletStatus.Locked, _) =>
-        SlinkyUnlockWalletView(props.backgroundAPI, (view: View) => updateView(view))
+        UnlockWalletView(props.backgroundAPI, (view: View) => updateView(view))
       case (WalletStatus.Unlocked, _) =>
-        SlinkyMainWalletView(props.backgroundAPI, (view: View) => updateView(view))
-
+        MainWalletView(props.backgroundAPI, (view: View) => updateView(view))
       case _ =>
-        SlinkyInitialWalletView(props.backgroundAPI, (view: View) => updateView(view))
+        InitialWalletView(props.backgroundAPI, (view: View) => updateView(view))
     }
   }
 }

@@ -16,16 +16,23 @@ import slinky.web.html._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-@react class SlinkyRecoverWalletView extends Component {
-  case class Props(backgroundAPI: BackgroundAPI, termsUrl: String, privacyPolicyUrl: String, switchToView: View => Unit)
+@react class RecoverWalletView extends Component {
+
+  case class Props(
+      backgroundAPI: BackgroundAPI,
+      termsUrl: String,
+      privacyPolicyUrl: String,
+      switchToView: (View) => Unit
+  )
+
   case class State(
       seed: String,
       password: String,
       password2: String,
       message: String,
-      tandc: Boolean = false,
-      privacyPolicy: Boolean = false,
-      isLoading: Boolean = false
+      tandc: Boolean,
+      privacyPolicy: Boolean,
+      isLoading: Boolean
   )
 
   private def setPassword(newValue: String): Unit = {
@@ -41,7 +48,7 @@ import scala.util.{Failure, Success}
   }
 
   override def initialState: State = {
-    State("", "", "", "")
+    State("", "", "", "", false, false, false)
   }
 
   private def setTandC(newValue: Boolean): Unit = {

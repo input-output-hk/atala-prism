@@ -551,6 +551,10 @@ p.padding  { padding:0; margin:0;}
   fill: #6FCF97 !important;
 }
 
+.buttonIcon_checkbox {
+  fill: #40EAEA !important;
+}
+
 .button_success_mui {
     color: #6FCF97 !important;
     text-transform: none !important;

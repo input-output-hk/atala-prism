@@ -45,6 +45,11 @@ Run: `PROD=true sbt chromePackage` which generates:
 - A zip file that can be uploaded to the chrome store: `target/chrome/chrome-scalajs-template.zip`
 - A folder with all resources which can be packaged for firefox: `target/chrome/unpacked-opt/`
 
+To Run against develop environment: `CONNECTOR_URL=https://grpc-develop.atalaprism.io:4433 sbt chromePackage` which generates:
+- A zip file that can be uploaded to the chrome store: `target/chrome/chrome-scalajs-template.zip`
+- A folder with all resources which can be packaged for chrome: `target/chrome/unpacked-opt/`
+- This will allow you run browser wallet against develop environment. You don't need to run other dependent services locally
+- For developer testing upload this folder into the `chrome://extensions/` load unpacked  `target/chrome/unpacked-opt/` 
 ## Docs
 The project has 3 components, and each of them acts as a different application, there are interfaces for interacting between them.
 

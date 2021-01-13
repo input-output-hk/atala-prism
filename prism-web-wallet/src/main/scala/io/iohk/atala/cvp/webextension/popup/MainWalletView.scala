@@ -21,25 +21,26 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 
-@react class SlinkyMainWalletView extends Component {
+@react class MainWalletView extends Component {
 
   private val domParser = new DOMParser()
   private val emptyDiv = "<div/>"
 
-  case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
+  case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
+
   case class State(
       requests: List[SigningRequest],
       id: Int,
       message: String,
-      status: Option[Boolean] = None,
-      isLoading: Boolean = false
+      status: Option[Boolean],
+      isLoading: Boolean
   )
 
   override def componentDidMount(): Unit = {
     loadRequests()
   }
 
-  override def initialState: State = State(requests = Nil, 0, "")
+  override def initialState: State = State(requests = Nil, 0, "", None, false)
 
   private def renderTemplate(request: SigningRequest) = {
     val sanitisedHtml = dompurify.sanitize(request.subject.properties.getOrElse("html", emptyDiv))

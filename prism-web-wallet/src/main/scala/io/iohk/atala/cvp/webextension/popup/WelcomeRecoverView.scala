@@ -8,9 +8,9 @@ import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
-@react class SlinkyWelcomeRecoverView extends StatelessComponent {
+@react class WelcomeRecoverView extends StatelessComponent {
 
-  case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
+  case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   override def render(): ReactElement = {
     div(id := "welcomeRecoveryScreen", className := "status_container")(

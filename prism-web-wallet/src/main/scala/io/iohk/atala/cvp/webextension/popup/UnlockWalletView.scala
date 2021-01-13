@@ -11,9 +11,9 @@ import slinky.web.html._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-@react class SlinkyUnlockWalletView extends Component {
+@react class UnlockWalletView extends Component {
 
-  case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
+  case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   case class State(
       password: String,

@@ -10,14 +10,16 @@ import slinky.web.html._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-@react class SlinkyWelcomeRegisterView extends Component {
+@react class WelcomeRegisterView extends Component {
 
   override def componentDidMount(): Unit = {
     getTransactionInfo()
   }
+
   override def initialState: State = State(mayBeTransactionId = None)
 
-  case class Props(backgroundAPI: BackgroundAPI, blockchainExplorerUrl: String, switchToView: View => Unit)
+  case class Props(backgroundAPI: BackgroundAPI, blockchainExplorerUrl: String, switchToView: (View) => Unit)
+
   case class State(mayBeTransactionId: Option[String])
 
   override def render(): ReactElement = {

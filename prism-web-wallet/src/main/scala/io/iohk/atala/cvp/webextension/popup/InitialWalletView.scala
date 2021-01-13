@@ -2,14 +2,15 @@ package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.popup.models.View
-import io.iohk.atala.cvp.webextension.popup.models.View.{Recover, Register}
+import io.iohk.atala.cvp.webextension.popup.models.View.{DisplayMnemonic, Recover}
 import slinky.core.StatelessComponent
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
-@react class SlinkyInitialWalletView extends StatelessComponent {
-  case class Props(backgroundAPI: BackgroundAPI, switchToView: View => Unit)
+@react class InitialWalletView extends StatelessComponent {
+
+  case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   override def render(): ReactElement = {
     div(className := "container", className := "status_container")(
@@ -40,7 +41,7 @@ import slinky.web.html._
         id := "registrationScreenButton",
         "Register",
         onClick := { () =>
-          props.switchToView(Register)
+          props.switchToView(DisplayMnemonic)
         }
       ),
       div(
