@@ -6,8 +6,10 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.node_models
@@ -93,10 +95,15 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val dummyTimestamp = dummyTimestampInfo
+  lazy val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestamp
+  )
 
   "CreateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
-      CreateDIDOperation.parse(exampleOperation, dummyTimestamp) mustBe a[Right[_, _]]
+      CreateDIDOperation.parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]
     }
 
     "return error when id is provided" in {
@@ -104,7 +111,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.id := providedDidSuffix)
 
-      inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("createDid", "didData", "id")
           value mustBe providedDidSuffix
@@ -115,7 +122,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.publicKeys(0).ecKeyData.curve := "")
 
-      inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, _, _)) =>
           path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "ecKeyData", "curve")
       }
@@ -125,7 +132,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.publicKeys(0).ecKeyData.x := ByteString.EMPTY)
 
-      inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.MissingValue(path)) =>
           path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "ecKeyData", "x")
       }
@@ -135,7 +142,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.publicKeys(0).keyData := node_models.PublicKey.KeyData.Empty)
 
-      inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.MissingValue(path)) =>
           path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "keyData")
       }
@@ -145,7 +152,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.publicKeys(0).id := "")
 
-      inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, _, _)) =>
           path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "id")
       }
@@ -155,7 +162,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.publicKeys(0).id := "it isn't proper key id")
 
-      inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, _, _)) =>
           path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "id")
       }
@@ -165,7 +172,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.publicKeys(0).usage := node_models.KeyUsage.UNKNOWN_KEY)
 
-      inside(CreateDIDOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, _, _)) =>
           path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "usage")
       }
@@ -174,7 +181,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
   "CreateDIDOperation.getCorrectnessData" should {
     "provide the key to be used for signing" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("master")
         .transact(database)
@@ -190,7 +197,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
   "CreateDIDOperation.applyState" should {
     "create the DID information in the database" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -205,16 +212,16 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       for (key <- parsedOperation.keys) {
         val keyState = didDataRepository.findKey(parsedOperation.id, key.keyId).value.futureValue.toOption.value
         DIDPublicKey(keyState.didSuffix, keyState.keyId, keyState.keyUsage, keyState.key) mustBe key
-        keyState.addedOn mustBe dummyTimestamp
+        keyState.addedOn mustBe dummyLedgerData.timestampInfo
         keyState.revokedOn mustBe None
       }
     }
 
     "return error when given DID already exists" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       didDataRepository
-        .create(DIDData(parsedOperation.id, Nil, parsedOperation.digest), dummyTimestamp)
+        .create(DIDData(parsedOperation.id, Nil, parsedOperation.digest), dummyLedgerData)
         .value
         .futureValue
 

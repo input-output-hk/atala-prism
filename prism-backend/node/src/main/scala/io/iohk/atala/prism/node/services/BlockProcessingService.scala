@@ -8,6 +8,8 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.Path
@@ -20,6 +22,8 @@ trait BlockProcessingService {
 
   def processBlock(
       block: node_internal.AtalaBlock,
+      transactionId: TransactionId,
+      ledger: Ledger,
       blockTimestamp: Instant,
       blockIndex: Int
   ): ConnectionIO[Boolean]
@@ -37,21 +41,21 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   def parseOperation(
       signedOperation: node_models.SignedAtalaOperation,
-      timestampInfo: TimestampInfo
+      ledgerData: LedgerData
   ): Either[ValidationError, Operation] = {
     signedOperation.getOperation.operation match {
       case _: node_models.AtalaOperation.Operation.CreateDid =>
-        CreateDIDOperation.parse(signedOperation, timestampInfo)
+        CreateDIDOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.UpdateDid =>
-        UpdateDIDOperation.parse(signedOperation, timestampInfo)
+        UpdateDIDOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.IssueCredential =>
-        IssueCredentialOperation.parse(signedOperation, timestampInfo)
+        IssueCredentialOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.RevokeCredential =>
-        RevokeCredentialOperation.parse(signedOperation, timestampInfo)
+        RevokeCredentialOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
-        IssueCredentialBatchOperation.parse(signedOperation, timestampInfo)
+        IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
-        RevokeCredentialsOperation.parse(signedOperation, timestampInfo)
+        RevokeCredentialsOperation.parse(signedOperation, ledgerData)
       case empty @ node_models.AtalaOperation.Operation.Empty =>
         Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
     }
@@ -86,6 +90,8 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   // it eventually will be replaced with ConnectionIO[Unit]
   override def processBlock(
       block: node_internal.AtalaBlock,
+      transactionId: TransactionId,
+      ledger: Ledger,
       blockTimestamp: Instant,
       blockIndex: Int
   ): ConnectionIO[Boolean] = {
@@ -93,7 +99,10 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     val operationsWithSeqNumbers = operations.zipWithIndex
     val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) {
       case (signedOperation, osn) =>
-        parseOperation(signedOperation, TimestampInfo(blockTimestamp, blockIndex, osn)).left
+        parseOperation(
+          signedOperation,
+          LedgerData(transactionId, ledger, TimestampInfo(blockTimestamp, blockIndex, osn))
+        ).left
           .map(err => (signedOperation, err))
     }
 

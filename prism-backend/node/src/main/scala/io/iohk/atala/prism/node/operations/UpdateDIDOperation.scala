@@ -5,11 +5,10 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
@@ -24,7 +23,7 @@ case class UpdateDIDOperation(
     actions: List[UpdateDIDAction],
     previousOperation: SHA256Digest,
     digest: SHA256Digest,
-    timestampInfo: TimestampInfo
+    ledgerData: nodeState.LedgerData
 ) extends Operation {
 
   override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
@@ -53,13 +52,13 @@ case class UpdateDIDOperation(
     action match {
       case AddKeyAction(key) =>
         EitherT {
-          PublicKeysDAO.insert(key, timestampInfo).attemptSomeSqlState {
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
             case sqlstate.class23.UNIQUE_VIOLATION =>
               EntityExists("DID suffix", didSuffix.value): StateError
           }
         }
       case RevokeKeyAction(keyId) =>
-        EitherT.right[StateError](PublicKeysDAO.revoke(keyId, timestampInfo)).subflatMap { wasRemoved =>
+        EitherT.right[StateError](PublicKeysDAO.revoke(keyId, ledgerData)).subflatMap { wasRemoved =>
           Either.cond(wasRemoved, (), StateError.EntityMissing("key", keyId))
         }
     }
@@ -111,12 +110,12 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
   /** Parses the protobuf representation of operation
     *
     * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-    * @param timestampInfo timestamp information provided by the caller, needed to instantiate the operation objects
+    * @param ledgerData ledger information provided by the caller, needed to instantiate the operation objects
     * @return parsed operation or ValidationError signifying the operation is invalid
     */
   override def parse(
       signedOperation: node_models.SignedAtalaOperation,
-      timestampInfo: TimestampInfo
+      ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
     val operation = signedOperation.getOperation
     val signingKeyId = signedOperation.signedWith
@@ -144,6 +143,6 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
                 parsedAction <- parseAction(action, didSuffix, signingKeyId)
               } yield parsedAction :: acc
           }
-    } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest, timestampInfo)
+    } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest, ledgerData)
   }
 }

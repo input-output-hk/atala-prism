@@ -5,8 +5,10 @@ import java.time.Instant
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import org.scalatest.OptionValues._
@@ -20,10 +22,15 @@ class DIDDataServiceSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val didDataService = new DIDDataService(didDataRepository)
   val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestamp
+  )
 
   "DIDDataServiceSpec.findByDID" should {
     "retrieve DID document from database" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()

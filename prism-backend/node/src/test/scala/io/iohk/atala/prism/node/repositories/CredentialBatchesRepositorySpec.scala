@@ -9,8 +9,9 @@ import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
-import io.iohk.atala.prism.node.models.nodeState.CredentialBatchState
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
@@ -29,6 +30,11 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
   private lazy implicit val repository = new CredentialBatchesRepository(database)
 
   private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestampInfo
+  )
 
   "CredentialsRepository.getCredentialRevocationTime" should {
     "return empty timestamp when there is no data associated to the credential and batch" in {
@@ -43,11 +49,20 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       val randomCredentialHash1 = SHA256Digest.compute("random".getBytes())
       val randomCredentialHash2 = SHA256Digest.compute("another random".getBytes())
       val randomRevocationTime = TimestampInfo(Instant.now(), 10, 100)
+      val randomRevocationLedgerData = LedgerData(
+        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        Ledger.InMemory,
+        randomRevocationTime
+      )
 
       val randomIssuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
-      val randomIssuedOnTime = dummyTimestampInfo
+      val randomIssuedOnTime = LedgerData(
+        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        Ledger.InMemory,
+        dummyTimestampInfo
+      )
 
       registerDID(randomIssuerDIDSuffix)
 
@@ -62,11 +77,11 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       revokeCredentials(
         randomBatchId,
         List(randomCredentialHash1, randomCredentialHash2),
-        randomRevocationTime
+        randomRevocationLedgerData
       )
 
-      revocationTime(randomBatchId, randomCredentialHash1) must be(Some(randomRevocationTime))
-      revocationTime(randomBatchId, randomCredentialHash2) must be(Some(randomRevocationTime))
+      revocationTime(randomBatchId, randomCredentialHash1) must be(Some(randomRevocationLedgerData))
+      revocationTime(randomBatchId, randomCredentialHash2) must be(Some(randomRevocationLedgerData))
     }
   }
 
@@ -90,7 +105,11 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       val randomIssuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
-      val randomIssuedOnTime = dummyTimestampInfo
+      val randomIssuedOnLedgerData = LedgerData(
+        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        Ledger.InMemory,
+        dummyTimestampInfo
+      )
 
       registerDID(randomIssuerDIDSuffix)
 
@@ -99,14 +118,14 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
         randomLastOperation,
         randomIssuerDIDSuffix,
         randomMerkleRoot,
-        randomIssuedOnTime
+        randomIssuedOnLedgerData
       )
 
       val expectedState = CredentialBatchState(
         batchId = randomBatchId,
         issuerDIDSuffix = randomIssuerDIDSuffix,
         merkleRoot = randomMerkleRoot,
-        issuedOn = randomIssuedOnTime,
+        issuedOn = randomIssuedOnLedgerData,
         revokedOn = None,
         lastOperation = randomLastOperation
       )
@@ -124,9 +143,14 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
       val randomIssuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("did".getBytes()))
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
-      val randomIssuedOnTime = dummyTimestampInfo
+      val randomIssuedOnLedgerData = dummyLedgerData
 
       val randomRevocationTime = TimestampInfo(Instant.now(), 10, 100)
+      val randomRevocationLedgerData = LedgerData(
+        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        Ledger.InMemory,
+        randomRevocationTime
+      )
 
       registerDID(randomIssuerDIDSuffix)
 
@@ -135,17 +159,17 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
         randomLastOperation,
         randomIssuerDIDSuffix,
         randomMerkleRoot,
-        randomIssuedOnTime
+        randomIssuedOnLedgerData
       )
 
-      revokeCredentialBatch(randomBatchId, randomRevocationTime)
+      revokeCredentialBatch(randomBatchId, randomRevocationLedgerData)
 
       val expectedState = CredentialBatchState(
         batchId = randomBatchId,
         issuerDIDSuffix = randomIssuerDIDSuffix,
         merkleRoot = randomMerkleRoot,
-        issuedOn = randomIssuedOnTime,
-        revokedOn = Some(randomRevocationTime),
+        issuedOn = randomIssuedOnLedgerData,
+        revokedOn = Some(randomRevocationLedgerData),
         lastOperation = randomLastOperation
       )
 
@@ -162,8 +186,14 @@ class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
 object CredentialBatchesRepositorySpec {
   private def registerDID(didSuffix: DIDSuffix)(implicit database: Transactor[IO]): Unit = {
     val lastOperation = SHA256Digest.compute("a random did create operation".getBytes())
+    val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+    val dummyLedgerData = LedgerData(
+      TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+      Ledger.InMemory,
+      dummyTimestampInfo
+    )
     DIDDataDAO
-      .insert(didSuffix, lastOperation)
+      .insert(didSuffix, lastOperation, dummyLedgerData)
       .transact(database)
       .unsafeRunSync()
   }
@@ -173,7 +203,7 @@ object CredentialBatchesRepositorySpec {
       lastOperation: SHA256Digest,
       issuerDIDSuffix: DIDSuffix,
       merkleRoot: MerkleRoot,
-      issuedOn: TimestampInfo
+      issuedOn: LedgerData
   )(implicit database: Transactor[IO]): Unit = {
     CredentialBatchesDAO
       .insert(
@@ -182,7 +212,7 @@ object CredentialBatchesRepositorySpec {
           lastOperation = lastOperation,
           issuerDIDSuffix = issuerDIDSuffix,
           merkleRoot = merkleRoot,
-          issuedOn = issuedOn
+          ledgerData = issuedOn
         )
       )
       .transact(database)
@@ -191,10 +221,10 @@ object CredentialBatchesRepositorySpec {
 
   private def revokeCredentialBatch(
       batchId: CredentialBatchId,
-      revocationTime: TimestampInfo
+      revocationLedgerData: LedgerData
   )(implicit database: Transactor[IO]): Unit = {
     CredentialBatchesDAO
-      .revokeEntireBatch(batchId, revocationTime)
+      .revokeEntireBatch(batchId, revocationLedgerData)
       .transact(database)
       .unsafeRunSync()
     ()
@@ -203,13 +233,13 @@ object CredentialBatchesRepositorySpec {
   private def revokeCredentials(
       batchId: CredentialBatchId,
       credentialHashes: List[SHA256Digest],
-      revocationTime: TimestampInfo
+      revocationLedgerData: LedgerData
   )(implicit database: Transactor[IO]): Unit = {
     CredentialBatchesDAO
       .revokeCredentials(
         batchId,
         credentialHashes,
-        revocationTime
+        revocationLedgerData
       )
       .transact(database)
       .unsafeRunSync()
@@ -217,7 +247,7 @@ object CredentialBatchesRepositorySpec {
 
   private def revocationTime(batchId: CredentialBatchId, credentialHash: SHA256Digest)(implicit
       repository: CredentialBatchesRepository
-  ): Option[TimestampInfo] = {
+  ): Option[LedgerData] = {
     repository
       .getCredentialRevocationTime(batchId, credentialHash)
       .value

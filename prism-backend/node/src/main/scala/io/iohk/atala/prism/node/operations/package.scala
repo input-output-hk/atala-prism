@@ -9,6 +9,8 @@ import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.protos.node_models
 
@@ -110,7 +112,7 @@ package object operations {
 
     def linkedPreviousOperation: Option[SHA256Digest] = None
 
-    def timestampInfo: TimestampInfo
+    def ledgerData: LedgerData
   }
 
   /** Companion object for operation */
@@ -119,12 +121,12 @@ package object operations {
     /** Parses the protobuf representation of operation
       *
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-      * @param timestampInfo timestamp information provided by the caller, needed to instantiate the operation objects
+      * @param ledgerData information of the underlying ledger transaction that carried this operation
       * @return parsed operation or ValidationError signifying the operation is invalid
       */
     def parse(
         signedOperation: node_models.SignedAtalaOperation,
-        timestampInfo: TimestampInfo
+        ledgerData: LedgerData
     ): Either[ValidationError, Repr]
 
     /** Parses the protobuf representation of operation and report errors (if any)
@@ -133,7 +135,7 @@ package object operations {
       * @return Unit if the operation is valid or ValidationError signifying the operation is invalid
       */
     def validate(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Unit] = {
-      parseWithMockedTime(signedOperation) map (_ => ())
+      parseWithMockedLedgerData(signedOperation) map (_ => ())
     }
 
     /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter
@@ -142,9 +144,15 @@ package object operations {
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
       * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
       */
-    def parseWithMockedTime(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] = {
+    def parseWithMockedLedgerData(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] = {
+      val mockLedger = Ledger.InMemory
+      val mockTxId: TransactionId = TransactionId
+        .from(
+          Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)
+        )
+        .get
       val mockTime = TimestampInfo(Instant.now(), 1, 1)
-      parse(signedOperation, mockTime)
+      parse(signedOperation, LedgerData(mockTxId, mockLedger, mockTime))
     }
   }
 
@@ -152,12 +160,14 @@ package object operations {
 
     override def parse(
         operation: node_models.SignedAtalaOperation,
-        timestampInfo: TimestampInfo
+        ledgerData: LedgerData
     ): Either[ValidationError, Repr] = {
-      parse(operation.getOperation, timestampInfo)
+      parse(operation.getOperation, ledgerData)
     }
 
-    def parse(operation: node_models.AtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, Repr]
+    def parse(
+        operation: node_models.AtalaOperation,
+        ledgerData: LedgerData
+    ): Either[ValidationError, Repr]
   }
-
 }

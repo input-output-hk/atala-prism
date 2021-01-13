@@ -6,7 +6,7 @@ import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
@@ -69,8 +69,8 @@ package object models {
         batchId: CredentialBatchId,
         issuerDIDSuffix: DIDSuffix,
         merkleRoot: MerkleRoot,
-        issuedOn: TimestampInfo,
-        revokedOn: Option[TimestampInfo] = None,
+        issuedOn: LedgerData,
+        revokedOn: Option[LedgerData] = None,
         lastOperation: SHA256Digest
     )
 
@@ -87,6 +87,12 @@ package object models {
         didSuffix: DIDSuffix,
         keys: List[DIDPublicKeyState],
         lastOperation: SHA256Digest
+    )
+
+    case class LedgerData(
+        transactionId: TransactionId,
+        ledger: Ledger,
+        timestampInfo: TimestampInfo
     )
   }
 }

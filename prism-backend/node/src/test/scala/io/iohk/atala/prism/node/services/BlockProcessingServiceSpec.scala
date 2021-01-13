@@ -8,11 +8,13 @@ import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPrivateKey}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
@@ -53,12 +55,14 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
 
   val service = new BlockProcessingServiceImpl()
   val dummyTimestamp = dummyTimestampInfo.atalaBlockTimestamp
+  val dummyTransactionId = TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value
+  val dummyLedger = Ledger.InMemory
   val dummyABSequenceNumber = dummyTimestampInfo.atalaBlockSequenceNumber
 
   "BlockProcessingService" should {
     "apply block in" in {
       val result = service
-        .processBlock(exampleBlock, dummyTimestamp, dummyABSequenceNumber)
+        .processBlock(exampleBlock, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue
@@ -79,7 +83,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       )
 
       val result = service
-        .processBlock(invalidSignatureBlock, dummyTimestamp, dummyABSequenceNumber)
+        .processBlock(invalidSignatureBlock, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue
@@ -100,7 +104,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       )
 
       val result = service
-        .processBlock(invalidBlock, dummyTimestamp, dummyABSequenceNumber)
+        .processBlock(invalidBlock, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue
@@ -145,7 +149,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       )
 
       val result = service
-        .processBlock(block, dummyTimestamp, dummyABSequenceNumber)
+        .processBlock(block, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue

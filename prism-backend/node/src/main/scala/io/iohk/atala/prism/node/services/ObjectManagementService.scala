@@ -195,9 +195,16 @@ class ObjectManagementService private (
     for {
       protobufObject <- Future.fromTry(node_internal.AtalaObject.validate(obj.byteContent))
       block <- getBlockFromObject(protobufObject)
+      transactionInfo = obj.transaction.getOrElse(throw new RuntimeException("AtalaObject has no transaction info"))
       transactionBlock =
-        obj.transaction.flatMap(_.block).getOrElse(throw new RuntimeException("AtalaObject has no transaction block"))
-      blockProcess = blockProcessing.processBlock(block, transactionBlock.timestamp, transactionBlock.index)
+        transactionInfo.block.getOrElse(throw new RuntimeException("AtalaObject has no transaction block"))
+      blockProcess = blockProcessing.processBlock(
+        block,
+        transactionInfo.transactionId,
+        transactionInfo.ledger,
+        transactionBlock.timestamp,
+        transactionBlock.index
+      )
     } yield for {
       wasProcessed <- blockProcess
       _ <- AtalaObjectsDAO.setProcessed(obj.objectId)

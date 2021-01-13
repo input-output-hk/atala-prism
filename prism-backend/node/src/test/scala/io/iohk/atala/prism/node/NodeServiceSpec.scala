@@ -13,7 +13,7 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, CredentialState}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, CredentialState, LedgerData}
 import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
@@ -51,9 +51,9 @@ import io.iohk.atala.prism.utils.FutureEither
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
-
 import java.time.Instant
 import java.util.concurrent.TimeUnit
+
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -117,17 +117,23 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   }
 
   private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).get,
+    Ledger.InMemory,
+    dummyTimestampInfo
+  )
 
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = SHA256Digest.compute("test".getBytes())
       val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
-      val dummyTime = dummyTimestampInfo
-      DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
+      DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
+      println("did data stored")
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
-      PublicKeysDAO.insert(key, dummyTime).transact(database).unsafeRunSync()
-
+      PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
+      println("keys stored")
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.value}"))
+      println(s"response: $response")
       val document = response.document.value
       document.id mustBe didSuffix.value
       document.publicKeys.size mustBe 1
@@ -135,7 +141,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val publicKey = document.publicKeys.headOption.value
       publicKey.id mustBe "master"
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
-      ProtoCodecs.fromTimestampInfoProto(publicKey.addedOn.value) mustBe dummyTime
+      ProtoCodecs.fromTimestampInfoProto(publicKey.addedOn.value) mustBe dummyLedgerData.timestampInfo
       publicKey.revokedOn mustBe empty
 
       ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(key.key)
@@ -167,12 +173,11 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value.value)
       val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
-      val dummyTime = dummyTimestampInfo
-      DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
+      DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
       val key1 = DIDPublicKey(didSuffix, "master0", KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
-      PublicKeysDAO.insert(key1, dummyTime).transact(database).unsafeRunSync()
-      PublicKeysDAO.insert(key2, dummyTime).transact(database).unsafeRunSync()
+      PublicKeysDAO.insert(key1, dummyLedgerData).transact(database).unsafeRunSync()
+      PublicKeysDAO.insert(key2, dummyLedgerData).transact(database).unsafeRunSync()
 
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
@@ -182,13 +187,13 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       val publicKey1 = document.publicKeys.find(_.id == "master0").value
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
-      ProtoCodecs.fromTimestampInfoProto(publicKey1.addedOn.value) mustBe dummyTime
+      ProtoCodecs.fromTimestampInfoProto(publicKey1.addedOn.value) mustBe dummyLedgerData.timestampInfo
       publicKey1.revokedOn mustBe empty
       ParsingUtils.parseECKey(ValueAtPath(publicKey1.getEcKeyData, Path.root)) must beRight(masterKey)
 
       val publicKey2 = document.publicKeys.find(_.id == "issuance0").value
       publicKey2.usage mustBe node_models.KeyUsage.ISSUING_KEY
-      ProtoCodecs.fromTimestampInfoProto(publicKey2.addedOn.value) mustBe dummyTime
+      ProtoCodecs.fromTimestampInfoProto(publicKey2.addedOn.value) mustBe dummyLedgerData.timestampInfo
       publicKey2.revokedOn mustBe empty
       ParsingUtils.parseECKey(ValueAtPath(publicKey2.getEcKeyData, Path.root)) must beRight(issuingKey)
     }
@@ -438,7 +443,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
 
       val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()))
-      val issuedOn = dummyTimestampInfo
+      val issuedOn = dummyLedgerData.timestampInfo
       val credState =
         CredentialState(
           contentHash = SHA256Digest.compute("content".getBytes()),
@@ -506,14 +511,14 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()))
-      val issuedOn = dummyTimestampInfo
+      val issuedOnLedgerData = dummyLedgerData
       val merkleRoot = MerkleRoot(SHA256Digest.compute("content".getBytes()))
       val credState =
         CredentialBatchState(
           merkleRoot = merkleRoot,
           batchId = validBatchId,
           issuerDIDSuffix = issuerDIDSuffix,
-          issuedOn = issuedOn,
+          issuedOn = issuedOnLedgerData,
           revokedOn = None,
           lastOperation = SHA256Digest.compute("lastOp".getBytes())
         )
@@ -524,19 +529,25 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         )
       )
 
-      val timestampInfoProto = node_models
-        .TimestampInfo()
-        .withBlockTimestamp(issuedOn.atalaBlockTimestamp.toEpochMilli)
-        .withBlockSequenceNumber(issuedOn.atalaBlockSequenceNumber)
-        .withOperationSequenceNumber(issuedOn.operationSequenceNumber)
+      val ledgerDataProto = node_models
+        .LedgerData()
+        .withTransactionId(dummyLedgerData.transactionId.toString)
+        .withLedger(common_models.Ledger.IN_MEMORY)
+        .withTimestampInfo(
+          node_models
+            .TimestampInfo()
+            .withBlockTimestamp(issuedOnLedgerData.timestampInfo.atalaBlockTimestamp.toEpochMilli)
+            .withBlockSequenceNumber(issuedOnLedgerData.timestampInfo.atalaBlockSequenceNumber)
+            .withOperationSequenceNumber(issuedOnLedgerData.timestampInfo.operationSequenceNumber)
+        )
 
       doReturn(repositoryResponse).when(credentialBatchesRepository).getBatchState(validBatchId)
 
       val response = service.getBatchState(requestWithValidId)
       response.issuerDID must be(issuerDIDSuffix.value)
       response.merkleRoot.toByteArray.toVector must be(merkleRoot.hash.value)
-      response.publicationDate must be(Some(timestampInfoProto))
-      response.revocationDate must be(empty)
+      response.publicationLedgerData must be(Some(ledgerDataProto))
+      response.revocationLedgerData must be(empty)
     }
   }
 
@@ -591,7 +602,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         .getCredentialRevocationTime(validBatchId, validCredentialHash)
 
       val response = service.getCredentialRevocationTime(validRequest)
-      response.revocationDate must be(empty)
+      response.revocationLedgerData must be(empty)
     }
 
     "return correct timestamp when CredentialBatchesRepository succeeds returning a time" in {
@@ -602,10 +613,15 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
       )
       val revocationDate = TimestampInfo(Instant.now(), 1, 1)
+      val revocationLedgerData = LedgerData(
+        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(1)).value,
+        Ledger.InMemory,
+        revocationDate
+      )
 
-      val repositoryResponse = new FutureEither[NodeError, Option[TimestampInfo]](
+      val repositoryResponse = new FutureEither[NodeError, Option[LedgerData]](
         Future.successful(
-          Right(Some(revocationDate))
+          Right(Some(revocationLedgerData))
         )
       )
 
@@ -615,12 +631,18 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         .withBlockSequenceNumber(revocationDate.atalaBlockSequenceNumber)
         .withOperationSequenceNumber(revocationDate.operationSequenceNumber)
 
+      val revocationLedgerDataProto = node_models
+        .LedgerData()
+        .withTransactionId(revocationLedgerData.transactionId.toString)
+        .withLedger(common_models.Ledger.IN_MEMORY)
+        .withTimestampInfo(timestampInfoProto)
+
       doReturn(repositoryResponse)
         .when(credentialBatchesRepository)
         .getCredentialRevocationTime(validBatchId, validCredentialHash)
 
       val response = service.getCredentialRevocationTime(validRequest)
-      response.revocationDate must be(Some(timestampInfoProto))
+      response.revocationLedgerData must be(Some(revocationLedgerDataProto))
     }
   }
 

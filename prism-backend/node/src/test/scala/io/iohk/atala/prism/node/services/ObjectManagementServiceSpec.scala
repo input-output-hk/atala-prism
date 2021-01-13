@@ -178,9 +178,14 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
   }
 
+  // needed because mockito doesn't interact too nicely with value classes
+  private def anyTransactionIdMatcher = mockito.ArgumentMatchers.any[Array[Byte]].asInstanceOf[TransactionId]
+
   "ObjectManagementService.saveObject" should {
     "add object to the database when nonexistent (unpublished)" in {
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      doReturn(connection.pure(true))
+        .when(blockProcessing)
+        .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val obj = createAtalaObject()
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
@@ -191,7 +196,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "update object to the database when existing without transaction info (published but not confirmed)" in {
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      doReturn(connection.pure(true))
+        .when(blockProcessing)
+        .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val obj = createAtalaObject(createBlock(signedOperation))
       objectManagementService.publishAtalaOperation(signedOperation)
@@ -204,7 +211,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "not update the object when existing with transaction info (confirmed)" in {
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      doReturn(connection.pure(true))
+        .when(blockProcessing)
+        .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val obj = createAtalaObject()
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
@@ -221,7 +230,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "process the block" in {
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      doReturn(connection.pure(true))
+        .when(blockProcessing)
+        .processBlock(*, anyTransactionIdMatcher, *, *, *)
 
       val block = createBlock()
       val obj = createAtalaObject(block)
@@ -230,6 +241,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing).processBlock(
         blockCaptor,
+        // mockito hates value classes, so we cannot test equality to this argument
+        anyTransactionIdMatcher,
+        mockito.ArgumentMatchers.eq(dummyTransactionInfo.ledger),
         mockito.ArgumentMatchers.eq(dummyTimestamp),
         mockito.ArgumentMatchers.eq(dummyABSequenceNumber)
       )
@@ -242,7 +256,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "add objects by content and by reference" in {
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      doReturn(connection.pure(true))
+        .when(blockProcessing)
+        .processBlock(*, anyTransactionIdMatcher, *, *, *)
 
       val blocks = for ((signedOp, i) <- exampleSignedOperations.zipWithIndex) yield {
         val includeBlock = (i & 1) == 1
@@ -262,7 +278,13 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing, times(blocks.size))
-        .processBlock(blockCaptor, mockito.ArgumentMatchers.any(), mockito.ArgumentMatchers.any())
+        .processBlock(
+          blockCaptor,
+          anyTransactionIdMatcher,
+          mockito.ArgumentMatchers.any(),
+          mockito.ArgumentMatchers.any(),
+          mockito.ArgumentMatchers.any()
+        )
       blockCaptor.values must contain theSameElementsAs blocks
 
       verifyNoMoreInteractions(blockProcessing)
@@ -454,7 +476,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "return Confirmed when object has been processed" in {
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
+      doReturn(connection.pure(true))
+        .when(blockProcessing)
+        .processBlock(*, anyTransactionIdMatcher, *, *, *)
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
       // Need block info when saving an object as it comes from the ledger
       objectManagementService.saveObject(AtalaObjectNotification(atalaObject, transactionInfoWithBlock)).futureValue

@@ -3,11 +3,10 @@ package io.iohk.atala.prism.node.operations
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.CredentialId
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.models.{CredentialId, nodeState}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
@@ -16,7 +15,7 @@ case class RevokeCredentialOperation(
     credentialId: CredentialId,
     previousOperation: SHA256Digest,
     digest: SHA256Digest,
-    timestampInfo: TimestampInfo
+    ledgerData: nodeState.LedgerData
 ) extends Operation {
   override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
 
@@ -49,7 +48,7 @@ case class RevokeCredentialOperation(
   override def applyState(): EitherT[ConnectionIO, StateError, Unit] =
     EitherT[ConnectionIO, StateError, Unit] {
       CredentialsDAO
-        .revoke(credentialId, timestampInfo)
+        .revoke(credentialId, ledgerData)
         .map(_ => Right(()))
     }
 }
@@ -58,7 +57,7 @@ object RevokeCredentialOperation extends SimpleOperationCompanion[RevokeCredenti
 
   override def parse(
       operation: node_models.AtalaOperation,
-      timestampInfo: TimestampInfo
+      ledgerData: LedgerData
   ): Either[ValidationError, RevokeCredentialOperation] = {
 
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
@@ -75,6 +74,6 @@ object RevokeCredentialOperation extends SimpleOperationCompanion[RevokeCredenti
       previousOperation <- ParsingUtils.parseHash(
         revokeOperation.child(_.previousOperationHash, "previousOperationHash")
       )
-    } yield RevokeCredentialOperation(credentialId, previousOperation, operationDigest, timestampInfo)
+    } yield RevokeCredentialOperation(credentialId, previousOperation, operationDigest, ledgerData)
   }
 }

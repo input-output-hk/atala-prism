@@ -5,11 +5,11 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
@@ -19,7 +19,7 @@ case class CreateDIDOperation(
     id: DIDSuffix,
     keys: List[DIDPublicKey],
     digest: SHA256Digest,
-    timestampInfo: TimestampInfo
+    ledgerData: LedgerData
 ) extends Operation {
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
@@ -47,7 +47,7 @@ case class CreateDIDOperation(
 
     for {
       _ <- EitherT {
-        DIDDataDAO.insert(id, digest).attemptSomeSqlState {
+        DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState {
           case sqlstate.class23.UNIQUE_VIOLATION =>
             EntityExists("DID", id.value): StateError
         }
@@ -55,7 +55,7 @@ case class CreateDIDOperation(
 
       _ <- keys.traverse[ConnectionIOEitherTError, Unit] { key: DIDPublicKey =>
         EitherT {
-          PublicKeysDAO.insert(key, timestampInfo).attemptSomeSqlState {
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
             case sqlstate.class23.UNIQUE_VIOLATION =>
               EntityExists("public key", key.keyId): StateError
           }
@@ -92,7 +92,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
 
   override def parse(
       operation: proto.AtalaOperation,
-      timestampInfo: TimestampInfo
+      ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val didSuffix = DIDSuffix.unsafeFromDigest(operationDigest)
@@ -100,6 +100,6 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     for {
       data <- createOperation.childGet(_.didData, "didData")
       keys <- parseData(data, didSuffix)
-    } yield CreateDIDOperation(didSuffix, keys, operationDigest, timestampInfo)
+    } yield CreateDIDOperation(didSuffix, keys, operationDigest, ledgerData)
   }
 }

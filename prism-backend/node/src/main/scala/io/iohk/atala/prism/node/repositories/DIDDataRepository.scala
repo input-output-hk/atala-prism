@@ -5,13 +5,12 @@ import cats.effect.IO
 import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
-import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState}
+import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 
@@ -22,16 +21,16 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   /** Creates DID record in the database
     *
     * @param didData did document information
-    * @param timestampInfo the protocol timestamp information derived from the blockchain and sequence numbers
+    * @param ledgerData the information derived from the blockchain that carried the CreateDID operation
     * @return unit indicating success or error
     */
   def create(
       didData: DIDData,
-      timestampInfo: TimestampInfo
+      ledgerData: LedgerData
   ): FutureEither[NodeError, Unit] = {
     val query = for {
-      _ <- DIDDataDAO.insert(didData.didSuffix, didData.lastOperation)
-      _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, timestampInfo))
+      _ <- DIDDataDAO.insert(didData.didSuffix, didData.lastOperation, ledgerData)
+      _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, ledgerData))
     } yield ()
 
     query

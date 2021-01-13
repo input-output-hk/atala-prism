@@ -4,13 +4,12 @@ import cats.data.{EitherT, OptionT}
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.CredentialId
-import io.iohk.atala.prism.node.models.nodeState.CredentialState
+import io.iohk.atala.prism.node.models.nodeState.{CredentialState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO
 import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO.CreateCredentialData
 
@@ -38,9 +37,9 @@ class CredentialsRepository(xa: Transactor[IO]) {
       .toFutureEither
   }
 
-  def revoke(credentialId: CredentialId, revocationTimestamp: TimestampInfo): FutureEither[NodeError, Boolean] = {
+  def revoke(credentialId: CredentialId, revocationLedgerData: LedgerData): FutureEither[NodeError, Boolean] = {
     EitherT
-      .right[NodeError](CredentialsDAO.revoke(credentialId, revocationTimestamp))
+      .right[NodeError](CredentialsDAO.revoke(credentialId, revocationLedgerData))
       .transact(xa)
       .value
       .unsafeToFuture()

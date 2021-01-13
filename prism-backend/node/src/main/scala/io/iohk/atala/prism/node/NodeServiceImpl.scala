@@ -96,7 +96,7 @@ class NodeServiceImpl(
     }
     for {
       operation <- operationF
-      parsedOp <- errorEitherToFuture(CreateDIDOperation.parseWithMockedTime(operation))
+      parsedOp <- errorEitherToFuture(CreateDIDOperation.parseWithMockedLedgerData(operation))
       transactionInfo <- objectManagement.publishAtalaOperation(operation)
     } yield {
       logAndReturnResponse(
@@ -124,7 +124,7 @@ class NodeServiceImpl(
     }
     for {
       operation <- operationF
-      parsedOp <- errorEitherToFuture(IssueCredentialOperation.parseWithMockedTime(operation))
+      parsedOp <- errorEitherToFuture(IssueCredentialOperation.parseWithMockedLedgerData(operation))
       operation = request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
       transactionInfo <- objectManagement.publishAtalaOperation(operation)
     } yield {
@@ -251,7 +251,7 @@ class NodeServiceImpl(
 
     for {
       operation <- operationF
-      parsedOp <- errorEitherToFuture(IssueCredentialBatchOperation.parseWithMockedTime(operation))
+      parsedOp <- errorEitherToFuture(IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
       transactionInfo <- objectManagement.publishAtalaOperation(operation)
     } yield {
       logAndReturnResponse(
@@ -300,12 +300,12 @@ class NodeServiceImpl(
       case Left(error) =>
         throw error.toStatus.asRuntimeException()
       case Right(state) =>
-        val revocationDateProto = state.revokedOn.map(ProtoCodecs.toTimeStampInfoProto)
+        val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
         val responseBase = GetBatchStateResponse()
           .withIssuerDID(state.issuerDIDSuffix.value)
           .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.hash.value.toArray))
-          .withPublicationDate(ProtoCodecs.toTimeStampInfoProto(state.issuedOn))
-        val response = revocationDateProto.fold(responseBase)(responseBase.withRevocationDate)
+          .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
+        val response = revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
         logAndReturnResponse(
           "getBatchState",
           response
@@ -340,11 +340,11 @@ class NodeServiceImpl(
     } yield timeEither match {
       case Left(error) =>
         throw error.toStatus.asRuntimeException()
-      case Right(timestampInfo) =>
+      case Right(ledgerData) =>
         logAndReturnResponse(
           "getCredentialRevocationTime",
           GetCredentialRevocationTimeResponse(
-            revocationDate = timestampInfo.map(ProtoCodecs.toTimeStampInfoProto)
+            revocationLedgerData = ledgerData.map(ProtoCodecs.toLedgerData)
           )
         )
     }

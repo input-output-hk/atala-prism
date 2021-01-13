@@ -4,8 +4,10 @@ import java.time.Instant
 
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -49,11 +51,16 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
   val didData = DIDData(didSuffix, keys, operationDigest)
   val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestamp
+  )
 
   "DIDDataRepository" should {
     "retrieve previously inserted DID data" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, dummyTimestamp)
+        _ <- didDataRepository.create(didData, dummyLedgerData)
         did <- didDataRepository.findByDidSuffix(didSuffix)
       } yield did).value.futureValue.toOption.value
 
@@ -62,7 +69,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
     "return UnknownValueError when the DID is not found" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, dummyTimestamp)
+        _ <- didDataRepository.create(didData, dummyLedgerData)
         did <- didDataRepository.findByDidSuffix(didSuffixFromDigest(digestGen(0, 2)))
       } yield did).value.futureValue.left.value
 
@@ -71,18 +78,18 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
     "retrieve previously inserted DID key" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, dummyTimestamp)
+        _ <- didDataRepository.create(didData, dummyLedgerData)
         key <- didDataRepository.findKey(didSuffix, "issuing")
       } yield key).value.futureValue.toOption.value
 
       DIDPublicKey(result.didSuffix, result.keyId, result.keyUsage, result.key) mustBe keys.tail.head
-      result.addedOn mustBe dummyTimestamp
+      result.addedOn mustBe dummyLedgerData.timestampInfo
       result.revokedOn mustBe None
     }
 
     "return UnknownValueError when retrieving key for non-existing DID" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, dummyTimestamp)
+        _ <- didDataRepository.create(didData, dummyLedgerData)
         key <- didDataRepository.findKey(didSuffixFromDigest(digestGen(0, 2)), "issuing")
       } yield key).value.futureValue.left.value
 
@@ -91,7 +98,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
     "return UnknownValueError when retrieving non-existing key" in {
       val result = (for {
-        _ <- didDataRepository.create(DIDData(didSuffix, keys.tail, operationDigest), dummyTimestamp)
+        _ <- didDataRepository.create(DIDData(didSuffix, keys.tail, operationDigest), dummyLedgerData)
         key <- didDataRepository.findKey(didSuffix, "master")
       } yield key).value.futureValue.left.value
 

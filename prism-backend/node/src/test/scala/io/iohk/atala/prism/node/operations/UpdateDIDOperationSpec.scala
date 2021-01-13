@@ -6,6 +6,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.randomProtoECKey
@@ -24,8 +26,13 @@ object UpdateDIDOperationSpec {
   val newMasterKeys = EC.generateKeyPair()
 
   lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  lazy val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestamp
+  )
   lazy val createDidOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
@@ -73,7 +80,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
 
   "UpdateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
-      val result = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).toOption.value
+      val result = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
       result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
     }
 
@@ -166,7 +173,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
     "provide the data required for correctness verification" in {
       createDidOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("master")
@@ -185,7 +192,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
     "update DID keys in the database" in {
       createDidOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
 
       parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
@@ -203,12 +210,12 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
         .actions(0)
         .asInstanceOf[AddKeyAction]
         .key
-      newKey.addedOn mustBe dummyTimestamp
+      newKey.addedOn mustBe dummyLedgerData.timestampInfo
       newKey.revokedOn mustBe None
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -230,7 +237,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
         .value
         .unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -253,7 +260,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
         .value
         .unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()

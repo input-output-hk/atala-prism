@@ -5,6 +5,8 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+import "common_models.proto";
+
 // Includes timestamping details about a blockchain's block.
 //
 // TODO: Consider renaming to BlockTimestampInfo.
@@ -171,4 +173,13 @@ message SignedAtalaOperation {
     string signedWith = 1; // the key id used to sign the operation, it must belong to the DID that signs the operation
     bytes signature = 2; // the actual signature
     AtalaOperation operation = 3; // the operation that was signed
+}
+
+// Ledger data associated to a protocol event
+// Note that the difference with TransactionInfo is that this message contains a full
+// timestamp, and there is not expectation for it to be optional
+message LedgerData {
+    string transactionId = 1; // ID of the transaction
+    Ledger ledger = 2; // Ledger the transaction was published to
+    TimestampInfo timestampInfo = 3; // timestamp of the protocol event
 }

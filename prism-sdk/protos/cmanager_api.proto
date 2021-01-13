@@ -149,7 +149,7 @@ message GetContactCredentialsResponse {
     repeated CManagerGenericCredential genericCredentials = 1; // the credentials found
 }
 
-// Request to get blokchain related information for a credential
+// Request to get blockchain related information for a credential
 message GetBlockchainDataRequest {
     string encodedSignedCredential = 1; // encoded credential for which we want to retreive information
 }

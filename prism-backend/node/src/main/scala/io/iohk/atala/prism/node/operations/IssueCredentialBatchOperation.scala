@@ -5,12 +5,12 @@ import cats.syntax.either._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.node.models.KeyUsage
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
+import io.iohk.atala.prism.node.models.{KeyUsage, nodeState}
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
@@ -21,7 +21,7 @@ case class IssueCredentialBatchOperation(
     issuerDIDSuffix: DIDSuffix,
     merkleRoot: MerkleRoot,
     digest: SHA256Digest,
-    timestampInfo: TimestampInfo
+    ledgerData: nodeState.LedgerData
 ) extends Operation {
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
@@ -56,7 +56,9 @@ case class IssueCredentialBatchOperation(
   override def applyState(): EitherT[ConnectionIO, StateError, Unit] =
     EitherT {
       CredentialBatchesDAO
-        .insert(CreateCredentialBatchData(credentialBatchId, digest, issuerDIDSuffix, merkleRoot, timestampInfo))
+        .insert(
+          CreateCredentialBatchData(credentialBatchId, digest, issuerDIDSuffix, merkleRoot, ledgerData)
+        )
         .attemptSomeSqlState {
           case sqlstate.class23.UNIQUE_VIOLATION =>
             StateError.EntityExists("credential", credentialBatchId.id): StateError
@@ -72,7 +74,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
 
   override def parse(
       operation: node_models.AtalaOperation,
-      chainTime: TimestampInfo
+      ledgerData: LedgerData
   ): Either[ValidationError, IssueCredentialBatchOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val issueCredentialBatchOperation =
@@ -98,6 +100,6 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
           s"Merkle root must be of ${SHA256Digest.BYTE_LENGTH} bytes"
         )
       }
-    } yield IssueCredentialBatchOperation(batchId, issuerDID, merkleRoot, operationDigest, chainTime)
+    } yield IssueCredentialBatchOperation(batchId, issuerDID, merkleRoot, operationDigest, ledgerData)
   }
 }

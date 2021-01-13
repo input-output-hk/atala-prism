@@ -5,11 +5,10 @@ import cats.syntax.either._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO.CreateCredentialData
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
@@ -20,7 +19,7 @@ case class IssueCredentialOperation(
     issuerDIDSuffix: DIDSuffix,
     contentHash: SHA256Digest,
     digest: SHA256Digest,
-    timestampInfo: TimestampInfo
+    ledgerData: nodeState.LedgerData
 ) extends Operation {
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
@@ -55,13 +54,13 @@ case class IssueCredentialOperation(
   override def applyState(): EitherT[ConnectionIO, StateError, Unit] =
     EitherT {
       CredentialsDAO
-        .insert(CreateCredentialData(credentialId, digest, issuerDIDSuffix, contentHash, timestampInfo))
+        .insert(CreateCredentialData(credentialId, digest, issuerDIDSuffix, contentHash, ledgerData))
         .attemptSomeSqlState {
           case sqlstate.class23.UNIQUE_VIOLATION =>
             StateError.EntityExists("credential", credentialId.id): StateError
           case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
             // that shouldn't happen, as key verification requires issuer in the DB,
-            // but puting it here just in the case
+            // but putting it here just in the case
             StateError.EntityMissing("issuer", issuerDIDSuffix.value)
         }
     }
@@ -71,7 +70,7 @@ object IssueCredentialOperation extends SimpleOperationCompanion[IssueCredential
 
   override def parse(
       operation: node_models.AtalaOperation,
-      timestampInfo: TimestampInfo
+      ledgerData: LedgerData
   ): Either[ValidationError, IssueCredentialOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val credentialId = CredentialId(operationDigest)
@@ -95,6 +94,6 @@ object IssueCredentialOperation extends SimpleOperationCompanion[IssueCredential
           s"must be of ${SHA256Digest.BYTE_LENGTH} bytes"
         )
       }
-    } yield IssueCredentialOperation(credentialId, issuer, contestHash, operationDigest, timestampInfo)
+    } yield IssueCredentialOperation(credentialId, issuer, contestHash, operationDigest, ledgerData)
   }
 }

@@ -7,6 +7,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -27,8 +29,13 @@ object IssueCredentialOperationSpec {
   )
 
   lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  lazy val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestamp
+  )
   lazy val issuerOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
   lazy val issuer = issuerOperation.id
   val content = ""
   val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes).toVector).value
@@ -57,7 +64,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
-      IssueCredentialOperation.parse(exampleOperation, dummyTimestamp) mustBe a[Right[_, _]]
+      IssueCredentialOperation.parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]
     }
 
     "return error when id is provided" in {
@@ -65,7 +72,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.id := providedCredentialId)
 
-      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "id")
           value mustBe providedCredentialId
@@ -76,7 +83,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.issuer := "")
 
-      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "issuer")
           value mustBe ""
@@ -87,7 +94,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.issuer := "my best friend")
 
-      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "issuer")
           value mustBe "my best friend"
@@ -98,7 +105,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.contentHash := ByteString.EMPTY)
 
-      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "contentHash")
           value mustBe "0x0"
@@ -110,7 +117,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.contentHash := invalidHash)
 
-      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "contentHash")
           value mustBe "0x616263"
@@ -120,8 +127,11 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
-      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      didDataRepository
+        .create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
+        .value
+        .futureValue
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
@@ -138,8 +148,11 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.applyState" should {
     "create the credential information in the database" in {
-      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      didDataRepository
+        .create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
+        .value
+        .futureValue
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -153,7 +166,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -168,8 +181,11 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when the credential already exists in the db" in {
-      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      didDataRepository
+        .create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
+        .value
+        .futureValue
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       // first insertion
       parsedOperation

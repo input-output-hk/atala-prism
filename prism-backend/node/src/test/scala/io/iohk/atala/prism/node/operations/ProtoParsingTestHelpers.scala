@@ -3,11 +3,14 @@ package io.iohk.atala.prism.node.operations
 import java.time.Instant
 
 import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.Assertion
 import org.scalatest.Inside._
 import org.scalatest.matchers.must.Matchers._
+import org.scalatest.OptionValues._
 import scalapb.lenses.{Lens, Mutation}
 
 trait ProtoParsingTestHelpers {
@@ -17,6 +20,11 @@ trait ProtoParsingTestHelpers {
   protected def operationCompanion: OperationCompanion[Repr]
 
   private val dummyTimestampInfo2 = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyLedgerData2 = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestampInfo2
+  )
 
   protected def signingKeyId = "master"
   protected def signingKey = CreateDIDOperationSpec.masterKeys.privateKey
@@ -28,7 +36,7 @@ trait ProtoParsingTestHelpers {
     val invalidOperation = exampleOperation.update(mutation)
     val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
 
-    inside(operationCompanion.parse(signedOperation, dummyTimestampInfo2)) {
+    inside(operationCompanion.parse(signedOperation, dummyLedgerData2)) {
       case Left(ValidationError.MissingValue(path)) =>
         path.path mustBe expectedPath
     }
@@ -42,7 +50,7 @@ trait ProtoParsingTestHelpers {
     val invalidOperation = exampleOperation.update(mutation)
     val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
 
-    inside(operationCompanion.parse(signedOperation, dummyTimestampInfo2)) {
+    inside(operationCompanion.parse(signedOperation, dummyLedgerData2)) {
       case Left(ValidationError.InvalidValue(path, value, _)) =>
         path.path mustBe expectedPath
         value mustBe expectedValue

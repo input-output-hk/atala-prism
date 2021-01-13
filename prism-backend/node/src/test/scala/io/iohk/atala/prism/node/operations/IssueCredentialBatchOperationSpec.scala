@@ -7,6 +7,8 @@ import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -28,8 +30,14 @@ object IssueCredentialBatchOperationSpec {
   )
 
   lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  lazy val dummyLedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestamp
+  )
+
   lazy val issuerCreateDIDOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).toOption.value
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
   lazy val issuerDIDSuffix = issuerCreateDIDOperation.id
   val content = ""
   val mockMerkleRoot = MerkleRoot(SHA256Digest.compute(content.getBytes))
@@ -58,14 +66,14 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialBatchOperation.parse" should {
     "parse valid IssueCredentialBatchOperation AtalaOperation" in {
-      IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp) mustBe a[Right[_, _]]
+      IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]
     }
 
     "return error when issuerDID is not provided / empty" in {
       val invalidOperation = exampleOperation
         .update(_.issueCredentialBatch.credentialBatchData.issuerDID := "")
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "issuerDID")
           value mustBe ""
@@ -76,7 +84,7 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredentialBatch.credentialBatchData.issuerDID := "my best friend")
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "issuerDID")
           value mustBe "my best friend"
@@ -87,7 +95,7 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := ByteString.EMPTY)
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "merkleRoot")
           value mustBe "0x0"
@@ -99,7 +107,7 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := invalidHash)
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyTimestamp)) {
+      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "merkleRoot")
           value mustBe "0x616263"
@@ -110,10 +118,10 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
   "IssueCredentialBatchOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
       didDataRepository
-        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyTimestamp)
+        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
         .value
         .futureValue
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
@@ -131,10 +139,10 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
   "IssueCredentialBatchOperation.applyState" should {
     "create the credential batch information in the database" in {
       didDataRepository
-        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyTimestamp)
+        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
         .value
         .futureValue
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -155,13 +163,13 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
       insertedBatch.batchId mustBe parsedOperation.credentialBatchId
       insertedBatch.issuerDIDSuffix mustBe parsedOperation.issuerDIDSuffix
       insertedBatch.merkleRoot mustBe parsedOperation.merkleRoot
-      insertedBatch.issuedOn mustBe dummyTimestamp
+      insertedBatch.issuedOn mustBe dummyLedgerData
       insertedBatch.lastOperation mustBe parsedOperation.digest
       insertedBatch.revokedOn mustBe empty
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
         .applyState()
@@ -177,10 +185,10 @@ class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
 
     "return error when the credential already exists in the db" in {
       didDataRepository
-        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyTimestamp)
+        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
         .value
         .futureValue
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyTimestamp).toOption.value
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       // first insertion
       val resultAttempt1 = parsedOperation

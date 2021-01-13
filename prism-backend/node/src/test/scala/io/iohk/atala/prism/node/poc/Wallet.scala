@@ -13,7 +13,6 @@ import io.iohk.atala.prism.credentials.{
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.poc.NodeSDK
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.identity.DIDSuffix
@@ -175,8 +174,10 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
         batchId.id
       )
     )
-    val batchIssuanceDate = ProtoCodecs.fromTimestampInfoProto(batchStateProto.publicationDate.value)
-    val batchRevocationDate = batchStateProto.revocationDate.map(ProtoCodecs.fromTimestampInfoProto)
+    val batchIssuanceDate =
+      ProtoCodecs.fromTimestampInfoProto(batchStateProto.getPublicationLedgerData.timestampInfo.value)
+    val batchRevocationDate =
+      batchStateProto.getRevocationLedgerData.timestampInfo.map(ProtoCodecs.fromTimestampInfoProto)
     val batchData = BatchData(batchIssuanceDate, batchRevocationDate)
 
     // resolve DID through the node
@@ -207,7 +208,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
         .withCredentialHash(ByteString.copyFrom(credentialHash.value.toArray))
     )
     val credentialRevocationTime =
-      credentialRevocationTimeResponse.revocationDate
+      credentialRevocationTimeResponse.getRevocationLedgerData.timestampInfo
         .map(ProtoCodecs.fromTimestampInfoProto)
 
     PrismCredentialVerification

@@ -5,10 +5,11 @@ import cats.free.Free
 import cats.implicits.catsSyntaxEitherId
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
+import io.iohk.atala.prism.node.models.nodeState
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
@@ -18,7 +19,7 @@ case class RevokeCredentialsOperation(
     credentialsToRevoke: List[SHA256Digest],
     previousOperation: SHA256Digest,
     digest: SHA256Digest,
-    timestampInfo: TimestampInfo
+    ledgerData: nodeState.LedgerData
 ) extends Operation {
   override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
 
@@ -52,7 +53,7 @@ case class RevokeCredentialsOperation(
     def weShouldRevokeTheFullBatch: Boolean = credentialsToRevoke.isEmpty
 
     def revokeFullBatch() = {
-      CredentialBatchesDAO.revokeEntireBatch(credentialBatchId, timestampInfo).map { wasUpdated =>
+      CredentialBatchesDAO.revokeEntireBatch(credentialBatchId, ledgerData).map { wasUpdated =>
         if (wasUpdated) ().asRight[StateError]
         else StateError.BatchAlreadyRevoked(credentialBatchId.id).asLeft
       }
@@ -65,7 +66,7 @@ case class RevokeCredentialsOperation(
           Free.pure((StateError.BatchAlreadyRevoked(credentialBatchId.id): StateError).asLeft[Unit])
         } else {
           CredentialBatchesDAO
-            .revokeCredentials(credentialBatchId, credentialsToRevoke, timestampInfo)
+            .revokeCredentials(credentialBatchId, credentialsToRevoke, ledgerData)
             .map(_ => ().asRight[StateError])
         }
       }
@@ -82,7 +83,7 @@ object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredent
 
   override def parse(
       operation: node_models.AtalaOperation,
-      timestampInfo: TimestampInfo
+      ledgerData: LedgerData
   ): Either[ValidationError, RevokeCredentialsOperation] = {
 
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
@@ -104,7 +105,7 @@ object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredent
       credentialsToRevoke,
       previousOperation,
       operationDigest,
-      timestampInfo
+      ledgerData
     )
   }
 }

@@ -152,12 +152,12 @@ message GetBatchStateResponse {
     string issuerDID = 1; // DID suffix used to sign the IssueCredentialBatch operation
     bytes merkleRoot = 2; // merkle root used IssueCredential operation
 
-    // If present: underlying blockchain timestamp that refers to the transaction that
+    // If present: underlying blockchain data that refers to the transaction that
     // contains the IssueCredential operation associated to the credential
-    TimestampInfo publicationDate = 3;
+    LedgerData publicationLedgerData = 3;
 
-    // If present: underlying blockchain timestamp that refers to the transaction that RevokeCredential operation associated to the credential
-    TimestampInfo revocationDate = 4;
+    // If present: underlying blockchain data that refers to the transaction that RevokeCredential operation associated to the credential
+    LedgerData revocationLedgerData = 4;
 }
 
 // Request to get the credential's revocation time
@@ -167,7 +167,7 @@ message GetCredentialRevocationTimeRequest {
 }
 // Response with the credential's revocation time
 message GetCredentialRevocationTimeResponse {
-    TimestampInfo revocationDate = 1; // if present, the time when the credential was revoked
+    LedgerData revocationLedgerData = 1; // if present, the ledger data when the credential was revoked
 }
 
 // Request to get the on-chain transaction status
