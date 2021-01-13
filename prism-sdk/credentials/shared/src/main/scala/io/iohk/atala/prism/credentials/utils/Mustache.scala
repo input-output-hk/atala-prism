@@ -19,14 +19,8 @@ import io.iohk.atala.prism.credentials.utils.Mustache._
   *
   * {{{
   *   val mustache = new Mustache
-  *
-  *   case class Context(title: String) extends TemplateContext {
-  *     override def get(variable: String): Option[Any] = Some(title)
-  *   }
-  *
-  *   val context = Context(variable = "content")
-  *
-  *   mustache.render("Template with {{ variable }}.", context) == Right("Template with content".)
+  *   val context: TemplateContext = (variable: String) => Some("$variable content")
+  *   mustache.render("Template with {{ variable }}.", context) == Right("Template with variable content".)
   * }}}
   */
 class Mustache extends JavaTokenParsers {
@@ -75,9 +69,10 @@ class Mustache extends JavaTokenParsers {
     Right(template.tags.map {
       case Literal(content) => content
       case _: Comment => ""
-      case Variable(variable, _) =>
+      case Variable(variable, escape) =>
         context(variable) match {
-          case Some(value) => value.toString // TODO: Escape html entities.
+          case Some(value) if escape => Mustache.escapeHtml(value.toString)
+          case Some(value) if escape == false => value.toString
           case None => "" // TODO: Create strict mode and retrun error if variable desn't exist.
         }
     }.mkString)
@@ -136,5 +131,23 @@ object Mustache {
     */
   def isMustacheTemplate(content: String): Boolean =
     "\\{\\{(?:(?!}}).)*\\}\\}".r.findFirstIn(content).isDefined
+
+  /**
+    * Escape html entities.
+    * Solution from: https://github.com/janl/mustache.js/blob/master/mustache.js#L67-L76
+    */
+  def escapeHtml(html: String): String = {
+    html.map {
+      case '\'' => "&#39;"
+      case '\"' => "&quot;"
+      case '&' => "&amp;"
+      case '<' => "&lt;"
+      case '>' => "&gt;"
+      case '/' => "&#x2F;"
+      case '`' => "&#x60;"
+      case '=' => "&#x3D;"
+      case other => other
+    }.mkString
+  }
 
 }

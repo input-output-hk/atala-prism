@@ -110,10 +110,18 @@ class MustacheSpec extends AnyWordSpec with Matchers with EitherValues with Java
       )
 
       case class Context(title: String)
-      val context = Context("variable")
+      val context = Context("<variable>")
 
-      mustache.render(template, (_) => Some(context.title)) mustBe Right("Content with variable included.")
+      mustache.render(template, (_) => Some(context.title)) mustBe Right("Content with &lt;variable&gt; included.")
     }
+  }
+
+  "escape html" in {
+    Mustache.escapeHtml("") mustBe ""
+    Mustache.escapeHtml("test") mustBe "test"
+    Mustache.escapeHtml(
+      """<test id="name" class='name' style=`/&`>"""
+    ) mustBe "&lt;test id&#x3D;&quot;name&quot; class&#x3D;&#39;name&#39; style&#x3D;&#x60;&#x2F;&amp;&#x60;&gt;"
   }
 
   trait Fixtures {
