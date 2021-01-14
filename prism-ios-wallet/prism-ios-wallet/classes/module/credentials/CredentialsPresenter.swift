@@ -96,7 +96,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     // MARK: ListingBaseTableUtilsPresenterDelegate
 
     func cleanData() {
-        detailCredential = nil
+        if mode == .degrees {
+            detailCredential = nil
+        }
         degreeRows = []
         historyRows = []
         credentials = []

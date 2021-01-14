@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Connection Proof Request View Controller-->
         <scene sceneID="8wJ-eh-Vd3">
             <objects>
-                <viewController storyboardIdentifier="ConnectionProofRequest" useStoryboardIdentifierAsRestorationIdentifier="YES" id="RWw-Me-lRh" customClass="ConnectionProofRequestViewController" customModule="Atala_Prism" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ConnectionProofRequest" useStoryboardIdentifierAsRestorationIdentifier="YES" id="RWw-Me-lRh" customClass="ConnectionProofRequestViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="9JB-FL-67p">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -66,21 +68,21 @@
                                             </label>
                                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Iqg-CC-KhY">
                                                 <rect key="frame" x="24" y="143" width="328" height="40"/>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="40" id="mEM-0X-V0D"/>
                                                 </constraints>
                                                 <prototypes>
-                                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ConnectionProofRequestCell" id="jhm-bv-0i6" customClass="ConnectionProofRequestCell" customModule="Atala_Prism" customModuleProvider="target">
+                                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ConnectionProofRequestCell" id="jhm-bv-0i6" customClass="ConnectionProofRequestCell" customModule="Atala_PRISM" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="28" width="328" height="35"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="jhm-bv-0i6" id="b0X-bg-b2X">
                                                             <rect key="frame" x="0.0" y="0.0" width="328" height="35"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <subviews>
-                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cj4-Hb-UhR" customClass="SwitchCustomView" customModule="Atala_Prism" customModuleProvider="target">
+                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cj4-Hb-UhR" customClass="SwitchCustomView" customModule="Atala_PRISM" customModuleProvider="target">
                                                                     <rect key="frame" x="298" y="0.0" width="30" height="30"/>
-                                                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="Fhn-LN-yfu"/>
                                                                         <constraint firstAttribute="width" constant="30" id="L22-45-EUy"/>
@@ -199,6 +201,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="sFk-Ev-5wr"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="bottomMargin" secondItem="m9i-U1-rCQ" secondAttribute="bottom" id="FqQ-4p-smT"/>
@@ -206,7 +209,6 @@
                             <constraint firstItem="m9i-U1-rCQ" firstAttribute="leading" secondItem="9JB-FL-67p" secondAttribute="leadingMargin" id="XeX-qd-0DK"/>
                             <constraint firstAttribute="trailingMargin" secondItem="m9i-U1-rCQ" secondAttribute="trailing" id="kME-ur-NTU"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="sFk-Ev-5wr"/>
                     </view>
                     <connections>
                         <outlet property="buttonConfirm" destination="L8R-gc-1Z9" id="t1I-Z5-Mst"/>
@@ -227,5 +229,8 @@
     <resources>
         <image name="ico_check_off" width="31" height="31"/>
         <image name="ico_check_on" width="31" height="31"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

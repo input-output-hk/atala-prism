@@ -97,7 +97,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     // MARK: ListingBaseTableUtilsPresenterDelegate
 
     func cleanData() {
-        detailCredential = nil
+        if mode != .detail {
+            detailCredential = nil
+        }
         degreeRows = []
     }
 

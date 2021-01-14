@@ -97,7 +97,7 @@ class ConnectionsViewController: ListingBaseViewController {
             let attributeString = (!isScanningQr && mode != .fetching && !Env.isProduction())
                 ? NSAttributedString(string: "connections_add_new".localize(), attributes: attributes)
                 : nil
-            let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil
+            let navIconName = (!isScanningQr && mode != .fetching) ? "ico_qr" : nil
             navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr,
                                        rightIconName: navIconName, rightIconAction: actionScan,
                                        textButtonTitle: attributeString, textButtonAction: actionInput)

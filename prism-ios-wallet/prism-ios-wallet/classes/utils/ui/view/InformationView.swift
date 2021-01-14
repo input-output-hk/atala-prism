@@ -19,12 +19,21 @@ protocol InformationViewDelegate: class {}
         buttonMain.layer.cornerRadius = AppConfigs.CORNER_RADIUS_BUTTON
     }
 
-    func config(imageNamed: String, title: String?, titleColor: UIColor = UIColor.appBlack,
+    func config(imageNamed: String, title: String?, titleBold: String? = nil, titleColor: UIColor = UIColor.appBlack,
                 subtitle: String?, subtitleColor: UIColor = UIColor.appGreySub, buttonText: String?,
                 buttonAction: SelectorAction?) {
 
         imageMain.image = UIImage(named: imageNamed)
-        labelTitle.text = title
+        if let title = title, let titleBold = titleBold, let font = labelTitle.font {
+            let attributedString = NSMutableAttributedString(string: title,
+                                                             attributes: [NSAttributedString.Key.font: font])
+            let boldFontAttribute: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: font.pointSize)]
+            let range = (title as NSString).range(of: titleBold)
+            attributedString.addAttributes(boldFontAttribute, range: range)
+            labelTitle.attributedText = attributedString
+        } else {
+            labelTitle.text = title
+        }
         labelTitle.textColor = titleColor
         labelSubtitle.text = subtitle
         labelSubtitle.textColor = subtitleColor

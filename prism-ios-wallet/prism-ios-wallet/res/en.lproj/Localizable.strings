@@ -52,14 +52,14 @@
 
 // <!-- Contacts -->
 "connections_nav_title" = "Contacts";
-"connections_empty_title" = "Connect to an organization to receive your first credential";
+"connections_empty_title" = "Connect to an organization to receive your credentials";
 "connections_empty_subtitle" = "Receive, store and share your digital credentials";
 "connections_empty_button" = "Scan QR code";
 "connections_scan_qr_nav_title" = "Scan QR";
 "connections_scan_qr_error" = "Invalid QR code";
 "connections_scan_qr_confirm_button" = "Confirm";
 "connections_scan_qr_confirm_duplicated_button" = "Connect again";
-"connections_scan_qr_confirm_title" = "Would you like to connect with";
+"connections_scan_qr_confirm_title" = "Connect with:";
 "connections_scan_qr_confirm_duplicated_title" = "You have already connected with %1$@. Please reset the data in the settings and reset the interactive city map.";
 "connections_scan_qr_confirm_error" = "Failed to confirm connection. Try again.";
 "connections_scan_qr_confirm_payment_error" = "Failed to confirm payment. Try again.";
@@ -68,7 +68,7 @@
 "connections_more_info" = "More Info";
 "connections_add_new" = "Add new";
 "connections_enter_code" = "Enter connection code";
-"connections_search_contacts" = "Search contacts";
+"connections_search_contacts" = "Search Contacts";
 "contacts_delete_confrimation_title" = "Are you sure?";
 "contacts_delete_confrimation_message" = "You are about to delete:";
 "contacts_delete_description" = "If you do this, the credentials below that were issued by the contact will also be deleted:";
@@ -92,9 +92,9 @@
 "credentials_nav_title" = "Credentials";
 "credentials_degrees_new_hello" = "Hello %1$@!";
 "credentials_degrees_new_title" = "You have new credential(s)";
-"credentials_degrees_new_date" = "Received %1$@";
+"credentials_degrees_new_date" = "Received: %1$@";
 "credentials_degrees_new_view_btn" = "VIEW";
-"credentials_search" = "Search credentials";
+"credentials_search" = "Search Credentials";
 "credentials_document_title" = "National ID Card";
 "credentials_detail_title_type_university" = "University Degree";
 "credentials_detail_title_type_government_id" = "Government ID";
@@ -105,7 +105,7 @@
 "credentials_georgia_educational_degree_transcript" = "Educational Degree Transcript";
 "credentials_detail_title_new" = "Add Credential";
 "credentials_detail_share_button" = "Share!";
-"credentials_detail_share_search_contacts" = "Search contacts";
+"credentials_detail_share_search_contacts" = "Search Contacts";
 "credentials_detail_share_contact_name" = "Contact Name";
 "credentials_detail_share_success" = "Credential(s) successfully shared";
 "credentials_detail_view_detail"= "View Detail";
@@ -120,7 +120,7 @@
 "credentials_delete_confrimation_title" = "Are you sure?";
 "credentials_delete_confrimation_message" = "You are about to delete:";
 "credentials_delete_error" = "The credential couldn't be deleted";
-"credentials_detail_date" = "Received %1$@";
+"credentials_detail_date" = "Received: %1$@";
 "credentials_history_title" = "%1$@ History";
 "credentials_history_date" = "Shared: %1$@";
 "credentials_history_shared" = "SHARED WITH";
@@ -179,46 +179,47 @@
 "tutorial_1_subtitle" = "Store all your important documents in one place and share in easy, secure and private way";
 "tutorial_1_button" = "Get Started";
 "tutorial_2_title" = "Take control of your personal information";
-"tutorial_2_subtitle" = "Secure your personal information and only share what you need to. ";
+"tutorial_2_subtitle" = "Secure your personal information and only share what you need to";
 "tutorial_2_button" = "Continue";
 "tutorial_3_title" = "Get instant access to services";
-"tutorial_3_subtitle" = "Prove your identity in one click and instantly access services everywhere Atala PRISM is supported.";
+"tutorial_3_subtitle" = "Prove your identity in one click and instantly access services everywhere Atala PRISM is supported";
 "tutorial_3_button_register" = "Create Account";
 "tutorial_3_button_restore" = "Restore Account";
 
 // <!-- Login: Terms -->
 "terms_lead" = "Account Creation";
 "terms_title" = "Terms \& Conditions";
-"terms_subtitle" = "Please indicate that you have read and agree to the Terms and Conditions and the Privacy Policy Agreement.";
-"terms_accept_terms" = "<b><font color=#000000>Accept </font><font color=#FF002D>Terms and Conditions</font></b>";
+"terms_subtitle" = "Please indicate that you have read and agreed to the Terms & Conditions and the Privacy Policy Agreement";
+"terms_accept_terms" = "<b><font color=#000000>Accept </font><font color=#FF002D>Terms & Conditions</font></b>";
 "terms_accept_privacy" = "<b><font color=#000000>Accept </font><font color=#FF002D>Privacy Policy Agreement</font></b>";
 
 // <!-- Login: Register -->
-"register_nav_title" = "Your Seed Phrase";
-"register_subtitle" = "Your Seed Phrase is used to generate and recover your account.";
-"register_warning" = "Please save these 12 words on a piece of paper. The order is important. This seed will allow you to recover your account.";
-"register_accept_terms" = "I understand that if I lose my seed phrase that I will not be able to recover my account.";
+"register_nav_title" = "Your Recovery Phrase";
+"register_subtitle" = "Your recovery phrase is used to generate and recover your account";
+"register_warning" = "Please save these 12 words on a piece of paper. The order is important. This phrase will allow you to recover your account";
+"register_accept_terms" = "I understand that if I lose my recovery phrase that I will not be able to recover my account";
 "register_seed_text" = "%1$d. %2$@";
 
 // <!-- Login: Login -->
-"login_nav_title" = "Verify Seed Phrase";
-"login_subtitle" = "Enter the following words to verify your Seed Phrase.";
+"login_nav_title" = "Verify Recovery Phrase";
+"login_subtitle" = "Enter the following words to verify your Recovery Phrase";
 "login_input_title" = "Word \#%1$d";
 "login_input_title_empty" = "Word";
-"login_phrase_invalid_error" = "Words were invalid. Please try again.";
+"login_phrase_invalid_error" = "Words were invalid. Please try again";
 
 // <!-- Login: Restore -->
 "restore_title" = "Restore Account";
-"restore_description" = "In order to restore your account, you need to type in the 12 words from the seed phrase that you will have kept safe.";
+"restore_description" = "In order to restore your account, you need to type in the 12 words from the Recovery Phrase that you will have kept safe";
 "restore_subtitle" = "Recovery phrase";
-"restore_helper" = "Press enter or space after entering each word.";
+"restore_helper" = "Press enter or space after entering each word";
 "restore_hint" = "Enter your 12-word recovery phrase";
 "restore_verify" = "Check";
 "restore_phrase_invalid_error" = "Invalid 12-word recovery phrase";
 "restore_recovering_data" = "Recovering data";
 
 // <!-- Success -->
-"success_register_title" = "Congrats!\nYour account has been created";
+"success_register_title" = "Congratulations!\nYour account has been created";
+"success_register_title_bold" = "Congratulations!";
 "success_register_subtitle" = "Continue to start the \nconnection process";
 "success_register_button" = "Continue";
 "success_email_support_title" = "Your message has been sent successfully!";
@@ -283,7 +284,7 @@
 // <!-- Notifications -->
 "notifications_title" = "Notifications";
 "notifications_scan_qr_nav_title" = "Scan QR code";
-"notifications_empty_title" = "You don’t have Notifications yet";
+"notifications_empty_title" = "You don’t have any notifications";
 "notifications_empty_subtitle" = "You can edit your notifiations\non settings section.";
 
 // <!-- Security -->
@@ -343,3 +344,4 @@
 "activitylog_requested" = "Requested by %1$@";
 "activitylog_connected" = "Connected";
 "activitylog_deleted" = "Deleted";
+"activitylog_empty_title" = "You don’t have any activities";

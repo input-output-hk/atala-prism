@@ -54,8 +54,7 @@ class NotificationsViewController: ListingBaseViewController {
     func setupEmptyView() {
 
         viewEmpty.config(imageNamed: "img_notifications_tray", title: "notifications_empty_title".localize(),
-                         subtitle: "notifications_empty_subtitle".localize(),
-                         buttonText: nil, buttonAction: nil)
+                         subtitle: nil, buttonText: nil, buttonAction: nil)
     }
 
     override func config(mode: ListingBasePresenter.ListingBaseState) {
@@ -88,6 +87,11 @@ class NotificationsViewController: ListingBaseViewController {
         }
 
         NavBarCustom.config(view: self)
+
+        // Change empty view
+        let titleKey = credentialsMode == .activityLog ? "activitylog_empty_title" : "notifications_empty_title"
+        viewEmpty.config(imageNamed: "img_notifications_tray", title: titleKey.localize(),
+                         subtitle: nil, buttonText: nil, buttonAction: nil)
     }
 
     func config(isLoading: Bool) {

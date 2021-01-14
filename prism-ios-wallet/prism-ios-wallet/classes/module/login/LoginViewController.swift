@@ -48,6 +48,7 @@ class LoginViewController: BaseViewController {
         configFields(numbers: [])
 
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
+        textField1.textField.becomeFirstResponder()
     }
 
     // MARK: Buttons
@@ -97,7 +98,8 @@ class LoginViewController: BaseViewController {
         let params = SuccessViewController.makeSeguedParams(title: "success_register_title".localize(),
                                                             subtitle: "success_register_subtitle".localize(),
                                                             buttonText: "success_register_button".localize(),
-                                                            buttonAction: action)
+                                                            buttonAction: action,
+                                                            titleBold: "success_register_title_bold".localize())
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "SuccessSegue", params: params)
     }
 

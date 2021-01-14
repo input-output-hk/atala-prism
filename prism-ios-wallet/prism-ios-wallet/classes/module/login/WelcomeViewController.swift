@@ -24,7 +24,7 @@ class WelcomeViewController: BaseViewController {
         super.viewDidLoad()
 
         // Setup
-        informationView.config(imageNamed: "img_black_logo", title: "welcome_title".localize(),
+        informationView.config(imageNamed: "img_black_logo", title: nil,
                                subtitle: nil, buttonText: "welcome_button".localize(),
                                buttonAction: actionContinue)
     }
