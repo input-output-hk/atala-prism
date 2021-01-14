@@ -33,11 +33,16 @@ import scala.util.Random
   )
 
   override def initialState: State = {
-    val wordList = props.data.mnemonic.seed.split(" ").toSeq
     val index1 = Random.between(0, 12)
     val index2 = Random.between(0, 12)
     if (index2 == index1) initialState
-    State("", "", index1, index2, wordList, None, false)
+    val wordList = props.data.mnemonic.seed.split(" ").toSeq
+    if (index1 > index2) {
+      State("", "", index2, index1, wordList, None, false)
+    } else {
+      State("", "", index1, index2, wordList, None, false)
+    }
+
   }
 
   override def render(): ReactElement = {
