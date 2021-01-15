@@ -35,6 +35,10 @@ object PrismBuild {
         Test / parallelExecution := false,
         Test / testForkedParallel := false,
         test in assembly := {},
+        commands += Command.args("testOnlyUntilFailed", "<testOnly params>") { (state, args) =>
+          val argsString = args.mkString(" ")
+          ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
+        },
         assemblyMergeStrategy in assembly := {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
           case PathList("META-INF", "services", _*) => MergeStrategy.concat
