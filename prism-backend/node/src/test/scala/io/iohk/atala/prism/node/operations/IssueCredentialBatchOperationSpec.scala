@@ -13,7 +13,7 @@ import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues.convertOptionToValuable
@@ -56,7 +56,7 @@ object IssueCredentialBatchOperationSpec {
   )
 }
 
-class IssueCredentialBatchOperationSpec extends PostgresRepositorySpec {
+class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
   import IssueCredentialBatchOperationSpec._
 

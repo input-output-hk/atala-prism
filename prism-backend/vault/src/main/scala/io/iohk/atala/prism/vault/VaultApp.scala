@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.IO
+import cats.effect.{IO, ContextShift}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -31,6 +31,8 @@ class VaultApp(executionContext: ExecutionContext) {
   private[this] var server: Server = null
   private[this] var releaseTransactor: Option[IO[Unit]] = None
 
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
   private def start(): Unit = {
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
@@ -40,7 +42,7 @@ class VaultApp(executionContext: ExecutionContext) {
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val (transactor, releaseTransactor) = TransactorFactory.transactorIO(databaseConfig).allocated.unsafeRunSync()
+    val (transactor, releaseTransactor) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
     self.releaseTransactor = Some(releaseTransactor)
 
     // Node client

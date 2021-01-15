@@ -31,7 +31,6 @@ import scala.concurrent.Future
 
 class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDGenerator {
 
-  private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 
   private lazy val credentialsRepository = new CredentialsRepository(database)

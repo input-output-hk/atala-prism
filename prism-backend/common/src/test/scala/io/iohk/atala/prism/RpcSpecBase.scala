@@ -4,7 +4,6 @@ import io.grpc.{CallCredentials, CallOptions, ManagedChannel, Metadata, Server, 
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor, SignedRequestsHelper}
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPublicKey, ECSignature}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
 import java.util.concurrent.{Executor, TimeUnit}
@@ -25,7 +24,7 @@ trait ApiTestHelper[STUB] {
   def unlogged[T](f: STUB => T): T
 }
 
-abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
+abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
   protected var serverName: String = _
   protected var serverHandle: Server = _

@@ -19,7 +19,7 @@ import io.iohk.atala.prism.node.services.{
 }
 import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
 import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 
@@ -28,7 +28,7 @@ import scala.concurrent.{Future, Promise}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.node.poc.{Wallet, GenericCredentialsSDK}
 
-class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
+class VerificationPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   implicit val ecTrait = EC
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
@@ -85,7 +85,7 @@ class VerificationPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
               credentialsService,
               credentialBatchesRepository
             ),
-            ec
+            executionContext
           )
       )
       .build()

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.kycbridge.services
 
 import java.util.UUID
 
+import monix.eval.Task
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.kycbridge.KycBridgeFixtures
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
@@ -16,7 +17,7 @@ import monix.execution.Scheduler.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 // sbt "project kycbridge" "testOnly *services.ConnectionServiceSpec"
-class ConnectionServiceSpec extends PostgresRepositorySpec with MockitoSugar with KycBridgeFixtures {
+class ConnectionServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with KycBridgeFixtures {
   import ConnectionFixtures._
 
   "updateCredentialsStream" should {
@@ -29,17 +30,17 @@ class ConnectionServiceSpec extends PostgresRepositorySpec with MockitoSugar wit
         Seq(ConnectionInfo(token = token, connectionId = uuid.toString, participantDID = participantDID.value))
 
       val connectorClientStub = new ConnectorClientServiceStub(connectionInfos = connectionInfos)
-      val connectionService = new ConnectionService(databaseTask, connectorClientStub)
+      val connectionService = new ConnectionService(database, connectorClientStub)
 
       // when
       val result = (for {
-        _ <- ConnectionDao.insert(connection1).transact(databaseTask)
+        _ <- ConnectionDao.insert(connection1).transact(database)
         _ <-
           connectionService.connectionUpdateStream
             .interruptAfter(1.seconds)
             .compile
             .drain
-        result <- ConnectionDao.findByConnectionToken(ConnectionToken(token)).transact(databaseTask)
+        result <- ConnectionDao.findByConnectionToken(ConnectionToken(token)).transact(database)
       } yield result).runSyncUnsafe(1.minute)
 
       // then

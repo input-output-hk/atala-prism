@@ -30,7 +30,7 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
 import org.mockito.captor.ArgCaptor
@@ -62,7 +62,7 @@ object ObjectManagementServiceSpec {
   }
 }
 
-class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSugar with BeforeAndAfterEach {
+class ObjectManagementServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with BeforeAndAfterEach {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   import ObjectManagementServiceSpec._

@@ -7,12 +7,12 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.{AtalaObject, AtalaObjectId}
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
-class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
+class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   private val objectId = AtalaObjectId.of(node_internal.AtalaObject())

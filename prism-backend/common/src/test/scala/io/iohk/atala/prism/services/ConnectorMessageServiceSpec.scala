@@ -4,6 +4,8 @@ import java.time.{LocalDateTime, ZoneOffset}
 
 import scala.concurrent.duration.DurationInt
 
+import monix.eval.Task
+
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.ConnectorMessageId
@@ -16,7 +18,7 @@ import doobie.implicits._
 import monix.execution.Scheduler.Implicits.global
 
 // sbt "project common" "testOnly *services.ConnectorMessageServiceSpec"
-class ConnectorMessageServiceSpec extends PostgresRepositorySpec {
+class ConnectorMessageServiceSpec extends PostgresRepositorySpec[Task] {
 
   override protected def migrationScriptsLocation: String = "common/db/migration"
 
@@ -47,14 +49,14 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec {
       val connectorMessagesService = new ConnectorMessagesService(
         connectorService = connectorClientService,
         messageProcessors = List(spyMessageProcessor),
-        findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(databaseTask),
-        saveMessageOffset = ConnectorMessageOffsetDao.updateLastMessageOffset(_).transact(databaseTask).map(_ => ())
+        findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(database),
+        saveMessageOffset = ConnectorMessageOffsetDao.updateLastMessageOffset(_).transact(database).map(_ => ())
       )
 
       // when
       val lastSeenMessageId = (for {
         _ <- connectorMessagesService.messagesUpdatesStream.interruptAfter(5.second).compile.drain
-        lastSeenMessageId <- ConnectorMessageOffsetDao.findLastMessageOffset().transact(databaseTask)
+        lastSeenMessageId <- ConnectorMessageOffsetDao.findLastMessageOffset().transact(database)
       } yield lastSeenMessageId).runSyncUnsafe()
 
       // then

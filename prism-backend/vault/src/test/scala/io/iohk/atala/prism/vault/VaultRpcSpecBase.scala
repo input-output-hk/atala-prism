@@ -8,7 +8,6 @@ import io.iohk.atala.prism.vault.services.EncryptedDataVaultServiceImpl
 import org.mockito.MockitoSugar._
 
 class VaultRpcSpecBase extends RpcSpecBase {
-  implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   override def services =
     Seq(

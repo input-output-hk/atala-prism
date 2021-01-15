@@ -12,12 +12,12 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus
 }
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
-class AtalaObjectTransactionSubmissionsDAOSpec extends PostgresRepositorySpec {
+class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
   private val ONE_SECOND = Duration.ofSeconds(1)
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)

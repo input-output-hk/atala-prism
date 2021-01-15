@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.{IO, Resource}
+import cats.effect.{IO, Resource, ContextShift}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
@@ -38,6 +38,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   implicit val implicitExecutionContext: ExecutionContext = executionContext
 
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private[this] var server: Server = null
@@ -52,7 +54,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     logger.info("Connecting to the database")
     implicit val (transactor, releaseTransactor) =
-      TransactorFactory.transactorIO(databaseConfig).allocated.unsafeRunSync()
+      TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
 
     val storage = globalConfig.getString("storage") match {
       case "in-memory" => new ObjectStorageService.InMemory()

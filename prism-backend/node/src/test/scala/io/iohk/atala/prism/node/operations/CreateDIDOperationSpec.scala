@@ -7,7 +7,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
@@ -88,7 +88,7 @@ object CreateDIDOperationSpec {
 
 }
 
-class CreateDIDOperationSpec extends PostgresRepositorySpec {
+class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
   import CreateDIDOperationSpec._
 

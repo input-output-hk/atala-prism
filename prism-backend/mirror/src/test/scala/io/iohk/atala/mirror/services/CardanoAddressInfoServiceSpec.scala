@@ -1,5 +1,6 @@
 package io.iohk.atala.mirror.services
 
+import monix.eval.Task
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
@@ -18,19 +19,19 @@ import org.scalatest.Assertion
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
 
 // sbt "project mirror" "testOnly *services.CardanoAddressInfoServiceSpec"
-class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
+class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with MirrorFixtures {
   import ConnectorMessageFixtures._, ConnectionFixtures._, CardanoAddressInfoFixtures._, PayIdFixtures._,
   CredentialFixtures._
 
   "cardanoAddressesMessageProcessor" should {
     "upsert cardano address" in new CardanoAddressInfoServiceFixtures {
       // given
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
       val cardanoAddressInfoOption = (for {
         _ <- cardanoAddressMessageProcessor(cardanoAddressInfoMessage1).get
-        cardanoAddress <- CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddress1)).transact(databaseTask)
+        cardanoAddress <- CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddress1)).transact(database)
       } yield cardanoAddress).runSyncUnsafe(1.minute)
 
       // then
@@ -45,13 +46,13 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
   "payIdMessageProcessor" should {
     "upsert cardano address" in new CardanoAddressInfoServiceFixtures {
       // given
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
       val cardanoAddressInfoOption = (for {
         _ <- paymentInformationMessageProcessor(paymentInformationMessage1).get
         cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
+          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
 
       // then
@@ -61,7 +62,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
     "do not upsert cardano address if holder did and pay id name do not match" in new CardanoAddressInfoServiceFixtures {
       // given
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       val paymentInformationWithWrongHolder =
         paymentInformation1.copy(payId =
@@ -75,7 +76,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       val cardanoAddressInfoOption = (for {
         _ <- paymentInformationMessageProcessor(messageWithWrongHolder).get
         cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
+          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
 
       // then
@@ -84,7 +85,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
     "do not upsert cardano address if host network is incorrect" in new CardanoAddressInfoServiceFixtures {
       // given
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       val paymentInformationWithWrongNetwork =
         paymentInformation1.copy(payId = Some(PayID(connectionHolderDid2.value + "$" + "wrongNetwork")))
@@ -96,7 +97,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       val cardanoAddressInfoOption = (for {
         _ <- paymentInformationMessageProcessor(messageWithWrongNetwork).get
         cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
+          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
 
       // then
@@ -105,18 +106,18 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
     "do not upsert cardano address if address signature cannot be verified (key doesn't exist)" in {
       // given
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       val nodeClientStub = new NodeClientServiceStub()
       val cardanoAddressInfoService =
-        new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig, nodeClientStub)
+        new CardanoAddressInfoService(database, mirrorConfig.httpConfig, nodeClientStub)
       val paymentInformationMessageProcessor = cardanoAddressInfoService.payIdMessageProcessor
 
       // when
       val cardanoAddressInfoOption = (for {
         _ <- paymentInformationMessageProcessor(paymentInformationMessage1).get
         cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(databaseTask)
+          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
       } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
 
       // then
@@ -188,12 +189,12 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
     ): Assertion = {
       // given
       val fixtures = new CardanoAddressInfoServiceFixtures {}
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
       val updatedConnectionOption = (for {
         _ <- fixtures.payIdNameRegistrationMessageProcessor(message).get
-        updatedConnection <- ConnectionDao.findByConnectionToken(connectionToUpdate.token).transact(databaseTask)
+        updatedConnection <- ConnectionDao.findByConnectionToken(connectionToUpdate.token).transact(database)
       } yield updatedConnection).runSyncUnsafe(1.minute)
 
       // then
@@ -211,7 +212,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoAddressInfoFixtures.insertAll(database)
-      } yield ()).unsafeRunSync()
+      } yield ()).runSyncUnsafe()
 
       // when
       val paymentInfo = cardanoAddressInfoService
@@ -227,7 +228,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoAddressInfoFixtures.insertAll(database)
-      } yield ()).unsafeRunSync()
+      } yield ()).runSyncUnsafe()
 
       // when
       val paymentInfo =
@@ -244,7 +245,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoAddressInfoFixtures.insertAll(database)
-      } yield ()).unsafeRunSync()
+      } yield ()).runSyncUnsafe()
 
       // when
       val paymentInfo = cardanoAddressInfoService
@@ -260,7 +261,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoAddressInfoFixtures.insertAll(database)
-      } yield ()).unsafeRunSync()
+      } yield ()).runSyncUnsafe()
 
       // when
       val paymentInfo =
@@ -275,7 +276,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec with MockitoS
 
   trait CardanoAddressInfoServiceFixtures {
     val cardanoAddressInfoService =
-      new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig, defaultNodeClientStub)
+      new CardanoAddressInfoService(database, mirrorConfig.httpConfig, defaultNodeClientStub)
     val cardanoAddressMessageProcessor = cardanoAddressInfoService.cardanoAddressInfoMessageProcessor
     val paymentInformationMessageProcessor = cardanoAddressInfoService.payIdMessageProcessor
     val payIdNameRegistrationMessageProcessor = cardanoAddressInfoService.payIdNameRegistrationMessageProcessor

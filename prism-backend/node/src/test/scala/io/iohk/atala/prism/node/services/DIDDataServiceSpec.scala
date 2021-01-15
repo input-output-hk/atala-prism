@@ -6,7 +6,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
@@ -15,7 +15,7 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
-class DIDDataServiceSpec extends PostgresRepositorySpec {
+class DIDDataServiceSpec extends AtalaWithPostgresSpec {
   import CreateDIDOperationSpec._
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)

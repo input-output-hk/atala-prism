@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -20,7 +20,7 @@ import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import scala.concurrent.duration._
 import scala.util.Random
 
-class CardanoLedgerServiceIntegrationSpec extends PostgresRepositorySpec {
+class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)
   private val RETRY_TIMEOUT = 2.minutes

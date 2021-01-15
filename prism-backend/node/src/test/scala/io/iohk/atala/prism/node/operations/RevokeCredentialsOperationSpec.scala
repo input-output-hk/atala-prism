@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
 import org.scalatest.EitherValues._
@@ -76,7 +76,7 @@ object RevokeCredentialsOperationSpec {
   )
 }
 
-class RevokeCredentialsOperationSpec extends PostgresRepositorySpec {
+class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
   import RevokeCredentialsOperationSpec._
 

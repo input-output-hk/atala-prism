@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.cardano.dbsync
 
-import cats.effect.{IO, Resource}
+import cats.effect.{ContextShift, IO, Resource}
 import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient.Result
@@ -22,11 +22,13 @@ class CardanoDbSyncClient(cardanoBlockRepository: CardanoBlockRepository) {
 object CardanoDbSyncClient {
   type Result[E, A] = FutureEither[E, A]
 
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
   case class Config(dbConfig: TransactorFactory.Config)
 
   def apply(config: Config)(implicit ec: ExecutionContext): Resource[IO, CardanoDbSyncClient] = {
     TransactorFactory
-      .transactorIO(config.dbConfig)
+      .transactor[IO](config.dbConfig)
       .map(transactor => {
         val cardanoBlockRepository = new CardanoBlockRepository(transactor)
 

@@ -9,7 +9,7 @@ import io.iohk.atala.prism.crypto.{EC, ECPrivateKey}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -42,7 +42,7 @@ object BlockProcessingServiceSpec {
 
 }
 
-class BlockProcessingServiceSpec extends PostgresRepositorySpec {
+class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
   import BlockProcessingServiceSpec._
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys

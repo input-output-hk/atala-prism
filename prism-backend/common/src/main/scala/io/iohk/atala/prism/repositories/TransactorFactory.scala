@@ -2,9 +2,8 @@ package io.iohk.atala.prism.repositories
 
 import java.util.concurrent.Executors
 
-import cats.effect.{Async, Blocker, ContextShift, IO, Resource}
+import cats.effect.{Async, Blocker, ContextShift, Resource}
 import doobie.hikari.HikariTransactor
-import monix.eval.Task
 
 import scala.concurrent.ExecutionContext
 
@@ -25,15 +24,6 @@ object TransactorFactory {
       password = password,
       awaitConnectionThreads = awaitConnectionThreads
     )
-  }
-
-  def transactorIO(config: Config): Resource[IO, HikariTransactor[IO]] = {
-    implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-    transactor[IO](config)
-  }
-
-  def transactorTask(config: Config): Resource[Task, HikariTransactor[Task]] = {
-    transactor[Task](config)
   }
 
   // We need a ContextShift[A] before we can construct a Transactor[A]. The passed ExecutionContext

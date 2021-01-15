@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.connector
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
@@ -64,6 +64,8 @@ object ConnectorApp {
 class ConnectorApp(executionContext: ExecutionContext) { self =>
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
   private[this] var server: Server = null
   private[this] var messageNotificationService: MessageNotificationService = null
 
@@ -76,7 +78,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val (xa, releaseXa) = TransactorFactory.transactorIO(databaseConfig).allocated.unsafeRunSync()
+    val (xa, releaseXa) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
 
     logger.info("Initializing Payment Wall")
     val braintreePayments =

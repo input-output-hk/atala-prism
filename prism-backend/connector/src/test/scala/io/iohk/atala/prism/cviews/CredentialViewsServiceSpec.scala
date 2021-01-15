@@ -14,7 +14,6 @@ import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCre
 import org.mockito.MockitoSugar._
 
 class CredentialViewsServiceSpec extends RpcSpecBase with DIDGenerator {
-  private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val usingApiAs = usingApiAsConstructor(
     new CredentialViewsServiceGrpc.CredentialViewsServiceBlockingStub(_, _)
   )

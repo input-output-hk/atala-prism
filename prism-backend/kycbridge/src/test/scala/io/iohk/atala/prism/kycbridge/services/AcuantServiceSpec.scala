@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.kycbridge.services
 
+import monix.eval.Task
 import io.iohk.atala.prism.kycbridge.KycBridgeFixtures
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
@@ -14,7 +15,7 @@ import monix.execution.Scheduler.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 // sbt "project kycbridge" "testOnly *services.AcuantServiceSpec"
-class AcuantServiceSpec extends PostgresRepositorySpec with MockitoSugar with KycBridgeFixtures {
+class AcuantServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with KycBridgeFixtures {
   import ConnectionFixtures._
 
   "acuantDataStream" should {
@@ -32,18 +33,18 @@ class AcuantServiceSpec extends PostgresRepositorySpec with MockitoSugar with Ky
         documentId = "documentId"
       )
       val assureIdServiceStub = new AssureIdServiceStub(Right(newDocumentInstanceResponseBody))
-      val acuantService = new AcuantService(databaseTask, assureIdServiceStub, acasServiceStub, connectorClientStub)
+      val acuantService = new AcuantService(database, assureIdServiceStub, acasServiceStub, connectorClientStub)
 
       // when
       val updatedConnection1 = (for {
-        _ <- ConnectionFixtures.insertAll(databaseTask)
+        _ <- ConnectionFixtures.insertAll(database)
         _ <-
           acuantService.acuantDataStream
             .interruptAfter(5.seconds)
             .compile
             .drain
 
-        connection1 <- ConnectionDao.findByConnectionToken(connection1.token).transact(databaseTask)
+        connection1 <- ConnectionDao.findByConnectionToken(connection1.token).transact(database)
 
       } yield connection1).runSyncUnsafe()
 

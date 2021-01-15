@@ -24,7 +24,6 @@ import scala.concurrent.duration.DurationDouble
 
 class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
-  private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
   private val usingApiAs = usingApiAsConstructor(new console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub(_, _))
 

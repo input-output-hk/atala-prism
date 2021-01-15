@@ -7,11 +7,11 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.management.console.models.ParticipantId
 import io.iohk.atala.prism.management.console.repositories.daos._
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.OptionValues._
 
-class RequestNoncesRepositorySpec extends PostgresRepositorySpec {
+class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
   private def createParticipant(
       name: String,
       did: String

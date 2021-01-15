@@ -8,7 +8,7 @@ import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.randomProtoECKey
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
@@ -66,7 +66,7 @@ object UpdateDIDOperationSpec {
   )
 }
 
-class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTestHelpers {
+class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTestHelpers {
   import UpdateDIDOperationSpec._
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)

@@ -2,6 +2,7 @@ package io.iohk.atala.mirror.services
 
 import java.time.Instant
 
+import monix.eval.Task
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.db.ConnectionDao
 import org.mockito.scalatest.MockitoSugar
@@ -20,20 +21,20 @@ import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import scala.concurrent.duration.DurationInt
 
 // sbt "project mirror" "testOnly *services.MirrorServiceSpec"
-class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with MirrorFixtures {
+class MirrorServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with MirrorFixtures {
   import UserCredentialFixtures._, CardanoAddressInfoFixtures._, CredentialFixtures._
 
   "create new account" in {
     // given
     val token = "token"
     val connectorClientStub = new ConnectorClientServiceStub(token)
-    val mirrorService = new MirrorService(databaseTask, connectorClientStub)
+    val mirrorService = new MirrorService(database, connectorClientStub)
     val updatedAt = Instant.now()
 
     // when
     val connection = (for {
       response <- mirrorService.createAccount
-      connection <- ConnectionDao.findByConnectionToken(ConnectionToken(token)).transact(databaseTask)
+      connection <- ConnectionDao.findByConnectionToken(ConnectionToken(token)).transact(database)
       updatedConnection = connection.map(_.copy(updatedAt = updatedAt))
     } yield response -> updatedConnection).runSyncUnsafe(1.minute)
 
@@ -54,9 +55,9 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with Mi
     "return credentials for address" in new MirrorServiceFixtures {
       // given
       (for {
-        _ <- ConnectionFixtures.insertAll(databaseTask)
-        _ <- UserCredentialFixtures.insertAll(databaseTask)
-        _ <- CardanoAddressInfoFixtures.insertAll(databaseTask)
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- UserCredentialFixtures.insertAll(database)
+        _ <- CardanoAddressInfoFixtures.insertAll(database)
       } yield ()).runSyncUnsafe()
 
       // when
@@ -88,9 +89,9 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with Mi
     "return ivms101 Person info for address" in new MirrorServiceFixtures {
       // given
       (for {
-        _ <- ConnectionFixtures.insertAll(databaseTask)
-        _ <- UserCredentialFixtures.insertAll(databaseTask)
-        _ <- CardanoAddressInfoFixtures.insertAll(databaseTask)
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- UserCredentialFixtures.insertAll(database)
+        _ <- CardanoAddressInfoFixtures.insertAll(database)
       } yield ()).runSyncUnsafe()
 
       // when
@@ -121,6 +122,6 @@ class MirrorServiceSpec extends PostgresRepositorySpec with MockitoSugar with Mi
 
   trait MirrorServiceFixtures {
     val connectorClientStub = new ConnectorClientServiceStub()
-    val mirrorService = new MirrorService(databaseTask, connectorClientStub)
+    val mirrorService = new MirrorService(database, connectorClientStub)
   }
 }

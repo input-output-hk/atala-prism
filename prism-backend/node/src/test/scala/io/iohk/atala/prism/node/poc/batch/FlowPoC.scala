@@ -25,14 +25,14 @@ import io.iohk.atala.prism.node.services.{
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.{node_api, node_models}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
 
-class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
+class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   implicit val ecTrait = EC
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
@@ -89,7 +89,7 @@ class FlowPoC extends PostgresRepositorySpec with BeforeAndAfterEach {
               credentialsService,
               credentialBatchesRepository
             ),
-            ec
+            executionContext
           )
       )
       .build()

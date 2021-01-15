@@ -7,7 +7,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.node_models
@@ -57,7 +57,7 @@ object RevokeCredentialOperationSpec {
   )
 }
 
-class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
+class RevokeCredentialOperationSpec extends AtalaWithPostgresSpec {
 
   import RevokeCredentialOperationSpec._
 

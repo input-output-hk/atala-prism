@@ -14,7 +14,6 @@ import io.iohk.atala.prism.protos.{connector_api, connector_models, console_mode
 import org.mockito.MockitoSugar.mock
 
 class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with ConnectorRepositorySpecBase {
-  private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val usingApiAs = usingApiAsConstructor(
     new connector_api.ContactConnectionServiceGrpc.ContactConnectionServiceBlockingStub(_, _)
   )

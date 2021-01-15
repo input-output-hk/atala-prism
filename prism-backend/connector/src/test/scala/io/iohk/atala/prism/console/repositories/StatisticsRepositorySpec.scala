@@ -4,12 +4,12 @@ import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.{IssuerGroup, PublishCredential}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
-class StatisticsRepositorySpec extends PostgresRepositorySpec {
+class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
 

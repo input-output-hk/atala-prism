@@ -13,6 +13,8 @@ import org.flywaydb.core.internal.scanner.{LocationScannerCache, ResourceNameCac
 import org.flywaydb.core.internal.sqlscript.{SqlScriptExecutorFactory, SqlScriptFactory}
 import org.slf4j.LoggerFactory
 
+import io.iohk.atala.prism.AtalaWithPostgresSpec
+
 import scala.jdk.CollectionConverters._
 
 /**
@@ -44,7 +46,7 @@ import scala.jdk.CollectionConverters._
   * @param targetPrefixScript the prefix on the script to test, in order to test the migration for
   *                           "v22_alter_tables.sql", you send the prefix as "v22"
   */
-abstract class PostgresMigrationSpec(targetPrefixScript: String) extends PostgresRepositorySpec {
+abstract class PostgresMigrationSpec(targetPrefixScript: String) extends AtalaWithPostgresSpec {
 
   private def doNothing[T]: T => Unit = _ => ()
 

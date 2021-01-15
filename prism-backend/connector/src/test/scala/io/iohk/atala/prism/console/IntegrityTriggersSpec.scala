@@ -7,11 +7,11 @@ import io.circe.Json
 import DataPreparation.{createIssuer, createIssuerGroup}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, IssuerGroupsDAO}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 
 import scala.concurrent.duration._
 
-class IntegrityTriggersSpec extends PostgresRepositorySpec {
+class IntegrityTriggersSpec extends AtalaWithPostgresSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
 

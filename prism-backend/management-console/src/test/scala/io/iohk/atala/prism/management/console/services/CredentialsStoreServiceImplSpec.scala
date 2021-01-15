@@ -24,8 +24,6 @@ import scala.concurrent.duration._
 
 class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
-  implicit val executionContext = scala.concurrent.ExecutionContext.global
-
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
   val usingApiAs = usingApiAsConstructor(

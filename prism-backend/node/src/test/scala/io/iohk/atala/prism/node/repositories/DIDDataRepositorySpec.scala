@@ -4,9 +4,9 @@ import java.time.Instant
 
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import org.scalatest.EitherValues._
@@ -14,7 +14,7 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
 
-class DIDDataRepositorySpec extends PostgresRepositorySpec {
+class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
   lazy val didDataRepository = new DIDDataRepository(database)

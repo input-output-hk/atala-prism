@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -42,6 +42,8 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
   self =>
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
   private[this] var server: Server = null
   private[this] var releaseTransactor: Option[IO[Unit]] = None
 
@@ -54,7 +56,7 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val (transactor, releaseTransactor) = TransactorFactory.transactorIO(databaseConfig).allocated.unsafeRunSync()
+    val (transactor, releaseTransactor) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
     self.releaseTransactor = Some(releaseTransactor)
 
     // node client

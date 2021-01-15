@@ -84,7 +84,7 @@ object KycBridgeApp extends TaskApp {
       nodeConfig = NodeConfig(globalConfig)
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
 
-      tx <- TransactorFactory.transactorTask(transactorConfig)
+      tx <- TransactorFactory.transactor[Task](transactorConfig)
       _ <- Resource.liftF(runMigrations(tx, classLoader))
 
       // connector

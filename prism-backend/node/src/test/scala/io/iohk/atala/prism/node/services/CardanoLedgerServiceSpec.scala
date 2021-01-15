@@ -23,7 +23,7 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.util.BytesOps
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
@@ -31,7 +31,7 @@ import org.scalatest.OptionValues._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class CardanoLedgerServiceSpec extends PostgresRepositorySpec {
+class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   private val network = CardanoNetwork.Testnet

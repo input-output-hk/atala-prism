@@ -1,20 +1,17 @@
 package io.iohk.atala.prism.db
 
-import cats.effect.{ContextShift, IO, Timer}
 import doobie.HC
 import doobie.implicits._
 import doobie.postgres._
 import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.AtalaSpecBase.implicits.{timer, contextShift}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class DbNotificationStreamerSpec extends PostgresRepositorySpec {
+class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
   implicit val pc: PatienceConfig = PatienceConfig(10.seconds, 5.millis)
-
-  private implicit val contextSwitch: ContextShift[IO] = IO.contextShift(ec)
-  private implicit val timer: Timer[IO] = IO.timer(ec)
 
   private val CHANNEL = "test_channel"
 

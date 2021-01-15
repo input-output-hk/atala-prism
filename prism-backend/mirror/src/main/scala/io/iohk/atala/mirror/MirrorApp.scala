@@ -64,7 +64,7 @@ object MirrorApp extends TaskApp {
       nodeConfig = NodeConfig(globalConfig)
 
       // db
-      tx <- TransactorFactory.transactorTask(transactorConfig)
+      tx <- TransactorFactory.transactor[Task](transactorConfig)
       _ <- Resource.liftF(runMigrations(tx, classLoader))
 
       // connector

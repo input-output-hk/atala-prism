@@ -6,7 +6,6 @@ import monix.eval.Task
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
 import org.slf4j.LoggerFactory
-import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.crypto._
@@ -37,7 +36,7 @@ import io.iohk.atala.prism.services.{
 }
 import io.iohk.atala.prism.E2ETestUtils._
 
-class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpec with MirrorFixtures {
+class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with MirrorFixtures {
 
   implicit val ecTrait = EC
 
@@ -67,11 +66,11 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
         connectorClientService =
           new ConnectorClientServiceImpl(connectorStub, new RequestAuthenticator(ecTrait), connectorConfig)
         credentialService = new CredentialService(
-          databaseTask,
+          database,
           connectorClientService,
           nodeService
         )
-        mirrorService = new MirrorService(databaseTask, connectorClientService)
+        mirrorService = new MirrorService(database, connectorClientService)
 
         // Wallet: connector with public key auth
         walletConnectorClientService = new BaseGrpcClientService(
@@ -116,17 +115,17 @@ class MirrorE2eSpec extends AnyWordSpec with Matchers with PostgresRepositorySpe
           .flatMap(_.map(r => walletConnectorClientService.authenticatedCall(r, _.sendMessage)).toList.sequence)
 
         // Mirror: process incoming messages
-        cardanoAddressService = new CardanoAddressInfoService(databaseTask, mirrorConfig.httpConfig, nodeService)
+        cardanoAddressService = new CardanoAddressInfoService(database, mirrorConfig.httpConfig, nodeService)
         connectorMessageService = new ConnectorMessagesService(
           connectorService = connectorClientService,
           List(credentialService.credentialMessageProcessor, cardanoAddressService.cardanoAddressInfoMessageProcessor),
-          findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(databaseTask),
-          saveMessageOffset = ConnectorMessageOffsetDao.updateLastMessageOffset(_).transact(databaseTask).map(_ => ())
+          findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(database),
+          saveMessageOffset = ConnectorMessageOffsetDao.updateLastMessageOffset(_).transact(database).void
         )
         _ <- connectorMessageService.messagesUpdatesStream.interruptAfter(5.second).compile.drain
 
         // verify result
-        result <- UserCredentialDao.findBy(ConnectionToken(connectionToken)).transact(databaseTask).map(_.head)
+        result <- UserCredentialDao.findBy(ConnectionToken(connectionToken)).transact(database).map(_.head)
       } yield result).runSyncUnsafe(1.minute).status mustBe UserCredential.CredentialStatus.Valid
     }
   }

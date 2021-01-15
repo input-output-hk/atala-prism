@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector
 
 import java.time.Instant
-import cats.effect.{ContextShift, IO, Timer}
+
 import doobie.implicits._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model._
@@ -24,17 +24,13 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.AtalaSpecBase.implicits.{contextShift, timer}
 import org.mockito.MockitoSugar._
 
 import java.util.UUID
-import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationLong
 
 class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
-  implicit val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
-  implicit val contextShift: ContextShift[IO] = IO.contextShift(executionContext)
-  implicit val timer: Timer[IO] = IO.timer(executionContext)
-
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
   override def services =
@@ -76,7 +72,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val registrationService = new RegistrationService(participantsRepository, nodeMock)(executionContext)
-  lazy val messageNotificationService = MessageNotificationService(database)(contextShift, timer)
+  lazy val messageNotificationService = MessageNotificationService(database)
   lazy val connectorService = new ConnectorService(
     connectionsService,
     messagesService,

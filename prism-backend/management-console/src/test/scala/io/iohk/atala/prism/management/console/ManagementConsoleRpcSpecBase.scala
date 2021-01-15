@@ -13,7 +13,6 @@ import io.iohk.atala.prism.protos.console_api
 import org.mockito.MockitoSugar.mock
 
 class ManagementConsoleRpcSpecBase extends RpcSpecBase {
-  implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   override def services =
     Seq(

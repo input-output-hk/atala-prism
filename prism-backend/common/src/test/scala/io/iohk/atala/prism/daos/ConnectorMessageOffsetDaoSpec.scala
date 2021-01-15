@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.daos
 
 import io.iohk.atala.prism.models.ConnectorMessageId
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 
 // sbt "project common" "testOnly *daos.ConnectorMessageOffsetDaoSpec"
-class ConnectorMessageOffsetDaoSpec extends PostgresRepositorySpec {
+class ConnectorMessageOffsetDaoSpec extends AtalaWithPostgresSpec {
 
   override protected def migrationScriptsLocation: String = "common/db/migration"
 

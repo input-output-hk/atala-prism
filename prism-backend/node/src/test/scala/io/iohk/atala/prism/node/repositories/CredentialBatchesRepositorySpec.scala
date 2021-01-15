@@ -14,18 +14,17 @@ import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
 
-class CredentialBatchesRepositorySpec extends PostgresRepositorySpec {
+class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
   import CredentialBatchesRepositorySpec._
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
-  implicit lazy val db = database
 
   private lazy implicit val repository = new CredentialBatchesRepository(database)
 

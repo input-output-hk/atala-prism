@@ -1,17 +1,17 @@
 package io.iohk.atala.mirror.db
 
-import scala.concurrent.duration._
+import monix.eval.Task
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
 import io.iohk.atala.prism.models.ConnectorMessageId
 
-// sbt "project mirror" "testOnly *db.CardanoAddressInfoDaoSpec"
-class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtures {
-  import ConnectionFixtures._, CardanoAddressInfoFixtures._
+import monix.execution.Scheduler.Implicits.global
 
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
+// sbt "project mirror" "testOnly *db.CardanoAddressInfoDaoSpec"
+class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtures {
+  import ConnectionFixtures._, CardanoAddressInfoFixtures._
 
   "CardanoAddressDao" should {
     "insert single cardano address into the db" in {
@@ -21,7 +21,7 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtur
         resultCount <- CardanoAddressInfoDao.insert(cardanoAddressInfo1)
       } yield resultCount)
         .transact(database)
-        .unsafeRunSync()
+        .runSyncUnsafe()
 
       // then
       resultCount mustBe 1
@@ -32,11 +32,11 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtur
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoAddressInfoFixtures.insertAll(database)
-      } yield ()).unsafeRunSync()
+      } yield ()).runSyncUnsafe()
 
       // when
       val cardanoAddressesInfo =
-        CardanoAddressInfoDao.findBy(cardanoAddressInfo1.cardanoAddress).transact(database).unsafeRunSync()
+        CardanoAddressInfoDao.findBy(cardanoAddressInfo1.cardanoAddress).transact(database).runSyncUnsafe()
 
       // then
       cardanoAddressesInfo mustBe Some(cardanoAddressInfo1)
@@ -47,14 +47,14 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtur
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoAddressInfoFixtures.insertAll(database)
-      } yield ()).unsafeRunSync()
+      } yield ()).runSyncUnsafe()
 
       // when
       val cardanoAddressesInfo =
         CardanoAddressInfoDao
           .findBy(connection1.token, cardanoAddressInfo1.cardanoNetwork)
           .transact(database)
-          .unsafeRunSync()
+          .runSyncUnsafe()
 
       // then
       cardanoAddressesInfo mustBe List(cardanoAddressInfo1)
@@ -63,7 +63,7 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtur
     "return none if a cardano address doesn't exist" in {
       // when
       val cardanoAddressesInfo =
-        CardanoAddressInfoDao.findBy(CardanoAddress("non existing")).transact(database).unsafeRunSync()
+        CardanoAddressInfoDao.findBy(CardanoAddress("non existing")).transact(database).runSyncUnsafe()
 
       // then
       cardanoAddressesInfo.size mustBe 0
@@ -74,11 +74,11 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec with MirrorFixtur
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoAddressInfoFixtures.insertAll(database)
-      } yield ()).unsafeRunSync()
+      } yield ()).runSyncUnsafe()
 
       // when
       val lastSeenMessageId: Option[ConnectorMessageId] =
-        CardanoAddressInfoDao.findLastSeenMessageId.transact(database).unsafeRunSync()
+        CardanoAddressInfoDao.findLastSeenMessageId.transact(database).runSyncUnsafe()
 
       // then
       lastSeenMessageId mustBe Some(cardanoAddressInfo3.messageId)

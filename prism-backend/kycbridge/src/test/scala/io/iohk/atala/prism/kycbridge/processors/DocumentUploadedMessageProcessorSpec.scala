@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.kycbridge.processors
 
+import monix.eval.Task
 import scala.concurrent.duration.DurationInt
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
@@ -19,7 +20,10 @@ import doobie.implicits._
 import io.iohk.atala.prism.kycbridge.models.faceId.FaceMatchResponse
 
 //sbt "project kycbridge" "testOnly *processors.DocumentUploadedMessageProcessorSpec"
-class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with KycBridgeFixtures with ServicesFixtures {
+class DocumentUploadedMessageProcessorSpec
+    extends PostgresRepositorySpec[Task]
+    with KycBridgeFixtures
+    with ServicesFixtures {
   import ConnectorClientServiceFixtures._, ConnectionFixtures._
 
   implicit val ecTrait = EC
@@ -31,12 +35,12 @@ class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with K
 
     "update connection with document status" in new Fixtures {
       // given
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
       val result = (for {
         _ <- processor.processor(receivedMessage).get
-        connection <- ConnectionDao.findByConnectionId(connection1.id.get).transact(databaseTask)
+        connection <- ConnectionDao.findByConnectionId(connection1.id.get).transact(database)
       } yield connection).runSyncUnsafe(1.minute)
 
       // then
@@ -45,7 +49,7 @@ class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with K
 
     "create and send credential" in new Fixtures {
       // given
-      ConnectionFixtures.insertAll(databaseTask).runSyncUnsafe()
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
       val result = (for {
@@ -61,7 +65,7 @@ class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with K
       val faceIdServiceStubWithFailedMatch = new FaceIdServiceStub(FaceMatchResponse(score = 0, isMatch = false))
       val processorWithFailingFaceIdMatch =
         new DocumentUploadedMessageProcessor(
-          databaseTask,
+          database,
           nodeClientService,
           connectorClientService,
           assureIdServiceStub,
@@ -88,7 +92,7 @@ class DocumentUploadedMessageProcessorSpec extends PostgresRepositorySpec with K
     val faceIdServiceStub = new FaceIdServiceStub()
     val processor =
       new DocumentUploadedMessageProcessor(
-        databaseTask,
+        database,
         nodeClientService,
         connectorClientService,
         assureIdServiceStub,
