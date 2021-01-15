@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.connector
 
-import java.util.UUID
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.stub.StreamObserver
@@ -18,6 +16,8 @@ import org.mockito.Mockito
 import org.mockito.MockitoSugar._
 import org.mockito.captor.ArgCaptor
 import org.mockito.verification.VerificationWithTimeout
+
+import java.util.UUID
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   private def eventually: VerificationWithTimeout = Mockito.timeout(5000)
@@ -143,7 +143,11 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     def generateMessageIds(participantId: ParticipantId): Seq[String] = {
-      createExampleMessages(participantId).map(_._1).map(_.id.toString)
+      val messageIds = createExampleMessages(participantId).map(_._1).map(_.id.toString)
+      // Sleep a bit to avoid race conditions with messages being in DB but still not notified to the streams
+      // (this is only needed for the tests to behave as expected)
+      Thread.sleep(500)
+      messageIds
     }
 
     def asMessageIds(responses: List[connector_api.GetMessageStreamResponse]): Seq[String] = {
