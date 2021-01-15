@@ -273,13 +273,11 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.viewImpl?.config(isLoading: false)
-            let actions = [UIAlertAction(title: "ok".localize(), style: .default, handler: { _ in
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "credentials_detail_share_success".localize(),
+                                              title: "credentials_detail_share_success_title".localize()) {
                 self.tappedBackButton()
                 self.actionPullToRefresh()
-            })]
-            self.viewImpl?.showSuccessMessage(doShow: true, message: "",
-                                              title: "credentials_detail_share_success".localize(),
-                                              actions: actions)
+            }
         }, error: { _ in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())

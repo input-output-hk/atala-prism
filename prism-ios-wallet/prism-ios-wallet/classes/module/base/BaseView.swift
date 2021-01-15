@@ -8,7 +8,7 @@ protocol BaseView: class {
 
     func showErrorMessage(doShow: Bool, message: String?, afterErrorAction: (() -> Void)?)
 
-    func showSuccessMessage(doShow: Bool, message: String?, title: String?, actions: [UIAlertAction]?)
+    func showSuccessMessage(doShow: Bool, message: String?, title: String?, action: (() -> Void)?)
 
     func callOnMain(millis: Int, method: (() -> Void)?)
 
@@ -117,8 +117,8 @@ extension UIViewController: BaseView {
                                    afterErrorAction: afterErrorAction)
     }
 
-    func showSuccessMessage(doShow: Bool, message: String?, title: String? = nil, actions: [UIAlertAction]? = nil) {
-        ViewUtils.showSuccessMessage(doShow: doShow, view: self, title: title, message: message, actions: actions)
+    func showSuccessMessage(doShow: Bool, message: String?, title: String? = nil, action: (() -> Void)? = nil) {
+        ViewUtils.showSuccessMessage(doShow: doShow, view: self, title: title, message: message, action: action)
     }
 
     func showComingSoonMessage() {

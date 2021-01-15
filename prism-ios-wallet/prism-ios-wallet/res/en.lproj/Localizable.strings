@@ -107,7 +107,8 @@
 "credentials_detail_share_button" = "Share!";
 "credentials_detail_share_search_contacts" = "Search Contacts";
 "credentials_detail_share_contact_name" = "Contact Name";
-"credentials_detail_share_success" = "Credential(s) successfully shared";
+"credentials_detail_share_success_title" = "Your credential(s) were";
+"credentials_detail_share_success" = "Successfully shared";
 "credentials_detail_view_detail"= "View Detail";
 "credentials_empty_title" = "Connect to an organization to receive your credentials";
 "credentials_empty_subtitle" = "Receive, store and share your digital credentials";

@@ -292,8 +292,8 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showSuccessMessage(doShow: true,
-                                              message: "credentials_detail_share_success".localize())
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "credentials_detail_share_success".localize(),
+                                              title: "credentials_detail_share_success_title".localize())
         }, error: { _ in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())

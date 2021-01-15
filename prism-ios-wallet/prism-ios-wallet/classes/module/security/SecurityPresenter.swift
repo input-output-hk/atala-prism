@@ -169,10 +169,9 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         if sharedMemory.loggedUser?.appPin == oldPin {
             sharedMemory.loggedUser?.appPin = newPin
             sharedMemory.loggedUser = sharedMemory.loggedUser
-            viewImpl?.showSuccessMessage(doShow: true, message: "security_change_pin_success".localize(),
-                                         actions: [UIAlertAction(title: "Ok", style: .default, handler: { _ in
+            viewImpl?.showSuccessMessage(doShow: true, message: "security_change_pin_success".localize()) {
                 self.startShowingMain()
-            })])
+            }
         } else {
             viewImpl?.showErrorMessage(doShow: true, message: "security_change_pin_error".localize())
         }

@@ -34,12 +34,16 @@ class ViewUtils: NSObject {
     }
 
     public static func showSuccessMessage(doShow: Bool, view: UIViewController, title: String? = nil,
-                                          message: String? = nil, actions: [UIAlertAction]? = nil) {
+                                          message: String? = nil,
+                                          action: (() -> Void)? = nil) {
 
         if doShow {
             let titleStr = title == nil ? "success_generic_title".localize() : title
             let messageStr = message == nil ? "error_generic_error".localize() : message
-            showAlertView(view: view, title: titleStr!, message: messageStr!, actions: actions)
+            let modal = SuccessModalViewController.makeThisView()
+            modal.config(subtitle: messageStr, title: titleStr, onOk: action)
+            
+            view.customPresentViewController(modal.presentr, viewController: modal, animated: true)
         }
     }
 
