@@ -3,6 +3,7 @@
     "ok": "OK",
     "cancel": "Cancel",
     "delete": "Delete",
+    "save": "Save",
     "view": "View",
     "back": "Back",
     "next": "Next",
@@ -160,7 +161,14 @@
         "view": "View"
       }
     },
-    "deletionSuccess": "The group {{groupName}} was successfully deleted"
+    "deletionSuccess": "The group {{groupName}} was successfully deleted",
+    "copy": {
+      "title": "Do you want to copy a group?",
+      "subtitle": "Group names must be unique, please use a different name for the new group",
+      "label": "Insert a new name",
+      "copyOf": "Copy of {{name}}",
+      "success": "Successfully copied the group"
+    }
   },
   "holders": {
     "status": {
@@ -548,7 +556,7 @@
       "subtitle": "This is a placeholder with info that is important for the logged user.",
       "paragraph": "View key data to help better understand usage of ",
       "atalaPrism": "Atala PRISM."
-    },    
+    },
     "waitbanner": {
       "title": "Give us a moment!",
       "image": "Please wait",

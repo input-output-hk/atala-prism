@@ -12,7 +12,7 @@ const baseProps = {
   style: { color: '#FF2D3B' }
 };
 
-const ActionButtons = ({ id, setGroupToDelete, fullInfo }) => {
+const ActionButtons = ({ id, setGroupToDelete, onCopy, fullInfo }) => {
   const { t } = useTranslation();
 
   const menu = (
@@ -22,6 +22,9 @@ const ActionButtons = ({ id, setGroupToDelete, fullInfo }) => {
       </Button>
       <Button {...baseProps}>
         <Link to={`/groups/${id}/edit`}>{t('groups.table.buttons.edit')}</Link>
+      </Button>
+      <Button {...baseProps} onClick={onCopy}>
+        {t('groups.table.buttons.copy')}
       </Button>
       {fullInfo && (
         <Button {...baseProps} disabled onClick={setGroupToDelete}>
@@ -37,6 +40,7 @@ const ActionButtons = ({ id, setGroupToDelete, fullInfo }) => {
 ActionButtons.propTypes = {
   id: PropTypes.string.isRequired,
   setGroupToDelete: PropTypes.func.isRequired,
+  onCopy: PropTypes.func.isRequired,
   fullInfo: PropTypes.bool.isRequired
 };
 

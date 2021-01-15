@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Icon } from 'antd';
+import { Icon } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
@@ -15,6 +15,9 @@ import { backendDateFormat } from '../../helpers/formatters';
 import { filterByInclusion } from '../../helpers/filterHelpers';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
+import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
+
+import './_style.scss';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -33,13 +36,16 @@ const NewGroupButton = ({ onClick }) => {
 const Groups = ({
   groups,
   handleGroupDeletion,
-  updateGroups,
-  hasMore,
+  copyGroup,
   loading,
   redirector: { redirectToGroupCreation }
 }) => {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
 
@@ -48,9 +54,8 @@ const Groups = ({
 
   const { accountIsConfirmed } = useSession();
 
-  const closeModal = () => {
-    setGroupToDelete({});
-  };
+  const closeDeleteModal = () => setGroupToDelete({});
+  const closeCopyModal = () => setIsCopyModalOpen(false);
 
   useEffect(() => {
     setFilteredGroups(filterGroups());
@@ -58,7 +63,7 @@ const Groups = ({
 
   useEffect(() => {
     const hasValues = Object.keys(groupToDelete).length !== 0;
-    setOpen(hasValues);
+    setIsDeleteModalOpen(hasValues);
   }, [groupToDelete]);
 
   const filterGroups = () =>
@@ -73,19 +78,31 @@ const Groups = ({
     setDate(newDate);
   };
 
-  const modalProps = {
+  const deleteModalProps = {
     toDelete: { name: groupToDelete.groupName, id: groupToDelete.id },
-    open,
-    closeModal,
+    open: isDeleteModalOpen,
+    closeModal: closeDeleteModal,
     handleGroupDeletion,
     prefix: 'groups'
   };
 
+  const copyModalProps = {
+    open: isCopyModalOpen,
+    closeModal: closeCopyModal,
+    prefix: 'groups',
+    group: selectedGroup,
+    onSave: copyName => copyGroup(selectedGroup, copyName).then(closeCopyModal)
+  };
+
+  const onCopy = group => {
+    setSelectedGroup(group);
+    setIsCopyModalOpen(true);
+  };
+
   const tableProps = {
-    onPageChange: updateGroups,
-    scroll: '60vh',
+    onCopy,
     setGroupToDelete,
-    hasMore
+    groups: filteredGroups
   };
 
   const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
@@ -105,7 +122,8 @@ const Groups = ({
   return (
     <div className="Wrapper">
       {!accountIsConfirmed && <WaitBanner />}
-      <DeleteGroupModal {...modalProps} />
+      <DeleteGroupModal {...deleteModalProps} />
+      <CopyGroupModal {...copyModalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
         {accountIsConfirmed && newGroupButton}
@@ -124,6 +142,7 @@ Groups.defaultProps = {
 Groups.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.shape(groupShape)),
   handleGroupDeletion: PropTypes.func.isRequired,
+  copyGroup: PropTypes.func.isRequired,
   updateGroups: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
   loading: PropTypes.bool,

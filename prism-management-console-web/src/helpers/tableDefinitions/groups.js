@@ -38,17 +38,18 @@ const baseColumns = [
   }
 ];
 
-export const getGroupColumns = ({ setGroupToDelete, setGroup }) => {
+export const getGroupColumns = ({ onCopy, setGroupToDelete, setGroup }) => {
   const fullInfo = !setGroup;
 
   const actionColumn = {
     key: 'actions',
     width: 150,
     align: 'right',
-    render: ({ name, id }) => (
+    render: group => (
       <ActionButtons
-        id={id}
-        setGroupToDelete={() => setGroupToDelete({ id, name })}
+        id={group.id}
+        setGroupToDelete={() => setGroupToDelete(group)}
+        onCopy={() => onCopy(group)}
         fullInfo={fullInfo}
       />
     )

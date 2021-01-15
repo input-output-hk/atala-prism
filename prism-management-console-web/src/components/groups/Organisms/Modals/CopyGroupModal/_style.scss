@@ -1,0 +1,47 @@
+@import '../../../../../css/general_styling';
+
+.CopyGroupModal {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  padding: 2em 3em 0;
+
+  h1 {
+    @include secondary-text($subtitle, $primary-color);
+  }
+
+  h3 {
+    @include primary-text($subtitle, $secondary-color);
+  }
+
+  .NewNameContainer {
+    border: 1px solid $medium-grey;
+    border-radius: 6px;
+    margin: 1em;
+    width: 100%;
+
+    p {
+      padding: 1em 2em;
+      background-color: $light-grey;
+    }
+
+    .NewName {
+      padding: 0 2em;
+
+      .FormContainer {
+        width: 90%;
+      }
+    }
+  }
+
+  .ButtonsContainer {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+
+    button {
+      width: 40%;
+      margin: 1em;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, message, Icon } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,14 @@ const GroupName = ({
 }) => {
   const { t } = useTranslation();
 
-  const handleUpdateForm = async value => {
+  useEffect(() => {
+    if (nameState === GROUP_NAME_STATES.initial && formValues?.groupName) {
+      setNameState(GROUP_NAME_STATES.loading);
+      checkIfGroupExists(formValues.groupName);
+    }
+  }, [nameState]);
+
+  const handleUpdateForm = value => {
     updateForm(value);
     if (value) {
       setNameState(GROUP_NAME_STATES.loading);

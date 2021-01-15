@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import _ from 'lodash';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -33,8 +34,8 @@ const GroupsContainer = ({ api }) => {
           setHasMore(false);
           return;
         }
-
-        setGroups(oldGroups.concat(filteredGroups));
+        const newGroups = _.uniqBy(oldGroups.concat(filteredGroups), 'id');
+        setGroups(newGroups);
         removeUnconfirmedAccountError();
       })
       .catch(error => {
@@ -67,6 +68,26 @@ const GroupsContainer = ({ api }) => {
         Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
         message.error(t('errors.errorDeletingGroup', { groupName }));
       });
+
+  const copyGroup = ({ numberofcontacts, name }, copyName) =>
+    api.groupsManager
+      .createGroup(copyName)
+      .then(({ id }) =>
+        api.contactsManager
+          .getContacts(null, numberofcontacts, name)
+          .then(contacts =>
+            api.groupsManager.updateGroup(id, contacts.map(({ contactid }) => contactid))
+          )
+      )
+      .then(() => {
+        updateGroups();
+        message.success(t('groups.copy.success'));
+      })
+      .catch(error => {
+        Logger.error('[GroupsContainer.copyGroup] Error: ', error);
+        message.error(t('errors.errorCopyingGroup'));
+      });
+
   return (
     <Groups
       groups={groups}
@@ -74,6 +95,7 @@ const GroupsContainer = ({ api }) => {
         setHasMore(true);
         updateGroups(oldGroups, date, name);
       }}
+      copyGroup={copyGroup}
       handleGroupDeletion={handleGroupDeletion}
       loading={loading}
       hasMore={hasMore}
