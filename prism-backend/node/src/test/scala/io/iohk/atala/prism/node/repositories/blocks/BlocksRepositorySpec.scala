@@ -5,12 +5,9 @@ import io.iohk.atala.prism.node.bitcoin.models.{BlockError, BlockHeader, Blockha
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationLong
 import scala.util.Random
 
 class BlocksRepositorySpec extends AtalaWithPostgresSpec {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
   lazy val blocksRepository = new BlocksRepository(database)
 
   "create" should {

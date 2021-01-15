@@ -9,11 +9,7 @@ import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationLong
-
 class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
   lazy val participantsRepository = new ParticipantsRepository(database)
 
   "getParticipant by did" should {

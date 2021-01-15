@@ -1,10 +1,8 @@
 package io.iohk.atala.prism.management.console.services
 
-import java.util.UUID
-
 import cats.effect.IO
-import doobie.util.transactor.Transactor
 import doobie.implicits._
+import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -31,11 +29,9 @@ import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationDouble
+import java.util.UUID
 
 class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
-
-  private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
   private val usingApiAs = usingApiAsConstructor(new cmanager_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
   private lazy val institutionGroupsRepository = new InstitutionGroupsRepository(database)

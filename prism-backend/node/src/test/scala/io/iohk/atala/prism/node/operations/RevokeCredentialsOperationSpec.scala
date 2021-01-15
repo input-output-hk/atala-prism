@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.node.operations
 
-import java.time.Instant
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
@@ -12,12 +11,11 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
-import org.scalatest.EitherValues._
 
-import scala.concurrent.duration._
+import java.time.Instant
 
 object RevokeCredentialsOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
@@ -80,7 +78,6 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
   import RevokeCredentialsOperationSpec._
 
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
 
   "RevokeCredentialsOperation.parse" should {

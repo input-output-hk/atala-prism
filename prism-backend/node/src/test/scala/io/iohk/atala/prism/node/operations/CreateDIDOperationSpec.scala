@@ -1,23 +1,21 @@
 package io.iohk.atala.prism.node.operations
 
-import java.time.Instant
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.node_models
-import org.scalatest.OptionValues._
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
+import org.scalatest.OptionValues._
 
-import scala.concurrent.duration._
+import java.time.Instant
 
 object CreateDIDOperationSpec {
   def protoECKeyFromPublicKey(key: ECPublicKey) = {
@@ -92,7 +90,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
   import CreateDIDOperationSpec._
 
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val dummyTimestamp = dummyTimestampInfo
   lazy val dummyLedgerData = LedgerData(

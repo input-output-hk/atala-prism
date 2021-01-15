@@ -1,22 +1,19 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, ECPrivateKey}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{EC, ECPrivateKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration._
+import java.time.Instant
 
 object BlockProcessingServiceSpec {
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
@@ -47,7 +44,6 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
   import BlockProcessingServiceSpec._
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
 
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 

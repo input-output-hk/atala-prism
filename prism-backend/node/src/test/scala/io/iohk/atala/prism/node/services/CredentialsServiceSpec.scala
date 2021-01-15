@@ -1,30 +1,26 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
-
 import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.models.nodeState.CredentialState
 import io.iohk.atala.prism.node.repositories.CredentialsRepository
+import io.iohk.atala.prism.utils.FutureEither
 import org.mockito.scalatest.MockitoSugar
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.matchers.must
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.EitherValues._
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.must
+import org.scalatest.wordspec.AnyWordSpec
 
-import scala.concurrent.Future
-import scala.concurrent.duration._
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class CredentialsServiceSpec extends AnyWordSpec with must.Matchers with ScalaFutures with MockitoSugar {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val credentialsRepository = mock[CredentialsRepository]
   lazy val credentialsService = new CredentialsService(credentialsRepository)
 

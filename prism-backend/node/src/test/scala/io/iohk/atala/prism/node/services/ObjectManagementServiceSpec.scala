@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.{Duration, Instant}
-
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.models.{
@@ -30,7 +29,6 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
 import org.mockito.captor.ArgCaptor
@@ -38,8 +36,8 @@ import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
 
+import java.time.{Duration, Instant}
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
@@ -63,8 +61,6 @@ object ObjectManagementServiceSpec {
 }
 
 class ObjectManagementServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with BeforeAndAfterEach {
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
-
   import ObjectManagementServiceSpec._
 
   private val storage = new objects.ObjectStorageService.InMemory

@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.connector.repositories
 
-import java.time.{Instant, LocalDateTime, ZoneOffset}
-
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model.ConnectionId
@@ -10,11 +8,9 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationLong
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
   lazy val messagesRepository = new MessagesRepository(database)
 
   "insertMessage" should {

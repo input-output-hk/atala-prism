@@ -1,21 +1,18 @@
 package io.iohk.atala.prism.node.poc.batch
 
-import java.time.Duration
-import java.util.concurrent.TimeUnit
-
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
 import com.google.protobuf.ByteString
-import io.grpc.{ManagedChannel, Server}
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
+import io.grpc.{ManagedChannel, Server}
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.VerificationError.{BatchWasRevoked, CredentialWasRevoked}
-import io.iohk.atala.prism.credentials.{CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.credentials.Credential
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.node.poc.{Wallet, GenericCredentialsSDK}
-import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
+import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   CredentialsService,
@@ -23,18 +20,17 @@ import io.iohk.atala.prism.node.services.{
   InMemoryLedgerService,
   ObjectManagementService
 }
-import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
 import io.iohk.atala.prism.protos.{node_api, node_models}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 import scala.concurrent.{Future, Promise}
-import scala.concurrent.duration._
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   implicit val ecTrait = EC
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   protected var serverName: String = _
   protected var serverHandle: Server = _

@@ -1,22 +1,18 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.UUID
-
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationInt
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
-
   lazy val receivedCredentialsRepository = new ReceivedCredentialsRepository(database)
   lazy val participantsRepository = new ParticipantsRepository(database)
 

@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -46,20 +47,16 @@ import io.iohk.atala.prism.protos.node_api.{
   GetTransactionStatusResponse
 }
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.utils.FutureEither
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
+
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with BeforeAndAfterEach {
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
-
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _

@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.node.repositories
 
-import java.time.Instant
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -12,19 +11,16 @@ import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
-import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.AtalaWithPostgresSpec
-import org.scalatest.concurrent.ScalaFutures._
+import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO}
 import org.scalatest.OptionValues._
+import org.scalatest.concurrent.ScalaFutures._
 
-import scala.concurrent.duration.DurationLong
+import java.time.Instant
 
 class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
   import CredentialBatchesRepositorySpec._
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
 
   private lazy implicit val repository = new CredentialBatchesRepository(database)
 

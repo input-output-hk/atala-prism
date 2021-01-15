@@ -1,18 +1,14 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import java.time.LocalDate
-
 import io.circe.Json
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration._
+import java.time.LocalDate
 
 class ContactsRepositorySpec extends AtalaWithPostgresSpec {
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
-
   lazy val repository = new ContactsRepository(database)
 
   "create" should {

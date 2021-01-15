@@ -1,8 +1,7 @@
 package io.iohk.atala.prism.connector
 
-import java.time.Instant
-
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaSpecBase.implicits.{contextShift, timer}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.payments.BraintreePayments
@@ -24,15 +23,12 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
-import io.iohk.atala.prism.AtalaSpecBase.implicits.{contextShift, timer}
 import org.mockito.MockitoSugar._
 
+import java.time.Instant
 import java.util.UUID
-import scala.concurrent.duration.DurationLong
 
 class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
-
   override def services =
     Seq(
       connector_api.ConnectorServiceGrpc

@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.node.repositories.daos
 
-import java.time.{Duration, Instant}
-
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.{
@@ -12,15 +11,12 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus
 }
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration._
+import java.time.{Duration, Instant}
 
 class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
   private val ONE_SECOND = Duration.ofSeconds(1)
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
   private val atalaObjectId = AtalaObjectId.of(node_internal.AtalaObject())
   private val atalaObjectId2 = AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = 2))

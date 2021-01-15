@@ -1,30 +1,26 @@
 package io.iohk.atala.prism.console.services
 
-import java.time.LocalDate
-import java.util.UUID
-
 import io.circe
 import io.circe.{Json, parser}
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.console.grpc.ProtoCodecs.toContactProto
-import io.iohk.atala.prism.console.DataPreparation.{createContact, createIssuer, createIssuerGroup}
-import io.iohk.atala.prism.connector.model.{ConnectionStatus, TokenString}
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
+import io.iohk.atala.prism.connector.model.{ConnectionStatus, TokenString}
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.console.DataPreparation.{createContact, createIssuer, createIssuerGroup}
+import io.iohk.atala.prism.console.grpc.ProtoCodecs.toContactProto
 import io.iohk.atala.prism.console.models.{Contact, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, StatisticsRepository}
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.protos.{console_api, console_models}
+import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationDouble
+import java.time.LocalDate
+import java.util.UUID
 
 class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
-
-  private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
   private val usingApiAs = usingApiAsConstructor(new console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub(_, _))
 
   private lazy val participantsRepository = new ParticipantsRepository(database)

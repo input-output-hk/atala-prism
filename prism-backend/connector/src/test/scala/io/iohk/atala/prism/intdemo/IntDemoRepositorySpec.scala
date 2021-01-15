@@ -1,24 +1,19 @@
 package io.iohk.atala.prism.intdemo
 
-import java.time.LocalDate
-import java.util.concurrent.ThreadLocalRandom
-
 import doobie.implicits._
 import doobie.implicits.legacy.localdate._
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.repositories.ConnectorRepositorySpecBase
-import IntDemoRepositorySpec._
-import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
+import io.iohk.atala.prism.intdemo.IntDemoRepositorySpec._
 import io.iohk.atala.prism.intdemo.protos.intdemo_models
+import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.matchers.should.Matchers._
 
-import scala.concurrent.duration._
+import java.time.LocalDate
+import java.util.concurrent.ThreadLocalRandom
 import scala.util.Random
 
 class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
-
   lazy val repository = new IntDemoRepository(database)
 
   "mergeStatus" should {

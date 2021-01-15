@@ -4,11 +4,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationLong
-
 class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
-
-  private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
   private lazy val keyValuesRepository = new KeyValuesRepository(database)
 
   private val KEY = "test-key"

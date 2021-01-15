@@ -2,14 +2,11 @@ package io.iohk.atala.prism.node.cardano.dbsync.repositories
 
 import cats.scalatest.EitherMatchers._
 import io.circe.Json
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
-
-import scala.concurrent.duration.DurationLong
 
 class CardanoBlockRepositorySpec extends AtalaWithPostgresSpec {
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
   lazy val blockRepository = new CardanoBlockRepository(database)
 
   override def beforeAll(): Unit = {

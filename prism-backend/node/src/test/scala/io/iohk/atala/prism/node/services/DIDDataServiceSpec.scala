@@ -1,24 +1,21 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
-
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration._
+import java.time.Instant
 
 class DIDDataServiceSpec extends AtalaWithPostgresSpec {
   import CreateDIDOperationSpec._
 
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val didDataService = new DIDDataService(didDataRepository)
   val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)

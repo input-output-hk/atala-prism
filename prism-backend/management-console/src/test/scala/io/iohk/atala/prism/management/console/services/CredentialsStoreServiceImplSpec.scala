@@ -1,31 +1,26 @@
 package io.iohk.atala.prism.management.console.services
 
-import java.util.UUID
-
 import doobie.implicits._
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models.{CredentialExternalId, ParticipantId, ParticipantLogo}
+import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.management.console.repositories.{
   ParticipantsRepository,
-  RequestNoncesRepository,
-  ReceivedCredentialsRepository
+  ReceivedCredentialsRepository,
+  RequestNoncesRepository
 }
-import io.iohk.atala.prism.management.console.repositories.daos._
-import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.cstore_api
+import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 
-import scala.concurrent.duration._
+import java.util.UUID
 
 class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
-
   val usingApiAs = usingApiAsConstructor(
     new cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )

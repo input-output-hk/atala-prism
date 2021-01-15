@@ -1,17 +1,12 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.scalatest.EitherMatchers._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.InstitutionGroup
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration._
-
 class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
-
   lazy val repository = new InstitutionGroupsRepository(database)
 
   "create" should {

@@ -1,10 +1,8 @@
 package io.iohk.atala.prism.node.repositories
 
-import java.time.Instant
-
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.DIDData
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -12,11 +10,9 @@ import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO.CreateCredentia
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
-import scala.concurrent.duration.DurationLong
+import java.time.Instant
 
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 

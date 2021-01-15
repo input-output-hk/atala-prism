@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.node.operations
 
-import java.time.Instant
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -13,12 +12,11 @@ import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues.convertOptionToValuable
 
-import scala.concurrent.duration._
+import java.time.Instant
 
 object IssueCredentialBatchOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
@@ -60,7 +58,6 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
   import IssueCredentialBatchOperationSpec._
 
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import com.google.protobuf.ByteString
 import io.circe.Json
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -23,17 +24,13 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.util.BytesOps
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
-  private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
-
   private val network = CardanoNetwork.Testnet
   private val ledger = Ledger.CardanoTestnet
   private val walletId: WalletId = WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
