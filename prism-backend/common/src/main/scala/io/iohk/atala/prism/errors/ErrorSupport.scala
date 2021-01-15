@@ -19,7 +19,7 @@ trait ErrorSupport[E <: PrismError, ES <: E with PrismServerError] {
     }
   }
 
-  implicit class InternalServerErrorLoggingOps[T <: E with PrismServerError](error: T) {
+  implicit class InternalServerErrorLoggingOps[T <: PrismServerError](error: T) {
     def logErr(implicit lc: LoggingContext): T = {
       logger.error(s"Issuing ${error.getClass.getSimpleName} ($lc)", error.cause)
       error
@@ -28,7 +28,19 @@ trait ErrorSupport[E <: PrismError, ES <: E with PrismServerError] {
 
   implicit class FutureEitherErrorOps[T](v: FutureEither[E, T]) {
     def wrapExceptions(implicit ec: ExecutionContext, lc: LoggingContext): FutureEither[E, T] = {
-      v.value.recover { case ex => Left(wrapAsServerError(ex).logErr) }.toFutureEither
+      def logIfPrismServerError(error: E): E = {
+        error match {
+          case serverError: PrismServerError =>
+            serverError.logErr
+            error
+          case _ => error
+        }
+      }
+
+      v.value
+        .recover { case ex => Left(wrapAsServerError(ex)) }
+        .toFutureEither
+        .mapLeft(logIfPrismServerError)
     }
 
     def successMap[U](f: T => U)(implicit ec: ExecutionContext): Future[U] = {
