@@ -13,7 +13,7 @@ kotlin {
             }
         }
     }
-    iosX64("ios") {
+    ios("ios") {
         binaries.all {
             // Linker options required to link to libsecp256k1.
             linkerOpts("-L../credentials-verification-iOS/Pods/BitcoinKit/Libraries/secp256k1/lib", "-lsecp256k1")

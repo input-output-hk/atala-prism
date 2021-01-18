@@ -132,7 +132,7 @@ actual object EC {
             val context = createContext(this, SECP256K1_CONTEXT_SIGN)
 
             val sig = alloc<secp256k1_ecdsa_signature>()
-            val data32 = SHA256.compute(data.toUByteArray()).toCArrayPointer(this)
+            val data32 = SHA256.compute(data).map { it.toUByte() }.toUByteArray().toCArrayPointer(this)
             val privateKeyPtr = privateKey.key.toCArrayPointer(this)
 
             val result = secp256k1_ecdsa_sign(context, sig.ptr, data32, privateKeyPtr, null, null)
@@ -156,7 +156,7 @@ actual object EC {
             val sig = alloc<secp256k1_ecdsa_signature>()
             for (i in 0 until ECConfig.SIGNATURE_BYTE_SIZE) sig.data[i] = sigBytes[i]
 
-            val data32 = SHA256.compute(data.toUByteArray()).toCArrayPointer(this)
+            val data32 = SHA256.compute(data).map { it.toUByte() }.toUByteArray().toCArrayPointer(this)
 
             val pubkey = publicKey.toSecpPubkey(this)
 

@@ -66,7 +66,7 @@ kotlin {
             }
         }
     }
-    iosX64("ios") {
+    ios("ios") {
         compilations.all {
             kotlinOptions {
                 freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
@@ -123,7 +123,8 @@ tasks {
         .all {
             val compileTasks = listOf<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>(
                 named<KotlinCompile>("compileKotlinJvm").get(),
-                named<KotlinNativeCompile>("compileKotlinIos").get(),
+                named<KotlinNativeCompile>("compileKotlinIosX64").get(),
+                named<KotlinNativeCompile>("compileKotlinIosArm64").get(),
                 named<KotlinCompileCommon>("compileKotlinMetadata").get()
             )
 

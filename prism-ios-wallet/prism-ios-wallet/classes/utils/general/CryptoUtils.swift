@@ -3,8 +3,10 @@ import BitcoinKit
 import JavaScriptCore
 import WebKit
 import CommonCrypto
+import crypto
 
 class CryptoUtils: NSObject {
+    public static let sha256 = SHA256()
 
     static let global = CryptoUtils()
 
@@ -89,7 +91,7 @@ class CryptoUtils: NSObject {
         }
         let nonceBase64 = nonceData.base64urlEncodedString()
         nonceData.append(data)
-        let nonceSHA256 = Data(sha256(data: nonceData))
+        let nonceSHA256 = Data(CryptoUtils.sha256.compute(bytes: toKotlinBytes(data: nonceData)).map { $0.uint8Value })
         let keychain = HDKeychain(seed: seed!, network: .testnetBTC)
         let derived = try? keychain.derivedKey(path: keyPath)
         if let privateKey = derived?.privateKey() {
@@ -100,14 +102,6 @@ class CryptoUtils: NSObject {
         }
         signSemaphore.signal()
         return nil
-    }
-
-    func sha256(data: Data) -> [UInt8] {
-        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
-        data.withUnsafeBytes {
-            _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &hash)
-        }
-        return hash
     }
 
     func getUsedRandomIndexes(count: Int) -> [Int] {

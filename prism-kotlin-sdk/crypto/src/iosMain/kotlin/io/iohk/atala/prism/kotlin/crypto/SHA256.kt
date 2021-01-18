@@ -7,13 +7,13 @@ import platform.CoreCrypto.*
 
 @ExperimentalUnsignedTypes
 actual object SHA256 {
-    actual fun compute(bytes: UByteArray): UByteArray {
+    actual fun compute(bytes: List<Byte>): List<Byte> {
         val digest = UByteArray(CC_SHA256_DIGEST_LENGTH)
-        bytes.usePinned { bytesPinned ->
+        bytes.toByteArray().usePinned { bytesPinned ->
             digest.usePinned { digestPinned ->
                 CC_SHA256(bytesPinned.addressOf(0), bytes.size.convert(), digestPinned.addressOf(0))
             }
         }
-        return digest
+        return digest.toByteArray().toList()
     }
 }

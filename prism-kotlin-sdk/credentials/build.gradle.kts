@@ -18,7 +18,7 @@ kotlin {
             }
         }
     }
-    iosX64("ios") {
+    ios("ios") {
         compilations.all {
             kotlinOptions {
                 freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"

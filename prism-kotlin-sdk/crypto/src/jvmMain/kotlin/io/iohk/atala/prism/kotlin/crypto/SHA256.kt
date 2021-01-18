@@ -2,11 +2,10 @@ package io.iohk.atala.prism.kotlin.crypto
 
 import java.security.MessageDigest
 
-@ExperimentalUnsignedTypes
 actual object SHA256 {
     @JvmStatic
-    actual fun compute(bytes: UByteArray): UByteArray {
+    actual fun compute(bytes: List<Byte>): List<Byte> {
         val messageDigest = MessageDigest.getInstance("SHA-256")
-        return messageDigest.digest(bytes.toByteArray()).toUByteArray()
+        return messageDigest.digest(bytes.toByteArray()).toList()
     }
 }

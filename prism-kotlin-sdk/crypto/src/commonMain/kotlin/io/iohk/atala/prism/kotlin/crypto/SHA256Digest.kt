@@ -12,7 +12,7 @@ data class SHA256Digest(val value: List<UByte>) {
 
         @JvmStatic
         fun compute(bytes: List<Byte>): SHA256Digest {
-            return SHA256Digest(SHA256.compute(bytes.toByteArray().toUByteArray()).toList())
+            return SHA256Digest(SHA256.compute(bytes).map { it.toUByte() })
         }
 
         @JvmStatic
