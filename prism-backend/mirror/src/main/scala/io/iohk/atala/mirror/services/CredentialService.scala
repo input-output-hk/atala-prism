@@ -111,11 +111,11 @@ class CredentialService(
       userCredentials <-
         EitherT
           .liftF(createUserCredential(receivedMessage, connection.token, rawCredential))
-          .leftMap(error => MessageProcessorException(error))
+          .leftMap(MessageProcessorException.apply)
       _ <-
         EitherT
           .liftF(UserCredentialDao.insert(userCredentials).transact(tx))
-          .leftMap(error => MessageProcessorException(error))
+          .leftMap(MessageProcessorException.apply)
     } yield ()).value
   }
 

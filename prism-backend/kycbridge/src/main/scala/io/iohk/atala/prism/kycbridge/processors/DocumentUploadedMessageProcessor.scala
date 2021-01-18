@@ -33,6 +33,8 @@ class DocumentUploadedMessageProcessor(
     connectorConfig: ConnectorConfig
 )(implicit ec: ECTrait) {
 
+  private val ASSURE_ID_CREDENTIAL = "VerifiableCredential/AssureIdCredential"
+
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   val processor: MessageProcessor = { receivedMessage =>
@@ -42,12 +44,10 @@ class DocumentUploadedMessageProcessor(
         (for {
           // get required informations
           connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
-          documentStatus <- EitherT(assureIdService.getDocumentStatus(message.documentInstanceId)).leftMap(e =>
-            MessageProcessorException(e.getMessage)
-          )
-          document <- EitherT(assureIdService.getDocument(message.documentInstanceId)).leftMap(e =>
-            MessageProcessorException(e.getMessage)
-          )
+          documentStatus <- EitherT(assureIdService.getDocumentStatus(message.documentInstanceId))
+            .leftMap(MessageProcessorException.apply)
+          document <-
+            EitherT(assureIdService.getDocument(message.documentInstanceId)).leftMap(MessageProcessorException.apply)
 
           // update connection with new document status
           _ <- EitherT.right[MessageProcessorException](
@@ -85,7 +85,7 @@ class DocumentUploadedMessageProcessor(
 
           // send credential
           credentialMessage = credential_models.Credential(
-            typeId = "VerifiableCredential/AssureIdCredential",
+            typeId = ASSURE_ID_CREDENTIAL,
             credentialDocument = credential.canonicalForm
           )
           sendMessageRequest =

@@ -166,7 +166,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
               }
             }
           })
-          .leftMap(error => MessageProcessorException(error))
+          .leftMap(MessageProcessorException.apply)
 
       cardanoAddressesWithVerifiedSignature = addressWithVerifiedSignature.flatMap(verifiedAddress =>
         parseAddress(receivedMessage, verifiedAddress.content.payload.payIdAddress, Some(verifiedAddress), connection)
@@ -180,7 +180,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
           .liftF(
             (cardanoAddresses ++ cardanoAddressesWithVerifiedSignature).toList.traverse(saveCardanoAddress).transact(tx)
           )
-          .leftMap(error => MessageProcessorException(error))
+          .leftMap(MessageProcessorException.apply)
 
     } yield ()).value
   }
@@ -319,7 +319,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       _ <-
         EitherT
           .liftF(ConnectionDao.update(connection.copy(payIdName = Some(payIdName))))
-          .leftMap(error => MessageProcessorException(error))
+          .leftMap(MessageProcessorException.apply)
     } yield ()).value.transact(tx)
   }
 

@@ -2,7 +2,6 @@ package io.iohk.atala.prism.services
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.DurationInt
-import scala.util.control.NoStackTrace
 
 import fs2.Stream
 import monix.eval.Task
@@ -15,9 +14,19 @@ import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, Me
 trait MessageProcessor extends (ReceivedMessage => Option[MessageProcessorResult])
 object MessageProcessor {
   type MessageProcessorResult = Task[Either[MessageProcessorException, Unit]]
-  case class MessageProcessorException(message: String) extends Exception(message) with NoStackTrace
   def successful: MessageProcessorResult = Task.pure(Right(()))
   def failed(error: MessageProcessorException): MessageProcessorResult = Task.pure(Left(error))
+
+  case class MessageProcessorException(message: String, cause: Option[Throwable] = None)
+      extends Exception(message, cause.orNull)
+  object MessageProcessorException {
+
+    /**
+      * Create a [[MessageProcessorException]] from a [[Throwable]].
+      */
+    def apply(cause: Throwable): MessageProcessorException =
+      MessageProcessorException(cause.getMessage, cause = Some(cause))
+  }
 }
 
 class ConnectorMessagesService(
