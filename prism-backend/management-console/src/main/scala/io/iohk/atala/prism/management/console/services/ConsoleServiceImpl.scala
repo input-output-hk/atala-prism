@@ -1,28 +1,41 @@
 package io.iohk.atala.prism.management.console.services
 
-import java.util.UUID
-
+import io.circe.Json
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.ManagementConsoleErrorSupport
+import io.iohk.atala.prism.management.console.errors.{
+  InternalServerError,
+  ManagementConsoleError,
+  ManagementConsoleErrorSupport
+}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
-import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, StatisticsRepository}
+import io.iohk.atala.prism.management.console.repositories.{
+  ContactsRepository,
+  CredentialIssuancesRepository,
+  InstitutionGroupsRepository,
+  StatisticsRepository
+}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.connector_api.{ConnectionsStatusRequest, ContactConnectionServiceGrpc}
-import io.iohk.atala.prism.protos.{console_api, connector_models}
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
+import io.iohk.atala.prism.protos.{connector_models, console_api}
+import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters.SetHasAsJava
 import scala.util.Try
 
 class ConsoleServiceImpl(
     contactsRepository: ContactsRepository,
     statisticsRepository: StatisticsRepository,
+    institutionGroupsRepository: InstitutionGroupsRepository,
+    credentialIssuancesRepository: CredentialIssuancesRepository,
     authenticator: ManagementConsoleAuthenticator,
     contactConnectionService: ContactConnectionServiceGrpc.ContactConnectionService
 )(implicit
@@ -174,6 +187,81 @@ class ConsoleServiceImpl(
   override def generateConnectionTokenForContact(
       request: GenerateConnectionTokenForContactRequest
   ): Future[GenerateConnectionTokenForContactResponse] = ???
+
+  override def createCredentialIssuance(
+      request: CreateCredentialIssuanceRequest
+  ): Future[CreateCredentialIssuanceResponse] = {
+    def asCreateCredentialIssuanceContact(
+        institutionId: ParticipantId,
+        request: CreateCredentialIssuanceRequest
+    ): FutureEither[ManagementConsoleError, List[CredentialIssuancesRepository.CreateCredentialIssuanceContact]] = {
+      val contactIdsF = Future {
+        Try {
+          request.credentialIssuanceContacts.map(contact => Contact.Id(UUID.fromString(contact.contactId)))
+        }.toEither
+      }.toFutureEither
+
+      val contacts = for {
+        // Validate contacts
+        contactIds <- contactIdsF
+        contacts <- contactsRepository.findContacts(institutionId, contactIds.toList)
+        _ = if (contacts.size != contactIds.size) throw new IllegalArgumentException("Some contacts are invalid")
+        // Validate groups
+        groups <- institutionGroupsRepository.getBy(institutionId, None)
+        validGroupIds = groups.map(_.value.id).toSet.asJava
+        requestGroupIds =
+          request.credentialIssuanceContacts
+            .flatten(_.groupIds)
+            .toSet
+            .map((groupId: String) => InstitutionGroup.Id(UUID.fromString(groupId)))
+            .asJava
+        _ =
+          if (!validGroupIds.containsAll(requestGroupIds)) throw new IllegalArgumentException("Some groups are invalid")
+        // Map the contacts so they are ready to be inserted in the DB
+        createCredentialIssuanceContacts = request.credentialIssuanceContacts.map { contact =>
+          CredentialIssuancesRepository
+            .CreateCredentialIssuanceContact(
+              contactId = Contact.Id(UUID.fromString(contact.contactId)),
+              credentialData = Json.fromString(contact.credentialData),
+              groupIds = contact.groupIds.map(groupId => InstitutionGroup.Id(UUID.fromString(groupId))).toList
+            )
+        }.toList
+      } yield createCredentialIssuanceContacts
+
+      contacts.mapLeft(InternalServerError)
+    }
+
+    def f(
+        institutionId: ParticipantId,
+        request: CreateCredentialIssuanceRequest
+    ): Future[CreateCredentialIssuanceResponse] = {
+      implicit val loggingContext: LoggingContext =
+        LoggingContext("request" -> request, "institutionId" -> institutionId)
+
+      val responseF = for {
+        contacts <- asCreateCredentialIssuanceContact(institutionId, request)
+        response <-
+          credentialIssuancesRepository
+            .create(
+              CredentialIssuancesRepository.CreateCredentialIssuance(
+                name = request.name,
+                createdBy = institutionId,
+                credentialTypeId = request.credentialTypeId,
+                contacts = contacts
+              )
+            )
+            .map { credentialIssuanceId =>
+              CreateCredentialIssuanceResponse(credentialIssuanceId = credentialIssuanceId.uuid.toString)
+            }
+      } yield response
+
+      responseF.wrapExceptions.flatten
+    }
+
+    authenticator.authenticated("createCredentialIssuance", request) { institutionId =>
+      f(institutionId, request)
+    }
+  }
 
   override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] = {
     def f(participantId: ParticipantId): Future[GetStatisticsResponse] = {

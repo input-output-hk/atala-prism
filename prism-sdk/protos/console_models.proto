@@ -24,3 +24,9 @@ message Contact {
   string connectionId = 6; // the connection id necessary to send messages to this contact, present when the status is ConnectionAccepted
   int64 createdAt = 7; // the timestamp when the contact was created
 }
+
+message CredentialIssuanceContact {
+  string contactId = 1; // ID of the contact the credential data is about
+  string credentialData = 2; // Actual credential data of the contact, in JSON format
+  repeated string groupIds = 3; // IDs of the groups the contact was taken from, empty if added directly
+}

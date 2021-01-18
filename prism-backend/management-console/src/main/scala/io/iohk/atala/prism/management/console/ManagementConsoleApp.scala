@@ -6,6 +6,7 @@ import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.management.console.repositories.{
   ContactsRepository,
+  CredentialIssuancesRepository,
   CredentialsRepository,
   InstitutionGroupsRepository,
   ParticipantsRepository,
@@ -20,9 +21,9 @@ import io.iohk.atala.prism.management.console.services.{
   GroupsServiceImpl
 }
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
-import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import io.iohk.atala.prism.protos.{cmanager_api, console_api, cstore_api}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.{cmanager_api, console_api, cstore_api}
+import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -87,6 +88,7 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     val credentialsRepository = new CredentialsRepository(transactor)(executionContext)
     val receivedCredentialsRepository = new ReceivedCredentialsRepository(transactor)(executionContext)
     val institutionGroupsRepository = new InstitutionGroupsRepository(transactor)(executionContext)
+    val credentialIssuancesRepository = new CredentialIssuancesRepository(transactor)(executionContext)
 
     val authenticator = new ManagementConsoleAuthenticator(
       participantsRepository,
@@ -96,11 +98,23 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     )
 
     val credentialsService =
-      new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, node)(executionContext)
+      new CredentialsServiceImpl(
+        credentialsRepository,
+        contactsRepository,
+        authenticator,
+        node
+      )(executionContext)
     val credentialsStoreService =
       new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)(executionContext)
     val groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)(executionContext)
-    val consoleService = new ConsoleServiceImpl(contactsRepository, statisticsRepository, authenticator, connector)(
+    val consoleService = new ConsoleServiceImpl(
+      contactsRepository,
+      statisticsRepository,
+      institutionGroupsRepository,
+      credentialIssuancesRepository,
+      authenticator,
+      connector
+    )(
       executionContext
     )
 

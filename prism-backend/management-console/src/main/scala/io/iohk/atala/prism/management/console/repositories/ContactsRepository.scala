@@ -53,6 +53,15 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
+  def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): FutureEither[Nothing, List[Contact]] = {
+    ContactsDAO
+      .findContacts(institutionId, contactIds)
+      .transact(xa)
+      .map(Right(_))
+      .unsafeToFuture()
+      .toFutureEither
+  }
+
   def getBy(
       createdBy: ParticipantId,
       lastSeen: Option[Contact.Id],

@@ -1,16 +1,19 @@
 package io.iohk.atala.prism.management.console.services
 
-import java.time.LocalDate
-import java.util.UUID
-
 import io.circe.{Json, parser}
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.management.console.DataPreparation._
+import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
-import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CreateContact,
+  CredentialIssuance,
+  InstitutionGroup,
+  ParticipantId
+}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.connector_api.ConnectionsStatusResponse
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
@@ -18,10 +21,12 @@ import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
 
+import java.time.LocalDate
+import java.util.UUID
 import scala.concurrent.Future
 
 class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
-  val invitationMissing = connector_models.ContactConnection(
+  private val invitationMissing = connector_models.ContactConnection(
     connectionStatus = console_models.ContactConnectionStatus.INVITATION_MISSING
   )
 
@@ -498,6 +503,109 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
         response.contact must be(empty)
       }
     }
+  }
+
+  "createCredentialIssuance" should {
+    val keyPair = EC.generateKeyPair()
+    val did = generateDid(keyPair.publicKey)
+    val otherKeyPair = EC.generateKeyPair()
+    val otherDid = generateDid(otherKeyPair.publicKey)
+
+    def createRequest(
+        contacts: List[console_models.CredentialIssuanceContact]
+    ): console_api.CreateCredentialIssuanceRequest = {
+      console_api.CreateCredentialIssuanceRequest(
+        name = "2021 Class",
+        credentialTypeId = 1,
+        credentialIssuanceContacts = contacts
+      )
+    }
+
+    "create a credential issuance" in {
+      val institutionId = createParticipant("Institution", did)
+      val contacts = createRandomCredentialIssuanceContacts(institutionId)
+
+      val request = createRequest(contacts)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.createCredentialIssuance(request)
+
+        val credentialIssuanceId = CredentialIssuance.Id(UUID.fromString(response.credentialIssuanceId))
+        val credentialIssuance =
+          credentialIssuancesRepository.get(credentialIssuanceId, institutionId).value.futureValue.toOption.value
+        credentialIssuance.id mustBe credentialIssuanceId
+        credentialIssuance.name mustBe request.name
+        credentialIssuance.credentialTypeId mustBe request.credentialTypeId
+        credentialIssuance.status mustBe CredentialIssuance.Status.Ready
+        credentialIssuance.contacts.size mustBe contacts.size
+        val issuanceContactsByContactId =
+          credentialIssuance.contacts.map(contact => (contact.contactId.value.toString, contact)).toMap
+        for (contact <- contacts) {
+          val issuanceContact = issuanceContactsByContactId(contact.contactId)
+          issuanceContact.credentialData mustBe Json.fromString(contact.credentialData)
+        }
+      }
+    }
+
+    "fail for a contact outside the institution" in {
+      val institutionId = createParticipant("Institution", did)
+      val contacts = createRandomCredentialIssuanceContacts(institutionId)
+      val otherInstitutionId = createParticipant("Other Institution", otherDid)
+      val otherContacts = List(createRandomCredentialIssuanceContact(otherInstitutionId))
+
+      val request = createRequest(contacts ++ otherContacts)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        assertThrows[Exception] {
+          serviceStub.createCredentialIssuance(request)
+        }
+      }
+    }
+  }
+
+  private def createRandomCredentialIssuanceContacts(
+      institutionId: ParticipantId
+  ): List[console_models.CredentialIssuanceContact] = {
+    val groups = List("Engineering", "Business").map { groupName =>
+      institutionGroupsRepository
+        .create(institutionId, InstitutionGroup.Name(groupName))
+        .value
+        .futureValue
+        .toOption
+        .value
+    }
+    val contactsWithGroup =
+      groups.map { group =>
+        createRandomCredentialIssuanceContact(institutionId, Some(group))
+      }
+    val contactsWithoutGroup = (1 to 2).map { _ =>
+      createRandomCredentialIssuanceContact(institutionId)
+    }
+
+    contactsWithGroup ++ contactsWithoutGroup
+  }
+
+  private def createRandomCredentialIssuanceContact(
+      institutionId: ParticipantId,
+      group: Option[InstitutionGroup] = None
+  ): console_models.CredentialIssuanceContact = {
+    val contact = createRandomContact(institutionId, group.map(_.name))
+    val contactId = contact.contactId.value.toString
+    console_models.CredentialIssuanceContact(
+      contactId = contactId,
+      credentialData = s"{'contactId': $contactId}",
+      groupIds = group.map(_.id.value.toString).toList
+    )
+  }
+
+  private def createRandomContact(
+      institutionId: ParticipantId,
+      maybeGroupName: Option[InstitutionGroup.Name]
+  ): Contact = {
+    val contactData = CreateContact(institutionId, Contact.ExternalId.random(), Json.Null)
+    contactsRepository.create(contactData, maybeGroupName).value.futureValue.toOption.value
   }
 
   "getStatistics" should {

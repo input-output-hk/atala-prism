@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.management.console.services
 
-import java.util.UUID
-
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
+import io.iohk.atala.prism.management.console.errors.ManagementConsoleErrorSupport
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.genericCredentialToProto
 import io.iohk.atala.prism.management.console.models.{
   Contact,
@@ -21,7 +20,9 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.dsl._
+import org.slf4j.{Logger, LoggerFactory}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
@@ -32,7 +33,10 @@ class CredentialsServiceImpl(
     nodeService: NodeServiceGrpc.NodeService
 )(implicit
     ec: ExecutionContext
-) extends cmanager_api.CredentialsServiceGrpc.CredentialsService {
+) extends cmanager_api.CredentialsServiceGrpc.CredentialsService
+    with ManagementConsoleErrorSupport {
+
+  val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createGenericCredential(
       request: CreateGenericCredentialRequest

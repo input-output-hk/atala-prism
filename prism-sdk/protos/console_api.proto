@@ -26,6 +26,9 @@ service ConsoleService {
   // This is a necessary step before being able to connect to the contact.
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
 
+  // Creates a new credential issuance
+  rpc CreateCredentialIssuance (CreateCredentialIssuanceRequest) returns (CreateCredentialIssuanceResponse) {}
+
   // Retrieves numbers about the operations done in the management console
   rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
 }
@@ -92,4 +95,15 @@ message GenerateConnectionTokenForContactRequest {
 // Response after generating a connection token
 message GenerateConnectionTokenForContactResponse {
   string token = 1; // the token that needs to be shared to the user to accept the connection
+}
+
+// Request to create a new credential issuance
+message CreateCredentialIssuanceRequest {
+  string name = 1; // Name of the credential issuance
+  int32 credentialTypeId = 2; // ID of the type of credential to issue
+  repeated CredentialIssuanceContact credentialIssuanceContacts = 3; // The contacts and their credential data
+}
+// Response to creating a credential issuance
+message CreateCredentialIssuanceResponse {
+  string credentialIssuanceId = 1; // ID of the credential issuance just created
 }

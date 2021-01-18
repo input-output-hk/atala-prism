@@ -151,7 +151,7 @@ message GetContactCredentialsResponse {
 
 // Request to get blockchain related information for a credential
 message GetBlockchainDataRequest {
-    string encodedSignedCredential = 1; // encoded credential for which we want to retreive information
+    string encodedSignedCredential = 1; // encoded credential for which we want to retrieve information
 }
 
 // Response with the information found in the blockchain

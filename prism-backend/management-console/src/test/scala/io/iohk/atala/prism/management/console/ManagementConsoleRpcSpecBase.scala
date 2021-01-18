@@ -4,6 +4,8 @@ import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.management.console.repositories.{
   ContactsRepository,
+  CredentialIssuancesRepository,
+  InstitutionGroupsRepository,
   ParticipantsRepository,
   RequestNoncesRepository,
   StatisticsRepository
@@ -27,6 +29,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val contactsRepository = new ContactsRepository(database)(executionContext)
   lazy val statisticsRepository = new StatisticsRepository(database)
+  lazy val institutionGroupsRepository = new InstitutionGroupsRepository(database)(executionContext)
+  lazy val credentialIssuancesRepository = new CredentialIssuancesRepository(database)(executionContext)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val connectorMock =
@@ -42,6 +46,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val consoleService = new ConsoleServiceImpl(
     contactsRepository,
     statisticsRepository,
+    institutionGroupsRepository,
+    credentialIssuancesRepository,
     authenticator,
     connectorMock
   )(
