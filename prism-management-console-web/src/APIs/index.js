@@ -14,14 +14,8 @@ export { mockApi };
 
 // TODO when the bulk imports really exist replace this mocked promise
 const mockApiCall = file => new Promise(resolve => resolve(file));
-const importStudentBulk = mockApiCall;
-const importIndividualBulk = mockApiCall;
-
-const importBulk = (issuer, fileWithBulk) => {
-  const functionByRole = issuer ? importStudentBulk : importIndividualBulk;
-
-  return functionByRole(fileWithBulk);
-};
+const importContactBulk = mockApiCall;
+const importBulk = (_, fileWithBulk) => importContactBulk(fileWithBulk);
 
 function Api(configuration, authenticator) {
   this.configuration = configuration;

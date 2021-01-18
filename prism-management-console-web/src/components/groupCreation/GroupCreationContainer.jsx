@@ -32,7 +32,6 @@ const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
 
   return (
     <GroupCreation
-      isIssuer={() => api.wallet.isIssuer()}
       createGroup={saveGroup}
       formRef={formRef}
       updateForm={setGroupName}
@@ -50,7 +49,7 @@ GroupCreationContainer.propTypes = {
       updateGroup: PropTypes.func.isRequired
     }).isRequired,
     contactsManager: PropTypes.shape({ getContacts: PropTypes.func.isRequired }).isRequired,
-    wallet: PropTypes.shape({ isIssuer: PropTypes.func, signCredentials: PropTypes.func })
+    wallet: PropTypes.shape({ signCredentials: PropTypes.func })
   }).isRequired,
   redirector: PropTypes.shape({ redirectToGroups: PropTypes.func.isRequired }).isRequired
 };

@@ -1,10 +1,6 @@
 import { ConnectorServicePromiseClient } from '../../protos/connector_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import {
-  GetConnectionsPaginatedRequest,
-  SendMessageRequest,
-  RegisterDIDRequest
-} from '../../protos/connector_api_pb';
+import { GetConnectionsPaginatedRequest, SendMessageRequest } from '../../protos/connector_api_pb';
 
 async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();
@@ -37,24 +33,6 @@ async function sendCredential(message, connectionId) {
   });
 }
 
-async function registerUser(createOperation, name, logoFile, isIssuer) {
-  const registerRequest = new RegisterDIDRequest();
-  const logo = new TextEncoder().encode(logoFile);
-
-  registerRequest.setRole(
-    isIssuer ? RegisterDIDRequest.Role.ISSUER : RegisterDIDRequest.Role.VERIFIER
-  );
-  registerRequest.setName(name);
-  registerRequest.setLogo(logo);
-  registerRequest.setCreatedidoperation(createOperation);
-
-  const response = await this.client.registerDID(registerRequest);
-
-  const { id } = response.toObject();
-
-  return id;
-}
-
 function Connector(config, auth) {
   this.config = config;
   this.auth = auth;
@@ -63,6 +41,5 @@ function Connector(config, auth) {
 
 Connector.prototype.getConnectionsPaginated = getConnectionsPaginated;
 Connector.prototype.sendCredential = sendCredential;
-Connector.prototype.registerUser = registerUser;
 
 export default Connector;

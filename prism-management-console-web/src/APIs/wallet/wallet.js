@@ -7,8 +7,6 @@ import {
   LOCKED,
   BROWSER_WALLET_CHECK_INTERVAL_MS,
   BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS,
-  VERIFIER,
-  ISSUER,
   MISSING_WALLET_ERROR
 } from '../../helpers/constants';
 
@@ -74,7 +72,6 @@ function setSessionState(sessionData) {
   this.session = {
     sessionId: sessionData?.sessionId,
     sessionState: UNLOCKED,
-    userRole: sessionData.role?.toUpperCase(),
     organisationName: sessionData.name,
     logo: fromByteArray(sessionData.logo)
   };
@@ -85,14 +82,6 @@ function setSessionState(sessionData) {
 function clearSession() {
   this.session = defaultSessionState;
   return this.session;
-}
-
-function isIssuer() {
-  return this.session.userRole === ISSUER;
-}
-
-function isVerifier() {
-  return this.session.userRole === VERIFIER;
 }
 
 function getNonce() {
@@ -133,7 +122,6 @@ function Wallet(config) {
 const defaultSessionState = {
   sessionId: null,
   sessionState: LOCKED,
-  role: null,
   organisationname: null,
   logo: null
 };
@@ -144,8 +132,6 @@ Wallet.prototype.getSessionRequest = getSessionRequest;
 Wallet.prototype.verifyRegistration = verifyRegistration;
 Wallet.prototype.setSessionState = setSessionState;
 Wallet.prototype.clearSession = clearSession;
-Wallet.prototype.isIssuer = isIssuer;
-Wallet.prototype.isVerifier = isVerifier;
 Wallet.prototype.getNonce = getNonce;
 Wallet.prototype.signMessage = signMessage;
 Wallet.prototype.signCredentials = signCredentials;

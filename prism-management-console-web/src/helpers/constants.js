@@ -96,10 +96,6 @@ export const ENCODING_ISO = 'ISO-8859-1';
 export const SESSION = 'session';
 export const DEFAULT_LANGUAGE = 'defaultLanguage';
 
-// Roles
-export const VERIFIER = 'VERIFIER';
-export const ISSUER = 'ISSUER';
-
 // Wallet
 export const LOADING = 'LOADING';
 export const UNLOCKED = 'UNLOCKED';

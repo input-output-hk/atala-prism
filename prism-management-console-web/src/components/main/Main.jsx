@@ -4,8 +4,7 @@ import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import Router from '../Router';
 import { APIContext } from '../providers/ApiContext';
-import { SessionProvider, useSession } from '../providers/SessionContext';
-import { getThemeByRole } from '../../helpers/themeHelper';
+import { SessionProvider } from '../providers/SessionContext';
 import i18nInitialise from '../../i18nInitialisator';
 import I18nError from '../I18nError';
 import Logger from '../../helpers/Logger';
@@ -37,15 +36,11 @@ const Main = ({ apiProvider }) => {
   );
 };
 
-const MainContent = () => {
-  const { session } = useSession();
-  const theme = getThemeByRole(session?.userRole);
-  return (
-    <div className={`AppContainer ${theme.class()}`}>
-      <Router />
-    </div>
-  );
-};
+const MainContent = () => (
+  <div className="AppContainer">
+    <Router />
+  </div>
+);
 
 Main.propTypes = {
   apiProvider: PropTypes.shape().isRequired

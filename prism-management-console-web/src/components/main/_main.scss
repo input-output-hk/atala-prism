@@ -5,14 +5,7 @@
   flex-flow: column;
   height: 100vh;
   width: 100vw;
-
-  &.IssuerUser {
-    background-color: $secondary-color;
-  }
-
-  &.VerifierUser {
-    background-color: transparent;
-  }
+  background-color: $secondary-color;
 
   .MainContent {
     display: flex;
@@ -36,7 +29,7 @@
 
       .FilterControls {
         display: flex;
-        margin: .5em 0 1em;
+        margin: 0.5em 0 1em;
 
         .ant-select {
           width: 100%;

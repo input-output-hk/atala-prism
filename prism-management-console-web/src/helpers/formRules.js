@@ -1,5 +1,4 @@
 import moment from 'moment';
-import { ISSUER, VERIFIER } from './constants';
 
 export const futureDate = (value, cb, compareTo) => {
   if (!value) return cb('error');
@@ -81,5 +80,3 @@ export const passwordFormatValidation = (value, cb, t) => {
   if (!errors.length) cb();
   else cb(formatPasswordErrors(errors, t));
 };
-
-export const isValidRole = (value, cb) => ([ISSUER, VERIFIER].includes(value) ? cb() : cb('error'));

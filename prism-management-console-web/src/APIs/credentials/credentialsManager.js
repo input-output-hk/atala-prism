@@ -35,62 +35,25 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   return credentialsList;
 }
 
-function createAndPopulateCreationRequest(studentId, credentialData, groupName) {
-  const createCredentialRequest = new CreateGenericCredentialRequest();
-
-  createCredentialRequest.setSubjectid(studentId);
-  createCredentialRequest.setCredentialdata(JSON.stringify(credentialData));
-  createCredentialRequest.setGroupname(groupName);
-
-  return createCredentialRequest;
-}
-
-async function createCredential({ title, enrollmentdate, graduationdate, groupName, students }) {
-  Logger.info(
-    'Creating credentials for the all the subjects as the issuer: ',
-    this.config.issuerId
-  );
-
-  const credentialStudentsPromises = students.map(student => {
-    const credentialData = { title, enrollmentdate, graduationdate };
-    const createCredentialRequest = createAndPopulateCreationRequest(
-      student.id,
-      credentialData,
-      groupName
-    );
-
-    return this.auth
-      .getMetadata(createCredentialRequest)
-      .then(metadata => this.client.createGenericCredential(createCredentialRequest, metadata));
-  });
-
-  return Promise.all(credentialStudentsPromises);
-}
-
 async function createBatchOfCredentials(credentialsData) {
   Logger.info(`Creating ${credentialsData?.length} credential(s):`);
 
-  const credentialStudentsPromises = credentialsData.map(
-    ({ externalid, contactid, ...json }, index) => {
-      const createCredentialRequest = new CreateGenericCredentialRequest();
+  const credentialStudentsPromises = credentialsData.map(({ externalid, contactid, ...json }) => {
+    const createCredentialRequest = new CreateGenericCredentialRequest();
 
-      createCredentialRequest.setContactid(contactid);
-      createCredentialRequest.setExternalid(externalid);
-      createCredentialRequest.setCredentialdata(JSON.stringify(json));
+    createCredentialRequest.setContactid(contactid);
+    createCredentialRequest.setExternalid(externalid);
+    createCredentialRequest.setCredentialdata(JSON.stringify(json));
 
-      return this.auth
-        .getMetadata(createCredentialRequest)
-        .then(metadata => {
-          Logger.info(`${index}) externalid: ${externalid}, issuer: ${metadata.did}'`);
-          return this.client.createGenericCredential(createCredentialRequest, metadata);
-        })
-        .then(response => ({ externalid, status: SUCCESS, response }))
-        .catch(error => {
-          Logger.error(error);
-          return { externalid, status: FAILED, error };
-        });
-    }
-  );
+    return this.auth
+      .getMetadata(createCredentialRequest)
+      .then(metadata => this.client.createGenericCredential(createCredentialRequest, metadata))
+      .then(response => ({ externalid, status: SUCCESS, response }))
+      .catch(error => {
+        Logger.error(error);
+        return { externalid, status: FAILED, error };
+      });
+  });
 
   return Promise.all(credentialStudentsPromises);
 }
@@ -159,7 +122,6 @@ function CredentialsManager(config, auth) {
 }
 
 CredentialsManager.prototype.getCredentials = getCredentials;
-CredentialsManager.prototype.createCredential = createCredential;
 CredentialsManager.prototype.createBatchOfCredentials = createBatchOfCredentials;
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 CredentialsManager.prototype.getCredentialTypes = getCredentialTypes;

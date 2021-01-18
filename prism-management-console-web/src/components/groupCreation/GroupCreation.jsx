@@ -20,7 +20,6 @@ const GroupCreation = ({
   updateForm,
   formValues,
   updateMembers,
-  isIssuer,
   isSaving
 }) => {
   const [selectedContacts, setSelectedContacts] = useState([]);
@@ -32,7 +31,6 @@ const GroupCreation = ({
     contacts,
     filteredContacts,
     filterProps,
-    getContacts,
     handleContactsRequest,
     hasMore
   } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
@@ -93,7 +91,6 @@ const GroupCreation = ({
                   <SimpleLoading />
                 ) : (
                   <ConnectionsTable
-                    isIssuer={isIssuer}
                     contacts={filteredContacts}
                     selectedContacts={selectedContacts}
                     setSelectedContacts={setSelectedContacts}
@@ -139,7 +136,6 @@ GroupCreation.propTypes = {
       getGroups: PropTypes.func.isRequired
     }).isRequired
   }).isRequired,
-  isIssuer: PropTypes.func.isRequired,
   createGroup: PropTypes.func.isRequired,
   formRef: PropTypes.shape().isRequired,
   updateForm: PropTypes.func.isRequired,

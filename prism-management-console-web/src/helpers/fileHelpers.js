@@ -6,7 +6,9 @@ export const downloadTemplateCsv = (inputData, headersMapping) => {
   const csvData = inputData?.contacts?.length
     ? generateCsvFromInputData(inputData, headersMapping)
     : generateDefaultCsv(headersMapping.map(h => h.translation));
-  const filename = inputData ? getFilename(inputData) : `${i18n.t('generic.contactsTemplate')}.csv`;
+  const filename = inputData?.credentialType
+    ? getFilename(inputData)
+    : `${i18n.t('generic.contactsTemplate')}.csv`;
   downloadCsvFile(filename, csvData);
 };
 

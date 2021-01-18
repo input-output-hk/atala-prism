@@ -253,7 +253,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       case SELECT_RECIPIENTS_STEP:
         return (
           <RecipientsSelection
-            isIssuer={() => api.wallet.isIssuer()}
             groups={filteredGroups}
             selectedGroups={selectedGroups}
             setSelectedGroups={setSelectedGroups}
@@ -320,7 +319,7 @@ NewCredentialContainer.propTypes = {
     contactsManager: PropTypes.shape({
       getContacts: PropTypes.func
     }),
-    wallet: PropTypes.shape({ isIssuer: PropTypes.func, signCredentials: PropTypes.func })
+    wallet: PropTypes.shape({ signCredentials: PropTypes.func })
   }).isRequired,
   redirector: PropTypes.shape({
     redirectToCredentials: PropTypes.func

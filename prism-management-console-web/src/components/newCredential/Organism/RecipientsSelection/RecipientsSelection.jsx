@@ -13,7 +13,6 @@ const GROUPS_KEY = 'groups';
 const SUBJECTS_KEY = 'subjects';
 
 const RecipientsSelection = ({
-  isIssuer,
   groups,
   selectedGroups,
   setSelectedGroups,
@@ -83,7 +82,6 @@ const RecipientsSelection = ({
           </div>
           {activeKey === SUBJECTS_KEY && (
             <ConnectionsTable
-              isIssuer={isIssuer}
               contacts={subjects}
               selectedContacts={selectedSubjects}
               setSelectedContacts={setSelectedSubjects}
@@ -97,10 +95,7 @@ const RecipientsSelection = ({
   );
 };
 
-RecipientsSelection.defaultProps = {};
-
 RecipientsSelection.propTypes = {
-  isIssuer: PropTypes.func.isRequired,
   groups: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
   setSelectedGroups: PropTypes.func.isRequired,

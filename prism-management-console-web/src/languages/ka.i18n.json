@@ -532,12 +532,7 @@
       "title": "We need some data...",
       "comment": "You are almost done!",
       "subtitle": "Please enter your Organization info so you can start using the application.",
-      "name": "Organization Name",
-      "role": "Organization Role",
-      "defaultRole": "Please select a role",
-      "invalidRole": "Please select a valid role",
-      "ISSUER": "Issuer",
-      "VERIFIER": "Verifier"
+      "name": "Organization Name"
     },
     "congratulations": {
       "alt": "Congratulations Image",
@@ -802,10 +797,7 @@
     "selectAll": "Select All"
   },
   "theme": {
-    "title": {
-      "issuer": "MANAGEMENT CONSOLE",
-      "verifier": "Verifier Portal"
-    }
+    "title": "MANAGEMENT CONSOLE"
   },
   "support": {
     "title": "Support"

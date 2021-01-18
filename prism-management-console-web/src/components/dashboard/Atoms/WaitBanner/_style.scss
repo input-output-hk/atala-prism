@@ -9,14 +9,7 @@
   align-items: center;
   margin: 2.5em 0 2em;
   height: 100px;
-
-  &.IssuerUser {
-    background: #FFEAEB;
-  }
-
-  &.VerifierUser {
-    background: #FFEAEB;
-  }
+  background: #ffeaeb;
 
   @include breakpoint(sm) {
     width: 100%;
@@ -25,14 +18,8 @@
   .WaitBannerText {
     h2 {
       @include letter-spacing;
-      &.IssuerUser {
-        @include primary-text($h2, $primary-color);
-        font-weight: 600;
-      }
-
-      &.VerifierUser {
-        @include primary-text($h1, $primary-color);
-      }
+      @include primary-text($h2, $primary-color);
+      font-weight: 600;
     }
     p {
       @include primary-text($body, $secondary-color);

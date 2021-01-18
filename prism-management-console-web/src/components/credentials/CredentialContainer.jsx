@@ -229,7 +229,7 @@ const CredentialContainer = ({ api }) => {
         ? getTargetCredentials(requiredStatus)
         : wrapSingleCredential(targetId);
       if (!targetCredentials.length) {
-        const statusName = CREDENTIAL_STATUSES_TRANSLATOR[requiredStatus];
+        const statusName = CREDENTIAL_STATUSES_TRANSLATOR[requiredStatus.credentials];
         throw new Error(
           `Invalid credential status. Select at least one credential in '${t(
             `credentials.status.${statusName}`

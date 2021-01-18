@@ -2,14 +2,7 @@
 
 .HeaderContainer {
   padding: 1em;
-
-  &.IssuerUser {
-    background-color: $secondary-color;
-  }
-
-  &.VerifierUser {
-    background-color: $primary-color-darker;
-  }
+  background-color: $secondary-color;
 
   .LogoContainer {
     display: flex;
@@ -32,7 +25,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    outline:none;
+    outline: none;
     .ant-select-selection {
       background: transparent;
       border: transparent;
@@ -54,10 +47,8 @@
   }
 }
 
-
-
 @media only screen and (max-width: 996px) {
-  .HeaderContainer.IssuerUser {
+  .HeaderContainer {
     display: flex;
     justify-content: space-between;
   }
