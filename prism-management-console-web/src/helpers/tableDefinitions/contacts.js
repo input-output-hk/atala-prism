@@ -70,6 +70,7 @@ const getExtendedColumns = ({ inviteContact, viewContactDetail }) => [
 const getSpecialGroupContactsColumns = onDelete => [
   {
     key: 'actions',
+    width: 150,
     render: contact => (
       <PopOver content={<ActionGroupButtons contact={contact} onDelete={onDelete} />} />
     )

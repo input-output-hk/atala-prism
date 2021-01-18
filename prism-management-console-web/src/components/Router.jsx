@@ -100,7 +100,7 @@ const groupCreationRoute = {
 };
 const groupEditingRoute = {
   exact: true,
-  path: '/groups/:id/edit',
+  path: '/groups/:id',
   key: 'groupsEditing',
   component: withLoggedValidation(withSideBar(GroupEditingContainer), allRoles)
 };

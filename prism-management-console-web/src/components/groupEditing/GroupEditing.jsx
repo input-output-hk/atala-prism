@@ -189,29 +189,16 @@ const GroupEditing = ({
           </Col>
         </Row>
         <Row gutter={10} align="bottom" type="flex" className="ContactsContainer">
-          <Col sm={24} md={20}>
-            <GroupContacts
-              contacts={contacts}
-              groupName={groupName}
-              selectedContacts={selectedGroupContacts}
-              setSelectedContacts={setSelectedGroupContacts}
-              onDeleteContact={handleRemoveContactRequest}
-              handleContactsRequest={handleContactsRequest}
-              loading={loadingContacts || isSaving}
-              hasMore={hasMore}
-            />
-          </Col>
-          <Col sm={24} md={4} className="SaveButtonContainer">
-            <CustomButton
-              buttonProps={{
-                className: 'theme-primary',
-                disabled: nameState === GROUP_NAME_STATES.failed
-                // onClick: () => createGroup(groupName)
-              }}
-              buttonText={t('groupCreation.form.buttonText')}
-              loading={isSaving}
-            />
-          </Col>
+          <GroupContacts
+            contacts={contacts}
+            groupName={groupName}
+            selectedContacts={selectedGroupContacts}
+            setSelectedContacts={setSelectedGroupContacts}
+            onDeleteContact={handleRemoveContactRequest}
+            handleContactsRequest={handleContactsRequest}
+            loading={loadingContacts || isSaving}
+            hasMore={hasMore}
+          />
         </Row>
       </div>
     </div>

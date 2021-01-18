@@ -64,6 +64,7 @@
         "email": "Email",
         "invite": "QR Code",
         "delete": "Delete",
+        "remove": "Remove",
         "view": "View",
         "edit": "Edit",
         "viewCredentials": "View Credentials",
@@ -779,8 +780,8 @@
     "addContacts": "Add Contacts"
   },
   "groupEditing": {
-    "title": "Edit Group",
-    "subtitle": "Edit group name, add or remove contacts.",
+    "title": "Group Details",
+    "subtitle": "View details, edit group name, add or remove contacts.",
     "contacts": "Contacts",
     "selectContacts": "Select contacts to add",
     "removeContacts": "Remove Contacts",

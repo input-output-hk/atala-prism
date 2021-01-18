@@ -17,11 +17,8 @@ const ActionButtons = ({ id, setGroupToDelete, onCopy, fullInfo }) => {
 
   const menu = (
     <>
-      <Button {...baseProps} disabled>
-        <Link to={`group/${id}`}>{t('groups.table.buttons.view')}</Link>
-      </Button>
       <Button {...baseProps}>
-        <Link to={`/groups/${id}/edit`}>{t('groups.table.buttons.edit')}</Link>
+        <Link to={`groups/${id}`}>{t('groups.table.buttons.view')}</Link>
       </Button>
       <Button {...baseProps} onClick={onCopy}>
         {t('groups.table.buttons.copy')}

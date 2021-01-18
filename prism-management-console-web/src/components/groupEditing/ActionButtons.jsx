@@ -14,7 +14,7 @@ const ActionButtons = ({ contact, onDelete }) => {
           className: 'theme-link',
           onClick: () => onDelete(contact.contactid)
         }}
-        buttonText={t('contacts.table.columns.delete')}
+        buttonText={t('contacts.table.columns.remove')}
       />
     </div>
   );
