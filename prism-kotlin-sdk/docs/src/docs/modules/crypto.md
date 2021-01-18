@@ -7,7 +7,7 @@ implementation("io.iohk.atala.prism:crypto:$VERSION")
 
 Atala PRISM Crypto module provides SHA256 hash function that can be used as follows:
 
-```kotlin
+```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 
 SHA256Digest.compute(listOf(0))
@@ -18,7 +18,7 @@ SHA256Digest.compute(listOf(0))
 Crypto module contains low-level tools to work with public-key cryptography based on elliptic curves.
 
 Some helpful globals can be found in `ECConfig`:
-```kotlin
+```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
 
 ECConfig.CURVE_NAME
@@ -28,7 +28,7 @@ ECConfig.SIGNATURE_ALGORITHM
 ```
 
 `EC` provides access to key generation, signing and verification:
-```kotlin
+```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.EC
 
 val keyPair = EC.generateKeyPair()
@@ -45,7 +45,7 @@ EC.verify(text, publicKey, textSignature)
 ```
 
 Keys can also be encoded and decoded as follows:
-```kotlin
+```kotlin:ank
 val privateKeyEncoded = privateKey.getEncoded()
 val publicKeyEncoded = publicKey.getEncoded()
 
@@ -58,7 +58,7 @@ EC.toPublicKey(publicKeyEncoded) == publicKey
 Atala PRISM Crypto module provides the means to derive keys from a given seed.
 
 First, there are some utilities to work with mnemonic codes:
-```kotlin
+```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.derivation.KeyDerivation
 import io.iohk.atala.prism.kotlin.crypto.derivation.JvmKeyDerivation
 
@@ -69,7 +69,7 @@ keyDerivation.isValidMnemonicWord("airport")
 ```
 
 After you have a mnemonic code, you can generate a mnemonic seed and, subsequently, a root key:
-```kotlin
+```kotlin:ank
 val seed = keyDerivation.binarySeed(mnemonicCode, "my_secret_password")
 val extendedKey = keyDerivation.derivationRoot(seed)
 
@@ -82,7 +82,7 @@ extendedKey.path()
 ```
 
 Crypto module also supports derivation paths, so you can derive children keys as follows:
-```kotlin
+```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.derivation.DerivationPath
 
 val path = DerivationPath.fromPath("m/0'/0'/1'")
@@ -92,7 +92,7 @@ keyDerivation.deriveKey(seed, path)
 ## Merkle Tree
 
 It is possible to build Merkle tree proofs of inclusion and verify them by using `MerkleTree`:
-```kotlin
+```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.MerkleTree
 
 val hash1 = SHA256Digest.compute(listOf(0))

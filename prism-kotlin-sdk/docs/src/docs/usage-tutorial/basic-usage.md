@@ -16,7 +16,7 @@ implementation("io.iohk.atala.prism:credentials:$VERSION") // needed to deal wit
 ## Imports
 Import the PRISM modules:
 
-```kotlin
+```kotlin:ank
 import io.iohk.atala.prism.kotlin.credentials.Credential
 import io.iohk.atala.prism.kotlin.credentials.content.*
 import io.iohk.atala.prism.kotlin.credentials.json.*
@@ -31,7 +31,7 @@ In order to use the PRISM ecosystem, you will need to generate an identity, PRIS
 
 Generating an Unpublished DID is simple, we start generating a master key, taking the public key to generate the DID:
 
-```kotlin
+```kotlin:ank
 val masterKeyPair = EC.generateKeyPair()
 val did = DID.createUnpublishedDID(masterKeyPair.publicKey)
 ```
@@ -39,7 +39,7 @@ val did = DID.createUnpublishedDID(masterKeyPair.publicKey)
 
 Then, we need to get some details before being able to sign a credential, the [DID Document](https://w3c.github.io/did-core/#dfn-did-documents), and the id for the master key we used while creating our DID:
 
-```kotlin
+```kotlin:ank
 // The DID Document is necessary to find the master key id, used to sign a credential
 val didDocument =
     (did.asLongForm()?.getInitialState()?.operation as? AtalaOperation.Operation.CreateDid)?.value!!
@@ -53,7 +53,7 @@ val firstPublicKey = didDocument.didData?.publicKeys?.firstOrNull()!!
 Then, generating a credential requires defining credential content (with optional credentialSubject), 
 let's define a simple one:
 
-```kotlin
+```kotlin:ank
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -78,14 +78,14 @@ You can add additional claims as credential subject.
 We're ready to create credential now:
 
 
-```kotlin
+```kotlin:ank
 val credential: Credential = JsonBasedCredential(credentialContent)
 ```
 
 
 At last, we can proceed to sign the actual credential:
 
-```kotlin
+```kotlin:ank
 val signedCredential = credential.sign(masterKeyPair.privateKey)
 ```
 
