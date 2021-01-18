@@ -51,6 +51,8 @@ service NodeService {
 
     // Finds the time when a credential was revoked
     rpc GetCredentialRevocationTime(GetCredentialRevocationTimeRequest) returns (GetCredentialRevocationTimeResponse) {}
+
+    rpc PublishAsABlock(PublishAsABlockRequest) returns (PublishAsABlockResponse) {}
 }
 
 // Request to find a DID Document
@@ -178,4 +180,16 @@ message GetTransactionStatusRequest {
 message GetTransactionStatusResponse {
     TransactionInfo transactionInfo = 1; // the on-chain transaction info
     TransactionStatus status = 2; // whether the transaction has been applied
+}
+
+message PublishAsABlockRequest {
+    // the sequence of operations to apply. They will be applied in the order provided here
+    repeated SignedAtalaOperation signed_operations = 1; // two or more signed operations
+}
+// Response with the transaction info and operations outputs
+message PublishAsABlockResponse {
+    // the on-chain transaction info where the block of operations is going to be attached to
+    TransactionInfo transactionInfo = 1;
+    // the responses of every operation in the block, they are ordered in the same order of the operations sent in PublishAsABlockRequest
+    repeated OperationOutput outputs = 2;
 }

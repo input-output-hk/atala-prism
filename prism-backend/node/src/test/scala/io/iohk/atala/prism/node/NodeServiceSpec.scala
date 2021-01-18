@@ -54,6 +54,9 @@ import org.scalatest.OptionValues._
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
+
+import io.iohk.atala.prism.protos.node_models.OperationOutput
+
 import scala.concurrent.Future
 
 class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with BeforeAndAfterEach {
@@ -76,6 +79,10 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
 
   override def beforeEach(): Unit = {
     super.beforeEach()
+
+    reset(objectManagementService)
+    reset(credentialsService)
+    reset(credentialBatchesRepository)
 
     val didDataService = new DIDDataService(new DIDDataRepository(database))
 
@@ -124,12 +131,9 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
       val didDigest = SHA256Digest.compute("test".getBytes())
       val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
-      println("did data stored")
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
       PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
-      println("keys stored")
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.value}"))
-      println(s"response: $response")
       val document = response.document.value
       document.id mustBe didSuffix.value
       document.publicKeys.size mustBe 1
@@ -207,7 +211,12 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
 
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
-      response.id must not be empty
+      val expectedDIDSuffix =
+        SHA256Digest
+          .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
+          .hexValue
+
+      response.id must be(expectedDIDSuffix)
       response.transactionInfo.value mustEqual testTransactionInfoProto
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
@@ -677,6 +686,146 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
           .withTransactionInfo(testTransactionInfoProto)
           .withStatus(common_models.TransactionStatus.UNKNOWN)
       )
+    }
+  }
+
+  "NodeService.publishAsABlock" should {
+    "fail when called with an empty sequence of operations" in {
+      val error = intercept[StatusRuntimeException] {
+        service.publishAsABlock(
+          node_api
+            .PublishAsABlockRequest()
+            .withSignedOperations(Seq())
+        )
+      }
+
+      val expectedMessage = "INTERNAL: requirement failed: there must be at least one operation to be published"
+      error.getMessage must be(expectedMessage)
+    }
+
+    "return error when at least one provided operation is invalid" in {
+      val validOperation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      val invalidOperation = BlockProcessingServiceSpec.signOperation(
+        IssueCredentialBatchOperationSpec.exampleOperation
+          .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := ByteString.copyFrom("abc".getBytes)),
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      val error = intercept[StatusRuntimeException] {
+        service.publishAsABlock(
+          node_api
+            .PublishAsABlockRequest()
+            .withSignedOperations(Seq(validOperation, invalidOperation))
+        )
+      }
+      error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "properly return the result of a CreateDID operation and an IssueCredentialBatch operation" in {
+      val createDIDOperation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      val issuanceOperation = BlockProcessingServiceSpec.signOperation(
+        IssueCredentialBatchOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
+
+      val response = service.publishAsABlock(
+        node_api
+          .PublishAsABlockRequest()
+          .withSignedOperations(Seq(createDIDOperation, issuanceOperation))
+      )
+
+      val expectedBatchId =
+        SHA256Digest
+          .compute(
+            IssueCredentialBatchOperationSpec.exampleOperation.getIssueCredentialBatch.getCredentialBatchData.toByteArray
+          )
+          .hexValue
+
+      val expectedDIDSuffix =
+        SHA256Digest
+          .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
+          .hexValue
+
+      response.transactionInfo.value mustBe testTransactionInfoProto
+      response.outputs.size mustBe (2)
+      response.outputs.head.getCreateDIDOutput.didSuffix mustBe expectedDIDSuffix
+      response.outputs.last.getBatchOutput.batchId mustBe expectedBatchId
+
+      verify(objectManagementService).publishAtalaOperation(createDIDOperation, issuanceOperation)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "properly return the result of a CreateDID operation and a DID Update operation" in {
+      val createDIDOperation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      val updateOperation = BlockProcessingServiceSpec.signOperation(
+        UpdateDIDOperationSpec.exampleOperation,
+        "master",
+        UpdateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
+
+      val response = service.publishAsABlock(
+        node_api
+          .PublishAsABlockRequest()
+          .withSignedOperations(Seq(createDIDOperation, updateOperation))
+      )
+
+      val expectedDIDSuffix =
+        SHA256Digest
+          .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
+          .hexValue
+
+      response.transactionInfo.value mustBe testTransactionInfoProto
+      response.outputs.size mustBe (2)
+      response.outputs.head.getCreateDIDOutput.didSuffix mustBe expectedDIDSuffix
+      response.outputs.last.result mustBe OperationOutput.Result.UpdateDIDOutput(node_models.UpdateDIDOutput())
+
+      verify(objectManagementService).publishAtalaOperation(createDIDOperation, updateOperation)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "properly return the result of a RevokeCredentials operation" in {
+      val revokeOperation = BlockProcessingServiceSpec.signOperation(
+        RevokeCredentialsOperationSpec.revokeFullBatchOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+
+      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
+
+      val response = service.publishAsABlock(
+        node_api
+          .PublishAsABlockRequest()
+          .withSignedOperations(Seq(revokeOperation))
+      )
+
+      response.transactionInfo.value mustBe testTransactionInfoProto
+      response.outputs.size mustBe (1)
+      response.outputs.head.getRevokeCredentialsOutput mustBe node_models.RevokeCredentialsOutput()
+
+      verify(objectManagementService).publishAtalaOperation(revokeOperation)
+      verifyNoMoreInteractions(objectManagementService)
     }
   }
 }

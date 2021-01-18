@@ -104,14 +104,14 @@ class ObjectManagementService private (
       }
   }
 
-  def publishAtalaOperation(op: node_models.SignedAtalaOperation): Future[TransactionInfo] = {
-    val block = node_internal.AtalaBlock("1.0", List(op))
+  def publishAtalaOperation(op: node_models.SignedAtalaOperation*): Future[TransactionInfo] = {
+    val block = node_internal.AtalaBlock("1.0", op.toList)
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)
     val objectBlock =
       if (atalaReferenceLedger.supportsOnChainData) Block.BlockContent(block)
       else Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray))
-    val obj = node_internal.AtalaObject(block = objectBlock, blockOperationCount = 1)
+    val obj = node_internal.AtalaObject(block = objectBlock, blockOperationCount = block.operations.size)
     val objBytes = obj.toByteArray
     val objId = AtalaObjectId.of(objBytes)
 

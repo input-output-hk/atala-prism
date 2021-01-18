@@ -26,9 +26,13 @@ import io.iohk.atala.prism.protos.node_api.{
   GetTransactionStatusResponse,
   IssueCredentialBatchRequest,
   IssueCredentialBatchResponse,
+  PublishAsABlockRequest,
+  PublishAsABlockResponse,
   RevokeCredentialsRequest,
   RevokeCredentialsResponse
 }
+import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
+import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
@@ -349,6 +353,34 @@ class NodeServiceImpl(
         )
     }
   }
+
+  override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = {
+    logRequest("publishAsABlock", request)
+    val operationsF = Future.fromTry {
+      Try {
+        require(request.signedOperations.nonEmpty, "there must be at least one operation to be published")
+        request.signedOperations
+      }
+    }
+
+    for {
+      operations <- operationsF
+      outputs <- Future.sequence(
+        operations.map { op =>
+          errorEitherToFuture(parseOperationWithMockData(op))
+        }
+      )
+      transactionInfo <- objectManagement.publishAtalaOperation(operations: _*)
+    } yield {
+      logAndReturnResponse(
+        "publishAsABlock",
+        node_api
+          .PublishAsABlockResponse()
+          .withTransactionInfo(toTransactionInfo(transactionInfo))
+          .withOutputs(outputs)
+      )
+    }
+  }
 }
 
 object NodeServiceImpl {
@@ -392,5 +424,54 @@ object NodeServiceImpl {
   ): Response = {
     logger.info(s"$method response = ${response.toProtoString}")
     response
+  }
+
+  private def parseOperationWithMockData(operation: SignedAtalaOperation): Either[ValidationError, OperationOutput] = {
+    operation.getOperation.operation match {
+      case Operation.Empty => // should not happen
+        throw new RuntimeException("Unexpected empty AtalaOperation")
+      case Operation.CreateDid(_) =>
+        CreateDIDOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
+          OperationOutput(
+            OperationOutput.Result.CreateDIDOutput(
+              node_models.CreateDIDOutput(parsedOp.id.value)
+            )
+          )
+        }
+      case Operation.UpdateDid(_) =>
+        UpdateDIDOperation
+          .parseWithMockedLedgerData(operation)
+          .map { _ =>
+            OperationOutput(
+              OperationOutput.Result.UpdateDIDOutput(
+                node_models.UpdateDIDOutput()
+              )
+            )
+          }
+      case Operation.IssueCredentialBatch(_) =>
+        IssueCredentialBatchOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
+          OperationOutput(
+            OperationOutput.Result.BatchOutput(
+              node_models.IssueCredentialBatchOutput(parsedOp.credentialBatchId.id)
+            )
+          )
+        }
+      case Operation.RevokeCredentials(_) =>
+        RevokeCredentialsOperation
+          .parseWithMockedLedgerData(operation)
+          .map { _ =>
+            OperationOutput(
+              OperationOutput.Result.RevokeCredentialsOutput(
+                node_models.RevokeCredentialsOutput()
+              )
+            )
+          }
+      case Operation.IssueCredential(_) =>
+        // we are deprecating this one soon, so we leave a not implemented error
+        throw new NotImplementedError("IssueCredential is deprecated and cannot be used in a block")
+      case Operation.RevokeCredential(_) =>
+        // we are deprecating this one soon, so we leave a not implemented error
+        throw new NotImplementedError("RevokeCredential is deprecated and cannot be used in a block")
+    }
   }
 }

@@ -183,3 +183,26 @@ message LedgerData {
     Ledger ledger = 2; // Ledger the transaction was published to
     TimestampInfo timestampInfo = 3; // timestamp of the protocol event
 }
+
+// Used to encode the responses of the operations issued in an AtalaBlock
+message OperationOutput {
+    oneof result {
+        // Represents the response provided by IssueCredentialBatchOperation
+        IssueCredentialBatchOutput batchOutput = 1;
+        // Represents the response provided by CreateDIDOperation
+        CreateDIDOutput createDIDOutput = 2;
+        // Represents the response provided by UpdateDIDOperation
+        UpdateDIDOutput updateDIDOutput = 3;
+        // Represents the response provided by RevokeCredentialOperation
+        RevokeCredentialsOutput revokeCredentialsOutput = 4;
+    }
+}
+
+message IssueCredentialBatchOutput {
+    string batchId = 1;
+}
+message CreateDIDOutput {
+    string didSuffix = 1;
+}
+message UpdateDIDOutput {}
+message RevokeCredentialsOutput {}

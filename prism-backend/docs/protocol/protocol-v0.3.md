@@ -12,48 +12,49 @@ identity system. The system must provide the following features:
 1. Allow the decentralised creation of self certifiable identifiers. This is, any person can create an identifier
    without the need of coordination with, or permission from any external authority. Only the creator (controller) of 
    the identifier can prove his ownership through the use of cryptographic techniques.
-2. Allow controllers to update the state of the said identifiers.
+2. Allow controllers to update the state of their identifiers.
 3. Given an identifier, allow anyone to obtain its current state.
-4. Allow to assert claims using the identifiers.
+4. Allow asserting claims using the identifiers.
 
 In particular, we will refer to these identifiers as **D**ecentralised **ID**entifiers (DIDs). There is a working group 
 in W3C specifying the nature of these entities. For the purpose of this document, we will simplify their definition 
-and declare that a DID is an identifier, which is associated to a document (DID Document). A DID Document declares the 
-state of the DID. The first DID Document declares the initial state associated to a DID. This document contains 
-cryptographic keys that allow controllers to prove their ownership over the DID and to update the associated document. 
+and declare that a DID is a string, which is associated to a document (DID Document). A DID Document declares the 
+state of its associated DID. The first DID Document declares the *initial state* associated to a DID. This document 
+contains cryptographic keys that allow controllers to prove their ownership over the DID, and to update the associated 
+document. 
 The DID Document can also contain other data, such as, URLs, referring to external information about the associated DID
 controller. The document can also be updated. In our construction, the identifier (DID) has the form 
-`did:prism:hash_initial_DID_Document`, making our DIDs, self-certifiable. That is, given a DID and its DID
+`did:prism:hash_initial_DID_Document`, making our DIDs, self-certifiable. That is, given a DID and its initial DID
 Document, anyone could verify that the document is really associated to the identifier by comparing the identifier to
 the hash of the document.
 
 In previous versions of our protocol, we followed the ideas behind Sidetree. 
-Sidetree is a protocol developed by Microsoft and is currently being specified in a Working Group inside the
-Decentralised Identity Foundation. In a simplified explanation, Sidetree protocol is run by independent nodes, each one
-can post file references in the metadata (or equivalent) field of an underlying blockchain's transactions. The 
-references point to files in a publicly accessible content addressable storage (CAS) service. The files contain the 
-following events:
+Sidetree is a protocol developed by Microsoft, and is currently being specified in a Working Group inside the
+Decentralised Identity Foundation. In a simplified explanation, independent nodes run the Sidetree protocol using an 
+underlying blockchain as base layer. Each node can post file references in the metadata (or equivalent) field the
+blockchain's transactions. The references point to files in a publicly accessible content addressable storage (CAS) 
+service. The files contain the following events:
 
- - Create DID: An event that declares the creation of an identifier and declares its DID Document. 
- - Update DID: An event that allows to add/remove data to the associated DID Document.
+ - Create DID: An event that declares the creation of an identifier, and declares its initial DID Document. 
+ - Update DID: An event that allows adding/removing data to the associated DID Document.
  - Deactivate DID: An event that declares that the DID is not usable anymore.
  
 All events (except for DID creation ones), are signed by adequate keys to prove validity. The current state of a DID
-Document is computed by taking the initial state (provided on DID creation) and, applying the events found in files 
+Document is computed by taking the initial state (provided on DID creation), and applying the events found in files 
 referenced on the underlying blockchain following the order in which they appear.
 
 With respect to claims, there is [a variation of Sidetree](https://hackmd.io/tx8Z0mIRS-aK84Gx4xIzfg?view) that allows
-DID controllers to sign statements and to post hashes of them as events in the files that are later referenced in the 
-blockchain. This action allows to timestamp the statement assertion while not revealing the statement content. The
-variation also allows the protocol to revoke an already asserted statement, and also to timestamp that event by adding
-it to a file.
+DID controllers to sign statements and post hashes of them as events in the protocol files (the ones referenced by
+blockchain transactions). This action, allows to timestamp the statement assertion while not revealing the statement 
+content. The variation also allows the protocol to revoke an already asserted statement, also timestamping that 
+event by adding it to a file.
 
 The feature of `batching` events in files, and posting only references on-chain, allows a considerable scalability 
-improvement. However, we can observe some drawbacks related to this approach:
+performance. However, we can observe some drawbacks related to this approach:
 1. Data availability problems (referenced files may not be available). This leads to the inability to obtain consensus
-   about the order in which events occurred in the past (and event to know if certain event were ever valid). This 
-   allows a situation known as ["late publication"](./late-publish.md), that could affect certain use cases (e.g. DID
-   transferability).
+   about the order in which events occurred in the past. Furthermore, it makes it difficult to know if certain event 
+   were ever valid at all. This allows a situation known as ["late publication"](./late-publish.md), that could affect 
+   certain use cases (e.g. DID transferability).
 
    Late publication also represents a potential change to the "past" of the system state.
 2. Even though batching increases events throughput, it comes with the need of an anti spam strategy to avoid garbage
@@ -234,13 +235,20 @@ differences from our proposal.
 For simplicity, we incline for option 2. As it would require fewer changes in the way we process operations. Currently,
 when the node finds a new operation, it applies the state change right away. If we do not post the initial DID state, we
 would need to process operations differently, as DID update operations would have no initial state to be applied upon.
-Similarly, we need to have the DID state at the time of credential issuance and revocation. We will allow to publish a
+Similarly, we need to have the DID state at the time of credential issuance and revocation. We should allow to publish a
 DID during the first issuance operation too. Note that we won't need to publish a DID during the first revocation, because
 the first revocation must occur after an issuance event. Hence, we will request the signing DID to already be published
-by this point.
+by this point. 
+
+In practice, we have implemented the above two cases through "on-chain batching", meaning that we allow users to publish
+a sequence of events in a single blockchain transaction. In order to publish a DID during its first update, the user can
+post the `CreateDID` event and the `UpdateDID` events in the same underlying transaction. Similarly, the user can also 
+publish a `CreateDID` event along with an event to issue a batch of credentials. Any other combination of events can be
+published too, the only restriction is for the entire sequence to be small enough too fit in a single transaction
+metadata field. 
   
-The use of a long form would enable us to create DID without the need of batching or any on-chain event whatsoever. 
-Leading to unbound throughput for DID creation. 
+The use of a long format would enable us to create DIDs without the need of batching or any on-chain event whatsoever. 
+This leads to unbound throughput for DID creation. 
 
 *NOTE:* Even though there does not seem to be a maximum value for DID length, we should be aware of such discussions in 
 DID core or similar groups. We have been warned that QR codes would not be good for DIDs with "big" long form. we could
@@ -476,8 +484,8 @@ state'.revokedCredentials = state.revokedCredentials
 
 ## DID Update
 
-Our new update operations will have a new optional field, called `initialState` that will represent the state used to
-create the DID.
+Given that we implemented on-chain batching, we do not need to update this operation. 
+For completeness, we will describe the formal specification of this event.
 
 ```json
 {
@@ -487,7 +495,6 @@ create the DID.
     "previousOperationHash": HASH,
     "updateDid": {
       "didSuffix": DID_SUFFIX,
-      "initialState": STATE, // The representation is implementation dependent  
       "actions": [
         ADD_KEY_ACTION | REMOVE_KEY_ACTION,
         ...
@@ -497,9 +504,8 @@ create the DID.
 }
 ```
 
-When the operation is observed in the stable part of the ledger, the node has two alternatives:
-
-- Case 1: The DID was already published before. This is, the condition
+When the operation is observed in the stable part of the ledger, the node will act as before,
+this is: 
 
   ```scala
     alias didToUpdate   = decoded.operation.updateDid.didSuffix
@@ -507,7 +513,6 @@ When the operation is observed in the stable part of the ledger, the node has tw
     alias updateActions = decoded.operation.updateDID.actions
     alias messageSigned = decoded.operation
 
-    decoded.operation.initialState.isEmpty && // if the DID was already published, the initial state must not be present
     state.publishedDids.contains(didToUpdate) &&
     state.publishedDids(didToUpdate).keys.contains(signingKeyId) &&
     state.publishedDids(didToUpdate).keys(signingKeyId).usage == MasterKey &&
@@ -530,52 +535,20 @@ When the operation is observed in the stable part of the ledger, the node has tw
    state'.revokedCredentials = state.revokedCredentials
    ```
 
-- Case 2: When the DID is published during its first update:
-
-```scala
-    alias didToUpdate   = decoded.operation.updateDid.didSuffix
-    alias signingKeyId  = decoded.signedWith
-    alias updateActions = decoded.operation.updateDID.actions
-    alias messageSigned = decoded.operation
-    alias initialState  = decoded.operation.initialState
-
-    ! state.publishedDids.contains(didToUpdate) &&
-    decoded.operation.initialState.nonEmpty && // if the DID was not published, the initial state must be present
-    hash(initialState) == didToUpdate && // we must check that the initial state matches the DID suffix
-    initialState.keys.contains(signingKeyId) &&
-    initialState.keys(signingKeyId).usage == MasterKey &&
-    decoded.operation.previousOperationHash.isEmpty &&
-    isValid(decoded.signature, messageSigned, initialState.keys(signingKeyId).key) &&
-    updateMap(signingKeyId, initialState.keys, updateActions).nonEmpty 
-  ```  
-
-   The DID data returned by `updateMap` will add `BeginningOfTime` as the addition event  timestamp for the keys 
-   declared in `initialState`.
-   If the check passes, then we get the following state update:
-   
-   ```scala
-   state'.publishedDids = state.publishedDids.update(didToUpdate, { lastOperationReference = hash(decoded), 
-                                                                    keys = updateMap(signingKeyId, initialState.keys, updateActions).get }
-   state'.didTimestamps = state.didTimestamps
-   state'.credentialBatches  = state.credentialBatches
-   state'.revokedCredentials = state.revokedCredentials
-   ```
-
 ## Credential Batch Issuance
 
 Now, similar to the situation with the first update operation, we find ourselves with an operation that will be signed
-by a key referenced by a DID. Given that we process operations "as soon as we see them", we need the issuer DID state to
-be publicly available in order to process the issuance action. 
+by a key referenced by a DID. We said that we implemented on-chain batching, so we do not need to embed the DID creation
+event in this operation.
 
-The old credential issuance operation is hence updated in the following way:
+The old credential issuance operation can be described in the following way:
 
 ```json
 {
   "keyId": KEY_ID,
   "signature": SIGNATURE,
   "operation": {
-    "issueCredential": {
-      "initialState": STATE, // The representation is implementation dependent  
+    "issueCredentialBatch": {
       "batchData": {
         "issuerDIDSuffix": DID_SUFFIX,
         "merkleRoot": MERKLE_TREE_ROOT
@@ -595,23 +568,20 @@ The response is now a `batchId` that represents the batch analogous to the old `
 
 Its implementation will be the hash of the `batchData` field.
 
-The node state is now updated based on two possible cases.
+The node state is now updated as follows:
 
-- Case 1: The issuer DID was already published before
+    ```scala
+    alias signingKeyId    = decoded.keyId
+    alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
+    alias signature       = decoded.signature
+    alias messageSigned   = decoded.operation
 
-   ```
-   alias signingKeyId    = decoded.keyId
-   alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
-   alias signature       = decoded.signature
-   alias messageSigned   = decoded.operation
-
-   decoded.operation.issueCredential.initialState.isEmpty && // if the credential was published, this field must be empty
-   state.dids.contains(issuerDIDSuffix) &&
-   state.dids(issuerDIDSuffix).keys.contains(signingKeyId) &&
-   state.dids(issuerDIDSuffix).keys(signingKeyId).usage == IssuingKey &&
-   state.dids(issuerDIDSuffix).keys(signingKeyId).keyRevocationEvent.isEmpty &&
-   isValid(signature, messageSigned, state.dids(issuerDIDSuffix).keys(signingKeyId).key)
-   ```
+    state.dids.contains(issuerDIDSuffix) &&
+    state.dids(issuerDIDSuffix).keys.contains(signingKeyId) &&
+    state.dids(issuerDIDSuffix).keys(signingKeyId).usage == IssuingKey &&
+    state.dids(issuerDIDSuffix).keys(signingKeyId).keyRevocationEvent.isEmpty &&
+    isValid(signature, messageSigned, state.dids(issuerDIDSuffix).keys(signingKeyId).key)
+    ```
 
    The state would be updated as follows:
 
@@ -632,45 +602,6 @@ The node state is now updated based on two possible cases.
     state'.revokedCredentials = state.revokedCredentials
    ```
 
-
-- Case 2: The issuer DID is published in this issuance operation
-
-   ```
-   alias signingKeyId    = decoded.keyId
-   alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
-   alias signature       = decoded.signature
-   alias messageSigned   = decoded.operation
-   alias initialState    = decoded.operation.issueCredential.initialState
-  
-   ! state.dids.contains(issuerDIDSuffix) &&
-   initialState.nonEmpty && // if the credential was not published, we need this field
-   hash(initialState) == issuerDIDSuffix && // we validate that the state matches the DID
-   initialState.keys.contains(signingKeyId) &&
-   initialState.keys(signingKeyId).usage == IssuingKey &&
-   isValid(signature, messageSigned, state.dids(issuerDIDSuffix).keys(signingKeyId).key)
-   ```
-
-   The state would be updated as follows, note that we also publish the DID:
-
-   ```scala
-    alias batchId = computeBatchId(decoded)
-    alias merkleRoot = decoded.operation.issueCredential.batchData.merkleRoot 
-    alias issuerDIDSuffix = decoded.operation.issueCredential.batchData.issuerDIDSuffix 
-
-    state'.publishedDids = state.publishedDids + { issuerDIDSuffix -> { lastOperationReference = hash(decoded),
-                                                                        keys = process(initialState) }
-                                                 }
-    state'.didTimestamps = state.didTimestamps
-    state'.credentialBatches  = state.credentialBatches + { batchId -> {
-                                                                         merkleRoot = merkleRoot, 
-                                                                         issuerDIDSuffix = issuerDIDSuffix, 
-                                                                         batchIssuingEvent    = LEDGER_TIMESTAMP,
-                                                                         batchRevocationEvent = None
-                                                                       }
-                                                          }
-    state'.revokedCredentials = state.revokedCredentials
-   ```
- 
 ## Batch Revocation
 
 We now define the revocation for a batch of issued credentials.
