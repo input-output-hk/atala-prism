@@ -1,0 +1,11 @@
+body {
+    color: black;
+}
+
+.menu ul a, .menu ul span {
+    color: black;
+}
+
+p {
+    margin-block-end: 1em;
+}

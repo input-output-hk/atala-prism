@@ -1,0 +1,76 @@
+site:
+  about:
+    siteName: PRISM SDK
+    siteDescription: Official SDK for the Atala PRISM project
+    siteCopyright: Input Output HK
+
+wiki:
+  sections:
+    - 'usage-tutorial'
+    - 'modules'
+
+allPages:
+  metaComponents:
+    - type: 'prism'
+      githubTheme: 'ghcolors'
+      languages:
+        - 'kotlin'
+
+theme:
+  primaryColor: '#DE9149'
+  legacySearch: false
+  metaComponents:
+    - type: 'orchidSearch'
+  extraCss:
+    - 'assets/css/theme.css'
+    - 'assets/css/highlight.css'
+  menu:
+    - type: 'wiki'
+      
+    - type: 'separator'
+      title: 'KotlinDoc'
+    - type: 'sourcedocPages'
+      moduleType: 'kotlindoc'
+      moduleName: 'Crypto'
+      node: 'classes'
+      asSubmenu: true
+      submenuTitle: 'Crypto Classes'
+    - type: 'sourcedocPages'
+      moduleType: 'kotlindoc'
+      moduleName: 'Identity'
+      node: 'classes'
+      asSubmenu: true
+      submenuTitle: 'Identity Classes'
+    - type: 'sourcedocPages'
+      moduleType: 'kotlindoc'
+      moduleName: 'Credentials'
+      node: 'classes'
+      asSubmenu: true
+      submenuTitle: 'Credentials Classes'
+    - type: 'sourcedocPages'
+      moduleType: 'kotlindoc'
+      moduleName: 'Protos'
+      node: 'classes'
+      asSubmenu: true
+      submenuTitle: 'Protos Classes'
+
+kotlindoc:
+  modules:
+    - name: 'Crypto'
+      slug: 'crypto'
+      sourceDirs: [ '../../../../crypto/src/commonMain/kotlin' ]
+    - name: 'Identity'
+      slug: 'identity'
+      sourceDirs: [ '../../../../identity/src/commonMain/kotlin' ]
+    - name: 'Credentials'
+      slug: 'credentials'
+      sourceDirs: [ '../../../../credentials/src/commonMain/kotlin' ]
+    - name: 'Protos'
+      slug: 'protos'
+      sourceDirs: [ '../../../../protos/build/generated/source/proto/main/kotlin' ]
+  pages:
+    menu:
+      - type: 'sourcedocPageLinks'
+        moduleType: 'kotlindoc'
+        itemTitleType: 'SIGNATURE'
+        includeItems: true

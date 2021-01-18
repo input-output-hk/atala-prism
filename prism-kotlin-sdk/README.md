@@ -55,3 +55,13 @@ $ pod install
 ```
 
 Lastly, re-import your iOS project in XCode, and you should be all good to go.
+
+## How to serve Orchid docs
+
+Run the following command from the SDK root directory:
+
+```
+$ ./gradlew :docs:orchidServe
+```
+
+Wait until Orchid is done generating HTML files and open http://localhost:8080 in your browser of choice.
