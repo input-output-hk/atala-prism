@@ -17,7 +17,9 @@ import {
   isWalletUnlocked,
   getSessionFromExtension,
   clearSession,
-  verifyRegistration
+  verifyRegistration,
+  setSessionState,
+  setSessionErrorHandler
 } from './login';
 import { isAdminSupported, populateDemoDataset } from './admin';
 
@@ -53,6 +55,8 @@ export const mockApi = {
     isWalletUnlocked,
     getSessionFromExtension,
     clearSession,
-    verifyRegistration
+    verifyRegistration,
+    setSessionState,
+    setSessionErrorHandler
   }
 };

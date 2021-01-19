@@ -845,6 +845,7 @@
     "saveDraft": "Error while saving New Credential draft",
     "emptyCredential": "Trying to save empty credential",
     "invalidCredential": "The credential has invalid fields",
+    "walletLockedOrRemoved": "You have either uninstalled or locked your wallet, to get back into Management Console, please unlock your wallet and log in again.",
     "walletNotRunning": "You must have the Atala PRISM browser wallet installed and unlocked",
     "walletNotRegistered": "You must register your organization using your browser wallet",
     "errorDuringRegister": "An error ocurred while registering, please try again or contact the FAQs",

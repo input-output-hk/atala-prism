@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withApi } from './withApi';
-import { LOADING, SESSION } from '../../helpers/constants';
+import { LOADING, LOCKED, SESSION, UNLOCKED } from '../../helpers/constants';
 import UnconfirmedAccountErrorModal from '../common/Organisms/Modals/UnconfirmedAccountErrorModal/UnconfirmedAccountErrorModal';
 
 const SessionContext = React.createContext();
@@ -21,37 +21,33 @@ const SessionProviderComponent = props => {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    const storedSession = localStorage.getItem(SESSION);
-    if (storedSession) {
-      login();
-    } else {
-      setSession(null);
-    }
+    wallet.setSessionErrorHandler(handleSessionError);
+    const storedSession = JSON.parse(localStorage.getItem(SESSION));
+    if (storedSession?.sessionState === UNLOCKED) login();
+    else setSession({ sessionState: LOCKED });
   }, []);
 
   useEffect(() => {
-    if (session) {
-      localStorage.setItem(SESSION, JSON.stringify(session));
-    } else {
-      localStorage.removeItem(SESSION);
-    }
-  });
+    localStorage.setItem(SESSION, JSON.stringify(session));
+    wallet.setSessionState(session);
+  }, [session]);
 
-  const login = async () => {
-    const { sessionData, error } = await wallet.getSessionFromExtension({ timeout: 5000 });
-    if (error) {
-      setSession(null);
-      message.error(t(error.message));
-      return;
-    }
-    setSession(sessionData);
-    return sessionData;
-  };
+  const login = () =>
+    wallet.getSessionFromExtension({ timeout: 5000 }).then(({ sessionData, error }) => {
+      if (error) {
+        setSession({ sessionState: LOCKED });
+        message.error(t(error.message));
+      } else setSession(sessionData);
+    });
 
   const logout = () => {
-    wallet.clearSession();
-    setSession(null);
+    setSession({ sessionState: LOCKED });
     setAcceptedModal(false);
+  };
+
+  const handleSessionError = () => {
+    message.error(t('errors.walletLockedOrRemoved'));
+    logout();
   };
 
   const verifyRegistration = () => wallet.verifyRegistration({ timeout: 5000 });
@@ -93,8 +89,9 @@ SessionProviderComponent.propTypes = {
   api: PropTypes.shape({
     wallet: PropTypes.shape({
       getSessionFromExtension: PropTypes.func.isRequired,
-      clearSession: PropTypes.func.isRequired,
-      verifyRegistration: PropTypes.func.isRequired
+      verifyRegistration: PropTypes.func.isRequired,
+      setSessionState: PropTypes.func.isRequired,
+      setSessionErrorHandler: PropTypes.func.isRequired
     }).isRequired
   }).isRequired
 };

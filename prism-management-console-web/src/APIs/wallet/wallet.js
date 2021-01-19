@@ -10,13 +10,14 @@ import {
   MISSING_WALLET_ERROR
 } from '../../helpers/constants';
 
+const RETRIES = 100;
+
 function getSessionFromExtension({ timeout = BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } = {}) {
   return Promise.race([this.repeatGetSessionRequest(), timeoutPromise(timeout)]);
 }
 
 function repeatGetSessionRequest() {
-  // retry(promise, retries, interval)
-  return retry(() => this.getSessionRequest(), 100, BROWSER_WALLET_CHECK_INTERVAL_MS);
+  return retry(() => this.getSessionRequest(), RETRIES, BROWSER_WALLET_CHECK_INTERVAL_MS);
 }
 
 const timeoutPromise = ms =>
@@ -38,7 +39,7 @@ function getSessionRequest() {
           resolve({ sessionData: newSessionState, error: null });
         } else resolve({ error: MISSING_WALLET_ERROR });
       })
-      .catch(error => {
+      .catch(() => {
         resolve({ error: MISSING_WALLET_ERROR });
       });
   });
@@ -62,26 +63,27 @@ function verifyRegistration() {
           resolve();
         } else reject(MISSING_WALLET_ERROR);
       })
-      .catch(error => {
+      .catch(() => {
         reject(MISSING_WALLET_ERROR);
       });
   });
 }
 
 function setSessionState(sessionData) {
-  this.session = {
-    sessionId: sessionData?.sessionId,
-    sessionState: UNLOCKED,
-    organisationName: sessionData.name,
-    logo: fromByteArray(sessionData.logo)
-  };
+  this.session = sessionData?.sessionId
+    ? {
+        sessionId: sessionData?.sessionId,
+        sessionState: UNLOCKED,
+        organisationName: sessionData.name,
+        logo: fromByteArray(sessionData.logo)
+      }
+    : defaultSessionState;
 
   return this.session;
 }
 
-function clearSession() {
-  this.session = defaultSessionState;
-  return this.session;
+function setSessionErrorHandler(sessionErrorHandler) {
+  this.handleSessionError = sessionErrorHandler;
 }
 
 function getNonce() {
@@ -90,11 +92,27 @@ function getNonce() {
   return Uint8Array.from(buffer);
 }
 
-async function signMessage(unsignedRequest) {
-  const { sessionId } = this.session;
+function isSessionError(error) {
+  const LOCKED_WALLET_ERROR = 'You need to create the wallet before logging in';
+  return (
+    error.message.includes(LOCKED_WALLET_ERROR) || error.message.includes(MISSING_WALLET_ERROR)
+  );
+}
 
-  const requestBytes = unsignedRequest.serializeBinary();
-  return window.prism.signConnectorRequest(sessionId, requestBytes);
+async function signMessage(unsignedRequest) {
+  try {
+    const { sessionId } = this.session;
+    const requestBytes = unsignedRequest.serializeBinary();
+    const result = await Promise.race([
+      window.prism.signConnectorRequest(sessionId, requestBytes),
+      timeoutPromise(BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS)
+    ]);
+    if (result.error) throw new Error(result.error);
+    return result;
+  } catch (error) {
+    if (isSessionError(error)) this.handleSessionError();
+    throw error;
+  }
 }
 
 async function signCredentials(unsignedCredentials) {
@@ -117,6 +135,7 @@ async function signCredentials(unsignedCredentials) {
 function Wallet(config) {
   this.config = config;
   this.session = defaultSessionState;
+  this.handleSessionError = () => {};
 }
 
 const defaultSessionState = {
@@ -131,7 +150,7 @@ Wallet.prototype.repeatGetSessionRequest = repeatGetSessionRequest;
 Wallet.prototype.getSessionRequest = getSessionRequest;
 Wallet.prototype.verifyRegistration = verifyRegistration;
 Wallet.prototype.setSessionState = setSessionState;
-Wallet.prototype.clearSession = clearSession;
+Wallet.prototype.setSessionErrorHandler = setSessionErrorHandler;
 Wallet.prototype.getNonce = getNonce;
 Wallet.prototype.signMessage = signMessage;
 Wallet.prototype.signCredentials = signCredentials;
