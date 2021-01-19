@@ -25,9 +25,10 @@ import scoverage.ScoverageKeys._
 import Dependencies._
 
 object SdkBuild {
-  val scala212 = "2.12.10"
+  // We used to cross-compile to scala 2.12 just to support Android, now, its not required anymore.
+  // The config is left just in case we ever need to cross-compile in a later stage.
   val scala213 = "2.13.3"
-  val supportedScalaVersions = List(scala212, scala213)
+  val supportedScalaVersions = List(scala213)
 
   def commonProject(project: CrossProject): CrossProject =
     project

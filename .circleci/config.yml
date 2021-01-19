@@ -586,6 +586,10 @@ jobs:
           command: cd prism-sdk && sbt coverageReport coverageAggregate
           when: always
 
+      - run:
+          name: Make sure that the modules can be published
+          command: cd prism-sdk && sbt +publishLocal
+
       - aggregate-test-reports:
           directory: "prism-sdk"
 
