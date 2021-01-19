@@ -753,7 +753,8 @@
       },
       "errors": {
         "required": "{{headerName}} is required",
-        "unexpectedValue": "Unexpected value found",
+        "unexpectedExternalID": "External ID does not exist",
+        "valueDoesNotMatch": "{{headerName}} does not match External ID",
         "emptyFile": "File is empty",
         "emptyRow": "Row contains no values",
         "invalidHeaderPosition": "Expected [ {{headerName}} ] header to be in column {{expectedHeaderPosition}}",

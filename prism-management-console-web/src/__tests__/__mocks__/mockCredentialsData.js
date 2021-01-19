@@ -654,6 +654,11 @@ export const invalidCredentialsData = {
         col: { index: 0, name: 'External ID' }
       },
       {
+        error: 'valueDoesNotMatch',
+        row: { index: 1 },
+        col: { index: 1, name: 'Contact Name' }
+      },
+      {
         error: 'required',
         row: { index: 1 },
         col: { index: 3, name: 'Full Name' }
@@ -667,9 +672,14 @@ export const invalidCredentialsData = {
     [],
     [
       {
-        error: 'unexpectedValue',
+        error: 'unexpectedExternalID',
         row: { index: 3 },
         col: { index: 0, name: 'External ID' }
+      },
+      {
+        error: 'valueDoesNotMatch',
+        row: { index: 3 },
+        col: { index: 1, name: 'Contact Name' }
       }
     ]
   ],

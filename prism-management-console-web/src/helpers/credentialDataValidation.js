@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import moment from 'moment';
-import { COMMON_CREDENTIALS_HEADERS, DEFAULT_DATE_FORMAT } from './constants';
+import { COMMON_CREDENTIALS_HEADERS, DEFAULT_DATE_FORMAT, EXTERNAL_ID_KEY } from './constants';
 import { isEmptyRow, trimEmptyRows } from './fileHelpers';
 
 // Credentials data bulk-import validations
@@ -130,13 +130,26 @@ const validateCommonFields = (
   expectedCommonHeaders
     .map(header => {
       const { key } = headersMapping.find(({ translation }) => translation === header);
+      const { translation: translatedHeader } = headersMapping.find(
+        ({ key: externalIdKey }) => externalIdKey === EXTERNAL_ID_KEY
+      );
+      const isExternalID = key === EXTERNAL_ID_KEY;
       const importedValue = dataRow[header];
+      const importedExternalID = dataRow[translatedHeader];
       if (!importedValue)
         return generateCommonFieldError('required', dataRow, header, allExpectedHeaders);
 
-      return recipients.some(({ [key]: expectedValue }) => importedValue === expectedValue)
+      return recipients.some(
+        ({ [key]: expectedValue, [EXTERNAL_ID_KEY]: expectedExternalID }) =>
+          importedValue === expectedValue && importedExternalID === expectedExternalID
+      )
         ? null
-        : generateCommonFieldError('unexpectedValue', dataRow, header, allExpectedHeaders);
+        : generateCommonFieldError(
+            isExternalID ? 'unexpectedExternalID' : 'valueDoesNotMatch',
+            dataRow,
+            header,
+            allExpectedHeaders
+          );
     })
     .filter(Boolean);
 
