@@ -5,7 +5,13 @@ import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
 
 case class HttpConfig(payIdPort: Int, payIdHostAddress: String)
 
-case class MirrorConfig(grpcConfig: GrpcConfig, httpConfig: HttpConfig)
+case class MirrorConfig(grpcConfig: GrpcConfig, httpConfig: HttpConfig, trisaConfig: TrisaConfig)
+
+case class TrisaConfig(
+    serverCertificateLocation: String,
+    serverCertificatePrivateKeyLocation: String,
+    serverTrustChainLocation: String
+)
 
 object MirrorConfig {
 
@@ -18,7 +24,14 @@ object MirrorConfig {
       payIdHostAddress = http.getString("pay-id-host-address")
     )
 
-    MirrorConfig(grpcConfig, httpConfig)
+    val trisa = globalConfig.getConfig("trisa")
+    val trisaConfig = TrisaConfig(
+      serverCertificateLocation = trisa.getString("serverCertificateLocation"),
+      serverCertificatePrivateKeyLocation = trisa.getString("serverCertificatePrivateKeyLocation"),
+      serverTrustChainLocation = trisa.getString("serverTrustChainLocation")
+    )
+
+    MirrorConfig(grpcConfig, httpConfig, trisaConfig)
   }
 
 }

@@ -13,17 +13,17 @@ import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.atala.mirror.config.MirrorConfig
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
-import io.iohk.atala.mirror.services.{CardanoAddressInfoService, CredentialService, MirrorService}
+import io.iohk.atala.mirror.services.{CardanoAddressInfoService, CredentialService, MirrorService, TrisaService}
 import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.services.{
   ConnectorClientService,
-  NodeClientService,
-  NodeClientServiceImpl,
   ConnectorClientServiceImpl,
-  ConnectorMessagesService
+  ConnectorMessagesService,
+  NodeClientService,
+  NodeClientServiceImpl
 }
 import io.iohk.atala.prism.utils.GrpcUtils
 import doobie.implicits._
@@ -106,6 +106,9 @@ object MirrorApp extends TaskApp {
           .start
       )
       _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
+
+      //trisa
+      _ = new TrisaService(mirrorConfig.trisaConfig).sendTestRequest("vasp2", 8092)
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer(

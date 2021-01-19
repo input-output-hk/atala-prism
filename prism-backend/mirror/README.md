@@ -71,3 +71,14 @@ jq -r '.connectionToken'| tr -d '\n\t' | qrencode -t UTF8
 4. Scan the QR code with the mobile app.
 
 5. Wait for credential request on the mobile app (it can take a few minutes).
+
+## Trisa
+https://trisa.io/ 
+### Running
+1. Follow instructions on https://trisacrypto.github.io/getting_started/demo/ to get trisa
+   demo environment running
+2. Copy `server.crt` `server.key` `trust.chain` from `trisa/artifacts/domo/vasp3/` (trisa demo environment) to
+    `mirror/etc/trisa` directory
+3. Edit `/etc/hosts` file, add: `172.22.0.2	vasp2` line where`172.22.0.2` is the ip address of Vasp2 running in docker.
+   (Vasp2 uses localhost port: `8092`)
+3. Run mirror with all the required dependencies (node, connector, database)
