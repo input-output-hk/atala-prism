@@ -17,29 +17,22 @@ import { CONNECTION_STATUSES } from './constants';
 export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
 export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
 
+export const contactCreationShape = {
+  contactName: string,
+  externalid: string,
+  key: number.isRequired
+};
+
 export const contactShape = {
-  avatar: string,
-  name: string,
-  identityNumber: number,
-  admissionDate: number,
-  email: string,
-  status: oneOf(connectionStatusesShape),
-  id: string
+  contactName: string,
+  externalid: string,
+  contactid: string,
+  status: oneOf(connectionStatusesShape)
 };
 
 export const groupShape = {
-  icon: string,
-  courseName: string,
-  courseId: string,
-  certificate: shape({
-    certificateName: string,
-    certificateId: string
-  }),
-  credential: shape({
-    credentialName: string,
-    credentialId: string
-  }),
-  lastUpdate: number
+  groupid: string,
+  name: string
 };
 
 export const credentialSummaryShape = {

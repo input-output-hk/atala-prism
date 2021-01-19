@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import BulkImportErrorLog from '../Molecules/Results/BulkImportErrorLog';
-import BulkImportSuccess from '../Molecules/Results/BulkImportSuccess';
-import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../helpers/constants';
+import SuccessPage from '../../common/Molecules/SuccessPage/SuccessPage';
+import { BULK_IMPORT, IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../helpers/constants';
 
 const BulkImportResult = ({
   fileData,
@@ -23,13 +23,14 @@ const BulkImportResult = ({
     contactCreations,
     credentialDataImported,
     continueCallback,
+    importType: BULK_IMPORT,
     useCase
   };
 
   return validationErrors ? (
     <BulkImportErrorLog {...errorProps} />
   ) : (
-    <BulkImportSuccess {...successfulUpdates} />
+    <SuccessPage {...successfulUpdates} />
   );
 };
 

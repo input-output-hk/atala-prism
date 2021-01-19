@@ -157,3 +157,6 @@ const renameProperties = (contact, headersMapping) =>
     (acc, { key, translation }) => Object.assign(acc, { [key]: contact[translation] }),
     {}
   );
+
+export const filterEmptyContact = contact =>
+  Object.keys(_.omit(contact, ['key'])).some(attribute => !!contact[attribute]);

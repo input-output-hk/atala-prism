@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { arrayOfArraysToObjects } from '../../helpers/fileHelpers';
+import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
+import ImportTypeSelectionContainer from '../ImportTypeSelection/ImportTypeSelectionContainer';
+import BulkImport from '../bulkImport/BulkImport';
+import ManualImportContainer from '../manualImport/ManualImportContainer';
+import {
+  filterEmptyContact,
+  translateBackSpreadsheetNamesToContactKeys
+} from '../../helpers/contactValidations';
 import {
   BULK_IMPORT,
   MANUAL_IMPORT,
   IMPORT_CONTACTS,
   IMPORT_CREDENTIALS_DATA
 } from '../../helpers/constants';
-import ImportTypeSelectionContainer from '../ImportTypeSelection/ImportTypeSelectionContainer';
-import BulkImport from '../bulkImport/BulkImport';
-import { arrayOfArraysToObjects } from '../../helpers/fileHelpers';
-import UnderContsructionMessage from '../common/Atoms/UnderContsructionMessage/UnderContsructionMessage';
-import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
+import { ImportResults } from './Molecules/ImportResults';
 
 const showGroupSelection = {
   [IMPORT_CONTACTS]: true,
@@ -33,13 +38,25 @@ const ImportDataContainer = ({
   loading
 }) => {
   const [selection, setSelection] = useState();
+  const [results, setResults] = useState();
 
   const resetSelection = () => setSelection();
 
-  const handleBulkImport = (fileData, selectedGroups, setResults) => {
+  const handleManualImport = (contacts, groups) => {
+    const filteredContacts = contacts.filter(filterEmptyContact);
+    onFinish(filteredContacts, groups, setResults);
+  };
+
+  const handleBulkImport = (fileData, selectedGroups) => {
     const { dataObjects, containsErrors, validationErrors } = parseFile(fileData, bulkValidator);
     if (containsErrors) setResults({ fileData, validationErrors });
-    else onFinish(dataObjects, selectedGroups, setResults);
+    else {
+      const translatedContacts = translateBackSpreadsheetNamesToContactKeys(
+        dataObjects,
+        headersMapping
+      );
+      onFinish(translatedContacts, selectedGroups, setResults);
+    }
   };
 
   const parseFile = (fileData, validator) => {
@@ -59,6 +76,26 @@ const ImportDataContainer = ({
     };
   };
 
+  const handleReturnToUploadStep = () => {
+    setResults(null);
+  };
+
+  const useCaseProps = {
+    useCase,
+    showGroupSelection: showGroupSelection[useCase],
+    isEmbedded: isEmbedded[useCase]
+  };
+
+  if (results)
+    return (
+      <ImportResults
+        results={results}
+        importType={selection}
+        useCaseProps={useCaseProps}
+        returnToUploadStep={handleReturnToUploadStep}
+      />
+    );
+
   switch (selection) {
     case BULK_IMPORT: {
       return (
@@ -67,15 +104,21 @@ const ImportDataContainer = ({
           cancelImport={resetSelection}
           recipients={recipients}
           credentialType={credentialType}
-          showGroupSelection={showGroupSelection[useCase]}
-          useCase={useCase}
+          useCaseProps={useCaseProps}
           headersMapping={headersMapping}
           loading={loading}
         />
       );
     }
     case MANUAL_IMPORT: {
-      return <UnderContsructionMessage goBack={() => setSelection()} />;
+      return (
+        <ManualImportContainer
+          onSave={handleManualImport}
+          cancelImport={resetSelection}
+          useCaseProps={useCaseProps}
+          loading={loading}
+        />
+      );
     }
     default: {
       return (

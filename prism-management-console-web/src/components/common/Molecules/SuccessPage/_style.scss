@@ -1,0 +1,31 @@
+@import "../../../../css/general_styling";
+
+.img-success {
+  width: 30%;
+}
+.success-wrapper {
+  height: 100%;
+  flex-direction: column;
+  display: flex;
+  .success-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: auto;
+    margin-top: 10%;
+    h1 {
+      @include secondary-text($h2, #00D793);
+      margin-top: 20px;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+      margin-bottom: 25px;
+      margin-top: 8px;
+    }
+    h1,
+    p {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}

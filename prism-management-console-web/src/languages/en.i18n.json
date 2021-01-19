@@ -8,6 +8,7 @@
     "back": "Back",
     "next": "Next",
     "done": "Done",
+    "save": "Save",
     "saveForLater": "Save & Continue later"
   },
   "commonWords": {
@@ -697,6 +698,32 @@
     "buttons": {
       "previous": "Back",
       "next": "Next"
+    },
+    "manualImport": {
+      "title": "Add Contacts Manually",
+      "newContact": "Add new contact"
+    }
+  }, 
+  "manualImport": {
+    "assignToGroups": {
+      "placeholder": "Type in or Select Group Name"
+    },
+    "table": {
+      "requirement": "{{requirement}} is required",
+      "contactName":"Contact Name",
+      "externalid": "External ID"
+    },
+    "importSuccess": {
+      "importContacts": {
+        "title": "Contacts successfully added",
+        "uploadedEntities": "contact(s) added",
+        "continue": "Continue"
+      },
+      "importCredentials": {
+        "title": "Your credential information has been successfully uploaded",
+        "uploadedEntities": "credential(s) uploaded",
+        "continue": "Continue"
+      }
     }
   },
   "bulkImport": {
@@ -857,6 +884,10 @@
     "buttons": {
       "previous": "Back",
       "next": "Next"
+    },
+    "manualImport": {
+      "title": "Add Contacts Manually",
+      "newContact": "Add new contact"
     }
   },
   "modelNames": {

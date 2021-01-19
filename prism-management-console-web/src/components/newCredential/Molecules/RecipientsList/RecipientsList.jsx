@@ -4,7 +4,7 @@ import { Table } from 'antd';
 import contactLogo from '../../../../images/holder-default-avatar.svg';
 import groupLogo from '../../../../images/groupIcon.svg';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import { dayMonthYearBackendFormatter } from '../../../../helpers/formatters';
+import { contactBackendDateFormat } from '../../../../helpers/formatters';
 
 import './_style.scss';
 import { useTranslationWithPrefix } from '../../../../hooks/useTranslationWithPrefix';
@@ -45,11 +45,11 @@ const RecipientsList = ({ recipients }) => {
               externalid && <CellRenderer title={tpc('externalid')} value={externalid} />
           },
           {
-            render: ({ creationDate }) =>
-              creationDate && (
+            render: ({ createdat }) =>
+              createdat && (
                 <CellRenderer
                   title={tpc('creationDate')}
-                  value={dayMonthYearBackendFormatter(creationDate)}
+                  value={contactBackendDateFormat(createdat)}
                 />
               )
           }
@@ -67,12 +67,9 @@ RecipientsList.propTypes = {
       PropTypes.shape({
         contactid: PropTypes.string,
         contactName: PropTypes.string,
+        groupName: PropTypes.string,
         externalid: PropTypes.string,
-        creationDate: PropTypes.shape({
-          day: PropTypes.number,
-          month: PropTypes.number,
-          year: PropTypes.number
-        })
+        createdat: PropTypes.number
       })
     ])
   ).isRequired

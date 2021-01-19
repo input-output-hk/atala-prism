@@ -20,12 +20,7 @@
   width: 200px;
 }
 
-.InputWithoutError {
-  padding-top: 20px;
-  margin:0;
-}
-
-.InputWithError {
+.TableInputContainer {
   width: auto;
   height: 70px;  
   .ant-form-item-control {

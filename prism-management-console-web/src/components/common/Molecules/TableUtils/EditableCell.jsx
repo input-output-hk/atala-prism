@@ -22,8 +22,8 @@ const EditableCell = ({
 }) => {
   const { t } = useTranslation();
 
-  const [editing, setEditing] = useState(false);
   const [cellForm, setCellForm] = useState();
+  const [editing, setEditing] = useState();
 
   const toggleEdit = () => {
     const isEditing = !editing;
@@ -39,16 +39,15 @@ const EditableCell = ({
       toggleEdit();
       const toSave = Object.assign({}, record, values);
 
-      handleSave(toSave);
+      handleSave({ ...toSave, errors });
     });
   };
 
-  const save = ({ currentTarget: { id } }) => {
+  const save = () => {
     cellForm.validateFields((errors, values) => {
       toggleEdit();
       const toSave = Object.assign({}, record, values);
-
-      handleSave(toSave);
+      handleSave({ ...toSave, errors });
     });
   };
 
@@ -72,31 +71,25 @@ const EditableCell = ({
     }
   };
 
-  const getError = () => {
-    const data = record[dataIndex];
-
-    if (!data) return `* ${t('errors.form.emptyField')}`;
-    if (isDate(type) && moment(data).isSameOrAfter(moment()))
-      return `* ${t('newCredential.form.errors.futureError')}`;
-  };
+  const getError = () =>
+    record.errors && record.errors[dataIndex]?.errors?.map(({ message }) => message);
 
   const renderCell = form => {
     setCellForm(form);
-
     const savedData = record[dataIndex];
 
     const emptyRule = [
       noEmptyInput(
-        t('studentCreation.table.requirement', {
-          requirement: t(`studentCreation.table.${dataIndex}`)
+        t('manualImport.table.requirement', {
+          requirement: t(`manualImport.table.${dataIndex}`)
         })
       )
     ];
     const futureRule = [
       {
         validator: (_, value, cb) => futureDate(value, cb, moment.now()),
-        message: t('studentCreation.table.requirement', {
-          requirement: t('studentCreation.table.dateRequirement')
+        message: t('manualImport.table.requirement', {
+          requirement: t('manualImport.table.dateRequirement')
         })
       }
     ];
@@ -105,12 +98,11 @@ const EditableCell = ({
     const errorToShow = getError();
 
     return editing ? (
-      <div className={errorToShow ? 'InputWithError' : 'InputWithoutError'}>
-        <Form.Item>
-          {errorToShow}
+      <div className="TableInputContainer">
+        <Form.Item validateStatus={errorToShow ? 'error' : null} hasFeedback help={errorToShow}>
           {cellForm.getFieldDecorator(dataIndex, {
-            rules: rulesByType,
-            initialValue: savedData
+            initialValue: savedData,
+            rules: rulesByType
           })(getElement())}
         </Form.Item>
       </div>

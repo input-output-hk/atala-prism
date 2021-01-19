@@ -57,3 +57,13 @@
     border-bottom: 4px solid $white;
   }
 }
+
+.EditableTable {
+  height: 100%;
+  width: 100%;
+  .ant-table-tbody {
+    .ant-row.ant-form-item {
+      margin-bottom: 0;
+    }
+  }
+}

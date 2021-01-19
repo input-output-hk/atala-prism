@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { message } from 'antd';
@@ -9,10 +9,7 @@ import { withRedirector } from '../providers/withRedirector';
 import { COMMON_CONTACT_HEADERS, IMPORT_CONTACTS } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
-import {
-  translateBackSpreadsheetNamesToContactKeys,
-  validateContactsBulk
-} from '../../helpers/contactValidations';
+import { validateContactsBulk } from '../../helpers/contactValidations';
 import { fromMomentToProtoDateFormatter } from '../../helpers/formatters';
 
 import './_style.scss';
@@ -21,23 +18,13 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
-  const headersMapping = COMMON_CONTACT_HEADERS.map(headerKey => ({
-    key: headerKey,
-    translation: t(`contacts.table.columns.${headerKey}`)
-  }));
-
   // TODO: replace with bulk request
   const handleRequests = async (contactsData, groups, setResults) => {
     setLoading(true);
     try {
-      const translatedContacts = translateBackSpreadsheetNamesToContactKeys(
-        contactsData,
-        headersMapping
-      );
-
       const groupsToAssign = await createMissingGroups(groups);
 
-      const contactsCreated = await createContacts(translatedContacts, groupsToAssign);
+      const contactsCreated = await createContacts(contactsData, groupsToAssign);
 
       message.success(t('importContacts.success'));
       setResults({
@@ -64,22 +51,14 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
 
   const createContacts = async (contacts, groups) => {
     const [firstGroup, ...otherGroups] = groups;
-    const contactCreationPromises = contacts.map(contact =>
-      api.contactsManager.createContact(
-        firstGroup?.name,
-        creationDateDecorator(omit(contact, ['originalArray'])),
-        contact.externalid
-      )
-    );
+    const contactCreationPromises = contacts.map(contact => {
+      const contactToSend = omit(contact, ['originalArray', 'errors', 'key', 'externalid']);
+      return api.contactsManager.createContact(firstGroup?.name, contactToSend, contact.externalid);
+    });
     const contactsCreated = await Promise.all(contactCreationPromises);
     await assignToGroups(contactsCreated, otherGroups);
     return contactsCreated;
   };
-
-  const creationDateDecorator = data => ({
-    ...data,
-    creationDate: fromMomentToProtoDateFormatter(moment())
-  });
 
   const assignToGroups = async (contacts, groups) => {
     const contactIds = contacts.map(c => c.contactid);
@@ -91,13 +70,18 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
     await Promise.all(updateGroupsPromises);
   };
 
+  const headersMapping = COMMON_CONTACT_HEADERS.map(headerKey => ({
+    key: headerKey,
+    translation: t(`contacts.table.columns.${headerKey}`)
+  }));
+
   return (
     <ImportDataContainer
       bulkValidator={validateContactsBulk}
       onFinish={handleRequests}
       onCancel={redirectToContacts}
-      useCase={IMPORT_CONTACTS}
       headersMapping={headersMapping}
+      useCase={IMPORT_CONTACTS}
       loading={loading}
     />
   );

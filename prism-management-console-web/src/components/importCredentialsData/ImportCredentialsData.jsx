@@ -1,13 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
+import { useTranslation } from 'react-i18next';
 import ImportDataContainer from '../importContactData/ImportDataContainer';
 import { withRedirector } from '../providers/withRedirector';
 import { withApi } from '../providers/withApi';
 import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
-import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 
 const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish }) => {
@@ -28,13 +27,8 @@ const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish 
 
   const headersMapping = generateHeadersMapping();
 
-  const unapplyTranslationToKeys = (dataObjects, _groups, setResults) => {
-    const untrasnlatedCredentials = translateBackSpreadsheetNamesToContactKeys(
-      dataObjects,
-      headersMapping
-    );
-
-    onFinish(untrasnlatedCredentials, setResults);
+  const handleFinishUpload = (credentials, _groups, setResults) => {
+    onFinish(credentials, setResults);
   };
 
   // append credential type to validator function arguments
@@ -52,7 +46,7 @@ const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish 
       recipients={recipients}
       credentialType={credentialType}
       bulkValidator={validatorWithCredentialType}
-      onFinish={unapplyTranslationToKeys}
+      onFinish={handleFinishUpload}
       onCancel={onCancel}
       useCase={IMPORT_CREDENTIALS_DATA}
       headersMapping={headersMapping}

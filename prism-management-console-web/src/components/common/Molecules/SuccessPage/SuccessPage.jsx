@@ -4,12 +4,19 @@ import { Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withRedirector } from '../../../providers/withRedirector';
 import img from '../../../../images/success-img.png';
-import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
+import {
+  BULK_IMPORT,
+  MANUAL_IMPORT,
+  IMPORT_CONTACTS,
+  IMPORT_CREDENTIALS_DATA
+} from '../../../../helpers/constants';
+import './_style.scss';
 
-const BulkImportSuccess = ({
+const SuccessPage = ({
   contactCreations,
   credentialDataImported,
   continueCallback,
+  importType,
   useCase,
   redirector: { redirectToContacts }
 }) => {
@@ -29,30 +36,33 @@ const BulkImportSuccess = ({
     <div className="success-wrapper">
       <div className="success-container">
         <img className="img-success" src={img} alt="" />
-        <h1>{t(`bulkImport.importSuccess.${useCase}.title`)}</h1>
+        <h1>{t(`${importType}.importSuccess.${useCase}.title`)}</h1>
         <p>
-          {`${successAmount[useCase]} ${t(`bulkImport.importSuccess.${useCase}.uploadedEntities`)}`}
+          {`${successAmount[useCase]} ${t(
+            `${importType}.importSuccess.${useCase}.uploadedEntities`
+          )}`}
         </p>
         <Button className="theme-secondary" onClick={continueFn[useCase]}>
-          {t(`bulkImport.importSuccess.${useCase}.continue`)}
+          {t(`${importType}.importSuccess.${useCase}.continue`)}
         </Button>
       </div>
     </div>
   );
 };
 
-BulkImportSuccess.defaultProps = {
+SuccessPage.defaultProps = {
   contactCreations: 0,
   credentialDataImported: 0,
   continueCallback: null
 };
 
-BulkImportSuccess.propTypes = {
+SuccessPage.propTypes = {
   contactCreations: PropTypes.number,
   redirector: PropTypes.shape({ redirectToContacts: PropTypes.func.isRequired }).isRequired,
   credentialDataImported: PropTypes.number,
   continueCallback: PropTypes.func,
+  importType: PropTypes.oneOf([MANUAL_IMPORT, BULK_IMPORT]).isRequired,
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
 };
 
-export default withRedirector(BulkImportSuccess);
+export default withRedirector(SuccessPage);

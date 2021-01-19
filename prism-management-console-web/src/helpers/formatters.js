@@ -74,6 +74,10 @@ export const backendDateFormat = unixDate =>
   // backend gives dates as timestamp expressed in seconds, moment takes it as milliseconds
   moment(unixDate * 1000).format(DEFAULT_DATE_FORMAT);
 
+export const contactBackendDateFormat = unixDate =>
+  // same as backendDateFormat but w/o *1000 due to an inconsistency on the timestamp formats
+  moment(unixDate).format(DEFAULT_DATE_FORMAT);
+
 export const backendDateFormatter = () => date => completeDateFormatter(date);
 export const frontendDateFormatter = format => date => completeFrontendDateFormatter(date, format);
 export const simpleMomentFormatter = date => date.format('L');

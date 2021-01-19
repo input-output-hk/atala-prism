@@ -3,11 +3,11 @@
     "ok": "OK",
     "cancel": "Cancel",
     "delete": "Delete",
-    "save": "Save",
     "view": "View",
     "back": "Back",
     "next": "Next",
     "done": "Done",
+    "save": "Save",
     "saveForLater": "Save & Continue later"
   },
   "commonWords": {
@@ -64,7 +64,6 @@
         "email": "Email",
         "invite": "QR Code",
         "delete": "Delete",
-        "remove": "Remove",
         "view": "View",
         "edit": "Edit",
         "viewCredentials": "View Credentials",
@@ -162,14 +161,7 @@
         "view": "View"
       }
     },
-    "deletionSuccess": "The group {{groupName}} was successfully deleted",
-    "copy": {
-      "title": "Do you want to copy a group?",
-      "subtitle": "Group names must be unique, please use a different name for the new group",
-      "label": "Insert a new name",
-      "copyOf": "Copy of {{name}}",
-      "success": "Successfully copied the group"
-    }
+    "deletionSuccess": "The group {{groupName}} was successfully deleted"
   },
   "holders": {
     "status": {
@@ -532,7 +524,12 @@
       "title": "We need some data...",
       "comment": "You are almost done!",
       "subtitle": "Please enter your Organization info so you can start using the application.",
-      "name": "Organization Name"
+      "name": "Organization Name",
+      "role": "Organization Role",
+      "defaultRole": "Please select a role",
+      "invalidRole": "Please select a valid role",
+      "ISSUER": "Issuer",
+      "VERIFIER": "Verifier"
     },
     "congratulations": {
       "alt": "Congratulations Image",
@@ -552,7 +549,7 @@
       "subtitle": "This is a placeholder with info that is important for the logged user.",
       "paragraph": "View key data to help better understand usage of ",
       "atalaPrism": "Atala PRISM."
-    },
+    },    
     "waitbanner": {
       "title": "Give us a moment!",
       "image": "Please wait",
@@ -697,6 +694,32 @@
     "buttons": {
       "previous": "Back",
       "next": "Next"
+    },
+    "manualImport": {
+      "title": "Add Contacts Manually",
+      "newContact": "Add new contact"
+    }
+  }, 
+  "manualImport": {
+    "assignToGroups": {
+      "placeholder": "Type in or Select Group Name"
+    },
+    "table": {
+      "requirement": "{{requirement}} is required",
+      "contactName":"Contact Name",
+      "externalid": "External ID"
+    },
+    "importSuccess": {
+      "importContacts": {
+        "title": "Contacts successfully added",
+        "uploadedEntities": "contact(s) added",
+        "continue": "Continue"
+      },
+      "importCredentials": {
+        "title": "Your credential information has been successfully uploaded",
+        "uploadedEntities": "credential(s) uploaded",
+        "continue": "Continue"
+      }
     }
   },
   "bulkImport": {
@@ -775,8 +798,8 @@
     "addContacts": "Add Contacts"
   },
   "groupEditing": {
-    "title": "Group Details",
-    "subtitle": "View details, edit group name, add or remove contacts.",
+    "title": "Edit Group",
+    "subtitle": "Edit group name, add or remove contacts.",
     "contacts": "Contacts",
     "selectContacts": "Select contacts to add",
     "removeContacts": "Remove Contacts",
@@ -797,7 +820,10 @@
     "selectAll": "Select All"
   },
   "theme": {
-    "title": "MANAGEMENT CONSOLE"
+    "title": {
+      "issuer": "MANAGEMENT CONSOLE",
+      "verifier": "Verifier Portal"
+    }
   },
   "support": {
     "title": "Support"
@@ -857,6 +883,10 @@
     "buttons": {
       "previous": "Back",
       "next": "Next"
+    },
+    "manualImport": {
+      "title": "Add Contacts Manually",
+      "newContact": "Add new contact"
     }
   },
   "modelNames": {

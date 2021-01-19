@@ -6,9 +6,7 @@ export const downloadTemplateCsv = (inputData, headersMapping) => {
   const csvData = inputData?.contacts?.length
     ? generateCsvFromInputData(inputData, headersMapping)
     : generateDefaultCsv(headersMapping.map(h => h.translation));
-  const filename = inputData?.credentialType
-    ? getFilename(inputData)
-    : `${i18n.t('generic.contactsTemplate')}.csv`;
+  const filename = getFilename(inputData);
   downloadCsvFile(filename, csvData);
 };
 
@@ -22,7 +20,10 @@ const generateCsvFromInputData = ({ contacts }, headersMapping) => {
   return Papa.unparse(templateJSON);
 };
 
-const getFilename = ({ credentialType }) => `${i18n.t(credentialType.name)}.csv`;
+const getFilename = ({ credentialType }) =>
+  credentialType
+    ? `${i18n.t(credentialType.name)}.csv`
+    : `${i18n.t('generic.contactsTemplate')}.csv`;
 
 // empty csv from headers array
 const headersToCsvString = headers => headers.reduce((acc, h) => (!acc ? h : `${acc},${h}`), null);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import EdtiableTable from '../../../common/Organisms/Tables/EditableTable';
+import EditableTable from '../../../common/Organisms/Tables/EditableTable';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 const getColumns = (length, t, handleDelete) => [
@@ -73,7 +73,7 @@ const StudentCreationTable = ({ students, deleteStudent, editStudent }) => {
     columns: realColumns
   };
 
-  return <EdtiableTable {...tableProps} />;
+  return <EditableTable {...tableProps} />;
 };
 
 StudentCreationTable.defaultProps = {
