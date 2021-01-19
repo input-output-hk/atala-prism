@@ -19,7 +19,7 @@ import io.iohk.atala.prism.credentials.utils.Mustache._
   *
   * {{{
   *   val mustache = new Mustache
-  *   val context: TemplateContext = (variable: String) => Some("$variable content")
+  *   val context: TemplateContext = (variable: String) => Some("\$variable content")
   *   mustache.render("Template with {{ variable }}.", context) == Right("Template with variable content".)
   * }}}
   */
