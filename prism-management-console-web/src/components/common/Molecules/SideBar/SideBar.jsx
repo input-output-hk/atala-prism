@@ -8,10 +8,13 @@ import contactsIcon from '../../../../images/connectionsIcon.svg';
 import iconMenu from '../../../../images/icon-menu.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
+import supportIcon from '../../../../images/supportIcon.svg';
 
 import './_style.scss';
 
 const { Sider } = Layout;
+
+const SUPPORT_URL = 'https://iohk.zendesk.com/hc/en-us/requests/new';
 
 const SideMenu = ({ location: { pathname } }) => {
   const { t } = useTranslation();
@@ -39,6 +42,17 @@ const SideMenu = ({ location: { pathname } }) => {
             </Menu.Item>
           );
         })}
+      </Menu>
+      <Menu mode="inline" selectable={false}>
+        <Menu.Item data-tip={t('support.title')}>
+          <a href={SUPPORT_URL} rel="noopener noreferrer" target="_blank">
+            <img
+              src={supportIcon}
+              alt={t('dashboard.itemAlt', { itemName: t('support.title') })}
+              className="NoOpacity"
+            />
+          </a>
+        </Menu.Item>
       </Menu>
     </Sider>
   );

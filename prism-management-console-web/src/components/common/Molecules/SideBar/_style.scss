@@ -8,7 +8,7 @@
   z-index: 99;
   // Layoout Side
 
-  .ant-layout-sider-zero-width-trigger{
+  .ant-layout-sider-zero-width-trigger {
     background-color: $primary-color;
     top: 0px;
     right: -40px;
@@ -41,6 +41,9 @@
       margin: 0 auto;
       opacity: 0.2;
     }
+    .NoOpacity {
+      opacity: 1;
+    }
   }
   li.ant-menu-item.ant-menu-item-selected {
     img {
@@ -59,4 +62,3 @@
 .ant-menu-inline .ant-menu-item.ant-menu-item-selected::after {
   border-right: 3px solid $primary-color;
 }
-
