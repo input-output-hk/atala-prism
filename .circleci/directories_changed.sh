@@ -34,19 +34,12 @@ if [ -z "$current_commit" ] ; then
   current_commit=$(git rev-parse HEAD)
 fi
 
-echo "Current commit is $current_commit"
-# Get the last commit shared by both develop and the current branch
-set +o pipefail # Disable pipefail check as head causes it but it's OK
-base_commit=$(git rev-list origin/develop | grep "$(git rev-list HEAD)" | head -1)
-set -o pipefail # Re-enable the pipefail check
-
-echo "Base commit is $base_commit"
-
 # Detect changed files, ignoring doc files (.md and everything inside a docs directory) and other files not affecting
 # builds or tests
+# "git diff A...B" is equivalent to "git diff $(git merge-base A B) B" (source: git help diff)
 set +e # Ignore grep returning an exit code of 1 when no line is selected
 changed_files=$(
-  git diff "$base_commit".."$current_commit" --name-only | \
+  git diff origin/develop..."$current_commit" --name-only | \
       grep -v "\.md$" | \
       grep -v "/docs/" | \
       grep -v "\.gitignore$")
