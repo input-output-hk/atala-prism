@@ -33,7 +33,7 @@ object CredentialIssuancesDAO {
       institutionId: ParticipantId
   ): ConnectionIO[CredentialIssuance] = {
     sql"""
-         |SELECT credential_issuance_id, name, credential_type_id, status, created_at, ready_at
+         |SELECT credential_issuance_id, name, credential_type_id, status, created_at
          |  FROM credential_issuances
          |  WHERE credential_issuance_id = $credentialIssuanceId
          |    AND created_by = $institutionId
@@ -88,6 +88,18 @@ object CredentialIssuancesDAO {
          |INSERT INTO contacts_per_credential_issuance_group (credential_issuance_group_id, credential_issuance_contact_id)
          |VALUES ($contactGroupId, $contactId)
          |""".stripMargin.update.run.map(_ => ())
+  }
+
+  def listGroupsPerContact(
+      credentialIssuanceId: CredentialIssuance.Id
+  ): ConnectionIO[List[(CredentialIssuance.ContactId, InstitutionGroup.Id)]] = {
+    sql"""
+         |SELECT ci_contact_groups.credential_issuance_contact_id, ci_groups.contact_group_id
+         |  FROM contacts_per_credential_issuance_group AS ci_contact_groups
+         |  JOIN credential_issuance_groups AS ci_groups
+         |    ON ci_groups.credential_issuance_group_id = ci_contact_groups.credential_issuance_group_id
+         |  WHERE ci_groups.credential_issuance_id = $credentialIssuanceId
+         |""".stripMargin.query[(CredentialIssuance.ContactId, InstitutionGroup.Id)].to[List]
   }
 
   case class CreateCredentialIssuance(

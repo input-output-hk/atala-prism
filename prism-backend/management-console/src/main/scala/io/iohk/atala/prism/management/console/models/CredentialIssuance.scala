@@ -3,6 +3,7 @@ package io.iohk.atala.prism.management.console.models
 import enumeratum.{Enum, EnumEntry}
 import io.circe.Json
 
+import java.time.Instant
 import java.util.UUID
 
 /** Represents the metadata to issue credentials to a batch of contacts. */
@@ -11,6 +12,7 @@ case class CredentialIssuance(
     name: String,
     credentialTypeId: Int,
     status: CredentialIssuance.Status,
+    createdAt: Instant,
     contacts: List[CredentialIssuanceContact]
 )
 
@@ -19,7 +21,8 @@ case class CredentialIssuanceContactGroup(id: CredentialIssuance.ContactGroupId,
 case class CredentialIssuanceContact(
     id: CredentialIssuance.ContactId,
     contactId: Contact.Id,
-    credentialData: Json
+    credentialData: Json,
+    groupIds: List[InstitutionGroup.Id]
 )
 
 object CredentialIssuance {

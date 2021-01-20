@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.services
 
-import io.circe.Json
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{
@@ -9,7 +8,13 @@ import io.iohk.atala.prism.management.console.errors.{
   ManagementConsoleErrorSupport
 }
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CreateContact,
+  CredentialIssuance,
+  InstitutionGroup,
+  ParticipantId
+}
 import io.iohk.atala.prism.management.console.repositories.{
   ContactsRepository,
   CredentialIssuancesRepository,
@@ -19,7 +24,7 @@ import io.iohk.atala.prism.management.console.repositories.{
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.connector_api.{ConnectionsStatusRequest, ContactConnectionServiceGrpc}
 import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
+import io.iohk.atala.prism.protos.console_models.{ContactConnectionStatus, CredentialIssuanceContact}
 import io.iohk.atala.prism.protos.{connector_models, console_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -222,7 +227,9 @@ class ConsoleServiceImpl(
           CredentialIssuancesRepository
             .CreateCredentialIssuanceContact(
               contactId = Contact.Id(UUID.fromString(contact.contactId)),
-              credentialData = Json.fromString(contact.credentialData),
+              credentialData = io.circe.parser
+                .parse(contact.credentialData)
+                .getOrElse(throw new RuntimeException("Invalid credentialData: it must be a JSON string")),
               groupIds = contact.groupIds.map(groupId => InstitutionGroup.Id(UUID.fromString(groupId))).toList
             )
         }.toList
@@ -259,6 +266,48 @@ class ConsoleServiceImpl(
     }
 
     authenticator.authenticated("createCredentialIssuance", request) { institutionId =>
+      f(institutionId, request)
+    }
+  }
+
+  override def getCredentialIssuance(
+      request: GetCredentialIssuanceRequest
+  ): Future[GetCredentialIssuanceResponse] = {
+    def f(
+        institutionId: ParticipantId,
+        request: GetCredentialIssuanceRequest
+    ): Future[GetCredentialIssuanceResponse] = {
+      implicit val loggingContext: LoggingContext =
+        LoggingContext("request" -> request, "institutionId" -> institutionId)
+
+      val credentialIssuanceIdF = Future {
+        Try {
+          CredentialIssuance.Id(UUID.fromString(request.credentialIssuanceId))
+        }.toEither
+      }.toFutureEither.mapLeft(InternalServerError)
+
+      val responseF = for {
+        credentialIssuanceId <- credentialIssuanceIdF
+        credentialIssuance <- credentialIssuancesRepository.get(credentialIssuanceId, institutionId)
+        response = GetCredentialIssuanceResponse(
+          name = credentialIssuance.name,
+          credentialTypeId = credentialIssuance.credentialTypeId,
+          status = ProtoCodecs.toCredentialIssuanceStatusProto(credentialIssuance.status),
+          createdAt = credentialIssuance.createdAt.toEpochMilli,
+          credentialIssuanceContacts = credentialIssuance.contacts.map(contact =>
+            CredentialIssuanceContact(
+              contactId = contact.contactId.value.toString,
+              credentialData = contact.credentialData.noSpaces,
+              groupIds = contact.groupIds.map(_.value.toString)
+            )
+          )
+        )
+      } yield response
+
+      responseF.wrapExceptions.flatten
+    }
+
+    authenticator.authenticated("getCredentialIssuance", request) { institutionId =>
       f(institutionId, request)
     }
   }

@@ -1,17 +1,21 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import doobie.Meta
+import doobie.implicits.legacy.instant._
 import doobie.postgres.implicits.pgEnumString
 import doobie.util.Read
 import doobie.util.invariant.InvalidEnum
+import io.circe.Json
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.management.console.models.{
   Contact,
   CredentialExternalId,
   CredentialIssuance,
+  CredentialIssuanceContact,
   ParticipantLogo
 }
 
+import java.time.Instant
 import java.util.UUID
 
 package object daos extends BaseDAO {
@@ -33,8 +37,14 @@ package object daos extends BaseDAO {
   )
 
   implicit val credentialIssuanceRead: Read[CredentialIssuance] =
-    Read[(CredentialIssuance.Id, String, Int, CredentialIssuance.Status)].map[CredentialIssuance] {
-      case (id, name, credentialTypeId, status) =>
-        CredentialIssuance(id, name, credentialTypeId, status, contacts = List())
+    Read[(CredentialIssuance.Id, String, Int, CredentialIssuance.Status, Instant)].map[CredentialIssuance] {
+      case (id, name, credentialTypeId, status, createdAt) =>
+        CredentialIssuance(id, name, credentialTypeId, status, createdAt, contacts = List())
+    }
+
+  implicit val credentialIssuanceContactRead: Read[CredentialIssuanceContact] =
+    Read[(CredentialIssuance.ContactId, Contact.Id, Json)].map[CredentialIssuanceContact] {
+      case (id, contactId, credentialData) =>
+        CredentialIssuanceContact(id, contactId, credentialData, groupIds = List())
     }
 }

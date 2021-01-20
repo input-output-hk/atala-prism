@@ -58,9 +58,10 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
       credentialIssuance.status mustBe CredentialIssuance.Status.Ready
       credentialIssuance.contacts.size mustBe contactsWithGroup.size
       val issuanceContactsByContactId = credentialIssuance.contacts.map(contact => (contact.contactId, contact)).toMap
-      for ((contact, _) <- contactsWithGroup) {
+      for ((contact, group) <- contactsWithGroup) {
         val issuanceContact = issuanceContactsByContactId(contact.contactId)
         issuanceContact.credentialData mustBe createCredentialData(contact)
+        issuanceContact.groupIds must contain theSameElementsAs group.map(_.id).toList
       }
     }
   }

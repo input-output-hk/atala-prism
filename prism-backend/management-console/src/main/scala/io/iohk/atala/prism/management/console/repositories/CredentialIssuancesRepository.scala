@@ -108,9 +108,17 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
       institutionId: ParticipantId
   ): FutureEither[ManagementConsoleError, CredentialIssuance] = {
     val query = for {
+      // Get the issuance first, as contacts are queried later
       issuanceWithoutContacts <-
         CredentialIssuancesDAO.getCredentialIssuanceWithoutContacts(credentialIssuanceId, institutionId)
-      contacts <- CredentialIssuancesDAO.listContacts(credentialIssuanceId)
+      // Get the contacts without contacts, as they are queried later
+      contactsWithoutGroups <- CredentialIssuancesDAO.listContacts(credentialIssuanceId)
+      // Determine which contacts belong to which group
+      groupsPerContactList <- CredentialIssuancesDAO.listGroupsPerContact(credentialIssuanceId)
+      groupsPerContact = groupsPerContactList.groupMap(_._1)(_._2).withDefaultValue(List())
+      contacts = contactsWithoutGroups.map { contact =>
+        contact.copy(groupIds = groupsPerContact(contact.id))
+      }
     } yield issuanceWithoutContacts.copy(contacts = contacts)
 
     query

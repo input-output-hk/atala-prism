@@ -165,6 +165,11 @@ class ContactsServiceImpl(
       request: CreateCredentialIssuanceRequest
   ): Future[CreateCredentialIssuanceResponse] = ???
 
+  /** Implemented on Management Console. */
+  override def getCredentialIssuance(
+      request: GetCredentialIssuanceRequest
+  ): Future[GetCredentialIssuanceResponse] = ???
+
   override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] = {
     def f(institutionId: Institution.Id): Future[GetStatisticsResponse] = {
       implicit val loggingContext: LoggingContext =

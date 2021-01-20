@@ -7,21 +7,16 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateContact,
-  CredentialIssuance,
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.connector_api.ConnectionsStatusResponse
+import io.iohk.atala.prism.protos.console_models.CredentialIssuanceStatus
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.concurrent.Future
 
@@ -505,13 +500,13 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
     }
   }
 
-  "createCredentialIssuance" should {
+  "createCredentialIssuance and getCredentialIssuance" should {
     val keyPair = EC.generateKeyPair()
     val did = generateDid(keyPair.publicKey)
     val otherKeyPair = EC.generateKeyPair()
     val otherDid = generateDid(otherKeyPair.publicKey)
 
-    def createRequest(
+    def createCredentialIssuanceRequest(
         contacts: List[console_models.CredentialIssuanceContact]
     ): console_api.CreateCredentialIssuanceRequest = {
       console_api.CreateCredentialIssuanceRequest(
@@ -521,45 +516,65 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       )
     }
 
-    "create a credential issuance" in {
+    "create and get a credential issuance" in {
       val institutionId = createParticipant("Institution", did)
       val contacts = createRandomCredentialIssuanceContacts(institutionId)
 
-      val request = createRequest(contacts)
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      // Create the credential issuance
+      val createRequest = createCredentialIssuanceRequest(contacts)
+      usingApiAs(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
+        val creationTime = Instant.now
+        val createResponse = serviceStub.createCredentialIssuance(createRequest)
 
-      usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.createCredentialIssuance(request)
+        // Get the credential issuance just created
+        val getRequest =
+          console_api.GetCredentialIssuanceRequest(credentialIssuanceId = createResponse.credentialIssuanceId)
+        usingApiAs(SignedRpcRequest.generate(keyPair, did, getRequest)) { serviceStub =>
+          val credentialIssuance = serviceStub.getCredentialIssuance(getRequest)
 
-        val credentialIssuanceId = CredentialIssuance.Id(UUID.fromString(response.credentialIssuanceId))
-        val credentialIssuance =
-          credentialIssuancesRepository.get(credentialIssuanceId, institutionId).value.futureValue.toOption.value
-        credentialIssuance.id mustBe credentialIssuanceId
-        credentialIssuance.name mustBe request.name
-        credentialIssuance.credentialTypeId mustBe request.credentialTypeId
-        credentialIssuance.status mustBe CredentialIssuance.Status.Ready
-        credentialIssuance.contacts.size mustBe contacts.size
-        val issuanceContactsByContactId =
-          credentialIssuance.contacts.map(contact => (contact.contactId.value.toString, contact)).toMap
-        for (contact <- contacts) {
-          val issuanceContact = issuanceContactsByContactId(contact.contactId)
-          issuanceContact.credentialData mustBe Json.fromString(contact.credentialData)
+          // Verify the obtained credential issuance matches the created one
+          credentialIssuance.name mustBe createRequest.name
+          credentialIssuance.credentialTypeId mustBe createRequest.credentialTypeId
+          credentialIssuance.status mustBe CredentialIssuanceStatus.READY
+          credentialIssuance.createdAt must (be >= creationTime.toEpochMilli and be <= Instant.now.toEpochMilli)
+          // Verify contacts
+          credentialIssuance.credentialIssuanceContacts.size mustBe contacts.size
+          val issuanceContactsByContactId =
+            credentialIssuance.credentialIssuanceContacts.map(contact => (contact.contactId, contact)).toMap
+          for (contact <- contacts) {
+            val issuanceContact = issuanceContactsByContactId(contact.contactId)
+            issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
+            // Verify credential data
+            val issuanceContactData = parser.parse(issuanceContact.credentialData).toOption.value
+            val expectedContactData = parser.parse(contact.credentialData).toOption.value
+            issuanceContactData mustBe expectedContactData
+          }
         }
       }
     }
 
-    "fail for a contact outside the institution" in {
+    "fail to create for a contact outside the institution" in {
       val institutionId = createParticipant("Institution", did)
       val contacts = createRandomCredentialIssuanceContacts(institutionId)
       val otherInstitutionId = createParticipant("Other Institution", otherDid)
       val otherContacts = List(createRandomCredentialIssuanceContact(otherInstitutionId))
 
-      val request = createRequest(contacts ++ otherContacts)
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
+      val createRequest = createCredentialIssuanceRequest(contacts ++ otherContacts)
+      usingApiAs(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
         assertThrows[Exception] {
-          serviceStub.createCredentialIssuance(request)
+          serviceStub.createCredentialIssuance(createRequest)
+        }
+      }
+    }
+
+    "fail to get for a nonexistent ID" in {
+      createParticipant("Institution", did)
+
+      val getRequest =
+        console_api.GetCredentialIssuanceRequest(credentialIssuanceId = UUID.randomUUID().toString)
+      usingApiAs(SignedRpcRequest.generate(keyPair, did, getRequest)) { serviceStub =>
+        assertThrows[Exception] {
+          serviceStub.getCredentialIssuance(getRequest)
         }
       }
     }
@@ -595,7 +610,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
     val contactId = contact.contactId.value.toString
     console_models.CredentialIssuanceContact(
       contactId = contactId,
-      credentialData = s"{'contactId': $contactId}",
+      credentialData = s"""{"contactId": "$contactId"}""",
       groupIds = group.map(_.id.value.toString).toList
     )
   }

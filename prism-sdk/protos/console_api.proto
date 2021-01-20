@@ -29,6 +29,9 @@ service ConsoleService {
   // Creates a new credential issuance
   rpc CreateCredentialIssuance (CreateCredentialIssuanceRequest) returns (CreateCredentialIssuanceResponse) {}
 
+  // Gets a credential issuance
+  rpc GetCredentialIssuance (GetCredentialIssuanceRequest) returns (GetCredentialIssuanceResponse) {}
+
   // Retrieves numbers about the operations done in the management console
   rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
 }
@@ -106,4 +109,17 @@ message CreateCredentialIssuanceRequest {
 // Response to creating a credential issuance
 message CreateCredentialIssuanceResponse {
   string credentialIssuanceId = 1; // ID of the credential issuance just created
+}
+
+// Request to get a credential issuance
+message GetCredentialIssuanceRequest {
+  string credentialIssuanceId = 1; // ID of the credential issuance
+}
+// Response to getting a credential issuance
+message GetCredentialIssuanceResponse {
+  string name = 1; // Name of the credential issuance
+  int32 credentialTypeId = 2; // ID of the type of credential to issue
+  CredentialIssuanceStatus status = 3; // Current status of the credential issuance
+  int64 createdAt = 4; // Timestamp when the credential issuance was created
+  repeated CredentialIssuanceContact credentialIssuanceContacts = 5; // The contacts and their credential data
 }

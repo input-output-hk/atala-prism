@@ -30,3 +30,10 @@ message CredentialIssuanceContact {
   string credentialData = 2; // Actual credential data of the contact, in JSON format
   repeated string groupIds = 3; // IDs of the groups the contact was taken from, empty if added directly
 }
+
+enum CredentialIssuanceStatus {
+  CREDENTIAL_ISSUANCE_STATUS_UNKNOWN = 0; // Invalid value, should not happen
+  DRAFT = 1; // The credential issuance is still being defined and is not final
+  READY = 2; // The credential issuance has been defined but not all credentials have been issued
+  COMPLETED = 3; // All the credentials from the credential issuance have been issued
+}
