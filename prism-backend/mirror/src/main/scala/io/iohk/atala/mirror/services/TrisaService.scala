@@ -16,10 +16,12 @@ class TrisaService(trisaConfig: TrisaConfig) {
   private val sslContext = {
     val sslContext = GrpcSslContexts.forClient()
 
-    sslContext.trustManager(new File(trisaConfig.serverTrustChainLocation))
+    val sslConfig = trisaConfig.sslConfig
+
+    sslContext.trustManager(new File(sslConfig.serverTrustChainLocation))
     sslContext.keyManager(
-      new File(trisaConfig.serverCertificateLocation),
-      new File(trisaConfig.serverCertificatePrivateKeyLocation)
+      new File(sslConfig.serverCertificateLocation),
+      new File(sslConfig.serverCertificatePrivateKeyLocation)
     )
 
     sslContext.build()

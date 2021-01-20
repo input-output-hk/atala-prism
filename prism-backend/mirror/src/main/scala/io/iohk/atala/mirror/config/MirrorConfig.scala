@@ -1,17 +1,13 @@
 package io.iohk.atala.mirror.config
 
 import com.typesafe.config.Config
-import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
+import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
 
 case class HttpConfig(payIdPort: Int, payIdHostAddress: String)
 
-case class MirrorConfig(grpcConfig: GrpcConfig, httpConfig: HttpConfig, trisaConfig: TrisaConfig)
+case class TrisaConfig(grpcConfig: GrpcConfig, sslConfig: SslConfig)
 
-case class TrisaConfig(
-    serverCertificateLocation: String,
-    serverCertificatePrivateKeyLocation: String,
-    serverTrustChainLocation: String
-)
+case class MirrorConfig(grpcConfig: GrpcConfig, httpConfig: HttpConfig, trisaConfig: TrisaConfig)
 
 object MirrorConfig {
 
@@ -25,13 +21,8 @@ object MirrorConfig {
     )
 
     val trisa = globalConfig.getConfig("trisa")
-    val trisaConfig = TrisaConfig(
-      serverCertificateLocation = trisa.getString("serverCertificateLocation"),
-      serverCertificatePrivateKeyLocation = trisa.getString("serverCertificatePrivateKeyLocation"),
-      serverTrustChainLocation = trisa.getString("serverTrustChainLocation")
-    )
 
-    MirrorConfig(grpcConfig, httpConfig, trisaConfig)
+    MirrorConfig(grpcConfig, httpConfig, TrisaConfig(GrpcConfig(trisa), SslConfig(trisa)))
   }
 
 }

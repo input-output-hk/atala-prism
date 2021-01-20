@@ -33,7 +33,7 @@ import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import io.circe.generic.auto._
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken, ConnectorMessageId}
-import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
+import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
 import io.iohk.atala.prism.services.NodeClientService
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
 
@@ -44,7 +44,10 @@ trait MirrorFixtures {
   lazy val mirrorConfig: MirrorConfig = MirrorConfig(
     GrpcConfig(50057),
     HttpConfig(8080, "localhost"),
-    TrisaConfig("mirror/etc/trisa/server.crt", "mirror/etc/trisa/server.key", "mirror/etc/trisa/trust.chain")
+    TrisaConfig(
+      GrpcConfig(7777),
+      SslConfig("mirror/etc/trisa/server.crt", "mirror/etc/trisa/server.key", "mirror/etc/trisa/trust.chain")
+    )
   )
 
   /**

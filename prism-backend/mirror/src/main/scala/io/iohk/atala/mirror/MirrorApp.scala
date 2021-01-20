@@ -13,7 +13,13 @@ import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.atala.mirror.config.MirrorConfig
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
-import io.iohk.atala.mirror.services.{CardanoAddressInfoService, CredentialService, MirrorService, TrisaService}
+import io.iohk.atala.mirror.services.{
+  CardanoAddressInfoService,
+  CredentialService,
+  MirrorService,
+  TrisaPeer2PeerService,
+  TrisaService
+}
 import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.CredentialProofRequestType
@@ -27,10 +33,13 @@ import io.iohk.atala.prism.services.{
 }
 import io.iohk.atala.prism.utils.GrpcUtils
 import doobie.implicits._
+import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
 
 object MirrorApp extends TaskApp {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
+
+  case class GrpcServers(mirrorGrpcServer: Server, trisaGrpcServer: Server)
 
   /**
     * Run the Mirror application.
@@ -39,10 +48,12 @@ object MirrorApp extends TaskApp {
     //for some unknown reasons, incorrect class loader is used during execution
     //of Resource "for comprehension".
     val classLoader = Thread.currentThread().getContextClassLoader
-    app(classLoader).use { grpcServer =>
-      logger.info("Starting GRPC server")
-      grpcServer.start
-      Task.never // run server forever
+    app(classLoader).use {
+      case GrpcServers(grpcServer, trisaGrpcServer) =>
+        logger.info("Starting GRPC server")
+        grpcServer.start
+        trisaGrpcServer.start()
+        Task.never // run server forever
     }
   }
 
@@ -50,7 +61,7 @@ object MirrorApp extends TaskApp {
     * This is an entry point for the Mirror application.
     * The resource contains a GRPC [[Server]] instance, that isn't started.
     */
-  def app(classLoader: ClassLoader): Resource[Task, Server] =
+  def app(classLoader: ClassLoader): Resource[Task, GrpcServers] =
     for {
       globalConfig <- Resource.liftF(Task {
         logger.info("Loading config")
@@ -92,6 +103,7 @@ object MirrorApp extends TaskApp {
         findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(tx),
         saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
       )
+      trisaPeer2PeerService = new TrisaPeer2PeerService()
 
       // background streams
       _ <- Resource.liftF(
@@ -108,18 +120,26 @@ object MirrorApp extends TaskApp {
       _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       //trisa
-      _ = new TrisaService(mirrorConfig.trisaConfig).sendTestRequest("vasp2", 8092)
+      _ = new TrisaService(mirrorConfig.trisaConfig).sendTestRequest("vasp1", 8091)
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer(
         mirrorConfig.grpcConfig,
+        sslConfigOption = None,
         MirrorServiceGrpc.bindService(mirrorGrpcService, scheduler)
+      )
+
+      // gRPC server
+      trisaGrpcServer <- GrpcUtils.createGrpcServer(
+        mirrorConfig.trisaConfig.grpcConfig,
+        sslConfigOption = Some(mirrorConfig.trisaConfig.sslConfig),
+        TrisaPeer2PeerGrpc.bindService(trisaPeer2PeerService, scheduler)
       )
 
       paymentsEndpoint = new PaymentEndpoints(cardanoAddressInfoService, mirrorConfig.httpConfig)
       apiServer = new ApiServer(paymentsEndpoint, mirrorConfig.httpConfig)
       _ <- apiServer.payIdServer.resource
-    } yield grpcServer
+    } yield GrpcServers(grpcServer, trisaGrpcServer)
 
   /**
     * Run db migrations with Flyway.
