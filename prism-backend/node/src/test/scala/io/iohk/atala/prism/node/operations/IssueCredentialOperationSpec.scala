@@ -159,7 +159,7 @@ class IssueCredentialOperationSpec extends AtalaWithPostgresSpec {
         .futureValue
       result mustBe a[Right[_, _]]
 
-      credentialsRepository.find(parsedOperation.credentialId).value.futureValue mustBe a[Right[_, _]]
+      credentialsRepository.getCredentialState(parsedOperation.credentialId).value.futureValue mustBe a[Right[_, _]]
     }
 
     "return error when issuer is missing in the DB" in {

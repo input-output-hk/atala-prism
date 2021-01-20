@@ -52,8 +52,15 @@ service NodeService {
     // Finds the time when a credential was revoked
     rpc GetCredentialRevocationTime(GetCredentialRevocationTimeRequest) returns (GetCredentialRevocationTimeResponse) {}
 
+    // Publishes a sequence of signed operations in a single underlying transaction
+    // The sequence of operations has a size limit to fit in the metadata of the transaction(approx 15KB)
     rpc PublishAsABlock(PublishAsABlockRequest) returns (PublishAsABlockResponse) {}
+
+    // NOTE: This will be removed after migrating to slayer 0.3
+    // Returns the transaction information associated to the credential issuance
+    rpc GetCredentialTransactionInfo(GetCredentialTransactionInfoRequest) returns (GetCredentialTransactionInfoResponse) {}
 }
+
 
 // Request to find a DID Document
 message GetDidDocumentRequest {
@@ -192,4 +199,15 @@ message PublishAsABlockResponse {
     TransactionInfo transactionInfo = 1;
     // the responses of every operation in the block, they are ordered in the same order of the operations sent in PublishAsABlockRequest
     repeated OperationOutput outputs = 2;
+}
+
+// TODO: Deprecate these messages after migration to 0.3
+// Requests the transaction information associated to the credential
+message GetCredentialTransactionInfoRequest {
+    string credentialId = 1; // the slayer id of the desired credential
+}
+
+// Returns the data associated to the credential requested
+message GetCredentialTransactionInfoResponse {
+    TransactionInfo issuance = 1; // if present, the information associated to the issuance of this credential
 }

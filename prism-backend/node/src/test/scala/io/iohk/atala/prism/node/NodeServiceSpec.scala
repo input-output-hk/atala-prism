@@ -27,17 +27,12 @@ import io.iohk.atala.prism.node.operations.{
   UpdateDIDOperationSpec
 }
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
   AtalaObjectTransactionStatus
 }
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceSpec,
-  CredentialsService,
-  DIDDataService,
-  ObjectManagementService
-}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
   GetCredentialRevocationTimeRequest,
@@ -51,11 +46,11 @@ import io.iohk.atala.prism.utils.FutureEither
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
-
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 import io.iohk.atala.prism.protos.node_models.OperationOutput
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.Future
 
@@ -66,7 +61,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   private val objectManagementService = mock[ObjectManagementService]
-  private val credentialsService = mock[CredentialsService]
+  private val credentialsRepository = mock[CredentialsRepository]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository]
 
   private val testTransactionInfo =
@@ -81,7 +76,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
     super.beforeEach()
 
     reset(objectManagementService)
-    reset(credentialsService)
+    reset(credentialsRepository)
     reset(credentialBatchesRepository)
 
     val didDataService = new DIDDataService(new DIDDataRepository(database))
@@ -97,7 +92,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
             new NodeServiceImpl(
               didDataService,
               objectManagementService,
-              credentialsService,
+              credentialsRepository,
               credentialBatchesRepository
             ),
             executionContext
@@ -435,7 +430,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
         )
       )
 
-      doReturn(repositoryError).when(credentialsService).getCredentialState(validCredentialId)
+      doReturn(repositoryError).when(credentialsRepository).getCredentialState(validCredentialId)
 
       val serviceError = intercept[RuntimeException] {
         service.getCredentialState(requestWithValidId)
@@ -471,7 +466,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
         .withBlockSequenceNumber(issuedOn.atalaBlockSequenceNumber)
         .withOperationSequenceNumber(issuedOn.operationSequenceNumber)
 
-      doReturn(repositoryResponse).when(credentialsService).getCredentialState(validCredentialId)
+      doReturn(repositoryResponse).when(credentialsRepository).getCredentialState(validCredentialId)
 
       val response = service.getCredentialState(requestWithValidId)
       response.issuerDID must be(issuerDIDSuffix.value)
@@ -826,6 +821,65 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
 
       verify(objectManagementService).publishAtalaOperation(revokeOperation)
       verifyNoMoreInteractions(objectManagementService)
+    }
+  }
+
+  "NodeService.getCredentialTransactionInfo" should {
+    "fail when the credential id has the wrong format" in {
+      val invalidCredentialId = "bad format"
+      val error = intercept[StatusRuntimeException] {
+        service.getCredentialTransactionInfo(
+          node_api
+            .GetCredentialTransactionInfoRequest()
+            .withCredentialId(invalidCredentialId)
+        )
+      }
+
+      val expectedMessage = s"INTERNAL: requirement failed: invalid credential id: $invalidCredentialId"
+      error.getMessage must be(expectedMessage)
+    }
+
+    "return empty transaction info when the repository reports no info" in {
+      val credentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
+
+      val repositoryResponse = Future(Right(None)).toFutureEither
+      doReturn(repositoryResponse).when(credentialsRepository).getCredentialTransactionInfo(credentialId)
+
+      val response = service.getCredentialTransactionInfo(
+        node_api
+          .GetCredentialTransactionInfoRequest()
+          .withCredentialId(credentialId.id)
+      )
+
+      response.issuance must be(empty)
+    }
+
+    "return the proper transaction info when the repository reports it" in {
+      val credentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
+
+      val transactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = Ledger.InMemory,
+        block = None
+      )
+
+      val repositoryResponse = Future(Right(Some(transactionInfo))).toFutureEither
+
+      doReturn(repositoryResponse).when(credentialsRepository).getCredentialTransactionInfo(credentialId)
+
+      val expectedResponse = common_models.TransactionInfo(
+        transactionId = transactionInfo.transactionId.toString,
+        ledger = common_models.Ledger.IN_MEMORY,
+        block = None
+      )
+
+      val response = service.getCredentialTransactionInfo(
+        node_api
+          .GetCredentialTransactionInfoRequest()
+          .withCredentialId(credentialId.id)
+      )
+
+      response.issuance.value must be(expectedResponse)
     }
   }
 }

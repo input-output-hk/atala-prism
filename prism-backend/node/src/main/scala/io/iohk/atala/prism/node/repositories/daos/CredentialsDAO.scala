@@ -6,10 +6,12 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
 import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.models.nodeState.{CredentialState, LedgerData}
 import io.iohk.atala.prism.node.models.CredentialId
 
 object CredentialsDAO {
+
   case class CreateCredentialData(
       id: CredentialId,
       lastOperation: SHA256Digest,
@@ -58,5 +60,15 @@ object CredentialsDAO {
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
          |WHERE credential_id = $credentialId
        """.stripMargin.update.run.map(_ > 0)
+  }
+
+  def getCredentialTransactionInfo(
+      credentialId: CredentialId
+  ): ConnectionIO[Option[TransactionInfo]] = {
+    sql"""
+         |SELECT issued_on_transaction_id, ledger, null as block
+         |FROM credentials
+         |WHERE credential_id = $credentialId
+       """.stripMargin.query[TransactionInfo].option
   }
 }

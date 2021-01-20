@@ -4,6 +4,7 @@ import cats.data.{EitherT, OptionT}
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.node.errors.NodeError
@@ -28,7 +29,7 @@ class CredentialsRepository(xa: Transactor[IO]) {
       .toFutureEither
   }
 
-  def find(credentialId: CredentialId): FutureEither[NodeError, CredentialState] = {
+  def getCredentialState(credentialId: CredentialId): FutureEither[NodeError, CredentialState] = {
     OptionT(CredentialsDAO.find(credentialId))
       .toRight(UnknownValueError("credential_id", credentialId.id))
       .transact(xa)
@@ -40,6 +41,15 @@ class CredentialsRepository(xa: Transactor[IO]) {
   def revoke(credentialId: CredentialId, revocationLedgerData: LedgerData): FutureEither[NodeError, Boolean] = {
     EitherT
       .right[NodeError](CredentialsDAO.revoke(credentialId, revocationLedgerData))
+      .transact(xa)
+      .value
+      .unsafeToFuture()
+      .toFutureEither
+  }
+
+  def getCredentialTransactionInfo(credentialId: CredentialId): FutureEither[NodeError, Option[TransactionInfo]] = {
+    EitherT
+      .right[NodeError](CredentialsDAO.getCredentialTransactionInfo(credentialId))
       .transact(xa)
       .value
       .unsafeToFuture()

@@ -51,7 +51,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         _ <- credentialsRepository.create(
           createCredentialData
         )
-        credential <- credentialsRepository.find(credentialId)
+        credential <- credentialsRepository.getCredentialState(credentialId)
       } yield credential).value.futureValue.toOption.value
 
       result.credentialId mustBe credentialId
@@ -66,7 +66,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val result = (for {
         _ <- didDataRepository.create(didData, issuanceLedgerData)
         _ <- credentialsRepository.create(createCredentialData)
-        credential <- credentialsRepository.find(otherCredentialId)
+        credential <- credentialsRepository.getCredentialState(otherCredentialId)
       } yield credential).value.futureValue.left.value
 
       result mustBe an[UnknownValueError]
@@ -77,7 +77,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         _ <- didDataRepository.create(didData, issuanceLedgerData)
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(credentialId, revocationLedgerData)
-        credential <- credentialsRepository.find(credentialId)
+        credential <- credentialsRepository.getCredentialState(credentialId)
       } yield (revocation, credential)).value.futureValue.toOption.value
 
       revocation mustBe true
@@ -94,6 +94,31 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       } yield revocation).value.futureValue.toOption.value
 
       result mustBe false
+    }
+
+    "getCredentialTransactionInfo returns transaction info when the credential is published" in {
+      val result = (for {
+        _ <- didDataRepository.create(didData, issuanceLedgerData)
+        _ <- credentialsRepository.create(
+          createCredentialData
+        )
+        transactionInfo <- credentialsRepository.getCredentialTransactionInfo(credentialId)
+      } yield transactionInfo).value.futureValue.toOption.value
+
+      result.value.transactionId must be(createCredentialData.ledgerData.transactionId)
+      result.value.ledger must be(createCredentialData.ledgerData.ledger)
+      result.value.block must be(empty)
+    }
+
+    "getCredentialTransactionInfo returns Right(None) when the credential is not published" in {
+      val transactionInfo = credentialsRepository
+        .getCredentialTransactionInfo(credentialId)
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      transactionInfo must be(empty)
     }
   }
 }

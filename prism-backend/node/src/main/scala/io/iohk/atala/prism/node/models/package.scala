@@ -34,7 +34,7 @@ package object models {
 
   object CredentialId {
     def apply(id: String): CredentialId = {
-      require(CREDENTIAL_ID_RE.pattern.matcher(id).matches())
+      require(CREDENTIAL_ID_RE.pattern.matcher(id).matches(), s"invalid credential id: $id")
 
       new CredentialId(id)
     }

@@ -11,9 +11,9 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.repositories.CredentialBatchesRepository
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
-import io.iohk.atala.prism.node.services.{CredentialsService, DIDDataService, ObjectManagementService}
+import io.iohk.atala.prism.node.services.{DIDDataService, ObjectManagementService}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
@@ -22,6 +22,8 @@ import io.iohk.atala.prism.protos.node_api.{
   GetCredentialRevocationTimeResponse,
   GetCredentialStateRequest,
   GetCredentialStateResponse,
+  GetCredentialTransactionInfoRequest,
+  GetCredentialTransactionInfoResponse,
   GetTransactionStatusRequest,
   GetTransactionStatusResponse,
   IssueCredentialBatchRequest,
@@ -44,7 +46,7 @@ import scala.util.Try
 class NodeServiceImpl(
     didDataService: DIDDataService,
     objectManagement: ObjectManagementService,
-    credentialsService: CredentialsService,
+    credentialsRepository: CredentialsRepository,
     credentialBatchesRepository: CredentialBatchesRepository
 )(implicit
     ec: ExecutionContext
@@ -169,7 +171,7 @@ class NodeServiceImpl(
       }
     for {
       credentialId <- credentialIdF
-      credentialStateEither <- credentialsService.getCredentialState(credentialId).value
+      credentialStateEither <- credentialsRepository.getCredentialState(credentialId).value
     } yield {
       credentialStateEither match {
         case Left(err: NodeError) =>
@@ -379,6 +381,32 @@ class NodeServiceImpl(
           .withTransactionInfo(toTransactionInfo(transactionInfo))
           .withOutputs(outputs)
       )
+    }
+  }
+
+  /** NOTE: This will be removed after migrating to slayer 0.3
+    * Returns the transaction information associated to the credential (both issuance and possible revocation)
+    */
+  override def getCredentialTransactionInfo(
+      request: GetCredentialTransactionInfoRequest
+  ): Future[GetCredentialTransactionInfoResponse] = {
+    logRequest("getCredentialTransactionInfo", request)
+    val credentialIdF = Future.fromTry(
+      Try { CredentialId(request.credentialId) }
+    )
+    for {
+      credentialId <- credentialIdF
+      transactionInfoEither <- credentialsRepository.getCredentialTransactionInfo(credentialId).value
+    } yield transactionInfoEither match {
+      case Left(error) =>
+        throw error.toStatus.asRuntimeException()
+      case Right(transactionInfo) =>
+        logAndReturnResponse(
+          "getCredentialTransactionInfo",
+          node_api.GetCredentialTransactionInfoResponse(
+            issuance = transactionInfo.map(toTransactionInfo)
+          )
+        )
     }
   }
 }

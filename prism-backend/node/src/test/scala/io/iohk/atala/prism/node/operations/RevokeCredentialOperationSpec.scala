@@ -146,7 +146,7 @@ class RevokeCredentialOperationSpec extends AtalaWithPostgresSpec {
       parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
       val credential = credentialsRepository
-        .find(credentialId)
+        .getCredentialState(credentialId)
         .value
         .futureValue
         .toOption

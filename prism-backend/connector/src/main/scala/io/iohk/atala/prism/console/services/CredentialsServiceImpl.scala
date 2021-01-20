@@ -3,7 +3,6 @@ package io.iohk.atala.prism.console.services
 import java.util.UUID
 
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs._
 import io.iohk.atala.prism.console.models.{
   Contact,
@@ -252,22 +251,22 @@ class CredentialsServiceImpl(
     */
   override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = {
     authenticator.authenticated("getBlockchainData", request) { _ =>
-      // TODO: The node currently does not store the transaction data in a useful way.
-      //       Hence, we will have this workaround: We will return the data from the
-      //       published_credentials table to unlock the flow.
-      //       This must be updated after we update the node
-      credentialsRepository
-        .getTransactionInfo(request.encodedSignedCredential)
-        .map { maybeTransactionInfo =>
-          maybeTransactionInfo.fold(GetBlockchainDataResponse())(txInfo =>
-            GetBlockchainDataResponse().withIssuanceProof(CommonProtoCodecs.toTransactionInfo(txInfo))
-          )
-        }
-        .value
-        .map {
-          case Right(x) => x
-          case Left(e) => throw new RuntimeException(s"FAILED: $e")
-        }
+      val slayerIdF = Future.fromTry(
+        SlayerCredentialId.compute(request.encodedSignedCredential).toTry
+      )
+
+      for {
+        slayerId <- slayerIdF
+        response <-
+          nodeService
+            .getCredentialTransactionInfo(
+              node_api
+                .GetCredentialTransactionInfoRequest()
+                .withCredentialId(slayerId.string)
+            )
+      } yield response.issuance.fold(GetBlockchainDataResponse())(txInfo =>
+        GetBlockchainDataResponse().withIssuanceProof(txInfo)
+      )
     }
   }
 }
