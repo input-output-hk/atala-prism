@@ -2,7 +2,6 @@ package io.iohk.atala.mirror
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.UUID
-
 import cats.effect.Sync
 import cats.implicits._
 import com.google.protobuf.ByteString
@@ -26,7 +25,7 @@ import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
 import io.iohk.atala.prism.protos.credential_models
 import io.circe.syntax._
-import io.iohk.atala.mirror.config.{HttpConfig, MirrorConfig}
+import io.iohk.atala.mirror.config.{HttpConfig, MirrorConfig, TrisaConfig}
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.jose.implicits._
 import io.iohk.atala.prism.credentials.Credential
@@ -42,7 +41,11 @@ trait MirrorFixtures {
 
   private implicit def ec = EC
 
-  lazy val mirrorConfig: MirrorConfig = MirrorConfig(GrpcConfig(50057), HttpConfig(8080, "localhost"))
+  lazy val mirrorConfig: MirrorConfig = MirrorConfig(
+    GrpcConfig(50057),
+    HttpConfig(8080, "localhost"),
+    TrisaConfig("mirror/etc/trisa/server.crt", "mirror/etc/trisa/server.key", "mirror/etc/trisa/trust.chain")
+  )
 
   /**
     * Helper method to insert multiple records into the database.
