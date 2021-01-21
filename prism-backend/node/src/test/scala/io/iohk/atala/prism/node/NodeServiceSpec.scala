@@ -43,18 +43,22 @@ import io.iohk.atala.prism.protos.node_api.{
 }
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.FutureEither
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
+
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-
 import io.iohk.atala.prism.protos.node_models.OperationOutput
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.Future
 
-class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with BeforeAndAfterEach {
+class NodeServiceSpec
+    extends AtalaWithPostgresSpec
+    with MockitoSugar
+    with ResetMocksAfterEachTest
+    with BeforeAndAfterEach {
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
@@ -74,10 +78,6 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-
-    reset(objectManagementService)
-    reset(credentialsRepository)
-    reset(credentialBatchesRepository)
 
     val didDataRepository = new DIDDataRepository(database)
 

@@ -32,7 +32,7 @@ import io.iohk.atala.prism.protos.{node_internal, node_models}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
 import org.mockito.captor.ArgCaptor
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
 
@@ -60,7 +60,11 @@ object ObjectManagementServiceSpec {
   }
 }
 
-class ObjectManagementServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with BeforeAndAfterEach {
+class ObjectManagementServiceSpec
+    extends AtalaWithPostgresSpec
+    with MockitoSugar
+    with ResetMocksAfterEachTest
+    with BeforeAndAfterEach {
   import ObjectManagementServiceSpec._
 
   private val storage = new objects.ObjectStorageService.InMemory
@@ -90,9 +94,6 @@ class ObjectManagementServiceSpec extends AtalaWithPostgresSpec with MockitoSuga
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-
-    reset(ledger)
-    reset(blockProcessing)
 
     doReturn(Ledger.InMemory).when(ledger).getType
     ()

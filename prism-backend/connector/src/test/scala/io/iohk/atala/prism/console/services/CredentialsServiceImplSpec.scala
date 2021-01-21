@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.console.services
 
 import java.util.UUID
-
 import com.google.protobuf.ByteString
 import io.circe
 import io.circe.Json
@@ -23,13 +22,14 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GetBlockchainDataRequest}
 import io.iohk.atala.prism.protos.console_models.CManagerGenericCredential
-import io.iohk.atala.prism.protos.{console_api, common_models, node_api, node_models}
+import io.iohk.atala.prism.protos.{common_models, console_api, node_api, node_models}
 import org.mockito.MockitoSugar
+import org.mockito.scalatest.ResetMocksAfterEachTest
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 
-class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDGenerator {
+class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with ResetMocksAfterEachTest with DIDGenerator {
 
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 
@@ -44,12 +44,6 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
     nodeMock,
     GrpcAuthenticationHeaderParser
   )
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(nodeMock)
-    MockitoSugar.reset(nodeMock)
-  }
 
   override def services: Seq[ServerServiceDefinition] =
     Seq(
