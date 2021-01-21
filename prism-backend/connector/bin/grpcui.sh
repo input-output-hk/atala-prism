@@ -10,7 +10,7 @@ grpcui \
   -import-path protos/intdemo \
   -proto protos/admin_api.proto \
   -proto protos/intdemo/intdemo_api.proto \
-  -proto protos/cmanager_api.proto \
+  -proto protos/console_api.proto \
   -proto protos/connector_api.proto \
   -proto protos/cstore_api.proto \
   localhost:50051

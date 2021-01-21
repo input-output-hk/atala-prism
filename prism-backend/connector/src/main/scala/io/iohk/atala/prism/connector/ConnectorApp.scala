@@ -20,7 +20,7 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   InsuranceServiceGrpc
 }
 import io.iohk.atala.prism.protos.admin_api.AdminServiceGrpc
-import io.iohk.atala.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc}
+import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GroupsServiceGrpc}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.console_api.{ConsoleServiceGrpc, ContactsServiceGrpc}

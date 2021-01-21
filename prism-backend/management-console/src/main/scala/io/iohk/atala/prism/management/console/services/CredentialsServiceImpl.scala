@@ -4,18 +4,12 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleErrorSupport
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.genericCredentialToProto
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateGenericCredential,
-  GenericCredential,
-  ParticipantId,
-  PublishCredential
-}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.models.ProtoCodecs
-import io.iohk.atala.prism.protos.cmanager_api._
+import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{cmanager_api, node_api}
+import io.iohk.atala.prism.protos.{console_api, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
@@ -33,7 +27,7 @@ class CredentialsServiceImpl(
     nodeService: NodeServiceGrpc.NodeService
 )(implicit
     ec: ExecutionContext
-) extends cmanager_api.CredentialsServiceGrpc.CredentialsService
+) extends console_api.CredentialsServiceGrpc.CredentialsService
     with ManagementConsoleErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -85,7 +79,7 @@ class CredentialsServiceImpl(
           credentialsRepository
             .create(model)
             .map(genericCredentialToProto)
-      } yield cmanager_api.CreateGenericCredentialResponse().withGenericCredential(created)
+      } yield console_api.CreateGenericCredentialResponse().withGenericCredential(created)
 
       result.failOnLeft(identity)
     }
@@ -99,7 +93,7 @@ class CredentialsServiceImpl(
       credentialsRepository
         .getBy(ParticipantId(issuerId), request.limit, lastSeenCredential)
         .map { list =>
-          cmanager_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
+          console_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
         }
     }
 
@@ -153,7 +147,7 @@ class CredentialsServiceImpl(
               case Right(x) => x
               case Left(e) => throw new RuntimeException(s"FAILED: $e")
             }
-      } yield cmanager_api.PublishCredentialResponse().withTransactionInfo(transactionInfo)
+      } yield console_api.PublishCredentialResponse().withTransactionInfo(transactionInfo)
     }
   }
 
@@ -186,7 +180,7 @@ class CredentialsServiceImpl(
           credentialsRepository
             .getBy(institutionId, contactId)
             .map { list =>
-              cmanager_api.GetContactCredentialsResponse(list.map(genericCredentialToProto))
+              console_api.GetContactCredentialsResponse(list.map(genericCredentialToProto))
             }
             .value
             .map {
@@ -215,7 +209,7 @@ class CredentialsServiceImpl(
           credentialsRepository
             .markAsShared(institutionId, credentialId)
             .map { _ =>
-              cmanager_api.ShareCredentialResponse()
+              console_api.ShareCredentialResponse()
             }
             .value
             .map {

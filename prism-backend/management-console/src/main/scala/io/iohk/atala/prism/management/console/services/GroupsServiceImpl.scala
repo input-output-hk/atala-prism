@@ -5,7 +5,7 @@ import java.util.UUID
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
-import io.iohk.atala.prism.protos.{cmanager_api, cmanager_models}
+import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,9 +16,9 @@ class GroupsServiceImpl(
     authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
-) extends cmanager_api.GroupsServiceGrpc.GroupsService {
+) extends console_api.GroupsServiceGrpc.GroupsService {
 
-  override def createGroup(request: cmanager_api.CreateGroupRequest): Future[cmanager_api.CreateGroupResponse] = {
+  override def createGroup(request: console_api.CreateGroupRequest): Future[console_api.CreateGroupResponse] = {
 
     def f(institutionId: ParticipantId) = {
       institutionGroupsRepository
@@ -26,10 +26,10 @@ class GroupsServiceImpl(
         .value
         .map {
           case Right(g) =>
-            cmanager_api
+            console_api
               .CreateGroupResponse()
               .withGroup(
-                cmanager_models
+                console_models
                   .Group()
                   .withId(g.id.value.toString)
                   .withCreatedAt(g.createdAt.getEpochSecond)
@@ -45,7 +45,7 @@ class GroupsServiceImpl(
 
   }
 
-  override def getGroups(request: cmanager_api.GetGroupsRequest): Future[cmanager_api.GetGroupsResponse] = {
+  override def getGroups(request: console_api.GetGroupsRequest): Future[console_api.GetGroupsResponse] = {
 
     def f(institutionId: ParticipantId) = {
       lazy val contactIdT = if (request.contactId.nonEmpty) {
@@ -61,14 +61,14 @@ class GroupsServiceImpl(
         groups <- institutionGroupsRepository.getBy(institutionId, contactIdMaybe)
       } yield {
         val proto = groups.map { g =>
-          cmanager_models
+          console_models
             .Group()
             .withId(g.value.id.value.toString)
             .withCreatedAt(g.value.createdAt.getEpochSecond)
             .withName(g.value.name.value)
             .withNumberOfContacts(g.numberOfContacts)
         }
-        cmanager_api.GetGroupsResponse(proto)
+        console_api.GetGroupsResponse(proto)
       }
     }
 
@@ -81,7 +81,7 @@ class GroupsServiceImpl(
     }
   }
 
-  override def updateGroup(request: cmanager_api.UpdateGroupRequest): Future[cmanager_api.UpdateGroupResponse] = {
+  override def updateGroup(request: console_api.UpdateGroupRequest): Future[console_api.UpdateGroupResponse] = {
     def f(institutionId: ParticipantId) = {
       institutionGroupsRepository
         .updateGroup(
@@ -92,7 +92,7 @@ class GroupsServiceImpl(
         )
         .value
         .map {
-          case Right(_) => cmanager_api.UpdateGroupResponse()
+          case Right(_) => console_api.UpdateGroupResponse()
           case Left(e) => throw new RuntimeException(s"FAILED: $e")
         }
     }

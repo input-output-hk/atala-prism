@@ -1,11 +1,12 @@
 package io.iohk.atala.prism.management.console.grpc
 
-import java.time.LocalDate
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, GenericCredential, Statistics}
-import io.iohk.atala.prism.protos.{cmanager_models, common_models, connector_models, console_api, console_models}
+import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
+
+import java.time.LocalDate
 
 object ProtoCodecs {
 
@@ -17,8 +18,8 @@ object ProtoCodecs {
     common_models.Date(year = date.getYear, month = date.getMonthValue, day = date.getDayOfMonth)
   }
 
-  def genericCredentialToProto(credential: GenericCredential): cmanager_models.CManagerGenericCredential = {
-    val model = cmanager_models
+  def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {
+    val model = console_models
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.value.toString)
       .withIssuerId(credential.issuedBy.uuid.toString)

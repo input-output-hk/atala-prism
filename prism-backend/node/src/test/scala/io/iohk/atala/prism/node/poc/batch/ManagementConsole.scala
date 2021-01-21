@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.poc.batch
 import java.time.LocalDate
 import java.util.UUID
 
-import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
+import io.iohk.atala.prism.protos.console_models.CManagerGenericCredential
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.{IssueCredentialBatchRequest, RevokeCredentialsRequest}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation

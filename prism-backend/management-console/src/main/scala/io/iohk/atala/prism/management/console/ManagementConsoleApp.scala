@@ -4,27 +4,11 @@ import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.management.console.repositories.{
-  ContactsRepository,
-  CredentialIssuancesRepository,
-  CredentialsRepository,
-  InstitutionGroupsRepository,
-  ParticipantsRepository,
-  ReceivedCredentialsRepository,
-  RequestNoncesRepository,
-  StatisticsRepository
-}
-import io.iohk.atala.prism.management.console.services.{
-  ConsoleServiceImpl,
-  ContactsServiceImpl,
-  CredentialIssuanceServiceImpl,
-  CredentialsServiceImpl,
-  CredentialsStoreServiceImpl,
-  GroupsServiceImpl
-}
+import io.iohk.atala.prism.management.console.repositories._
+import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{cmanager_api, console_api, cstore_api}
+import io.iohk.atala.prism.protos.{console_api, cstore_api}
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 
@@ -132,8 +116,8 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
       .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
       .addService(console_api.ContactsServiceGrpc.bindService(contactsService, executionContext))
       .addService(console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, executionContext))
-      .addService(cmanager_api.CredentialsServiceGrpc.bindService(credentialsService, executionContext))
-      .addService(cmanager_api.GroupsServiceGrpc.bindService(groupsService, executionContext))
+      .addService(console_api.CredentialsServiceGrpc.bindService(credentialsService, executionContext))
+      .addService(console_api.GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(cstore_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
       .build()

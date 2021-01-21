@@ -1,10 +1,10 @@
-import { GroupsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
+import { GroupsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 
 const {
   GetGroupsRequest,
   CreateGroupRequest,
   UpdateGroupRequest
-} = require('../../protos/cmanager_api_pb');
+} = require('../../protos/console_api_pb');
 
 async function getGroups(contactId) {
   const groupRequest = new GetGroupsRequest();

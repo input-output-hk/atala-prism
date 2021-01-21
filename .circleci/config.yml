@@ -614,9 +614,7 @@ jobs:
           command: |
             mkdir protos
             cd prism-sdk/protos
-            mv cmanager_api.proto \
-              cmanager_models.proto \
-              common_models.proto \
+            mv common_models.proto \
               connector_api.proto \
               connector_models.proto \
               console_api.proto \

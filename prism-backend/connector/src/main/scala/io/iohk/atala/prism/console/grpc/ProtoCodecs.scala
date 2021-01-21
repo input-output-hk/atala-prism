@@ -1,13 +1,14 @@
 package io.iohk.atala.prism.console.grpc
 
-import java.time.LocalDate
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models
 import io.iohk.atala.prism.console.models.GenericCredential
 import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
-import io.iohk.atala.prism.protos.{cmanager_models, common_models, console_models}
+import io.iohk.atala.prism.protos.{common_models, console_models}
 import io.scalaland.chimney.Transformer
+
+import java.time.LocalDate
 
 object ProtoCodecs {
 
@@ -26,10 +27,10 @@ object ProtoCodecs {
     case ConnectionStatus.ConnectionRevoked => console_models.ContactConnectionStatus.CONNECTION_REVOKED
   }
 
-  def genericCredentialToProto(credential: GenericCredential): cmanager_models.CManagerGenericCredential = {
+  def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {
     val connectionStatus = contactConnectionStatus2Proto.transform(credential.connectionStatus)
 
-    val model = cmanager_models
+    val model = console_models
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.value.toString)
       .withIssuerId(credential.issuedBy.value.toString)

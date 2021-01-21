@@ -7,7 +7,7 @@ import io.iohk.atala.cvp.webextension.background.services._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
 import io.iohk.atala.prism.credentials.SlayerCredentialId
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.cmanager_api.{PublishCredentialRequest, PublishCredentialResponse}
+import io.iohk.atala.prism.protos.console_api.{PublishCredentialRequest, PublishCredentialResponse}
 import io.iohk.atala.prism.protos.connector_api.{
   GetCurrentUserRequest,
   GetCurrentUserResponse,
@@ -16,7 +16,7 @@ import io.iohk.atala.prism.protos.connector_api.{
   RegisterDIDRequest,
   RegisterDIDResponse
 }
-import io.iohk.atala.prism.protos.{cmanager_api, connector_api}
+import io.iohk.atala.prism.protos.{console_api, connector_api}
 import scalapb.grpc.Channels
 
 import scala.concurrent.Future
@@ -24,7 +24,7 @@ import scala.scalajs.js.JSConverters._
 
 class ConnectorClientService(url: String) {
   private val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
-  private val credentialsServiceApi = cmanager_api.CredentialsServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
+  private val credentialsServiceApi = console_api.CredentialsServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
 
   def registerDID(request: RegisterDIDRequest): Future[RegisterDIDResponse] = {
     connectorApi.registerDID(request)

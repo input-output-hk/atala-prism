@@ -21,9 +21,9 @@ import io.iohk.atala.prism.credentials.SlayerCredentialId
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.protos.cmanager_api.{CredentialsServiceGrpc, GetBlockchainDataRequest}
-import io.iohk.atala.prism.protos.cmanager_models.CManagerGenericCredential
-import io.iohk.atala.prism.protos.{cmanager_api, common_models, node_api, node_models}
+import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GetBlockchainDataRequest}
+import io.iohk.atala.prism.protos.console_models.CManagerGenericCredential
+import io.iohk.atala.prism.protos.{console_api, common_models, node_api, node_models}
 import org.mockito.MockitoSugar
 import org.scalatest.OptionValues._
 
@@ -53,7 +53,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
 
   override def services: Seq[ServerServiceDefinition] =
     Seq(
-      cmanager_api.CredentialsServiceGrpc
+      console_api.CredentialsServiceGrpc
         .bindService(
           new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, nodeMock),
           executionContext
@@ -75,7 +75,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         "claim2" -> "claim 2".asJson,
         "claim3" -> "claim 3".asJson
       )
-      val request = cmanager_api.CreateGenericCredentialRequest(
+      val request = console_api.CreateGenericCredentialRequest(
         contactId = subject.contactId.value.toString,
         credentialData = credentialData.noSpaces,
         groupName = issuerGroup.name.value
@@ -114,7 +114,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         "claim2" -> "claim 2".asJson,
         "claim3" -> "claim 3".asJson
       )
-      val request = cmanager_api.CreateGenericCredentialRequest(
+      val request = console_api.CreateGenericCredentialRequest(
         credentialData = credentialData.noSpaces,
         groupName = issuerGroup.name.value,
         externalId = subject.externalId.value
@@ -145,7 +145,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val credentlal2Proto = ProtoCodecs.genericCredentialToProto(credential2)
       val credentlal3Proto = ProtoCodecs.genericCredentialToProto(credential3)
 
-      val requestFirst = cmanager_api.GetGenericCredentialsRequest(
+      val requestFirst = console_api.GetGenericCredentialsRequest(
         limit = 1
       )
       val rpcRequestFirst = SignedRpcRequest.generate(keyPair, did, requestFirst)
@@ -159,7 +159,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         retrievedCred mustNot be(credentlal3Proto)
       }
 
-      val requestMoreThanExistent = cmanager_api.GetGenericCredentialsRequest(
+      val requestMoreThanExistent = console_api.GetGenericCredentialsRequest(
         limit = 4
       )
       val rpcRequestMoreThanExistent = SignedRpcRequest.generate(keyPair, did, requestMoreThanExistent)
@@ -170,7 +170,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         allCredentials.toSet must be(Set(credentlal1Proto, credentlal2Proto, credentlal3Proto))
       }
 
-      val requestLastTwo = cmanager_api.GetGenericCredentialsRequest(
+      val requestLastTwo = console_api.GetGenericCredentialsRequest(
         limit = 2,
         lastSeenCredentialId = credential1.credentialId.value.toString
       )
@@ -223,7 +223,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       ).when(nodeMock)
         .issueCredential(nodeRequest)
 
-      val request = cmanager_api
+      val request = console_api
         .PublishCredentialRequest()
         .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
         .withIssueCredentialOperation(issuanceOp)
@@ -278,7 +278,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val mockNodeCredentialId =
         SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
 
-      val request = cmanager_api
+      val request = console_api
         .PublishCredentialRequest()
         .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
         .withIssueCredentialOperation(issuanceOp)
@@ -334,7 +334,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
         SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
 
       val unknownCredentialId = GenericCredential.Id(UUID.randomUUID())
-      val request = cmanager_api
+      val request = console_api
         .PublishCredentialRequest()
         .withCmanagerCredentialId(unknownCredentialId.value.toString)
         .withIssueCredentialOperation(issuanceOp)
@@ -379,7 +379,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
       val mockIncorrectNodeCredentialId = SHA256Digest.compute("AN INCORRECT VALUE".getBytes()).hexValue
 
-      val request = cmanager_api
+      val request = console_api
         .PublishCredentialRequest()
         .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
         .withIssueCredentialOperation(issuanceOp)
@@ -431,7 +431,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val mockNodeCredentialId =
         SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
 
-      val request = cmanager_api
+      val request = console_api
         .PublishCredentialRequest()
         .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
         .withIssueCredentialOperation(issuanceOp)
@@ -483,7 +483,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val mockNodeCredentialId =
         SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
 
-      val request = cmanager_api
+      val request = console_api
         .PublishCredentialRequest()
         .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
         .withIssueCredentialOperation(issuanceOp)
@@ -556,7 +556,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val cred2 = createGenericCredential(issuerId, contactId1, "D")
       createGenericCredential(issuerId, contactId2, "E")
 
-      val request = cmanager_api.GetContactCredentialsRequest(
+      val request = console_api.GetContactCredentialsRequest(
         contactId = contactId1.value.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -588,7 +588,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val contactId = createContact(issuerId, "IOHK Student", group.name).contactId
 
-      val request = cmanager_api.GetContactCredentialsRequest(
+      val request = console_api.GetContactCredentialsRequest(
         contactId = contactId.value.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -617,7 +617,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with DIDG
 
       publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
 
-      val request = cmanager_api.ShareCredentialRequest(
+      val request = console_api.ShareCredentialRequest(
         cmanagerCredentialId = credentialId.value.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)

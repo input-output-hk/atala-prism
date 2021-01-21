@@ -1,4 +1,4 @@
-import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
+import { CredentialsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import credentialTypes from './credentialTypes';
 import { FAILED, SUCCESS } from '../../helpers/constants';
@@ -9,7 +9,7 @@ const {
   GetContactCredentialsRequest,
   ShareCredentialRequest,
   GetBlockchainDataRequest
-} = require('../../protos/cmanager_api_pb');
+} = require('../../protos/console_api_pb');
 const { AtalaMessage, PlainTextCredential } = require('../../protos/credential_models_pb');
 
 function mapCredential(cred) {
