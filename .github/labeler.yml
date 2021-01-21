@@ -12,6 +12,9 @@ connector:
 node:
   - prism-backend/node/**/*
   - prism-backend/infra/modules/components/prism-node/**/*
+management-console:
+  - prism-backend/management-console/**/*
+  - prism-backend/infra/modules/components/prism-console/**/*
 mirror:
   - prism-backend/mirror/**/*
   - prism-backend/infra/modules/components/prism-mirror/**/*
@@ -36,3 +39,6 @@ scala-sdk:
   - prism-sdk/**/*
 interactive-demo:
   - prism-interactive-demo-web/**/*
+management-console-web:
+  - prism-management-console-web/**/*
+
