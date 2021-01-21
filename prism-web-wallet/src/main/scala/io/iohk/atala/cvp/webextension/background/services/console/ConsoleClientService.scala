@@ -3,20 +3,20 @@ package io.iohk.atala.cvp.webextension.background.services.console
 import io.iohk.atala.cvp.webextension.background.services.metadataForRequest
 import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.cstore_api
+import io.iohk.atala.prism.protos.console_api
 import scalapb.grpc.Channels
 
 import scala.concurrent.Future
 import scala.scalajs.js.JSConverters.JSRichMap
 
 class ConsoleClientService(url: String) {
-  private val consoleApi = cstore_api.CredentialsStoreServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
+  private val consoleApi = console_api.CredentialsStoreServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
 
   def getLatestCredentialExternalId(
       ecKeyPair: ECKeyPair,
       did: DID
-  ): Future[cstore_api.GetLatestCredentialExternalIdResponse] = {
-    val request = cstore_api.GetLatestCredentialExternalIdRequest()
+  ): Future[console_api.GetLatestCredentialExternalIdResponse] = {
+    val request = console_api.GetLatestCredentialExternalIdRequest()
     val metadata = metadataForRequest(ecKeyPair, did, request)
     consoleApi.getLatestCredentialExternalId(request, metadata.toJSDictionary)
   }
@@ -24,8 +24,8 @@ class ConsoleClientService(url: String) {
   def storeCredentials(
       ecKeyPair: ECKeyPair,
       did: DID,
-      request: cstore_api.StoreCredentialRequest
-  ): Future[cstore_api.StoreCredentialResponse] = {
+      request: console_api.StoreCredentialRequest
+  ): Future[console_api.StoreCredentialResponse] = {
     val metadata = metadataForRequest(ecKeyPair, did, request)
     consoleApi.storeCredential(request, metadata.toJSDictionary)
   }

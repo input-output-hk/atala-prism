@@ -8,7 +8,7 @@ import io.iohk.atala.cvp.webextension.util.Scheduler.Implicits.jsScheduler
 import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage.Message
-import io.iohk.atala.prism.protos.{connector_api, connector_models, credential_models, cstore_api}
+import io.iohk.atala.prism.protos.{connector_api, connector_models, credential_models, console_api}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -80,13 +80,13 @@ class CredentialsCopyJob(
 object CredentialsCopyJob {
   def buildRequestFromConnectorMessage(
       receivedMessage: connector_models.ReceivedMessage
-  ): Either[Throwable, cstore_api.StoreCredentialRequest] = {
+  ): Either[Throwable, console_api.StoreCredentialRequest] = {
 
     Try { credential_models.AtalaMessage.parseFrom(receivedMessage.message.toArray) } match {
       case Failure(exception) => Left(exception)
       case Success(credential_models.AtalaMessage(Message.PlainCredential(credentialMessage), _)) =>
         Right(
-          cstore_api
+          console_api
             .StoreCredentialRequest()
             .withConnectionId(receivedMessage.connectionId)
             .withCredentialExternalId(receivedMessage.id)

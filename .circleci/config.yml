@@ -620,8 +620,6 @@ jobs:
               console_api.proto \
               console_models.proto \
               credential_models.proto \
-              cstore_api.proto \
-              cstore_models.proto \
               cviews_api.proto \
               cviews_models.proto \
               node_api.proto \

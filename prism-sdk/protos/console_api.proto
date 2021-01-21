@@ -82,6 +82,21 @@ service GroupsService {
   rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse) {}
 }
 
+// The API for the received credentials
+service CredentialsStoreService {
+  // Stores a received credential.
+  // This is invoked from the wallet after receiving a credential.
+  rpc StoreCredential (StoreCredentialRequest) returns (StoreCredentialResponse) {}
+
+  // Finds the received credentials given the filters
+  rpc GetStoredCredentialsFor (GetStoredCredentialsForRequest) returns (GetStoredCredentialsForResponse) {}
+
+  // Finds the latest credentialExternalId received.
+  // This is invoked from the wallet to know what's the latest received credential, which allows us to avoid
+  // processing the same received credential twice.
+  rpc GetLatestCredentialExternalId (GetLatestCredentialExternalIdRequest) returns (GetLatestCredentialExternalIdResponse) {}
+}
+
 // Request to get usage statistics for the authenticated institution
 message GetStatisticsRequest {}
 
@@ -280,4 +295,32 @@ message GetBlockchainDataRequest {
 // Response with the information found in the blockchain
 message GetBlockchainDataResponse {
   TransactionInfo issuanceProof = 1; // transaction information associated to the credential issuance event
+}
+
+// Request to store a received credential
+message StoreCredentialRequest {
+  string connectionId = 1; // connection id retrieved from the connector message that carried the credential
+  string encodedSignedCredential = 2; // the encoded signed data
+  string credentialExternalId = 3; // credential external id (currently, id of the connector message that carried it)
+}
+// Response after storing a received credential
+message StoreCredentialResponse {
+}
+
+// Request to find the received credentials
+message GetStoredCredentialsForRequest {
+  // Optional, allows to retrieve received credentials from a single contact.
+  // TODO: Rename to `contactId` after removing legacy methods
+  string individualId = 1;
+}
+// Response with the received credentials
+message GetStoredCredentialsForResponse {
+  repeated StoredSignedCredential credentials = 1; // the received credentials
+}
+
+// Request to find the latest credentialExternalId
+message GetLatestCredentialExternalIdRequest {}
+// Response with the latest credentialExternalId
+message GetLatestCredentialExternalIdResponse {
+  string latestCredentialExternalId = 1;
 }

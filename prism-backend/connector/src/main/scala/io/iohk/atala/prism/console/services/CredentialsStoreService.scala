@@ -10,11 +10,11 @@ import io.iohk.atala.prism.console.repositories.daos.StoredCredentialsDAO.Stored
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.cstore_api.{
+import io.iohk.atala.prism.protos.console_api.{
   GetLatestCredentialExternalIdRequest,
   GetLatestCredentialExternalIdResponse
 }
-import io.iohk.atala.prism.protos.{cstore_api, cstore_models}
+import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,14 +25,14 @@ class CredentialsStoreService(
     authenticator: ConnectorAuthenticator
 )(implicit
     ec: ExecutionContext
-) extends cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreService
+) extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ConnectorErrorSupport {
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def storeCredential(
-      request: cstore_api.StoreCredentialRequest
-  ): Future[cstore_api.StoreCredentialResponse] = {
+      request: console_api.StoreCredentialRequest
+  ): Future[console_api.StoreCredentialResponse] = {
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
@@ -52,7 +52,7 @@ class CredentialsStoreService(
             .storeCredential(createData)
             .wrapExceptions
             .successMap { _ =>
-              cstore_api.StoreCredentialResponse()
+              console_api.StoreCredentialResponse()
             }
       } yield response
     }
@@ -71,7 +71,7 @@ class CredentialsStoreService(
         .getLatestCredentialExternalId(institutionId)
         .wrapExceptions
         .successMap { maybeCredentialExternalId =>
-          cstore_api.GetLatestCredentialExternalIdResponse(
+          console_api.GetLatestCredentialExternalIdResponse(
             latestCredentialExternalId = maybeCredentialExternalId.fold("")(_.value.toString)
           )
         }
@@ -83,8 +83,8 @@ class CredentialsStoreService(
   }
 
   override def getStoredCredentialsFor(
-      request: cstore_api.GetStoredCredentialsForRequest
-  ): Future[cstore_api.GetStoredCredentialsForResponse] = {
+      request: console_api.GetStoredCredentialsForRequest
+  ): Future[console_api.GetStoredCredentialsForResponse] = {
     def f(institutionId: Institution.Id) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> institutionId)
 
@@ -100,9 +100,9 @@ class CredentialsStoreService(
             .getCredentialsFor(institutionId, maybeContactId)
             .wrapExceptions
             .successMap { credentials =>
-              cstore_api.GetStoredCredentialsForResponse(
+              console_api.GetStoredCredentialsForResponse(
                 credentials = credentials.map { credential =>
-                  cstore_models.StoredSignedCredential(
+                  console_models.StoredSignedCredential(
                     individualId = credential.individualId.value.toString,
                     encodedSignedCredential = credential.encodedSignedCredential,
                     storedAt = credential.storedAt.toEpochMilli,

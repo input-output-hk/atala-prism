@@ -1,6 +1,6 @@
 import base64url from 'base64url';
-import { CredentialsStoreServicePromiseClient } from '../../protos/cstore_api_grpc_web_pb';
-import { GetStoredCredentialsForRequest } from '../../protos/cstore_api_pb';
+import { CredentialsStoreServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
+import { GetStoredCredentialsForRequest } from '../../protos/console_api_pb';
 import Logger from '../../helpers/Logger';
 
 async function getReceivedCredentials(contactId) {

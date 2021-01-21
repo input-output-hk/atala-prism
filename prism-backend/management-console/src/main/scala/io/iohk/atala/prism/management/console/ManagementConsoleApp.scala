@@ -7,8 +7,8 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
+import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{console_api, cstore_api}
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 
@@ -118,7 +118,7 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
       .addService(console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, executionContext))
       .addService(console_api.CredentialsServiceGrpc.bindService(credentialsService, executionContext))
       .addService(console_api.GroupsServiceGrpc.bindService(groupsService, executionContext))
-      .addService(cstore_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
+      .addService(console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
       .build()
       .start()

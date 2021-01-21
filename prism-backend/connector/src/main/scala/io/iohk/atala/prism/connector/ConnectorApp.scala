@@ -24,7 +24,7 @@ import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GroupsSer
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.console_api.{ConsoleServiceGrpc, ContactsServiceGrpc}
-import io.iohk.atala.prism.protos.cstore_api.CredentialsStoreServiceGrpc
+import io.iohk.atala.prism.protos.console_api.CredentialsStoreServiceGrpc
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
