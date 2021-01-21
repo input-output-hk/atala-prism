@@ -7,26 +7,9 @@ import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
-import io.iohk.atala.prism.connector.services.{
-  ConnectionsService,
-  ContactConnectionService,
-  MessageNotificationService,
-  MessagesService,
-  RegistrationService
-}
-import io.iohk.atala.prism.console.repositories.{
-  ContactsRepository,
-  CredentialsRepository,
-  GroupsRepository,
-  StatisticsRepository,
-  StoredCredentialsRepository
-}
-import io.iohk.atala.prism.console.services.{
-  ContactsServiceImpl,
-  CredentialsServiceImpl,
-  CredentialsStoreService,
-  GroupsServiceImpl
-}
+import io.iohk.atala.prism.connector.services._
+import io.iohk.atala.prism.console.repositories._
+import io.iohk.atala.prism.console.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.atala.prism.intdemo._
@@ -40,7 +23,7 @@ import io.iohk.atala.prism.protos.admin_api.AdminServiceGrpc
 import io.iohk.atala.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
-import io.iohk.atala.prism.protos.console_api.ConsoleServiceGrpc
+import io.iohk.atala.prism.protos.console_api.{ConsoleServiceGrpc, ContactsServiceGrpc}
 import io.iohk.atala.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -169,7 +152,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
 
     // console (unified backend) services
-    val consoleService = new ContactsServiceImpl(contactsRepository, statisticsRepository, authenticator)(
+    val consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)(
+      executionContext
+    )
+    val contactsService = new ContactsServiceImpl(contactsRepository, authenticator)(
       executionContext
     )
 
@@ -188,6 +174,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
       .addService(AdminServiceGrpc.bindService(adminService, executionContext))
       .addService(ConsoleServiceGrpc.bindService(consoleService, executionContext))
+      .addService(ContactsServiceGrpc.bindService(contactsService, executionContext))
       .addService(ContactConnectionServiceGrpc.bindService(contactConnectionService, executionContext))
       .build()
       .start()

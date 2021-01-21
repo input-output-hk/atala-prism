@@ -1,29 +1,38 @@
 package io.iohk.atala.prism.management.console
 
-import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.management.console.repositories.{
-  ContactsRepository,
-  CredentialIssuancesRepository,
-  InstitutionGroupsRepository,
-  ParticipantsRepository,
-  RequestNoncesRepository,
-  StatisticsRepository
+import io.iohk.atala.prism.management.console.repositories._
+import io.iohk.atala.prism.management.console.services.{
+  ConsoleServiceImpl,
+  ContactsServiceImpl,
+  CredentialIssuanceServiceImpl
 }
-import io.iohk.atala.prism.management.console.services.ConsoleServiceImpl
 import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
+import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import org.mockito.MockitoSugar.mock
 
 class ManagementConsoleRpcSpecBase extends RpcSpecBase {
 
-  override def services =
+  override def services = {
     Seq(
       console_api.ConsoleServiceGrpc
         .bindService(
           consoleService,
           executionContext
+        ),
+      console_api.ContactsServiceGrpc
+        .bindService(
+          contactsService,
+          executionContext
+        ),
+      console_api.CredentialIssuanceServiceGrpc
+        .bindService(
+          credentialIssuanceService,
+          executionContext
         )
     )
+  }
 
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
@@ -43,19 +52,37 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
       GrpcAuthenticationHeaderParser
     )
 
-  lazy val consoleService = new ConsoleServiceImpl(
+  lazy val consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)(
+    executionContext
+  )
+  lazy val contactsService = new ContactsServiceImpl(contactsRepository, authenticator, connectorMock)(
+    executionContext
+  )
+  lazy val credentialIssuanceService = new CredentialIssuanceServiceImpl(
     contactsRepository,
-    statisticsRepository,
     institutionGroupsRepository,
     credentialIssuancesRepository,
-    authenticator,
-    connectorMock
+    authenticator
   )(
     executionContext
   )
 
-  val usingApiAs: ApiTestHelper[console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub] =
+  val usingApiAsConsole: ApiTestHelper[console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub] = {
     usingApiAsConstructor(
       new console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub(_, _)
     )
+  }
+
+  val usingApiAsContacts: ApiTestHelper[console_api.ContactsServiceGrpc.ContactsServiceBlockingStub] = {
+    usingApiAsConstructor(
+      new console_api.ContactsServiceGrpc.ContactsServiceBlockingStub(_, _)
+    )
+  }
+
+  val usingApiAsCredentialIssuance
+      : ApiTestHelper[console_api.CredentialIssuanceServiceGrpc.CredentialIssuanceServiceBlockingStub] = {
+    usingApiAsConstructor(
+      new CredentialIssuanceServiceGrpc.CredentialIssuanceServiceBlockingStub(_, _)
+    )
+  }
 }

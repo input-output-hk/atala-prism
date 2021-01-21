@@ -11,8 +11,13 @@ import "common_models.proto";
 // The Management Console API
 service ConsoleService {
   // Checks if the service is healthy
-  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+  rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {}
 
+  // Retrieves numbers about the operations done in the management console
+  rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
+}
+
+service ContactsService {
   // Creates a contact for the authenticated institution
   rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
 
@@ -25,15 +30,14 @@ service ConsoleService {
   // Generates a connection token for the given contact.
   // This is a necessary step before being able to connect to the contact.
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
+}
 
+service CredentialIssuanceService {
   // Creates a new credential issuance
   rpc CreateCredentialIssuance (CreateCredentialIssuanceRequest) returns (CreateCredentialIssuanceResponse) {}
 
   // Gets a credential issuance
   rpc GetCredentialIssuance (GetCredentialIssuanceRequest) returns (GetCredentialIssuanceResponse) {}
-
-  // Retrieves numbers about the operations done in the management console
-  rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
 }
 
 // Request to get usage statistics for the authenticated institution

@@ -16,6 +16,8 @@ import io.iohk.atala.prism.management.console.repositories.{
 }
 import io.iohk.atala.prism.management.console.services.{
   ConsoleServiceImpl,
+  ContactsServiceImpl,
+  CredentialIssuanceServiceImpl,
   CredentialsServiceImpl,
   CredentialsStoreServiceImpl,
   GroupsServiceImpl
@@ -80,7 +82,7 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
       .build()
     val connector = ContactConnectionServiceGrpc.stub(connectorChannel)
 
-    // Vault repositories
+    // repositories
     val contactsRepository = new ContactsRepository(transactor)(executionContext)
     val participantsRepository = new ParticipantsRepository(transactor)(executionContext)
     val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(transactor)(executionContext)
@@ -97,23 +99,29 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
       GrpcAuthenticationHeaderParser
     )
 
-    val credentialsService =
-      new CredentialsServiceImpl(
-        credentialsRepository,
-        contactsRepository,
-        authenticator,
-        node
-      )(executionContext)
-    val credentialsStoreService =
-      new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)(executionContext)
-    val groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)(executionContext)
-    val consoleService = new ConsoleServiceImpl(
+    val credentialsService = new CredentialsServiceImpl(
+      credentialsRepository,
       contactsRepository,
-      statisticsRepository,
+      authenticator,
+      node
+    )(executionContext)
+    val credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)(
+      executionContext
+    )
+    val groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)(executionContext)
+    val consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)(
+      executionContext
+    )
+
+    val contactsService = new ContactsServiceImpl(contactsRepository, authenticator, connector)(
+      executionContext
+    )
+
+    val credentialIssuanceService = new CredentialIssuanceServiceImpl(
+      contactsRepository,
       institutionGroupsRepository,
       credentialIssuancesRepository,
-      authenticator,
-      connector
+      authenticator
     )(
       executionContext
     )
@@ -122,6 +130,8 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
     server = ServerBuilder
       .forPort(ManagementConsoleApp.port)
       .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
+      .addService(console_api.ContactsServiceGrpc.bindService(contactsService, executionContext))
+      .addService(console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, executionContext))
       .addService(cmanager_api.CredentialsServiceGrpc.bindService(credentialsService, executionContext))
       .addService(cmanager_api.GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(cstore_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))

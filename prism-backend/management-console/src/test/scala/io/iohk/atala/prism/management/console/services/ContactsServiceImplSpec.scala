@@ -1,56 +1,64 @@
-package io.iohk.atala.prism.console.services
+package io.iohk.atala.prism.management.console.services
 
-import io.circe
 import io.circe.{Json, parser}
+import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.connector.model.{ConnectionStatus, TokenString}
-import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.console.DataPreparation.{createContact, createIssuer, createIssuerGroup}
-import io.iohk.atala.prism.console.grpc.ProtoCodecs.toContactProto
-import io.iohk.atala.prism.console.models.{Contact, IssuerGroup}
-import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.protos.console_api.ContactsServiceGrpc
-import io.iohk.atala.prism.protos.{console_api, console_models}
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
-import org.mockito.MockitoSugar._
+import io.iohk.atala.prism.management.console.DataPreparation._
+import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
+import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
+import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup}
+import io.iohk.atala.prism.protos.connector_api.ConnectionsStatusResponse
+import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
+import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
 
 import java.time.LocalDate
 import java.util.UUID
+import scala.concurrent.Future
 
-class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
-  private val usingApiAs = usingApiAsConstructor(new ContactsServiceGrpc.ContactsServiceBlockingStub(_, _))
-
-  private lazy val participantsRepository = new ParticipantsRepository(database)
-  private lazy val contactsRepository = new ContactsRepository(database)
-  private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  private lazy val authenticator = new ConnectorAuthenticator(
-    participantsRepository,
-    requestNoncesRepository,
-    nodeMock,
-    GrpcAuthenticationHeaderParser
+class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
+  private val invitationMissing = connector_models.ContactConnection(
+    connectionStatus = console_models.ContactConnectionStatus.INVITATION_MISSING
   )
 
-  override def services =
-    Seq(
-      console_api.ContactsServiceGrpc
-        .bindService(
-          new ContactsServiceImpl(contactsRepository, authenticator),
-          executionContext
+  "authentication" should {
+    "support unpublished DID authentication" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution", did)
+      val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
+      val externalId = Contact.ExternalId.random()
+      val json = Json
+        .obj(
+          "universityAssignedId" -> Json.fromString("noneyet"),
+          "fullName" -> Json.fromString("Alice Beakman"),
+          "email" -> Json.fromString("alice@bkm.me"),
+          "admissionDate" -> Json.fromString(LocalDate.now().toString)
         )
-    )
+      val request = console_api
+        .CreateContactRequest(
+          groupName = group.name.value,
+          jsonData = json.noSpaces,
+          externalId = externalId.value
+        )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      usingApiAsContacts(rpcRequest) { blockingStub =>
+        val response = blockingStub.createContact(request)
+        response.contact.value.externalId must be(externalId.value)
+      }
+    }
+  }
 
   "createContact" should {
     "create a contact and assign it to a group" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
-      val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
+      val institutionId = createParticipant("Institution", did)
+      val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
       val externalId = Contact.ExternalId.random()
       val json = Json
         .obj(
@@ -67,16 +75,19 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
         val response = serviceStub.createContact(request).contact.value
         parser.parse(response.jsonData).toOption.value must be(json)
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.getBy(issuerId, None, Some(group.name), 10).value.futureValue.toOption.value
+        val result =
+          contactsRepository.getBy(institutionId, None, Some(group.name), 10).value.futureValue.toOption.value
         result.size must be(1)
         val storedContact = result.headOption.value
-        toContactProto(storedContact).copy(jsonData = "") must be(response.copy(jsonData = ""))
+        toContactProto(storedContact, invitationMissing).copy(jsonData = "") must be(
+          response.copy(jsonData = "")
+        )
         storedContact.data must be(json)
       }
     }
@@ -85,7 +96,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val institutionId = createParticipant("Institution", did)
       val externalId = Contact.ExternalId.random()
       val json = Json
         .obj(
@@ -102,16 +113,18 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
         val response = serviceStub.createContact(request).contact.value
         val contactId = Contact.Id(UUID.fromString(response.contactId))
         parser.parse(response.jsonData).toOption.value must be(json)
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(issuerId, contactId).value.futureValue.toOption.value
+        val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
         val storedContact = result.value
-        toContactProto(storedContact).copy(jsonData = "") must be(response.copy(jsonData = ""))
+        toContactProto(storedContact, invitationMissing).copy(jsonData = "") must be(
+          response.copy(jsonData = "")
+        )
         storedContact.data must be(json)
       }
     }
@@ -120,7 +133,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val institutionId = createParticipant("Institution", did)
       val externalId = Contact.ExternalId.random()
 
       val request = console_api
@@ -129,16 +142,16 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
         val response = serviceStub.createContact(request).contact.value
         val contactId = Contact.Id(UUID.fromString(response.contactId))
         parser.parse(response.jsonData).toOption.value must be(Json.obj())
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(issuerId, contactId).value.futureValue.toOption.value
+        val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
         val storedContact = result.value
-        toContactProto(storedContact) must be(response)
+        toContactProto(storedContact, invitationMissing) must be(response)
       }
     }
 
@@ -146,7 +159,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val institutionId = createParticipant("Institution", did)
       val externalId = Contact.ExternalId.random()
       val json = Json
         .obj(
@@ -163,13 +176,13 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
         intercept[Exception](
           serviceStub.createContact(request).contact.value
         )
 
         // the contact must not be added
-        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
+        val result = contactsRepository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
         result must be(empty)
       }
     }
@@ -178,8 +191,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
-      val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
+      val institutionId = createParticipant("Institution", did)
+      val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
       val json = Json
         .obj(
           "universityAssignedId" -> Json.fromString("noneyet"),
@@ -194,13 +207,13 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
         intercept[Exception](
           serviceStub.createContact(request).contact.value
         )
 
         // the new contact should not exist
-        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
+        val result = contactsRepository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
         result must be(empty)
       }
     }
@@ -209,8 +222,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
-      val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
+      val institutionId = createParticipant("Institution", did)
+      val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
       val externalId = Contact.ExternalId.random()
       val json = Json
         .obj(
@@ -227,7 +240,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
         val initialResponse = serviceStub.createContact(request).contact.value
 
         // We attempt to insert another contact with the same external id
@@ -244,7 +257,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
 
         // the contact needs to exist as originally inserted
-        val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value
+        val result = contactsRepository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
         result.size must be(1)
 
         val storedContact = result.head
@@ -256,33 +269,44 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   }
 
   private def cleanContactData(c: console_models.Contact): console_models.Contact = c.copy(jsonData = "")
-  private def contactJsonData(c: console_models.Contact): Json = circe.parser.parse(c.jsonData).toOption.value
+  private def contactJsonData(c: console_models.Contact): Json = parser.parse(c.jsonData).toOption.value
 
   "getContacts" should {
     "return the first contacts" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
-      val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
-      val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val contactA = createContact(issuerId, "Alice", groupNameA)
-      val contactB = createContact(issuerId, "Bob", groupNameB)
-      createContact(issuerId, "Charles", groupNameC)
-      createContact(issuerId, "Alice 2", groupNameA)
+      val institutionId = createParticipant("institutionx", did)
+      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+      val contactA = createContact(institutionId, "Alice", groupNameA)
+      val contactB = createContact(institutionId, "Bob", groupNameB)
+      createContact(institutionId, "Charles", groupNameC)
+      createContact(institutionId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 2
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing, invitationMissing)
+            )
+          )
+        }
+
         val response = serviceStub.getContacts(request)
         val contactsReturned = response.contacts
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
-          List(toContactProto(contactA), toContactProto(contactB)) map cleanContactData
+          List(
+            toContactProto(contactA, invitationMissing),
+            toContactProto(contactB, invitationMissing)
+          ).map(cleanContactData)
         )
         contactsReturnedJsons.toList must be(List(contactA.data, contactB.data))
       }
@@ -292,27 +316,38 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
-      val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
-      val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val contactA = createContact(issuerId, "Alice", groupNameA)
-      createContact(issuerId, "Bob", groupNameB)
-      createContact(issuerId, "Charles", groupNameC)
-      val contactA2 = createContact(issuerId, "Alice 2", groupNameA)
+      val institutionId = createParticipant("institutionx", did)
+      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+      val contactA = createContact(institutionId, "Alice", groupNameA)
+      createContact(institutionId, "Bob", groupNameB)
+      createContact(institutionId, "Charles", groupNameC)
+      val contactA2 = createContact(institutionId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 2,
         groupName = groupNameA.value
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing, invitationMissing)
+            )
+          )
+        }
+
         val response = serviceStub.getContacts(request)
         val contactsReturned = response.contacts
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
-          List(toContactProto(contactA), toContactProto(contactA2)) map cleanContactData
+          List(
+            toContactProto(contactA, invitationMissing),
+            toContactProto(contactA2, invitationMissing)
+          ).map(cleanContactData)
         )
         contactsReturnedJsons.toList must be(List(contactA.data, contactA2.data))
       }
@@ -322,26 +357,36 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
-      val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
-      val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      createContact(issuerId, "Alice", groupNameA)
-      val contactB = createContact(issuerId, "Bob", groupNameB)
-      val contactC = createContact(issuerId, "Charles", groupNameC)
-      createContact(issuerId, "Alice 2", groupNameA)
+      val institutionId = createParticipant("Institution X", did)
+      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+      createContact(institutionId, "Alice", groupNameA)
+      val contactB = createContact(institutionId, "Bob", groupNameB)
+      val contactC = createContact(institutionId, "Charles", groupNameC)
+      createContact(institutionId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 1,
         lastSeenContactId = contactB.contactId.value.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing)
+            )
+          )
+        }
+
         val response = serviceStub.getContacts(request)
         val contactsReturned = response.contacts
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
-        contactsReturnedNoJsons.toList must be(List(cleanContactData(toContactProto(contactC))))
+        contactsReturnedNoJsons.toList must be(
+          List(cleanContactData(toContactProto(contactC, invitationMissing)))
+        )
         contactsReturnedJsons.toList must be(List(contactC.data))
       }
     }
@@ -350,14 +395,14 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
-      val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
-      val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
-      val contactA = createContact(issuerId, "Alice", groupNameA)
-      createContact(issuerId, "Bob", groupNameB)
-      createContact(issuerId, "Charles", groupNameC)
-      val contactA2 = createContact(issuerId, "Alice 2", groupNameA)
+      val institutionId = createParticipant("Institution X", did)
+      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+      val contactA = createContact(institutionId, "Alice", groupNameA)
+      createContact(institutionId, "Bob", groupNameB)
+      createContact(institutionId, "Charles", groupNameC)
+      val contactA2 = createContact(institutionId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 2,
         lastSeenContactId = contactA.contactId.value.toString,
@@ -365,12 +410,22 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing)
+            )
+          )
+        }
+
         val response = serviceStub.getContacts(request)
         val contactsReturned = response.contacts
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
-        contactsReturnedNoJsons.toList must be(List(cleanContactData(toContactProto(contactA2))))
+        contactsReturnedNoJsons.toList must be(
+          List(cleanContactData(toContactProto(contactA2, invitationMissing)))
+        )
         contactsReturnedJsons.toList must be(List(contactA2.data))
       }
     }
@@ -381,76 +436,58 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val groupName = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
-      val contact = createContact(issuerId, "Alice", groupName)
-      createContact(issuerId, "Bob", groupName)
+      val institutionId = createParticipant("Institution X", did)
+      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val contact = createContact(institutionId, "Alice", groupName)
+      createContact(institutionId, "Bob", groupName)
       val request = console_api.GetContactRequest(
         contactId = contact.contactId.value.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing)
+            )
+          )
+        }
+
         val response = serviceStub.getContact(request)
-        cleanContactData(response.contact.value) must be(cleanContactData(toContactProto(contact)))
+        cleanContactData(response.contact.value) must be(
+          cleanContactData(toContactProto(contact, invitationMissing))
+        )
         contactJsonData(response.contact.value) must be(contact.data)
       }
     }
 
-    "return no contact when the contact is missing (issuerId and contactId not correlated)" in {
-      val keyPairX = EC.generateKeyPair()
-      val publicKeyX = keyPairX.publicKey
-      val issuerXId = createIssuer("Issuer X", publicKey = Some(publicKeyX))
+    "return no contact when the contact is missing (institutionId and contactId not correlated)" in {
+      val institutionXId = createParticipant("Institution X")
       val keyPairY = EC.generateKeyPair()
       val publicKeyY = keyPairY.publicKey
       val didY = generateDid(publicKeyY)
-      val issuerYId = createIssuer("Issuer Y", publicKey = Some(publicKeyY), did = Some(didY))
-      val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
-      val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
-      val contact = createContact(issuerXId, "Alice", groupNameA)
-      createContact(issuerYId, "Bob", groupNameB)
+      val institutionYId = createParticipant("Institution Y", didY)
+      val groupNameA = createInstitutionGroup(institutionXId, InstitutionGroup.Name("Group A")).name
+      val groupNameB = createInstitutionGroup(institutionYId, InstitutionGroup.Name("Group B")).name
+      val contact = createContact(institutionXId, "Alice", groupNameA)
+      createContact(institutionYId, "Bob", groupNameB)
       val request = console_api.GetContactRequest(
         contactId = contact.contactId.value.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPairY, didY, request)
 
-      usingApiAs(rpcRequest) { serviceStub =>
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List()
+            )
+          )
+        }
+
         val response = serviceStub.getContact(request)
         response.contact must be(empty)
-      }
-    }
-  }
-
-  "generateConnectionTokenForContact" should {
-    "generate a token" in {
-      val issuerName = "tokenizer"
-      val groupName = IssuerGroup.Name("Grp 1")
-      val contactName = "Contact 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-      createIssuerGroup(issuerId, groupName)
-      val contact = createContact(issuerId, contactName, groupName)
-      val request = console_api
-        .GenerateConnectionTokenForContactRequest(
-          contactId = contact.contactId.value.toString
-        )
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.generateConnectionTokenForContact(request)
-        val token = TokenString(response.token)
-
-        // the new contact needs to exist
-        val result = contactsRepository.find(issuerId, contact.contactId).value.futureValue.toOption.value
-        val storedContact = result.value
-        storedContact.contactId must be(contact.contactId)
-        storedContact.data must be(contact.data)
-        storedContact.createdAt must be(contact.createdAt)
-        storedContact.connectionStatus must be(ConnectionStatus.ConnectionMissing)
-        storedContact.connectionToken.value must be(token)
-        storedContact.connectionId must be(contact.connectionId)
       }
     }
   }

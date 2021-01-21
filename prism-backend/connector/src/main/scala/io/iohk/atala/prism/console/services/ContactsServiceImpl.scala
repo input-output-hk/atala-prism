@@ -1,35 +1,26 @@
 package io.iohk.atala.prism.console.services
 
-import java.util.UUID
-
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.ConnectorErrorSupport
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
-import io.iohk.atala.prism.console.repositories.{ContactsRepository, StatisticsRepository}
+import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class ContactsServiceImpl(
-    contactsRepository: ContactsRepository,
-    statisticsRepository: StatisticsRepository,
-    authenticator: ConnectorAuthenticator
-)(implicit
+class ContactsServiceImpl(contactsRepository: ContactsRepository, authenticator: ConnectorAuthenticator)(implicit
     ec: ExecutionContext
-) extends console_api.ConsoleServiceGrpc.ConsoleService
+) extends console_api.ContactsServiceGrpc.ContactsService
     with ConnectorErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
-    Future.successful(HealthCheckResponse())
 
   override def createContact(request: CreateContactRequest): Future[CreateContactResponse] = {
     def f(institutionId: Institution.Id): Future[CreateContactResponse] = {
@@ -160,38 +151,4 @@ class ContactsServiceImpl(
     }
   }
 
-  /** Implemented on Management Console. */
-  override def createCredentialIssuance(
-      request: CreateCredentialIssuanceRequest
-  ): Future[CreateCredentialIssuanceResponse] = ???
-
-  /** Implemented on Management Console. */
-  override def getCredentialIssuance(
-      request: GetCredentialIssuanceRequest
-  ): Future[GetCredentialIssuanceResponse] = ???
-
-  override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] = {
-    def f(institutionId: Institution.Id): Future[GetStatisticsResponse] = {
-      implicit val loggingContext: LoggingContext =
-        LoggingContext("request" -> request, "institutionId" -> institutionId)
-
-      for {
-        response <-
-          statisticsRepository
-            .query(institutionId)
-            .map { stats =>
-              stats
-                .into[GetStatisticsResponse]
-                .withFieldConst(_.numberOfCredentialsInDraft, stats.numberOfCredentialsInDraft)
-                .transform
-            }
-            .wrapExceptions
-            .flatten
-      } yield response
-    }
-
-    authenticator.authenticated("getStatistics", request) { participantId =>
-      f(Institution.Id(participantId.uuid))
-    }
-  }
 }

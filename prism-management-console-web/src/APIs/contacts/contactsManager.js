@@ -1,4 +1,4 @@
-import { ConsoleServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
+import { ContactsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import {
@@ -70,7 +70,7 @@ async function getContact(contactId) {
 function ContactsManager(config, auth) {
   this.config = config;
   this.auth = auth;
-  this.client = new ConsoleServicePromiseClient(this.config.grpcClient);
+  this.client = new ContactsServicePromiseClient(this.config.grpcClient);
 }
 
 ContactsManager.prototype.generateConnectionToken = generateConnectionToken;
