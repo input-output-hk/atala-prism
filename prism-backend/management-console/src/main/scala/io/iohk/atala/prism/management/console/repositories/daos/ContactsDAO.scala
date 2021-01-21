@@ -62,40 +62,40 @@ object ContactsDAO {
 
   def getBy(
       participantId: ParticipantId,
-      lastContactSeen: Option[Contact.Id],
+      scrollIdMaybe: Option[Contact.Id],
       limit: Int,
       groupName: Option[InstitutionGroup.Name]
   ): doobie.ConnectionIO[List[Contact]] = {
 
-    val query = (lastContactSeen, groupName) match {
-      case (Some(lastSeen), Some(group)) =>
+    val query = (scrollIdMaybe, groupName) match {
+      case (Some(scrollId), Some(group)) =>
         sql"""
              |WITH CTE AS (
              |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_seen_time
              |  FROM contacts
-             |  WHERE contact_id = $lastSeen
+             |  WHERE contact_id = $scrollId
              |)
              |SELECT contact_id, external_id, contact_data, contacts.created_at
              |FROM CTE CROSS JOIN contacts
              |     JOIN contacts_per_group USING (contact_id)
              |     JOIN institution_groups g USING (group_id)
              |WHERE contacts.created_by = $participantId AND
-             |      (contacts.created_at > last_seen_time OR (contacts.created_at = last_seen_time AND contact_id > $lastSeen)) AND
+             |      (contacts.created_at > last_seen_time OR (contacts.created_at = last_seen_time AND contact_id > $scrollId)) AND
              |      g.name = $group
              |ORDER BY contacts.created_at ASC, contact_id
              |LIMIT $limit
              |""".stripMargin
-      case (Some(lastSeen), None) =>
+      case (Some(scrollId), None) =>
         sql"""
              |WITH CTE AS (
              |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_seen_time
              |  FROM contacts
-             |  WHERE contact_id = $lastSeen
+             |  WHERE contact_id = $scrollId
              |)
              |SELECT contact_id, external_id, contact_data, created_at
              |FROM CTE CROSS JOIN contacts
              |WHERE contacts.created_by = $participantId AND
-             |      (created_at > last_seen_time OR (created_at = last_seen_time AND contact_id > $lastSeen))
+             |      (created_at > last_seen_time OR (created_at = last_seen_time AND contact_id > $scrollId))
              |ORDER BY created_at ASC, contact_id
              |LIMIT $limit
              |""".stripMargin

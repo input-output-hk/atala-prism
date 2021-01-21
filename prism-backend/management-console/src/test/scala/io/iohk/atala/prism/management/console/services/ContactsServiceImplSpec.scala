@@ -367,7 +367,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       createContact(institutionId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 1,
-        lastSeenContactId = contactB.contactId.value.toString
+        scrollId = contactB.contactId.value.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -405,7 +405,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val contactA2 = createContact(institutionId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 2,
-        lastSeenContactId = contactA.contactId.value.toString,
+        scrollId = contactA.contactId.value.toString,
         groupName = groupNameA.value
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)

@@ -135,12 +135,20 @@ message CreateContactResponse {
 // The result is sorted by the contact's creation date in ascending order, breaking ties by contact id.
 message GetContactsRequest {
   int32 limit = 1; // the max amount of contacts to return, must be > 0
-  string lastSeenContactId = 2; // the last seen contact (if any), the returned contacts start after this one
+  // the last seen contact (if any), the returned contacts start after this one, just for the connector integration
+  // TODO: Remove once the connector integration is removed
+  string lastSeenContactId = 2;
   string groupName = 3; // if provided, get only the contacts that belong to this group
+  // retrieve the next items based on the given scroll id (when provided)
+  // This applies only to the management console, the connector still works with the lastSeenContactId
+  string scrollId = 4;
 }
 // Response with the retrieved contacts
 message GetContactsResponse {
   repeated Contact contacts = 1; // the contacts found
+  // the scroll id to retrieve the next items
+  // This applies only to the management console, the connector still needs to compute the lastSeenContactId
+  string scrollId = 2;
 }
 
 // Request to retrieve a contact from the authenticated institution

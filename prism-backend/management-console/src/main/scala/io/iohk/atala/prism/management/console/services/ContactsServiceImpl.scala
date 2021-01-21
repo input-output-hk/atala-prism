@@ -84,33 +84,35 @@ class ContactsServiceImpl(
 
   override def getContacts(request: GetContactsRequest): Future[GetContactsResponse] = {
     def f(participantId: ParticipantId): Future[GetContactsResponse] = {
-      val lastSeenContact = Try(Contact.Id(UUID.fromString(request.lastSeenContactId))).toOption
+      val scrollId = Try(Contact.Id(UUID.fromString(request.scrollId))).toOption
       val groupName = Option(request.groupName.trim).filter(_.nonEmpty).map(InstitutionGroup.Name.apply)
 
       implicit val loggingContext: LoggingContext =
         LoggingContext(
           "request" -> request,
           "participantId" -> participantId,
-          "lastSeenContact" -> lastSeenContact,
+          "scrollId" -> scrollId,
           "groupName" -> groupName
         )
 
       contactsRepository
-        .getBy(participantId, lastSeenContact, groupName, request.limit)
+        .getBy(participantId, scrollId, groupName, request.limit)
         .flatMap { list =>
           contactConnectionService
             .getConnectionStatus(
               ConnectionsStatusRequest(acceptorIds = list.map(_.contactId.value.toString))
             )
             .map { connectionStatusResponse =>
-              Right(
-                console_api.GetContactsResponse(
-                  list.zip(connectionStatusResponse.connections).map {
-                    case (contact, connection) =>
-                      ProtoCodecs.toContactProto(contact, connection)
-                  }
-                )
-              )
+              list.zip(connectionStatusResponse.connections)
+            }
+            .map { list =>
+              val contacts = list.map {
+                case (contact, connection) =>
+                  ProtoCodecs.toContactProto(contact, connection)
+              }
+              val scrollId = contacts.lastOption.map(_.contactId).getOrElse("")
+              val response = console_api.GetContactsResponse().withContacts(contacts).withScrollId(scrollId)
+              Right(response)
             }
             .toFutureEither
         }
