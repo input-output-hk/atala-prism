@@ -1,8 +1,5 @@
 package io.iohk.atala.prism.node.repositories
 
-import cats.effect.IO
-import doobie.implicits._
-import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
@@ -11,12 +8,14 @@ import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
-import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO}
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
-
 import java.time.Instant
+
+import cats.effect.IO
+import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.DIDData
 
 class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
@@ -61,7 +60,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
       registerDID(randomIssuerDIDSuffix)
 
-      createBatch(
+      DataPreparation.createBatch(
         randomBatchId,
         randomLastOperation,
         randomIssuerDIDSuffix,
@@ -69,7 +68,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         randomIssuedOnTime
       )
 
-      revokeCredentials(
+      DataPreparation.revokeCredentials(
         randomBatchId,
         List(randomCredentialHash1, randomCredentialHash2),
         randomRevocationLedgerData
@@ -108,7 +107,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
       registerDID(randomIssuerDIDSuffix)
 
-      createBatch(
+      DataPreparation.createBatch(
         randomBatchId,
         randomLastOperation,
         randomIssuerDIDSuffix,
@@ -149,7 +148,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
       registerDID(randomIssuerDIDSuffix)
 
-      createBatch(
+      DataPreparation.createBatch(
         randomBatchId,
         randomLastOperation,
         randomIssuerDIDSuffix,
@@ -157,7 +156,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         randomIssuedOnLedgerData
       )
 
-      revokeCredentialBatch(randomBatchId, randomRevocationLedgerData)
+      DataPreparation.revokeCredentialBatch(randomBatchId, randomRevocationLedgerData)
 
       val expectedState = CredentialBatchState(
         batchId = randomBatchId,
@@ -187,57 +186,10 @@ object CredentialBatchesRepositorySpec {
       Ledger.InMemory,
       dummyTimestampInfo
     )
-    DIDDataDAO
-      .insert(didSuffix, lastOperation, dummyLedgerData)
-      .transact(database)
-      .unsafeRunSync()
-  }
-
-  private def createBatch(
-      batchId: CredentialBatchId,
-      lastOperation: SHA256Digest,
-      issuerDIDSuffix: DIDSuffix,
-      merkleRoot: MerkleRoot,
-      issuedOn: LedgerData
-  )(implicit database: Transactor[IO]): Unit = {
-    CredentialBatchesDAO
-      .insert(
-        CreateCredentialBatchData(
-          batchId = batchId,
-          lastOperation = lastOperation,
-          issuerDIDSuffix = issuerDIDSuffix,
-          merkleRoot = merkleRoot,
-          ledgerData = issuedOn
-        )
-      )
-      .transact(database)
-      .unsafeRunSync()
-  }
-
-  private def revokeCredentialBatch(
-      batchId: CredentialBatchId,
-      revocationLedgerData: LedgerData
-  )(implicit database: Transactor[IO]): Unit = {
-    CredentialBatchesDAO
-      .revokeEntireBatch(batchId, revocationLedgerData)
-      .transact(database)
-      .unsafeRunSync()
-    ()
-  }
-
-  private def revokeCredentials(
-      batchId: CredentialBatchId,
-      credentialHashes: List[SHA256Digest],
-      revocationLedgerData: LedgerData
-  )(implicit database: Transactor[IO]): Unit = {
-    CredentialBatchesDAO
-      .revokeCredentials(
-        batchId,
-        credentialHashes,
-        revocationLedgerData
-      )
-      .transact(database)
-      .unsafeRunSync()
+    DataPreparation.createDID(
+      DIDData(didSuffix, keys = Nil, lastOperation),
+      dummyLedgerData
+    )
   }
 
   private def revocationTime(batchId: CredentialBatchId, credentialHash: SHA256Digest)(implicit

@@ -13,9 +13,10 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
-
 import java.security.MessageDigest
 import java.time.Instant
+
+import io.iohk.atala.prism.node.DataPreparation
 
 object IssueCredentialOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
@@ -124,10 +125,8 @@ class IssueCredentialOperationSpec extends AtalaWithPostgresSpec {
 
   "IssueCredentialOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
-      didDataRepository
-        .create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
-        .value
-        .futureValue
+      DataPreparation
+        .createDID(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
@@ -145,10 +144,8 @@ class IssueCredentialOperationSpec extends AtalaWithPostgresSpec {
 
   "IssueCredentialOperation.applyState" should {
     "create the credential information in the database" in {
-      didDataRepository
-        .create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
-        .value
-        .futureValue
+      DataPreparation
+        .createDID(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
@@ -178,10 +175,8 @@ class IssueCredentialOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "return error when the credential already exists in the db" in {
-      didDataRepository
-        .create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
-        .value
-        .futureValue
+      DataPreparation
+        .createDID(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyLedgerData)
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       // first insertion

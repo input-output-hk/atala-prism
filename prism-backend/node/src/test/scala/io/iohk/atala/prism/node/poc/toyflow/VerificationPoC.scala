@@ -9,12 +9,7 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, NodeSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceImpl,
-  DIDDataService,
-  InMemoryLedgerService,
-  ObjectManagementService
-}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService}
 import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
 import io.iohk.atala.prism.protos.node_api
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -31,7 +26,7 @@ class VerificationPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
-  protected var didDataService: DIDDataService = _
+  protected var didDataRepository: DIDDataRepository = _
   protected var credentialBatchesRepository: CredentialBatchesRepository = _
   protected var credentialsRepository: CredentialsRepository = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
@@ -43,7 +38,8 @@ class VerificationPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    didDataService = new DIDDataService(new DIDDataRepository(database))
+    credentialsRepository = new CredentialsRepository(database)
+    didDataRepository = new DIDDataRepository(database)
     credentialsRepository = new CredentialsRepository(database)
     credentialBatchesRepository = new CredentialBatchesRepository(database)
 
@@ -75,7 +71,7 @@ class VerificationPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
         node_api.NodeServiceGrpc
           .bindService(
             new NodeServiceImpl(
-              didDataService,
+              didDataRepository,
               objectManagementService,
               credentialsRepository,
               credentialBatchesRepository

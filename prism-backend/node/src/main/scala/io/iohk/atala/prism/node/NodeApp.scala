@@ -96,7 +96,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
-    val didDataService = new DIDDataService(new DIDDataRepository(transactor))
+    val didDataRepository = new DIDDataRepository(transactor)
     val credentialsRepository = new CredentialsRepository(transactor)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
@@ -111,7 +111,12 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val credentialBatchesRepository = new CredentialBatchesRepository(transactor)
 
     val nodeService =
-      new NodeServiceImpl(didDataService, objectManagementService, credentialsRepository, credentialBatchesRepository)
+      new NodeServiceImpl(
+        didDataRepository,
+        objectManagementService,
+        credentialsRepository,
+        credentialBatchesRepository
+      )
 
     logger.info("Starting server")
     import io.grpc.protobuf.services.ProtoReflectionService

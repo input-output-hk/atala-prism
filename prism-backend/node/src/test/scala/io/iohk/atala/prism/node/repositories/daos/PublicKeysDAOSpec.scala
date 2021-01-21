@@ -1,21 +1,19 @@
-package io.iohk.atala.prism.node.repositories
+package io.iohk.atala.prism.node.repositories.daos
+
+import java.time.Instant
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
-import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
-import org.scalatest.EitherValues._
-import org.scalatest.OptionValues._
-import java.time.Instant
-
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
+import io.iohk.atala.prism.node.repositories.{didSuffixFromDigest, digestGen}
 
-class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val didDataRepository = new DIDDataRepository(database)
+import org.scalatest.OptionValues._
+
+class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
 
   val operationDigest = digestGen(0, 1)
   val didSuffix = didSuffixFromDigest(operationDigest)
@@ -55,31 +53,28 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
     dummyTimestamp
   )
 
-  "DIDDataRepository" should {
-    "retrieve previously inserted DID data" in {
+  "PublicKeysDAO" should {
+    "retrieve previously inserted DID key" in {
       DataPreparation.createDID(didData, dummyLedgerData)
-      val did = didDataRepository.findByDid(DID.buildPrismDID(didSuffix)).value.futureValue.toOption.value
+      val result = DataPreparation.findKey(didSuffix, "issuing").value
 
-      did.didSuffix mustBe didSuffix
+      DIDPublicKey(result.didSuffix, result.keyId, result.keyUsage, result.key) mustBe keys.tail.head
+      result.addedOn mustBe dummyLedgerData.timestampInfo
+      result.revokedOn mustBe None
     }
 
-    "return UnknownValueError when the DID suffix is not found" in {
+    "return None when retrieving key for non-existing DID" in {
       DataPreparation.createDID(didData, dummyLedgerData)
+      val result = DataPreparation.findKey(didSuffixFromDigest(digestGen(0, 2)), "issuing")
 
-      val result = didDataRepository
-        .findByDid(DID.buildPrismDID(didSuffixFromDigest(digestGen(0, 2))))
-        .value
-        .futureValue
-        .left
-        .value
-
-      result must be(a[UnknownValueError])
+      result must be(empty)
     }
 
-    "return error when did is in invalid format" in {
-      val did = io.iohk.atala.prism.identity.DID.buildPrismDID("11:11:11:11")
-      didDataRepository.findByDid(did).value.futureValue mustBe a[Left[UnknownValueError, _]]
+    "return None when retrieving non-existing key" in {
+      DataPreparation.createDID(DIDData(didSuffix, keys.tail, operationDigest), dummyLedgerData)
+      val result = DataPreparation.findKey(didSuffix, "master")
+
+      result must be(empty)
     }
   }
-
 }

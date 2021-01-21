@@ -14,8 +14,9 @@ import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
-
 import java.time.Instant
+
+import io.iohk.atala.prism.node.DataPreparation
 
 object UpdateDIDOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
@@ -193,7 +194,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
       parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
-      val did = didDataRepository.findByDidSuffix(createDidOperation.id).value.futureValue.toOption.value
+      val did = DataPreparation.findByDidSuffix(createDidOperation.id)
 
       val initialKeys = CreateDIDOperationSpec.exampleOperation.getCreateDid.getDidData.publicKeys.map(_.id).toSet
       val expectedKeys = initialKeys + "new_master" - "issuing"

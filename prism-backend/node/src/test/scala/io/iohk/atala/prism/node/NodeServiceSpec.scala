@@ -32,7 +32,7 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
   AtalaObjectTransactionStatus
 }
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService}
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
   GetCredentialRevocationTimeRequest,
@@ -79,7 +79,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
     reset(credentialsRepository)
     reset(credentialBatchesRepository)
 
-    val didDataService = new DIDDataService(new DIDDataRepository(database))
+    val didDataRepository = new DIDDataRepository(database)
 
     serverName = InProcessServerBuilder.generateName()
 
@@ -90,7 +90,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
         node_api.NodeServiceGrpc
           .bindService(
             new NodeServiceImpl(
-              didDataService,
+              didDataRepository,
               objectManagementService,
               credentialsRepository,
               credentialBatchesRepository
@@ -411,7 +411,7 @@ class NodeServiceSpec extends AtalaWithPostgresSpec with MockitoSugar with Befor
     "fail when credentialId is not valid" in {
       val invalidCredentialId = "invalid@_?"
       val requestWithInvalidId = GetCredentialStateRequest(credentialId = invalidCredentialId)
-      val expectedMessage = "INTERNAL: requirement failed"
+      val expectedMessage = s"INTERNAL: requirement failed: invalid credential id: $invalidCredentialId"
 
       val error = intercept[RuntimeException] {
         service.getCredentialState(requestWithInvalidId)

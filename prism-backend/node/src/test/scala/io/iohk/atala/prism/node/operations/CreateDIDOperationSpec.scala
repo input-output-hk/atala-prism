@@ -4,21 +4,23 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.LedgerData
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
-
 import java.time.Instant
 
+import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.protos.node_models.ECKeyData
+
 object CreateDIDOperationSpec {
-  def protoECKeyFromPublicKey(key: ECPublicKey) = {
+  def protoECKeyFromPublicKey(key: ECPublicKey): ECKeyData = {
     val point = key.getCurvePoint
 
     node_models.ECKeyData(
@@ -28,20 +30,20 @@ object CreateDIDOperationSpec {
     )
   }
 
-  def randomProtoECKey = {
+  def randomProtoECKey: ECKeyData = {
     val keyPair = EC.generateKeyPair()
     protoECKeyFromPublicKey(keyPair.publicKey)
   }
 
-  val masterKeys = EC.generateKeyPair()
-  val masterEcKey = protoECKeyFromPublicKey(masterKeys.publicKey)
+  val masterKeys: ECKeyPair = EC.generateKeyPair()
+  val masterEcKey: ECKeyData = protoECKeyFromPublicKey(masterKeys.publicKey)
 
-  val issuingKeys = EC.generateKeyPair()
-  val issuingEcKey = protoECKeyFromPublicKey(issuingKeys.publicKey)
+  val issuingKeys: ECKeyPair = EC.generateKeyPair()
+  val issuingEcKey: ECKeyData = protoECKeyFromPublicKey(issuingKeys.publicKey)
 
   private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
-  val exampleOperation = node_models.AtalaOperation(
+  val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(
         didData = Some(
@@ -91,8 +93,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
   import CreateDIDOperationSpec._
 
   lazy val didDataRepository = new DIDDataRepository(database)
-  lazy val dummyTimestamp = dummyTimestampInfo
-  lazy val dummyLedgerData = LedgerData(
+  lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
+  lazy val dummyLedgerData: LedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,
     dummyTimestamp
@@ -192,6 +194,15 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
     }
   }
 
+  private def toDIDPublicKey(keyState: DIDPublicKeyState): DIDPublicKey = {
+    DIDPublicKey(
+      didSuffix = keyState.didSuffix,
+      keyId = keyState.keyId,
+      keyUsage = keyState.keyUsage,
+      key = keyState.key
+    )
+  }
+
   "CreateDIDOperation.applyState" should {
     "create the DID information in the database" in {
       val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
@@ -204,10 +215,14 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .futureValue
       result mustBe a[Right[_, _]]
 
-      didDataRepository.findByDidSuffix(parsedOperation.id).value.futureValue mustBe a[Right[_, _]]
+      val didState = DataPreparation.findByDidSuffix(parsedOperation.id)
+
+      didState.didSuffix mustBe parsedOperation.id
+      didState.lastOperation mustBe parsedOperation.digest
+      didState.keys.map(toDIDPublicKey) must contain theSameElementsAs parsedOperation.keys
 
       for (key <- parsedOperation.keys) {
-        val keyState = didDataRepository.findKey(parsedOperation.id, key.keyId).value.futureValue.toOption.value
+        val keyState = DataPreparation.findKey(parsedOperation.id, key.keyId).value
         DIDPublicKey(keyState.didSuffix, keyState.keyId, keyState.keyUsage, keyState.key) mustBe key
         keyState.addedOn mustBe dummyLedgerData.timestampInfo
         keyState.revokedOn mustBe None
@@ -217,10 +232,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
     "return error when given DID already exists" in {
       val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
-      didDataRepository
-        .create(DIDData(parsedOperation.id, Nil, parsedOperation.digest), dummyLedgerData)
-        .value
-        .futureValue
+      DataPreparation
+        .createDID(DIDData(parsedOperation.id, Nil, parsedOperation.digest), dummyLedgerData)
 
       val result = parsedOperation
         .applyState()

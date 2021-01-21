@@ -15,8 +15,9 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues.convertOptionToValuable
-
 import java.time.Instant
+
+import io.iohk.atala.prism.node.DataPreparation
 
 object IssueCredentialBatchOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
@@ -114,10 +115,8 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
   "IssueCredentialBatchOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
-      didDataRepository
-        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
-        .value
-        .futureValue
+      DataPreparation
+        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
       val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
@@ -135,10 +134,8 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
   "IssueCredentialBatchOperation.applyState" should {
     "create the credential batch information in the database" in {
-      didDataRepository
-        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
-        .value
-        .futureValue
+      DataPreparation
+        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
       val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       val result = parsedOperation
@@ -181,10 +178,9 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "return error when the credential already exists in the db" in {
-      didDataRepository
-        .create(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
-        .value
-        .futureValue
+      DataPreparation
+        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
+
       val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
       // first insertion

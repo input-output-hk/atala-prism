@@ -11,9 +11,9 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository}
+import io.iohk.atala.prism.node.repositories.{CredentialsRepository, CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
-import io.iohk.atala.prism.node.services.{DIDDataService, ObjectManagementService}
+import io.iohk.atala.prism.node.services.ObjectManagementService
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
@@ -44,7 +44,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class NodeServiceImpl(
-    didDataService: DIDDataService,
+    didDataRepository: DIDDataRepository,
     objectManagement: ObjectManagementService,
     credentialsRepository: CredentialsRepository,
     credentialBatchesRepository: CredentialBatchesRepository
@@ -60,7 +60,7 @@ class NodeServiceImpl(
     Future.successful(HealthCheckResponse())
 
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
-    implicit val didService: DIDDataService = didDataService
+    implicit val didDataRepositoryImplicit: DIDDataRepository = didDataRepository
 
     logRequest("getDidDocument", request)
 
@@ -436,12 +436,12 @@ object NodeServiceImpl {
       }
   }
 
-  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit didDataService: DIDDataService): OrElse = {
-    OrElse(butShowInDIDDocument, didDataService.findByDID(did).value)
+  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit didDataRepository: DIDDataRepository): OrElse = {
+    OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).value)
   }
 
-  private def resolve(did: DID)(implicit didDataService: DIDDataService): OrElse = {
-    OrElse(did, didDataService.findByDID(did).value)
+  private def resolve(did: DID)(implicit didDataRepository: DIDDataRepository): OrElse = {
+    OrElse(did, didDataRepository.findByDid(did).value)
   }
 
   def logRequest[Req <: GeneratedMessage](method: String, request: Req)(implicit logger: Logger): Unit = {
