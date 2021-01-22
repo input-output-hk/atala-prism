@@ -3,13 +3,14 @@ package io.iohk.atala.cvp.webextension.common.services
 import chrome.windows.bindings.{CreateOptions, Window}
 import typings.std.global.screen
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 
 class BrowserWindowService {
-  private var windowId: Option[Int] = None
 
-  def createOrUpdate(mayBeParam: Option[String] = None)(implicit ec: ExecutionContext): Unit = {
+  def createOrUpdate(mayBeParam: Option[String] = None, windowId: Option[Window.Id] = None)(implicit
+      ec: ExecutionContext
+  ): Future[Option[Window]] = {
 
     val param = mayBeParam.map(p => s"?view=$p").getOrElse("")
     val url = s"chrome-extension://${chrome.runtime.Runtime.id}/popup.html$param"
@@ -41,25 +42,13 @@ class BrowserWindowService {
 
     windowId
       .map { id =>
-        chrome.windows.Windows.remove(id).map { _ =>
-          createWindow(options: CreateOptions)
+        chrome.windows.Windows.remove(id).flatMap { _ =>
+          chrome.windows.Windows.create(options)
         }
       }
       .getOrElse {
-        createWindow(options)
+        chrome.windows.Windows.create(options)
       }
-
-  }
-
-  private def createWindow(options: CreateOptions)(implicit ec: ExecutionContext) = {
-    chrome.windows.Windows.create(options).map {
-      _.map { window =>
-        windowId = window.id.toOption
-        chrome.windows.Windows.onRemoved.listen { id =>
-          if (window.id.toOption.contains(id)) windowId = None
-        }
-      }
-    }
   }
 }
 

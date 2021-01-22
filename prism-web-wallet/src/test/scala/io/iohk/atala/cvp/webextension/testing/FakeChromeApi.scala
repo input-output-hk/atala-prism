@@ -37,6 +37,27 @@ object FakeChromeApi extends js.Object() {
     def create(tab: TabCreateProperties): Unit = {}
   }
 
+  val windows: js.Object = new js.Object() {
+    val WINDOW_ID_NONE = 1
+    val WINDOW_ID_CURRENT = 2
+    val listeners: ListBuffer[js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]] =
+      ListBuffer()
+    val onCreated: js.Object = new js.Object() {
+      def addListener(
+          callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]
+      ): Unit = {
+        listeners += callback
+      }
+    }
+    val onRemoved: js.Object = new js.Object() {
+      def addListener(
+          callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]
+      ): Unit = {
+        listeners += callback
+      }
+    }
+  }
+
   val runtime: js.Object = new js.Object() {
     val id = "id"
 

@@ -1,5 +1,6 @@
 package io.iohk.atala.cvp.webextension.background
 
+import chrome.windows.bindings.Window
 import io.circe.generic.auto._
 import io.circe.{Encoder, Json}
 import io.iohk.atala.cvp.webextension.Config
@@ -29,17 +30,27 @@ class Runner(
     commandProcessor: CommandProcessor
 )(implicit ec: ExecutionContext) {
 
+  private var windowId: Option[Window.Id] = None
+
   val browserWindowService = BrowserWindowService()
 
   implicit val encodeNothing = new Encoder[Nothing] {
     override def apply(a: Nothing): Json = ???
   }
 
+  chrome.windows.Windows.onRemoved.listen { id =>
+    if (windowId.contains(id)) windowId = None
+  }
+
   def run(): Unit = {
     Logger.log("This was run by the background script")
     chrome.browserAction.BrowserAction.setPopup("") //Need to disable default popup for using window
     chrome.browserAction.BrowserAction.onClicked.addListener(_ => {
-      browserWindowService.createOrUpdate()
+      browserWindowService.createOrUpdate(None, windowId).map {
+        _.map { window =>
+          windowId = window.id.toOption
+        }
+      }
     })
 
     processExternalMessages()
