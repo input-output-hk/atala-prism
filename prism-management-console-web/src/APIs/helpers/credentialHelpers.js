@@ -6,6 +6,7 @@ export function credentialMapper(credential, credentialTypes) {
     credentialid,
     credentialdata,
     contactid,
+    externalid,
     contactdata,
     connectionstatus,
     encodedsignedcredential,
@@ -26,6 +27,7 @@ export function credentialMapper(credential, credentialTypes) {
     status: getCredentialStatus(credential),
     contactData: contactMapper({
       contactid,
+      externalid,
       connectionstatus,
       jsondata: contactdata
     })
