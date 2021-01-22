@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.utils
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   def map[B](f: A => B)(implicit ec: ExecutionContext): FutureEither[E, B] = {
@@ -76,6 +77,20 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   * These could cause ambiguity to the compiler while resolving implicits.
   */
 object FutureEither {
+
+  /**
+    * Constructs a `FutureEither` from the given `body` by wrapping it in a `Try`.
+    *
+    * <p>This method ensures any non-fatal exception is caught.
+    */
+  def apply[E, A](body: => A): FutureEither[Throwable, A] = {
+    Future.successful {
+      Try(body) match {
+        case Failure(ex) => Left(ex)
+        case Success(value) => Right(value)
+      }
+    }.toFutureEither
+  }
 
   implicit class FutureEitherOps[E, A](val value: Future[Either[E, A]]) extends AnyVal {
     def toFutureEither: FutureEither[E, A] = new FutureEither[E, A](value)

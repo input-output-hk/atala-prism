@@ -18,13 +18,11 @@ import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.console_models.CredentialIssuanceContact
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters.SetHasAsJava
-import scala.util.Try
 
 class CredentialIssuanceServiceImpl(
     contactsRepository: ContactsRepository,
@@ -45,11 +43,9 @@ class CredentialIssuanceServiceImpl(
         institutionId: ParticipantId,
         request: CreateCredentialIssuanceRequest
     ): FutureEither[ManagementConsoleError, List[CredentialIssuancesRepository.CreateCredentialIssuanceContact]] = {
-      val contactIdsF = Future {
-        Try {
-          request.credentialIssuanceContacts.map(contact => Contact.Id(UUID.fromString(contact.contactId)))
-        }.toEither
-      }.toFutureEither
+      val contactIdsF = FutureEither {
+        request.credentialIssuanceContacts.map(contact => Contact.Id(UUID.fromString(contact.contactId)))
+      }
 
       val contacts = for {
         // Validate contacts
@@ -125,11 +121,9 @@ class CredentialIssuanceServiceImpl(
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "institutionId" -> institutionId)
 
-      val credentialIssuanceIdF = Future {
-        Try {
-          CredentialIssuance.Id(UUID.fromString(request.credentialIssuanceId))
-        }.toEither
-      }.toFutureEither.mapLeft(InternalServerError)
+      val credentialIssuanceIdF = FutureEither {
+        CredentialIssuance.Id(UUID.fromString(request.credentialIssuanceId))
+      }.mapLeft(InternalServerError)
 
       val responseF = for {
         credentialIssuanceId <- credentialIssuanceIdF
