@@ -99,13 +99,13 @@ function isSessionError(error) {
   );
 }
 
-async function signMessage(unsignedRequest) {
+async function signMessage(unsignedRequest, timeout = BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS) {
   try {
     const { sessionId } = this.session;
     const requestBytes = unsignedRequest.serializeBinary();
     const result = await Promise.race([
       window.prism.signConnectorRequest(sessionId, requestBytes),
-      timeoutPromise(BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS)
+      timeoutPromise(timeout)
     ]);
     if (result.error) throw new Error(result.error);
     return result;

@@ -4,6 +4,8 @@ import __ from 'lodash';
 export const BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS = 3000; // The allowed delay for the extension to inject it's sdk
 // eslint-disable-next-line camelcase
 export const BROWSER_WALLET_CHECK_INTERVAL_MS = 500; // Delay before checking if the extension has injected it's SDK
+// eslint-disable-next-line no-magic-numbers
+export const SEND_CREDENTIAL_TIMEOUT = BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS * 2;
 export const SEARCH_DELAY_MS = 1000;
 // eslint-disable-next-line camelcase
 const DEFAUlT_PAGE_SIZE = 10;

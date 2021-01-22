@@ -1,7 +1,8 @@
 function DIDBased(configs, wallet) {
-  const getMetadata = async unsignedRequest => {
+  const getMetadata = async (unsignedRequest, timeout) => {
     const { encodedNonce, encodedSignature, did, didKeyId } = await wallet.signMessage(
-      unsignedRequest
+      unsignedRequest,
+      timeout
     );
 
     return {
