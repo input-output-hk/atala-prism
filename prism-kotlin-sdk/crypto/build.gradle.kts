@@ -13,10 +13,23 @@ kotlin {
             }
         }
     }
+    js(IR) {
+        nodejs()
+        binaries.executable()
+        useCommonJs()
+
+        compilations["main"].packageJson {
+            version = "0.1.0"
+        }
+
+        compilations["test"].packageJson {
+            version = "0.1.0"
+        }
+    }
     ios("ios") {
         binaries.all {
             // Linker options required to link to libsecp256k1.
-            linkerOpts("-L../credentials-verification-iOS/Pods/BitcoinKit/Libraries/secp256k1/lib", "-lsecp256k1")
+            linkerOpts("-L../prism-ios-wallet/Pods/BitcoinKit/Libraries/secp256k1/lib", "-lsecp256k1")
         }
     }
 
@@ -44,6 +57,17 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-junit5"))
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+            }
+        }
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("hash.js", "1.1.7", generateExternals = true))
+                implementation(npm("elliptic", "6.5.3"))
+            }
+        }
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
             }
         }
         val iosMain by getting

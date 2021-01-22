@@ -17,14 +17,14 @@ class MerkleTreeTest {
     private val hashes = (1..50).map { randomHash(length = 16) }
 
     @Test
-    fun `build proofs for all supplied hashes`() {
+    fun buildProofsForAllSuppliedHashes() {
         val (_, proofs) = MerkleTree.generateProofs(hashes)
 
         hashes.forEach { h -> assertNotNull(proofs.find { it.hash == h }) }
     }
 
     @Test
-    fun `build proofs of limited length`() {
+    fun buildProofsOfLimitedLength() {
         val (_, proofs) = MerkleTree.generateProofs(hashes)
 
         val maxLength = ceil(log2(hashes.size.toDouble()) / log2(2.0)).toInt()
@@ -32,7 +32,7 @@ class MerkleTreeTest {
     }
 
     @Test
-    fun `build verifiable proofs`() {
+    fun buildVerifiableProofs() {
         val (root, proofs) = MerkleTree.generateProofs(hashes)
 
         for (proof in proofs) {
@@ -41,7 +41,7 @@ class MerkleTreeTest {
     }
 
     @Test
-    fun `reject invalid proofs`() {
+    fun rejectInvalidProofs() {
         val (root, proofs) = MerkleTree.generateProofs(hashes)
         val proofNumber = Random.nextInt(proofs.size)
         val proof = proofs[proofNumber]
@@ -61,7 +61,7 @@ class MerkleTreeTest {
     }
 
     @Test
-    fun `be resistant to second-preimage attacks`() {
+    fun beResistantToSecondPreimageAttacks() {
         val (root, proofs) = MerkleTree.generateProofs(hashes)
         val proofNumber = Random.nextInt(proofs.size)
         val proof = proofs[proofNumber]
@@ -79,7 +79,7 @@ class MerkleTreeTest {
     }
 
     @Test
-    fun `derive consistent root`() {
+    fun deriveConsistentRoot() {
         val (root, proofs) = MerkleTree.generateProofs(hashes)
 
         proofs.forEach { assertEquals(it.derivedRoot(), root) }

@@ -11,9 +11,27 @@ plugins {
 val versionDetails: groovy.lang.Closure<VersionDetails> by extra
 val pbandkVersion by extra("0.10.0-M1")
 
+// Since NPM only accepts pure semantic versioning (\d.\d.\d), we have to
+// replace 0.1.0-$githash with 0.1.0 in root package.json
+gradle.buildFinished {
+    val rootPackageJson = File("$buildDir/js/package.json")
+    val versionRegex = Regex("""  "version": "(\d\.\d\.\d)-[0-9a-f]{8}"""")
+    if (rootPackageJson.exists()) {
+        val newLines = rootPackageJson.readLines().map { line ->
+            val matchResult = versionRegex.matchEntire(line)
+            if (matchResult != null) {
+                "  \"version\": \"${matchResult.groups[1]!!.value}\""
+            } else {
+                line
+            }
+        }
+        rootPackageJson.writeText(newLines.joinToString("\n"))
+    }
+}
+
 allprojects {
     group = "io.iohk.atala.prism"
-    version = "0.1-" + versionDetails().gitHash.substring(0, 8)
+    version = "0.1.0-" + versionDetails().gitHash.substring(0, 8)
 
     repositories {
         mavenCentral()
@@ -31,7 +49,10 @@ allprojects {
 
         // Exclude generated proto classes
         filter {
-            exclude { element -> element.file.path.contains("generated/") }
+            exclude { element ->
+                element.file.path.contains("generated/") or
+                    element.file.path.contains("externals/")
+            }
         }
     }
 }
