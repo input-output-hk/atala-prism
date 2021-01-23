@@ -14,4 +14,14 @@ object InstitutionGroup {
   final case class Id(value: UUID) extends AnyVal
   final case class Name(value: String) extends AnyVal
   final case class WithContactCount(value: InstitutionGroup, numberOfContacts: Int)
+
+  object Name {
+    def optional(string: String): Option[Name] = {
+      if (string.trim.isEmpty) {
+        None
+      } else {
+        Some(Name(string.trim))
+      }
+    }
+  }
 }

@@ -4,6 +4,7 @@ import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
@@ -97,7 +98,8 @@ class ManagementConsoleApp(executionContext: ExecutionContext) {
       executionContext
     )
 
-    val contactsService = new ContactsServiceImpl(contactsRepository, authenticator, connector)(
+    val contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)(executionContext)
+    val contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)(
       executionContext
     )
 
