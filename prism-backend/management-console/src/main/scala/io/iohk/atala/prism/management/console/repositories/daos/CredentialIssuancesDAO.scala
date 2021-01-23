@@ -13,11 +13,10 @@ import io.iohk.atala.prism.management.console.models.{
 }
 
 import java.time.Instant
-import java.util.UUID
 
 object CredentialIssuancesDAO {
   def createCredentialIssuance(issuance: CreateCredentialIssuance): ConnectionIO[CredentialIssuance.Id] = {
-    val id = CredentialIssuance.Id(UUID.randomUUID())
+    val id = CredentialIssuance.Id.random()
     val createdOn = Instant.now()
     sql"""
          |INSERT INTO credential_issuances
@@ -41,7 +40,7 @@ object CredentialIssuancesDAO {
   }
 
   def createContact(contact: CreateCredentialIssuanceContact): ConnectionIO[CredentialIssuance.ContactId] = {
-    val id = CredentialIssuance.ContactId(UUID.randomUUID())
+    val id = CredentialIssuance.ContactId.random()
     sql"""
          |INSERT INTO credential_issuance_contacts
          |  (credential_issuance_contact_id, credential_issuance_id, contact_id, credential_data)
@@ -62,7 +61,7 @@ object CredentialIssuancesDAO {
   def createContactGroup(
       group: CreateCredentialIssuanceContactGroup
   ): ConnectionIO[CredentialIssuance.ContactGroupId] = {
-    val id = CredentialIssuance.ContactGroupId(UUID.randomUUID())
+    val id = CredentialIssuance.ContactGroupId.random()
     sql"""
          |INSERT INTO credential_issuance_groups (credential_issuance_group_id, credential_issuance_id, contact_group_id)
          |VALUES ($id, ${group.credentialIssuanceId}, ${group.contactGroupId})

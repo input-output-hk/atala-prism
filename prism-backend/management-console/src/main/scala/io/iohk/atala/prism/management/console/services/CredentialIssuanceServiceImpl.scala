@@ -99,7 +99,7 @@ class CredentialIssuanceServiceImpl(
               )
             )
             .map { credentialIssuanceId =>
-              CreateCredentialIssuanceResponse(credentialIssuanceId = credentialIssuanceId.uuid.toString)
+              CreateCredentialIssuanceResponse(credentialIssuanceId = credentialIssuanceId.toString)
             }
       } yield response
 
@@ -122,7 +122,7 @@ class CredentialIssuanceServiceImpl(
         LoggingContext("request" -> request, "institutionId" -> institutionId)
 
       val credentialIssuanceIdF = FutureEither {
-        CredentialIssuance.Id(UUID.fromString(request.credentialIssuanceId))
+        CredentialIssuance.Id.from(request.credentialIssuanceId)
       }.mapLeft(InternalServerError)
 
       val responseF = for {

@@ -84,8 +84,15 @@ object FutureEither {
     * <p>This method ensures any non-fatal exception is caught.
     */
   def apply[E, A](body: => A): FutureEither[Throwable, A] = {
+    apply(Try(body))
+  }
+
+  /**
+    * Constructs a `FutureEither` from the given `Try`.
+    */
+  def apply[E, A](tryBody: Try[A]): FutureEither[Throwable, A] = {
     Future.successful {
-      Try(body) match {
+      tryBody match {
         case Failure(ex) => Left(ex)
         case Success(value) => Right(value)
       }
