@@ -64,6 +64,7 @@
         "email": "Email",
         "invite": "QR Code",
         "delete": "Delete",
+        "remove": "Remove",
         "view": "View",
         "edit": "Edit",
         "viewCredentials": "View Credentials",
@@ -161,7 +162,14 @@
         "view": "View"
       }
     },
-    "deletionSuccess": "The group {{groupName}} was successfully deleted"
+    "deletionSuccess": "The group {{groupName}} was successfully deleted",
+    "copy": {
+      "title": "Do you want to copy a group?",
+      "subtitle": "Group names must be unique, please use a different name for the new group",
+      "label": "Insert a new name",
+      "copyOf": "Copy of {{name}}",
+      "success": "Successfully copied the group"
+    }
   },
   "holders": {
     "status": {
@@ -304,8 +312,8 @@
       "notImplementedYet": "This functionality is not implemented yet"
     },
     "success": {
-      "successSign": "Succesfully sent credential(s) to the wallet",
-      "successSend": "Succesfully sent credential(s) to the contact"
+      "successSign": "Successfully sent credential(s) to the wallet",
+      "successSend": "Successfully sent credential(s) to the contact"
     },
     "errors": {
       "errorSigning": "An error occurred while signing the credential(s)",
@@ -524,12 +532,7 @@
       "title": "We need some data...",
       "comment": "You are almost done!",
       "subtitle": "Please enter your Organization info so you can start using the application.",
-      "name": "Organization Name",
-      "role": "Organization Role",
-      "defaultRole": "Please select a role",
-      "invalidRole": "Please select a valid role",
-      "ISSUER": "Issuer",
-      "VERIFIER": "Verifier"
+      "name": "Organization Name"
     },
     "congratulations": {
       "alt": "Congratulations Image",
@@ -765,12 +768,12 @@
     },
     "importSuccess": {
       "importContacts": {
-        "title": "Your file was succesfully uploaded",
+        "title": "Your file was successfully uploaded",
         "uploadedEntities": "Contacts Imported",
         "continue": "Continue"
       },
       "importCredentialsData": {
-        "title": "Your file was succesfully uploaded",
+        "title": "Your file was successfully uploaded",
         "uploadedEntities": "Credential Records Imported",
         "continue": "Continue"
       }
@@ -799,8 +802,8 @@
     "addContacts": "Add Contacts"
   },
   "groupEditing": {
-    "title": "Edit Group",
-    "subtitle": "Edit group name, add or remove contacts.",
+    "title": "Group Details",
+    "subtitle": "View details, edit group name, add or remove contacts.",
     "contacts": "Contacts",
     "selectContacts": "Select contacts to add",
     "removeContacts": "Remove Contacts",
@@ -821,10 +824,7 @@
     "selectAll": "Select All"
   },
   "theme": {
-    "title": {
-      "issuer": "MANAGEMENT CONSOLE",
-      "verifier": "Verifier Portal"
-    }
+    "title": "MANAGEMENT CONSOLE"
   },
   "support": {
     "title": "Support"

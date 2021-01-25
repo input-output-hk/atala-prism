@@ -3,7 +3,6 @@
     "ok": "OK",
     "cancel": "Cancel",
     "delete": "Delete",
-    "save": "Save",
     "view": "View",
     "back": "Back",
     "next": "Next",
@@ -313,8 +312,8 @@
       "notImplementedYet": "This functionality is not implemented yet"
     },
     "success": {
-      "successSign": "Succesfully sent credential(s) to the wallet",
-      "successSend": "Succesfully sent credential(s) to the contact"
+      "successSign": "Successfully sent credential(s) to the wallet",
+      "successSend": "Successfully sent credential(s) to the contact"
     },
     "errors": {
       "errorSigning": "An error occurred while signing the credential(s)",
@@ -769,12 +768,12 @@
     },
     "importSuccess": {
       "importContacts": {
-        "title": "Your file was succesfully uploaded",
+        "title": "Your file was successfully uploaded",
         "uploadedEntities": "Contacts Imported",
         "continue": "Continue"
       },
       "importCredentialsData": {
-        "title": "Your file was succesfully uploaded",
+        "title": "Your file was successfully uploaded",
         "uploadedEntities": "Credential Records Imported",
         "continue": "Continue"
       }
