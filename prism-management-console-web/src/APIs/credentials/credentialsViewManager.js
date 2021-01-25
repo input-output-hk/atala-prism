@@ -1,9 +1,10 @@
+import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
 import { CredentialViewsServicePromiseClient } from '../../protos/cviews_api_grpc_web_pb';
 import { GetCredentialViewTemplatesRequest } from '../../protos/cviews_api_pb';
 
 async function getCredentialViewTemplates() {
   const req = new GetCredentialViewTemplatesRequest();
-  const metadata = await this.auth.getMetadata(req);
+  const metadata = await this.auth.getMetadata(req, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
   const res = await this.client.getCredentialViewTemplates(req, metadata);
   return res.getTemplatesList().map(template => template.toObject());
 }

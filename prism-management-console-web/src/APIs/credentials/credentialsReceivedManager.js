@@ -2,12 +2,13 @@ import base64url from 'base64url';
 import { CredentialsStoreServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import { GetStoredCredentialsForRequest } from '../../protos/console_api_pb';
 import Logger from '../../helpers/Logger';
+import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
 
 async function getReceivedCredentials(contactId) {
   Logger.info(`Getting received credentials ${contactId ? `for contact ${contactId}` : ''}`);
   const req = new GetStoredCredentialsForRequest();
   if (contactId) req.setIndividualid(contactId);
-  const metadata = await this.auth.getMetadata(req);
+  const metadata = await this.auth.getMetadata(req, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
   const res = await this.client.getStoredCredentialsFor(req, metadata);
   const credentials = res.getCredentialsList().map(storedCredential => {
     const encodedsignedcredential = storedCredential.getEncodedsignedcredential();

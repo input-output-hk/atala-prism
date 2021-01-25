@@ -1,7 +1,7 @@
 import { ConnectorServicePromiseClient } from '../../protos/connector_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { GetConnectionsPaginatedRequest, SendMessageRequest } from '../../protos/connector_api_pb';
-import { SEND_CREDENTIAL_TIMEOUT } from '../../helpers/constants';
+import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
 
 async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();
@@ -9,7 +9,10 @@ async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   connectionsPaginatedRequest.setLastseenconnectionid(lastSeenConnectionId);
   connectionsPaginatedRequest.setLimit(limit);
 
-  const metadata = await this.auth.getMetadata(connectionsPaginatedRequest);
+  const metadata = await this.auth.getMetadata(
+    connectionsPaginatedRequest,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
 
   return this.client
     .getConnectionsPaginated(connectionsPaginatedRequest, metadata)
@@ -26,7 +29,7 @@ async function sendCredential(message, connectionId) {
   sendMessageRequest.setConnectionid(connectionId);
   sendMessageRequest.setMessage(message);
 
-  const metadata = await this.auth.getMetadata(sendMessageRequest, SEND_CREDENTIAL_TIMEOUT);
+  const metadata = await this.auth.getMetadata(sendMessageRequest);
 
   return this.client.sendMessage(sendMessageRequest, metadata).catch(error => {
     Logger.error('Error issuing the credential: ', error);

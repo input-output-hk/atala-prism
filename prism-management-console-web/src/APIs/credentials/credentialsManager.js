@@ -1,7 +1,7 @@
 import { CredentialsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import credentialTypes from './credentialTypes';
-import { FAILED, SUCCESS } from '../../helpers/constants';
+import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS, FAILED, SUCCESS } from '../../helpers/constants';
 
 const {
   GetGenericCredentialsRequest,
@@ -26,7 +26,10 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   getCredentialsRequest.setLimit(limit);
   getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
 
-  const metadata = await this.auth.getMetadata(getCredentialsRequest);
+  const metadata = await this.auth.getMetadata(
+    getCredentialsRequest,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
 
@@ -96,7 +99,10 @@ async function markAsSent(credentialid) {
   const markCredentialRequest = new ShareCredentialRequest();
   markCredentialRequest.setCmanagercredentialid(credentialid);
 
-  const metadata = await this.auth.getMetadata(markCredentialRequest);
+  const metadata = await this.auth.getMetadata(
+    markCredentialRequest,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
 
   const res = await this.client.shareCredential(markCredentialRequest, metadata);
   Logger.info(`Marked credential (${credentialid}) as sent`);
@@ -107,7 +113,10 @@ async function getBlockchainData(credential) {
   const getBlockchainDataRequest = new GetBlockchainDataRequest();
   getBlockchainDataRequest.setEncodedsignedcredential(credential);
 
-  const metadata = await this.auth.getMetadata(getBlockchainDataRequest);
+  const metadata = await this.auth.getMetadata(
+    getBlockchainDataRequest,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
 
   const res = await this.client.getBlockchainData(getBlockchainDataRequest, metadata);
   const issuanceProof = res.getIssuanceproof().toObject();

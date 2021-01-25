@@ -1,6 +1,6 @@
 import { ContactsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
+import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS, HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import {
   CreateContactRequest,
   GetContactsRequest,
@@ -13,7 +13,7 @@ async function generateConnectionToken(contactId) {
   const req = new GenerateConnectionTokenForContactRequest();
   req.setContactid(contactId);
 
-  const metadata = await this.auth.getMetadata(req);
+  const metadata = await this.auth.getMetadata(req, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
 
   const res = await this.client.generateConnectionTokenForContact(req, metadata);
   const token = res.getToken();
@@ -29,7 +29,7 @@ async function createContact(groupName, jsonData, externalid) {
   req.setJsondata(JSON.stringify(jsonData));
   req.setExternalid(externalid);
 
-  const metadata = await this.auth.getMetadata(req);
+  const metadata = await this.auth.getMetadata(req, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
 
   const res = await this.client.createContact(req, metadata);
   const { contact } = res.toObject();
@@ -44,7 +44,7 @@ async function getContacts(lastSeenContactId, limit = HOLDER_PAGE_SIZE, groupNam
   req.setLastseencontactid(lastSeenContactId);
   if (groupName) req.setGroupname(groupName);
 
-  const metadata = await this.auth.getMetadata(req);
+  const metadata = await this.auth.getMetadata(req, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
 
   const res = await this.client.getContacts(req, metadata);
   const { contactsList } = res.toObject();

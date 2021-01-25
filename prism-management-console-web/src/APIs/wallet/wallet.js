@@ -99,14 +99,17 @@ function isSessionError(error) {
   );
 }
 
-async function signMessage(unsignedRequest, timeout = BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS) {
+async function signMessage(unsignedRequest, timeout) {
   try {
     const { sessionId } = this.session;
     const requestBytes = unsignedRequest.serializeBinary();
-    const result = await Promise.race([
-      window.prism.signConnectorRequest(sessionId, requestBytes),
-      timeoutPromise(timeout)
-    ]);
+    const result = timeout
+      ? await Promise.race([
+          window.prism.signConnectorRequest(sessionId, requestBytes),
+          timeoutPromise(timeout)
+        ])
+      : await window.prism.signConnectorRequest(sessionId, requestBytes);
+
     if (result.error) throw new Error(result.error);
     return result;
   } catch (error) {

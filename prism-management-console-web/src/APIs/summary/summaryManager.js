@@ -1,4 +1,5 @@
 import { pick } from 'lodash';
+import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
 import { ConsoleServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 
 const { GetStatisticsRequest } = require('../../protos/console_api_pb');
@@ -6,7 +7,7 @@ const { GetStatisticsRequest } = require('../../protos/console_api_pb');
 async function getStatistics() {
   const request = new GetStatisticsRequest();
 
-  const metadata = await this.auth.getMetadata(request);
+  const metadata = await this.auth.getMetadata(request, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
   const response = await this.client.getStatistics(request, metadata);
 
   const result = await response.toObject();
