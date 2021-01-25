@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.console.services
 
-import java.util.UUID
 import com.google.protobuf.ByteString
 import io.circe
 import io.circe.Json
@@ -70,7 +69,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         "claim3" -> "claim 3".asJson
       )
       val request = console_api.CreateGenericCredentialRequest(
-        contactId = subject.contactId.value.toString,
+        contactId = subject.contactId.toString,
         credentialData = credentialData.noSpaces,
         groupName = issuerGroup.name.value
       )
@@ -80,8 +79,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         val response = serviceStub.createGenericCredential(request).genericCredential.value
 
         response.credentialId mustNot be(empty)
-        response.issuerId must be(issuerId.value.toString)
-        response.contactId must be(subject.contactId.value.toString)
+        response.issuerId must be(issuerId.toString)
+        response.contactId must be(subject.contactId.toString)
         response.credentialData must be(request.credentialData)
         response.issuerName must be(issuerName)
         response.groupName must be(issuerGroup.name.value)
@@ -166,7 +165,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val requestLastTwo = console_api.GetGenericCredentialsRequest(
         limit = 2,
-        lastSeenCredentialId = credential1.credentialId.value.toString
+        lastSeenCredentialId = credential1.credentialId.toString
       )
       val rpcRequestLastTwo = SignedRpcRequest.generate(keyPair, did, requestLastTwo)
       usingApiAs(rpcRequestLastTwo) { serviceStub =>
@@ -219,7 +218,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val request = console_api
         .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withCmanagerCredentialId(originalCredential.credentialId.toString)
         .withIssueCredentialOperation(issuanceOp)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
         .withNodeCredentialId(mockNodeCredentialId)
@@ -274,7 +273,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val request = console_api
         .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withCmanagerCredentialId(originalCredential.credentialId.toString)
         .withIssueCredentialOperation(issuanceOp)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
         .withNodeCredentialId(mockNodeCredentialId)
@@ -327,10 +326,10 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val mockNodeCredentialId =
         SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
 
-      val unknownCredentialId = GenericCredential.Id(UUID.randomUUID())
+      val unknownCredentialId = GenericCredential.Id.random()
       val request = console_api
         .PublishCredentialRequest()
-        .withCmanagerCredentialId(unknownCredentialId.value.toString)
+        .withCmanagerCredentialId(unknownCredentialId.toString)
         .withIssueCredentialOperation(issuanceOp)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
         .withNodeCredentialId(mockNodeCredentialId)
@@ -375,7 +374,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val request = console_api
         .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withCmanagerCredentialId(originalCredential.credentialId.toString)
         .withIssueCredentialOperation(issuanceOp)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
         .withNodeCredentialId(mockIncorrectNodeCredentialId)
@@ -427,7 +426,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val request = console_api
         .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withCmanagerCredentialId(originalCredential.credentialId.toString)
         .withIssueCredentialOperation(issuanceOp)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
         .withNodeCredentialId(mockNodeCredentialId)
@@ -479,7 +478,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val request = console_api
         .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.value.toString)
+        .withCmanagerCredentialId(originalCredential.credentialId.toString)
         .withIssueCredentialOperation(issuanceOp)
         .withEncodedSignedCredential(mockEmptyEncodedSignedCredential)
         .withNodeCredentialId(mockNodeCredentialId)
@@ -551,7 +550,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       createGenericCredential(issuerId, contactId2, "E")
 
       val request = console_api.GetContactCredentialsRequest(
-        contactId = contactId1.value.toString
+        contactId = contactId1.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -583,7 +582,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val contactId = createContact(issuerId, "IOHK Student", group.name).contactId
 
       val request = console_api.GetContactCredentialsRequest(
-        contactId = contactId.value.toString
+        contactId = contactId.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -612,7 +611,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
 
       val request = console_api.ShareCredentialRequest(
-        cmanagerCredentialId = credentialId.value.toString
+        cmanagerCredentialId = credentialId.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 

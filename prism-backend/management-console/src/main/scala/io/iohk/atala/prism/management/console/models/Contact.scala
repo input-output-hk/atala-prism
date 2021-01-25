@@ -1,9 +1,10 @@
 package io.iohk.atala.prism.management.console.models
 
+import io.circe.Json
+import io.iohk.atala.prism.models.UUIDValue
+
 import java.time.Instant
 import java.util.UUID
-import io.circe.Json
-
 import scala.concurrent.Future
 import scala.util.Try
 
@@ -21,16 +22,8 @@ final case class Contact(
 )
 
 object Contact {
-  final case class Id(value: UUID) extends AnyVal
-  object Id {
-    def validated(string: String): Try[Id] = {
-      Try {
-        Contact.Id(UUID.fromString(string))
-      }
-    }
-
-    def validatedF(string: String): Future[Id] = Future.fromTry(validated(string))
-  }
+  final case class Id(uuid: UUID) extends AnyVal with UUIDValue
+  object Id extends UUIDValue.Builder[Id]
 
   final case class ExternalId(value: String) extends AnyVal
   object ExternalId {

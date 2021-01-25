@@ -1,13 +1,14 @@
 package io.iohk.atala.prism.daos
 
-import java.util.UUID
-
+import reflect.runtime.universe.TypeTag
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
+
+import java.util.UUID
 
 trait BaseDAO {
   implicit val uuidMeta: Meta[UUID] = doobie.postgres.implicits.UuidType
@@ -32,6 +33,10 @@ trait BaseDAO {
     Meta[String].timap(s => {
       DID.unsafeFromString(s)
     })(_.value)
+
+  protected def uuidValueMeta[T <: UUIDValue: TypeTag](builder: UUIDValue.Builder[T]): Meta[T] = {
+    Meta[UUID].timap(builder.apply)(_.uuid)
+  }
 }
 
 object BaseDAO extends BaseDAO

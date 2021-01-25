@@ -10,13 +10,12 @@ import org.scalatest.OptionValues._
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.UUID
 
 class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
   lazy val receivedCredentialsRepository = new ReceivedCredentialsRepository(database)
   lazy val participantsRepository = new ParticipantsRepository(database)
 
-  lazy val verifierId = ParticipantId(UUID.fromString("af45a4da-65b8-473e-aadc-aa6b346250a3"))
+  lazy val verifierId = ParticipantId.unsafeFrom("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
   override def beforeEach(): Unit = {
     super.beforeEach()

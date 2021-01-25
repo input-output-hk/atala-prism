@@ -62,7 +62,7 @@ class DegreeServiceImpl(
 }
 
 object DegreeServiceImpl {
-  val issuerId = ParticipantId("6c170e91-92b0-4265-909d-951c11f30caa")
+  val issuerId = ParticipantId.unsafeFrom("6c170e91-92b0-4265-909d-951c11f30caa")
 
   val credentialTypeId = "VerifiableCredential/AirsideDegreeCredential"
 

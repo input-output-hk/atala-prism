@@ -1,7 +1,5 @@
 package io.iohk.atala.mirror.db
 
-import java.util.UUID
-
 import monix.eval.Task
 import cats.data.NonEmptyList
 
@@ -83,7 +81,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtures
     }
 
     "return none if a connection id doesn't exist" in {
-      ConnectionDao.findByConnectionId(ConnectionId(UUID.randomUUID())).transact(database).runSyncUnsafe() mustBe None
+      ConnectionDao.findByConnectionId(ConnectionId.random()).transact(database).runSyncUnsafe() mustBe None
     }
 
     "return none if a holder DID doesn't exist" in {

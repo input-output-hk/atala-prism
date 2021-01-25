@@ -1,8 +1,5 @@
 package io.iohk.atala.prism.console
 
-import java.time.LocalDate
-import java.util.UUID
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -17,6 +14,8 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.migrations.Student.ConnectionStatus
 import io.iohk.atala.prism.models.ParticipantId
 
+import java.time.LocalDate
+
 object DataPreparation {
 
   import connectorDaos._
@@ -30,12 +29,12 @@ object DataPreparation {
   )(implicit
       database: Transactor[IO]
   ): Institution.Id = {
-    val id = Institution.Id(UUID.randomUUID())
+    val id = Institution.Id.random()
     val didValue = did.getOrElse(DID.buildPrismDID(s"issuer-x$tag"))
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
     val participant =
       ParticipantInfo(
-        ParticipantId(id.value),
+        ParticipantId(id.uuid),
         ParticipantType.Issuer,
         publicKey,
         name,
@@ -136,7 +135,7 @@ object DataPreparation {
     val token = maybeToken.getOrElse(TokenString.random())
 
     val tx = for {
-      _ <- ConnectionTokensDAO.insert(ParticipantId(issuerId.value), token)
+      _ <- ConnectionTokensDAO.insert(ParticipantId(issuerId.uuid), token)
       _ <- ContactsDAO.setConnectionToken(issuerId, contactId, token)
     } yield token
 

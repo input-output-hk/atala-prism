@@ -15,7 +15,7 @@ package object daos extends BaseDAO {
     _.entryName
   )
 
-  implicit val messageIdMeta: Meta[MessageId] = uuidMeta.timap(MessageId.apply)(_.id)
+  implicit val messageIdMeta: Meta[MessageId] = uuidMeta.timap(MessageId.apply)(_.uuid)
 
   implicit val participantLogoMeta: Meta[ParticipantLogo] =
     Meta[Array[Byte]].timap(b => ParticipantLogo.apply(b.toVector))(_.bytes.toArray)

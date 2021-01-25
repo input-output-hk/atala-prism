@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.connector
 
-import java.util.UUID
-
 import cats.effect._
 import com.google.protobuf.ByteString
 import io.grpc.Context
@@ -87,9 +85,8 @@ class ConnectorService(
       val lastSeenConnectionId = request.lastSeenConnectionId match {
         case "" => Right(None)
         case id =>
-          Try(id)
-            .map(UUID.fromString)
-            .map(model.ConnectionId.apply)
+          model.ConnectionId
+            .from(id)
             .fold(
               _ => Left(InvalidArgumentError("lastSeenConnectionId", "valid id", id).logWarn),
               id => Right(Some(id))
@@ -377,9 +374,8 @@ class ConnectorService(
     id match {
       case "" => Right(None)
       case id =>
-        Try(id)
-          .map(UUID.fromString)
-          .map(model.MessageId.apply)
+        model.MessageId
+          .from(id)
           .fold(
             _ => Left(InvalidArgumentError(fieldName, "valid id", id).logWarn),
             id => Right(Some(id))
@@ -394,13 +390,13 @@ class ConnectorService(
     def f(userId: ParticipantId) = {
       Future {
         implicit val loggingContext: LoggingContext = LoggingContext("request" -> request, "userId" -> userId)
-        val validatedConnectionId = Try(request.connectionId)
-          .map(UUID.fromString)
-          .map(model.ConnectionId.apply)
-          .fold(
-            _ => Left(InvalidArgumentError("connectionId", "valid id", request.connectionId).logWarn),
-            id => Right(id)
-          )
+        val validatedConnectionId =
+          model.ConnectionId
+            .from(request.connectionId)
+            .fold(
+              _ => Left(InvalidArgumentError("connectionId", "valid id", request.connectionId).logWarn),
+              id => Right(id)
+            )
 
         validatedConnectionId.toFutureEither
           .flatMap(connectionId => messages.getConnectionMessages(userId, connectionId))
@@ -425,9 +421,8 @@ class ConnectorService(
     def f(userId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
-      Future
-        .fromTry(Try(Right(ConnectionId.apply(request.connectionId))))
-        .toFutureEither
+      FutureEither(ConnectionId.from(request.connectionId))
+        .mapLeft(_ => InvalidArgumentError("connectionId", "a valid UUID", request.connectionId))
         .flatMap { connectionId =>
           connections.getConnectionCommunicationKeys(connectionId, userId)
         }
@@ -468,15 +463,17 @@ class ConnectorService(
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
       for {
-        connectionId <- Try { ConnectionId(request.connectionId) }
-          .fold(
-            _ =>
-              Future.failed(
-                InvalidArgumentError("connectionId", "invalid connectionOd", request.connectionId).toStatus
-                  .asRuntimeException()
-              ),
-            Future.successful
-          )
+        connectionId <-
+          ConnectionId
+            .from(request.connectionId)
+            .fold(
+              _ =>
+                Future.failed(
+                  InvalidArgumentError("connectionId", "a valid connectionId", request.connectionId).toStatus
+                    .asRuntimeException()
+                ),
+              Future.successful
+            )
         response <-
           messages
             .insertMessage(userId, connectionId, request.message.toByteArray)

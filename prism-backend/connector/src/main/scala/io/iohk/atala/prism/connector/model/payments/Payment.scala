@@ -2,9 +2,8 @@ package io.iohk.atala.prism.connector.model.payments
 
 import java.time.Instant
 import java.util.UUID
-
 import enumeratum._
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{ParticipantId, UUIDValue}
 
 case class Payment(
     id: Payment.Id,
@@ -17,7 +16,8 @@ case class Payment(
 )
 
 object Payment {
-  case class Id(uuid: UUID) extends AnyVal
+  case class Id(uuid: UUID) extends AnyVal with UUIDValue
+  object Id extends UUIDValue.Builder[Id]
 
   sealed abstract class Status(val value: String) extends EnumEntry {
     override def entryName: String = value

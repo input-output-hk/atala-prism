@@ -1,15 +1,13 @@
 package io.iohk.atala.prism.management.console.services
 
-import java.util.UUID
-
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.protos.{console_api, console_models}
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.FutureEither
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 class GroupsServiceImpl(
     institutionGroupsRepository: InstitutionGroupsRepository,
@@ -31,7 +29,7 @@ class GroupsServiceImpl(
               .withGroup(
                 console_models
                   .Group()
-                  .withId(g.id.value.toString)
+                  .withId(g.id.toString)
                   .withCreatedAt(g.createdAt.getEpochSecond)
                   .withName(g.name.value)
                   .withNumberOfContacts(0) // creating a group adds no contacts
@@ -49,21 +47,17 @@ class GroupsServiceImpl(
 
     def f(institutionId: ParticipantId) = {
       lazy val contactIdT = if (request.contactId.nonEmpty) {
-        Try(UUID.fromString(request.contactId))
-          .orElse(Failure(new RuntimeException("The provided contactId is invalid")))
-          .map(Contact.Id.apply)
-          .map(Option.apply)
-          .map(Right(_))
-      } else Try(Right(None))
+        Contact.Id.from(request.contactId).map(Option.apply)
+      } else Try(None)
 
       for {
-        contactIdMaybe <- Future.fromTry(contactIdT).toFutureEither
+        contactIdMaybe <- FutureEither(contactIdT)
         groups <- institutionGroupsRepository.getBy(institutionId, contactIdMaybe)
       } yield {
         val proto = groups.map { g =>
           console_models
             .Group()
-            .withId(g.value.id.value.toString)
+            .withId(g.value.id.toString)
             .withCreatedAt(g.value.createdAt.getEpochSecond)
             .withName(g.value.name.value)
             .withNumberOfContacts(g.numberOfContacts)
@@ -86,9 +80,9 @@ class GroupsServiceImpl(
       institutionGroupsRepository
         .updateGroup(
           institutionId,
-          InstitutionGroup.Id(UUID.fromString(request.groupId)),
-          request.contactIdsToAdd.map(id => Contact.Id(UUID.fromString(id))).to(List),
-          request.contactIdsToRemove.map(id => Contact.Id(UUID.fromString(id))).to(List)
+          InstitutionGroup.Id.unsafeFrom(request.groupId),
+          request.contactIdsToAdd.map(id => Contact.Id.unsafeFrom(id)).to(List),
+          request.contactIdsToRemove.map(id => Contact.Id.unsafeFrom(id)).to(List)
         )
         .value
         .map {

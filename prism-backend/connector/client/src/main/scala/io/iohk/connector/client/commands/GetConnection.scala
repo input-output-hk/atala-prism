@@ -13,7 +13,7 @@ case object GetConnection extends Command {
     val response = api.getConnectionByToken(GetConnectionByTokenRequest(token = connectionToken))
     val connection = Connection(
       connectionToken = new TokenString(response.getConnection.connectionToken),
-      connectionId = ConnectionId(response.getConnection.connectionId)
+      connectionId = ConnectionId.unsafeFrom(response.getConnection.connectionId)
     )
     println(connection.asJson.printWith(new Printer(false, "  ")))
   }

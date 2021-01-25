@@ -64,12 +64,12 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
       val connectionId2 = createConnection(initiator2, acceptor2, token2, ConnectionStatus.ConnectionAccepted)
 
       val contactConnection1 = connector_models.ContactConnection(
-        connectionId1.id.toString,
+        connectionId1.toString,
         token1.token,
         console_models.ContactConnectionStatus.INVITATION_MISSING
       )
       val contactConnection2 = connector_models.ContactConnection(
-        connectionId2.id.toString,
+        connectionId2.toString,
         token2.token,
         console_models.ContactConnectionStatus.CONNECTION_ACCEPTED
       )

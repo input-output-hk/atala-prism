@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.management.console.services
 
-import java.util.UUID
-
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialExternalId, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.repositories.ReceivedCredentialsRepository
@@ -41,8 +39,7 @@ class CredentialsStoreServiceImpl(
       for {
         credentialExternalId <- credentialExternalIdF
         createData = ReceivedSignedCredentialData(
-          contactId =
-            Contact.Id(UUID.fromString(request.connectionId)), // TODO: Change proto model field name to contactId
+          contactId = Contact.Id.unsafeFrom(request.connectionId), // TODO: Change proto model field name to contactId
           encodedSignedCredential = request.encodedSignedCredential,
           credentialExternalId = credentialExternalId
         )
@@ -88,9 +85,7 @@ class CredentialsStoreServiceImpl(
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
       for {
-        contactId <- Future.fromTry(
-          Try { Contact.Id(UUID.fromString(request.individualId)) }
-        )
+        contactId <- Future.fromTry(Contact.Id.from(request.individualId))
         response <-
           receivedCredentials
             .getCredentialsFor(participantId, contactId)
@@ -99,7 +94,7 @@ class CredentialsStoreServiceImpl(
               console_api.GetStoredCredentialsForResponse(
                 credentials = credentials.map { credential =>
                   console_models.StoredSignedCredential(
-                    individualId = credential.individualId.value.toString,
+                    individualId = credential.individualId.toString,
                     encodedSignedCredential = credential.encodedSignedCredential,
                     storedAt = credential.receivedAt.toEpochMilli
                   )

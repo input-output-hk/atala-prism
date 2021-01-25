@@ -42,7 +42,7 @@ class ContactsIntegrationService(
   ): Future[Either[errors.ManagementConsoleError, GetContactsResult]] = {
     val result = for {
       list <- contactsRepository.getBy(institutionId, scrollId, groupName, limit)
-      connectorRequest = connector_api.ConnectionsStatusRequest(acceptorIds = list.map(_.contactId.value.toString))
+      connectorRequest = connector_api.ConnectionsStatusRequest(acceptorIds = list.map(_.contactId.toString))
       connectionStatusResponse <- {
         contactConnectionService
           .getConnectionStatus(connectorRequest)
@@ -72,7 +72,7 @@ class ContactsIntegrationService(
           .map { _ =>
             contactConnectionService
               .getConnectionStatus(
-                connector_api.ConnectionsStatusRequest(acceptorIds = List(contactId.value.toString))
+                connector_api.ConnectionsStatusRequest(acceptorIds = List(contactId.toString))
               )
               .map(_.connections.headOption)
               .map(contactMaybe.zip)

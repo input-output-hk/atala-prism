@@ -124,11 +124,11 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       group: Option[InstitutionGroup] = None
   ): console_models.CredentialIssuanceContact = {
     val contact = createRandomContact(institutionId, group.map(_.name))
-    val contactId = contact.contactId.value.toString
+    val contactId = contact.contactId.toString
     console_models.CredentialIssuanceContact(
       contactId = contactId,
       credentialData = s"""{"contactId": "$contactId"}""",
-      groupIds = group.map(_.id.value.toString).toList
+      groupIds = group.map(_.id.toString).toList
     )
   }
 

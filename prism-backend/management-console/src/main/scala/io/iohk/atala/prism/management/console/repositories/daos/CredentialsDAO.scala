@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import java.time.Instant
-import java.util.UUID
 
 import cats.implicits._
 import doobie._
@@ -11,7 +10,7 @@ import io.iohk.atala.prism.management.console.models._
 
 object CredentialsDAO {
   def create(data: CreateGenericCredential): doobie.ConnectionIO[GenericCredential] = {
-    val id = GenericCredential.Id(UUID.randomUUID())
+    val id = GenericCredential.Id.random()
     val createdOn = Instant.now()
     sql"""
          |WITH inserted AS (

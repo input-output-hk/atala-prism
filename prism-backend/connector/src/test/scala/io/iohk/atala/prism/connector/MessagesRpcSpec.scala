@@ -31,7 +31,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
       val holderId = createHolder("Holder")
       val connectionId = createConnection(issuerId, holderId)
-      val request = connector_api.SendMessageRequest(connectionId.id.toString, ByteString.copyFrom("test".getBytes))
+      val request = connector_api.SendMessageRequest(connectionId.toString, ByteString.copyFrom("test".getBytes))
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { blockingStub =>
@@ -56,7 +56,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs(rpcRequest) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
-          messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }
+          messages.take(10).map { case (messageId, connectionId) => (messageId.toString, connectionId.toString) }
       }
     }
 
@@ -79,7 +79,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs(requestNonce, signature, did, "master0") { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
-          messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }
+          messages.take(10).map { case (messageId, connectionId) => (messageId.toString, connectionId.toString) }
       }
     }
 
@@ -143,7 +143,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     def generateMessageIds(participantId: ParticipantId): Seq[String] = {
-      val messageIds = createExampleMessages(participantId).map(_._1).map(_.id.toString)
+      val messageIds = createExampleMessages(participantId).map(_._1).map(_.toString)
       // Sleep a bit to avoid race conditions with messages being in DB but still not notified to the streams
       // (this is only needed for the tests to behave as expected)
       Thread.sleep(500)

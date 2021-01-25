@@ -19,7 +19,6 @@ import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
 import java.time.LocalDate
-import java.util.UUID
 
 class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private val usingApiAs = usingApiAsConstructor(new ContactsServiceGrpc.ContactsServiceBlockingStub(_, _))
@@ -104,7 +103,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       usingApiAs(rpcRequest) { serviceStub =>
         val response = serviceStub.createContact(request).contact.value
-        val contactId = Contact.Id(UUID.fromString(response.contactId))
+        val contactId = Contact.Id.unsafeFrom(response.contactId)
         parser.parse(response.jsonData).toOption.value must be(json)
         response.externalId must be(request.externalId)
 
@@ -131,7 +130,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       usingApiAs(rpcRequest) { serviceStub =>
         val response = serviceStub.createContact(request).contact.value
-        val contactId = Contact.Id(UUID.fromString(response.contactId))
+        val contactId = Contact.Id.unsafeFrom(response.contactId)
         parser.parse(response.jsonData).toOption.value must be(Json.obj())
         response.externalId must be(request.externalId)
 
@@ -249,7 +248,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
         val storedContact = result.head
         storedContact.data must be(json)
-        storedContact.contactId.value.toString must be(initialResponse.contactId)
+        storedContact.contactId.toString must be(initialResponse.contactId)
         storedContact.externalId must be(externalId)
       }
     }
@@ -332,7 +331,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       createContact(issuerId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 1,
-        lastSeenContactId = contactB.contactId.value.toString
+        lastSeenContactId = contactB.contactId.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -360,7 +359,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val contactA2 = createContact(issuerId, "Alice 2", groupNameA)
       val request = console_api.GetContactsRequest(
         limit = 2,
-        lastSeenContactId = contactA.contactId.value.toString,
+        lastSeenContactId = contactA.contactId.toString,
         groupName = groupNameA.value
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -386,7 +385,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val contact = createContact(issuerId, "Alice", groupName)
       createContact(issuerId, "Bob", groupName)
       val request = console_api.GetContactRequest(
-        contactId = contact.contactId.value.toString
+        contactId = contact.contactId.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -410,7 +409,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val contact = createContact(issuerXId, "Alice", groupNameA)
       createContact(issuerYId, "Bob", groupNameB)
       val request = console_api.GetContactRequest(
-        contactId = contact.contactId.value.toString
+        contactId = contact.contactId.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPairY, didY, request)
 
@@ -434,7 +433,7 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val contact = createContact(issuerId, contactName, groupName)
       val request = console_api
         .GenerateConnectionTokenForContactRequest(
-          contactId = contact.contactId.value.toString
+          contactId = contact.contactId.toString
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 

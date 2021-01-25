@@ -16,10 +16,9 @@ import io.iohk.atala.prism.management.console.models.{
 }
 
 import java.time.Instant
-import java.util.UUID
 
 package object daos extends BaseDAO {
-  implicit val contactIdMeta: Meta[Contact.Id] = Meta[UUID].timap(Contact.Id.apply)(_.value)
+  implicit val contactIdMeta: Meta[Contact.Id] = uuidValueMeta(Contact.Id)
 
   implicit val participantLogoMeta: Meta[ParticipantLogo] =
     Meta[Array[Byte]].timap(b => ParticipantLogo.apply(b.toVector))(_.bytes.toArray)
@@ -27,8 +26,7 @@ package object daos extends BaseDAO {
   implicit val credentialExternalIdMeta: Meta[CredentialExternalId] =
     Meta[String].timap(CredentialExternalId.apply)(_.value)
 
-  implicit val credentialIssuanceIdMeta: Meta[CredentialIssuance.Id] =
-    Meta[UUID].timap(CredentialIssuance.Id.apply)(_.uuid)
+  implicit val credentialIssuanceIdMeta: Meta[CredentialIssuance.Id] = uuidValueMeta(CredentialIssuance.Id)
 
   implicit val credentialIssuanceStatusMeta: Meta[CredentialIssuance.Status] = pgEnumString[CredentialIssuance.Status](
     "CREDENTIAL_ISSUANCE_STATUS_TYPE",

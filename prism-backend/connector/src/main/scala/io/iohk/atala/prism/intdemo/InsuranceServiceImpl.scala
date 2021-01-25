@@ -60,7 +60,7 @@ class InsuranceServiceImpl(
 }
 
 object InsuranceServiceImpl {
-  private val issuerId = ParticipantId("a1cb7eee-65c1-4d7f-9417-db8a37a6212a")
+  private val issuerId = ParticipantId.unsafeFrom("a1cb7eee-65c1-4d7f-9417-db8a37a6212a")
   private val credentialTypeId = "VerifiableCredential/AtalaCertificateOfInsurance"
 
   case class RequiredInsuranceData(

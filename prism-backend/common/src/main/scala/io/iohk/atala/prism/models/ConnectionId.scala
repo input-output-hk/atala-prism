@@ -2,4 +2,6 @@ package io.iohk.atala.prism.models
 
 import java.util.UUID
 
-case class ConnectionId(uuid: UUID) extends AnyVal
+case class ConnectionId(uuid: UUID) extends AnyVal with UUIDValue
+
+object ConnectionId extends UUIDValue.Builder[ConnectionId]

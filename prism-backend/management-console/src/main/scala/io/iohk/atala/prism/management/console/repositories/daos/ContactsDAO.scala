@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import java.time.Instant
-import java.util.UUID
 
 import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
@@ -14,7 +13,7 @@ import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, In
 object ContactsDAO {
 
   def createContact(data: CreateContact): ConnectionIO[Contact] = {
-    val contactId = Contact.Id(UUID.randomUUID())
+    val contactId = Contact.Id.random()
     val createdAt = Instant.now()
     sql"""
          |INSERT INTO contacts

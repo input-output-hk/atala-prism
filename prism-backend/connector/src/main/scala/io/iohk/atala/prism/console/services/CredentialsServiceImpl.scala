@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.console.services
 
-import java.util.UUID
-
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.grpc.ProtoCodecs._
 import io.iohk.atala.prism.console.models.{
@@ -25,8 +23,8 @@ import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.dsl._
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
@@ -53,14 +51,8 @@ class CredentialsServiceImpl(
             .map(_.contactId)
 
         case None =>
-          val maybe = Try(request.contactId)
-            .filter(_.nonEmpty)
-            .map(UUID.fromString)
-            .map(Contact.Id.apply)
-            .toOption
-
           Future
-            .successful(maybe)
+            .successful(Contact.Id.from(request.contactId).toOption)
             .toFutureEither(
               new RuntimeException("The contactId is required, if it was provided, it's an invalid value")
             )
@@ -93,8 +85,7 @@ class CredentialsServiceImpl(
       request: GetGenericCredentialsRequest
   ): Future[GetGenericCredentialsResponse] =
     authenticatedHandler("getGenericCredentials", request) { issuerId =>
-      val lastSeenCredential =
-        Try(UUID.fromString(request.lastSeenCredentialId)).map(GenericCredential.Id.apply).toOption
+      val lastSeenCredential = GenericCredential.Id.from(request.lastSeenCredentialId).toOption
       credentialsRepository
         .getBy(Institution.Id(issuerId), request.limit, lastSeenCredential)
         .map { list =>
@@ -108,7 +99,7 @@ class CredentialsServiceImpl(
     authenticator.authenticated("publishCredential", request) { participantId =>
       for {
         issuerId <- Institution.Id(participantId.uuid).tryF
-        credentialId = GenericCredential.Id(UUID.fromString(request.cmanagerCredentialId))
+        credentialId = GenericCredential.Id.unsafeFrom(request.cmanagerCredentialId)
         credentialProtocolId = request.nodeCredentialId
         issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray.toVector)
         encodedSignedCredential = request.encodedSignedCredential
@@ -191,14 +182,8 @@ class CredentialsServiceImpl(
 
   override def getContactCredentials(request: GetContactCredentialsRequest): Future[GetContactCredentialsResponse] = {
     def f(institutionId: Institution.Id): Future[GetContactCredentialsResponse] = {
-      val contactIdF = Future.fromTry {
-        Try {
-          Contact.Id(UUID.fromString(request.contactId))
-        }
-      }
-
       for {
-        contactId <- contactIdF
+        contactId <- Future.fromTry(Contact.Id.from(request.contactId))
         response <-
           credentialsRepository
             .getBy(institutionId, contactId)
@@ -220,14 +205,8 @@ class CredentialsServiceImpl(
 
   override def shareCredential(request: ShareCredentialRequest): Future[ShareCredentialResponse] = {
     def f(institutionId: Institution.Id): Future[ShareCredentialResponse] = {
-      val credentialIdF = Future.fromTry {
-        Try {
-          GenericCredential.Id(UUID.fromString(request.cmanagerCredentialId))
-        }
-      }
-
       for {
-        credentialId <- credentialIdF
+        credentialId <- Future.fromTry(GenericCredential.Id.from(request.cmanagerCredentialId))
         response <-
           credentialsRepository
             .markAsShared(institutionId, credentialId)

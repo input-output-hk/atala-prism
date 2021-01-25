@@ -78,7 +78,7 @@ class IdServiceImpl(
 
 object IdServiceImpl {
 
-  val issuerId = ParticipantId("091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
+  val issuerId = ParticipantId.unsafeFrom("091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
 
   val credentialTypeId = "VerifiableCredential/RedlandIdCredential"
 

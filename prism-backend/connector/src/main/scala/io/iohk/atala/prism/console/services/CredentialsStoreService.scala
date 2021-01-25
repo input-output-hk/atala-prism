@@ -1,13 +1,11 @@
 package io.iohk.atala.prism.console.services
 
-import java.util.UUID
-
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.ConnectorErrorSupport
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution}
-import io.iohk.atala.prism.console.repositories.daos.StoredCredentialsDAO.StoredSignedCredentialData
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
+import io.iohk.atala.prism.console.repositories.daos.StoredCredentialsDAO.StoredSignedCredentialData
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.console_api.{
@@ -42,8 +40,9 @@ class CredentialsStoreService(
 
       for {
         credentialExternalId <- credentialExternalIdF
+        connectionId <- Future.fromTry(ConnectionId.from(request.connectionId))
         createData = StoredSignedCredentialData(
-          connectionId = ConnectionId.apply(request.connectionId),
+          connectionId = connectionId,
           encodedSignedCredential = request.encodedSignedCredential,
           credentialExternalId = credentialExternalId
         )
@@ -88,13 +87,14 @@ class CredentialsStoreService(
     def f(institutionId: Institution.Id) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> institutionId)
 
+      val maybeContactIdF = if (request.individualId.nonEmpty) {
+        Future.fromTry(Contact.Id.from(request.individualId)).map(Some(_))
+      } else {
+        Future.successful(None)
+      }
+
       for {
-        maybeContactId <- Future.fromTry(
-          Try {
-            if (request.individualId.isEmpty) None
-            else Some(Contact.Id(UUID.fromString(request.individualId)))
-          }
-        )
+        maybeContactId <- maybeContactIdF
         response <-
           storedCredentials
             .getCredentialsFor(institutionId, maybeContactId)
@@ -103,7 +103,7 @@ class CredentialsStoreService(
               console_api.GetStoredCredentialsForResponse(
                 credentials = credentials.map { credential =>
                   console_models.StoredSignedCredential(
-                    individualId = credential.individualId.value.toString,
+                    individualId = credential.individualId.toString,
                     encodedSignedCredential = credential.encodedSignedCredential,
                     storedAt = credential.storedAt.toEpochMilli,
                     externalId = credential.externalId.value

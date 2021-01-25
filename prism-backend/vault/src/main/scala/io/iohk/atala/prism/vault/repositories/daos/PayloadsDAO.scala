@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.vault.repositories.daos
 
 import java.time.Instant
-import java.util.UUID
 
 import doobie.ConnectionIO
 import doobie.free.connection
@@ -12,7 +11,7 @@ import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 
 object PayloadsDAO {
   def createPayload(data: CreatePayload): ConnectionIO[Payload] = {
-    val payloadId = Payload.Id(UUID.randomUUID())
+    val payloadId = Payload.Id.random()
     val createdAt = Instant.now()
     sql"""
          |SELECT payload_id, external_id, hash, did, content, created_at

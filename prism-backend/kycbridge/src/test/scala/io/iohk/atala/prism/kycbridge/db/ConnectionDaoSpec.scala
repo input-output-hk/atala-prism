@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.kycbridge.db
 
-import java.util.UUID
-
 import monix.eval.Task
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
@@ -58,7 +56,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec[Task] with KycBridgeFixtu
     }
 
     "return none if a connection id doesn't exist" in {
-      ConnectionDao.findByConnectionId(ConnectionId(UUID.randomUUID())).transact(database).runSyncUnsafe() mustBe None
+      ConnectionDao.findByConnectionId(ConnectionId.random()).transact(database).runSyncUnsafe() mustBe None
     }
 
     "return last seen connection id" in {

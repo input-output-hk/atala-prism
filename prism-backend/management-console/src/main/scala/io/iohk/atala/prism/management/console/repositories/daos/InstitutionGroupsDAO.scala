@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import java.time.Instant
-import java.util.UUID
 
 import cats.data.NonEmptyList
 import cats.implicits.catsStdInstancesForList
@@ -15,7 +14,7 @@ import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup,
 object InstitutionGroupsDAO {
 
   def create(institutionId: ParticipantId, name: InstitutionGroup.Name): ConnectionIO[InstitutionGroup] = {
-    val groupId = InstitutionGroup.Id(UUID.randomUUID())
+    val groupId = InstitutionGroup.Id.random()
     val now = Instant.now()
     sql"""
          |INSERT INTO institution_groups (group_id, institution_id, name, created_at)

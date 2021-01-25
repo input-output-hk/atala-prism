@@ -67,7 +67,7 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
   }
 
   private def createCredentialData(contact: Contact): Json = {
-    Json.obj("externalId" -> Json.fromString(contact.contactId.value.toString))
+    Json.obj("externalId" -> Json.fromString(contact.contactId.toString))
   }
 
   private def createRandomContact(

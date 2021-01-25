@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.kycbridge
 
 import java.time.{LocalDateTime, ZoneOffset}
-import java.util.UUID
 
 import cats.implicits._
 import cats.effect.Sync
@@ -19,8 +18,8 @@ trait KycBridgeFixtures {
     records.toList.sequence.transact(database).void
 
   object ConnectionFixtures {
-    lazy val connectionId1: ConnectionId = ConnectionId(UUID.fromString("3a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
-    lazy val connectionId2: ConnectionId = ConnectionId(UUID.fromString("06325aef-d937-41b2-9a6c-b654e02b273d"))
+    lazy val connectionId1: ConnectionId = ConnectionId.unsafeFrom("3a66fcef-4d50-4a67-a365-d4dbebcf22d3")
+    lazy val connectionId2: ConnectionId = ConnectionId.unsafeFrom("06325aef-d937-41b2-9a6c-b654e02b273d")
     lazy val connection1: Connection =
       Connection(
         token = ConnectionToken("token1"),

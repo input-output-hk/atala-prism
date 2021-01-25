@@ -17,7 +17,6 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 
 import java.time.LocalDate
-import java.util.UUID
 
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   lazy val credentialsRepository = new CredentialsRepository(database)
@@ -78,7 +77,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "return no credential when not found" in {
-      val credentialId = GenericCredential.Id(UUID.randomUUID())
+      val credentialId = GenericCredential.Id.random()
 
       val credential = credentialsRepository.getBy(credentialId).value.futureValue.toOption.value
 
@@ -255,7 +254,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
           .storePublicationData(
             issuerId,
             PublishCredential(
-              GenericCredential.Id(UUID.randomUUID()),
+              GenericCredential.Id.random(),
               mockOperationHash,
               mockNodeCredentialId,
               mockEncodedSignedCredential,
@@ -286,7 +285,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       intercept[RuntimeException](
         credentialsRepository
           .storePublicationData(
-            Institution.Id(UUID.randomUUID()),
+            Institution.Id.random(),
             PublishCredential(
               originalCredential.credentialId,
               mockOperationHash,

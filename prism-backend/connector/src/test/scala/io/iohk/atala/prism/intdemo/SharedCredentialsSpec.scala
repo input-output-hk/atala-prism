@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
 import java.time.Instant
-import java.util.UUID
 
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
 import io.iohk.atala.prism.intdemo.SharedCredentials.credentialsOfType
@@ -14,9 +13,9 @@ class SharedCredentialsSpec extends AnyFlatSpec {
 
   "credentialsOfType" should "ignore invalid messages" in {
     val message = Message(
-      MessageId(UUID.randomUUID()),
-      ConnectionId(UUID.randomUUID()),
-      ParticipantId(UUID.randomUUID()),
+      MessageId.random(),
+      ConnectionId.random(),
+      ParticipantId.random(),
       Instant.now(),
       Array[Byte]()
     )
@@ -27,18 +26,18 @@ class SharedCredentialsSpec extends AnyFlatSpec {
   it should "ignore messages of the wrong type" in {
 
     val m1 =
-      Message(MessageId.random(), ConnectionId.random(), ParticipantId(UUID.randomUUID()), Instant.now(), Array[Byte]())
+      Message(MessageId.random(), ConnectionId.random(), ParticipantId.random(), Instant.now(), Array[Byte]())
     val m2 = Message(
       MessageId.random(),
       ConnectionId.random(),
-      ParticipantId(UUID.randomUUID()),
+      ParticipantId.random(),
       Instant.now(),
       credentialMessage("A")
     )
     val m3 = Message(
       MessageId.random(),
       ConnectionId.random(),
-      ParticipantId(UUID.randomUUID()),
+      ParticipantId.random(),
       Instant.now(),
       credentialMessage("B")
     )

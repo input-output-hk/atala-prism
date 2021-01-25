@@ -2,9 +2,9 @@ package io.iohk.atala.prism.vault
 
 import java.time.Instant
 import java.util.UUID
-
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.models.UUIDValue
 
 package object model {
   final case class CreatePayload(
@@ -24,7 +24,10 @@ package object model {
   )
 
   object Payload {
-    final case class Id(value: UUID) extends AnyVal
-    final case class ExternalId(value: UUID) extends AnyVal
+    final case class Id(uuid: UUID) extends AnyVal with UUIDValue
+    object Id extends UUIDValue.Builder[Id]
+
+    final case class ExternalId(uuid: UUID) extends AnyVal with UUIDValue
+    object ExternalId extends UUIDValue.Builder[ExternalId]
   }
 }

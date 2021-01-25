@@ -1,16 +1,14 @@
 package io.iohk.atala.prism.connector.repositories.daos
 
-import java.util.UUID
-
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
+import io.iohk.atala.prism.models.ParticipantId
 
 object PaymentsDAO {
   def create(participantId: ParticipantId, request: CreatePaymentRequest): doobie.ConnectionIO[Payment] = {
-    val id = Payment.Id(UUID.randomUUID())
+    val id = Payment.Id.random()
     sql"""
          |INSERT INTO payments (payment_id, participant_id, nonce, amount, created_on, status, failure_reason)
          |VALUES ($id, $participantId, ${request.nonce}, ${request.amount}, NOW(), ${request.status}::PAYMENT_STATUS_TYPE, ${request.failureReason})

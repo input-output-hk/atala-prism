@@ -32,7 +32,7 @@ class ContactConnectionService(
         LoggingContext("request" -> request, "did" -> did)
 
       connectionsService
-        .getAcceptorConnections(request.acceptorIds.map(id => ParticipantId(id)).to(List))
+        .getAcceptorConnections(request.acceptorIds.map(id => ParticipantId.unsafeFrom(id)).to(List))
         .wrapExceptions
         .successMap { contactConnections =>
           ConnectionsStatusResponse(

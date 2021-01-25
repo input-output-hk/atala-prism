@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.vault.services
 
-import java.util.UUID
-
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -36,13 +34,13 @@ class EncryptedDataVaultServiceImpl(
       payloadsRepository
         .create(
           CreatePayload(
-            Payload.ExternalId(UUID.fromString(request.externalId)),
+            Payload.ExternalId.unsafeFrom(request.externalId),
             SHA256Digest(request.payloadHash.toByteArray.toVector),
             did,
             request.payload.toByteArray.toVector
           )
         )
-        .successMap(payload => vault_api.StoreDataResponse(payloadId = payload.id.value.toString))
+        .successMap(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
     }
 
     authenticator.authenticated("storeData", request) { did =>
@@ -54,7 +52,7 @@ class EncryptedDataVaultServiceImpl(
     if (lastSeenId.isEmpty) {
       None
     } else {
-      Some(Payload.Id(UUID.fromString(lastSeenId)))
+      Some(Payload.Id.unsafeFrom(lastSeenId))
     }
   }
 
@@ -72,7 +70,7 @@ class EncryptedDataVaultServiceImpl(
           vault_api.GetPaginatedDataResponse(
             payloads.map(p =>
               vault_models.Payload(
-                id = p.id.value.toString,
+                id = p.id.toString,
                 hash = ByteString.copyFrom(p.hash.value.toArray),
                 content = ByteString.copyFrom(p.content.toArray),
                 createdAt = p.createdAt.toEpochMilli

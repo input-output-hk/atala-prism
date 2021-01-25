@@ -5,7 +5,6 @@ import fs2.Stream
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.services.ConnectorClientService
-import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 import monix.eval.Task
 import org.slf4j.LoggerFactory
 import doobie.implicits._
@@ -34,7 +33,7 @@ class ConnectionService(tx: Transactor[Task], connectorService: ConnectorClientS
           .evalMap(connectionInfo => {
             val connection = Connection(
               token = ConnectionToken(connectionInfo.token),
-              id = parseUUID(connectionInfo.connectionId).map(ConnectionId),
+              id = ConnectionId.from(connectionInfo.connectionId).toOption,
               state = ConnectionState.Connected,
               acuantDocumentInstanceId = None,
               acuantDocumentStatus = None

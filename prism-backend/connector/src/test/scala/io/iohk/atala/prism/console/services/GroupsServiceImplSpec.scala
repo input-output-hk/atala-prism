@@ -20,8 +20,6 @@ import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
-import java.util.UUID
-
 class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
@@ -129,7 +127,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val contact = createRandomContact(issuerId, Some(groups(0)))
       createRandomContact(issuerId, Some(groups(1)))
 
-      val request = console_api.GetGroupsRequest().withContactId(contact.contactId.value.toString)
+      val request = console_api.GetGroupsRequest().withContactId(contact.contactId.toString)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -175,12 +173,12 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.value.toString
+        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.toString
       }
       val contact = createRandomContact(issuerId)
 
       val request1 =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
       val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
 
       usingApiAs(rpcRequest1) { serviceStub =>
@@ -191,7 +189,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       // Adding the same contact twice should have no effect
       val request2 =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
 
       usingApiAs(rpcRequest2) { serviceStub =>
@@ -209,7 +207,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.value.toString
+        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.toString
       }
       val contact1 = createRandomContact(issuerId, Some(group1Name))
       val contact2 = createRandomContact(issuerId, Some(group2Name))
@@ -218,7 +216,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       listContacts(issuerId, group2Name) must be(List(contact2))
 
       val request1 =
-        console_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.value.toString))
+        console_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.toString))
       val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
 
       usingApiAs(rpcRequest1) { serviceStub =>
@@ -230,7 +228,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       // Removing the same contact twice should have no effect
       val request2 =
-        console_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.value.toString))
+        console_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.toString))
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
 
       usingApiAs(rpcRequest2) { serviceStub =>
@@ -249,7 +247,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.value.toString
+        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.toString
       }
       val contact1 = createRandomContact(issuerId, Some(group1Name))
       val contact2 = createRandomContact(issuerId)
@@ -260,8 +258,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val request1 =
         console_api.UpdateGroupRequest(
           group1Id,
-          Seq(contact2.contactId.value.toString),
-          Seq(contact1.contactId.value.toString)
+          Seq(contact2.contactId.toString),
+          Seq(contact1.contactId.toString)
         )
       val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
 
@@ -276,8 +274,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val request2 =
         console_api.UpdateGroupRequest(
           group1Id,
-          Seq(contact1.contactId.value.toString),
-          Seq(contact1.contactId.value.toString)
+          Seq(contact1.contactId.toString),
+          Seq(contact1.contactId.toString)
         )
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
 
@@ -300,11 +298,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val issuerId2 = createIssuer(publicKey2, did2)
 
       val group1Id =
-        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.value.toString
+        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.toString
       val contact = createRandomContact(issuerId2)
 
       val request =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
       val rpcRequest = SignedRpcRequest.generate(keyPair2, did2, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -325,11 +323,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val issuerId2 = createIssuer(publicKey2, did2)
 
       val group1Id =
-        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.value.toString
+        issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.toString
       val contact = createRandomContact(issuerId2)
 
       val request =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.value.toString), Seq())
+        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
       val rpcRequest = SignedRpcRequest.generate(keyPair1, did1, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -354,13 +352,13 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private def createIssuer(publicKey: ECPublicKey, did: DID)(implicit
       database: Transactor[IO]
   ): Institution.Id = {
-    val id = UUID.randomUUID()
+    val id = Institution.Id.random()
     val mockTransactionId =
       TransactionId.from(SHA256Digest.compute("id".getBytes).value).value
 
     val participant =
       ParticipantInfo(
-        ParticipantId(id),
+        ParticipantId(id.uuid),
         ParticipantType.Issuer,
         Some(publicKey),
         "",
@@ -371,6 +369,6 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       )
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
-    Institution.Id(id)
+    id
   }
 }

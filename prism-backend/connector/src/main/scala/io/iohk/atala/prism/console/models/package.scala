@@ -1,11 +1,12 @@
 package io.iohk.atala.prism.console
 
-import java.time.Instant
-import java.util.UUID
 import io.circe.Json
 import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, TokenString}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo, UUIDValue}
+
+import java.time.Instant
+import java.util.UUID
 
 package object models {
   case class CreateContact(
@@ -15,11 +16,14 @@ package object models {
   )
 
   object Institution {
-    case class Id(value: UUID) extends AnyVal
+    case class Id(uuid: UUID) extends AnyVal with UUIDValue
+    object Id extends UUIDValue.Builder[Id]
   }
 
   object Contact {
-    case class Id(value: UUID) extends AnyVal
+    case class Id(uuid: UUID) extends AnyVal with UUIDValue
+    object Id extends UUIDValue.Builder[Id]
+
     case class ExternalId(value: String) extends AnyVal
     object ExternalId {
       def random(): ExternalId = ExternalId(UUID.randomUUID().toString)
@@ -51,7 +55,9 @@ package object models {
   )
 
   object IssuerGroup {
-    case class Id(value: UUID) extends AnyVal
+    case class Id(uuid: UUID) extends AnyVal with UUIDValue
+    object Id extends UUIDValue.Builder[Id]
+
     case class Name(value: String) extends AnyVal
     case class WithContactCount(value: IssuerGroup, numberOfContacts: Int)
   }
@@ -96,7 +102,8 @@ package object models {
   )
 
   object GenericCredential {
-    case class Id(value: UUID) extends AnyVal
+    case class Id(uuid: UUID) extends AnyVal with UUIDValue
+    object Id extends UUIDValue.Builder[Id]
   }
 
   case class Statistics(

@@ -32,9 +32,9 @@ object ProtoCodecs {
 
     val model = console_models
       .CManagerGenericCredential()
-      .withCredentialId(credential.credentialId.value.toString)
-      .withIssuerId(credential.issuedBy.value.toString)
-      .withContactId(credential.subjectId.value.toString)
+      .withCredentialId(credential.credentialId.toString)
+      .withIssuerId(credential.issuedBy.toString)
+      .withContactId(credential.subjectId.toString)
       .withCredentialData(credential.credentialData.noSpaces)
       .withIssuerName(credential.issuerName)
       .withGroupName(credential.groupName)
@@ -55,12 +55,12 @@ object ProtoCodecs {
 
   def toContactProto(contact: models.Contact): console_models.Contact = {
     val token = contact.connectionToken.fold("")(_.token)
-    val connectionId = contact.connectionId.fold("")(_.id.toString)
+    val connectionId = contact.connectionId.fold("")(_.toString)
     val status = contactConnectionStatus2Proto.transform(contact.connectionStatus)
 
     console_models
       .Contact()
-      .withContactId(contact.contactId.value.toString)
+      .withContactId(contact.contactId.toString)
       .withExternalId(contact.externalId.value)
       .withJsonData(contact.data.noSpaces)
       .withConnectionStatus(status)

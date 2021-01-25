@@ -2,12 +2,6 @@ package io.iohk.atala.prism.models
 
 import java.util.UUID
 
-case class ParticipantId(uuid: UUID) extends AnyVal
+case class ParticipantId(uuid: UUID) extends AnyVal with UUIDValue
 
-object ParticipantId {
-  def apply(uuid: String): ParticipantId = apply(UUID.fromString(uuid))
-
-  def random(): ParticipantId = {
-    new ParticipantId(UUID.randomUUID())
-  }
-}
+object ParticipantId extends UUIDValue.Builder[ParticipantId]

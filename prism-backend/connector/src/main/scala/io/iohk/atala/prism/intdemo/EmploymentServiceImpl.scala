@@ -60,7 +60,7 @@ class EmploymentServiceImpl(
 }
 
 object EmploymentServiceImpl {
-  private val issuerId = ParticipantId("12c28b34-95be-4801-951e-c775f89d05ba")
+  private val issuerId = ParticipantId.unsafeFrom("12c28b34-95be-4801-951e-c775f89d05ba")
   val credentialTypeId = "VerifiableCredential/AtalaEmploymentCredential"
 
   case class RequiredEmploymentData(

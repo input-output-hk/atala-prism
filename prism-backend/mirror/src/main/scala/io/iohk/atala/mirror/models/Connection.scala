@@ -9,7 +9,6 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 import io.iohk.atala.mirror.db.ConnectionDao
 
 case class Connection(
@@ -29,7 +28,7 @@ object Connection {
   ): ConnectionIO[Either[MessageProcessorException, Connection]] = {
     (for {
       connectionId <- EitherT.fromOption[ConnectionIO](
-        parseUUID(receivedMessage.connectionId).map(ConnectionId),
+        ConnectionId.from(receivedMessage.connectionId).toOption,
         MessageProcessorException(
           s"Message with id: ${receivedMessage.id} has incorrect connectionId. ${receivedMessage.connectionId} is not valid UUID."
         )

@@ -12,7 +12,6 @@ import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMess
 import io.iohk.atala.prism.config.ConnectorConfig
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
 import io.iohk.atala.prism.models.{ConnectorMessageId, CredentialProofRequestType}
-import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 
 trait ConnectorClientService {
 
@@ -161,8 +160,9 @@ class ConnectorClientServiceImpl(
                   Some(Nil -> (lastSeenConnectionId -> applyAwakeDelay))
                 case connections =>
                   val applyAwakeDelay = connections.size != limit
-                  // Some(ConnectionId(connections.last.connectionId))
-                  Some(connections -> (parseUUID(connections.last.connectionId).map(ConnectionId) -> applyAwakeDelay))
+                  Some(
+                    connections -> (ConnectionId.from(connections.last.connectionId).toOption -> applyAwakeDelay)
+                  )
               }
             } yield result
           )

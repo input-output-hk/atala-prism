@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.migrations
 
 import java.time.Instant
-import java.util.UUID
 
 import cats.effect.IO
 import doobie.implicits._
@@ -25,8 +24,9 @@ object DataHelper {
   )(implicit
       database: Transactor[IO]
   ): ParticipantId = {
+    val id = ParticipantId.random()
     sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo) VALUES
-          (${UUID.randomUUID()}, $tpe::PARTICIPANT_TYPE, $did, $publicKey, $name, $logo)
+          ($id, $tpe::PARTICIPANT_TYPE, $did, $publicKey, $name, $logo)
           RETURNING id"""
       .runUnique[ParticipantId]()
   }
@@ -41,11 +41,11 @@ object DataHelper {
   def createGroup(issuer: ParticipantId, name: String)(implicit
       database: Transactor[IO]
   ): IssuerGroup = {
-    val groupId = UUID.randomUUID()
+    val groupId = IssuerGroup.Id.random()
     sql"""INSERT INTO issuer_groups (group_id,issuer_id,name)
          |VALUES ($groupId, ${issuer.uuid}, $name)
          |""".stripMargin.runUpdate()
-    IssuerGroup(IssuerGroup.Id(groupId), IssuerGroup.Name(name), Institution.Id(issuer.uuid), Instant.now)
+    IssuerGroup(groupId, IssuerGroup.Name(name), Institution.Id(issuer.uuid), Instant.now)
   }
 
   def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None)(implicit
@@ -65,7 +65,7 @@ class V20MigrationSpec extends PostgresMigrationSpec("V20") with BaseDAO {
     beforeApply = {
       val issuerId = createIssuer("test-issuer")
       val group = createGroup(issuerId, "test-group")
-      val subjectId = Contact.Id(UUID.randomUUID())
+      val subjectId = Contact.Id.random()
       val status: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
       sql"""
              |INSERT INTO issuer_subjects (subject_id, created_at, connection_status, group_id, subject_data)

@@ -260,7 +260,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       createIssuerGroup(issuerId, groupName)
 
       val subject = createContact(issuerId, subjectName, groupName)
-      val result = repository.generateToken(Institution.Id(issuerId.value), subject.contactId).value.futureValue
+      val result = repository.generateToken(Institution.Id(issuerId.uuid), subject.contactId).value.futureValue
       val token = result.toOption.value
 
       val updatedSubject = repository.find(issuerId, subject.contactId).value.futureValue.toOption.value.value

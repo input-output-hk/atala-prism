@@ -1,21 +1,20 @@
 package io.iohk.atala.prism.vault.repositories
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.UUID
-
-import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
-import org.scalatest.OptionValues
 import cats.scalatest.EitherMatchers._
+import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
+import org.scalatest.OptionValues
+
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   lazy val repository = new PayloadsRepository(database)
 
   def createPayload(did: DID, content: Vector[Byte]): Payload = {
-    val externalId = Payload.ExternalId(UUID.randomUUID())
+    val externalId = Payload.ExternalId.random()
     val hash = SHA256Digest.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
     repository.create(createPayload1).value.futureValue.toOption.value

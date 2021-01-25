@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.console.repositories
 
-import java.time.Instant
-import java.util.UUID
-
-import doobie.{Meta, Read, Write}
 import doobie.implicits.legacy.instant._
+import doobie.{Meta, Read, Write}
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution, PublicationData}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+
+import java.time.Instant
 
 package object daos extends BaseDAO {
 
@@ -41,9 +40,9 @@ package object daos extends BaseDAO {
         )
     }
 
-  implicit val contactIdMeta: Meta[Contact.Id] = Meta[UUID].timap(Contact.Id.apply)(_.value)
+  implicit val contactIdMeta: Meta[Contact.Id] = uuidValueMeta(Contact.Id)
   implicit val contactExternalIdMeta: Meta[Contact.ExternalId] = Meta[String].timap(Contact.ExternalId.apply)(_.value)
   implicit val contactConnectionStatusMeta: Meta[ConnectionStatus] =
     Meta[String].timap(ConnectionStatus.withNameInsensitive)(_.entryName)
-  implicit val institutionIdMeta: Meta[Institution.Id] = Meta[UUID].timap(Institution.Id.apply)(_.value)
+  implicit val institutionIdMeta: Meta[Institution.Id] = uuidValueMeta(Institution.Id)
 }

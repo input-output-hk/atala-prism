@@ -1,7 +1,6 @@
 package io.iohk.atala.mirror
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
-import java.util.UUID
 import cats.effect.Sync
 import cats.implicits._
 import com.google.protobuf.ByteString
@@ -65,8 +64,8 @@ trait MirrorFixtures {
     records.toList.sequence.transact(database).void
 
   object ConnectionFixtures {
-    lazy val connectionId1: ConnectionId = ConnectionId(UUID.fromString("3a66fcef-4d50-4a67-a365-d4dbebcf22d3"))
-    lazy val connectionId2: ConnectionId = ConnectionId(UUID.fromString("06325aef-d937-41b2-9a6c-b654e02b273d"))
+    lazy val connectionId1: ConnectionId = ConnectionId.unsafeFrom("3a66fcef-4d50-4a67-a365-d4dbebcf22d3")
+    lazy val connectionId2: ConnectionId = ConnectionId.unsafeFrom("06325aef-d937-41b2-9a6c-b654e02b273d")
     lazy val connectionPayIdName2 = PayIdName("payIdName2")
     lazy val connectionHolderDid2 = DID.buildPrismDID("did2")
     lazy val connection1: Connection =

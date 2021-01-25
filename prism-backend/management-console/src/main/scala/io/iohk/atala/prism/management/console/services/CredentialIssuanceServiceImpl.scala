@@ -20,7 +20,6 @@ import io.iohk.atala.prism.protos.console_models.CredentialIssuanceContact
 import io.iohk.atala.prism.utils.FutureEither
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters.SetHasAsJava
 
@@ -44,7 +43,7 @@ class CredentialIssuanceServiceImpl(
         request: CreateCredentialIssuanceRequest
     ): FutureEither[ManagementConsoleError, List[CredentialIssuancesRepository.CreateCredentialIssuanceContact]] = {
       val contactIdsF = FutureEither {
-        request.credentialIssuanceContacts.map(contact => Contact.Id(UUID.fromString(contact.contactId)))
+        request.credentialIssuanceContacts.map(contact => Contact.Id.unsafeFrom(contact.contactId))
       }
 
       val contacts = for {
@@ -59,7 +58,7 @@ class CredentialIssuanceServiceImpl(
           request.credentialIssuanceContacts
             .flatten(_.groupIds)
             .toSet
-            .map((groupId: String) => InstitutionGroup.Id(UUID.fromString(groupId)))
+            .map((groupId: String) => InstitutionGroup.Id.unsafeFrom(groupId))
             .asJava
         _ =
           if (!validGroupIds.containsAll(requestGroupIds)) throw new IllegalArgumentException("Some groups are invalid")
@@ -67,11 +66,11 @@ class CredentialIssuanceServiceImpl(
         createCredentialIssuanceContacts = request.credentialIssuanceContacts.map { contact =>
           CredentialIssuancesRepository
             .CreateCredentialIssuanceContact(
-              contactId = Contact.Id(UUID.fromString(contact.contactId)),
+              contactId = Contact.Id.unsafeFrom(contact.contactId),
               credentialData = io.circe.parser
                 .parse(contact.credentialData)
                 .getOrElse(throw new RuntimeException("Invalid credentialData: it must be a JSON string")),
-              groupIds = contact.groupIds.map(groupId => InstitutionGroup.Id(UUID.fromString(groupId))).toList
+              groupIds = contact.groupIds.map(groupId => InstitutionGroup.Id.unsafeFrom(groupId)).toList
             )
         }.toList
       } yield createCredentialIssuanceContacts
@@ -135,9 +134,9 @@ class CredentialIssuanceServiceImpl(
           createdAt = credentialIssuance.createdAt.toEpochMilli,
           credentialIssuanceContacts = credentialIssuance.contacts.map(contact =>
             CredentialIssuanceContact(
-              contactId = contact.contactId.value.toString,
+              contactId = contact.contactId.toString,
               credentialData = contact.credentialData.noSpaces,
-              groupIds = contact.groupIds.map(_.value.toString)
+              groupIds = contact.groupIds.map(_.toString)
             )
           )
         )

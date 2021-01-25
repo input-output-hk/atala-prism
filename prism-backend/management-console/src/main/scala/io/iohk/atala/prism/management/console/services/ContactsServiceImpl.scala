@@ -61,7 +61,7 @@ class ContactsServiceImpl(
 
   override def getContacts(request: GetContactsRequest): Future[GetContactsResponse] = {
     def f(participantId: ParticipantId): Future[GetContactsResponse] = {
-      val scrollId = Contact.Id.validated(request.scrollId).toOption
+      val scrollId = Contact.Id.from(request.scrollId).toOption
       val groupName = InstitutionGroup.Name.optional(request.groupName)
 
       implicit val loggingContext: LoggingContext =
@@ -97,7 +97,7 @@ class ContactsServiceImpl(
         LoggingContext("request" -> request, "institutionId" -> participantId)
 
       for {
-        contactId <- Contact.Id.validatedF(request.contactId)
+        contactId <- Future.fromTry(Contact.Id.from(request.contactId))
         response <- {
           contactsIntegrationService
             .getContact(participantId, contactId)

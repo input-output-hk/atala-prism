@@ -10,7 +10,6 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import monix.eval.Task
 import org.slf4j.LoggerFactory
-import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.prism.models.{
@@ -69,7 +68,7 @@ class CredentialService(
           .evalMap(connectionInfo => {
             val connection = Connection(
               token = ConnectionToken(connectionInfo.token),
-              id = parseUUID(connectionInfo.connectionId).map(ConnectionId),
+              id = ConnectionId.from(connectionInfo.connectionId).toOption,
               state = ConnectionState.Connected,
               holderDID = DID.fromString(connectionInfo.participantDID),
               payIdName = None

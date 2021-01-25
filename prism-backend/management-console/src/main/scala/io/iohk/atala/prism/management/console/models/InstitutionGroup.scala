@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.models
 
+import io.iohk.atala.prism.models.UUIDValue
+
 import java.time.Instant
 import java.util.UUID
 
@@ -11,7 +13,9 @@ final case class InstitutionGroup(
 )
 
 object InstitutionGroup {
-  final case class Id(value: UUID) extends AnyVal
+  final case class Id(uuid: UUID) extends AnyVal with UUIDValue
+  object Id extends UUIDValue.Builder[Id]
+
   final case class Name(value: String) extends AnyVal
   final case class WithContactCount(value: InstitutionGroup, numberOfContacts: Int)
 

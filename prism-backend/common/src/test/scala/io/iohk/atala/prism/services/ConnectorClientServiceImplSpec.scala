@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.services
 
 import java.time.{LocalDateTime, ZoneOffset}
-import java.util.UUID
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -35,7 +34,7 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
       when(connector.sendMessage(any)).thenReturn(Future.successful(SendMessageResponse()))
       service
         .requestCredential(
-          ConnectionId(UUID.randomUUID()),
+          ConnectionId.random(),
           ConnectionToken(connectionToken),
           Seq(CredentialProofRequestType.RedlandIdCredential)
         )

@@ -102,10 +102,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         holderId mustNot be(empty)
         response.connection.value.participantInfo.value.getIssuer.name mustBe "Issuer"
         response.connection.value.participantName mustBe response.connection.value.participantInfo.value.getIssuer.name
-        val connectionId = new ConnectionId(UUID.fromString(response.connection.value.connectionId))
+        val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
 
         val participantInfo = io.iohk.atala.prism.connector.model.ParticipantInfo(
-          ParticipantId(holderId),
+          ParticipantId.unsafeFrom(holderId),
           Holder,
           Some(keys.publicKey),
           "",
@@ -178,7 +178,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
       val response = usingApiAs(rpcRequest)(_.getConnectionsPaginated(request))
 
-      response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.id.toString).take(10).toList.toSet
+      response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.toString).take(10).toList.toSet
 
       val nextRequest = connector_api.GetConnectionsPaginatedRequest(response.connections.last.connectionId, 10)
       val nextRpcRequest = SignedRpcRequest.generate(keyPair, did, nextRequest)
@@ -187,7 +187,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         val nextResponse = blockingStub.getConnectionsPaginated(nextRequest)
         nextResponse.connections
           .map(_.connectionId)
-          .toSet mustBe connections.map(_._2.id.toString).slice(10, 20).toList.toSet
+          .toSet mustBe connections.map(_._2.toString).slice(10, 20).toList.toSet
       }
     }
 
@@ -210,7 +210,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
       usingApiAs(requestNonce, signature, did, "master0") { blockingStub =>
         val response = blockingStub.getConnectionsPaginated(request)
-        response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.id.toString).take(10).toList.toSet
+        response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.toString).take(10).toList.toSet
       }
     }
 
@@ -311,9 +311,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       )
       doReturn(Future.successful(response)).when(nodeMock).getDidDocument(GetDidDocumentRequest("did:prism:issuer"))
 
-      val request = connector_api.GetConnectionCommunicationKeysRequest(
-        connectionId = connectionId.id.toString
-      )
+      val request = connector_api.GetConnectionCommunicationKeysRequest(connectionId = connectionId.toString)
       val rpcRequest = SignedRpcRequest.generate(holderKey, did, request)
 
       usingApiAs(rpcRequest) { blockingStub =>
@@ -345,9 +343,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val holderId = createHolder("Holder", publicKey = Some(holderKey.publicKey))
       val connectionId = createConnection(issuerId, holderId)
 
-      val request = connector_api.GetConnectionCommunicationKeysRequest(
-        connectionId = connectionId.id.toString
-      )
+      val request = connector_api.GetConnectionCommunicationKeysRequest(connectionId = connectionId.toString)
       val rpcRequest = SignedRpcRequest.generate(issuerAuthKey, did, request)
 
       usingApiAs(rpcRequest) { blockingStub =>

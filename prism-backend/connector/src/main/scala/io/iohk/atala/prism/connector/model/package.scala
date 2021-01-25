@@ -2,13 +2,12 @@ package io.iohk.atala.prism.connector.model
 
 import java.time.Instant
 import java.util.{Base64, UUID}
-
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models
 
 import scala.util.Random
@@ -22,24 +21,11 @@ object ParticipantType extends Enum[ParticipantType] {
   case object Verifier extends ParticipantType
 }
 
-case class ConnectionId(id: UUID) extends AnyVal
+case class ConnectionId(uuid: UUID) extends AnyVal with UUIDValue
+object ConnectionId extends UUIDValue.Builder[ConnectionId]
 
-object ConnectionId {
-  def random(): ConnectionId = {
-    new ConnectionId(UUID.randomUUID())
-  }
-  def apply(connectionId: String): ConnectionId = {
-    ConnectionId(UUID.fromString(connectionId))
-  }
-}
-
-case class MessageId(id: UUID) extends AnyVal
-
-object MessageId {
-  def random(): MessageId = {
-    new MessageId(UUID.randomUUID())
-  }
-}
+case class MessageId(uuid: UUID) extends AnyVal with UUIDValue
+object MessageId extends UUIDValue.Builder[MessageId]
 
 case class ParticipantLogo(bytes: Vector[Byte]) extends AnyVal
 case class ParticipantInfo(
@@ -106,7 +92,7 @@ case class ConnectionInfo(
 ) {
   def toProto: connector_models.ConnectionInfo = {
     connector_models.ConnectionInfo(
-      id.id.toString,
+      id.toString,
       created = instantiatedAt.toEpochMilli,
       participantInfo = Some(participantInfo.toProto),
       token = token.token,
@@ -119,7 +105,7 @@ case class ConnectionInfo(
 
 case class Connection(connectionToken: TokenString, connectionId: ConnectionId) {
   def toProto: connector_models.Connection = {
-    connector_models.Connection(connectionToken = connectionToken.token, connectionId = connectionId.id.toString)
+    connector_models.Connection(connectionToken = connectionToken.token, connectionId = connectionId.toString)
   }
 }
 
@@ -144,9 +130,9 @@ case class Message(
 ) {
   def toProto: connector_models.ReceivedMessage = {
     connector_models.ReceivedMessage(
-      id.id.toString,
+      id.toString,
       receivedAt.toEpochMilli,
-      connection.id.toString,
+      connection.toString,
       ByteString.copyFrom(content)
     )
   }

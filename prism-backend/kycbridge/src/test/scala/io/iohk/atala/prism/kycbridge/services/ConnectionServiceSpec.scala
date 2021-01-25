@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.kycbridge.services
 
-import java.util.UUID
-
 import monix.eval.Task
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.kycbridge.KycBridgeFixtures
@@ -23,11 +21,11 @@ class ConnectionServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
   "updateCredentialsStream" should {
     "update connections periodically" in {
       // given
-      val uuid = UUID.randomUUID
+      val connectionId = ConnectionId.random()
       val token = connection1.token.token
       val participantDID = DID.buildPrismDID("did1")
       val connectionInfos =
-        Seq(ConnectionInfo(token = token, connectionId = uuid.toString, participantDID = participantDID.value))
+        Seq(ConnectionInfo(token = token, connectionId = connectionId.toString, participantDID = participantDID.value))
 
       val connectorClientStub = new ConnectorClientServiceStub(connectionInfos = connectionInfos)
       val connectionService = new ConnectionService(database, connectorClientStub)
@@ -46,7 +44,7 @@ class ConnectionServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
       // then
       result.map(_.copy(updatedAt = connection1.updatedAt)) mustBe Some(
         connection1.copy(
-          id = Some(ConnectionId(uuid)),
+          id = Some(connectionId),
           state = ConnectionState.Connected
         )
       )

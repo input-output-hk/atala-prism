@@ -11,7 +11,6 @@ import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
@@ -69,7 +68,7 @@ class ContactsServiceImpl(contactsRepository: ContactsRepository, authenticator:
 
   override def getContacts(request: GetContactsRequest): Future[GetContactsResponse] = {
     def f(institutionId: Institution.Id): Future[GetContactsResponse] = {
-      val lastSeenContact = Try(Contact.Id(UUID.fromString(request.lastSeenContactId))).toOption
+      val lastSeenContact = Contact.Id.from(request.lastSeenContactId).toOption
       val groupName = Option(request.groupName.trim).filter(_.nonEmpty).map(IssuerGroup.Name.apply)
 
       implicit val loggingContext: LoggingContext =
@@ -96,17 +95,11 @@ class ContactsServiceImpl(contactsRepository: ContactsRepository, authenticator:
 
   override def getContact(request: GetContactRequest): Future[GetContactResponse] = {
     def f(institutionId: Institution.Id): Future[GetContactResponse] = {
-      val contactIdF = Future.fromTry {
-        Try {
-          Contact.Id(UUID.fromString(request.contactId))
-        }
-      }
-
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "institutionId" -> institutionId)
 
       for {
-        contactId <- contactIdF
+        contactId <- Future.fromTry(Contact.Id.from(request.contactId))
         response <-
           contactsRepository
             .find(institutionId, contactId)
@@ -127,14 +120,8 @@ class ContactsServiceImpl(contactsRepository: ContactsRepository, authenticator:
       request: GenerateConnectionTokenForContactRequest
   ): Future[GenerateConnectionTokenForContactResponse] = {
     def f(institutionId: Institution.Id): Future[GenerateConnectionTokenForContactResponse] = {
-      val contactIdF = Future.fromTry {
-        Try {
-          Contact.Id.apply(UUID.fromString(request.contactId))
-        }
-      }
-
       for {
-        contactId <- contactIdF
+        contactId <- Future.fromTry(Contact.Id.from(request.contactId))
         loggingContext =
           LoggingContext("request" -> request, "institutionId" -> institutionId, "contactId" -> contactId)
         response <-

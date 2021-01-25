@@ -2,10 +2,9 @@ package io.iohk.atala.prism.management.console.models
 
 import java.time.Instant
 import java.util.UUID
-
 import io.circe.Json
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
 
 final case class CreateGenericCredential(
     issuedBy: ParticipantId,
@@ -37,5 +36,6 @@ final case class GenericCredential(
 )
 
 object GenericCredential {
-  final case class Id(value: UUID) extends AnyVal
+  final case class Id(uuid: UUID) extends AnyVal with UUIDValue
+  object Id extends UUIDValue.Builder[Id]
 }

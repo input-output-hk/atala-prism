@@ -8,7 +8,6 @@ import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToke
 import io.iohk.atala.prism.kycbridge.models.Connection.AcuantDocumentInstanceId
 import io.iohk.atala.prism.kycbridge.models.assureId.DocumentStatus
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.utils.UUIDUtils.parseUUID
 import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 
@@ -29,7 +28,7 @@ object Connection {
   ): ConnectionIO[Either[MessageProcessorException, Connection]] = {
     (for {
       connectionId <- EitherT.fromOption[ConnectionIO](
-        parseUUID(receivedMessage.connectionId).map(ConnectionId),
+        ConnectionId.from(receivedMessage.connectionId).toOption,
         MessageProcessorException(
           s"Message with id: ${receivedMessage.id} has incorrect connectionId. ${receivedMessage.connectionId} is not valid UUID."
         )

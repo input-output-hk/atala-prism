@@ -9,7 +9,7 @@ object ProtoCodecs {
   implicit val contactConnection2Proto: Transformer[ContactConnection, connector_models.ContactConnection] =
     contactConnection => {
       connector_models.ContactConnection(
-        connectionId = contactConnection.connectionId.map(_.id.toString).getOrElse(""),
+        connectionId = contactConnection.connectionId.map(_.toString).getOrElse(""),
         connectionToken = contactConnection.contactToken.map(_.token).getOrElse(""),
         connectionStatus = contactConnectionStatus2Proto.transform(contactConnection.connectionStatus)
       )

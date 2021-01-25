@@ -1,8 +1,6 @@
 package io.iohk.atala.prism.connector.services
 
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-
 import cats.effect._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -14,7 +12,7 @@ import io.iohk.atala.prism.db.DbNotificationStreamer
 import io.iohk.atala.prism.models.ParticipantId
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 
 class MessageNotificationService private (
     dbNotificationStreamer: DbNotificationStreamer,
@@ -47,10 +45,9 @@ class MessageNotificationService private (
   def start(): Unit = {
     dbNotificationStreamer.stream
       .map { notification =>
-        try {
-          Some(MessageId(UUID.fromString(notification.payload)))
-        } catch {
-          case NonFatal(e) =>
+        MessageId.from(notification.payload) match {
+          case Success(notificationId) => Some(notificationId)
+          case Failure(e) =>
             logger.error(s"DB notification payload could not be parsed as message ID", e)
             None
         }
