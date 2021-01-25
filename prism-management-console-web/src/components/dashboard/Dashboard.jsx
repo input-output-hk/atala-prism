@@ -9,12 +9,18 @@ import DashboardCard from './organism/DashboardCard';
 import DashboardCardGroup from './organism/DashboardCardGroup';
 import DashboardCardCredential from './organism/DashboardCardCredential';
 import Logger from '../../helpers/Logger';
-import './_style.scss';
 import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
 import { longDateFormatter } from '../../helpers/formatters';
-import { UNKNOWN_DID_SUFFIX_ERROR_CODE } from '../../helpers/constants';
+import {
+  CONFIRMED,
+  LOADING,
+  UNCONFIRMED,
+  UNKNOWN_DID_SUFFIX_ERROR_CODE
+} from '../../helpers/constants';
 import WaitBanner from './Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
+import './_style.scss';
 
 const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
@@ -27,7 +33,7 @@ const Dashboard = ({ api, name, bundle }) => {
   const {
     showUnconfirmedAccountError,
     removeUnconfirmedAccountError,
-    accountIsConfirmed
+    accountStatus
   } = useSession();
 
   useEffect(() => {
@@ -62,11 +68,11 @@ const Dashboard = ({ api, name, bundle }) => {
         <p>{longDateFormatter()}</p>
       </div>
       <div className="DashboardContent">
-        {accountIsConfirmed ? (
+        {accountStatus === LOADING && <SimpleLoading size="md" />}
+        {accountStatus === CONFIRMED && (
           <Welcome name={name} importantInfo={tp('welcome.subtitle')} />
-        ) : (
-          <WaitBanner />
         )}
+        {accountStatus === UNCONFIRMED && <WaitBanner />}
         {false && <CurrentBundle bundle={bundle} />}
       </div>
       <div className="DashboardContentBottom">

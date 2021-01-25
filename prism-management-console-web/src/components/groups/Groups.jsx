@@ -18,6 +18,7 @@ import { useSession } from '../providers/SessionContext';
 import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
 
 import './_style.scss';
+import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -52,7 +53,7 @@ const Groups = ({
   const [groupToDelete, setGroupToDelete] = useState({});
   const [filteredGroups, setFilteredGroups] = useState([]);
 
-  const { accountIsConfirmed } = useSession();
+  const { accountStatus } = useSession();
 
   const closeDeleteModal = () => setGroupToDelete({});
   const closeCopyModal = () => setIsCopyModalOpen(false);
@@ -116,17 +117,19 @@ const Groups = ({
     if (loading) return <SimpleLoading size="md" />;
     if (groups.length && !filteredGroups.length) return <EmptyComponent {...emptyProps} isFilter />;
     if (groups.length) return <GroupsTable {...tableProps} groups={filteredGroups} />;
-    return <EmptyComponent {...emptyProps} button={accountIsConfirmed && newGroupButton} />;
+    return (
+      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
+    );
   };
 
   return (
     <div className="Wrapper">
-      {!accountIsConfirmed && <WaitBanner />}
+      {accountStatus === UNCONFIRMED && <WaitBanner />}
       <DeleteGroupModal {...deleteModalProps} />
       <CopyGroupModal {...copyModalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
-        {accountIsConfirmed && newGroupButton}
+        {accountStatus === CONFIRMED && newGroupButton}
       </div>
       <GroupFilters updateGroups={handleUpdateGroups} />
       {renderContent()}

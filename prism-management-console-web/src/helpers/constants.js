@@ -99,6 +99,8 @@ export const DEFAULT_LANGUAGE = 'defaultLanguage';
 
 // Wallet
 export const LOADING = 'LOADING';
+export const CONFIRMED = 'CONFIRMED';
+export const UNCONFIRMED = 'UNCONFIRMED';
 export const UNLOCKED = 'UNLOCKED';
 export const LOCKED = 'LOCKED';
 export const MISSING_WALLET_ERROR = Error('errors.walletNotRunning');

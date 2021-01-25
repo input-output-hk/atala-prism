@@ -3,7 +3,14 @@ import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withApi } from './withApi';
-import { LOADING, LOCKED, SESSION, UNLOCKED } from '../../helpers/constants';
+import {
+  SESSION,
+  LOADING,
+  LOCKED,
+  UNLOCKED,
+  CONFIRMED,
+  UNCONFIRMED
+} from '../../helpers/constants';
 import UnconfirmedAccountErrorModal from '../common/Organisms/Modals/UnconfirmedAccountErrorModal/UnconfirmedAccountErrorModal';
 
 const SessionContext = React.createContext();
@@ -16,7 +23,7 @@ const SessionProviderComponent = props => {
   const { t } = useTranslation();
 
   const [session, setSession] = useState({ sessionState: LOADING });
-  const [accountIsConfirmed, setAccountIsConfirmed] = useState(false);
+  const [accountStatus, setAccountStatus] = useState(LOADING);
   const [acceptedModal, setAcceptedModal] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -52,10 +59,10 @@ const SessionProviderComponent = props => {
 
   const verifyRegistration = () => wallet.verifyRegistration({ timeout: 5000 });
 
-  const removeUnconfirmedAccountError = () => setAccountIsConfirmed(true);
+  const removeUnconfirmedAccountError = () => setAccountStatus(CONFIRMED);
 
   const showUnconfirmedAccountError = () => {
-    setAccountIsConfirmed(false);
+    setAccountStatus(UNCONFIRMED);
     if (!acceptedModal) {
       setModalVisible(true);
     }
@@ -76,7 +83,7 @@ const SessionProviderComponent = props => {
           verifyRegistration,
           showUnconfirmedAccountError,
           removeUnconfirmedAccountError,
-          accountIsConfirmed
+          accountStatus
         }}
         {...props}
       />

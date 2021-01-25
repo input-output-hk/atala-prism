@@ -14,6 +14,7 @@ import './_style.scss';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
+import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 
 const Connections = ({
   tableProps,
@@ -30,7 +31,7 @@ const Connections = ({
   const [connectionToken, setConnectionToken] = useState('');
   const [QRModalIsOpen, showQRModal] = useState(false);
 
-  const { accountIsConfirmed } = useSession();
+  const { accountStatus } = useSession();
 
   const inviteContactAndShowQR = async contactId => {
     const token = await inviteContact(contactId);
@@ -66,11 +67,10 @@ const Connections = ({
 
   return (
     <div className="Wrapper">
-      {!accountIsConfirmed && <WaitBanner />}
-
+      {accountStatus === UNCONFIRMED && <WaitBanner />}
       <div className="ContentHeader">
         <h1>{t('contacts.title')}</h1>
-        {accountIsConfirmed && <AddUserButtons />}
+        {accountStatus === CONFIRMED && <AddUserButtons />}
       </div>
       <ConnectionsFilter {...filterProps} fetchContacts={handleContactsRequest} />
       {renderContent()}

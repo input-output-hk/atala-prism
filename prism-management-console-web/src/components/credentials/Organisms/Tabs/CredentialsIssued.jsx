@@ -4,7 +4,7 @@ import CreateCredentialsButton from '../../Atoms/Buttons/CreateCredentialsButton
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
-import { CREDENTIALS_ISSUED } from '../../../../helpers/constants';
+import { CONFIRMED, CREDENTIALS_ISSUED } from '../../../../helpers/constants';
 import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
@@ -23,7 +23,7 @@ const CredentialsIssued = ({
   const [loading, setLoading] = useState(false);
   const [selectedLength, setSelectedLength] = useState();
 
-  const { accountIsConfirmed } = useSession();
+  const { accountStatus } = useSession();
 
   useEffect(() => {
     const keys = Object.keys(selectedRowKeys);
@@ -48,7 +48,7 @@ const CredentialsIssued = ({
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
     isFilter: !showEmpty && !credentials.length,
-    button: showEmpty && accountIsConfirmed && <CreateCredentialsButton />
+    button: showEmpty && accountStatus === CONFIRMED && <CreateCredentialsButton />
   };
 
   const renderEmptyComponent = !credentials.length || showEmpty;
