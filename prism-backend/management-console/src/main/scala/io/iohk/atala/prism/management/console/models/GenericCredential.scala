@@ -28,6 +28,7 @@ final case class GenericCredential(
     subjectId: Contact.Id,
     credentialData: Json,
     createdOn: Instant,
+    credentialType: Option[CredentialTypeId],
     externalId: Contact.ExternalId,
     issuerName: String,
     subjectData: Json,
