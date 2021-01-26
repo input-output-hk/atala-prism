@@ -29,7 +29,7 @@ For testing purposes there are two participants automatically created in the dat
 * Issuer with participant id `c8834532-eade-11e9-a88d-d8f2ca059830`,
 * Holder with participant id `e20a974e-eade-11e9-a447-d8f2ca059830"`.
 
-We are going to run simple flow, creating connection between them and sending a message over it. All steps should be run inside of `credentials-verification` subdirectory (or protobuf definitions path should be changed).
+We are going to run simple flow, creating connection between them and sending a message over it. All steps should be run inside of `prism-sdk` subdirectory (or protobuf definitions path should be changed).
 
 0. Install grpcurl: https://github.com/fullstorydev/grpcurl (`go install github.com/fullstorydev/grpcurl/cmd/grpcurl`, might involve adding `$HOME/go/bin` to `PATH`).
 

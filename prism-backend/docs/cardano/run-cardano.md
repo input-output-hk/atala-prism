@@ -45,7 +45,7 @@ which will be referenced relatively from
 In order for components to not start over after restarts, we bind some Docker
 volumes to local directories, ensure the following exist:
 ```shell script
-cd credentials-verification/docs/cardano/docker
+cd prism-backend/docs/cardano/docker
 mkdir -p \
     cardano-data/node-db \
     cardano-data/node-ipc \
@@ -58,7 +58,7 @@ mkdir -p \
 Running the components from scratch should take ~1 hour for them to sync with
 the testnet:
 ```shell script
-cd credentials-verification/docs/cardano/docker
+cd prism-backend/docs/cardano/docker
 docker-compose up
 ```
 
@@ -182,7 +182,7 @@ xdg-open https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=${TXID}
 
 Log into the PostgreSQL DB maintained by the Cardano DB Sync node:
 ```shell script
-cd credentials-verification/docs/cardano/docker
+cd prism-backend/docs/cardano/docker
 PGPASSWORD=$(cat secrets/postgres_password) \
   psql $(cat secrets/postgres_db) \
     -U $(cat secrets/postgres_user) \

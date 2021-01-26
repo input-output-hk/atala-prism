@@ -30,7 +30,7 @@ where:
   - `CONTENT`: The array of bytes to store. There are no limits on the size of
   arrays, so it gets restricted only by the maximum transaction size. Such bytes
   represent an `AtalaObject` (see
-  [proto](https://github.com/input-output-hk/atala/blob/develop/credentials-verification/protos/node_internal.proto#L18)).
+  [proto](https://github.com/input-output-hk/atala/blob/91f36aa93986fb2df23618b62b9281a55a3ea3c0/prism-sdk/protos/node_internal.proto#L19).
 
 **NOTE**: The maximum size of the metadata is based on the size of the transaction
 and the maximum size of any transaction, which is an updatable protocol param

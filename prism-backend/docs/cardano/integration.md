@@ -39,7 +39,7 @@ If such choice makes integration testing harder, we can alway explore other poss
 In order to access services you should SSH to the machine running them (your key needs to be present in `infra/modules/ssh_keys/authorized_keys`):
 
 ```
-$ cd credentials-verification/infra/stage/base/cardano
+$ cd prism-backend/infra/stage/base/cardano
 $ ./cardano.sh -s | grep cardano_instance_public_ip
 cardano_instance_public_ip = "3.15.237.14"
 $ ssh ubuntu@3.15.237.14

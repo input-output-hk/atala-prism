@@ -9,7 +9,7 @@ Historically, it has evolved in three variations (v1, v2, v3), which are
 provided here as the following three sections. Each variation has its own
 document, so we simply concatenate the three documents in order to create the
 current one. The original markdown source can be found in the
-[repository](https://github.com/input-output-hk/atala/tree/develop/credentials-verification/docs/protocol).
+[repository](https://github.com/input-output-hk/atala/tree/develop/prism-backend/docs/protocol).
 
 In Slayer v1, the reference to Bitcoin is there because Bitcoin has been our
 initial target blockchain. Since then, we have transitioned to Cardano.

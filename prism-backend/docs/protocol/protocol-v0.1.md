@@ -8,7 +8,7 @@ This document describes the protocol for building the credentials project as a 2
 
 ## Definitions
 
-The definitions from the [high-level-design-document](https://github.com/input-output-hk/cardano-enterprise/tree/develop/credentials-verification/docs/bitcoin#definitions) apply here, be sure to review those ones first.
+The definitions from the [high-level-design-document](https://github.com/input-output-hk/atala/tree/develop/prism-backend/docs/bitcoin#definitions) apply here, be sure to review those ones first.
 
 - **DID**: A decentralized identifier, see the [official spec](https://w3c-ccg.github.io/did-spec/).
 - **DID Document**: The document representing a state of a DID, includes details like its public keys.

@@ -111,7 +111,7 @@ There are few setup steps if you wish to create and work with your own testing e
 * You will need to have the `PGPASSWORD` with the RDS postgres password, otherwise, the scripts will fail, ask someone from the team to share the password and run `export PGPASSWORD=thepassword` before running the `prism.sh` script.
 
 ### Changing either the docker image or database used by an environment
-Circleci will automatically build and push docker images for the CVP components. If you want to do this manually, the root `build.sc` 
+Circleci will automatically build and push docker images for the PRISM components. If you want to do this manually, the root `build.sc` 
 file now contains targets to do this.
 * `sbt connector/dockerBuildAndPush`. The docker image that gets pushed will have a tag with the following format: `<branch name prefix>-<revision count>-<sha>`.
 * The prism.sh script, which you should use to invoke terraform, understands this convention. It will try to configure your environment in the following way:
