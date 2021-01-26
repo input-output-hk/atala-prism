@@ -1,160 +1,118 @@
 package io.iohk.atala.prism.management.console
 
-import cats.effect.{ContextShift, IO}
-import com.typesafe.config.ConfigFactory
-import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
-import io.iohk.atala.prism.management.console.repositories._
-import io.iohk.atala.prism.management.console.services._
-import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
-import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import org.slf4j.LoggerFactory
-
 import scala.concurrent.ExecutionContext
 
-object ManagementConsoleApp {
-  def main(args: Array[String]): Unit = {
-    val server = new ManagementConsoleApp(ExecutionContext.global)
-    server.start()
-    server.blockUntilShutdown()
-    server.releaseResources()
-  }
+import cats.effect.{IO, Resource, ExitCode, IOApp}
+import org.slf4j.LoggerFactory
+import io.grpc.Server
+import com.typesafe.config.ConfigFactory
 
-  private val port = 50054
-}
+import io.iohk.atala.prism.utils.GrpcUtils
+import io.iohk.atala.prism.repositories.TransactorFactory
+import io.iohk.atala.prism.config.NodeConfig
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
+import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.management.console.services._
+import io.iohk.atala.prism.management.console.repositories._
+import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
 
-class ManagementConsoleApp(executionContext: ExecutionContext) {
-  self =>
+object ManagementConsoleApp extends IOApp {
+
   private val logger = LoggerFactory.getLogger(this.getClass)
+  private val grpcConfig = GrpcUtils.GrpcConfig(port = 50054)
 
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  implicit val ec = ExecutionContext.global
 
-  private[this] var server: Server = null
-  private[this] var releaseTransactor: Option[IO[Unit]] = None
+  override def run(args: List[String]): IO[ExitCode] = {
+    // Cats resource runs in multiple threads, we have to pass class loader
+    // explicit to provide a proper resource directory.
+    val classLoader = Thread.currentThread().getContextClassLoader
+    app(classLoader).use { grpcServer =>
+      logger.info("Starting GRPC server")
+      grpcServer.start()
+      IO.never
+    }
+  }
 
-  private def start(): Unit = {
-    logger.info("Loading config")
-    val globalConfig = ConfigFactory.load()
-    val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
+  def app(classLoader: ClassLoader): Resource[IO, Server] = {
+    for {
+      // configs
+      globalConfig <- Resource.liftF(IO.delay {
+        logger.info("Loading config")
+        ConfigFactory.load(classLoader)
+      })
 
-    logger.info("Applying database migrations")
-    applyDatabaseMigrations(databaseConfig)
+      transactorConfig = TransactorFactory.transactorConfig(globalConfig)
+      nodeConfig = NodeConfig(globalConfig)
 
-    logger.info("Connecting to the database")
-    val (transactor, releaseTransactor) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
-    self.releaseTransactor = Some(releaseTransactor)
+      // db
+      tx <- TransactorFactory.transactor[IO](transactorConfig)
+      _ <- TransactorFactory.runDbMigrations[IO](tx, classLoader)
 
-    // node client
-    val nodeChannel = ManagedChannelBuilder
-      .forAddress(
-        globalConfig.getConfig("node").getString("host"),
-        globalConfig.getConfig("node").getInt("port")
+      // node
+      node = GrpcUtils.createPlaintextStub(
+        host = nodeConfig.host,
+        port = nodeConfig.port,
+        stub = NodeServiceGrpc.stub
       )
-      .usePlaintext()
-      .build()
-    val node = NodeServiceGrpc.stub(nodeChannel)
 
-    // connector client
-    val connectorChannel = ManagedChannelBuilder
-      .forAddress(
-        globalConfig.getConfig("connector").getString("host"),
-        globalConfig.getConfig("connector").getInt("port")
+      // contact connection service
+      connector = GrpcUtils.createPlaintextStub(
+        host = globalConfig.getConfig("connector").getString("host"),
+        port = globalConfig.getConfig("connector").getInt("port"),
+        stub = ContactConnectionServiceGrpc.stub
       )
-      .usePlaintext()
-      .build()
-    val connector = ContactConnectionServiceGrpc.stub(connectorChannel)
 
-    // repositories
-    val contactsRepository = new ContactsRepository(transactor)(executionContext)
-    val participantsRepository = new ParticipantsRepository(transactor)(executionContext)
-    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(transactor)(executionContext)
-    val statisticsRepository = new StatisticsRepository(transactor)
-    val credentialsRepository = new CredentialsRepository(transactor)(executionContext)
-    val receivedCredentialsRepository = new ReceivedCredentialsRepository(transactor)(executionContext)
-    val institutionGroupsRepository = new InstitutionGroupsRepository(transactor)(executionContext)
-    val credentialIssuancesRepository = new CredentialIssuancesRepository(transactor)(executionContext)
+      // repositories
+      contactsRepository = new ContactsRepository(tx)
+      participantsRepository = new ParticipantsRepository(tx)
+      requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(tx)
+      statisticsRepository = new StatisticsRepository(tx)
+      credentialsRepository = new CredentialsRepository(tx)
+      receivedCredentialsRepository = new ReceivedCredentialsRepository(tx)
+      institutionGroupsRepository = new InstitutionGroupsRepository(tx)
+      credentialIssuancesRepository = new CredentialIssuancesRepository(tx)
 
-    val authenticator = new ManagementConsoleAuthenticator(
-      participantsRepository,
-      requestNoncesRepository,
-      node,
-      GrpcAuthenticationHeaderParser
-    )
+      authenticator = new ManagementConsoleAuthenticator(
+        participantsRepository,
+        requestNoncesRepository,
+        node,
+        GrpcAuthenticationHeaderParser
+      )
 
-    val credentialsService = new CredentialsServiceImpl(
-      credentialsRepository,
-      contactsRepository,
-      authenticator,
-      node
-    )(executionContext)
-    val credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)(
-      executionContext
-    )
-    val groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)(executionContext)
-    val consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)(
-      executionContext
-    )
+      credentialsService = new CredentialsServiceImpl(
+        credentialsRepository,
+        contactsRepository,
+        authenticator,
+        node
+      )
+      credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
+      groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
+      consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)
+      contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)
+      contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
+      credentialIssuanceService = new CredentialIssuanceServiceImpl(
+        contactsRepository,
+        institutionGroupsRepository,
+        credentialIssuancesRepository,
+        authenticator
+      )
 
-    val contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)(executionContext)
-    val contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)(
-      executionContext
-    )
-
-    val credentialIssuanceService = new CredentialIssuanceServiceImpl(
-      contactsRepository,
-      institutionGroupsRepository,
-      credentialIssuancesRepository,
-      authenticator
-    )(
-      executionContext
-    )
-
-    logger.info("Starting server")
-    server = ServerBuilder
-      .forPort(ManagementConsoleApp.port)
-      .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
-      .addService(console_api.ContactsServiceGrpc.bindService(contactsService, executionContext))
-      .addService(console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, executionContext))
-      .addService(console_api.CredentialsServiceGrpc.bindService(credentialsService, executionContext))
-      .addService(console_api.GroupsServiceGrpc.bindService(groupsService, executionContext))
-      .addService(console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
-      .addService(console_api.ConsoleServiceGrpc.bindService(consoleService, executionContext))
-      .build()
-      .start()
-
-    logger.info("Server started, listening on " + ManagementConsoleApp.port)
-    sys.addShutdownHook {
-      System.err.println("*** shutting down gRPC server since JVM is shutting down")
-      self.stop()
-      System.err.println("*** server shut down")
-    }
-    ()
+      // gRPC server
+      grpcServer <- GrpcUtils.createGrpcServer[IO](
+        grpcConfig,
+        sslConfigOption = None,
+        console_api.ConsoleServiceGrpc.bindService(consoleService, ec),
+        console_api.ContactsServiceGrpc.bindService(contactsService, ec),
+        console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, ec),
+        console_api.CredentialsServiceGrpc.bindService(credentialsService, ec),
+        console_api.GroupsServiceGrpc.bindService(groupsService, ec),
+        console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, ec),
+        console_api.ConsoleServiceGrpc.bindService(consoleService, ec)
+      )
+    } yield grpcServer
   }
 
-  private def stop(): Unit = {
-    if (server != null) {
-      server.shutdown()
-    }
-    ()
-  }
-
-  private def blockUntilShutdown(): Unit = {
-    if (server != null) {
-      server.awaitTermination()
-    }
-  }
-
-  private def releaseResources(): Unit = releaseTransactor.foreach(_.unsafeRunSync())
-
-  private def applyDatabaseMigrations(databaseConfig: TransactorFactory.Config): Unit = {
-    val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
-    if (appliedMigrations == 0) {
-      logger.info("Database up to date")
-    } else {
-      logger.info(s"$appliedMigrations migration scripts applied")
-    }
-  }
 }

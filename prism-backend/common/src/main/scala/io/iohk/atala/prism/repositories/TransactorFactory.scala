@@ -2,8 +2,9 @@ package io.iohk.atala.prism.repositories
 
 import java.util.concurrent.Executors
 
-import cats.effect.{Async, Blocker, ContextShift, Resource}
+import cats.effect.{Sync, Async, Blocker, ContextShift, Resource}
 import doobie.hikari.HikariTransactor
+import org.flywaydb.core.Flyway
 
 import scala.concurrent.ExecutionContext
 
@@ -49,4 +50,23 @@ object TransactorFactory {
       executeJdbcBlocker // execute JDBC operations here
     )
   }
+
+  /**
+    * Run db migrations with Flyway.
+    *
+    * @return number of applied migrations
+    */
+  def runDbMigrations[A[_]: Sync](transactor: HikariTransactor[A], classLoader: ClassLoader): Resource[A, Int] =
+    Resource.liftF(
+      transactor.configure(dataSource =>
+        Sync[A].delay(
+          Flyway
+            .configure(classLoader)
+            .dataSource(dataSource)
+            .load()
+            .migrate()
+            .migrationsExecuted
+        )
+      )
+    )
 }

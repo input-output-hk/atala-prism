@@ -5,9 +5,7 @@ import java.time.Instant
 import cats.data.EitherT
 import monix.eval.Task
 import com.google.protobuf.ByteString
-import io.grpc.ManagedChannelBuilder
 
-import io.iohk.atala.prism.config.NodeConfig
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
@@ -53,20 +51,6 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
 
 }
 object NodeClientService {
-
-  /**
-    * Create a node gRPC service stub.
-    */
-  def createNode(
-      nodeConfig: NodeConfig
-  ): NodeServiceGrpc.NodeServiceStub = {
-    val channel = ManagedChannelBuilder
-      .forAddress(nodeConfig.host, nodeConfig.port)
-      .usePlaintext()
-      .build()
-
-    NodeServiceGrpc.stub(channel)
-  }
 
   def getKeyData(
       issuerDID: DID,

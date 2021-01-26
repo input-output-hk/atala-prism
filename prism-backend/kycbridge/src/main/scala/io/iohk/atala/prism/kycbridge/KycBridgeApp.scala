@@ -3,7 +3,6 @@ package io.iohk.atala.prism.kycbridge
 import monix.eval.{Task, TaskApp}
 import cats.effect.{ExitCode, Resource}
 import com.typesafe.config.ConfigFactory
-import doobie.hikari.HikariTransactor
 import io.grpc.Server
 import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.connector.RequestAuthenticator
@@ -20,13 +19,7 @@ import io.iohk.atala.prism.kycbridge.services.{
   KycBridgeService
 }
 import io.iohk.atala.prism.repositories.TransactorFactory
-import io.iohk.atala.prism.services.{
-  ConnectorClientService,
-  ConnectorClientServiceImpl,
-  NodeClientService,
-  NodeClientServiceImpl
-}
-import org.flywaydb.core.Flyway
+import io.iohk.atala.prism.services.{ConnectorClientServiceImpl, NodeClientServiceImpl}
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.slf4j.LoggerFactory
 import io.iohk.atala.kycbridge.protos.kycbridge_api.KycBridgeServiceGrpc
@@ -37,6 +30,8 @@ import io.iohk.atala.prism.services.ConnectorMessagesService
 import doobie.implicits._
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.kycbridge.processors.DocumentUploadedMessageProcessor
+import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 
 object KycBridgeApp extends TaskApp {
 
@@ -85,13 +80,21 @@ object KycBridgeApp extends TaskApp {
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
 
       tx <- TransactorFactory.transactor[Task](transactorConfig)
-      _ <- Resource.liftF(runMigrations(tx, classLoader))
+      _ <- TransactorFactory.runDbMigrations[Task](tx, classLoader)
 
       // connector
-      connector = ConnectorClientService.createConnectorGrpcStub(connectorConfig)
+      connector = GrpcUtils.createPlaintextStub(
+        host = connectorConfig.host,
+        port = connectorConfig.port,
+        stub = ConnectorServiceGrpc.stub
+      )
 
       // node
-      node = NodeClientService.createNode(nodeConfig)
+      node = GrpcUtils.createPlaintextStub(
+        host = nodeConfig.host,
+        port = nodeConfig.port,
+        stub = NodeServiceGrpc.stub
+      )
 
       connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(ec), connectorConfig)
       nodeService = new NodeClientServiceImpl(node, connectorConfig.authConfig)
@@ -125,7 +128,7 @@ object KycBridgeApp extends TaskApp {
       _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       // gRPC server
-      grpcServer <- GrpcUtils.createGrpcServer(
+      grpcServer <- GrpcUtils.createGrpcServer[Task](
         kycBridgeConfig.grpcConfig,
         sslConfigOption = None,
         KycBridgeServiceGrpc.bindService(kycBridgeGrpcService, scheduler)
@@ -133,20 +136,4 @@ object KycBridgeApp extends TaskApp {
 
     } yield (assureIdService, acasService, grpcServer)
 
-  /**
-    * Run db migrations with Flyway.
-    *
-   * @return number of applied migrations
-    */
-  def runMigrations(transactor: HikariTransactor[Task], classLoader: ClassLoader): Task[Int] =
-    transactor.configure(dataSource =>
-      Task(
-        Flyway
-          .configure(classLoader)
-          .dataSource(dataSource)
-          .load()
-          .migrate()
-          .migrationsExecuted
-      )
-    )
 }

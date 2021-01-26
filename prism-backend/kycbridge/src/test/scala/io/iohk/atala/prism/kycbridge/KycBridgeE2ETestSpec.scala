@@ -17,7 +17,7 @@ import io.iohk.atala.prism.protos.connector_api.{
 }
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
-import io.iohk.atala.prism.services.{BaseGrpcClientService, ConnectorClientService}
+import io.iohk.atala.prism.services.BaseGrpcClientService
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import monix.execution.Scheduler.Implicits.global
@@ -31,6 +31,7 @@ import org.http4s.headers.Authorization
 import monix.eval.Task
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.dsl.Http4sClientDsl
+import io.iohk.atala.prism.utils.GrpcUtils
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
@@ -51,7 +52,7 @@ class KycBridgeE2ETestSpec extends AnyWordSpec with Matchers with KycBridgeFixtu
     "issue credential based on Acuant data" ignore new E2EFixtures {
 
       val kycBridgeStub = createKycBridgeStub("localhost", 50050)
-      val connectorStub = ConnectorClientService.createConnectorGrpcStub("localhost", 50051)
+      val connectorStub = GrpcUtils.createPlaintextStub("localhost", 50051, ConnectorServiceGrpc.stub)
 
       (for {
         httpClientAllocatedResource <- BlazeClientBuilder[Task](ExecutionContext.Implicits.global).resource.allocated

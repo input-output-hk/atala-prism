@@ -1,15 +1,17 @@
 package io.iohk.atala.prism.utils
 
 import java.util.concurrent.TimeUnit
-import cats.effect.Resource
+import cats.effect.{Resource, Sync}
 import com.typesafe.config.Config
 import io.grpc.netty.{GrpcSslContexts, NettyServerBuilder}
 import io.grpc.{Server, ServerServiceDefinition}
 import io.grpc.protobuf.services.ProtoReflectionService
-import monix.eval.Task
 
 import java.io.File
 import scala.concurrent.blocking
+import io.grpc.stub.AbstractStub
+import io.grpc.ManagedChannelBuilder
+import io.grpc.Channel
 
 object GrpcUtils {
 
@@ -35,17 +37,29 @@ object GrpcUtils {
   }
 
   /**
+    * Create a plainttext stub with a given host and port.
+    */
+  def createPlaintextStub[S <: AbstractStub[S]](host: String, port: Int, stub: Channel => S): S = {
+    val channel = ManagedChannelBuilder
+      .forAddress(host, port)
+      .usePlaintext()
+      .build()
+
+    stub(channel)
+  }
+
+  /**
     * Wrap a [[Server]] into a bracketed resource. The server stops when the
     * resource is released. With the following scenarios:
     *   - Server is shut down when there aren't any requests left.
     *   - We wait for 30 seconds to allow finish pending requests and
     *     then force quit the server.
     */
-  def createGrpcServer(
+  def createGrpcServer[F[_]: Sync](
       grpcConfig: GrpcConfig,
       sslConfigOption: Option[SslConfig],
       services: ServerServiceDefinition*
-  ): Resource[Task, Server] = {
+  ): Resource[F, Server] = {
     val builder = NettyServerBuilder.forPort(grpcConfig.port)
 
     builder.addService(
@@ -63,13 +77,14 @@ object GrpcUtils {
     }
 
     val shutdown = (server: Server) =>
-      Task {
+      Sync[F].delay {
         server.shutdown()
         if (!blocking(server.awaitTermination(30, TimeUnit.SECONDS))) {
           server.shutdownNow()
         }
-      }.void
+        ()
+      }
 
-    Resource.make(Task(builder.build()))(shutdown)
+    Resource.make(Sync[F].delay(builder.build()))(shutdown)
   }
 }

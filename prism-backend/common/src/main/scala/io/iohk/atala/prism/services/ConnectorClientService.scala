@@ -3,7 +3,6 @@ package io.iohk.atala.prism.services
 import scala.concurrent.duration.FiniteDuration
 import monix.eval.Task
 import fs2.Stream
-import io.grpc.ManagedChannelBuilder
 import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.connector_api._
@@ -184,24 +183,4 @@ class ConnectorClientServiceImpl(
     authenticatedCall(request, _.sendMessage)
   }
 
-}
-
-object ConnectorClientService {
-
-  def createConnectorGrpcStub(
-      connectorConfig: ConnectorConfig
-  ): ConnectorServiceGrpc.ConnectorServiceStub =
-    createConnectorGrpcStub(connectorConfig.host, connectorConfig.port)
-
-  def createConnectorGrpcStub(
-      host: String,
-      port: Int
-  ): ConnectorServiceGrpc.ConnectorServiceStub = {
-    val channel = ManagedChannelBuilder
-      .forAddress(host, port)
-      .usePlaintext()
-      .build()
-
-    ConnectorServiceGrpc.stub(channel)
-  }
 }

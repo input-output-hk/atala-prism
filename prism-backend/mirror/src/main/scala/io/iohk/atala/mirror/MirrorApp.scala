@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory
 import cats.effect.{ExitCode, Resource}
 import monix.eval.{Task, TaskApp}
 import io.grpc.Server
-import org.flywaydb.core.Flyway
-import doobie.hikari.HikariTransactor
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
@@ -24,16 +22,12 @@ import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.repositories.TransactorFactory
-import io.iohk.atala.prism.services.{
-  ConnectorClientService,
-  ConnectorClientServiceImpl,
-  ConnectorMessagesService,
-  NodeClientService,
-  NodeClientServiceImpl
-}
+import io.iohk.atala.prism.services.{ConnectorClientServiceImpl, ConnectorMessagesService, NodeClientServiceImpl}
 import io.iohk.atala.prism.utils.GrpcUtils
 import doobie.implicits._
 import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
+import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 
 object MirrorApp extends TaskApp {
 
@@ -76,13 +70,21 @@ object MirrorApp extends TaskApp {
 
       // db
       tx <- TransactorFactory.transactor[Task](transactorConfig)
-      _ <- Resource.liftF(runMigrations(tx, classLoader))
+      _ <- TransactorFactory.runDbMigrations[Task](tx, classLoader)
 
       // connector
-      connector <- Resource.liftF(Task.pure(ConnectorClientService.createConnectorGrpcStub(connectorConfig)))
+      connector = GrpcUtils.createPlaintextStub(
+        host = connectorConfig.host,
+        port = connectorConfig.port,
+        stub = ConnectorServiceGrpc.stub
+      )
 
       // node
-      node <- Resource.liftF(Task.pure(NodeClientService.createNode(nodeConfig)))
+      node = GrpcUtils.createPlaintextStub(
+        host = nodeConfig.host,
+        port = nodeConfig.port,
+        stub = NodeServiceGrpc.stub
+      )
 
       // services
       connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), connectorConfig)
@@ -123,14 +125,14 @@ object MirrorApp extends TaskApp {
       _ = new TrisaService(mirrorConfig.trisaConfig).sendTestRequest("vasp1", 8091)
 
       // gRPC server
-      grpcServer <- GrpcUtils.createGrpcServer(
+      grpcServer <- GrpcUtils.createGrpcServer[Task](
         mirrorConfig.grpcConfig,
         sslConfigOption = None,
         MirrorServiceGrpc.bindService(mirrorGrpcService, scheduler)
       )
 
       // gRPC server
-      trisaGrpcServer <- GrpcUtils.createGrpcServer(
+      trisaGrpcServer <- GrpcUtils.createGrpcServer[Task](
         mirrorConfig.trisaConfig.grpcConfig,
         sslConfigOption = Some(mirrorConfig.trisaConfig.sslConfig),
         TrisaPeer2PeerGrpc.bindService(trisaPeer2PeerService, scheduler)
@@ -141,20 +143,4 @@ object MirrorApp extends TaskApp {
       _ <- apiServer.payIdServer.resource
     } yield GrpcServers(grpcServer, trisaGrpcServer)
 
-  /**
-    * Run db migrations with Flyway.
-    *
-    * @return number of applied migrations
-    */
-  def runMigrations(transactor: HikariTransactor[Task], classLoader: ClassLoader): Task[Int] =
-    transactor.configure(dataSource =>
-      Task(
-        Flyway
-          .configure(classLoader)
-          .dataSource(dataSource)
-          .load()
-          .migrate()
-          .migrationsExecuted
-      )
-    )
 }
