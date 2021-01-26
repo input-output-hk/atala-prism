@@ -12,7 +12,7 @@ import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
-import io.iohk.atala.prism.node.AtalaLedger
+import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectId,
@@ -42,7 +42,7 @@ private class AtalaObjectAlreadyPublished extends Exception
 class ObjectManagementService private (
     config: Config,
     storage: ObjectStorageService,
-    atalaReferenceLedger: AtalaLedger,
+    atalaReferenceLedger: UnderlyingLedger,
     blockProcessing: BlockProcessingService
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
@@ -356,7 +356,7 @@ object ObjectManagementService {
   def apply(
       config: Config,
       storage: ObjectStorageService,
-      atalaReferenceLedger: AtalaLedger,
+      atalaReferenceLedger: UnderlyingLedger,
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
     new ObjectManagementService(config, storage, atalaReferenceLedger, blockProcessing)

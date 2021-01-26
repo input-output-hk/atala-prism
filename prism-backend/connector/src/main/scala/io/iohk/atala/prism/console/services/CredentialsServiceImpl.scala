@@ -10,14 +10,16 @@ import io.iohk.atala.prism.console.models.{
   PublishCredential
 }
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
-import io.iohk.atala.prism.credentials.SlayerCredentialId
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{console_api, node_api}
+import io.iohk.atala.prism.protos.{console_api, node_api, common_models}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
@@ -94,24 +96,31 @@ class CredentialsServiceImpl(
     }
 
   /** Publish an encoded signed credential into the blockchain
+    *
+    * NOTE: We will update this method when we migrate to credential batching.
+    *       Until then, this RPC will expect a signed IssueCredentialBatch instead of
+    *       in the `issueCredentialOperation` field. This operation will contain the hash
+    *       of the encodedSignedCredential instead of an actual merkle root.
+    *       This hack will be changed when we implement actual batching, but we need it for
+    *       now to allow retrieving credential timestamp data (to keep backward compatibility).
     */
   override def publishCredential(request: PublishCredentialRequest): Future[PublishCredentialResponse] = {
     authenticator.authenticated("publishCredential", request) { participantId =>
       for {
         issuerId <- Institution.Id(participantId.uuid).tryF
         credentialId = GenericCredential.Id.unsafeFrom(request.cmanagerCredentialId)
-        credentialProtocolId = request.nodeCredentialId
+        batchProtocolId = request.nodeCredentialId
         issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray.toVector)
         encodedSignedCredential = request.encodedSignedCredential
-        signedIssueCredentialOp =
+        signedIssueCredentialBatchOp =
           request.issueCredentialOperation
             .getOrElse(throw new RuntimeException("Missing IssueCredential operation"))
         // validation for sanity check
-        (contentHash, did, operationHash) = extractValues(signedIssueCredentialOp)
-        slayerId = SlayerCredentialId.compute(contentHash, did)
+        (merkleRoot, did, operationHash) = extractValues(signedIssueCredentialBatchOp)
+        batchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
         _ = require(
-          credentialProtocolId == slayerId.string,
-          "Invalid credential protocol id"
+          batchProtocolId == batchId.id,
+          "Invalid batch protocol id"
         )
         _ = require(
           issuanceOperationHash == operationHash,
@@ -124,10 +133,10 @@ class CredentialsServiceImpl(
           maybeCredential.getOrElse(throw new RuntimeException(s"Credential with ID $credentialId does not exist"))
         _ = require(credential.issuedBy == issuerId, "The credential was not issued by the specified issuer")
         // Issue the credential in the Node
-        credentialIssued <- nodeService.issueCredential {
+        credentialIssued <- nodeService.issueCredentialBatch {
           node_api
-            .IssueCredentialRequest()
-            .withSignedOperation(signedIssueCredentialOp)
+            .IssueCredentialBatchRequest()
+            .withSignedOperation(signedIssueCredentialBatchOp)
         }
         transactionInfo =
           credentialIssued.transactionInfo.getOrElse(throw new RuntimeException("Credential issues has no transaction"))
@@ -139,7 +148,7 @@ class CredentialsServiceImpl(
               PublishCredential(
                 credentialId,
                 issuanceOperationHash,
-                credentialProtocolId,
+                batchProtocolId,
                 encodedSignedCredential,
                 ProtoCodecs.fromTransactionInfo(transactionInfo)
               )
@@ -153,15 +162,15 @@ class CredentialsServiceImpl(
     }
   }
 
-  private def extractValues(signedAtalaOperation: SignedAtalaOperation): (SHA256Digest, DID, SHA256Digest) = {
+  private def extractValues(signedAtalaOperation: SignedAtalaOperation): (MerkleRoot, DID, SHA256Digest) = {
     val maybePair = for {
       atalaOperation <- signedAtalaOperation.operation
       opHash = SHA256Digest.compute(atalaOperation.toByteArray)
-      issueCredential <- atalaOperation.operation.issueCredential
-      credentialData <- issueCredential.credentialData
-      did = DID.buildPrismDID(credentialData.issuer)
-      contentHash = SHA256Digest(credentialData.contentHash.toByteArray.toVector)
-    } yield (contentHash, did, opHash)
+      issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
+      credentialBatchData <- issueCredentialBatch.credentialBatchData
+      did = DID.buildPrismDID(credentialBatchData.issuerDID)
+      merkleRoot = MerkleRoot(SHA256Digest(credentialBatchData.merkleRoot.toByteArray.toVector))
+    } yield (merkleRoot, did, opHash)
     maybePair.getOrElse(throw new RuntimeException("Failed to extract content hash and issuer DID"))
   }
 
@@ -230,21 +239,35 @@ class CredentialsServiceImpl(
     */
   override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = {
     authenticator.authenticated("getBlockchainData", request) { _ =>
-      val slayerIdF = Future.fromTry(
-        SlayerCredentialId.compute(request.encodedSignedCredential).toTry
-      )
+      // NOTE: Until we implement proper batching in the wallet, we will assume that the credential
+      //       was published with a batch that contained the hash of the encodedSignedCredential
+      //       as MerkleRoot in the IssueCredentialBatch operation. This allows us to compute the
+      //       credential batch id without requesting the merkle root to the client.
+      val batchIdF = Future.fromTry {
+        val either = for {
+          credential <- JsonBasedCredential.fromString(request.encodedSignedCredential)
+          credentialHash = credential.hash
+          issuerDID <- credential.content.issuerDid
+        } yield CredentialBatchId.fromBatchData(issuerDID.suffix, MerkleRoot(credentialHash))
+        either.toTry
+      }
 
       for {
-        slayerId <- slayerIdF
+        batchId <- batchIdF
         response <-
           nodeService
-            .getCredentialTransactionInfo(
+            .getBatchState(
               node_api
-                .GetCredentialTransactionInfoRequest()
-                .withCredentialId(slayerId.string)
+                .GetBatchStateRequest()
+                .withBatchId(batchId.id)
             )
-      } yield response.issuance.fold(GetBlockchainDataResponse())(txInfo =>
-        GetBlockchainDataResponse().withIssuanceProof(txInfo)
+      } yield response.publicationLedgerData.fold(GetBlockchainDataResponse())(ledgerData =>
+        GetBlockchainDataResponse().withIssuanceProof(
+          common_models
+            .TransactionInfo()
+            .withTransactionId(ledgerData.transactionId)
+            .withLedger(ledgerData.ledger)
+        )
       )
     }
   }

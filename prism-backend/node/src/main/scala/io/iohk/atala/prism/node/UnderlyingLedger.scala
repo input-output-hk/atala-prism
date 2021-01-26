@@ -5,7 +5,7 @@ import io.iohk.atala.prism.protos.node_internal
 
 import scala.concurrent.Future
 
-trait AtalaLedger {
+trait UnderlyingLedger {
   def getType: Ledger
 
   def supportsOnChainData: Boolean

@@ -52,10 +52,10 @@ object ECKeyOperation {
     val signedCredential = unsignedCredential.sign(signingKey.privateKey)
     val signedCredentialHash = signedCredential.hash
     val contentHash = ByteString.copyFrom(signedCredentialHash.value.toArray)
-    val credentialData = CredentialData(issuer = issuerDID.suffix.value, contentHash = contentHash)
-    val issueCredentialOperation = IssueCredentialOperation(Some(credentialData))
+    val credentialBatchData = CredentialBatchData(issuerDID = issuerDID.suffix.value, merkleRoot = contentHash)
+    val issueCredentialOperation = IssueCredentialBatchOperation(Some(credentialBatchData))
     (
-      AtalaOperation(AtalaOperation.Operation.IssueCredential(issueCredentialOperation)),
+      AtalaOperation(AtalaOperation.Operation.IssueCredentialBatch(issueCredentialOperation)),
       signedCredential.canonicalForm,
       signedCredentialHash
     )

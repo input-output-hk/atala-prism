@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.repositories.{
   DIDDataRepository,
   KeyValuesRepository
 }
-import io.iohk.atala.prism.node.services.AtalaService.BitcoinNetwork
+import io.iohk.atala.prism.node.services.BitcoinLedgerService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_api._
@@ -140,13 +140,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     ()
   }
 
-  private def initializeBitcoin(config: Config, onAtalaObject: AtalaObjectNotificationHandler): AtalaService = {
+  private def initializeBitcoin(config: Config, onAtalaObject: AtalaObjectNotificationHandler): BitcoinLedgerService = {
     logger.info("Creating bitcoin client")
 
     val bitcoinNetwork = BitcoinNetwork.withNameInsensitive(config.getString("network"))
     val bitcoinClient = BitcoinClient(NodeConfig.bitcoinConfig(config))
 
-    val atalaService = AtalaService(bitcoinNetwork, bitcoinClient, onAtalaObject)
+    val atalaService = BitcoinLedgerService(bitcoinNetwork, bitcoinClient, onAtalaObject)
 
     // TODO: Re-enable Bitcoin syncer
     /*

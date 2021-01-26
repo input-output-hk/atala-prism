@@ -18,7 +18,7 @@ class DIDDataRepository(xa: Transactor[IO]) {
   def findByDid(did: DID): FutureEither[NodeError, DIDDataState] = {
     val query = for {
       didSuffix <- OptionT(connection.pure(did.getCanonicalSuffix))
-        .toRight[NodeError](UnknownValueError("didSuffix", did.value))
+        .toRight[NodeError](UnknownValueError("did", did.value))
       lastOperation <- OptionT(DIDDataDAO.getLastOperation(didSuffix))
         .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.value))
       keys <- EitherT.right[NodeError](PublicKeysDAO.findAll(didSuffix))

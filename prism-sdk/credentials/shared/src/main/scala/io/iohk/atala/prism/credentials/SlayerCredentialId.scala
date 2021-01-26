@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.credentials
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_models
@@ -37,12 +36,4 @@ object SlayerCredentialId {
 
   def compute(credential: Credential, did: DID): SlayerCredentialId =
     compute(credential.hash, did)
-
-  def compute(encodedSignedCredential: String): Either[Exception, SlayerCredentialId] = {
-    for {
-      credential <- JsonBasedCredential.fromString(encodedSignedCredential)
-      credentialHash = credential.hash
-      issuerDID <- credential.content.issuerDid
-    } yield compute(credentialHash, issuerDID)
-  }
 }

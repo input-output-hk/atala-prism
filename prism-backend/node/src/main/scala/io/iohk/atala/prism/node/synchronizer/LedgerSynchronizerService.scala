@@ -8,13 +8,13 @@ import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.atala.prism.node.services.AtalaService
+import io.iohk.atala.prism.node.services.BitcoinLedgerService
 
 class LedgerSynchronizerService(
     bitcoinClient: BitcoinClient,
     blocksRepository: BlocksRepository,
     syncStatusService: LedgerSynchronizationStatusService,
-    atalaService: AtalaService
+    atalaService: BitcoinLedgerService
 )(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)

@@ -27,7 +27,7 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionStatus
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo, objects}
+import io.iohk.atala.prism.node.{UnderlyingLedger, PublicationInfo, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
@@ -69,7 +69,7 @@ class ObjectManagementServiceSpec
 
   private val storage = new objects.ObjectStorageService.InMemory
 
-  private val ledger: AtalaLedger = mock[AtalaLedger]
+  private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
   private lazy val objectManagementService =

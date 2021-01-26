@@ -15,9 +15,11 @@ import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.console.models.{GenericCredential, Institution, IssuerGroup, PublishCredential}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
-import io.iohk.atala.prism.credentials.SlayerCredentialId
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GetBlockchainDataRequest}
 import io.iohk.atala.prism.protos.console_models.CManagerGenericCredential
@@ -188,7 +190,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
+      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
@@ -199,7 +201,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
       val mockNodeCredentialId =
-        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
+        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
       val mockTransactionInfo =
         common_models
           .TransactionInfo()
@@ -207,14 +209,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
           .withLedger(common_models.Ledger.IN_MEMORY)
 
       val nodeRequest = node_api
-        .IssueCredentialRequest()
+        .IssueCredentialBatchRequest()
         .withSignedOperation(issuanceOp)
 
       doReturn(
         Future
-          .successful(node_api.IssueCredentialResponse(mockNodeCredentialId).withTransactionInfo(mockTransactionInfo))
+          .successful(
+            node_api
+              .IssueCredentialBatchResponse()
+              .withTransactionInfo(mockTransactionInfo)
+              .withBatchId(mockNodeCredentialId)
+          )
       ).when(nodeMock)
-        .issueCredential(nodeRequest)
+        .issueCredentialBatch(nodeRequest)
 
       val request = console_api
         .PublishCredentialRequest()
@@ -228,7 +235,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       usingApiAs(rpcRequest) { serviceStub =>
         serviceStub.publishCredential(request)
 
-        verify(nodeMock).issueCredential(nodeRequest)
+        verify(nodeMock).issueCredentialBatch(nodeRequest)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -241,7 +248,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         publicationData.nodeCredentialId must be(mockNodeCredentialId)
         publicationData.issuanceOperationHash must be(mockOperationHash)
         publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
-        publicationData.transactionId must be(TransactionId.from(mockNodeCredentialId).value)
+        publicationData.transactionId must be(TransactionId.from(mockTransactionInfo.transactionId).value)
         publicationData.ledger must be(Ledger.InMemory)
         // the rest should remain unchanged
         updatedCredential.copy(publicationData = None) must be(originalCredential)
@@ -258,7 +265,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
+      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
@@ -269,7 +276,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
       val mockNodeCredentialId =
-        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
+        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
 
       val request = console_api
         .PublishCredentialRequest()
@@ -313,7 +320,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val did = generateDid(publicKey)
       val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
 
-      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
+      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
@@ -324,7 +331,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
       val mockNodeCredentialId =
-        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
+        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
 
       val unknownCredentialId = GenericCredential.Id.random()
       val request = console_api
@@ -360,7 +367,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
+      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
@@ -387,7 +394,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
           serviceStub.publishCredential(request)
         )
 
-        err.getMessage.endsWith("Invalid credential protocol id") must be(true)
+        err.getMessage.endsWith("Invalid batch protocol id") must be(true)
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -411,7 +418,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
+      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
@@ -422,7 +429,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockIncorrectOperationHash = SHA256Digest.compute("AN INVALID VALUE".getBytes())
       val mockNodeCredentialId =
-        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
+        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
 
       val request = console_api
         .PublishCredentialRequest()
@@ -463,7 +470,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue
+      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEmptyEncodedSignedCredential = ""
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEmptyEncodedSignedCredential.getBytes())
 
@@ -474,7 +481,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
       val mockNodeCredentialId =
-        SlayerCredentialId.compute(mockEncodedSignedCredentialHash, DID.buildPrismDID(mockDIDSuffix)).string
+        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
 
       val request = console_api
         .PublishCredentialRequest()
@@ -507,19 +514,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
   def buildSignedIssueCredentialOp(
       credentialHash: SHA256Digest,
-      didSuffix: String
+      didSuffix: DIDSuffix
   ): node_models.SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
       signedWith = "mockKey",
       signature = ByteString.copyFrom("".getBytes()),
       operation = Some(
         node_models.AtalaOperation(
-          operation = node_models.AtalaOperation.Operation.IssueCredential(
-            node_models.IssueCredentialOperation(
-              credentialData = Some(
-                node_models.CredentialData(
-                  issuer = didSuffix,
-                  contentHash = ByteString.copyFrom(credentialHash.value.toArray)
+          operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
+            node_models.IssueCredentialBatchOperation(
+              credentialBatchData = Some(
+                node_models.CredentialBatchData(
+                  issuerDID = didSuffix.value,
+                  merkleRoot = ByteString.copyFrom(credentialHash.value.toArray)
                 )
               )
             )
@@ -622,31 +629,44 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
   }
 
   "getBlockchainData" should {
+
+    // this is the encoded JSON
+    // {"type":["VerifiableCredential","RedlandIdCredential"],"id":"did:prism:123456678abcdefg","keyId":"Issuance-0"}
+    // and we use a random base64URL as "signature" after the "." (we do not mind about the signature)
+    val encodedSignedCredential =
+      "eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiUmVkbGFuZElkQ3JlZGVudGlhbCJdLCJpZCI6ImRpZDpwcmlzbToxMjM0NTY2NzhhYmNkZWZnIiwia2V5SWQiOiJJc3N1YW5jZS0wIn0.MEUCICmZ463ZZbwNbAuA8TuHFkO0PM0H1UfZtdk2V7YLKFVIAiEAuKELUaOFd75N753Bt2qeNm7ah5fPtvQhgbYzpwB2_Ow="
+    val eitherBatchId = for {
+      credential <- JsonBasedCredential.fromString(encodedSignedCredential)
+      credentialHash = credential.hash
+      issuerDID <- credential.content.issuerDid
+    } yield CredentialBatchId.fromBatchData(issuerDID.suffix, MerkleRoot(credentialHash))
+    val batchId = eitherBatchId.toOption.value
+    val nodeRequest = node_api.GetBatchStateRequest(batchId.id)
+
     "return the expected transaction info when the credential is found" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
       DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val encodedSignedCredential =
-        "eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiUmVkbGFuZElkQ3JlZGVudGlhbCJdLCJpZCI6ImRpZDpwcmlzbToxMjM0NTY2NzhhYmNkZWZnIiwia2V5SWQiOiJJc3N1YW5jZS0wIn0.MEUCICmZ463ZZbwNbAuA8TuHFkO0PM0H1UfZtdk2V7YLKFVIAiEAuKELUaOFd75N753Bt2qeNm7ah5fPtvQhgbYzpwB2_Ow="
-      val mockTransactionInfoProto = common_models.TransactionInfo(
+      val expectedTransactionInfoProto = common_models.TransactionInfo(
         transactionId = "3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a",
         ledger = common_models.Ledger.IN_MEMORY,
         None
       )
-
-      val nodeRequest = node_api.GetCredentialTransactionInfoRequest(
-        SlayerCredentialId.compute(encodedSignedCredential).toOption.value.string
+      val mockLedgerData = node_models.LedgerData(
+        transactionId = expectedTransactionInfoProto.transactionId,
+        ledger = expectedTransactionInfoProto.ledger
       )
+
       val nodeResponse = Future
         .successful(
           node_api
-            .GetCredentialTransactionInfoResponse()
-            .withIssuance(mockTransactionInfoProto)
+            .GetBatchStateResponse()
+            .withPublicationLedgerData(mockLedgerData)
         )
       doReturn(nodeResponse)
         .when(nodeMock)
-        .getCredentialTransactionInfo(nodeRequest)
+        .getBatchState(nodeRequest)
 
       val request = GetBlockchainDataRequest(encodedSignedCredential)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -655,7 +675,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         val response = serviceStub.getBlockchainData(request)
 
         val issuanceProof = response.issuanceProof.value
-        issuanceProof mustBe mockTransactionInfoProto
+        issuanceProof mustBe expectedTransactionInfoProto
       }
     }
 
@@ -664,25 +684,17 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
       DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      // this is the encoded JSON
-      // {"type":["VerifiableCredential","RedlandIdCredential"],"id":"did:prism:123456678abcdefg","keyId":"Issuance-0"}
-      // and we use a random base64URL as "signature" after the "." (we do not mind about the signature)
-      val encodedSignedCredential =
-        "eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiUmVkbGFuZElkQ3JlZGVudGlhbCJdLCJpZCI6ImRpZDpwcmlzbToxMjM0NTY2NzhhYmNkZWZnIiwia2V5SWQiOiJJc3N1YW5jZS0wIn0.MEUCICmZ463ZZbwNbAuA8TuHFkO0PM0H1UfZtdk2V7YLKFVIAiEAuKELUaOFd75N753Bt2qeNm7ah5fPtvQhgbYzpwB2_Ow="
 
-      val nodeRequest = node_api.GetCredentialTransactionInfoRequest(
-        SlayerCredentialId.compute(encodedSignedCredential).toOption.value.string
-      )
       val nodeResponse = Future
         .successful(
-          node_api.GetCredentialTransactionInfoResponse(
-            issuance = None
+          node_api.GetBatchStateResponse(
+            publicationLedgerData = None
           )
         )
 
       doReturn(nodeResponse)
         .when(nodeMock)
-        .getCredentialTransactionInfo(nodeRequest)
+        .getBatchState(nodeRequest)
 
       val request = GetBlockchainDataRequest(encodedSignedCredential)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)

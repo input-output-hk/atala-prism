@@ -5,7 +5,8 @@ import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
 import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
 import io.iohk.atala.cvp.webextension.background.services._
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
-import io.iohk.atala.prism.credentials.SlayerCredentialId
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.console_api.{PublishCredentialRequest, PublishCredentialResponse}
 import io.iohk.atala.prism.protos.connector_api.{
@@ -47,13 +48,19 @@ class ConnectorClientService(url: String) {
       issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims)
     val operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
     val atalaOperationSHA256 = SHA256Digest.compute(issuanceOperation.toByteArray)
-    val slayerId = SlayerCredentialId.compute(signedCredentialHash, did)
+    // until we update the flow, we will post a credential batch where the merkle root
+    // is the hash of the signed credential. The reason for this is that we need to be
+    // able to query the credential transaction data associated to the issuance event
+    // Eventually, we will update this to use real merkle trees and the system will share
+    // merkle proofs as part of the information exchanged between parties.
+    val merkleRoot = MerkleRoot(signedCredentialHash)
+    val credentialBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
     val request = PublishCredentialRequest()
       .withCmanagerCredentialId(credentialId)
       .withEncodedSignedCredential(signedCredential)
       .withIssueCredentialOperation(operation)
       .withOperationHash(ByteString.copyFrom(atalaOperationSHA256.value.toArray))
-      .withNodeCredentialId(slayerId.string)
+      .withNodeCredentialId(credentialBatchId.id)
     val metadata = metadataForRequest(ecKeyPair, did, request)
 
     credentialsServiceApi.publishCredential(request, metadata.toJSDictionary)

@@ -12,13 +12,13 @@ import io.iohk.atala.prism.models.{
   TransactionStatus
 }
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo}
+import io.iohk.atala.prism.node.{UnderlyingLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
-    extends AtalaLedger {
+    extends UnderlyingLedger {
 
   override def getType: Ledger = Ledger.InMemory
 

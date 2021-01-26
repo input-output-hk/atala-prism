@@ -50,7 +50,8 @@ trait CardanoWalletApiClient {
   def getTransaction(walletId: WalletId, transactionId: TransactionId): Result[TransactionDetails]
 
   /**
-    * Delete a transaction.
+    * Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled.
+    * One can only request forgetting about it in order to try spending (concurrently) the same UTxO in another transaction.
     *
     * <p>Note the transaction may still show up later in a block.
     *

@@ -13,9 +13,9 @@ import io.iohk.atala.prism.models.{
 }
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.bitcoin.models.{OpData, _}
-import io.iohk.atala.prism.node.services.AtalaService.{BitcoinNetwork, Result}
+import io.iohk.atala.prism.node.services.BitcoinLedgerService.{BitcoinNetwork, Result}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.node.{AtalaLedger, PublicationInfo}
+import io.iohk.atala.prism.node.{UnderlyingLedger, PublicationInfo}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.util.BytesOps
 import io.iohk.atala.prism.utils.FutureEither
@@ -24,17 +24,17 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AtalaService extends AtalaLedger {
+trait BitcoinLedgerService extends UnderlyingLedger {
   def synchronizeBlock(blockhash: Blockhash): Result[Nothing, Unit]
 }
 
-class AtalaServiceImpl(
+class BitcoinLedgerServiceImpl(
     network: BitcoinNetwork,
     bitcoinClient: BitcoinClient,
     onAtalaObject: AtalaObjectNotificationHandler
 )(implicit
     ec: ExecutionContext
-) extends AtalaService {
+) extends BitcoinLedgerService {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -158,7 +158,7 @@ class AtalaServiceImpl(
   }
 }
 
-object AtalaService {
+object BitcoinLedgerService {
   type Result[E, A] = FutureEither[E, A]
 
   // Given that currently, `storage.put` doesn't return any error
@@ -179,7 +179,7 @@ object AtalaService {
       onAtalaObject: AtalaObjectNotificationHandler
   )(implicit
       ec: ExecutionContext
-  ): AtalaService = {
-    new AtalaServiceImpl(network, bitcoinClient, onAtalaObject)
+  ): BitcoinLedgerService = {
+    new BitcoinLedgerServiceImpl(network, bitcoinClient, onAtalaObject)
   }
 }

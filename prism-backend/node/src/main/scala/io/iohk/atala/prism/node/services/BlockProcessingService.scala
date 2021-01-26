@@ -37,54 +37,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   implicit def _connectionIOMonad: cats.Monad[doobie.free.connection.ConnectionIO] =
     doobie.free.connection.AsyncConnectionIO
 
-  protected val logger = LoggerFactory.getLogger(getClass)
-
-  def parseOperation(
-      signedOperation: node_models.SignedAtalaOperation,
-      ledgerData: LedgerData
-  ): Either[ValidationError, Operation] = {
-    signedOperation.getOperation.operation match {
-      case _: node_models.AtalaOperation.Operation.CreateDid =>
-        CreateDIDOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.UpdateDid =>
-        UpdateDIDOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.IssueCredential =>
-        IssueCredentialOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.RevokeCredential =>
-        RevokeCredentialOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
-        IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
-        RevokeCredentialsOperation.parse(signedOperation, ledgerData)
-      case empty @ node_models.AtalaOperation.Operation.Empty =>
-        Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
-    }
-  }
-
-  /** Applies function to all sequence elements, up to the point error occurs
-    *
-    * @param in input sequence
-    * @param f function to be applied to elements of the sequence
-    * @tparam A type of input sequence element
-    * @tparam L left alternative of Either returned by f
-    * @tparam R right alternative of Either returned by f
-    * @tparam M the input sequence type
-    * @return Left with underlying L type containing first error occured, Right with M[R] underlying type if there are no errors
-    */
-  private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
-      in: M[A]
-  )(f: A => Either[L, R])(implicit cbf: BuildFrom[M[A], R, M[R]]): Either[L, M[R]] = {
-    val builder = cbf.newBuilder(in)
-
-    in.iterator
-      .foldLeft(Either.right[L, builder.type](builder)) { (eitherBuilder, el) =>
-        for {
-          b <- eitherBuilder
-          elResult <- f(el)
-        } yield b.+=(elResult)
-      }
-      .map(_.result())
-  }
+  private val logger = LoggerFactory.getLogger(getClass)
 
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
   // it eventually will be replaced with ConnectionIO[Unit]
@@ -140,6 +93,28 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     }
   }
 
+  def parseOperation(
+      signedOperation: node_models.SignedAtalaOperation,
+      ledgerData: LedgerData
+  ): Either[ValidationError, Operation] = {
+    signedOperation.getOperation.operation match {
+      case _: node_models.AtalaOperation.Operation.CreateDid =>
+        CreateDIDOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.UpdateDid =>
+        UpdateDIDOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.IssueCredential =>
+        IssueCredentialOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.RevokeCredential =>
+        RevokeCredentialOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
+        IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
+        RevokeCredentialsOperation.parse(signedOperation, ledgerData)
+      case empty @ node_models.AtalaOperation.Operation.Empty =>
+        Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
+    }
+  }
+
   def processOperation(
       operation: Operation,
       protoOperation: node_models.SignedAtalaOperation
@@ -170,5 +145,30 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
         logger.warn("Unable to parse signature", ex)
         Left(StateError.InvalidSignature())
     }
+  }
+
+  /** Applies function to all sequence elements, up to the point error occurs
+    *
+   * @param in input sequence
+    * @param f function to be applied to elements of the sequence
+    * @tparam A type of input sequence element
+    * @tparam L left alternative of Either returned by f
+    * @tparam R right alternative of Either returned by f
+    * @tparam M the input sequence type
+    * @return Left with underlying L type containing first error occured, Right with M[R] underlying type if there are no errors
+    */
+  private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
+      in: M[A]
+  )(f: A => Either[L, R])(implicit cbf: BuildFrom[M[A], R, M[R]]): Either[L, M[R]] = {
+    val builder = cbf.newBuilder(in)
+
+    in.iterator
+      .foldLeft(Either.right[L, builder.type](builder)) { (eitherBuilder, el) =>
+        for {
+          b <- eitherBuilder
+          elResult <- f(el)
+        } yield b.+=(elResult)
+      }
+      .map(_.result())
   }
 }
