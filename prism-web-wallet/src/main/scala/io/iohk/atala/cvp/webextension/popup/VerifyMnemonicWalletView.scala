@@ -12,8 +12,6 @@ import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
-import scala.util.Random
-
 @react class VerifyMnemonicWalletView extends Component {
 
   case class Props(
@@ -33,16 +31,9 @@ import scala.util.Random
   )
 
   override def initialState: State = {
-    val index1 = Random.between(0, 12)
-    val index2 = Random.between(0, 12)
-    if (index2 == index1) initialState
+    val list = scala.util.Random.shuffle((0 until 12).toList).take(2).sorted
     val wordList = props.data.mnemonic.seed.split(" ").toSeq
-    if (index1 > index2) {
-      State("", "", index2, index1, wordList, None, false)
-    } else {
-      State("", "", index1, index2, wordList, None, false)
-    }
-
+    State("", "", list(0), list(1), wordList, None, false)
   }
 
   override def render(): ReactElement = {
