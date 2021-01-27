@@ -1,14 +1,15 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
-import java.time.Instant
-
 import cats.data.NonEmptyList
-import doobie.free.connection.ConnectionIO
 import doobie.free.connection
-import doobie.implicits.toSqlInterpolator
+import doobie.free.connection.ConnectionIO
+import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import doobie.util.fragments.{in, whereAnd}
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
+import doobie.util.fragments._
+import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, ParticipantId}
+import io.iohk.atala.prism.management.console.repositories.daos.queries.FindContactsQueryBuilder
+
+import java.time.Instant
 
 object ContactsDAO {
 
@@ -59,65 +60,10 @@ object ContactsDAO {
     }
   }
 
-  def getBy(
-      participantId: ParticipantId,
-      scrollIdMaybe: Option[Contact.Id],
-      limit: Int,
-      groupName: Option[InstitutionGroup.Name]
-  ): doobie.ConnectionIO[List[Contact]] = {
-
-    val query = (scrollIdMaybe, groupName) match {
-      case (Some(scrollId), Some(group)) =>
-        sql"""
-             |WITH CTE AS (
-             |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_seen_time
-             |  FROM contacts
-             |  WHERE contact_id = $scrollId
-             |)
-             |SELECT contact_id, external_id, contact_data, contacts.created_at
-             |FROM CTE CROSS JOIN contacts
-             |     JOIN contacts_per_group USING (contact_id)
-             |     JOIN institution_groups g USING (group_id)
-             |WHERE contacts.created_by = $participantId AND
-             |      (contacts.created_at > last_seen_time OR (contacts.created_at = last_seen_time AND contact_id > $scrollId)) AND
-             |      g.name = $group
-             |ORDER BY contacts.created_at ASC, contact_id
-             |LIMIT $limit
-             |""".stripMargin
-      case (Some(scrollId), None) =>
-        sql"""
-             |WITH CTE AS (
-             |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_seen_time
-             |  FROM contacts
-             |  WHERE contact_id = $scrollId
-             |)
-             |SELECT contact_id, external_id, contact_data, created_at
-             |FROM CTE CROSS JOIN contacts
-             |WHERE contacts.created_by = $participantId AND
-             |      (created_at > last_seen_time OR (created_at = last_seen_time AND contact_id > $scrollId))
-             |ORDER BY created_at ASC, contact_id
-             |LIMIT $limit
-             |""".stripMargin
-      case (None, Some(group)) =>
-        sql"""
-             |SELECT contact_id, external_id, contact_data, contacts.created_at
-             |FROM contacts
-             |     JOIN contacts_per_group USING (contact_id)
-             |     JOIN institution_groups g USING (group_id)
-             |WHERE contacts.created_by = $participantId AND
-             |      g.name = $group
-             |ORDER BY contacts.created_at ASC, contact_id
-             |LIMIT $limit
-             |""".stripMargin
-      case (None, None) =>
-        sql"""
-             |SELECT contact_id, external_id, contact_data, created_at
-             |FROM contacts
-             |WHERE created_by = $participantId
-             |ORDER BY created_at ASC, contact_id
-             |LIMIT $limit
-             |""".stripMargin
-    }
-    query.query[Contact].to[List]
+  def getBy(participantId: ParticipantId, constraints: Contact.PaginatedQuery): doobie.ConnectionIO[List[Contact]] = {
+    FindContactsQueryBuilder
+      .build(participantId, constraints)
+      .query[Contact]
+      .to[List]
   }
 }

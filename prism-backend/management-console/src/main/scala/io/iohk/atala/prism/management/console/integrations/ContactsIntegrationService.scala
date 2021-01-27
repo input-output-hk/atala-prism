@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.integrations
 
 import io.iohk.atala.prism.management.console.errors
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.ContactsRepository
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
@@ -41,7 +41,7 @@ class ContactsIntegrationService(
       limit: Int
   ): Future[Either[errors.ManagementConsoleError, GetContactsResult]] = {
     val result = for {
-      list <- contactsRepository.getBy(institutionId, scrollId, groupName, limit)
+      list <- contactsRepository.getBy(institutionId, Contact.legacyQuery(scrollId, groupName, limit))
       connectorRequest = connector_api.ConnectionsStatusRequest(acceptorIds = list.map(_.contactId.toString))
       connectionStatusResponse <- {
         contactConnectionService

@@ -64,12 +64,10 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def getBy(
       createdBy: ParticipantId,
-      scrollId: Option[Contact.Id],
-      groupName: Option[InstitutionGroup.Name],
-      limit: Int
+      constraints: Contact.PaginatedQuery
   ): FutureEither[ManagementConsoleError, Seq[Contact]] = {
     ContactsDAO
-      .getBy(createdBy, scrollId, limit, groupName)
+      .getBy(createdBy, constraints)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

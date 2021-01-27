@@ -38,4 +38,40 @@ object Contact {
 
     def validatedF(string: String): Future[ExternalId] = Future.fromTry(validated(string))
   }
+
+  // Used to sort the results by the given field
+  sealed trait SortBy
+  object SortBy {
+    final case object ExternalId extends SortBy
+    final case object CreatedAt extends SortBy
+
+    // helpers to upcast values to SortBy, used to simplify type-inference
+    val externalId: SortBy = ExternalId
+    val createdAt: SortBy = CreatedAt
+  }
+
+  /**
+    * Used to filter the results by the given criteria
+    *
+    * @param groupName when provided, all results belong to this group
+    */
+  case class FilterBy(groupName: Option[InstitutionGroup.Name])
+
+  type PaginatedQuery = PaginatedQueryConstraints[Contact.Id, Contact.SortBy, Contact.FilterBy]
+
+  // helper to keep the behavior before adding sorting/filters
+  def legacyQuery(
+      scrollId: Option[Contact.Id],
+      groupName: Option[InstitutionGroup.Name],
+      limit: Int
+  ): Contact.PaginatedQuery = {
+    import PaginatedQueryConstraints._
+
+    PaginatedQueryConstraints(
+      limit = limit,
+      ordering = ResultOrdering(Contact.SortBy.createdAt, ResultOrdering.Direction.Ascending),
+      scrollId = scrollId,
+      filters = Some(Contact.FilterBy(groupName))
+    )
+  }
 }

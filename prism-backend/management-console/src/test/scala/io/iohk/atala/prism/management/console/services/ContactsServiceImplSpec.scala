@@ -80,8 +80,12 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result =
-          contactsRepository.getBy(institutionId, None, Some(group.name), 10).value.futureValue.toOption.value
+        val result = contactsRepository
+          .getBy(institutionId, Contact.legacyQuery(None, Some(group.name), 10))
+          .value
+          .futureValue
+          .toOption
+          .value
         result.size must be(1)
         val storedContact = result.headOption.value
         toContactProto(storedContact, invitationMissing).copy(jsonData = "") must be(
@@ -181,7 +185,12 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         )
 
         // the contact must not be added
-        val result = contactsRepository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
+        val result = contactsRepository
+          .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+          .value
+          .futureValue
+          .toOption
+          .value
         result must be(empty)
       }
     }
@@ -212,7 +221,12 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         )
 
         // the new contact should not exist
-        val result = contactsRepository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
+        val result = contactsRepository
+          .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+          .value
+          .futureValue
+          .toOption
+          .value
         result must be(empty)
       }
     }
@@ -256,7 +270,12 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         )
 
         // the contact needs to exist as originally inserted
-        val result = contactsRepository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
+        val result = contactsRepository
+          .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+          .value
+          .futureValue
+          .toOption
+          .value
         result.size must be(1)
 
         val storedContact = result.head

@@ -3,7 +3,12 @@ package io.iohk.atala.prism.management.console.repositories
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CreateContact,
+  InstitutionGroup,
+  PaginatedQueryConstraints
+}
 import org.scalatest.OptionValues._
 
 import java.time.LocalDate
@@ -30,8 +35,13 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       subject.externalId must be(externalId)
 
       // we check that the subject was added to the intended group
-      val subjectsInGroupList =
-        repository.getBy(institutionId, None, Some(group.name), 10).value.futureValue.toOption.value
+      val subjectsInGroupList = repository
+        .getBy(institutionId, Contact.legacyQuery(None, Some(group.name), 10))
+        .value
+        .futureValue
+        .toOption
+        .value
+
       subjectsInGroupList.size must be(1)
       subjectsInGroupList.headOption.value must be(subject)
     }
@@ -73,7 +83,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
 
       // we check that the subject was not created
-      val subjectsList = repository.getBy(institutionId, None, None, 1).value.futureValue.toOption.value
+      val subjectsList = repository
+        .getBy(institutionId, Contact.legacyQuery(None, None, 1))
+        .value
+        .futureValue
+        .toOption
+        .value
       subjectsList must be(empty)
     }
 
@@ -93,7 +108,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         repository.create(request, Some(group.name)).value.futureValue
       )
       // no subject should be created
-      val createdSubjects = repository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
+      val createdSubjects = repository
+        .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+        .value
+        .futureValue
+        .toOption
+        .value
       createdSubjects must be(empty)
     }
 
@@ -124,7 +144,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         repository.create(secondRequest, Some(group.name)).value.futureValue
       )
 
-      val subjectsStored = repository.getBy(institutionId, None, None, 10).value.futureValue.toOption.value
+      val subjectsStored = repository
+        .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+        .value
+        .futureValue
+        .toOption
+        .value
 
       // only one subject must be inserted correctly
       subjectsStored.size must be(1)
@@ -185,65 +210,138 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   }
 
   "getBy" should {
-    "return the first subjects" in {
-      val institutionId = createParticipant("Institution X")
-      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
-      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val subjectA = createContact(institutionId, "Alice", groupNameA)
-      val subjectB = createContact(institutionId, "Bob", groupNameB)
-      createContact(institutionId, "Charles", groupNameC)
-      createContact(institutionId, "Alice 2", groupNameA)
 
-      val result = repository.getBy(institutionId, None, None, 2).value.futureValue.toOption.value
-      result must be(List(subjectA, subjectB))
+    def testQuery(tag: String, sortBy: Contact.SortBy, desc: Boolean) = {
+      import PaginatedQueryConstraints._
+
+      def buildQuery(
+          limit: Int,
+          groupName: Option[InstitutionGroup.Name] = None,
+          scrollId: Option[Contact.Id] = None
+      ) = {
+        val condition = if (desc) ResultOrdering.Direction.Descending else ResultOrdering.Direction.Ascending
+
+        PaginatedQueryConstraints(
+          limit = limit,
+          ordering = ResultOrdering(sortBy, condition),
+          scrollId = scrollId,
+          filters = Some(Contact.FilterBy(groupName))
+        )
+      }
+
+      // queries the in-memory data to verify results
+      // NOTE: this doesn't filter by groups
+      def query(data: List[Contact], constraints: Contact.PaginatedQuery): List[Contact] = {
+        val sorted = constraints.ordering.field match {
+          case Contact.SortBy.ExternalId => data.sortBy(_.externalId.value)
+          case Contact.SortBy.CreatedAt => data.sortBy(_.createdAt)
+        }
+
+        val sortedProperly = constraints.ordering.condition match {
+          case ResultOrdering.Direction.Ascending => sorted
+          case ResultOrdering.Direction.Descending => sorted.reverse
+        }
+
+        val paginated = constraints.scrollId match {
+          case Some(scrollId) => sortedProperly.dropWhile(_.contactId != scrollId).drop(1)
+          case None => sortedProperly
+        }
+
+        paginated.take(constraints.limit)
+      }
+
+      s"[$tag] return the first contacts" in {
+        val institutionId = createParticipant("Institution X")
+        val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+        val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+        val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+        val contactA = createContact(institutionId, "Alice", groupNameA)
+        val contactB = createContact(institutionId, "Bob", groupNameB)
+        val contactC = createContact(institutionId, "Charles", groupNameC)
+        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+
+        val expected = query(List(contactA, contactB, contactC, contactD), buildQuery(2))
+        val result = repository
+          .getBy(institutionId, buildQuery(2))
+          .value
+          .futureValue
+          .toOption
+          .value
+
+        result must be(expected)
+      }
+
+      s"[$tag] return the first contacts matching a group" in {
+        val institutionId = createParticipant("Institution X")
+        val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+        val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+        val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+        val contactA = createContact(institutionId, "Alice", groupNameA)
+        createContact(institutionId, "Bob", groupNameB)
+        createContact(institutionId, "Charles", groupNameC)
+        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+
+        val expected = query(List(contactA, contactD), buildQuery(2, Some(groupNameA)))
+        val result = repository
+          .getBy(institutionId, buildQuery(2, Some(groupNameA)))
+          .value
+          .futureValue
+          .toOption
+          .value
+
+        result must be(expected)
+      }
+
+      s"[$tag] paginate by the last seen subject" in {
+        val institutionId = createParticipant("Institution X")
+        val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+        val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+        val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+        val contactA = createContact(institutionId, "Alice", groupNameA)
+        val contactB = createContact(institutionId, "Bob", groupNameB)
+        val contactC = createContact(institutionId, "Charles", groupNameC)
+        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+
+        val scrollId = contactB.contactId
+        val result = repository
+          .getBy(institutionId, buildQuery(1, None, Some(scrollId)))
+          .value
+          .futureValue
+          .toOption
+          .value
+
+        val expected = query(List(contactA, contactB, contactC, contactD), buildQuery(1, scrollId = Some(scrollId)))
+        result must be(expected)
+      }
+
+      s"[$tag] paginate by the last seen subject matching by group" in {
+        val institutionId = createParticipant("Institution X")
+        val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+        val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+        val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+        val contactA = createContact(institutionId, "Alice", groupNameA)
+        createContact(institutionId, "Bob", groupNameB)
+        createContact(institutionId, "Charles", groupNameC)
+        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+        val scrollId = contactA.contactId
+
+        val expected = query(List(contactA, contactD), buildQuery(1, scrollId = Some(scrollId)))
+        val result = repository
+          .getBy(institutionId, buildQuery(1, Some(groupNameA), Some(scrollId)))
+          .value
+          .futureValue
+          .toOption
+          .value
+
+        result must be(expected)
+      }
     }
 
-    "return the first subjects matching a group" in {
-      val institutionId = createParticipant("Institution X")
-      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
-      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val subjectA = createContact(institutionId, "Alice", groupNameA)
-      createContact(institutionId, "Bob", groupNameB)
-      createContact(institutionId, "Charles", groupNameC)
-      val subjectA2 = createContact(institutionId, "Alice 2", groupNameA)
-
-      val result = repository.getBy(institutionId, None, Some(groupNameA), 2).value.futureValue.toOption.value
-      result must be(List(subjectA, subjectA2))
-    }
-
-    "paginate by the last seen subject" in {
-      val institutionId = createParticipant("Institution X")
-      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
-      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      createContact(institutionId, "Alice", groupNameA)
-      val subjectB = createContact(institutionId, "Bob", groupNameB)
-      val subjectC = createContact(institutionId, "Charles", groupNameC)
-      createContact(institutionId, "Alice 2", groupNameA)
-
-      val result = repository.getBy(institutionId, Some(subjectB.contactId), None, 1).value.futureValue.toOption.value
-      result must be(List(subjectC))
-    }
-
-    "paginate by the last seen subject matching by group" in {
-      val institutionId = createParticipant("Institution X")
-      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
-      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val subjectA = createContact(institutionId, "Alice", groupNameA)
-      createContact(institutionId, "Bob", groupNameB)
-      createContact(institutionId, "Charles", groupNameC)
-      val subjectA2 = createContact(institutionId, "Alice 2", groupNameA)
-
-      val result = repository
-        .getBy(institutionId, Some(subjectA.contactId), Some(groupNameA), 1)
-        .value
-        .futureValue
-        .toOption
-        .value
-      result must be(List(subjectA2))
-    }
+    List(
+      ("sorted by createdAt asc", Contact.SortBy.createdAt, false),
+      ("sorted by createdAt desc", Contact.SortBy.createdAt, true),
+      ("sorted by externalId asc", Contact.SortBy.createdAt, false),
+      ("sorted by externalId desc", Contact.SortBy.createdAt, true)
+    ).foreach((testQuery _).tupled)
   }
 }
