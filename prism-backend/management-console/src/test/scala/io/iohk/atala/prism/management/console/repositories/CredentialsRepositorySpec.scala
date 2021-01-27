@@ -7,6 +7,7 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{
   CreateGenericCredential,
+  CredentialIssuance,
   GenericCredential,
   InstitutionGroup,
   ParticipantId,
@@ -34,7 +35,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
           "title" -> "Major IN Applied Blockchain".asJson,
           "enrollmentDate" -> LocalDate.now().asJson,
           "graduationDate" -> LocalDate.now().plusYears(5).asJson
-        )
+        ),
+        credentialIssuanceContactId = None
       )
 
       val result = credentialsRepository.create(request).value.futureValue
@@ -53,7 +55,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val subjectId = createContact(issuerId, "IOHK Student 2", group.name).contactId
-      val credential = createGenericCredential(issuerId, subjectId, "A")
+      val credentialIssuanceContactId = CredentialIssuance.ContactId.random()
+      val credential = createGenericCredential(issuerId, subjectId, "A", Some(credentialIssuanceContactId))
 
       val returnedCredential =
         credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value

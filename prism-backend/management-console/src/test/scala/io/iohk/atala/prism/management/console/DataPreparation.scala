@@ -87,17 +87,23 @@ object DataPreparation {
     }
   }
 
-  def createGenericCredential(issuedBy: ParticipantId, subjectId: Contact.Id, tag: String = "")(implicit
+  def createGenericCredential(
+      issuedBy: ParticipantId,
+      subjectId: Contact.Id,
+      tag: String = "",
+      credentialIssuanceContactId: Option[CredentialIssuance.ContactId] = None
+  )(implicit
       database: Transactor[IO]
   ): GenericCredential = {
     val request = CreateGenericCredential(
       issuedBy = issuedBy,
       subjectId = subjectId,
       credentialData = Json.obj(
-        "title" -> s"Major IN Applied Blockchain $tag".trim.asJson,
+        "title" -> s"Major In Applied Blockchain $tag".trim.asJson,
         "enrollmentDate" -> LocalDate.now().asJson,
         "graduationDate" -> LocalDate.now().plusYears(5).asJson
-      )
+      ),
+      credentialIssuanceContactId = credentialIssuanceContactId
     )
 
     CredentialsDAO.create(request).transact(database).unsafeRunSync()

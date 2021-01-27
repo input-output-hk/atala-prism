@@ -9,7 +9,10 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
 final case class CreateGenericCredential(
     issuedBy: ParticipantId,
     subjectId: Contact.Id,
-    credentialData: Json
+    credentialData: Json,
+    // TODO: Make it mandatory once credentials cannot be created individually (RPCs transitioned to credential
+    //       issuances only)
+    credentialIssuanceContactId: Option[CredentialIssuance.ContactId]
 )
 
 case class PublicationData(
@@ -28,6 +31,7 @@ final case class GenericCredential(
     credentialData: Json,
     createdOn: Instant,
     credentialType: Option[CredentialTypeId],
+    credentialIssuanceContactId: Option[CredentialIssuance.ContactId],
     externalId: Contact.ExternalId,
     issuerName: String,
     subjectData: Json,

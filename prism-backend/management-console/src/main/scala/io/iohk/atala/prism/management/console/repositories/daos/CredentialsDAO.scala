@@ -14,9 +14,12 @@ object CredentialsDAO {
     val createdOn = Instant.now()
     sql"""
          |WITH inserted AS (
-         |  INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data, created_on)
-         |  VALUES ($id, ${data.issuedBy}, ${data.subjectId}, ${data.credentialData}, $createdOn)
-         |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id
+         |  INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data,
+         |    created_on, credential_issuance_contact_id)
+         |  VALUES ($id, ${data.issuedBy}, ${data.subjectId}, ${data.credentialData},
+         |    $createdOn, ${data.credentialIssuanceContactId})
+         |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id,
+         |    credential_issuance_contact_id
          |)
          | , PTS AS (
          |  SELECT participant_id AS issuer_id, name
@@ -39,7 +42,7 @@ object CredentialsDAO {
          |  FROM participants
          |)
          |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-         |       external_id, PTS.name AS issuer_name, contact_data,
+         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
          |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
          |       pc.transaction_id, pc.ledger, pc.shared_at
          |FROM draft_credentials c
@@ -68,7 +71,7 @@ object CredentialsDAO {
              |  FROM participants
              |)
              |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-             |       external_id, PTS.name AS issuer_name, contact_data,
+             |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
              |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
              |       pc.transaction_id, pc.ledger, pc.shared_at
              |FROM CTE CROSS JOIN draft_credentials c
@@ -87,7 +90,7 @@ object CredentialsDAO {
              |  FROM participants
              |)
              |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-             |       external_id, PTS.name AS issuer_name, contact_data,
+             |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
              |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
              |       pc.transaction_id, pc.ledger, pc.shared_at
              |FROM draft_credentials c
@@ -109,7 +112,7 @@ object CredentialsDAO {
          |  FROM participants
          |)
          |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-         |       external_id, PTS.name AS issuer_name, contacts.contact_data,
+         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contacts.contact_data,
          |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
          |       pc.transaction_id, pc.ledger, pc.shared_at
          |FROM draft_credentials c

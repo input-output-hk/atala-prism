@@ -43,7 +43,24 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
         val creationTime = Instant.now
         val createResponse = serviceStub.createCredentialIssuance(createRequest)
 
-        // Get the credential issuance just created
+        // Verify the generated credentials
+        val credentials =
+          credentialsRepository
+            .getBy(institutionId, contacts.size + 1, None)
+            .value
+            .futureValue
+            .toOption
+            .value
+            .sortBy(_.subjectId.toString)
+        credentials.size mustBe contacts.size
+        contacts.zip(credentials).foreach {
+          case (contact, credential) =>
+            credential.subjectId.toString mustBe contact.contactId
+            credential.credentialData mustBe asJson(contact.credentialData)
+            credential.createdOn must (be >= creationTime and be <= Instant.now)
+        }
+
+        // Get the credential issuance just created and verify it matches
         val getRequest =
           console_api.GetCredentialIssuanceRequest(credentialIssuanceId = createResponse.credentialIssuanceId)
         usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, getRequest)) { serviceStub =>
@@ -55,16 +72,14 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           credentialIssuance.status mustBe CredentialIssuanceStatus.READY
           credentialIssuance.createdAt must (be >= creationTime.toEpochMilli and be <= Instant.now.toEpochMilli)
           // Verify contacts
-          credentialIssuance.credentialIssuanceContacts.size mustBe contacts.size
-          val issuanceContactsByContactId =
-            credentialIssuance.credentialIssuanceContacts.map(contact => (contact.contactId, contact)).toMap
-          for (contact <- contacts) {
-            val issuanceContact = issuanceContactsByContactId(contact.contactId)
-            issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
-            // Verify credential data
-            val issuanceContactData = parser.parse(issuanceContact.credentialData).toOption.value
-            val expectedContactData = parser.parse(contact.credentialData).toOption.value
-            issuanceContactData mustBe expectedContactData
+          val issuanceContacts =
+            credentialIssuance.credentialIssuanceContacts.sortBy(_.contactId)
+          issuanceContacts.size mustBe contacts.size
+          contacts.zip(issuanceContacts).foreach {
+            case (contact, issuanceContact) =>
+              issuanceContact.contactId mustBe contact.contactId
+              issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
+              asJson(issuanceContact.credentialData) mustBe asJson(contact.credentialData)
           }
         }
       }
@@ -116,7 +131,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       createRandomCredentialIssuanceContact(institutionId)
     }
 
-    contactsWithGroup ++ contactsWithoutGroup
+    (contactsWithGroup ++ contactsWithoutGroup).sortBy(_.contactId)
   }
 
   private def createRandomCredentialIssuanceContact(
@@ -139,4 +154,6 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val contactData = CreateContact(institutionId, Contact.ExternalId.random(), Json.Null)
     contactsRepository.create(contactData, maybeGroupName).value.futureValue.toOption.value
   }
+
+  private def asJson(string: String): Json = parser.parse(string).toOption.value
 }

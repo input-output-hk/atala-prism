@@ -7,9 +7,16 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, InstitutionGroup, ParticipantId}
-import io.iohk.atala.prism.management.console.repositories.daos.CredentialIssuancesDAO
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CreateGenericCredential,
+  CredentialIssuance,
+  GenericCredential,
+  InstitutionGroup,
+  ParticipantId
+}
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialIssuancesDAO.CreateCredentialIssuanceContactGroup
+import io.iohk.atala.prism.management.console.repositories.daos.{CredentialIssuancesDAO, CredentialsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.scalaland.chimney.dsl._
@@ -61,9 +68,8 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
         contactsWithIds: List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)],
         issuanceGroupIdByGroupId: Map[InstitutionGroup.Id, CredentialIssuance.ContactGroupId]
     ): ConnectionIO[List[Unit]] = {
-      contactsWithIds
-        .flatten(contactWithId => {
-          val (contact, issuanceContactId) = contactWithId
+      contactsWithIds.flatten {
+        case (contact, issuanceContactId) =>
           if (contact.groupIds.isEmpty) {
             // Add contact directly to the credential issuance as it does not belong to any group
             List(CredentialIssuancesDAO.addContactToCredentialIssuance(issuanceContactId, credentialIssuanceId))
@@ -74,8 +80,24 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
               CredentialIssuancesDAO.addContactToGroup(issuanceContactId, issuanceGroupIdByGroupId(groupId))
             )
           }
-        })
-        .sequence
+      }.sequence
+    }
+
+    def createGenericCredentials(
+        contactsWithIds: List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)]
+    ): ConnectionIO[List[GenericCredential]] = {
+      contactsWithIds.map {
+        case (contact, issuanceContactId) =>
+          CredentialsDAO
+            .create(
+              CreateGenericCredential(
+                issuedBy = createCredentialIssuance.createdBy,
+                subjectId = contact.contactId,
+                credentialData = contact.credentialData,
+                credentialIssuanceContactId = Some(issuanceContactId)
+              )
+            )
+      }.sequence
     }
 
     val query = for {
@@ -94,6 +116,8 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
       issuanceGroupIdByGroupId = groupIds.toMap
       // Associate each contact with the groups it belongs to, or add it to the credential issuance directly otherwise
       _ <- linkContactsToCredentialIssuance(credentialIssuanceId, contactsWithIds, issuanceGroupIdByGroupId)
+      // Create the credentials
+      _ <- createGenericCredentials(contactsWithIds)
     } yield credentialIssuanceId
 
     query

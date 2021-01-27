@@ -43,7 +43,7 @@ class CredentialsServiceImpl(
         case Some(externalId) =>
           contactsRepository
             .find(ParticipantId(issuerId), externalId)
-            .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exists")))
+            .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exist")))
             .map(_.contactId)
 
         case None =>
@@ -65,6 +65,7 @@ class CredentialsServiceImpl(
             .withFieldConst(_.issuedBy, ParticipantId(issuerId))
             .withFieldConst(_.subjectId, contactId)
             .withFieldConst(_.credentialData, json)
+            .withFieldConst(_.credentialIssuanceContactId, None)
             .enableUnsafeOption
             .transform
 
