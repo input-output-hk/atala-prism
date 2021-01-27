@@ -54,7 +54,7 @@ object AtalaObjectTransactionSubmissionsDAO {
        """.stripMargin.query[AtalaObjectTransactionSubmission].to[List]
   }
 
-  def updateStatus(
+  def updateLatestStatus(
       atalaObjectId: AtalaObjectId,
       status: AtalaObjectTransactionSubmissionStatus
   ): ConnectionIO[AtalaObjectTransactionSubmission] = {
@@ -62,6 +62,10 @@ object AtalaObjectTransactionSubmissionsDAO {
          |UPDATE atala_object_tx_submissions
          |  SET status = $status
          |  WHERE atala_object_id = $atalaObjectId
+         |    AND submission_timestamp = (
+         |      SELECT MAX(submission_timestamp)
+         |        FROM atala_object_tx_submissions
+         |        WHERE atala_object_id = $atalaObjectId)
          |RETURNING atala_object_id, ledger, transaction_id, submission_timestamp, status
        """.stripMargin.query[AtalaObjectTransactionSubmission].unique
   }

@@ -309,7 +309,7 @@ class ObjectManagementServiceSpec
         status: AtalaObjectTransactionSubmissionStatus
     ): Unit = {
       AtalaObjectTransactionSubmissionsDAO
-        .updateStatus(atalaObjectId, status)
+        .updateLatestStatus(atalaObjectId, status)
         .transact(database)
         .unsafeRunSync()
       ()
@@ -426,7 +426,7 @@ class ObjectManagementServiceSpec
         status: AtalaObjectTransactionSubmissionStatus
     ): Unit = {
       AtalaObjectTransactionSubmissionsDAO
-        .updateStatus(atalaObjectId, status)
+        .updateLatestStatus(atalaObjectId, status)
         .transact(database)
         .unsafeRunSync()
       ()

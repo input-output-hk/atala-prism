@@ -253,7 +253,7 @@ class ObjectManagementService private (
           // Transaction made it to the ledger, simply update status so it does not retry
           case TransactionStatus.InLedger =>
             AtalaObjectTransactionSubmissionsDAO
-              .updateStatus(transaction.atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
+              .updateLatestStatus(transaction.atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
               .transact(xa)
               .unsafeToFuture()
 
@@ -270,7 +270,7 @@ class ObjectManagementService private (
       _ <- atalaReferenceLedger.deleteTransaction(transaction.transactionId)
       _ <-
         AtalaObjectTransactionSubmissionsDAO
-          .updateStatus(transaction.atalaObjectId, AtalaObjectTransactionSubmissionStatus.Deleted)
+          .updateLatestStatus(transaction.atalaObjectId, AtalaObjectTransactionSubmissionStatus.Deleted)
           .transact(xa)
           .unsafeToFuture()
       // Retrieve and parse object from the DB
