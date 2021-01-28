@@ -9,6 +9,7 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.{
   ContactsDAO,
+  CredentialTypeDao,
   CredentialsDAO,
   InstitutionGroupsDAO,
   ParticipantsDAO
@@ -99,5 +100,29 @@ object DataPreparation {
     )
 
     CredentialsDAO.create(request).transact(database).unsafeRunSync()
+  }
+
+  def createCredentialType(institutionId: ParticipantId, name: String)(implicit
+      database: Transactor[IO]
+  ): CredentialTypeWithRequiredFields = {
+    CredentialTypeDao.create(sampleCreateCredentialType(institutionId, name)).transact(database).unsafeRunSync()
+  }
+
+  def sampleCreateCredentialType(institutionId: ParticipantId, name: String): CreateCredentialType = {
+    CreateCredentialType(
+      name = name,
+      institution = institutionId,
+      template = "",
+      fields = List(
+        CreateCredentialTypeField(
+          name = "name1",
+          description = "description1"
+        ),
+        CreateCredentialTypeField(
+          name = "name2",
+          description = "description2"
+        )
+      )
+    )
   }
 }

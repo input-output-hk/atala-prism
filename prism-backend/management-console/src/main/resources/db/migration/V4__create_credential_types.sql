@@ -6,7 +6,7 @@ CREATE TYPE CREDENTIAL_TYPE_STATE AS ENUM ('DRAFT', 'READY', 'ARCHIVED');
 CREATE TABLE credential_types(
     credential_type_id UUID NOT NULL,
     name CITEXT NOT NULL,
-    institution_id UUID,
+    institution_id UUID NOT NULL,
     state CREDENTIAL_TYPE_STATE NOT NULL,
     template TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,

@@ -5,16 +5,26 @@ import enumeratum.{DoobieEnum, Enum, EnumEntry}
 
 import java.time.Instant
 
+final case class CreateCredentialTypeField(
+    name: String,
+    description: String
+)
+
+final case class CreateCredentialType(
+    name: String,
+    institution: ParticipantId,
+    template: String,
+    fields: List[CreateCredentialTypeField]
+)
+
 final case class CredentialType(
     id: CredentialTypeId,
     name: String,
-    institution: Option[ParticipantId],
+    institution: ParticipantId,
     state: CredentialTypeState,
     template: String,
     createdAt: Instant
-) {
-  val isShared: Boolean = institution.isEmpty
-}
+)
 
 final case class CredentialTypeField(
     id: CredentialTypeFieldId,
