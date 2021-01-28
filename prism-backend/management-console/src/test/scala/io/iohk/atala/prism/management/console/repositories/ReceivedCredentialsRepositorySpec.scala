@@ -54,7 +54,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
   "ReceivedCredentialsRepository" should {
     "be able to create a new retrievable credential" in {
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, "").contactId
+      val contactId = DataPreparation.createContact(verifierId, "Individual", None).contactId
 
       val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
@@ -75,7 +75,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "be able to fetch latest credentials for a verifier" in {
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, "").contactId
+      val contactId = DataPreparation.createContact(verifierId, "Individual", None).contactId
 
       val encodedSignedCredential1 = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId1 = CredentialExternalId.random()

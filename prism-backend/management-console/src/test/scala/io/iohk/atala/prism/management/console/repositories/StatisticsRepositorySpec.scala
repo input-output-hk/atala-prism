@@ -15,10 +15,10 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
     "work" in {
       val issuerId = createParticipant("Issuer-1")
       createInstitutionGroup(issuerId, InstitutionGroup.Name("Grp 1"))
-      createContact(issuerId, "no-invite", None, "")
-      createContact(issuerId, "pending-connection-1", None, "")
-      createContact(issuerId, "pending-connection-2", None, "")
-      val contact3 = createContact(issuerId, "connected", None, "")
+      createContact(issuerId, "no-invite", None)
+      createContact(issuerId, "pending-connection-1", None)
+      createContact(issuerId, "pending-connection-2", None)
+      val contact3 = createContact(issuerId, "connected", None)
 
       // credentials
       val credential1 = createGenericCredential(issuerId, contact3.contactId)

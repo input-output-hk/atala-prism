@@ -27,7 +27,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       val did = generateDid(publicKey)
       val institutionId = createParticipant(institutionName, did)
       createInstitutionGroup(institutionId, groupName)
-      createContact(institutionId, contactName, groupName)
+      createContact(institutionId, contactName, Some(groupName))
       val request = console_api.GetStatisticsRequest()
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 

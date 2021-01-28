@@ -1,3 +1,6 @@
+-- Necessary for text searches
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- https://w3c.github.io/did-core/#did-syntax
 CREATE DOMAIN DID AS TEXT CHECK(
     VALUE ~ '^did:[a-z0-9]+:[a-zA-Z0-9._-]*(:[a-zA-Z0-9._-]*)*$'
@@ -33,6 +36,7 @@ CREATE TABLE contacts (
     created_by UUID NOT NULL,
     contact_data JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
+    name TEXT NOT NULL,
     CONSTRAINT contacts_contact_id_pk PRIMARY KEY (contact_id),
     CONSTRAINT contacts_created_by_fk FOREIGN KEY (created_by) REFERENCES participants (participant_id),
     CONSTRAINT contacts_external_id_non_empty_check CHECK (TRIM(external_id) <> ''::TEXT),
@@ -42,6 +46,9 @@ CREATE TABLE contacts (
 CREATE INDEX contacts_created_by_index ON contacts USING BTREE (created_by);
 CREATE INDEX contacts_external_id_index ON contacts USING BTREE (external_id);
 CREATE INDEX contacts_contact_created_at_index ON contacts USING BTREE (created_by, created_at, contact_id);
+CREATE INDEX contacts_contact_name_index ON contacts USING BTREE (LOWER(name)); -- used to sort results by name
+CREATE INDEX contacts_contact_name_gin_index ON contacts USING GIN (name gin_trgm_ops); -- used for similarity searching
+CREATE INDEX contacts_external_id_gin_index ON contacts USING GIN (external_id gin_trgm_ops); -- used for similarity searching
 
 CREATE TABLE institution_groups(
     group_id UUID NOT NULL,

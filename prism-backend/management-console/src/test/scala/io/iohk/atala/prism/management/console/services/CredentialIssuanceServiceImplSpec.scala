@@ -5,8 +5,8 @@ import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.protos.console_models.CredentialIssuanceStatus
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.mockito.IdiomaticMockito._
@@ -138,21 +138,13 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       institutionId: ParticipantId,
       group: Option[InstitutionGroup] = None
   ): console_models.CredentialIssuanceContact = {
-    val contact = createRandomContact(institutionId, group.map(_.name))
+    val contact = DataPreparation.createContact(institutionId, groupName = group.map(_.name))
     val contactId = contact.contactId.toString
     console_models.CredentialIssuanceContact(
       contactId = contactId,
       credentialData = s"""{"contactId": "$contactId"}""",
       groupIds = group.map(_.id.toString).toList
     )
-  }
-
-  private def createRandomContact(
-      institutionId: ParticipantId,
-      maybeGroupName: Option[InstitutionGroup.Name]
-  ): Contact = {
-    val contactData = CreateContact(institutionId, Contact.ExternalId.random(), Json.Null)
-    contactsRepository.create(contactData, maybeGroupName).value.futureValue.toOption.value
   }
 
   private def asJson(string: String): Json = parser.parse(string).toOption.value

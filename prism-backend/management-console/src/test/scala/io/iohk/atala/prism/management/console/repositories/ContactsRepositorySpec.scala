@@ -11,9 +11,11 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import org.scalatest.OptionValues._
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate, Period}
 
 class ContactsRepositorySpec extends AtalaWithPostgresSpec {
+  import PaginatedQueryConstraints._
+
   lazy val repository = new ContactsRepository(database)
 
   "create" should {
@@ -23,11 +25,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
-        "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json)
+      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
 
       val result = repository.create(request, Some(group.name)).value.futureValue
       val subject = result.toOption.value
@@ -51,11 +52,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
-        "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institution, externalId, json)
+      val request = CreateContact(institution, externalId, json, "Dusty Here")
 
       val result = repository.create(request, None).value.futureValue
       val subject = result.toOption.value
@@ -72,11 +72,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
-        "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json)
+      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
 
       intercept[Exception](
         repository.create(request, Some(InstitutionGroup.Name("Grp 1"))).value.futureValue
@@ -98,11 +97,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val externalId = Contact.ExternalId("")
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
-        "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json)
+      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
 
       intercept[Exception](
         repository.create(request, Some(group.name)).value.futureValue
@@ -123,22 +121,20 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val externalId = Contact.ExternalId.random()
       val json = Json.obj(
         "universityId" -> Json.fromString("uid"),
-        "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json)
+      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
 
       val initialResponse = repository.create(request, Some(group.name)).value.futureValue.toOption.value
 
       val secondJson = Json.obj(
         "universityId" -> Json.fromString("uid"),
-        "name" -> Json.fromString("Dusty Here"),
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
 
-      val secondRequest = CreateContact(institutionId, externalId, secondJson)
+      val secondRequest = CreateContact(institutionId, externalId, secondJson, "Dusty Here")
 
       intercept[Exception](
         repository.create(secondRequest, Some(group.name)).value.futureValue
@@ -166,8 +162,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
     "return the correct subject when present" in {
       val institutionId = createParticipant("Institution X")
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val subjectA = createContact(institutionId, "Alice", groupName)
-      createContact(institutionId, "Bob", groupName)
+      val subjectA = createContact(institutionId, "Alice", Some(groupName))
+      createContact(institutionId, "Bob", Some(groupName))
 
       val result = repository.find(institutionId, subjectA.contactId).value.futureValue.toOption.value
       result.value must be(subjectA)
@@ -178,8 +174,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionYId = createParticipant("Institution Y")
       val groupNameA = createInstitutionGroup(institutionXId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionYId, InstitutionGroup.Name("Group B")).name
-      val subjectA = createContact(institutionXId, "Alice", groupNameA)
-      createContact(institutionYId, "Bob", groupNameB)
+      val subjectA = createContact(institutionXId, "Alice", Some(groupNameA))
+      createContact(institutionYId, "Bob", Some(groupNameB))
 
       val result = repository.find(institutionYId, subjectA.contactId).value.futureValue.toOption.value
       result must be(empty)
@@ -189,8 +185,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   "find by externalId" should {
     "return the correct subject when present" in {
       val institutionId = createParticipant("Institution X")
-      val subjectA = createContact(institutionId, "Alice", None, "subject-1")
-      createContact(institutionId, "Bob", None, "subject-2")
+      val subjectA = createContact(institutionId, "Alice", None)
+      createContact(institutionId, "Bob", None)
 
       val result = repository.find(institutionId, subjectA.externalId).value.futureValue.toOption.value
       result.value must be(subjectA)
@@ -201,8 +197,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionYId = createParticipant("Institution Y")
       val groupNameA = createInstitutionGroup(institutionXId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionYId, InstitutionGroup.Name("Group B")).name
-      val subjectA = createContact(institutionXId, "Alice", groupNameA)
-      createContact(institutionYId, "Bob", groupNameB)
+      val subjectA = createContact(institutionXId, "Alice", Some(groupNameA))
+      createContact(institutionYId, "Bob", Some(groupNameB))
 
       val result = repository.find(institutionYId, subjectA.externalId).value.futureValue.toOption.value
       result must be(empty)
@@ -212,8 +208,6 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   "getBy" should {
 
     def testQuery(tag: String, sortBy: Contact.SortBy, desc: Boolean) = {
-      import PaginatedQueryConstraints._
-
       def buildQuery(
           limit: Int,
           groupName: Option[InstitutionGroup.Name] = None,
@@ -235,6 +229,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         val sorted = constraints.ordering.field match {
           case Contact.SortBy.ExternalId => data.sortBy(_.externalId.value)
           case Contact.SortBy.CreatedAt => data.sortBy(_.createdAt)
+          case Contact.SortBy.Name => data.sortBy(_.name)
         }
 
         val sortedProperly = constraints.ordering.condition match {
@@ -255,10 +250,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
         val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
         val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-        val contactA = createContact(institutionId, "Alice", groupNameA)
-        val contactB = createContact(institutionId, "Bob", groupNameB)
-        val contactC = createContact(institutionId, "Charles", groupNameC)
-        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+        val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+        val contactB = createContact(institutionId, "Bob", Some(groupNameB))
+        val contactC = createContact(institutionId, "Charles", Some(groupNameC))
+        val contactD = createContact(institutionId, "Alice 2", Some(groupNameA))
 
         val expected = query(List(contactA, contactB, contactC, contactD), buildQuery(2))
         val result = repository
@@ -276,10 +271,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
         val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
         val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-        val contactA = createContact(institutionId, "Alice", groupNameA)
-        createContact(institutionId, "Bob", groupNameB)
-        createContact(institutionId, "Charles", groupNameC)
-        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+        val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+        createContact(institutionId, "Bob", Some(groupNameB))
+        createContact(institutionId, "Charles", Some(groupNameC))
+        val contactD = createContact(institutionId, "Alice 2", Some(groupNameA))
 
         val expected = query(List(contactA, contactD), buildQuery(2, Some(groupNameA)))
         val result = repository
@@ -297,10 +292,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
         val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
         val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-        val contactA = createContact(institutionId, "Alice", groupNameA)
-        val contactB = createContact(institutionId, "Bob", groupNameB)
-        val contactC = createContact(institutionId, "Charles", groupNameC)
-        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+        val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+        val contactB = createContact(institutionId, "Bob", Some(groupNameB))
+        val contactC = createContact(institutionId, "Charles", Some(groupNameC))
+        val contactD = createContact(institutionId, "Alice 2", Some(groupNameA))
 
         val scrollId = contactB.contactId
         val result = repository
@@ -319,10 +314,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
         val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
         val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-        val contactA = createContact(institutionId, "Alice", groupNameA)
-        createContact(institutionId, "Bob", groupNameB)
-        createContact(institutionId, "Charles", groupNameC)
-        val contactD = createContact(institutionId, "Alice 2", groupNameA)
+        val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+        createContact(institutionId, "Bob", Some(groupNameB))
+        createContact(institutionId, "Charles", Some(groupNameC))
+        val contactD = createContact(institutionId, "Alice 2", Some(groupNameA))
         val scrollId = contactA.contactId
 
         val expected = query(List(contactA, contactD), buildQuery(1, scrollId = Some(scrollId)))
@@ -340,8 +335,231 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
     List(
       ("sorted by createdAt asc", Contact.SortBy.createdAt, false),
       ("sorted by createdAt desc", Contact.SortBy.createdAt, true),
-      ("sorted by externalId asc", Contact.SortBy.createdAt, false),
-      ("sorted by externalId desc", Contact.SortBy.createdAt, true)
+      ("sorted by externalId asc", Contact.SortBy.externalId, false),
+      ("sorted by externalId desc", Contact.SortBy.externalId, true),
+      ("sorted by name asc", Contact.SortBy.name, false),
+      ("sorted by name desc", Contact.SortBy.name, true)
     ).foreach((testQuery _).tupled)
+
+    def filterQuery(
+        externalId: Option[String] = None,
+        name: Option[String] = None,
+        createdAt: Option[LocalDate] = None
+    ): Contact.PaginatedQuery = {
+      PaginatedQueryConstraints(
+        limit = 10,
+        ordering = ResultOrdering(Contact.SortBy.createdAt),
+        filters = Some(
+          Contact.FilterBy(
+            externalId = externalId,
+            name = name,
+            createdAt = createdAt
+          )
+        )
+      )
+    }
+
+    "return items matching the externalId" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "Alice", externalId = Contact.ExternalId("atala1"))
+      val contactB = createContact(institutionId, "Bob", externalId = Contact.ExternalId("atala2"))
+      createContact(institutionId, "Charles", externalId = Contact.ExternalId("atxala"))
+      createContact(institutionId, "Alice 2", externalId = Contact.ExternalId("iohk2"))
+
+      val expected = List(contactA, contactB).map(_.contactId).toSet
+      val result = repository
+        .getBy(institutionId, filterQuery(externalId = Some("tala")))
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result.map(_.contactId).toSet must be(expected)
+    }
+
+    "return items matching the contact name" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "Charles Hoskinson", externalId = Contact.ExternalId("atala1"))
+      val contactB = createContact(institutionId, "Charles H", externalId = Contact.ExternalId("atala2"))
+      createContact(institutionId, "Carlos", externalId = Contact.ExternalId("iohk1"))
+      createContact(institutionId, "Alice 2", externalId = Contact.ExternalId("iohk2"))
+
+      val expected = List(contactA, contactB).map(_.contactId).toSet
+      val result = repository
+        .getBy(institutionId, filterQuery(name = Some("harl")))
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result.map(_.contactId).toSet must be(expected)
+    }
+
+    "return items matching the createdAt" in {
+      val institutionId = createParticipant("Institution X")
+      val now = Instant.parse("2007-12-03T10:15:30.00Z")
+      val contactA =
+        createContact(institutionId, "Alice", externalId = Contact.ExternalId("atala1"), createdAt = Some(now))
+      val contactB = createContact(
+        institutionId,
+        "Bob",
+        externalId = Contact.ExternalId("atala2"),
+        createdAt = Some(now.plusSeconds(10))
+      )
+      createContact(
+        institutionId,
+        "Charles",
+        externalId = Contact.ExternalId("atxala"),
+        createdAt = Some(now.plus(Period.ofDays(1)))
+      )
+      createContact(
+        institutionId,
+        "Alice 2",
+        externalId = Contact.ExternalId("iohk2"),
+        createdAt = Some(now.minus(Period.ofDays(1)))
+      )
+
+      val expected = List(contactA, contactB).map(_.contactId).toSet
+      val result = repository
+        .getBy(institutionId, filterQuery(createdAt = Some(LocalDate.parse("2007-12-03"))))
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result.map(_.contactId).toSet must be(expected)
+    }
+
+    "return items matching the externalId and contact name" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "Charles Hoskinson", externalId = Contact.ExternalId("atala1"))
+      val contactB = createContact(institutionId, "Charles H", externalId = Contact.ExternalId("atala2"))
+      createContact(institutionId, "Charles", externalId = Contact.ExternalId("iohk1"))
+      createContact(institutionId, "Alice 2", externalId = Contact.ExternalId("atala"))
+
+      val expected = List(contactA, contactB).map(_.contactId).toSet
+      val result = repository
+        .getBy(institutionId, filterQuery(name = Some("harl"), externalId = Some("tala")))
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result.map(_.contactId).toSet must be(expected)
+    }
+
+    "return items matching the createdAt and contact name" in {
+      val institutionId = createParticipant("Institution X")
+      val now = Instant.parse("2007-12-03T10:15:30.00Z")
+      val contactA =
+        createContact(institutionId, "iohk1", externalId = Contact.ExternalId("atala1"), createdAt = Some(now))
+      val contactB =
+        createContact(
+          institutionId,
+          "iohk2",
+          externalId = Contact.ExternalId("atala2"),
+          createdAt = Some(now.plusSeconds(10))
+        )
+      createContact(
+        institutionId,
+        "Charles",
+        externalId = Contact.ExternalId("atxala"),
+        createdAt = Some(now.plus(Period.ofDays(1)))
+      )
+      createContact(
+        institutionId,
+        "Alice 2",
+        externalId = Contact.ExternalId("iohk2"),
+        createdAt = Some(now.minus(Period.ofDays(1)))
+      )
+
+      val expected = List(contactA, contactB).map(_.contactId).toSet
+      val result = repository
+        .getBy(institutionId, filterQuery(name = Some("ioh"), createdAt = Some(LocalDate.parse("2007-12-03"))))
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result.map(_.contactId).toSet must be(expected)
+    }
+
+    "return items matching the createdAt and externalId" in {
+      val institutionId = createParticipant("Institution X")
+      val now = Instant.parse("2007-12-03T10:15:30.00Z")
+      val contactA =
+        createContact(institutionId, "iohk1", externalId = Contact.ExternalId("atala1"), createdAt = Some(now))
+      val contactB =
+        createContact(
+          institutionId,
+          "iohk2",
+          externalId = Contact.ExternalId("atala2"),
+          createdAt = Some(now.plusSeconds(10))
+        )
+      createContact(
+        institutionId,
+        "Charles",
+        externalId = Contact.ExternalId("atala"),
+        createdAt = Some(now.plus(Period.ofDays(1)))
+      )
+      createContact(
+        institutionId,
+        "iohkX",
+        externalId = Contact.ExternalId("no"),
+        createdAt = Some(now.minus(Period.ofDays(1)))
+      )
+
+      val expected = List(contactA, contactB).map(_.contactId).toSet
+      val result = repository
+        .getBy(
+          institutionId,
+          filterQuery(externalId = Some("atala"), createdAt = Some(LocalDate.parse("2007-12-03")))
+        )
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result.map(_.contactId).toSet must be(expected)
+    }
+
+    "return items matching the createdAt, externalId, and contact name" in {
+      val institutionId = createParticipant("Institution X")
+      val now = Instant.parse("2007-12-03T10:15:30.00Z")
+      val contactA =
+        createContact(institutionId, "iohk1", externalId = Contact.ExternalId("atala1"), createdAt = Some(now))
+      val contactB =
+        createContact(
+          institutionId,
+          "iohk2",
+          externalId = Contact.ExternalId("atala2"),
+          createdAt = Some(now.plusSeconds(10))
+        )
+      createContact(
+        institutionId,
+        "Charles",
+        externalId = Contact.ExternalId("atala"),
+        createdAt = Some(now.plus(Period.ofDays(1)))
+      )
+      createContact(
+        institutionId,
+        "iohkX",
+        externalId = Contact.ExternalId("no"),
+        createdAt = Some(now.minus(Period.ofDays(1)))
+      )
+
+      val expected = List(contactA, contactB).map(_.contactId).toSet
+      val result = repository
+        .getBy(
+          institutionId,
+          filterQuery(externalId = Some("atala"), name = Some("iohk"), createdAt = Some(LocalDate.parse("2007-12-03")))
+        )
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result.map(_.contactId).toSet must be(expected)
+    }
   }
 }

@@ -298,10 +298,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
       val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val contactA = createContact(institutionId, "Alice", groupNameA)
-      val contactB = createContact(institutionId, "Bob", groupNameB)
-      createContact(institutionId, "Charles", groupNameC)
-      createContact(institutionId, "Alice 2", groupNameA)
+      val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+      val contactB = createContact(institutionId, "Bob", Some(groupNameB))
+      createContact(institutionId, "Charles", Some(groupNameC))
+      createContact(institutionId, "Alice 2", Some(groupNameA))
       val request = console_api.GetContactsRequest(
         limit = 2
       )
@@ -338,10 +338,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
       val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val contactA = createContact(institutionId, "Alice", groupNameA)
-      createContact(institutionId, "Bob", groupNameB)
-      createContact(institutionId, "Charles", groupNameC)
-      val contactA2 = createContact(institutionId, "Alice 2", groupNameA)
+      val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+      createContact(institutionId, "Bob", Some(groupNameB))
+      createContact(institutionId, "Charles", Some(groupNameC))
+      val contactA2 = createContact(institutionId, "Alice 2", Some(groupNameA))
       val request = console_api.GetContactsRequest(
         limit = 2,
         groupName = groupNameA.value
@@ -379,10 +379,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
       val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      createContact(institutionId, "Alice", groupNameA)
-      val contactB = createContact(institutionId, "Bob", groupNameB)
-      val contactC = createContact(institutionId, "Charles", groupNameC)
-      createContact(institutionId, "Alice 2", groupNameA)
+      createContact(institutionId, "Alice", Some(groupNameA))
+      val contactB = createContact(institutionId, "Bob", Some(groupNameB))
+      val contactC = createContact(institutionId, "Charles", Some(groupNameC))
+      createContact(institutionId, "Alice 2", Some(groupNameA))
       val request = console_api.GetContactsRequest(
         limit = 1,
         scrollId = contactB.contactId.toString
@@ -417,10 +417,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
       val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val contactA = createContact(institutionId, "Alice", groupNameA)
-      createContact(institutionId, "Bob", groupNameB)
-      createContact(institutionId, "Charles", groupNameC)
-      val contactA2 = createContact(institutionId, "Alice 2", groupNameA)
+      val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+      createContact(institutionId, "Bob", Some(groupNameB))
+      createContact(institutionId, "Charles", Some(groupNameC))
+      val contactA2 = createContact(institutionId, "Alice 2", Some(groupNameA))
       val request = console_api.GetContactsRequest(
         limit = 2,
         scrollId = contactA.contactId.toString,
@@ -456,8 +456,8 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution X", did)
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val contact = createContact(institutionId, "Alice", groupName)
-      createContact(institutionId, "Bob", groupName)
+      val contact = createContact(institutionId, "Alice", Some(groupName))
+      createContact(institutionId, "Bob", Some(groupName))
       val request = console_api.GetContactRequest(
         contactId = contact.contactId.toString
       )
@@ -488,8 +488,8 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val institutionYId = createParticipant("Institution Y", didY)
       val groupNameA = createInstitutionGroup(institutionXId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionYId, InstitutionGroup.Name("Group B")).name
-      val contact = createContact(institutionXId, "Alice", groupNameA)
-      createContact(institutionYId, "Bob", groupNameB)
+      val contact = createContact(institutionXId, "Alice", Some(groupNameA))
+      createContact(institutionYId, "Bob", Some(groupNameB))
       val request = console_api.GetContactRequest(
         contactId = contact.contactId.toString
       )

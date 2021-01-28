@@ -69,7 +69,7 @@ object InstitutionGroupsDAO {
   }
 
   def listContacts(groupId: InstitutionGroup.Id): ConnectionIO[List[Contact]] = {
-    sql"""SELECT contact_id, external_id, contact_data, created_at
+    sql"""SELECT contact_id, external_id, contact_data, created_at, contacts.name
          |FROM contacts_per_group
          |     JOIN contacts USING (contact_id)
          |WHERE group_id = $groupId

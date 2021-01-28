@@ -9,19 +9,21 @@ import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, In
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext
 
 class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def create(
       contactData: CreateContact,
-      maybeGroupName: Option[InstitutionGroup.Name]
+      maybeGroupName: Option[InstitutionGroup.Name],
+      createdAt: Instant = Instant.now()
   ): FutureEither[ManagementConsoleError, Contact] = {
     val query = maybeGroupName match {
       case None => // if we do not request the subject to be added to a group
-        ContactsDAO.createContact(contactData)
+        ContactsDAO.createContact(contactData, createdAt)
       case Some(groupName) => // if we are requesting to add a subject to a group
         for {
-          contact <- ContactsDAO.createContact(contactData)
+          contact <- ContactsDAO.createContact(contactData, createdAt)
           groupMaybe <- InstitutionGroupsDAO.find(contactData.createdBy, groupName)
           group = groupMaybe.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
           _ <- InstitutionGroupsDAO.addContact(group.id, contact.contactId)

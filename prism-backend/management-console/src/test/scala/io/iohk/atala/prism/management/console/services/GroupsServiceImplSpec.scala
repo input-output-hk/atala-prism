@@ -3,27 +3,18 @@ package io.iohk.atala.prism.management.console.services
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.circe.Json
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateContact,
-  InstitutionGroup,
-  ParticipantId,
-  ParticipantInfo,
-  ParticipantLogo
-}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.management.console.repositories.{
-  ContactsRepository,
   InstitutionGroupsRepository,
   ParticipantsRepository,
   RequestNoncesRepository
 }
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
@@ -35,7 +26,6 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private lazy val institutionGroupsRepository = new InstitutionGroupsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val contactsRepository = new ContactsRepository(database)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new ManagementConsoleAuthenticator(
@@ -108,9 +98,9 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       groups.foreach { group =>
         institutionGroupsRepository.create(institutionId, group).value.futureValue.toOption.value
       }
-      createRandomContact(institutionId, Some(groups(0)))
-      createRandomContact(institutionId, Some(groups(0)))
-      createRandomContact(institutionId, Some(groups(1)))
+      DataPreparation.createContact(institutionId, groupName = Some(groups(0)))
+      DataPreparation.createContact(institutionId, groupName = Some(groups(0)))
+      DataPreparation.createContact(institutionId, groupName = Some(groups(1)))
 
       val request = console_api.GetGroupsRequest()
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -132,9 +122,9 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       groups.foreach { group =>
         institutionGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
       }
-      createRandomContact(issuerId, Some(groups(0)))
-      val contact = createRandomContact(issuerId, Some(groups(0)))
-      createRandomContact(issuerId, Some(groups(1)))
+      DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
+      val contact = DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
+      DataPreparation.createContact(issuerId, groupName = Some(groups(1)))
 
       val request = console_api.GetGroupsRequest().withContactId(contact.contactId.toString)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -184,7 +174,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val List(group1Id, _) = groupNames.map { groupName =>
         institutionGroupsRepository.create(institutionId, groupName).value.futureValue.toOption.value.id.toString
       }
-      val contact = createRandomContact(institutionId)
+      val contact = DataPreparation.createContact(institutionId)
 
       val request1 =
         console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
@@ -218,8 +208,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val List(group1Id, _) = groupNames.map { groupName =>
         institutionGroupsRepository.create(institutionId, groupName).value.futureValue.toOption.value.id.toString
       }
-      val contact1 = createRandomContact(institutionId, Some(group1Name))
-      val contact2 = createRandomContact(institutionId, Some(group2Name))
+      val contact1 = DataPreparation.createContact(institutionId, groupName = Some(group1Name))
+      val contact2 = DataPreparation.createContact(institutionId, groupName = Some(group2Name))
 
       listContacts(institutionId, group1Name) must be(List(contact1))
       listContacts(institutionId, group2Name) must be(List(contact2))
@@ -258,8 +248,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val List(group1Id, _) = groupNames.map { groupName =>
         institutionGroupsRepository.create(institutionId, groupName).value.futureValue.toOption.value.id.toString
       }
-      val contact1 = createRandomContact(institutionId, Some(group1Name))
-      val contact2 = createRandomContact(institutionId)
+      val contact1 = DataPreparation.createContact(institutionId, groupName = Some(group1Name))
+      val contact2 = DataPreparation.createContact(institutionId)
 
       listContacts(institutionId, group1Name) must be(List(contact1))
       listContacts(institutionId, group2Name) must be(List())
@@ -315,7 +305,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
           .value
           .id
           .toString
-      val contact = createRandomContact(institutionId2)
+      val contact = DataPreparation.createContact(institutionId2)
 
       val request =
         console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
@@ -347,7 +337,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
           .value
           .id
           .toString
-      val contact = createRandomContact(institutionId2)
+      val contact = DataPreparation.createContact(institutionId2)
 
       val request =
         console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
@@ -359,14 +349,6 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       }
     }
-  }
-
-  private def createRandomContact(
-      institutionId: ParticipantId,
-      maybeGroupName: Option[InstitutionGroup.Name] = None
-  ): Contact = {
-    val contactData = CreateContact(institutionId, Contact.ExternalId.random(), Json.Null)
-    contactsRepository.create(contactData, maybeGroupName).value.futureValue.toOption.value
   }
 
   private def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): List[Contact] =

@@ -124,6 +124,9 @@ message CreateContactRequest {
   // An institution cannot have two contacts with the same external id.
   // The id could be repeated in different institutions.
   string externalId = 3;
+
+  // The contact's name, required for the management console, ignored on the connector
+  string name = 4;
 }
 // Response after creating a contact
 message CreateContactResponse {

@@ -53,9 +53,9 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution-1")
       createInstitutionGroup(institutionId, groups(0))
       createInstitutionGroup(institutionId, groups(1))
-      createContact(institutionId, "test-contact-1", groups(0))
-      createContact(institutionId, "test-contact-2", groups(0))
-      createContact(institutionId, "test-contact-3", groups(1))
+      createContact(institutionId, "test-contact-1", groups.headOption)
+      createContact(institutionId, "test-contact-2", groups.headOption)
+      createContact(institutionId, "test-contact-3", groups.lift(1))
 
       val result = repository.getBy(institutionId, None).value.futureValue
       result.map(_.map(_.numberOfContacts)) must beRight(List(2, 1))
@@ -65,9 +65,9 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val groups = List("Group 1", "Group 2").map(InstitutionGroup.Name.apply)
       val issuerId = createParticipant("Institution-1")
       groups.foreach { g => createInstitutionGroup(issuerId, g) }
-      createContact(issuerId, "test-contact-1", groups(0))
-      val contact = createContact(issuerId, "test-contact-2", groups(0))
-      createContact(issuerId, "test-contact-3", groups(1))
+      createContact(issuerId, "test-contact-1", groups.headOption)
+      val contact = createContact(issuerId, "test-contact-2", groups.headOption)
+      createContact(issuerId, "test-contact-3", groups.lift(1))
 
       val result = repository.getBy(issuerId, Some(contact.contactId)).value.futureValue.toOption.value
       result.size must be(1)

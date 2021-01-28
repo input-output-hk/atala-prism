@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.models
 import io.circe.Json
 import io.iohk.atala.prism.models.UUIDValue
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.concurrent.Future
 import scala.util.Try
@@ -11,14 +11,16 @@ import scala.util.Try
 final case class CreateContact(
     createdBy: ParticipantId,
     externalId: Contact.ExternalId,
-    data: Json
+    data: Json,
+    name: String
 )
 
 final case class Contact(
     contactId: Contact.Id,
     externalId: Contact.ExternalId,
     data: Json,
-    createdAt: Instant
+    createdAt: Instant,
+    name: String
 )
 
 object Contact {
@@ -44,18 +46,31 @@ object Contact {
   object SortBy {
     final case object ExternalId extends SortBy
     final case object CreatedAt extends SortBy
+    final case object Name extends SortBy
 
     // helpers to upcast values to SortBy, used to simplify type-inference
     val externalId: SortBy = ExternalId
     val createdAt: SortBy = CreatedAt
+    val name: SortBy = Name
   }
 
   /**
     * Used to filter the results by the given criteria
     *
     * @param groupName when provided, all results belong to this group
+    * @param externalId when provided, the externalId on results is similar to this one
+    * @param name when provided, the name on results is similar to this one
+    * @param createdAt when provided, the createdAt on results matches this date
     */
-  case class FilterBy(groupName: Option[InstitutionGroup.Name])
+  case class FilterBy(
+      groupName: Option[InstitutionGroup.Name] = None,
+      externalId: Option[String] = None,
+      name: Option[String] = None,
+      createdAt: Option[LocalDate] = None
+  ) {
+    lazy val nonEmptyName: Option[String] = name.map(_.trim).filter(_.nonEmpty)
+    lazy val nonEmptyExternalId: Option[String] = externalId.map(_.trim).filter(_.nonEmpty)
+  }
 
   type PaginatedQuery = PaginatedQueryConstraints[Contact.Id, Contact.SortBy, Contact.FilterBy]
 

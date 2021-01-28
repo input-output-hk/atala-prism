@@ -27,7 +27,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val subjectName = "Student 1"
       val issuerId = createParticipant(issuerName)
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subject = createContact(issuerId, subjectName, group.name)
+      val subject = createContact(issuerId, subjectName, Some(group.name))
       val request = CreateGenericCredential(
         issuedBy = issuerId,
         subjectId = subject.contactId,
@@ -54,7 +54,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "return the credential when found" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subjectId = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       val credentialIssuanceContactId = CredentialIssuance.ContactId.random()
       val credential = createGenericCredential(issuerId, subjectId, "A", Some(credentialIssuanceContactId))
 
@@ -67,7 +67,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "return a credential with publication data" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subjectId = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
       publish(issuerId, credential.credentialId)
 
@@ -88,7 +88,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "return the first credentials" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subject = createContact(issuerId, "IOHK Student", group.name).contactId
+      val subject = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
       val credA = createGenericCredential(issuerId, subject, "A")
       val credB = createGenericCredential(issuerId, subject, "B")
       createGenericCredential(issuerId, subject, "C")
@@ -100,7 +100,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "return the first credentials involving a published one" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subject = createContact(issuerId, "IOHK Student", group.name).contactId
+      val subject = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
       val credA = createGenericCredential(issuerId, subject, "A")
       val credB = createGenericCredential(issuerId, subject, "B")
       createGenericCredential(issuerId, subject, "C")
@@ -114,7 +114,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "paginate by the last seen credential" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subject = createContact(issuerId, "IOHK Student", group.name).contactId
+      val subject = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
       createGenericCredential(issuerId, subject, "A")
       createGenericCredential(issuerId, subject, "B")
       val credC = createGenericCredential(issuerId, subject, "C")
@@ -134,7 +134,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "paginate by the last seen credential including a published one" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subject = createContact(issuerId, "IOHK Student", group.name).contactId
+      val subject = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
       createGenericCredential(issuerId, subject, "A")
       createGenericCredential(issuerId, subject, "B")
       val credC = createGenericCredential(issuerId, subject, "C")
@@ -157,8 +157,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "return subject's credentials" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subjectId1 = createContact(issuerId, "IOHK Student", group.name).contactId
-      val subjectId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      val subjectId1 = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
+      val subjectId2 = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       createGenericCredential(issuerId, subjectId2, "A")
       val cred1 = createGenericCredential(issuerId, subjectId1, "B")
       createGenericCredential(issuerId, subjectId2, "C")
@@ -172,8 +172,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "return subject's credentials including a published one" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subjectId1 = createContact(issuerId, "IOHK Student", group.name).contactId
-      val subjectId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      val subjectId1 = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
+      val subjectId2 = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       createGenericCredential(issuerId, subjectId2, "A")
       val cred1 = createGenericCredential(issuerId, subjectId1, "B")
       createGenericCredential(issuerId, subjectId2, "C")
@@ -188,7 +188,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "return empty list of credentials when not present" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subjectId = createContact(issuerId, "IOHK Student", group.name).contactId
+      val subjectId = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
 
       val result = credentialsRepository.getBy(issuerId, subjectId).value.futureValue.toOption.value
       result must be(empty)
@@ -199,7 +199,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "insert credential data in db" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subjectId = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -273,7 +273,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "fail when issuer_id does not belong to the credential_id" in {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subjectId = createContact(issuerId, "IOHK Student 2", group.name).contactId
+      val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
@@ -312,7 +312,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   "markAsShared" should {
     "work" in {
       val issuerId = createParticipant("Issuer X")
-      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
       publish(issuerId, credential.credentialId)
       credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
@@ -323,7 +323,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
     "set a new date even if the credential was shared before" in {
       val issuerId = createParticipant("Issuer X")
-      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
       publish(issuerId, credential.credentialId)
       credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
@@ -352,7 +352,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
     "fail when the credential hasn't been published" in {
       val issuerId = createParticipant("Issuer X")
-      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
       assertThrows[Exception] {
         credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
@@ -362,7 +362,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "fail when the credential doesn't belong to the given issuer" in {
       val issuerId = createParticipant("Issuer X")
       val issuerId2 = createParticipant("Issuer Y")
-      val subjectId = createContact(issuerId, "IOHK Student", None, "").contactId
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
       publish(issuerId, credential.credentialId)
       assertThrows[Exception] {

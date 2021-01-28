@@ -77,7 +77,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, "").contactId
+      val contactId = DataPreparation.createContact(verifierId, "Individual", None).contactId
 
       val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
@@ -110,7 +110,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, "").contactId
+      val contactId = DataPreparation.createContact(verifierId, "Individual", None).contactId
 
       val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
@@ -173,7 +173,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, "").contactId
+      val contactId = DataPreparation.createContact(verifierId, "Individual", None).contactId
 
       val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
@@ -207,7 +207,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, "").contactId
+      val contactId = DataPreparation.createContact(verifierId, "Individual", None).contactId
 
       // we generate 10 new ids
       val credentialExternalIds = for (_ <- 1 to 10) yield CredentialExternalId.random()

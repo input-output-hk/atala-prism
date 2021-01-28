@@ -13,21 +13,20 @@ import java.time.Instant
 
 object ContactsDAO {
 
-  def createContact(data: CreateContact): ConnectionIO[Contact] = {
+  def createContact(data: CreateContact, createdAt: Instant): ConnectionIO[Contact] = {
     val contactId = Contact.Id.random()
-    val createdAt = Instant.now()
     sql"""
          |INSERT INTO contacts
-         |  (contact_id, contact_data, created_at, created_by, external_id)
+         |  (contact_id, contact_data, created_at, created_by, external_id, name)
          |VALUES
-         |  ($contactId, ${data.data}, $createdAt, ${data.createdBy}, ${data.externalId})
-         |RETURNING contact_id, external_id, contact_data, created_at
+         |  ($contactId, ${data.data}, $createdAt, ${data.createdBy}, ${data.externalId}, ${data.name})
+         |RETURNING contact_id, external_id, contact_data, created_at, name
          |""".stripMargin.query[Contact].unique
   }
 
   def findContact(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Option[Contact]] = {
     sql"""
-         |SELECT contact_id, external_id, contact_data, created_at
+         |SELECT contact_id, external_id, contact_data, created_at, name
          |FROM contacts
          |WHERE contact_id = $contactId AND
          |      created_by = $participantId
@@ -39,7 +38,7 @@ object ContactsDAO {
       externalId: Contact.ExternalId
   ): doobie.ConnectionIO[Option[Contact]] = {
     sql"""
-         |SELECT contact_id, external_id, contact_data, created_at
+         |SELECT contact_id, external_id, contact_data, created_at, name
          |FROM contacts
          |WHERE external_id = $externalId AND
          |      created_by = $participantId
@@ -51,7 +50,7 @@ object ContactsDAO {
       case Some(contactIdsNonEmpty) =>
         val fragment =
           fr"""
-              |SELECT contact_id, external_id, contact_data, created_at
+              |SELECT contact_id, external_id, contact_data, created_at, name
               |FROM contacts""".stripMargin ++
             whereAnd(fr"created_by = $institutionId", in(fr"contact_id", contactIdsNonEmpty))
         fragment.query[Contact].to[List]

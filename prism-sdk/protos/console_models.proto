@@ -26,6 +26,7 @@ message Contact {
   string connectionToken = 5; // the connection token used to get this contact connected, present when the status is ConnectionMissing
   string connectionId = 6; // the connection id necessary to send messages to this contact, present when the status is ConnectionAccepted
   int64 createdAt = 7; // the timestamp when the contact was created
+  string name = 8; // the contact's name, only used by management console, empty on the connector
 }
 
 message CredentialIssuanceContact {

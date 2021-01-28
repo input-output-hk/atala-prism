@@ -2,14 +2,9 @@ package io.iohk.atala.prism.management.console.repositories
 
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation.{createInstitutionGroup, createParticipant}
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateContact,
-  CredentialIssuance,
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, InstitutionGroup}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
   CreateCredentialIssuance,
   CreateCredentialIssuanceContact
@@ -18,15 +13,14 @@ import org.scalatest.OptionValues._
 
 class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
   private lazy val credentialIssuancesRepository = new CredentialIssuancesRepository(database)
-  private lazy val contactsRepository = new ContactsRepository(database)
 
   "create" should {
     "create a CredentialIssuance" in {
       val institutionId = createParticipant("The Institution")
       val aGroup = createInstitutionGroup(institutionId, InstitutionGroup.Name("A Group"))
       val contactsWithGroup: List[(Contact, Option[InstitutionGroup])] = List(
-        (createRandomContact(institutionId), None),
-        (createRandomContact(institutionId, Some(aGroup.name)), Some(aGroup))
+        DataPreparation.createContact(institutionId) -> None,
+        DataPreparation.createContact(institutionId, groupName = Some(aGroup.name)) -> Some(aGroup)
       )
 
       val credentialIssuanceId = credentialIssuancesRepository
@@ -68,13 +62,5 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
 
   private def createCredentialData(contact: Contact): Json = {
     Json.obj("externalId" -> Json.fromString(contact.contactId.toString))
-  }
-
-  private def createRandomContact(
-      institutionId: ParticipantId,
-      maybeGroupName: Option[InstitutionGroup.Name] = None
-  ): Contact = {
-    val contactData = CreateContact(institutionId, Contact.ExternalId.random(), Json.Null)
-    contactsRepository.create(contactData, maybeGroupName).value.futureValue.toOption.value
   }
 }
