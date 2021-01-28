@@ -6,15 +6,16 @@ import CommonCrypto
 import crypto
 
 class CryptoUtils: NSObject {
+
     public static let sha256 = SHA256()
 
     static let global = CryptoUtils()
 
     static let SEED_COUNT = 12
 
-    var mnemonics: [String]?
+    var mnemonics: MnemonicCode?
     var usedMnemonics: [String]?
-    var seed: Data?
+    var seed: [KotlinByte]?
     var lastUsedKeyIndex: Int?
 
     let signSemaphore = DispatchSemaphore(value: 1)
@@ -24,25 +25,20 @@ class CryptoUtils: NSObject {
         self.lastUsedKeyIndex = SharedMemory.global.loggedUser?.lastUsedKeyIndex
         self.usedMnemonics = SharedMemory.global.loggedUser?.mnemonics
         if usedMnemonics != nil {
+            self.mnemonics = MnemonicCode(words: usedMnemonics!)
             self.generateSeed()
         }
     }
 
     func setupMnemonics() {
-
-        mnemonics = try? Mnemonic.generate()
-        usedMnemonics = Array(mnemonics![0 ..< CryptoUtils.SEED_COUNT])
+        mnemonics = SwiftKeyDerivation.global.randomMnemonicCode()
+        usedMnemonics = mnemonics?.words
 
         generateSeed()
     }
 
      func generateSeed() {
-        let passphrase = ""
-        do {
-            seed = try Mnemonic.seed(mnemonic: usedMnemonics!, passphrase: passphrase)
-        } catch {
-            Logger.e(error.localizedDescription)
-        }
+        seed = SwiftKeyDerivation.global.binarySeed(seed: mnemonics!, passphrase: "")
     }
 
     func getNextPublicKeyPath() -> String {
@@ -61,21 +57,20 @@ class CryptoUtils: NSObject {
     }
 
     func encodedPublicKey(keyPath: String) -> Io_Iohk_Atala_Prism_Protos_EncodedPublicKey {
-        let keychain = HDKeychain(seed: seed!, network: .testnetBTC)
-        let derived = try? keychain.derivedKey(path: keyPath)
-        let publicKey = derived?.extendedPublicKey().publicKey()
-        let pointData = getUncompressedKey(publicKey: publicKey!)
+        let derivationPath = DerivationPath.Companion.init().fromPath(path: keyPath)
+        let key = SwiftKeyDerivation.global.deriveKey(seed: seed!, path: derivationPath)
+        let pointData = key.publicKey().getEncoded()
         var protoPublicKey: Io_Iohk_Atala_Prism_Protos_EncodedPublicKey = Io_Iohk_Atala_Prism_Protos_EncodedPublicKey()
-        protoPublicKey.publicKey = pointData
+        protoPublicKey.publicKey = fromKotlinBytes(bytes: pointData)
         return protoPublicKey
     }
 
     func getUncompressedKey(publicKey: PublicKey) -> Data {
         let publicPoint = try? PointOnCurve.decodePointFromPublicKey(publicKey)
         if let pointData = NSMutableData(capacity: 65) {
-        pointData.append(Data(repeating: 0x04, count: 1))
-        pointData.append((publicPoint?.x.data)!)
-        pointData.append((publicPoint?.y.data)!)
+            pointData.append(Data(repeating: 0x04, count: 1))
+            pointData.append((publicPoint?.x.data)!)
+            pointData.append((publicPoint?.y.data)!)
             return pointData as Data
         }
 
@@ -92,7 +87,8 @@ class CryptoUtils: NSObject {
         let nonceBase64 = nonceData.base64urlEncodedString()
         nonceData.append(data)
         let nonceSHA256 = Data(CryptoUtils.sha256.compute(bytes: toKotlinBytes(data: nonceData)).map { $0.uint8Value })
-        let keychain = HDKeychain(seed: seed!, network: .testnetBTC)
+        let seedData = fromKotlinBytes(bytes: seed!)
+        let keychain = HDKeychain(seed: seedData, network: .testnetBTC)
         let derived = try? keychain.derivedKey(path: keyPath)
         if let privateKey = derived?.privateKey() {
             let signedData = privateKey.sign(nonceSHA256)

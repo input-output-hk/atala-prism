@@ -1,4 +1,4 @@
-# Credential Verification iOS
+# PRISM iOS wallet
 
 ## gRPC PoC
 
@@ -10,9 +10,17 @@ Prior to running the server, install the dependencies with `npm install`.
 
 Lastly, to run the server use `node simple_proto_server.js`.
 
-### Running the app
+## Running the app
 
-For now, the iOS app has a single screen that connects to the server sending a *Token* and receiving a *Issuer*, both are now hardcode, but with differents counters, so the client-server layers are easy to notice.
+Prior to building the app it's necessary to generate the Podspec file for the Kotlin Crypto library. For this navigate to the `prism-kotlin-sdk` directory on the Terminal and run th following command:
+```
+$ ./gradlew podspec
+```
+Then navigate to the `prism-ios-wallet` directory and run the following command to install Kotlin Crypto library and all Cocoapods dependencies:
+```
+$ pod install
+```
+Once th installation is completed, open the file `prism-ios-wallet.xcworkspace` with Xcode to run the app. Please for all non production runs make sure the scheme `AtalaPrism-Debug`  is useed to avoid populatig Firebase Analytics with test data.
 
 
 ## Proto config

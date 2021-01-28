@@ -103,7 +103,6 @@ class RestoreAccountPresenter: BasePresenter {
         let user = LoggedUser()
         user.apiUrl = Common.URL_API
         user.mnemonics = CryptoUtils.global.usedMnemonics
-        user.seed = CryptoUtils.global.seed
         user.dateFormat = Common.DAFAULT_DATE_FORMAT
         self.sharedMemory.loggedUser = user
         self.viewImpl?.changeScreenToSuccess(action: self.actionSuccessContinue)
