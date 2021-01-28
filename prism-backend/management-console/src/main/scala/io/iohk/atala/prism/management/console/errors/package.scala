@@ -2,7 +2,13 @@ package io.iohk.atala.prism.management.console
 
 import io.grpc.Status
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
-import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CredentialTypeId,
+  CredentialTypeState,
+  InstitutionGroup,
+  ParticipantId
+}
 
 package object errors {
   sealed trait ManagementConsoleError extends PrismError
@@ -38,6 +44,33 @@ package object errors {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
     }
+  }
+
+  case class CredentialTypeDoesNotExist(credentialTypeId: CredentialTypeId) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credential type with id: ${credentialTypeId} does not exist"
+      )
+  }
+
+  case class CredentialTypeUpdateIncorrectState(
+      credentialTypeId: CredentialTypeId,
+      name: String,
+      credentialTypeState: CredentialTypeState
+  ) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credential type with id: $credentialTypeId and name: $name " +
+          s"cannot be updated in ${credentialTypeState} state, updates are only allowed in DRAFT state"
+      )
+  }
+
+  case class CredentialTypeMarkArchivedAsReady(credentialTypeId: CredentialTypeId) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credential type with id: ${credentialTypeId} cannot be marked as READY because it is currently " +
+          s"marked as ARCHIVED. Only credential types in DRAFT state can be moved to READY state"
+      )
   }
 
   def groupDoesNotExist[A](groupId: InstitutionGroup.Id): Either[ManagementConsoleError, A] =

@@ -14,8 +14,10 @@ import io.iohk.atala.prism.management.console.models.{
   CredentialTypeId,
   CredentialTypeState,
   CredentialTypeWithRequiredFields,
-  ParticipantId
+  ParticipantId,
+  UpdateCredentialType
 }
+import doobie.free.connection
 
 object CredentialTypeDao {
 
@@ -37,6 +39,33 @@ object CredentialTypeDao {
     } yield (CredentialTypeWithRequiredFields(credentialType, requiredFields)))
   }
 
+  def update(
+      updateCredentialType: UpdateCredentialType
+  ): ConnectionIO[Unit] = {
+    for {
+      resultCount <- CredentialTypeDao.updateCredentialType(updateCredentialType)
+      _ <-
+        if (resultCount != 1)
+          connection.raiseError(
+            new Exception(
+              s"CredentialTypeDao: cannot update credential type, update result count was not equel to 1: $resultCount"
+            )
+          )
+        else
+          connection.pure(())
+      _ <- deleteCredentialTypeFields(updateCredentialType.id)
+      credentialTypeRequiredFields = updateCredentialType.fields.map { typeField =>
+        CredentialTypeField(
+          id = CredentialTypeFieldId(UUID.randomUUID()),
+          credentialTypeId = updateCredentialType.id,
+          name = typeField.name,
+          description = typeField.description
+        )
+      }
+      _ <- CredentialTypeDao.insertCredentialTypeFields(credentialTypeRequiredFields)
+    } yield ()
+  }
+
   def insertCredentialType(createCredentialType: CreateCredentialType): ConnectionIO[CredentialType] = {
     sql"""
          |INSERT INTO credential_types
@@ -53,6 +82,34 @@ object CredentialTypeDao {
          |RETURNING credential_type_id, name, institution_id, state, template, created_at
          |""".stripMargin.query[CredentialType].unique
   }
+
+  def updateCredentialType(updateCredentialType: UpdateCredentialType): ConnectionIO[Int] = {
+    sql"""
+         | UPDATE credential_types SET
+         | name = ${updateCredentialType.name},
+         | template = ${updateCredentialType.template}
+         | WHERE credential_type_id = ${updateCredentialType.id}
+    """.stripMargin.update.run
+  }
+
+  def markAsReady(credentialTypeId: CredentialTypeId): ConnectionIO[Int] = {
+    sql"""
+         | UPDATE credential_types SET
+         | state = ${CredentialTypeState.Ready.entryName}::CREDENTIAL_TYPE_STATE
+         | WHERE credential_type_id = ${credentialTypeId}
+    """.stripMargin.update.run
+  }
+
+  def markAsArchived(credentialTypeId: CredentialTypeId): ConnectionIO[Int] = {
+    sql"""
+         | UPDATE credential_types SET
+         | state = ${CredentialTypeState.Archived.entryName}::CREDENTIAL_TYPE_STATE
+         | WHERE credential_type_id = ${credentialTypeId}
+    """.stripMargin.update.run
+  }
+
+  def deleteCredentialTypeFields(credentialTypeId: CredentialTypeId): ConnectionIO[Int] =
+    sql"DELETE FROM credential_type_fields WHERE credential_type_id = ${credentialTypeId}".update.run
 
   def insertCredentialTypeField(credentialTypeField: CredentialTypeField): ConnectionIO[Int] =
     insertManyCredentialTypeField.toUpdate0(credentialTypeField).run

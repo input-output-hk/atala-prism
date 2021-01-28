@@ -17,6 +17,13 @@ final case class CreateCredentialType(
     fields: List[CreateCredentialTypeField]
 )
 
+final case class UpdateCredentialType(
+    id: CredentialTypeId,
+    name: String,
+    template: String,
+    fields: List[CreateCredentialTypeField]
+)
+
 final case class CredentialType(
     id: CredentialTypeId,
     name: String,
