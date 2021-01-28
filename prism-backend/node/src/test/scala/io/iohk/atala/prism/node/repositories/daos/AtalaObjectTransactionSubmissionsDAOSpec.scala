@@ -230,7 +230,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
     }
   }
 
-  "updateLatestStatus" should {
+  "updateStatus" should {
     def getAll(): IndexedSeq[AtalaObjectTransactionSubmission] = {
       AtalaObjectTransactionSubmissionStatus.values
         .flatten { status =>
@@ -251,42 +251,10 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
       AtalaObjectTransactionSubmissionsDAO.insert(pendingSubmission).runSync
 
       AtalaObjectTransactionSubmissionsDAO
-        .updateLatestStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
+        .updateStatus(ledger, transactionId1, AtalaObjectTransactionSubmissionStatus.InLedger)
         .runSync
 
       getAll() mustBe List(pendingSubmission.copy(status = AtalaObjectTransactionSubmissionStatus.InLedger))
-    }
-
-    "update only the status of the latest submission" in {
-      // Insert a deleted and a pending submission
-      insertAtalaObject(atalaObjectId, byteContent)
-      val deletedSubmission = AtalaObjectTransactionSubmission(
-        atalaObjectId,
-        ledger,
-        transactionId1,
-        submissionTimestamp.minusSeconds(60),
-        AtalaObjectTransactionSubmissionStatus.Pending
-      )
-      AtalaObjectTransactionSubmissionsDAO.insert(deletedSubmission).runSync
-      val pendingSubmission = AtalaObjectTransactionSubmission(
-        atalaObjectId,
-        ledger,
-        transactionId2,
-        submissionTimestamp,
-        AtalaObjectTransactionSubmissionStatus.Pending
-      )
-      AtalaObjectTransactionSubmissionsDAO.insert(pendingSubmission).runSync
-
-      // Update the status of the pending submission
-      AtalaObjectTransactionSubmissionsDAO
-        .updateLatestStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
-        .runSync
-
-      // The deleted submission should not be updated, only the most recent one with pending status
-      getAll() mustBe List(
-        deletedSubmission,
-        pendingSubmission.copy(status = AtalaObjectTransactionSubmissionStatus.InLedger)
-      )
     }
   }
 

@@ -7,11 +7,7 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
 
 object AtalaObjectTransactionSubmissionsDAO {
   def insert(submission: AtalaObjectTransactionSubmission): ConnectionIO[AtalaObjectTransactionSubmission] = {
@@ -54,18 +50,16 @@ object AtalaObjectTransactionSubmissionsDAO {
        """.stripMargin.query[AtalaObjectTransactionSubmission].to[List]
   }
 
-  def updateLatestStatus(
-      atalaObjectId: AtalaObjectId,
+  def updateStatus(
+      ledger: Ledger,
+      transactionId: TransactionId,
       status: AtalaObjectTransactionSubmissionStatus
   ): ConnectionIO[AtalaObjectTransactionSubmission] = {
     sql"""
          |UPDATE atala_object_tx_submissions
          |  SET status = $status
-         |  WHERE atala_object_id = $atalaObjectId
-         |    AND submission_timestamp = (
-         |      SELECT MAX(submission_timestamp)
-         |        FROM atala_object_tx_submissions
-         |        WHERE atala_object_id = $atalaObjectId)
+         |  WHERE ledger = $ledger
+         |    AND transaction_id = $transactionId
          |RETURNING atala_object_id, ledger, transaction_id, submission_timestamp, status
        """.stripMargin.query[AtalaObjectTransactionSubmission].unique
   }

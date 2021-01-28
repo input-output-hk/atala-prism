@@ -295,7 +295,6 @@ class ObjectManagementServiceSpec
   "retryOldPendingTransactions" should {
     val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
     val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
-    val atalaObjectId = AtalaObjectId.of(atalaObject)
 
     def mockTransactionStatus(transactionId: TransactionId, status: TransactionStatus): Unit = {
       doReturn(Future.successful(TransactionDetails(transactionId, status)))
@@ -304,23 +303,15 @@ class ObjectManagementServiceSpec
       ()
     }
 
-    def setAtalaObjectTransactionSubmissionStatus(
-        atalaObjectId: AtalaObjectId,
-        status: AtalaObjectTransactionSubmissionStatus
-    ): Unit = {
-      AtalaObjectTransactionSubmissionsDAO
-        .updateLatestStatus(atalaObjectId, status)
-        .transact(database)
-        .unsafeRunSync()
-      ()
-    }
-
     "ignore in-ledger transactions" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       // Publish once and update status
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
-      setAtalaObjectTransactionSubmissionStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
+      setAtalaObjectTransactionSubmissionStatus(
+        dummyPublicationInfo.transaction,
+        AtalaObjectTransactionSubmissionStatus.InLedger
+      )
 
       objectManagementService.retryOldPendingTransactions().futureValue
 
@@ -332,7 +323,10 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
-      setAtalaObjectTransactionSubmissionStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.Deleted)
+      setAtalaObjectTransactionSubmissionStatus(
+        dummyPublicationInfo.transaction,
+        AtalaObjectTransactionSubmissionStatus.Deleted
+      )
 
       objectManagementService.retryOldPendingTransactions().futureValue
 
@@ -411,7 +405,6 @@ class ObjectManagementServiceSpec
   "ObjectManagementService.getLatestTransactionAndStatus" should {
     val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
     val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
-    val atalaObjectId = AtalaObjectId.of(atalaObject)
     val transactionInfo = TransactionInfo(
       transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
       ledger = Ledger.InMemory
@@ -420,17 +413,6 @@ class ObjectManagementServiceSpec
       Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
     )
     val publicationInfo = PublicationInfo(transactionInfo, TransactionStatus.Pending)
-
-    def setAtalaObjectTransactionSubmissionStatus(
-        atalaObjectId: AtalaObjectId,
-        status: AtalaObjectTransactionSubmissionStatus
-    ): Unit = {
-      AtalaObjectTransactionSubmissionsDAO
-        .updateLatestStatus(atalaObjectId, status)
-        .transact(database)
-        .unsafeRunSync()
-      ()
-    }
 
     "return None when not found" in {
       val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue
@@ -452,7 +434,10 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
-      setAtalaObjectTransactionSubmissionStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.Deleted)
+      setAtalaObjectTransactionSubmissionStatus(
+        publicationInfo.transaction,
+        AtalaObjectTransactionSubmissionStatus.Deleted
+      )
 
       val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue.value
 
@@ -463,7 +448,10 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
-      setAtalaObjectTransactionSubmissionStatus(atalaObjectId, AtalaObjectTransactionSubmissionStatus.InLedger)
+      setAtalaObjectTransactionSubmissionStatus(
+        publicationInfo.transaction,
+        AtalaObjectTransactionSubmissionStatus.InLedger
+      )
 
       val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue.value
 
@@ -531,5 +519,16 @@ class ObjectManagementServiceSpec
         blockOperationCount = 1
       )
     }
+  }
+
+  def setAtalaObjectTransactionSubmissionStatus(
+      transaction: TransactionInfo,
+      status: AtalaObjectTransactionSubmissionStatus
+  ): Unit = {
+    AtalaObjectTransactionSubmissionsDAO
+      .updateStatus(transaction.ledger, transaction.transactionId, status)
+      .transact(database)
+      .unsafeRunSync()
+    ()
   }
 }
