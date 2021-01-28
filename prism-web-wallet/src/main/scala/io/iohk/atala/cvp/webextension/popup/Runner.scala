@@ -5,6 +5,7 @@ import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 import org.scalajs.dom
 import slinky.web.ReactDOM
+import typings.std.global.window
 
 import scala.concurrent.ExecutionContext
 
@@ -17,6 +18,7 @@ class Runner(
 ) {
 
   def run(): Unit = {
+    processMessages()
     dom.window.onload = _ => {
       ReactDOM.render(
         WalletView(backgroundAPI, blockchainExplorerUrl, termsUrl, privacyPolicyUrl),
@@ -25,6 +27,16 @@ class Runner(
     }
   }
 
+  private def processMessages() = {
+    val myExtensionId = chrome.runtime.Runtime.id
+    chrome.runtime.Runtime.onMessage
+      .filter { message =>
+        message.sender.id.getOrElse("id") == myExtensionId
+      }
+      .listen { message =>
+        message.value.filter(_ == "reload").foreach(_ => window.location.reload(true))
+      }
+  }
 }
 
 object Runner {

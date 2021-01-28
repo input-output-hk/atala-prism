@@ -98,7 +98,9 @@ object FakeChromeApi extends js.Object() {
         responseCallback: js.UndefOr[js.Function1[js.Any, _]] = js.undefined
     ): Unit = {
       listeners foreach { listener =>
-        listener(message, messageSender, responseCallback.get)
+        responseCallback.map { resp =>
+          listener(message, messageSender, resp)
+        }
       }
     }
   }

@@ -78,7 +78,7 @@ chromeManifest := new ExtensionManifest {
   override val defaultLocale: Option[String] = Some("en")
 
   override val browserAction: Option[BrowserAction] =
-    Some(BrowserAction(icons, Some("Popup action message"), Some("popup.html")))
+    Some(BrowserAction(icons, Some("Atala PRISM Wallet"), Some("popup.html")))
 
   override val background = Background(
     scripts = manifestCommonScripts ::: List("scripts/background-script.js")

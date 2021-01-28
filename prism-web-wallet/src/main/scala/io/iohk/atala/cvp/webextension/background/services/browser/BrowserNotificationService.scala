@@ -27,4 +27,5 @@ private[background] class BrowserNotificationService(messages: I18NMessages) {
       ResourceProvider.appIcon96
     )
   }
+
 }
