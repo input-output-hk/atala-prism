@@ -141,17 +141,59 @@ message GetContactsRequest {
   // the last seen contact (if any), the returned contacts start after this one, just for the connector integration
   // TODO: Remove once the connector integration is removed
   string lastSeenContactId = 2;
-  string groupName = 3; // if provided, get only the contacts that belong to this group
+  // if provided, get only the contacts that belong to this group, just for the connector integration
+  // TODO: Remove once the connector integration is removed
+  string groupName = 3;
   // retrieve the next items based on the given scroll id (when provided)
   // This applies only to the management console, the connector still works with the lastSeenContactId
   string scrollId = 4;
+  // when provided, filter the results based on the given criteria, just for the management console
+  FilterBy filterBy = 5;
+  // when provided, sort the results by the given criteria
+  SortBy sortBy = 6;
+
+  // The possible ways to filter the results from GetContactsRequest
+  message FilterBy {
+    string groupName = 1; // if provided, get only the contacts that belong to this group
+    Date createdBy = 2; // if provided, the contacts should have been created in the given date
+    string name = 3; // if provided, the contacts should partially match the given name
+    string externalId = 4; // if provided the contacts should partially match the given externalId
+  }
+
+  // The possible ways to sort the results
+  message SortBy {
+    Field field = 1; // the field used to sort the results by
+    SortByDirection direction = 2; // whether the results are in ascending/descending order, ascending order by default
+
+    // The possible fields to sort the results by
+    enum Field {
+      UNKNOWN = 0; // in case of the value being missing, where we take the default one, CREATED_AT
+      CREATED_AT = 1; // the createdAt field
+      NAME = 2; // the name field
+      EXTERNAL_ID = 3; // the externalId field
+    }
+  }
 }
 // Response with the retrieved contacts
 message GetContactsResponse {
-  repeated Contact contacts = 1; // the contacts found
+  // the contacts found
+  // NOTE: This is only for the connector's implementation which will be removed once the frontend migrates out of it
+  repeated Contact contacts = 1;
   // the scroll id to retrieve the next items
   // This applies only to the management console, the connector still needs to compute the lastSeenContactId
   string scrollId = 2;
+
+  // the contacts found filled with the credential counters
+  // NOTE: The connector's implementation doesn't use this
+  repeated ContactDetails data = 3;
+
+  // Represents a contact in the response
+  message ContactDetails {
+    Contact contact = 1; // the contact
+    int32 numberOfCredentialsReceived = 2; // the number of received credentials from this contact
+    // the number of credentials created for this contact, which involves draft, and published credentials
+    int32 numberOfCredentialsCreated = 3;
+  }
 }
 
 // Request to retrieve a contact from the authenticated institution

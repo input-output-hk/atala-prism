@@ -67,7 +67,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBy(
       createdBy: ParticipantId,
       constraints: Contact.PaginatedQuery
-  ): FutureEither[ManagementConsoleError, Seq[Contact]] = {
+  ): FutureEither[ManagementConsoleError, Seq[Contact.WithCredentialCounts]] = {
     ContactsDAO
       .getBy(createdBy, constraints)
       .transact(xa)

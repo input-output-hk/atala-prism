@@ -1,14 +1,18 @@
 package io.iohk.atala.prism.management.console.grpc
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, GenericCredential, Statistics}
+import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
 import java.time.LocalDate
+import scala.util.Try
 
 object ProtoCodecs {
+
+  import PaginatedQueryConstraints._
 
   implicit val proto2DateTransformer: Transformer[common_models.Date, LocalDate] = proto => {
     LocalDate.of(proto.year, proto.month, proto.day)
@@ -64,5 +68,78 @@ object ProtoCodecs {
       case CredentialIssuance.Status.Ready => console_models.CredentialIssuanceStatus.READY
       case CredentialIssuance.Status.Completed => console_models.CredentialIssuanceStatus.COMPLETED
     }
+  }
+
+  def toContactsPaginatedQuery(request: console_api.GetContactsRequest): Try[Contact.PaginatedQuery] = {
+    val scrollIdT = Contact.Id.optional(request.scrollId)
+    val createdAtT = Try {
+      request.filterBy
+        .flatMap(_.createdBy)
+        .map(proto2DateTransformer.transform)
+    }
+
+    val name = request.filterBy.map(_.name).map(_.trim).filter(_.nonEmpty)
+    val groupName = InstitutionGroup.Name.optional(request.groupName)
+
+    val defaultSortBy = ResultOrdering(Contact.SortBy.createdAt)
+    val sortByT = request.sortBy.map(toContactsResultOrdering).getOrElse(Try(defaultSortBy))
+    val allowedLimit = 0 to 100
+    val defaultLimit = 10
+    val limitT = Try {
+      if (allowedLimit contains request.limit) request.limit
+      else throw new RuntimeException(s"Invalid limit, allowed values are $allowedLimit")
+    }.map {
+      case 0 => defaultLimit
+      case x => x
+    }
+
+    for {
+      scrollId <- scrollIdT
+      createdAt <- createdAtT
+      sortBy <- sortByT
+      limit <- limitT
+    } yield PaginatedQueryConstraints(
+      limit = limit,
+      ordering = sortBy,
+      scrollId = scrollId,
+      filters = Some(
+        Contact.FilterBy(
+          groupName = groupName,
+          createdAt = createdAt,
+          name = name
+        )
+      )
+    )
+  }
+
+  def toContactsResultOrdering(sortBy: console_api.GetContactsRequest.SortBy): Try[ResultOrdering[Contact.SortBy]] = {
+    def unsafeField = {
+      sortBy.field match {
+        case console_api.GetContactsRequest.SortBy.Field.UNKNOWN => Contact.SortBy.createdAt
+        case console_api.GetContactsRequest.SortBy.Field.CREATED_AT => Contact.SortBy.createdAt
+        case console_api.GetContactsRequest.SortBy.Field.NAME => Contact.SortBy.name
+        case console_api.GetContactsRequest.SortBy.Field.EXTERNAL_ID => Contact.SortBy.externalId
+        case console_api.GetContactsRequest.SortBy.Field.Unrecognized(x) =>
+          throw new RuntimeException(s"Unrecognized SortBy Field: $x")
+      }
+    }
+
+    for {
+      field <- Try(unsafeField)
+      direction <- toSortByDirection(sortBy.direction)
+    } yield ResultOrdering(field, direction)
+  }
+
+  def toSortByDirection(proto: common_models.SortByDirection): Try[ResultOrdering.Direction] = {
+    def unsafe = {
+      proto match {
+        case SortByDirection.SORT_BY_DIRECTION_UNKNOWN => ResultOrdering.Direction.Ascending
+        case SortByDirection.SORT_BY_DIRECTION_ASCENDING => ResultOrdering.Direction.Ascending
+        case SortByDirection.SORT_BY_DIRECTION_DESCENDING => ResultOrdering.Direction.Descending
+        case SortByDirection.Unrecognized(x) => throw new RuntimeException(s"Unrecognized SortBy Direction: $x")
+      }
+    }
+
+    Try(unsafe)
   }
 }

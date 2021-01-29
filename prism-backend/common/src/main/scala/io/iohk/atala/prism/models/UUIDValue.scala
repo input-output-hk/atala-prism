@@ -17,10 +17,22 @@ object UUIDValue {
       apply(UUID.randomUUID())
     }
 
-    def from(string: String): Try[A] =
+    def from(string: String): Try[A] = {
       Try {
         apply(UUID.fromString(string))
       }
+    }
+
+    def optional(string: String): Try[Option[A]] = {
+      Option(string)
+        .filter(_.nonEmpty)
+        .map { string =>
+          Try(UUID.fromString(string))
+            .map(apply)
+            .map(Option.apply)
+        }
+        .getOrElse(Try(None))
+    }
 
     def unsafeFrom(string: String): A = {
       from(string).getOrElse(throw new IllegalArgumentException(s"`$string` is not a valid UUID"))

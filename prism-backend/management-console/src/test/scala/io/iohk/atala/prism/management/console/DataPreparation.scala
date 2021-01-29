@@ -7,12 +7,14 @@ import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.repositories.daos.{
   ContactsDAO,
   CredentialTypeDao,
   CredentialsDAO,
   InstitutionGroupsDAO,
-  ParticipantsDAO
+  ParticipantsDAO,
+  ReceivedCredentialsDAO
 }
 
 import java.time.{Instant, LocalDate}
@@ -124,5 +126,15 @@ object DataPreparation {
         )
       )
     )
+  }
+
+  def createReceivedCredential(contactId: Contact.Id)(implicit database: Transactor[IO]): Unit = {
+    val request = ReceivedSignedCredentialData(
+      contactId = contactId,
+      credentialExternalId = CredentialExternalId(Random.alphanumeric.take(10).mkString("")),
+      encodedSignedCredential = "signed-data-mock"
+    )
+
+    ReceivedCredentialsDAO.insertSignedCredential(request).transact(database).unsafeRunSync()
   }
 }

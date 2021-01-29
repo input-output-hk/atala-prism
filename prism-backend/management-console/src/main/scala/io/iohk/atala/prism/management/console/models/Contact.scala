@@ -24,6 +24,13 @@ final case class Contact(
 )
 
 object Contact {
+
+  case class WithCredentialCounts(details: Contact, counts: CredentialCounts) {
+    def contactId: Id = details.contactId
+  }
+
+  case class CredentialCounts(numberOfCredentialsReceived: Int, numberOfCredentialsCreated: Int)
+
   final case class Id(uuid: UUID) extends AnyVal with UUIDValue
   object Id extends UUIDValue.Builder[Id]
 
@@ -42,7 +49,7 @@ object Contact {
   }
 
   // Used to sort the results by the given field
-  sealed trait SortBy
+  sealed trait SortBy extends Product with Serializable
   object SortBy {
     final case object ExternalId extends SortBy
     final case object CreatedAt extends SortBy
@@ -74,14 +81,12 @@ object Contact {
 
   type PaginatedQuery = PaginatedQueryConstraints[Contact.Id, Contact.SortBy, Contact.FilterBy]
 
-  // helper to keep the behavior before adding sorting/filters
-  def legacyQuery(
+  def paginatedQuery(
+      limit: Int,
       scrollId: Option[Contact.Id],
-      groupName: Option[InstitutionGroup.Name],
-      limit: Int
-  ): Contact.PaginatedQuery = {
+      groupName: Option[InstitutionGroup.Name]
+  ): PaginatedQuery = {
     import PaginatedQueryConstraints._
-
     PaginatedQueryConstraints(
       limit = limit,
       ordering = ResultOrdering(Contact.SortBy.createdAt, ResultOrdering.Direction.Ascending),

@@ -65,7 +65,7 @@ object FindContactsQueryBuilder {
         fr"(contacts.name, contact_id)" -> fr"(last_seen_name, $scrollId)"
     }
 
-    toWhereCondition(left, right, ordering.condition)
+    toWhereCondition(left, right, ordering.direction)
   }
 
   private def scrollCTE(scrollId: Contact.Id) = {
@@ -77,8 +77,13 @@ object FindContactsQueryBuilder {
         )
        """
   }
+  private val selectFR =
+    fr"""
+        SELECT contact_id, external_id, contact_data, contacts.created_at, contacts.name,
+               (SELECT COUNT(*) FROM received_credentials WHERE contact_id = contacts.contact_id) AS number_of_credentials_received,
+               (SELECT COUNT(*) FROM draft_credentials WHERE contact_id = contacts.contact_id) AS number_of_credentials_created
+        """
 
-  private val selectFR = fr"""SELECT contact_id, external_id, contact_data, contacts.created_at, contacts.name"""
   private def selectFromScrollGroupFR(scrollId: Contact.Id) = {
     scrollCTE(scrollId) ++
       selectFR ++

@@ -36,12 +36,10 @@ class ContactsIntegrationService(
 
   def getContacts(
       institutionId: ParticipantId,
-      scrollId: Option[Contact.Id],
-      groupName: Option[InstitutionGroup.Name],
-      limit: Int
+      paginatedQuery: Contact.PaginatedQuery
   ): Future[Either[errors.ManagementConsoleError, GetContactsResult]] = {
     val result = for {
-      list <- contactsRepository.getBy(institutionId, Contact.legacyQuery(scrollId, groupName, limit))
+      list <- contactsRepository.getBy(institutionId, paginatedQuery)
       connectorRequest = connector_api.ConnectionsStatusRequest(acceptorIds = list.map(_.contactId.toString))
       connectionStatusResponse <- {
         contactConnectionService
@@ -52,7 +50,10 @@ class ContactsIntegrationService(
     } yield {
       val data = list
         .zip(connectionStatusResponse.connections)
-        .map(ContactWithConnection.tupled)
+        .map {
+          case (contact, connection) =>
+            ContactWithConnection(contact.details, connection) -> contact.counts
+        }
 
       GetContactsResult(data.toList)
     }
@@ -95,7 +96,7 @@ object ContactsIntegrationService {
       connection: connector_models.ContactConnection
   )
 
-  case class GetContactsResult(data: List[ContactWithConnection]) {
-    def scrollId: Option[Contact.Id] = data.lastOption.map(_.contact.contactId)
+  case class GetContactsResult(data: List[(ContactWithConnection, Contact.CredentialCounts)]) {
+    def scrollId: Option[Contact.Id] = data.lastOption.map(_._1.contact.contactId)
   }
 }

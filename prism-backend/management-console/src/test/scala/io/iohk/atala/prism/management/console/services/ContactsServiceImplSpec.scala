@@ -1,13 +1,14 @@
 package io.iohk.atala.prism.management.console.services
 
 import io.circe.{Json, parser}
+import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
-import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup}
+import io.iohk.atala.prism.management.console.models.{Contact, Helpers, InstitutionGroup}
 import io.iohk.atala.prism.protos.connector_api.ConnectionsStatusResponse
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
 import org.mockito.ArgumentMatchersSugar.*
@@ -81,13 +82,13 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
 
         // the new contact needs to exist
         val result = contactsRepository
-          .getBy(institutionId, Contact.legacyQuery(None, Some(group.name), 10))
+          .getBy(institutionId, Helpers.legacyQuery(None, Some(group.name), 10))
           .value
           .futureValue
           .toOption
           .value
         result.size must be(1)
-        val storedContact = result.headOption.value
+        val storedContact = result.headOption.value.details
         toContactProto(storedContact, invitationMissing).copy(jsonData = "") must be(
           response.copy(jsonData = "")
         )
@@ -186,7 +187,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
 
         // the contact must not be added
         val result = contactsRepository
-          .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+          .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
           .value
           .futureValue
           .toOption
@@ -222,7 +223,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
 
         // the new contact should not exist
         val result = contactsRepository
-          .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+          .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
           .value
           .futureValue
           .toOption
@@ -271,14 +272,14 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
 
         // the contact needs to exist as originally inserted
         val result = contactsRepository
-          .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+          .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
           .value
           .futureValue
           .toOption
           .value
         result.size must be(1)
 
-        val storedContact = result.head
+        val storedContact = result.head.details
         storedContact.data must be(json)
         storedContact.contactId.toString must be(initialResponse.contactId)
         storedContact.externalId must be(externalId)
@@ -317,7 +318,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         }
 
         val response = serviceStub.getContacts(request)
-        val contactsReturned = response.contacts
+        val contactsReturned = response.data.flatMap(_.contact)
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
@@ -358,7 +359,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         }
 
         val response = serviceStub.getContacts(request)
-        val contactsReturned = response.contacts
+        val contactsReturned = response.data.flatMap(_.contact)
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
@@ -399,7 +400,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         }
 
         val response = serviceStub.getContacts(request)
-        val contactsReturned = response.contacts
+        val contactsReturned = response.data.flatMap(_.contact)
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
@@ -438,13 +439,83 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         }
 
         val response = serviceStub.getContacts(request)
-        val contactsReturned = response.contacts
+        val contactsReturned = response.data.flatMap(_.contact)
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
           List(cleanContactData(toContactProto(contactA2, invitationMissing)))
         )
         contactsReturnedJsons.toList must be(List(contactA2.data))
+      }
+    }
+
+    "return the credential counts" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("institutionx", did)
+      val contactA = createContact(institutionId, "Alice")
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createReceivedCredential(contactA.contactId)
+      val request = console_api.GetContactsRequest(
+        limit = 2
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing, invitationMissing)
+            )
+          )
+        }
+
+        val response = serviceStub.getContacts(request)
+        val (created, received) = response.data
+          .map(r => r.numberOfCredentialsCreated -> r.numberOfCredentialsReceived)
+          .head
+
+        created must be(2)
+        received must be(1)
+      }
+    }
+
+    def testCall[T](
+        request: console_api.GetContactsRequest
+    )(f: console_api.ContactsServiceGrpc.ContactsServiceBlockingStub => T) = {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      createParticipant("institutionx", did)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      usingApiAsContacts(rpcRequest)(f)
+    }
+
+    List(-1, 101).foreach { limit =>
+      s"fail when the limit is invalid: $limit" in {
+        val request = console_api.GetContactsRequest(
+          limit = limit
+        )
+
+        testCall(request) { serviceStub =>
+          intercept[StatusRuntimeException] {
+            serviceStub.getContacts(request)
+          }
+        }
+      }
+    }
+
+    List(0, 1, 100).foreach { limit =>
+      s"succeed when the limit is valid: $limit" in {
+        val request = console_api.GetContactsRequest(
+          limit = limit
+        )
+
+        testCall(request) { serviceStub =>
+          serviceStub.getContacts(request)
+        }
       }
     }
   }

@@ -2,10 +2,12 @@ package io.iohk.atala.prism.management.console.repositories
 
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{
   Contact,
   CreateContact,
+  Helpers,
   InstitutionGroup,
   PaginatedQueryConstraints
 }
@@ -37,11 +39,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       // we check that the subject was added to the intended group
       val subjectsInGroupList = repository
-        .getBy(institutionId, Contact.legacyQuery(None, Some(group.name), 10))
+        .getBy(institutionId, Helpers.legacyQuery(None, Some(group.name), 10))
         .value
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       subjectsInGroupList.size must be(1)
       subjectsInGroupList.headOption.value must be(subject)
@@ -83,11 +86,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       // we check that the subject was not created
       val subjectsList = repository
-        .getBy(institutionId, Contact.legacyQuery(None, None, 1))
+        .getBy(institutionId, Helpers.legacyQuery(None, None, 1))
         .value
         .futureValue
         .toOption
         .value
+        .map(_.details)
       subjectsList must be(empty)
     }
 
@@ -107,11 +111,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
       // no subject should be created
       val createdSubjects = repository
-        .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+        .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
         .value
         .futureValue
         .toOption
         .value
+        .map(_.details)
       createdSubjects must be(empty)
     }
 
@@ -141,11 +146,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
 
       val subjectsStored = repository
-        .getBy(institutionId, Contact.legacyQuery(None, None, 10))
+        .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
         .value
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       // only one subject must be inserted correctly
       subjectsStored.size must be(1)
@@ -232,7 +238,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           case Contact.SortBy.Name => data.sortBy(_.name)
         }
 
-        val sortedProperly = constraints.ordering.condition match {
+        val sortedProperly = constraints.ordering.direction match {
           case ResultOrdering.Direction.Ascending => sorted
           case ResultOrdering.Direction.Descending => sorted.reverse
         }
@@ -262,6 +268,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .futureValue
           .toOption
           .value
+          .map(_.details)
 
         result must be(expected)
       }
@@ -283,6 +290,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .futureValue
           .toOption
           .value
+          .map(_.details)
 
         result must be(expected)
       }
@@ -304,6 +312,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .futureValue
           .toOption
           .value
+          .map(_.details)
 
         val expected = query(List(contactA, contactB, contactC, contactD), buildQuery(1, scrollId = Some(scrollId)))
         result must be(expected)
@@ -327,6 +336,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .futureValue
           .toOption
           .value
+          .map(_.details)
 
         result must be(expected)
       }
@@ -373,6 +383,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       result.map(_.contactId).toSet must be(expected)
     }
@@ -391,6 +402,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       result.map(_.contactId).toSet must be(expected)
     }
@@ -426,6 +438,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       result.map(_.contactId).toSet must be(expected)
     }
@@ -444,6 +457,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       result.map(_.contactId).toSet must be(expected)
     }
@@ -480,6 +494,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       result.map(_.contactId).toSet must be(expected)
     }
@@ -519,6 +534,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       result.map(_.contactId).toSet must be(expected)
     }
@@ -558,8 +574,34 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toOption
         .value
+        .map(_.details)
 
       result.map(_.contactId).toSet must be(expected)
+    }
+
+    "return the credential counts" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "iohk1")
+      val contactB = createContact(institutionId, "iohk2")
+
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createReceivedCredential(contactA.contactId)
+      DataPreparation.createReceivedCredential(contactA.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+
+      val expected = Map((contactA.contactId, (3, 2)), (contactB.contactId, (1, 0)))
+      val result = repository
+        .getBy(institutionId, filterQuery())
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      result
+        .map(r => (r.contactId, (r.counts.numberOfCredentialsCreated, r.counts.numberOfCredentialsReceived)))
+        .toMap must be(expected)
     }
   }
 }

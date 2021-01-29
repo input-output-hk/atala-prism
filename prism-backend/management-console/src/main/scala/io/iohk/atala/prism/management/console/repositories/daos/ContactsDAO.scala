@@ -59,10 +59,13 @@ object ContactsDAO {
     }
   }
 
-  def getBy(participantId: ParticipantId, constraints: Contact.PaginatedQuery): doobie.ConnectionIO[List[Contact]] = {
+  def getBy(
+      participantId: ParticipantId,
+      constraints: Contact.PaginatedQuery
+  ): doobie.ConnectionIO[List[Contact.WithCredentialCounts]] = {
     FindContactsQueryBuilder
       .build(participantId, constraints)
-      .query[Contact]
+      .query[Contact.WithCredentialCounts]
       .to[List]
   }
 }

@@ -17,6 +17,13 @@ message Date {
     int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
 }
 
+// When returning results, this is how you specify the direction on how those get sorted
+enum SortByDirection {
+    SORT_BY_DIRECTION_UNKNOWN = 0; // Nothing provided, each API may define whether to fail or take a default value (commonly ASCENDING)
+    SORT_BY_DIRECTION_ASCENDING = 1; // Sort the results in ascending order
+    SORT_BY_DIRECTION_DESCENDING = 2; // Sort the results in descending order
+}
+
 // The supported ledger types, commonly used for linking on-chain transactions
 enum Ledger {
     UNKNOWN_LEDGER = 0; // Invalid default value

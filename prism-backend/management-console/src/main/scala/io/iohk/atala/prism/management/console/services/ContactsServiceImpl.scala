@@ -2,7 +2,7 @@ package io.iohk.atala.prism.management.console.services
 
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.ManagementConsoleErrorSupport
+import io.iohk.atala.prism.management.console.errors.{GetContactsInvalidRequest, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
@@ -14,6 +14,7 @@ import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class ContactsServiceImpl(
     contactsIntegrationService: ContactsIntegrationService,
@@ -60,34 +61,50 @@ class ContactsServiceImpl(
   }
 
   override def getContacts(request: GetContactsRequest): Future[GetContactsResponse] = {
-    def f(participantId: ParticipantId): Future[GetContactsResponse] = {
-      val scrollId = Contact.Id.from(request.scrollId).toOption
-      val groupName = InstitutionGroup.Name.optional(request.groupName)
-
-      implicit val loggingContext: LoggingContext =
-        LoggingContext(
-          "request" -> request,
-          "participantId" -> participantId,
-          "scrollId" -> scrollId,
-          "groupName" -> groupName
-        )
+    def f(participantId: ParticipantId, query: Contact.PaginatedQuery): Future[GetContactsResponse] = {
+      implicit val loggingContext: LoggingContext = LoggingContext(
+        "participantId" -> participantId,
+        "scrollId" -> query.scrollId,
+        "limit" -> query.limit,
+        "orderByField" -> query.ordering.field,
+        "orderByDirection" -> query.ordering.direction,
+        "filterByName" -> query.filters.map(_.name),
+        "filterByExternalId" -> query.filters.map(_.externalId),
+        "filterByCreatedAt" -> query.filters.map(_.createdAt)
+      )
 
       contactsIntegrationService
-        .getContacts(participantId, scrollId, groupName, request.limit)
+        .getContacts(participantId, query)
         .toFutureEither
         .map { result =>
-          val contacts = result.data.map { item =>
-            ProtoCodecs.toContactProto(item.contact, item.connection)
-          }
-          val scrollId = contacts.lastOption.map(_.contactId).getOrElse("")
-          console_api.GetContactsResponse().withContacts(contacts).withScrollId(scrollId)
+          val data = result.data
+            .map { item =>
+              val contact = ProtoCodecs.toContactProto(item._1.contact, item._1.connection)
+              console_api.GetContactsResponse
+                .ContactDetails()
+                .withContact(contact)
+                .withNumberOfCredentialsReceived(item._2.numberOfCredentialsReceived)
+                .withNumberOfCredentialsCreated(item._2.numberOfCredentialsCreated)
+            }
+
+          console_api
+            .GetContactsResponse()
+            .withData(data)
+            .withScrollId(result.scrollId.map(_.toString).getOrElse(""))
         }
         .wrapExceptions
         .flatten
     }
 
     authenticator.authenticated("getSubjects", request) { participantId =>
-      f(participantId)
+      ProtoCodecs.toContactsPaginatedQuery(request) match {
+        case Failure(exception) =>
+          implicit val loggingContext: LoggingContext = LoggingContext("request" -> request)
+          val response = GetContactsInvalidRequest(exception.getMessage)
+          Future.successful(Left(response)).toFutureEither.wrapExceptions.flatten
+
+        case Success(query) => f(participantId, query)
+      }
     }
   }
 

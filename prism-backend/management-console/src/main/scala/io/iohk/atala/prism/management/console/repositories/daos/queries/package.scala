@@ -25,7 +25,7 @@ package object queries {
       toColumnName: T => String
   ): Fragment = {
     val field = toColumnName(ordering.field)
-    val condition = ordering.condition match {
+    val condition = ordering.direction match {
       case PaginatedQueryConstraints.ResultOrdering.Direction.Ascending => "ASC"
       case PaginatedQueryConstraints.ResultOrdering.Direction.Descending => "DESC"
     }
