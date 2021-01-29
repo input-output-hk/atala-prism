@@ -100,7 +100,7 @@
 "credentials_detail_title_type_government_id" = "Government ID";
 "credentials_detail_title_type_insurance" = "Health Insurance";
 "credentials_detail_title_type_employment" = "Proof of Employment";
-"credentials_georgia_national_id" = "National ID";
+"credentials_georgia_national_id" = "Government ID";
 "credentials_georgia_educational_degree" = "Educational Degree";
 "credentials_georgia_educational_degree_transcript" = "Educational Degree Transcript";
 "credentials_detail_title_new" = "Add Credential";
