@@ -9,7 +9,7 @@
 import Foundation
 
 class DateFormatPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
-                            DateFormatTableViewCellDelegate {
+                            DateFormatTableViewCellDelegate, DateFormatInfoTableViewCellDelegate {
 
     var viewImpl: DateFormatViewController? {
         return view as? DateFormatViewController
@@ -57,7 +57,7 @@ class DateFormatPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterD
     }
 
     func getElementCount() -> Int {
-        return initialStaticCells.count
+        return initialStaticCells.count + 1
     }
 
     // MARK: Table
@@ -85,6 +85,12 @@ class DateFormatPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterD
             }
         }
         viewImpl?.table.reloadData()
+    }
+
+    func setup(for cell: DateFormatInfoTableViewCell) {
+        let title = NSMutableAttributedString(attributedString: "dateformat_info_bold".localize()!.bold)
+        title.append("dateformat_info".localize()!.regular)
+        cell.config(title: title, delegate: self)
     }
 
 }

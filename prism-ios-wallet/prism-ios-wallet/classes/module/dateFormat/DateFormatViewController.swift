@@ -50,12 +50,16 @@ class DateFormatViewController: ListingBaseViewController {
 
     override func getCellIdentifier(for indexPath: IndexPath) -> String {
 
-        return DateFormatTableViewCell.reuseIdentifier
+        return indexPath.row == presenterImpl.initialStaticCells .count
+            ? DateFormatInfoTableViewCell.reuseIdentifier
+            : DateFormatTableViewCell.reuseIdentifier
     }
 
     override func getCellNib(for indexPath: IndexPath) -> String? {
 
-        return DateFormatTableViewCell.nibName
+        return indexPath.row == presenterImpl.initialStaticCells .count
+            ? DateFormatInfoTableViewCell.nibName
+            : DateFormatTableViewCell.nibName
     }
 
     // MARK: Buttons

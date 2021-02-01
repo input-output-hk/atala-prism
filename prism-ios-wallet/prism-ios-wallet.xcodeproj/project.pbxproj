@@ -47,6 +47,8 @@
 		B3491C01251A2C850040F89E /* ContactDetailSectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3491BFF251A2C850040F89E /* ContactDetailSectionViewCell.xib */; };
 		B3491C06251A31B10040F89E /* ContactDetailSharedViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3491C04251A31B10040F89E /* ContactDetailSharedViewCell.swift */; };
 		B3491C07251A31B10040F89E /* ContactDetailSharedViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */; };
+		B3508F3B25C2D53900F907B0 /* DateFormatInfoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3508F3925C2D53900F907B0 /* DateFormatInfoTableViewCell.swift */; };
+		B3508F3C25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3508F3A25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib */; };
 		B35181AB24195CAD007CA8F1 /* connector_api.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A824195CAC007CA8F1 /* connector_api.proto */; };
 		B35181AC24195CAD007CA8F1 /* connector_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A924195CAC007CA8F1 /* connector_models.proto */; };
 		B35181AD24195CAD007CA8F1 /* node_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181AA24195CAD007CA8F1 /* node_models.proto */; };
@@ -320,6 +322,8 @@
 		B3491BFF251A2C850040F89E /* ContactDetailSectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactDetailSectionViewCell.xib; sourceTree = "<group>"; };
 		B3491C04251A31B10040F89E /* ContactDetailSharedViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailSharedViewCell.swift; sourceTree = "<group>"; };
 		B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactDetailSharedViewCell.xib; sourceTree = "<group>"; };
+		B3508F3925C2D53900F907B0 /* DateFormatInfoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatInfoTableViewCell.swift; sourceTree = "<group>"; };
+		B3508F3A25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DateFormatInfoTableViewCell.xib; sourceTree = "<group>"; };
 		B35181A824195CAC007CA8F1 /* connector_api.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_api.proto; sourceTree = "<group>"; };
 		B35181A924195CAC007CA8F1 /* connector_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_models.proto; sourceTree = "<group>"; };
 		B35181AA24195CAD007CA8F1 /* node_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = node_models.proto; sourceTree = "<group>"; };
@@ -695,6 +699,7 @@
 			isa = PBXGroup;
 			children = (
 				B352434224FFDA080053A804 /* DateFormatViewCell.xib */,
+				B3508F3A25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib */,
 			);
 			path = cell;
 			sourceTree = "<group>";
@@ -703,6 +708,7 @@
 			isa = PBXGroup;
 			children = (
 				B352434124FFDA080053A804 /* DateFormatTableViewCell.swift */,
+				B3508F3925C2D53900F907B0 /* DateFormatInfoTableViewCell.swift */,
 			);
 			path = cell;
 			sourceTree = "<group>";
@@ -1650,6 +1656,7 @@
 				EE631CFB23C66259001EAA0F /* InfoPlist.strings in Resources */,
 				EE7D4CB62366B9C5007C31A8 /* ListingEmptyViewCell.xib in Resources */,
 				EE48AC192377549C00C0A441 /* Login.storyboard in Resources */,
+				B3508F3C25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib in Resources */,
 				EE7185712384D5CB00C58F62 /* ProfileViewCell.xib in Resources */,
 				EE48AC292379221000C0A441 /* SwitchCustomView.xib in Resources */,
 				EE7D4C7A2366B9C4007C31A8 /* Localizable.stringsdict in Resources */,
@@ -2001,6 +2008,7 @@
 				B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
 				B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */,
+				B3508F3B25C2D53900F907B0 /* DateFormatInfoTableViewCell.swift in Sources */,
 				B3A98F5724EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift in Sources */,
 				EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */,
 				B352434624FFDA270053A804 /* DateFormatPresenter.swift in Sources */,
@@ -2214,7 +2222,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 128;
+				CURRENT_PROJECT_VERSION = 130;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
@@ -2241,7 +2249,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 128;
+				CURRENT_PROJECT_VERSION = 130;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "prism-ios-wallet/Info.plist";
