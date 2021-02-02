@@ -26,10 +26,11 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   getCredentialsRequest.setLimit(limit);
   getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
 
-  const metadata = await this.auth.getMetadata(
+  const { metadata, sessionError } = await this.auth.getMetadata(
     getCredentialsRequest,
     BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
   );
+  if (sessionError) return [];
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
 
@@ -86,7 +87,8 @@ async function getContactCredentials(contactId) {
   const req = new GetContactCredentialsRequest();
   req.setContactid(contactId);
 
-  const metadata = await this.auth.getMetadata(req);
+  const { metadata, sessionError } = await this.auth.getMetadata(req);
+  if (sessionError) return [];
 
   const res = await this.client.getContactCredentials(req, metadata);
   const credentialsList = res.getGenericcredentialsList().map(mapCredential);
@@ -99,10 +101,11 @@ async function markAsSent(credentialid) {
   const markCredentialRequest = new ShareCredentialRequest();
   markCredentialRequest.setCmanagercredentialid(credentialid);
 
-  const metadata = await this.auth.getMetadata(
+  const { metadata, sessionError } = await this.auth.getMetadata(
     markCredentialRequest,
     BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
   );
+  if (sessionError) return;
 
   const res = await this.client.shareCredential(markCredentialRequest, metadata);
   Logger.info(`Marked credential (${credentialid}) as sent`);
@@ -113,10 +116,11 @@ async function getBlockchainData(credential) {
   const getBlockchainDataRequest = new GetBlockchainDataRequest();
   getBlockchainDataRequest.setEncodedsignedcredential(credential);
 
-  const metadata = await this.auth.getMetadata(
+  const { metadata, sessionError } = await this.auth.getMetadata(
     getBlockchainDataRequest,
     BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
   );
+  if (sessionError) return {};
 
   const res = await this.client.getBlockchainData(getBlockchainDataRequest, metadata);
   const issuanceProof = res.getIssuanceproof().toObject();

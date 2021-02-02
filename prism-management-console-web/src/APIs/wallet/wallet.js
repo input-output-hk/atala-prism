@@ -113,8 +113,9 @@ async function signMessage(unsignedRequest, timeout) {
     if (result.error) throw new Error(result.error);
     return result;
   } catch (error) {
-    if (isSessionError(error)) this.handleSessionError();
-    throw error;
+    if (!isSessionError(error)) throw error;
+    this.handleSessionError();
+    return { sessionError: true };
   }
 }
 

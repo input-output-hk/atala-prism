@@ -7,7 +7,12 @@ const { GetStatisticsRequest } = require('../../protos/console_api_pb');
 async function getStatistics() {
   const request = new GetStatisticsRequest();
 
-  const metadata = await this.auth.getMetadata(request, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
+  const { metadata, sessionError } = await this.auth.getMetadata(
+    request,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
+  if (sessionError) return {};
+
   const response = await this.client.getStatistics(request, metadata);
 
   const result = await response.toObject();

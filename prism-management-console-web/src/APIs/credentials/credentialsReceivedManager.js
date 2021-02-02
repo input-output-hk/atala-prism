@@ -8,7 +8,12 @@ async function getReceivedCredentials(contactId) {
   Logger.info(`Getting received credentials ${contactId ? `for contact ${contactId}` : ''}`);
   const req = new GetStoredCredentialsForRequest();
   if (contactId) req.setIndividualid(contactId);
-  const metadata = await this.auth.getMetadata(req, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
+  const { metadata, sessionError } = await this.auth.getMetadata(
+    req,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
+  if (sessionError) return [];
+
   const res = await this.client.getStoredCredentialsFor(req, metadata);
   const credentials = res.getCredentialsList().map(storedCredential => {
     const encodedsignedcredential = storedCredential.getEncodedsignedcredential();

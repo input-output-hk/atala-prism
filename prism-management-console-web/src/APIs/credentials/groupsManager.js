@@ -11,10 +11,12 @@ async function getGroups(contactId) {
   const groupRequest = new GetGroupsRequest();
   if (contactId) groupRequest.setContactid(contactId);
 
-  const metadata = await this.auth.getMetadata(
+  const { metadata, sessionError } = await this.auth.getMetadata(
     groupRequest,
     BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
   );
+  if (sessionError) return [];
+
   const response = await this.client.getGroups(groupRequest, metadata);
 
   return response.toObject().groupsList;
@@ -25,7 +27,12 @@ async function createGroup(groupName) {
 
   request.setName(groupName);
 
-  const metadata = await this.auth.getMetadata(request, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
+  const { metadata, sessionError } = await this.auth.getMetadata(
+    request,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
+  if (sessionError) return {};
+
   const response = await this.client.createGroup(request, metadata);
 
   return response.getGroup().toObject();
@@ -38,7 +45,12 @@ async function updateGroup(groupId, contactIdsToAdd, contactIdsToRemove) {
   request.setContactidstoaddList(contactIdsToAdd || []);
   request.setContactidstoremoveList(contactIdsToRemove || []);
 
-  const metadata = await this.auth.getMetadata(request, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
+  const { metadata, sessionError } = await this.auth.getMetadata(
+    request,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
+  if (sessionError) return {};
+
   const response = await this.client.updateGroup(request, metadata);
 
   return response.toObject();

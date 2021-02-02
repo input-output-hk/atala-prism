@@ -9,10 +9,11 @@ async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   connectionsPaginatedRequest.setLastseenconnectionid(lastSeenConnectionId);
   connectionsPaginatedRequest.setLimit(limit);
 
-  const metadata = await this.auth.getMetadata(
+  const { metadata, sessionError } = await this.auth.getMetadata(
     connectionsPaginatedRequest,
     BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
   );
+  if (sessionError) return [];
 
   return this.client
     .getConnectionsPaginated(connectionsPaginatedRequest, metadata)
@@ -29,7 +30,8 @@ async function sendCredential(message, connectionId) {
   sendMessageRequest.setConnectionid(connectionId);
   sendMessageRequest.setMessage(message);
 
-  const metadata = await this.auth.getMetadata(sendMessageRequest);
+  const { metadata, sessionError } = await this.auth.getMetadata(sendMessageRequest);
+  if (sessionError) return;
 
   return this.client.sendMessage(sendMessageRequest, metadata).catch(error => {
     Logger.error('Error issuing the credential: ', error);

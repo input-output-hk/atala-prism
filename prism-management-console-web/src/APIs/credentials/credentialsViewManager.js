@@ -4,7 +4,12 @@ import { GetCredentialViewTemplatesRequest } from '../../protos/cviews_api_pb';
 
 async function getCredentialViewTemplates() {
   const req = new GetCredentialViewTemplatesRequest();
-  const metadata = await this.auth.getMetadata(req, BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS);
+  const { metadata, sessionError } = await this.auth.getMetadata(
+    req,
+    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+  );
+  if (sessionError) return [];
+
   const res = await this.client.getCredentialViewTemplates(req, metadata);
   return res.getTemplatesList().map(template => template.toObject());
 }
