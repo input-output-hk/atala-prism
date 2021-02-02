@@ -17,6 +17,8 @@ const SendCredentialConfirmationModal = ({ selected, targetCredentials, ...modal
     return onOk().finally(() => setLoading(false));
   };
 
+  const nonSendablesAmount = selected.length - targetCredentials.length;
+
   return (
     <Modal className="Modal" width={450} centered destroyOnClose footer={null} {...modalProps}>
       <div className="SentModalContainer">
@@ -27,14 +29,16 @@ const SendCredentialConfirmationModal = ({ selected, targetCredentials, ...modal
             {t('credentials.modal.sendables', { sendables: targetCredentials.length })}
           </strong>
         </p>
-        <p className="ModalInfo">
-          <strong>
-            {t('credentials.modal.nonSendables', {
-              nonSendables: selected.length - targetCredentials.length
-            })}
-          </strong>
-          {t('credentials.modal.nonSendablesText')}
-        </p>
+        {!!nonSendablesAmount && (
+          <p className="ModalInfo">
+            <strong>
+              {t('credentials.modal.nonSendables', {
+                nonSendables: nonSendablesAmount
+              })}
+            </strong>
+            {t('credentials.modal.nonSendablesText')}
+          </p>
+        )}
       </div>
       <div className="FooterButtonsSent">
         <CustomButton
