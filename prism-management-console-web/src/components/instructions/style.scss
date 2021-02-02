@@ -3,8 +3,10 @@
 .instructionsHeader {
   height: 10vh;
   display: flex;
+  align-items: center;
   img {
     margin-left: 50px;
+    height: 25px;
   }
 }
 
