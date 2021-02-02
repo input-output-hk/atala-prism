@@ -1,4 +1,7 @@
 function DIDBased(configs, wallet) {
+  // FIXME: improve catching of wallet disconnection.
+  // The timeout causes other issues when calls take longer to complete.
+  // The timeout is disabled until a better fix is implemented.
   const getMetadata = async (unsignedRequest, timeout) => {
     const {
       encodedNonce,
@@ -6,7 +9,7 @@ function DIDBased(configs, wallet) {
       did,
       didKeyId,
       sessionError
-    } = await wallet.signMessage(unsignedRequest, timeout);
+    } = await wallet.signMessage(unsignedRequest);
 
     return {
       metadata: {
