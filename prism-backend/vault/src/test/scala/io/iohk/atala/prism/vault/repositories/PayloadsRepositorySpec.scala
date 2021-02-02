@@ -2,7 +2,7 @@ package io.iohk.atala.prism.vault.repositories
 
 import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
@@ -22,11 +22,11 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   "create" should {
     "create a new payload" in {
-      val did1 = DID.buildPrismDID("test1")
+      val did1 = newDID()
       val content1 = "encrypted_data_1".getBytes.toVector
       val payload1 = createPayload(did1, content1)
 
-      val did2 = DID.buildPrismDID("test2")
+      val did2 = newDID()
       val content2 = "encrypted_data_2".getBytes.toVector
       val payload2 = createPayload(did2, content2)
 
@@ -44,11 +44,11 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   "getBy" should {
     "return all created payloads" in {
-      val did1 = DID.buildPrismDID("test1")
+      val did1 = newDID()
       val content1 = "encrypted_data_1".getBytes.toVector
       val payload1 = createPayload(did1, content1)
 
-      val did2 = DID.buildPrismDID("test2")
+      val did2 = newDID()
       val content2 = "encrypted_data_2".getBytes.toVector
       val payload2 = createPayload(did2, content2)
 
@@ -62,5 +62,9 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
         List(payload3)
       )
     }
+  }
+
+  private def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

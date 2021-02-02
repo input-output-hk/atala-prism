@@ -1,14 +1,12 @@
 package io.iohk.atala.prism.connector.repositories
 
-import java.util.Base64
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, _}
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
+import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionInfo}
@@ -16,6 +14,7 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.util.Base64
 import scala.concurrent.ExecutionContext
 
 class ParticipantsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) extends ConnectorErrorSupport {

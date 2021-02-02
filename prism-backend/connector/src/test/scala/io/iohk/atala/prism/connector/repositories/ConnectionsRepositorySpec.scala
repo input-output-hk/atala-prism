@@ -4,8 +4,8 @@ import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
+import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.OptionValues._
@@ -29,7 +29,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
   "getTokenInfo" should {
     "return token info" in {
-      val issuerId = createIssuer()
+      val did = DataPreparation.newDID()
+      val issuerId = createIssuer(did = did)
 
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
@@ -40,7 +41,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         ParticipantType.Issuer,
         None,
         "Issuer",
-        Some(DID.buildPrismDID("issuer")),
+        Some(did),
         None,
         None,
         None

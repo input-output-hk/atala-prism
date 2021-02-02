@@ -5,6 +5,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.circe.syntax._
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
@@ -16,14 +17,14 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
   ParticipantsDAO,
   ReceivedCredentialsDAO
 }
+import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDate}
 import scala.util.Random
 
 object DataPreparation {
   def createParticipant(name: String)(implicit database: Transactor[IO]): ParticipantId = {
-    val curatedName = name.filter(c => c.isLetterOrDigit || c == '.' || c == '-' || c == '_')
-    createParticipant(name, DID.buildPrismDID(curatedName))
+    createParticipant(name, newDID())
   }
 
   def createParticipant(
@@ -136,5 +137,9 @@ object DataPreparation {
     )
 
     ReceivedCredentialsDAO.insertSignedCredential(request).transact(database).unsafeRunSync()
+  }
+
+  def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

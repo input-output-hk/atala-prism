@@ -56,7 +56,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
           verifierId,
           ParticipantType.Verifier,
           "Verifier",
-          DID.buildPrismDID("test"),
+          DataPreparation.newDID(),
           ParticipantLogo(Vector()),
           TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
         )

@@ -53,7 +53,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
         CreateParticipantRequest(
           verifierId,
           "Verifier",
-          DID.buildPrismDID("test"),
+          DataPreparation.newDID(),
           ParticipantLogo(Vector())
         )
       )

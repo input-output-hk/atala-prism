@@ -9,10 +9,11 @@ import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType, To
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
 import io.iohk.atala.prism.console.models._
 import io.iohk.atala.prism.console.repositories.{daos => consoleDaos}
-import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.migrations.Student.ConnectionStatus
 import io.iohk.atala.prism.models.ParticipantId
+import org.scalatest.OptionValues._
 
 import java.time.LocalDate
 
@@ -30,19 +31,18 @@ object DataPreparation {
       database: Transactor[IO]
   ): Institution.Id = {
     val id = Institution.Id.random()
-    val didValue = did.getOrElse(DID.buildPrismDID(s"issuer-x$tag"))
+    val didValue = did.getOrElse(newDID())
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
-    val participant =
-      ParticipantInfo(
-        ParticipantId(id.uuid),
-        ParticipantType.Issuer,
-        publicKey,
-        name,
-        Option(didValue),
-        None,
-        None,
-        None
-      )
+    val participant = ParticipantInfo(
+      ParticipantId(id.uuid),
+      ParticipantType.Issuer,
+      publicKey,
+      name + tag,
+      Option(didValue),
+      None,
+      None,
+      None
+    )
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id
@@ -56,9 +56,8 @@ object DataPreparation {
   )(implicit
       database: Transactor[IO]
   ): ParticipantId = {
-    val did = DID.buildPrismDID(s"issuer-x$tag")
     val participant =
-      ParticipantInfo(id, ParticipantType.Verifier, publicKey, name, Option(did), None, None, None)
+      ParticipantInfo(id, ParticipantType.Verifier, publicKey, name + tag, Option(newDID()), None, None, None)
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id
@@ -153,5 +152,9 @@ object DataPreparation {
       .map(_ => ())
       .transact(database)
       .unsafeRunSync()
+  }
+
+  def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

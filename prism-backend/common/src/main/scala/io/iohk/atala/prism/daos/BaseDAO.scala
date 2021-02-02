@@ -29,10 +29,10 @@ trait BaseDAO {
   implicit val ledgerMeta: Meta[Ledger] =
     Meta[String].timap(b => Ledger.withNameInsensitiveOption(b).getOrElse(throw InvalidEnum[Ledger](b)))(_.entryName)
 
-  implicit val didMeta: Meta[DID] =
-    Meta[String].timap(s => {
-      DID.unsafeFromString(s)
-    })(_.value)
+  // it makes no sense to register an unpublished DID, we'd always look for the canonical DID
+  implicit val didMeta: Meta[DID] = Meta[String].timap(DID.unsafeFromString) { did =>
+    did.canonical.getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did")).value
+  }
 
   protected def uuidValueMeta[T <: UUIDValue: TypeTag](builder: UUIDValue.Builder[T]): Meta[T] = {
     Meta[UUID].timap(builder.apply)(_.uuid)

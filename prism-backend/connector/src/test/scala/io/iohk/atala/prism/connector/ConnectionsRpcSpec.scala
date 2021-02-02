@@ -2,7 +2,6 @@ package io.iohk.atala.prism.connector
 
 import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
@@ -13,7 +12,6 @@ import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, Con
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
@@ -268,10 +266,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     "return non-revoked keys for a DID owning participant" in {
       val earlierTimestamp = LocalDateTime.of(2020, 5, 12, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1000L
       val laterTimestamp = LocalDateTime.of(2020, 5, 13, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1000L
-
-      val holderKey = EC.generateKeyPair()
-      val issuerAuthKey = EC.generateKeyPair()
-
       val issuerCommKeys = Seq(
         ("foo", EC.generateKeyPair(), None, node_models.KeyUsage.COMMUNICATION_KEY),
         ("bar", EC.generateKeyPair(), None, node_models.KeyUsage.COMMUNICATION_KEY),
@@ -279,16 +273,20 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         ("master", EC.generateKeyPair(), None, node_models.KeyUsage.COMMUNICATION_KEY)
       )
 
-      val did = generateDid(holderKey.publicKey)
+      val holderKey = EC.generateKeyPair()
+      val holderDID = generateDid(holderKey.publicKey)
+
+      val issuerAuthKey = EC.generateKeyPair()
+      val issuerDID = generateDid(EC.generateKeyPair().publicKey)
       val issuerId =
-        createIssuer("Issuer", publicKey = Some(issuerAuthKey.publicKey), did = Some(DID.buildPrismDID("issuer")))
-      val holderId = createHolder("Holder", publicKey = Some(holderKey.publicKey), did = Some(did))
+        createIssuer("Issuer", publicKey = Some(issuerAuthKey.publicKey), did = Some(issuerDID))
+      val holderId = createHolder("Holder", publicKey = Some(holderKey.publicKey), did = Some(holderDID))
       val connectionId = createConnection(issuerId, holderId)
 
       val response = node_api.GetDidDocumentResponse(
         Some(
           node_models.DIDData(
-            id = "issuer",
+            id = issuerDID.suffix.value,
             publicKeys = issuerCommKeys.map {
               case (keyId, key, revokedTimestamp, usage) =>
                 val ecPoint = key.publicKey.getCurvePoint
@@ -305,14 +303,14 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
                     )
                   )
                 )
-            }.toSeq
+            }
           )
         )
       )
-      doReturn(Future.successful(response)).when(nodeMock).getDidDocument(GetDidDocumentRequest("did:prism:issuer"))
+      doReturn(Future.successful(response)).when(nodeMock).getDidDocument(GetDidDocumentRequest(issuerDID.value))
 
       val request = connector_api.GetConnectionCommunicationKeysRequest(connectionId = connectionId.toString)
-      val rpcRequest = SignedRpcRequest.generate(holderKey, did, request)
+      val rpcRequest = SignedRpcRequest.generate(holderKey, holderDID, request)
 
       usingApiAs(rpcRequest) { blockingStub =>
         val response = blockingStub.getConnectionCommunicationKeys(request)
@@ -331,7 +329,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
       val requestCaptor = ArgCaptor[node_api.GetDidDocumentRequest]
       verify(nodeMock, atLeast(1)).getDidDocument(requestCaptor)
-      requestCaptor.value.did mustBe "did:prism:issuer"
+      requestCaptor.value.did mustBe issuerDID.value
     }
 
     "return connection keys for a participant with key known to connector" in {

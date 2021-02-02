@@ -4,6 +4,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
+import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.EitherValues._
@@ -11,11 +12,17 @@ import org.scalatest.OptionValues._
 
 class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
   lazy val participantsRepository = new ParticipantsRepository(database)
+  private val canonicalSuffix = "0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77"
+  private val encodedStateUsed =
+    "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
+
+  private val shortDID = DID.buildPrismDID(canonicalSuffix)
+  private val longDID = DID.buildPrismDID(canonicalSuffix, encodedStateUsed)
 
   "getParticipant by did" should {
     "get a participant" in {
       val id = ParticipantId.random()
-      val did = DID.buildPrismDID("test")
+      val did = DataPreparation.newDID()
       val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(did), None, None, None)
       ParticipantsDAO
         .insert(info)
@@ -27,8 +34,34 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
       result.toOption.value must be(info)
     }
 
+    "get a participant by unpublished DID" in {
+      val id = ParticipantId.random()
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(shortDID), None, None, None)
+      ParticipantsDAO
+        .insert(info)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val result = participantsRepository.findBy(longDID).value.futureValue
+      result.toOption.value must be(info)
+    }
+
+    "get a participant by DID when creating it with an unpublished DID" in {
+      val id = ParticipantId.random()
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None, None)
+      ParticipantsDAO
+        .insert(info)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val result = participantsRepository.findBy(shortDID).value.futureValue
+      result.toOption.value must be(info.copy(did = Some(shortDID)))
+    }
+
     "return no participant on unknown did" in {
-      val did = DID.buildPrismDID("test")
+      val did = DataPreparation.newDID()
       ParticipantsDAO
         .insert(
           ParticipantInfo(
@@ -36,7 +69,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
             ParticipantType.Issuer,
             None,
             "issuer",
-            Some(DID.buildPrismDID("test-x")),
+            Some(DataPreparation.newDID()),
             None,
             None,
             None

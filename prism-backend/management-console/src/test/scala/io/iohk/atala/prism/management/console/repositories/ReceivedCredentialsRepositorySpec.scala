@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
@@ -25,7 +24,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
         CreateParticipantRequest(
           verifierId,
           "Verifier",
-          DID.buildPrismDID("test"),
+          DataPreparation.newDID(),
           ParticipantLogo(Vector())
         )
       )

@@ -21,9 +21,7 @@ object ECKeyOperation {
   private val firstMasterChild = "m/0'/0'/0'"
 
   def didFromMasterKey(ecKeyPair: ECKeyPair): DID = {
-    val atalaOperation = createDIDAtalaOperation(ecKeyPair)
-    val didSuffix = SHA256Digest.compute(atalaOperation.toByteArray).hexValue
-    DID.buildPrismDID(didSuffix)
+    DID.createUnpublishedDID(ecKeyPair.publicKey)
   }
 
   def createDIDAtalaOperation(ecKeyPair: ECKeyPair): AtalaOperation = {

@@ -52,6 +52,10 @@ final class DID private (val value: String) {
     }
   }
 
+  def canonical: Option[DID] = {
+    getCanonicalSuffix.map(buildPrismDID)
+  }
+
   override def toString: String = value
 
   override def equals(other: Any): Boolean =
@@ -77,26 +81,30 @@ object DID {
   def buildPrismDID(stateHash: String, maybeEncodedState: Option[String] = None): DID = {
     maybeEncodedState match {
       case None => DID(s"$prismPrefix$stateHash")
-      case Some(encodedState) => DID(s"$prismPrefix${buildSuffix(stateHash, encodedState)}")
+      case Some(encodedState) => buildPrismDID(stateHash = stateHash, encodedState = encodedState)
     }
   }
 
-  def buildPrismDID(stateHash: String, encodedState: String): DID =
+  def buildPrismDID(stateHash: String, encodedState: String): DID = {
     DID(s"$prismPrefix${buildSuffix(stateHash, encodedState)}")
+  }
 
-  def buildPrismDID(suffix: DIDSuffix): DID =
+  def buildPrismDID(suffix: DIDSuffix): DID = {
     DID(s"$prismPrefix${suffix.value}")
+  }
 
-  def fromString(string: String): Option[DID] =
+  def fromString(string: String): Option[DID] = {
     string match {
       case prismRegex(_*) | testRegex(_*) =>
         Some(DID(string))
       case _ =>
         None
     }
+  }
 
-  def unsafeFromString(string: String): DID =
+  def unsafeFromString(string: String): DID = {
     fromString(string).getOrElse(throw new IllegalArgumentException(s"Invalid DID $string"))
+  }
 
   private def buildSuffix(stateHash: String, encodedState: String): String = s"$stateHash:$encodedState"
 

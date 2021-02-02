@@ -11,11 +11,12 @@ import io.iohk.atala.prism.connector.model.{
   ConnectionId,
   ConnectionInfo,
   ConnectionStatus,
-  TokenString,
-  ContactConnection
+  ContactConnection,
+  TokenString
 }
 
 object ConnectionsDAO {
+
   def insert(
       initiator: ParticipantId,
       acceptor: ParticipantId,

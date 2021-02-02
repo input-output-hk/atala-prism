@@ -4,8 +4,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
+import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.protos.node_api.CreateDIDResponse
 import io.iohk.atala.prism.protos.{common_models, connector_api, node_models}
@@ -20,7 +20,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
   "registerDID" should {
     "work" in {
       usingApiAs.unlogged { blockingStub =>
-        val expectedDID = DID.buildPrismDID("test")
+        val expectedDID = DataPreparation.newDID()
         val name = "iohk"
         val logo = "none".getBytes()
         val transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value
@@ -32,7 +32,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
         nodeMock.createDID(*).returns {
           Future.successful(
-            CreateDIDResponse("test").withTransactionInfo(
+            CreateDIDResponse(expectedDID.suffix.value).withTransactionInfo(
               common_models
                 .TransactionInfo()
                 .withTransactionId(transactionId.toString)

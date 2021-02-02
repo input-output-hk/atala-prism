@@ -1,27 +1,32 @@
 package io.iohk.atala.mirror.services
 
-import monix.eval.Task
+import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
-import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import org.mockito.scalatest.MockitoSugar
-import monix.execution.Scheduler.Implicits.global
-import doobie.implicits._
 import io.iohk.atala.mirror.models.Connection
 import io.iohk.atala.mirror.models.Connection.PayIdName
-
-import scala.concurrent.duration.DurationInt
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import org.scalatest.Assertion
+import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+import org.mockito.scalatest.MockitoSugar
+import org.scalatest.Assertion
+import org.scalatest.OptionValues._
+
+import scala.concurrent.duration.DurationInt
 
 // sbt "project mirror" "testOnly *services.CardanoAddressInfoServiceSpec"
 class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with MirrorFixtures {
-  import ConnectorMessageFixtures._, ConnectionFixtures._, CardanoAddressInfoFixtures._, PayIdFixtures._,
-  CredentialFixtures._
+  import CardanoAddressInfoFixtures._
+  import ConnectionFixtures._
+  import ConnectorMessageFixtures._
+  import CredentialFixtures._
+  import PayIdFixtures._
 
   "cardanoAddressesMessageProcessor" should {
     "upsert cardano address" in new CardanoAddressInfoServiceFixtures {
@@ -231,10 +236,9 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       } yield ()).runSyncUnsafe()
 
       // when
-      val paymentInfo =
-        cardanoAddressInfoService
-          .findPaymentInfoByHolderDid(DID.buildPrismDID("nonexisting"), cardanoNetwork2)
-          .runSyncUnsafe()
+      val paymentInfo = cardanoAddressInfoService
+        .findPaymentInfoByHolderDid(newDID(), cardanoNetwork2)
+        .runSyncUnsafe()
 
       // then
       paymentInfo mustBe None
@@ -280,5 +284,9 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     val cardanoAddressMessageProcessor = cardanoAddressInfoService.cardanoAddressInfoMessageProcessor
     val paymentInformationMessageProcessor = cardanoAddressInfoService.payIdMessageProcessor
     val payIdNameRegistrationMessageProcessor = cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
+  }
+
+  def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

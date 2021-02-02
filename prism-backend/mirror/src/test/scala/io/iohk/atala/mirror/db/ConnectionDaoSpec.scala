@@ -2,14 +2,14 @@ package io.iohk.atala.mirror.db
 
 import monix.eval.Task
 import cats.data.NonEmptyList
-
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
 import io.iohk.atala.mirror.MirrorFixtures
 import doobie.implicits._
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
-
 import monix.execution.Scheduler.Implicits.global
+import org.scalatest.OptionValues._
 
 // sbt "project mirror" "testOnly *db.ConnectionDaoSpec"
 class ConnectionDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtures {
@@ -85,7 +85,7 @@ class ConnectionDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtures
     }
 
     "return none if a holder DID doesn't exist" in {
-      ConnectionDao.findByHolderDID(DID.buildPrismDID("none")).transact(database).runSyncUnsafe() mustBe None
+      ConnectionDao.findByHolderDID(newDID()).transact(database).runSyncUnsafe() mustBe None
     }
 
     "return last seen connection id" in {
@@ -99,5 +99,9 @@ class ConnectionDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtures
       // then
       lastSeenConnectionId mustBe connection2.id
     }
+  }
+
+  private def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

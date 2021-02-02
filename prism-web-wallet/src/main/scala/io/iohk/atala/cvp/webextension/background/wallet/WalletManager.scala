@@ -389,12 +389,12 @@ private[background] class WalletManager(
   ): Future[Unit] = {
     val result = for {
       aesKey <- generateSecretKey(password)
-      response <- registerDid(mnemonic, role, organisationName, logo)
+      (response, did) <- registerDid(mnemonic, role, organisationName, logo)
       newWalletData = WalletData(
         Map.empty,
         mnemonic,
         organisationName,
-        DID.unsafeFromString(response.did),
+        did,
         response.transactionInfo.map(_.transactionId),
         role,
         logo
@@ -494,20 +494,23 @@ private[background] class WalletManager(
       role: Role,
       organisationName: String,
       logo: Array[Byte]
-  ): Future[RegisterDIDResponse] = {
+  ): Future[(RegisterDIDResponse, DID)] = {
 
     val connectRole = Role.toConnectorApiRole(role)
     val logoByteString = ByteString.copyFrom(logo)
     val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
 
-    val registerDIDRequest =
-      RegisterDIDRequest(
-        Some(signedAtalaOperation(ecKeyPair, createDIDAtalaOperation(ecKeyPair))),
-        connectRole,
-        organisationName,
-        logoByteString
-      )
-    connectorClientService.registerDID(registerDIDRequest)
+    val registerDIDRequest = RegisterDIDRequest(
+      Some(signedAtalaOperation(ecKeyPair, createDIDAtalaOperation(ecKeyPair))),
+      connectRole,
+      organisationName,
+      logoByteString
+    )
+
+    // use an unpublished DID to start authenticating requests right away
+    connectorClientService
+      .registerDID(registerDIDRequest)
+      .map(_ -> DID.createUnpublishedDID(ecKeyPair.publicKey))
   }
 
   private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {

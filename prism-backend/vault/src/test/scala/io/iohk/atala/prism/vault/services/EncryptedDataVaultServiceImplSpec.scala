@@ -57,7 +57,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
         val storedPayload = storedPayloads.head
 
         storedPayload.id.toString must be(responsePayloadId)
-        storedPayload.did must be(did)
+        storedPayload.did must be(did.canonical.value)
         storedPayload.content must be(payload.toVector)
         assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
       }
@@ -89,7 +89,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
       val storedPayload = storedPayloads.head
 
       storedPayload.id.toString must be(id1)
-      storedPayload.did must be(did)
+      storedPayload.did must be(did.canonical.value)
       storedPayload.content must be(payload.toVector)
       assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
     }

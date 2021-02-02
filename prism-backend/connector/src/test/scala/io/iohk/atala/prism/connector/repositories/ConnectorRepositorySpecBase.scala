@@ -1,15 +1,15 @@
 package io.iohk.atala.prism.connector.repositories
 
 import java.time.Instant
-
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
 trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
@@ -26,16 +26,42 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
       .runUnique[ParticipantId]()
   }
 
-  protected def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None): ParticipantId = {
-    createParticipant(ParticipantType.Issuer, name, DID.buildPrismDID(name.toLowerCase), None, logo)
+  protected def createIssuer(
+      name: String = "Issuer",
+      logo: Option[ParticipantLogo] = None,
+      did: DID = DataPreparation.newDID()
+  ): ParticipantId = {
+    createParticipant(
+      ParticipantType.Issuer,
+      name,
+      did,
+      None,
+      logo
+    )
   }
 
-  protected def createHolder(name: String = "Holder", publicKey: Option[ECPublicKey] = None): ParticipantId = {
-    createParticipant(ParticipantType.Holder, name, DID.buildPrismDID(name.toLowerCase), publicKey, None)
+  protected def createHolder(
+      name: String = "Holder",
+      publicKey: Option[ECPublicKey] = None,
+      did: DID = DataPreparation.newDID()
+  ): ParticipantId = {
+    createParticipant(
+      ParticipantType.Holder,
+      name,
+      did,
+      publicKey,
+      None
+    )
   }
 
   protected def createVerifier(name: String = "Verifier", logo: Option[ParticipantLogo] = None): ParticipantId = {
-    createParticipant(ParticipantType.Verifier, name, DID.buildPrismDID(name.toLowerCase), None, logo)
+    createParticipant(
+      ParticipantType.Verifier,
+      name,
+      DID.createUnpublishedDID(EC.generateKeyPair().publicKey),
+      None,
+      logo
+    )
   }
 
   protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {

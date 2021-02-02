@@ -33,8 +33,15 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
     }
 
     "return BadRequest when given payId doesn't exist" in new PaymentEndpointsFixtures {
-      val response =
-        service.run(Request(method = Method.GET, uri = uri"/did:prism:somepayid", headers = headers)).runSyncUnsafe()
+      val response = service
+        .run(
+          Request(
+            method = Method.GET,
+            uri = uri"/did:prism:0000000011111111222222223333333344444444555555556666666677777777",
+            headers = headers
+          )
+        )
+        .runSyncUnsafe()
 
       response.status mustBe Status.NotFound
     }
@@ -96,5 +103,4 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
     val acceptHeader = Header("Accept", "application/cardano-testnet+json")
     val headers = Headers.of(payIdHeader, acceptHeader)
   }
-
 }

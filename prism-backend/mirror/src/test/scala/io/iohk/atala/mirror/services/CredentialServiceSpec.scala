@@ -153,7 +153,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
       // given
       val connectionId = ConnectionId.random()
       val token = connection1.token.token
-      val participantDID = DID.buildPrismDID("did1")
+      val participantDID = newDID()
       val connectionInfos =
         Seq(ConnectionInfo(token = token, connectionId = connectionId.toString, participantDID = participantDID.value))
 
@@ -200,10 +200,11 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
   "getIssuersDid" should {
     "parse signed credential" in new ConnectionServiceFixtures {
       val keyPair = EC.generateKeyPair()
+      val did = DID.createUnpublishedDID(keyPair.publicKey).canonical.value
       val signedCredential = Credential
         .fromCredentialContent(
           CredentialContent(
-            CredentialContent.JsonFields.IssuerDid.field -> DID.buildPrismDID("id").value
+            CredentialContent.JsonFields.IssuerDid.field -> did.value
           )
         )
         .sign(keyPair.privateKey)
@@ -212,7 +213,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
         signedCredential.canonicalForm
       )
 
-      credentialService.getIssuersDid(credential) mustBe Some(DID.buildPrismDID("id"))
+      credentialService.getIssuersDid(credential).value mustBe did
     }
 
     "parse unsigned credential" in new ConnectionServiceFixtures {
@@ -285,5 +286,9 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
   trait ConnectionServiceFixtures {
     val connectorClientStub = new ConnectorClientServiceStub
     val credentialService = new CredentialService(database, connectorClientStub, defaultNodeClientStub)
+  }
+
+  private def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

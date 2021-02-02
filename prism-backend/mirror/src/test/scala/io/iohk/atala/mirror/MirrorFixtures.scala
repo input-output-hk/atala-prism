@@ -35,6 +35,7 @@ import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToke
 import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
 import io.iohk.atala.prism.services.NodeClientService
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
+import org.scalatest.OptionValues._
 
 trait MirrorFixtures {
 
@@ -67,7 +68,7 @@ trait MirrorFixtures {
     lazy val connectionId1: ConnectionId = ConnectionId.unsafeFrom("3a66fcef-4d50-4a67-a365-d4dbebcf22d3")
     lazy val connectionId2: ConnectionId = ConnectionId.unsafeFrom("06325aef-d937-41b2-9a6c-b654e02b273d")
     lazy val connectionPayIdName2 = PayIdName("payIdName2")
-    lazy val connectionHolderDid2 = DID.buildPrismDID("did2")
+    lazy val connectionHolderDid2 = newDID()
     lazy val connection1: Connection =
       Connection(
         token = ConnectionToken("token1"),
@@ -100,7 +101,7 @@ trait MirrorFixtures {
       UserCredential(
         ConnectionFixtures.connection1.token,
         RawCredential(CredentialFixtures.jsonBasedCredential1.canonicalForm),
-        Some(DID.buildPrismDID("issuersdid1")),
+        Some(newDID()),
         ConnectorMessageId("messageId1"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
@@ -110,7 +111,7 @@ trait MirrorFixtures {
       UserCredential(
         ConnectionFixtures.connection1.token,
         RawCredential(CredentialFixtures.jsonBasedCredential2.canonicalForm),
-        Some(DID.buildPrismDID("issuersdid1")),
+        Some(newDID()),
         ConnectorMessageId("messageId2"),
         MessageReceivedDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
@@ -138,7 +139,7 @@ trait MirrorFixtures {
   object CredentialFixtures {
 
     val issuanceKeyId = "Issuance-0"
-    val issuerDID = DID.buildPrismDID("123456678abcdefg")
+    val issuerDID = newDID()
 
     val keyAddedDate: TimestampInfo = TimestampInfo(Instant.now().minusSeconds(1), 1, 1)
     val credentialIssueDate: TimestampInfo = TimestampInfo(Instant.now(), 2, 2)
@@ -382,5 +383,9 @@ trait MirrorFixtures {
           MirrorMessage().withPayIdNameRegistrationMessage(credential_models.PayIdNameRegistrationMessage(payIdName))
         )
         .toByteString
+  }
+
+  private def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

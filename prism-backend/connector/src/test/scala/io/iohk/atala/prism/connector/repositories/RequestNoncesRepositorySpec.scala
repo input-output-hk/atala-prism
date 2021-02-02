@@ -4,7 +4,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.model.ParticipantType
 import io.iohk.atala.prism.connector.repositories.daos.RequestNoncesDAO
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.OptionValues._
 
@@ -18,7 +18,7 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
 
   "burn" should {
     "burn a nonce" in {
-      val participantId = createParticipant(ParticipantType.Issuer, "iohk", DID.buildPrismDID("iohk"), None, None)
+      val participantId = createParticipant(ParticipantType.Issuer, "iohk", DataPreparation.newDID(), None, None)
       val nonce = RequestNonce("test".getBytes.toVector)
 
       available(participantId, nonce) must be(true)
@@ -29,7 +29,7 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
     }
 
     "fail if the nonce is already burnt" in {
-      val participantId = createParticipant(ParticipantType.Issuer, "iohk", DID.buildPrismDID("iohk"), None, None)
+      val participantId = createParticipant(ParticipantType.Issuer, "iohk", DataPreparation.newDID(), None, None)
       val nonce = RequestNonce("test".getBytes.toVector)
       requestNoncesRepository.burn(participantId, nonce).value.futureValue
       intercept[RuntimeException] {
@@ -38,8 +38,8 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
     }
 
     "burn the same nonce for several participants" in {
-      val participantId = createParticipant(ParticipantType.Issuer, "iohk", DID.buildPrismDID("iohk"), None, None)
-      val participantId2 = createParticipant(ParticipantType.Issuer, "iohk-2", DID.buildPrismDID("iohk2"), None, None)
+      val participantId = createParticipant(ParticipantType.Issuer, "iohk", DataPreparation.newDID(), None, None)
+      val participantId2 = createParticipant(ParticipantType.Issuer, "iohk-2", DataPreparation.newDID(), None, None)
       val nonce = RequestNonce("test".getBytes.toVector)
       requestNoncesRepository.burn(participantId, nonce).value.futureValue
 

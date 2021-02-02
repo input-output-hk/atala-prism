@@ -46,6 +46,13 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
       wrong.getCanonicalSuffix mustBe None
     }
 
+    "get the correct canonical DID" in {
+      val didString = s"did:prism:$canonicalSuffix"
+      short.canonical.value.value mustBe didString
+      long.canonical.value.value mustBe didString
+      wrong.canonical mustBe None
+    }
+
     "tell if the DID is in canonical form" in {
       short.isCanonicalForm mustBe true
       long.isCanonicalForm mustBe false
