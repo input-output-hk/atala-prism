@@ -119,6 +119,10 @@ private[background] class WalletManager(
     browserActionService.setBadgeText(badgeText)
   }
 
+  private def reloadPopup(): Unit = {
+    browserActionService.reloadPopup()
+  }
+
   private def updateWalletData(walletData: WalletData): Unit = {
     this.walletData = Some(walletData)
   }
@@ -334,6 +338,7 @@ private[background] class WalletManager(
             val request = SigningRequest(requestCounter, origin, sessionID, subject)
             signingRequests += requestCounter -> ((request, signaturePromise))
             updateBadge()
+            reloadPopup()
             signaturePromise.future
           }
           .getOrElse(

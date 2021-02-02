@@ -8,8 +8,6 @@ class BrowserActionService {
   def setBadgeText(text: String, callback: () => Unit): Unit = CommonsFacade.setBadgeText(text, callback)
   def setBadgeText(text: String): Future[Unit] = {
     val promise = Promise[Unit]()
-    /* send message to popup to reload */
-    chrome.runtime.Runtime.sendMessage(message = "reload")
     CommonsFacade.setBadgeText(text, () => promise.success(()))
     promise.future
   }
@@ -32,6 +30,11 @@ class BrowserActionService {
     val promise = Promise[Unit]()
     CommonsFacade.setPopup(popup, () => promise.success(()))
     promise.future
+  }
+
+  def reloadPopup(): Unit = {
+    /* send message to popup to reload */
+    chrome.runtime.Runtime.sendMessage(message = "reload")
   }
 
 }
