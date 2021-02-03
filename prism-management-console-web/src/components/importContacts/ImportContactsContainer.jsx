@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { omit } from 'lodash';
@@ -10,7 +9,6 @@ import { COMMON_CONTACT_HEADERS, IMPORT_CONTACTS } from '../../helpers/constants
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { validateContactsBulk } from '../../helpers/contactValidations';
-import { fromMomentToProtoDateFormatter } from '../../helpers/formatters';
 
 import './_style.scss';
 

@@ -6,7 +6,13 @@ import GenericFooter from '../common/Molecules/GenericFooter/GenericFooter';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import './_style.scss';
 
-const ImportTypeSelectionContainer = ({ onFinish, onCancel, isEmbedded, useCase }) => {
+const ImportTypeSelectionContainer = ({
+  onFinish,
+  onCancel,
+  isEmbedded,
+  useCase,
+  hasSelectedRecipients
+}) => {
   const { t } = useTranslation();
   const [selectedMethod, setSelectedMethod] = useState();
 
@@ -29,6 +35,7 @@ const ImportTypeSelectionContainer = ({ onFinish, onCancel, isEmbedded, useCase 
         selected={selectedMethod}
         onSelect={setSelectedMethod}
         useCase={useCase}
+        disableManual={!hasSelectedRecipients}
       />
       <GenericFooter
         previous={onCancel}
@@ -41,14 +48,16 @@ const ImportTypeSelectionContainer = ({ onFinish, onCancel, isEmbedded, useCase 
 };
 
 ImportTypeSelectionContainer.defaultProps = {
-  isEmbedded: false
+  isEmbedded: false,
+  hasSelectedRecipients: true
 };
 
 ImportTypeSelectionContainer.propTypes = {
   onFinish: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
   isEmbedded: PropTypes.bool,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
+  hasSelectedRecipients: PropTypes.bool
 };
 
 export default ImportTypeSelectionContainer;

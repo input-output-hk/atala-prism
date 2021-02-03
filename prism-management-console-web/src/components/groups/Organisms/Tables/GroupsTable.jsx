@@ -5,7 +5,14 @@ import { getGroupColumns } from '../../../../helpers/tableDefinitions/groups';
 
 import './_style.scss';
 
-const GroupsTable = ({ setGroupToDelete, groups, selectedGroups, setSelectedGroups, onCopy }) => {
+const GroupsTable = ({
+  setGroupToDelete,
+  groups,
+  selectedGroups,
+  setSelectedGroups,
+  onCopy,
+  shouldSelectRecipients
+}) => {
   const tableProps = {
     columns: getGroupColumns({ onCopy, setGroupToDelete, setSelectedGroups }),
     data: groups,
@@ -14,7 +21,10 @@ const GroupsTable = ({ setGroupToDelete, groups, selectedGroups, setSelectedGrou
       : {
           selectedRowKeys: selectedGroups,
           type: 'checkbox',
-          onChange: setSelectedGroups
+          onChange: setSelectedGroups,
+          getCheckboxProps: () => ({
+            disabled: !shouldSelectRecipients
+          })
         },
     rowKey: 'name'
   };
@@ -30,7 +40,8 @@ GroupsTable.defaultProps = {
   groups: [],
   selectedGroups: [],
   setSelectedGroups: null,
-  setGroupToDelete: null
+  setGroupToDelete: null,
+  shouldSelectRecipients: false
 };
 
 GroupsTable.propTypes = {
@@ -40,7 +51,8 @@ GroupsTable.propTypes = {
   onPageChange: PropTypes.func.isRequired,
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   setSelectedGroups: PropTypes.func,
-  hasMore: PropTypes.bool.isRequired
+  hasMore: PropTypes.bool.isRequired,
+  shouldSelectRecipients: PropTypes.bool
 };
 
 export default GroupsTable;

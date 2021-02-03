@@ -12,11 +12,11 @@ import {
 import { dateFormat } from '../../helpers/formatters';
 import Logger from '../../helpers/Logger';
 import ManualImport from './ManualImport';
+import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 
 const blankContact = {
   externalid: '',
-  contactName: '',
-  key: 0
+  contactName: ''
 };
 
 const ManualImportContainer = ({
@@ -26,14 +26,29 @@ const ManualImportContainer = ({
   loading,
   useCaseProps,
   credentialType,
-  recipients
+  recipients,
+  hasSelectedRecipients
 }) => {
   const { t } = useTranslation();
   const { useCase, showGroupSelection } = useCaseProps;
-  const [contacts, setContacts] = useState([blankContact]);
+
+  const createBlankContact = key => ({
+    ...blankContact,
+    key
+  });
+
+  const createBlankCredential = key => ({
+    ...blankContact,
+    ...credentialType?.fields.map(f => ({ [f.key]: '' })),
+    key
+  });
+
+  const [contacts, setContacts] = useState([createBlankContact(0)]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [groups, setGroups] = useState([]);
-  const [credentialsData, setCredentialsData] = useState(recipients);
+  const [credentialsData, setCredentialsData] = useState(
+    hasSelectedRecipients ? recipients : [createBlankCredential(0)]
+  );
 
   useEffect(() => {
     if (showGroupSelection) {
@@ -47,11 +62,6 @@ const ManualImportContainer = ({
     }
   }, []);
 
-  const createBlankContact = key => ({
-    ...blankContact,
-    key
-  });
-
   const handleAddNewContact = () => {
     const { key = 0 } = _.last(contacts) || {};
 
@@ -63,8 +73,35 @@ const ManualImportContainer = ({
 
   const handleDeleteContact = key => {
     const filteredContacts = contacts.filter(({ key: contactKey }) => key !== contactKey);
+    const last = _.last(contacts) || {};
 
-    setContacts(filteredContacts);
+    const contactsToSave = filteredContacts.length
+      ? filteredContacts
+      : [createBlankContact(last.key + 1)];
+
+    setContacts(contactsToSave);
+  };
+
+  const handleAddNewCredential = () => {
+    const { key = 0 } = _.last(credentialsData) || {};
+
+    const newCredential = createBlankCredential(key + 1);
+    const newCredentialList = credentialsData.concat(newCredential);
+
+    setCredentialsData(newCredentialList);
+  };
+
+  const handleDeleteCredential = key => {
+    const filteredCredentials = credentialsData.filter(
+      ({ key: credentialKey }) => key !== credentialKey
+    );
+    const last = _.last(credentialsData) || {};
+
+    const credentialsToSave = filteredCredentials.length
+      ? filteredCredentials
+      : [createBlankCredential(last.key + 1)];
+
+    setCredentialsData(credentialsToSave);
   };
 
   const tableProps = {
@@ -76,7 +113,10 @@ const ManualImportContainer = ({
     },
     [IMPORT_CREDENTIALS_DATA]: {
       dataSource: credentialsData,
-      updateDataSource: setCredentialsData
+      updateDataSource: setCredentialsData,
+      deleteRow: !hasSelectedRecipients && handleDeleteCredential,
+      addRow: !hasSelectedRecipients && handleAddNewCredential,
+      hasSelectedRecipients
     }
   };
 
@@ -119,6 +159,11 @@ const ManualImportContainer = ({
   );
 };
 
+ManualImportContainer.defaultProps = {
+  credentialType: null,
+  recipients: []
+};
+
 ManualImportContainer.propTypes = {
   api: PropTypes.shape({
     groupsManager: PropTypes.shape({
@@ -132,7 +177,10 @@ ManualImportContainer.propTypes = {
     useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
     showGroupSelection: PropTypes.func.isRequired,
     isEmbedded: PropTypes.bool.isRequired
-  }).isRequired
+  }).isRequired,
+  credentialType: PropTypes.shape(credentialTypeShape),
+  recipients: PropTypes.arrayOf(contactShape),
+  hasSelectedRecipients: PropTypes.bool.isRequired
 };
 
 export default withApi(ManualImportContainer);

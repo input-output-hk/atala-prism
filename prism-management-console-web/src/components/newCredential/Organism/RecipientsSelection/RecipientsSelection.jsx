@@ -59,6 +59,7 @@ const RecipientsSelection = ({
                 groups={groups}
                 selectedGroups={selectedGroups}
                 setSelectedGroups={setSelectedGroups}
+                shouldSelectRecipients={shouldSelectRecipients}
                 size="xs"
               />
             </div>
@@ -87,6 +88,7 @@ const RecipientsSelection = ({
               selectedContacts={selectedSubjects}
               setSelectedContacts={setSelectedSubjects}
               handleContactsRequest={getSubjects}
+              shouldSelectRecipients={shouldSelectRecipients}
               size="xs"
             />
           )}

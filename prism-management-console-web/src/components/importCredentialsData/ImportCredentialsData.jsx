@@ -9,7 +9,14 @@ import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpe
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 
-const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish }) => {
+const ImportCredentialsData = ({
+  recipients,
+  contacts,
+  credentialType,
+  onCancel,
+  onFinish,
+  hasSelectedRecipients
+}) => {
   const { t } = useTranslation();
 
   const generateHeadersMapping = () => {
@@ -34,7 +41,8 @@ const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish 
       credentialsData,
       headers,
       headersMapping,
-      recipients
+      recipients,
+      contacts
     );
 
   return (
@@ -46,15 +54,22 @@ const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish 
       onCancel={onCancel}
       useCase={IMPORT_CREDENTIALS_DATA}
       headersMapping={headersMapping}
+      hasSelectedRecipients={hasSelectedRecipients}
     />
   );
 };
 
+ImportCredentialsData.defaultProps = {
+  hasSelectedRecipients: false
+};
+
 ImportCredentialsData.propTypes = {
   recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)).isRequired,
+  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)).isRequired,
   credentialType: PropTypes.shape(credentialTypeShape).isRequired,
   onCancel: PropTypes.func.isRequired,
-  onFinish: PropTypes.func.isRequired
+  onFinish: PropTypes.func.isRequired,
+  hasSelectedRecipients: PropTypes.bool
 };
 
 export default withApi(withRedirector(ImportCredentialsData));

@@ -752,7 +752,8 @@
       },
       "errors": {
         "required": "{{headerName}} is required",
-        "unexpectedExternalID": "External ID does not exist",
+        "unexpectedExternalID": "Unexpected External ID",
+        "nonexistentExternalID": "External ID does not exist",
         "valueDoesNotMatch": "{{headerName}} does not match External ID",
         "emptyFile": "File is empty",
         "emptyRow": "Row contains no values",
@@ -876,7 +877,8 @@
     },
     "manualImportCard": {
       "title": "Add Info Manually",
-      "info": "Add credential information Manually."
+      "info": "Add credential information Manually.",
+      "disabled": "This option is only available when selecting recipients"
     },
     "bulkImportStep": {
       "title": "Follow these steps to continue:",

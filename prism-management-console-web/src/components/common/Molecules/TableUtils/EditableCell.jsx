@@ -58,6 +58,15 @@ const EditableCell = ({
 
   const errorToShow = getError();
 
+  const getElement = () => {
+    switch (type) {
+      case 'date':
+        return <DatePicker ref={inputRef} onPressEnter={save} onBlur={save} onChange={save} />;
+      default:
+        return <Input ref={inputRef} onPressEnter={save} onBlur={save} />;
+    }
+  };
+
   return (
     <td {...restProps}>
       {editable ? (
@@ -70,11 +79,7 @@ const EditableCell = ({
           help={errorToShow}
           name={dataIndex}
         >
-          {type === 'date' ? (
-            <DatePicker ref={inputRef} onPressEnter={save} onBlur={save} onChange={save} />
-          ) : (
-            <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-          )}
+          {getElement()}
         </Form.Item>
       ) : (
         children

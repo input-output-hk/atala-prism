@@ -11,7 +11,7 @@ import imgBulk from '../../images/bulk-img.svg';
 import imgManually from '../../images/import-manually.svg';
 import './_style.scss';
 
-const ImportTypeSelector = ({ selected, onSelect, useCase }) => (
+const ImportTypeSelector = ({ selected, onSelect, useCase, disableBulk, disableManual }) => (
   <div className="OptionCardsContainer">
     <OptionCard
       option={BULK_IMPORT}
@@ -19,6 +19,7 @@ const ImportTypeSelector = ({ selected, onSelect, useCase }) => (
       onSelect={onSelect}
       img={imgBulk}
       useCase={useCase}
+      disabled={disableBulk}
     />
     <OptionCard
       option={MANUAL_IMPORT}
@@ -26,18 +27,23 @@ const ImportTypeSelector = ({ selected, onSelect, useCase }) => (
       onSelect={onSelect}
       img={imgManually}
       useCase={useCase}
+      disabled={disableManual}
     />
   </div>
 );
 
 ImportTypeSelector.defaultProps = {
-  selected: ''
+  selected: '',
+  disableBulk: false,
+  disableManual: false
 };
 
 ImportTypeSelector.propTypes = {
   selected: PropTypes.string,
   onSelect: PropTypes.func.isRequired,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
+  disableBulk: PropTypes.bool,
+  disableManual: PropTypes.bool
 };
 
 export default ImportTypeSelector;

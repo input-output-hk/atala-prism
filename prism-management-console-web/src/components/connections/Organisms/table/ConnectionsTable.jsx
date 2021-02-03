@@ -16,7 +16,8 @@ const ConnectionsTable = ({
   hasMore,
   viewContactDetail,
   columns,
-  searching
+  searching,
+  shouldSelectRecipients
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +40,10 @@ const ConnectionsTable = ({
           setSelectedContacts && {
             selectedRowKeys: selectedContacts,
             type: 'checkbox',
-            onChange: setSelectedContacts
+            onChange: setSelectedContacts,
+            getCheckboxProps: () => ({
+              disabled: !shouldSelectRecipients
+            })
           }
         }
       />
@@ -55,7 +59,8 @@ ConnectionsTable.defaultProps = {
   inviteContact: null,
   searching: false,
   columns: undefined,
-  handleContactsRequest: null
+  handleContactsRequest: null,
+  shouldSelectRecipients: false
 };
 
 ConnectionsTable.propTypes = {
@@ -67,7 +72,8 @@ ConnectionsTable.propTypes = {
   handleContactsRequest: PropTypes.func,
   hasMore: PropTypes.bool.isRequired,
   searching: PropTypes.bool,
-  columns: PropTypes.arrayOf(PropTypes.any)
+  columns: PropTypes.arrayOf(PropTypes.any),
+  shouldSelectRecipients: PropTypes.bool
 };
 
 export default ConnectionsTable;

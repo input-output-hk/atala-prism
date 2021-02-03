@@ -32,7 +32,8 @@ const ImportDataContainer = ({
   recipients,
   credentialType,
   headersMapping,
-  loading
+  loading,
+  hasSelectedRecipients
 }) => {
   const [selection, setSelection] = useState();
   const [results, setResults] = useState();
@@ -124,6 +125,7 @@ const ImportDataContainer = ({
           loading={loading}
           credentialType={credentialType}
           recipients={recipients}
+          hasSelectedRecipients={hasSelectedRecipients}
         />
       );
     }
@@ -134,6 +136,7 @@ const ImportDataContainer = ({
           onFinish={setSelection}
           isEmbedded={isEmbedded[useCase]}
           useCase={useCase}
+          hasSelectedRecipients={hasSelectedRecipients}
         />
       );
     }
@@ -158,7 +161,8 @@ ImportDataContainer.propTypes = {
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
   headersMapping: PropTypes.arrayOf(
     PropTypes.shape({ key: PropTypes.string, translation: PropTypes.string })
-  ).isRequired
+  ).isRequired,
+  hasSelectedRecipients: PropTypes.bool.isRequired
 };
 
 export default ImportDataContainer;

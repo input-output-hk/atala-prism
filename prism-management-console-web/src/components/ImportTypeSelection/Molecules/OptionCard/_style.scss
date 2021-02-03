@@ -90,7 +90,6 @@
     font-size: 25px;
 
   }
-
 }
 .img-container{
   display: flex;
@@ -125,4 +124,9 @@
       @include primary-text($body, $dark-grey);
     }
   }
+}
+
+.Disabled {
+  cursor: not-allowed !important;
+  box-shadow: none;
 }

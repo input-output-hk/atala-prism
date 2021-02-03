@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import EditableTable from '../../../common/Organisms/Tables/EditableTable';
-import { contactCreationShape } from '../../../../helpers/propShapes';
+import { contactCreationShape, credentialTypeShape } from '../../../../helpers/propShapes';
 
 const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType }) => {
   const { t } = useTranslation();
@@ -39,10 +39,15 @@ const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType })
 };
 
 CredentialCreationTable.propTypes = {
-  contacts: PropTypes.arrayOf(contactCreationShape).isRequired,
-  updateDataSource: PropTypes.func.isRequired,
-  deleteContact: PropTypes.func.isRequired,
-  setDisableSave: PropTypes.func.isRequired
+  tableProps: PropTypes.shape({
+    credentialsData: PropTypes.arrayOf(contactCreationShape).isRequired,
+    updateDataSource: PropTypes.func.isRequired,
+    deleteContact: PropTypes.func,
+    addNewRow: PropTypes.func,
+    hasSelectedRecipients: PropTypes.bool
+  }).isRequired,
+  setDisableSave: PropTypes.func.isRequired,
+  credentialType: PropTypes.shape(credentialTypeShape).isRequired
 };
 
 export default CredentialCreationTable;

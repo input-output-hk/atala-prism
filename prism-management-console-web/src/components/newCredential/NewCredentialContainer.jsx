@@ -272,10 +272,12 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         return (
           <ImportCredentialsData
             recipients={recipients}
+            contacts={subjects}
             credentialType={credentialTypes[credentialType]}
             onCancel={() => setCurrentStep(currentStep - 1)}
             onFinish={handleImportedData}
             getContactsFromGroups={getContactsFromGroups}
+            hasSelectedRecipients={shouldSelectRecipients}
           />
         );
       }

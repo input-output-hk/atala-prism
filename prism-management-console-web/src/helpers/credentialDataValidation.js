@@ -9,7 +9,8 @@ export const validateCredentialDataBulk = (
   credentialsData,
   inputHeaders,
   headersMapping,
-  recipients
+  recipients,
+  contacts
 ) => {
   // trim last empty rows
   const trimmedCredentials = trimEmptyRows(credentialsData);
@@ -28,7 +29,8 @@ export const validateCredentialDataBulk = (
       credentialType.fields,
       expectedHeaders,
       headersMapping,
-      recipients
+      recipients,
+      contacts
     );
   }
 
@@ -64,7 +66,8 @@ const validateCredentialsData = (
   fieldsValidations,
   expectedHeaders,
   headersMapping,
-  recipients
+  recipients,
+  contacts
 ) =>
   credentialsData.map((dataRow, index) =>
     credentialDataValidation(
@@ -72,7 +75,8 @@ const validateCredentialsData = (
       fieldsValidations,
       expectedHeaders,
       headersMapping,
-      recipients
+      recipients,
+      contacts
     )
   );
 
@@ -98,7 +102,8 @@ const credentialDataValidation = (
   fieldsValidations,
   expectedHeaders,
   headersMapping,
-  recipients
+  recipients,
+  contacts
 ) => {
   if (isEmptyRow(dataRow)) return generateEmptyRowError(dataRow.index);
 
@@ -106,6 +111,7 @@ const credentialDataValidation = (
     dataRow,
     expectedHeaders,
     recipients,
+    contacts,
     headersMapping
   );
 
@@ -125,6 +131,7 @@ const validateCommonFields = (
   dataRow,
   { expectedCommonHeaders, allExpectedHeaders },
   recipients,
+  contacts,
   headersMapping
 ) =>
   expectedCommonHeaders
@@ -136,8 +143,21 @@ const validateCommonFields = (
       const isExternalID = key === EXTERNAL_ID_KEY;
       const importedValue = dataRow[header];
       const importedExternalID = dataRow[translatedHeader];
+
       if (!importedValue)
         return generateCommonFieldError('required', dataRow, header, allExpectedHeaders);
+
+      if (!recipients.length) {
+        return validateContactExistence(
+          importedExternalID,
+          importedValue,
+          isExternalID,
+          contacts,
+          dataRow,
+          header,
+          allExpectedHeaders
+        );
+      }
 
       return recipients.some(
         ({ [key]: expectedValue, [EXTERNAL_ID_KEY]: expectedExternalID }) =>
@@ -152,6 +172,29 @@ const validateCommonFields = (
           );
     })
     .filter(Boolean);
+
+const validateContactExistence = (
+  importedExternalID,
+  importedValue,
+  isExternalID,
+  contacts,
+  dataRow,
+  header,
+  allExpectedHeaders
+) => {
+  const allExternalIds = contacts.map(c => c.externalid);
+
+  if (isExternalID) {
+    return allExternalIds.includes(importedExternalID)
+      ? null
+      : generateCommonFieldError('inexistentExternalID', dataRow, header, allExpectedHeaders);
+  }
+
+  const expectedName = contacts.find(c => c.externalid === importedExternalID)?.contactName;
+  return !expectedName || expectedName === importedValue
+    ? null
+    : generateCommonFieldError('valueDoesNotMatch', dataRow, header, allExpectedHeaders);
+};
 
 const generateInvalidHeadersError = (input, allExpectedHeaders) =>
   input
