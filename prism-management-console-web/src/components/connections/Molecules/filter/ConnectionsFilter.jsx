@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Row, Col, Input, Icon, Select } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { Row, Col, Input, Select } from 'antd';
 import { PENDING_CONNECTION, CONNECTED } from '../../../../helpers/constants';
 
 import './_style.scss';
@@ -17,7 +18,7 @@ const ConnectionsFilter = ({ searchText, setSearchText, status, setStatus, withS
         <Col span={12}>
           <Input
             placeholder={t('contacts.filters.search')}
-            prefix={<Icon type="search" />}
+            prefix={<SearchOutlined />}
             onChange={({ target: { value } }) => setSearchText(value)}
             allowClear
             value={searchText}

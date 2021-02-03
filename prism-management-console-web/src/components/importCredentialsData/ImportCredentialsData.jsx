@@ -27,10 +27,6 @@ const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish 
 
   const headersMapping = generateHeadersMapping();
 
-  const handleFinishUpload = (credentials, _groups, setResults) => {
-    onFinish(credentials, setResults);
-  };
-
   // append credential type to validator function arguments
   const validatorWithCredentialType = (credentialsData, headers) =>
     validateCredentialDataBulk(
@@ -46,7 +42,7 @@ const ImportCredentialsData = ({ recipients, credentialType, onCancel, onFinish 
       recipients={recipients}
       credentialType={credentialType}
       bulkValidator={validatorWithCredentialType}
-      onFinish={handleFinishUpload}
+      onFinish={onFinish}
       onCancel={onCancel}
       useCase={IMPORT_CREDENTIALS_DATA}
       headersMapping={headersMapping}

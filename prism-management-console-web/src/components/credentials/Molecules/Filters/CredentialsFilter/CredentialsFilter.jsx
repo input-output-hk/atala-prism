@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { Row, Col, Input, Icon, Select } from 'antd';
+import { DownOutlined, SearchOutlined } from '@ant-design/icons';
+import { Row, Col, Input, Select } from 'antd';
 import CustomDatePicker from '../../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import CustomInputGroup from '../../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import {
@@ -18,13 +19,13 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
 
   const datePickerProps = {
     placeholder: t('credentials.filters.dateSigned'),
-    suffixIcon: <Icon type="down" />,
+    suffixIcon: <DownOutlined />,
     onChange: (_, dateString) => filterProps.setDate(dateString)
   };
 
   const datePickerReceivedProps = {
     placeholder: t('credentials.filters.dateReceived'),
-    suffixIcon: <Icon type="down" />,
+    suffixIcon: <DownOutlined />,
     onChange: (_, dateString) => filterProps.setDate(dateString)
   };
 
@@ -34,7 +35,7 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
         <Input
           id="nameFilter"
           placeholder={t('credentials.filters.search')}
-          prefix={<Icon type="search" />}
+          prefix={<SearchOutlined />}
           onChange={({ target: { value } }) => filterProps.setName(value)}
           allowClear
           value={filterProps.name}

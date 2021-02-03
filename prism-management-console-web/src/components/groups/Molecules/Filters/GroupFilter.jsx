@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Icon, Input, Row, Col, Select } from 'antd';
+import { DownOutlined, SearchOutlined } from '@ant-design/icons';
+import { Input, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-
-const { Option } = Select;
 
 const GroupFilters = ({ updateGroups }) => {
   const { t } = useTranslation();
@@ -19,7 +18,7 @@ const GroupFilters = ({ updateGroups }) => {
 
   const datePickerProps = {
     placeholder: t('groups.filters.date'),
-    suffixIcon: <Icon type="down" />,
+    suffixIcon: <DownOutlined />,
     onChange: (_, dateString) => setDate(dateString)
   };
 
@@ -29,7 +28,7 @@ const GroupFilters = ({ updateGroups }) => {
         <Col span={4}>
           <Input
             placeholder={t('groups.filters.search')}
-            prefix={<Icon type="search" />}
+            prefix={<SearchOutlined />}
             onChange={({ target: { value } }) => setName(value)}
           />
         </Col>

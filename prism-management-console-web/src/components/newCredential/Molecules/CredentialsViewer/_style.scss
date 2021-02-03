@@ -1,20 +1,32 @@
 @import '../../../../css/general_styling';
 
 .PreviewContainer {
-  padding: 3em;
+  padding: 1em 3em;
   width: 35%;
   display: flex;
   flex-flow: column;
   align-items: center;
-  overflow-y: scroll;
-
   button {
     background-color: transparent;
     border: none;
     cursor: pointer;
+    color: $dark-grey;
   }
-}
-
-.arrowsContainer {
-  margin-top: 20px;
+  .PreviewCredential {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-y: scroll;
+    .credentialScroll {
+      margin-right: 0.5em;
+    }
+  }
+  .arrowsContainer {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid $dark-grey;
+    color: $dark-grey;
+    padding: 0.2em 1em;
+    z-index: 1;
+  }
 }

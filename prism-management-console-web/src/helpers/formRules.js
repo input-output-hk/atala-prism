@@ -1,6 +1,7 @@
 import moment from 'moment';
+import i18n from 'i18next';
 
-export const futureDate = (value, cb, compareTo) => {
+export const pastDate = (value, cb, compareTo) => {
   if (!value) return cb('error');
   const isAfter = moment(value).isSameOrAfter(compareTo);
 
@@ -11,7 +12,7 @@ export const futureDate = (value, cb, compareTo) => {
   }
 };
 
-export const pastDate = (value, cb, compareTo) => {
+export const futureDate = (value, cb, compareTo) => {
   if (!compareTo) {
     cb();
   } else {
@@ -60,18 +61,18 @@ const validatePassword = (value = '') =>
     []
   );
 
-const formatPasswordErrors = (errors, t) => {
+const formatPasswordErrors = errors => {
   const prefix = 'registration.password.invalidPassword.';
 
   return errors.reduce((accum, current, currentIndex) => {
     let link = '';
 
     if (currentIndex < errors.length - 2) link = ', ';
-    else if (currentIndex < errors.length - 1) link = ` ${t(`${prefix}and`)} `;
+    else if (currentIndex < errors.length - 1) link = ` ${i18n.t(`${prefix}and`)} `;
     else if (currentIndex === errors.length - 1) link = '.';
 
-    return accum + t(`${prefix}${current}`) + link;
-  }, `${t(`${prefix}initial`)} `);
+    return accum + i18n.t(`${prefix}${current}`) + link;
+  }, `${i18n.t(`${prefix}initial`)} `);
 };
 
 export const passwordFormatValidation = (value, cb, t) => {
@@ -80,3 +81,20 @@ export const passwordFormatValidation = (value, cb, t) => {
   if (!errors.length) cb();
   else cb(formatPasswordErrors(errors, t));
 };
+
+export const generateRequiredRule = (isDate, dataIndex) =>
+  Object.assign(
+    isDate
+      ? {
+          validator: (rule, value, cb) => {
+            if (!value?._isValid) cb(rule.message);
+            else cb();
+          }
+        }
+      : { required: true, whitespace: true },
+    {
+      message: i18n.t('manualImport.table.required', {
+        field: i18n.t(`contacts.table.columns.${dataIndex}`)
+      })
+    }
+  );

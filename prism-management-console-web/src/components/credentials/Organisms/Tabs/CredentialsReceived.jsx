@@ -33,7 +33,7 @@ const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initia
     return <CredentialsTable {...expandedTableProps} />;
   };
 
-  return <Row>{renderContent()}</Row>;
+  return renderContent();
 };
 
 CredentialsReceived.defaultProps = {

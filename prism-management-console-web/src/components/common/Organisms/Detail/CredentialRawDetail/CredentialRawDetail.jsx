@@ -1,5 +1,6 @@
 import React from 'react';
-import { Drawer, Card, Row, Col, Icon, Divider } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import { Drawer, Card, Row, Col, Divider } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslationWithPrefix } from '../../../../../hooks/useTranslationWithPrefix';
 import CustomButton from '../../../Atoms/CustomButton/CustomButton';
@@ -31,7 +32,7 @@ const CredentialRawDetail = ({ credentialString, visible, onClose }) => {
         <Card className="Card">
           <Row>
             <Col span={2}>
-              <Icon type="info-circle" className="icon" style={{ fontSize: 16 }} />
+              <InfoCircleOutlined className="icon" style={{ fontSize: 16 }} />
             </Col>
             <Col span={22}>
               <Divider orientation="left" className="title">

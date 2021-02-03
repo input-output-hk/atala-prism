@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Icon } from 'antd';
+import { Icon as LegacyIcon } from '@ant-design/compatible';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 import './_style.scss';
 
@@ -34,7 +34,7 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase }) => {
       tabIndex={index[option]}
     >
       <div className="icon-container">
-        <Icon
+        <LegacyIcon
           className={isSelected ? 'icon' : 'icon-disabled'}
           type={isSelected ? 'check-circle' : 'check-circle'}
           theme="filled"

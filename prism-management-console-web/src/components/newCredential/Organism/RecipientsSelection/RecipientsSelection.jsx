@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Col, Tabs, Input, Icon, Checkbox } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { Col, Tabs, Input, Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import './_style.scss';
@@ -42,7 +43,7 @@ const RecipientsSelection = ({
             <Input
               className="selectionGroups"
               placeholder={t('groups.filters.search')}
-              prefix={<Icon type="search" />}
+              prefix={<SearchOutlined />}
               onChange={({ target: { value } }) => setGroupsFilter(value)}
             />
             <div className="selectGroupCheckbox">
@@ -71,7 +72,7 @@ const RecipientsSelection = ({
             <Input
               className="selectionGroups"
               placeholder={t('groups.filters.search')}
-              prefix={<Icon type="search" />}
+              prefix={<SearchOutlined />}
               onChange={({ target: { value } }) => setSubjectsFilter(value)}
             />
             <div className="selectGroupCheckbox">

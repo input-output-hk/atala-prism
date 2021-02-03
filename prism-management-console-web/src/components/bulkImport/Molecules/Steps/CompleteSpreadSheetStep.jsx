@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import Papa from 'papaparse';
 import chardet from 'jschardet';
 import { useTranslation } from 'react-i18next';
-import { Icon, Upload, message, Button } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { Upload, message, Button } from 'antd';
 import GenericStep from './GenericStep';
 import { downloadTemplateCsv } from '../../../../helpers/fileHelpers';
 import { contactShape, credentialTypeShape } from '../../../../helpers/propShapes';
@@ -96,12 +97,12 @@ const CompleteSpreadSheetStep = ({
           }
         >
           {t('bulkImport.completeSpreadsheet.downloadText')}
-          <Icon className="Icon" type="download" />
+          <DownloadOutlined className="Icon" />
         </Button>
         <Upload {...uploaderProps}>
           <Button className="fileActionButton">
             {t('bulkImport.completeSpreadsheet.uploadText')}
-            <Icon className="Icon" type="upload" />
+            <UploadOutlined className="Icon" />
           </Button>
         </Upload>
       </>

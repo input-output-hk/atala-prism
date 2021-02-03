@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, message, Icon } from 'antd';
+import { CheckCircleFilled, CloseCircleFilled, LoadingOutlined } from '@ant-design/icons';
+import { Row, Col, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import Logger from '../../../../helpers/Logger';
 import { exactValueExists } from '../../../../helpers/filterHelpers';
@@ -58,11 +59,11 @@ const GroupName = ({
   const renderNameState = () => {
     switch (nameState) {
       case GROUP_NAME_STATES.loading:
-        return <Icon type="loading" />;
+        return <LoadingOutlined />;
       case GROUP_NAME_STATES.failed:
-        return <Icon type="close-circle" theme="filled" style={{ color: colors.error }} />;
+        return <CloseCircleFilled style={{ color: colors.error }} />;
       case GROUP_NAME_STATES.possible:
-        return <Icon type="check-circle" theme="filled" style={{ color: colors.success }} />;
+        return <CheckCircleFilled style={{ color: colors.success }} />;
       default:
         return null;
     }

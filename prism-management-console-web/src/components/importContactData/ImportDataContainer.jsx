@@ -5,10 +5,7 @@ import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 import ImportTypeSelectionContainer from '../ImportTypeSelection/ImportTypeSelectionContainer';
 import BulkImport from '../bulkImport/BulkImport';
 import ManualImportContainer from '../manualImport/ManualImportContainer';
-import {
-  filterEmptyContact,
-  translateBackSpreadsheetNamesToContactKeys
-} from '../../helpers/contactValidations';
+import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
 import {
   BULK_IMPORT,
   MANUAL_IMPORT,
@@ -42,10 +39,7 @@ const ImportDataContainer = ({
 
   const resetSelection = () => setSelection();
 
-  const handleManualImport = (contacts, groups) => {
-    const filteredContacts = contacts.filter(filterEmptyContact);
-    onFinish(filteredContacts, groups, setResults);
-  };
+  const handleManualImport = payload => onFinish(payload, setResults);
 
   const handleBulkImport = (fileData, selectedGroups) => {
     const { dataObjects, containsErrors, validationErrors } = parseFile(fileData, bulkValidator);
@@ -55,7 +49,18 @@ const ImportDataContainer = ({
         dataObjects,
         headersMapping
       );
-      onFinish(translatedContacts, selectedGroups, setResults);
+
+      const payload = {
+        [IMPORT_CONTACTS]: {
+          contacts: translatedContacts,
+          groups: selectedGroups
+        },
+        [IMPORT_CREDENTIALS_DATA]: {
+          credentials: translatedContacts
+        }
+      };
+
+      onFinish(payload[useCase], setResults);
     }
   };
 
@@ -117,6 +122,8 @@ const ImportDataContainer = ({
           cancelImport={resetSelection}
           useCaseProps={useCaseProps}
           loading={loading}
+          credentialType={credentialType}
+          recipients={recipients}
         />
       );
     }

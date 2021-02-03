@@ -4,10 +4,14 @@ import _ from 'lodash';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withApi } from '../providers/withApi';
-import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
+import {
+  COMMON_CONTACT_HEADERS,
+  IMPORT_CONTACTS,
+  IMPORT_CREDENTIALS_DATA
+} from '../../helpers/constants';
+import { dateFormat } from '../../helpers/formatters';
 import Logger from '../../helpers/Logger';
 import ManualImport from './ManualImport';
-import UnderContsructionMessage from '../common/Atoms/UnderContsructionMessage/UnderContsructionMessage';
 
 const blankContact = {
   externalid: '',
@@ -20,14 +24,16 @@ const ManualImportContainer = ({
   onSave,
   cancelImport,
   loading,
-  useCaseProps
+  useCaseProps,
+  credentialType,
+  recipients
 }) => {
   const { t } = useTranslation();
   const { useCase, showGroupSelection } = useCaseProps;
-
   const [contacts, setContacts] = useState([blankContact]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [credentialsData, setCredentialsData] = useState(recipients);
 
   useEffect(() => {
     if (showGroupSelection) {
@@ -62,25 +68,54 @@ const ManualImportContainer = ({
   };
 
   const tableProps = {
-    contacts,
-    updateDataSource: setContacts,
-    deleteContact: handleDeleteContact,
-    addNewContact: handleAddNewContact
+    [IMPORT_CONTACTS]: {
+      dataSource: contacts,
+      updateDataSource: setContacts,
+      deleteRow: handleDeleteContact,
+      addRow: handleAddNewContact
+    },
+    [IMPORT_CREDENTIALS_DATA]: {
+      dataSource: credentialsData,
+      updateDataSource: setCredentialsData
+    }
+  };
+
+  const processCredentials = credentials => {
+    const fieldsToInclude = COMMON_CONTACT_HEADERS.concat(credentialType.fields.map(f => f.key));
+
+    const dateFields = credentialType.fields
+      .filter(({ type }) => type === 'date')
+      .map(({ key }) => key);
+
+    const trimmedCredentials = credentials.map(r =>
+      _.pickBy(r, (_value, key) => fieldsToInclude.includes(key))
+    );
+
+    const parsedCredentials = trimmedCredentials.map(c =>
+      dateFields.reduce((acc, df) => Object.assign(acc, { [df]: dateFormat(c[df]) }), c)
+    );
+
+    return parsedCredentials;
+  };
+
+  const handleSave = {
+    [IMPORT_CONTACTS]: () => onSave({ contacts, groups: selectedGroups }),
+    [IMPORT_CREDENTIALS_DATA]: () => onSave({ credentials: processCredentials(credentialsData) })
   };
 
   const groupsProps = { groups, selectedGroups, setSelectedGroups };
 
-  return useCase === IMPORT_CONTACTS ? (
+  return (
     <ManualImport
-      tableProps={tableProps}
+      tableProps={tableProps[useCase]}
       groupsProps={groupsProps}
-      onSave={() => onSave(contacts, selectedGroups)}
+      onSave={handleSave[useCase]}
       cancelImport={cancelImport}
       loading={loading}
+      credentialType={credentialType}
+      recipients={recipients}
       {...useCaseProps}
     />
-  ) : (
-    <UnderContsructionMessage goBack={cancelImport} />
   );
 };
 

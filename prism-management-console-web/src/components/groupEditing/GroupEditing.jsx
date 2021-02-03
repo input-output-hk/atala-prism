@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Checkbox, Col, Row, Button, Icon } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { Checkbox, Col, Row, Button } from 'antd';
 import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
@@ -128,7 +129,7 @@ const GroupEditing = ({
               onClick: () => setModalVisible(true)
             }}
             buttonText={t('groupEditing.buttons.addContacts')}
-            icon={<Icon type="plus" />}
+            icon={<PlusOutlined />}
           />
         </Col>
       </Row>

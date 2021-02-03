@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { Icon, Select } from 'antd';
-import { filterEmptyContact } from '../../helpers/contactValidations';
+import { PlusOutlined } from '@ant-design/icons';
+import { Select } from 'antd';
+import { isEmptyContact } from '../../helpers/contactValidations';
+import { isEmptyCredential } from '../../helpers/credentialDataValidation';
 import GenericFooter from '../common/Molecules/GenericFooter/GenericFooter';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import ContactCreationTable from './Organisms/Tables/ContactCreationTable';
+import CredentialCreationTable from './Organisms/Tables/CredentialCreationTable';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
-import { contactCreationShape, groupShape } from '../../helpers/propShapes';
+import { contactCreationShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -20,37 +22,38 @@ const ManualImport = ({
   useCase,
   showGroupSelection,
   isEmbedded,
-  loading
+  loading,
+  credentialType
 }) => {
   const [disableNext, setDisableNext] = useState(true);
 
   const { t } = useTranslation();
   const { Option } = Select;
-  const { contacts, addNewContact } = tableProps;
+  const { dataSource, addRow } = tableProps;
   const { groups, selectedGroups, setSelectedGroups } = groupsProps;
 
   const shouldDisableNext = () => {
-    const noEmptyContacts = contacts.filter(filterEmptyContact);
-    const errors = contacts.filter(c => c.errors);
+    const emptyEntries = dataSource.filter(
+      useCase === IMPORT_CONTACTS
+        ? isEmptyContact
+        : dataRow => isEmptyCredential(dataRow, credentialType.fields)
+    );
+    const errors = dataSource.filter(c => c.errorFields);
 
-    return !noEmptyContacts.length || errors.length;
+    return emptyEntries.length || errors.length;
   };
 
   useEffect(() => {
     setDisableNext(shouldDisableNext());
-  }, [contacts]);
+  }, [dataSource]);
 
   return (
     <div className="ManualImportWrapper">
       <div className={`ContentHeader TitleAndSubtitle ${isEmbedded ? 'EmbeddedHeader' : ''}`}>
         <h3>{t(`${useCase}.manualImport.title`)}</h3>
+
         <div className="Options">
-          <CustomButton
-            buttonProps={{ onClick: addNewContact, className: 'theme-secondary' }}
-            buttonText={t(`${useCase}.manualImport.newContact`)}
-            icon={<Icon type="plus" />}
-          />
-          {showGroupSelection && (
+          {showGroupSelection ? (
             <div className="MultiSelectContainer">
               <Select
                 mode="tags"
@@ -64,11 +67,28 @@ const ManualImport = ({
                 ))}
               </Select>
             </div>
+          ) : (
+            <p>{t(`${useCase}.manualImport.info`)}</p>
+          )}
+          {addRow && (
+            <CustomButton
+              buttonProps={{ onClick: addRow, className: 'theme-secondary' }}
+              buttonText={t(`${useCase}.manualImport.newContact`)}
+              icon={<PlusOutlined />}
+            />
           )}
         </div>
       </div>
       <div className="ManualImportContent">
-        <ContactCreationTable {...tableProps} setDisableSave={setDisableNext} />
+        {useCase === IMPORT_CONTACTS ? (
+          <ContactCreationTable tableProps={tableProps} setDisableSave={setDisableNext} />
+        ) : (
+          <CredentialCreationTable
+            tableProps={tableProps}
+            setDisableSave={setDisableNext}
+            credentialType={credentialType}
+          />
+        )}
       </div>
       <GenericFooter
         previous={cancelImport}
@@ -81,12 +101,16 @@ const ManualImport = ({
   );
 };
 
+ManualImport.defaultProps = {
+  credentialType: null
+};
+
 ManualImport.propTypes = {
   tableProps: PropTypes.shape({
-    contacts: PropTypes.shape(contactCreationShape).isRequired,
+    dataSource: PropTypes.shape(contactCreationShape).isRequired,
     updateDataSource: PropTypes.func.isRequired,
-    deleteContact: PropTypes.func.isRequired,
-    addNewContact: PropTypes.func.isRequired
+    deleteRow: PropTypes.func.isRequired,
+    addRow: PropTypes.func.isRequired
   }).isRequired,
   groupsProps: PropTypes.shape({
     groups: PropTypes.shape(groupShape).isRequired,
@@ -98,7 +122,8 @@ ManualImport.propTypes = {
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
   showGroupSelection: PropTypes.bool.isRequired,
   isEmbedded: PropTypes.bool.isRequired,
-  loading: PropTypes.bool.isRequired
+  loading: PropTypes.bool.isRequired,
+  credentialType: PropTypes.shape(credentialTypeShape)
 };
 
 export default ManualImport;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { withRedirector } from '../../../providers/withRedirector';
@@ -17,7 +17,7 @@ const CredentialsButtons = ({ redirector: { redirectToNewCredential } }) => {
           onClick: redirectToNewCredential
         }}
         buttonText={t('credentials.actions.createCredential')}
-        icon={<Icon type="plus" />}
+        icon={<PlusOutlined />}
       />
     </div>
   );

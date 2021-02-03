@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Icon } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
@@ -29,7 +29,7 @@ const NewGroupButton = ({ onClick }) => {
         className: 'theme-secondary'
       }}
       buttonText={t('groups.createNewGroup')}
-      icon={<Icon type="plus" />}
+      icon={<PlusOutlined />}
     />
   );
 };

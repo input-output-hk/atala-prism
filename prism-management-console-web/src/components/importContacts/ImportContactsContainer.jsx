@@ -19,12 +19,12 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
   const [loading, setLoading] = useState(false);
 
   // TODO: replace with bulk request
-  const handleRequests = async (contactsData, groups, setResults) => {
+  const handleRequests = async ({ contacts, groups }, setResults) => {
     setLoading(true);
     try {
       const groupsToAssign = await createMissingGroups(groups);
 
-      const contactsCreated = await createContacts(contactsData, groupsToAssign);
+      const contactsCreated = await createContacts(contacts, groupsToAssign);
 
       message.success(t('importContacts.success'));
       setResults({

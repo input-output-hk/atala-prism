@@ -158,5 +158,5 @@ const renameProperties = (contact, headersMapping) =>
     {}
   );
 
-export const filterEmptyContact = contact =>
-  Object.keys(_.omit(contact, ['key'])).some(attribute => !!contact[attribute]);
+export const isEmptyContact = dataRow =>
+  _.keys(_.omit(dataRow, ['key'])).every(attribute => !dataRow[attribute]);

@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Result, Icon, Select } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { Result, Select } from 'antd';
 import StudentCreationTable from './Organisms/Table/StudentCreationTable';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 
@@ -61,7 +62,7 @@ const StudentCreation = ({
             disabled: canAddMore
           }}
           buttonText={t('studentCreation.newStudent')}
-          icon={<Icon type="plus" />}
+          icon={<PlusOutlined />}
         />
       </div>
       <div className="Content">

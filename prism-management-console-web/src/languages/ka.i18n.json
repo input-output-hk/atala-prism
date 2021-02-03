@@ -708,9 +708,9 @@
       "placeholder": "Type in or Select Group Name"
     },
     "table": {
-      "requirement": "{{requirement}} is required",
-      "contactName":"Contact Name",
-      "externalid": "External ID"
+      "required": "{{field}} is required",
+      "pastDateRequirement": "{{field}} must be earlier than today",
+      "futureDateRequirement": "{{field}} must be later than today"
     },
     "importSuccess": {
       "importContacts": {
@@ -718,7 +718,7 @@
         "uploadedEntities": "contact(s) added",
         "continue": "Continue"
       },
-      "importCredentials": {
+      "importCredentialsData": {
         "title": "Your credential information has been successfully uploaded",
         "uploadedEntities": "credential(s) uploaded",
         "continue": "Continue"
@@ -887,7 +887,8 @@
       "next": "Next"
     },
     "manualImport": {
-      "title": "Add Contacts Manually",
+      "title": "Add Credential Info",
+      "info": "Add credential information manually",
       "newContact": "Add new contact"
     }
   },

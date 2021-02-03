@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Menu, Dropdown, Icon, Col } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import { Menu, Dropdown, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../CustomButton/CustomButton';
 
@@ -31,7 +32,7 @@ const SettingsMenu = ({ logout }) => {
         trigger={['click']}
       >
         <div className="ant-dropdown-link">
-          <Icon type="down" />
+          <DownOutlined />
         </div>
       </Dropdown>
     </Col>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { Icon } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../../../providers/withRedirector';
 
@@ -16,7 +16,7 @@ const AddUsersButtons = ({ redirector: { redirectToImportContacts } }) => {
           onClick: redirectToImportContacts
         }}
         buttonText={t('contacts.buttons.import')}
-        icon={<Icon type="plus" />}
+        icon={<PlusOutlined />}
       />
     </div>
   );

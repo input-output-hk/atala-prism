@@ -37,8 +37,8 @@
 }
 
 .ConnectionsTable {
-  height: calc(100% - 12em);
   margin: 0 3em;
+  height: calc(100% - 8em);
   .PaginatedTable {
     .ant-table-body {
       height: 100%;

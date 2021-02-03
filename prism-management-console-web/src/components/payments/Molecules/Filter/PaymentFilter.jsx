@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Col, Icon, Input, Row } from 'antd';
+import { DownOutlined, SearchOutlined } from '@ant-design/icons';
+import { Col, Input, Row } from 'antd';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 
 const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
@@ -11,7 +12,7 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
     disabled: true,
     id: 'from',
     placeholder: t('payment.filterBy', { field: t('payment.fields.from') }),
-    suffixIcon: <Icon type="down" />,
+    suffixIcon: <DownOutlined />,
     onChange: (_, dateString) => setFrom(dateString)
   };
 
@@ -19,7 +20,7 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
     disabled: true,
     id: 'to',
     placeholder: t('payment.filterBy', { field: t('payment.fields.to') }),
-    suffixIcon: <Icon type="down" />,
+    suffixIcon: <DownOutlined />,
     onChange: (_, dateString) => setTo(dateString)
   };
 
@@ -37,7 +38,7 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
             disabled
             id="payer"
             placeholder={t('payment.filterBy', { field: t('payment.fields.payer') })}
-            prefix={<Icon type="search" />}
+            prefix={<SearchOutlined />}
             onChange={({ target: { value } }) => setPayer(value)}
             allowClear
             value={payer}

@@ -1,128 +1,104 @@
-import React, { useState } from 'react';
-import { Input, Form, DatePicker } from 'antd';
-import { useTranslation } from 'react-i18next';
+import React, { useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { noEmptyInput, futureDate } from '../../../../helpers/formRules';
+import { Input, Form, DatePicker } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { futureDate, generateRequiredRule, pastDate } from '../../../../helpers/formRules';
 
 import './editableCell.scss';
 
-const isDate = type => type === 'date';
-
 const EditableCell = ({
-  EditableContext: Consumer,
-  record,
-  handleSave,
+  EditableContext,
+  editable,
   children,
   dataIndex,
+  record,
+  handleSave,
   type,
-  title,
-  editable,
+  validations,
   ...restProps
 }) => {
   const { t } = useTranslation();
+  const inputRef = useRef(null);
+  const form = useContext(EditableContext);
 
-  const [cellForm, setCellForm] = useState();
-  const [editing, setEditing] = useState();
+  const isDate = type === 'date';
+  const savedData = record ? record[dataIndex] : '';
 
-  const toggleEdit = () => {
-    const isEditing = !editing;
-    setEditing(isEditing);
-  };
-
-  const saveDate = ({ currentTarget: { id } }) => {
-    cellForm.validateFields((errors, values) => {
-      if (errors && !values[id]) {
-        return;
-      }
-
-      toggleEdit();
-      const toSave = Object.assign({}, record, values);
-
-      handleSave({ ...toSave, errors });
-    });
-  };
-
-  const save = () => {
-    cellForm.validateFields((errors, values) => {
-      toggleEdit();
-      const toSave = Object.assign({}, record, values);
-      handleSave({ ...toSave, errors });
-    });
-  };
-
-  const renderChild = (child, form) => {
-    const [, , content] = child;
-
-    setEditing(true);
-    if (content === '' || content === null) {
-      setCellForm(form);
-    }
-
-    return child;
-  };
-
-  const getElement = () => {
-    switch (type) {
-      case 'date':
-        return <DatePicker onPressEnter={saveDate} onBlur={saveDate} />;
-      default:
-        return <Input onPressEnter={save} onBlur={save} />;
+  const allRules = {
+    required: generateRequiredRule(isDate, dataIndex),
+    futureDate: {
+      validator: (_rule, value, cb) => futureDate(value, cb, moment.now()),
+      message: t('manualImport.table.futureDateRequirement', {
+        field: t(`contacts.table.columns.${dataIndex}`)
+      })
+    },
+    pastDate: {
+      validator: (_rule, value, cb) => pastDate(value, cb, moment.now()),
+      message: t('manualImport.table.pastDateRequirement', {
+        field: t(`contacts.table.columns.${dataIndex}`)
+      })
     }
   };
 
-  const getError = () =>
-    record.errors && record.errors[dataIndex]?.errors?.map(({ message }) => message);
+  const getFieldRules = validations.map(validationKey => allRules[validationKey]).filter(Boolean);
 
-  const renderCell = form => {
-    setCellForm(form);
-    const savedData = record[dataIndex];
+  const save = async () => {
+    try {
+      const values = await form.validateFields();
+      const toSave = Object.assign(record, values, { errorFields: null });
+      handleSave(toSave);
+    } catch ({ errorFields, values }) {
+      const toSave = Object.assign(record, values, { errorFields });
+      handleSave(toSave);
+    }
+  };
 
-    const emptyRule = [
-      noEmptyInput(
-        t('manualImport.table.requirement', {
-          requirement: t(`manualImport.table.${dataIndex}`)
-        })
-      )
-    ];
-    const futureRule = [
-      {
-        validator: (_, value, cb) => futureDate(value, cb, moment.now()),
-        message: t('manualImport.table.requirement', {
-          requirement: t('manualImport.table.dateRequirement')
-        })
-      }
-    ];
-    const rulesByType = isDate(type) ? futureRule : emptyRule;
+  const getError = () => record?.errorFields?.find(({ name }) => name[0] === dataIndex)?.errors[0];
 
-    const errorToShow = getError();
+  const errorToShow = getError();
 
-    return editing ? (
-      <div className="TableInputContainer">
-        <Form.Item validateStatus={errorToShow ? 'error' : null} hasFeedback help={errorToShow}>
-          {cellForm.getFieldDecorator(dataIndex, {
-            initialValue: savedData,
-            rules: rulesByType
-          })(getElement())}
+  return (
+    <td {...restProps}>
+      {editable ? (
+        <Form.Item
+          initialValue={savedData}
+          rules={getFieldRules}
+          validateFirst
+          validateStatus={errorToShow ? 'error' : null}
+          hasFeedback
+          help={errorToShow}
+          name={dataIndex}
+        >
+          {type === 'date' ? (
+            <DatePicker ref={inputRef} onPressEnter={save} onBlur={save} onChange={save} />
+          ) : (
+            <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+          )}
         </Form.Item>
-      </div>
-    ) : (
-      <textbox onClick={toggleEdit}>{renderChild(children, form)}</textbox>
-    );
-  };
+      ) : (
+        children
+      )}
+    </td>
+  );
+};
 
-  return <td {...restProps}>{editable ? <Consumer>{renderCell}</Consumer> : children}</td>;
+EditableCell.defaultProps = {
+  record: null,
+  dataIndex: '',
+  editable: false,
+  validations: []
 };
 
 EditableCell.propTypes = {
   EditableContext: PropTypes.element.isRequired,
-  record: PropTypes.shape.isRequired,
-  children: PropTypes.arrayOf(PropTypes.element).isRequired,
-  dataIndex: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
+  record: PropTypes.shape({}),
+  children: PropTypes.oneOf([PropTypes.bool, PropTypes.string]).isRequired,
+  dataIndex: PropTypes.string,
   type: PropTypes.string.isRequired,
-  editable: PropTypes.bool.isRequired,
-  handleSave: PropTypes.func.isRequired
+  editable: PropTypes.bool,
+  handleSave: PropTypes.func.isRequired,
+  validations: PropTypes.arrayOf(PropTypes.string)
 };
 
 export default EditableCell;

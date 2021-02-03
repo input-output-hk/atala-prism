@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Icon, message, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import { message, Upload } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
@@ -59,7 +60,7 @@ const FileUploader = ({
           <CustomButton
             buttonProps={{ className: 'theme-outline', disabled }}
             buttonText={t(uploadText)}
-            icon={<Icon type="upload" />}
+            icon={<UploadOutlined />}
           />
         )}
       </Upload>

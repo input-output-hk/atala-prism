@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from 'antd';
+import { PlayCircleOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 
@@ -16,7 +16,7 @@ const Admin = ({ populateDemoDataset, isLoading, status }) => (
           disabled: isLoading
         }}
         buttonText="Load demo dataset"
-        icon={<Icon type="play-circle" />}
+        icon={<PlayCircleOutlined />}
       />
       <div>{status}</div>
     </div>

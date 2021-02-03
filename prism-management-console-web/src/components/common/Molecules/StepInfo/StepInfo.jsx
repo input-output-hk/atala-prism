@@ -14,7 +14,7 @@ const StepInfo = ({ title, subtitle, steps, currentStep }) => {
         {title && <h1>{t(title)}</h1>}
         {subtitle && <p>{t(subtitle)}</p>}
       </Col>
-      <Col xs={24} lg={12} className="NewCredentialSteps">
+      <Col xs={24} lg={24} className="NewCredentialSteps">
         {steps.map(({ stepTitle }, index) => (
           <div key={stepTitle} className="StepLine">
             <div
