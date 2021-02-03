@@ -51,7 +51,9 @@ async function createBatchOfCredentials(credentialsData) {
 
     return this.auth
       .getMetadata(createCredentialRequest)
-      .then(metadata => this.client.createGenericCredential(createCredentialRequest, metadata))
+      .then(({ metadata }) =>
+        this.client.createGenericCredential(createCredentialRequest, metadata)
+      )
       .then(response => ({ externalid, status: SUCCESS, response }))
       .catch(error => {
         Logger.error(error);
