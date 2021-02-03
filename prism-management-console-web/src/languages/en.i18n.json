@@ -371,9 +371,9 @@
     },
     "typeSelection": "Select a type of credential",
     "targetsSelection": {
-      "groups": "Select a group",
-      "subjects": "Select contacts",
-      "selectGroup": "Select a group or select individual contacts to issue credentials",
+      "groups": "Select group(s)",
+      "subjects": "Select contact(s)",
+      "selectGroup": "You can select multiple groups and contacts to assign recipients",
       "checkbox": "Do not select any group or contact"
     },
     "bulkImport": {
