@@ -233,11 +233,9 @@ message GetCredentialIssuanceRequest {
 message GetCredentialIssuanceResponse {
   string name = 1; // Name of the credential issuance
   int32 credentialTypeId = 2; // ID of the type of credential to issue
-  CredentialIssuanceStatus status = 3; // Current status of the credential issuance
-  int64 createdAt = 4; // Timestamp when the credential issuance was created
-  repeated CredentialIssuanceContact credentialIssuanceContacts = 5; // The contacts and their credential data
+  int64 createdAt = 3; // Timestamp (millis since epoch) when the credential issuance was created
+  repeated CredentialIssuanceContact credentialIssuanceContacts = 4; // The contacts and their credential data
 }
-
 
 // Request to create a group on the authenticated institution
 message CreateGroupRequest {

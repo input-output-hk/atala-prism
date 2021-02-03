@@ -35,13 +35,6 @@ message CredentialIssuanceContact {
   repeated string groupIds = 3; // IDs of the groups the contact was taken from, empty if added directly
 }
 
-enum CredentialIssuanceStatus {
-  CREDENTIAL_ISSUANCE_STATUS_UNKNOWN = 0; // Invalid value, should not happen
-  DRAFT = 1; // The credential issuance is still being defined and is not final
-  READY = 2; // The credential issuance has been defined but not all credentials have been issued
-  COMPLETED = 3; // All the credentials from the credential issuance have been issued
-}
-
 // Represents a group, where contacts can be assigned to.
 //
 // A group is generally used to collect the contacts related to the same issuance event,

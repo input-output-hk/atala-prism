@@ -11,6 +11,7 @@ import io.iohk.atala.prism.management.console.models.{
   Contact,
   CreateGenericCredential,
   CredentialIssuance,
+  CredentialIssuanceContact,
   GenericCredential,
   InstitutionGroup,
   ParticipantId
@@ -103,10 +104,7 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
     val query = for {
       // Create the credential issuance
       credentialIssuanceId <- CredentialIssuancesDAO.createCredentialIssuance(
-        createCredentialIssuance
-          .into[CredentialIssuancesDAO.CreateCredentialIssuance]
-          .withFieldConst(_.status, CredentialIssuance.Status.Ready)
-          .transform
+        createCredentialIssuance.into[CredentialIssuancesDAO.CreateCredentialIssuance].transform
       )
       // Create the contacts (not associated to the issuance yet)
       contactsWithIds <- createContacts(credentialIssuanceId)
@@ -136,14 +134,15 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
       issuanceWithoutContacts <-
         CredentialIssuancesDAO.getCredentialIssuanceWithoutContacts(credentialIssuanceId, institutionId)
       // Get the contacts without contacts, as they are queried later
-      contactsWithoutGroups <- CredentialIssuancesDAO.listContacts(credentialIssuanceId)
+      contactsWithoutGroups <- CredentialIssuancesDAO.listContactsWithoutGroups(credentialIssuanceId)
       // Determine which contacts belong to which group
       groupsPerContactList <- CredentialIssuancesDAO.listGroupsPerContact(credentialIssuanceId)
       groupsPerContact = groupsPerContactList.groupMap(_._1)(_._2).withDefaultValue(List())
       contacts = contactsWithoutGroups.map { contact =>
-        contact.copy(groupIds = groupsPerContact(contact.id))
+        contact.into[CredentialIssuanceContact].withFieldConst(_.groupIds, groupsPerContact(contact.id)).transform
       }
-    } yield issuanceWithoutContacts.copy(contacts = contacts)
+      issuance = issuanceWithoutContacts.into[CredentialIssuance].withFieldConst(_.contacts, contacts).transform
+    } yield issuance
 
     query
       .transact(xa)

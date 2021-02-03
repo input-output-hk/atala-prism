@@ -4,7 +4,7 @@ import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation.{createInstitutionGroup, createParticipant}
-import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, InstitutionGroup}
+import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
   CreateCredentialIssuance,
   CreateCredentialIssuanceContact
@@ -49,7 +49,6 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
       credentialIssuance.id mustBe credentialIssuanceId
       credentialIssuance.name mustBe "Credentials for everyone"
       credentialIssuance.credentialTypeId mustBe 1
-      credentialIssuance.status mustBe CredentialIssuance.Status.Ready
       credentialIssuance.contacts.size mustBe contactsWithGroup.size
       val issuanceContactsByContactId = credentialIssuance.contacts.map(contact => (contact.contactId, contact)).toMap
       for ((contact, group) <- contactsWithGroup) {

@@ -5,9 +5,8 @@ import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
-import io.iohk.atala.prism.protos.console_models.CredentialIssuanceStatus
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
@@ -69,7 +68,6 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           // Verify the obtained credential issuance matches the created one
           credentialIssuance.name mustBe createRequest.name
           credentialIssuance.credentialTypeId mustBe createRequest.credentialTypeId
-          credentialIssuance.status mustBe CredentialIssuanceStatus.READY
           credentialIssuance.createdAt must (be >= creationTime.toEpochMilli and be <= Instant.now.toEpochMilli)
           // Verify contacts
           val issuanceContacts =

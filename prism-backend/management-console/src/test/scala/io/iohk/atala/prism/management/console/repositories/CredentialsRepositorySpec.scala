@@ -5,14 +5,7 @@ import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  CreateGenericCredential,
-  CredentialIssuance,
-  GenericCredential,
-  InstitutionGroup,
-  ParticipantId,
-  PublishCredential
-}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 
@@ -55,8 +48,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
-      val credentialIssuanceContactId = CredentialIssuance.ContactId.random()
-      val credential = createGenericCredential(issuerId, subjectId, "A", Some(credentialIssuanceContactId))
+      val credential = createGenericCredential(issuerId, subjectId, "A")
 
       val returnedCredential =
         credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value

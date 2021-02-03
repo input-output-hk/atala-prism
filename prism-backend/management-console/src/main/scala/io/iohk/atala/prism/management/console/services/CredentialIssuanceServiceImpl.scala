@@ -7,7 +7,6 @@ import io.iohk.atala.prism.management.console.errors.{
   ManagementConsoleError,
   ManagementConsoleErrorSupport
 }
-import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.{
   ContactsRepository,
@@ -130,7 +129,6 @@ class CredentialIssuanceServiceImpl(
         response = GetCredentialIssuanceResponse(
           name = credentialIssuance.name,
           credentialTypeId = credentialIssuance.credentialTypeId,
-          status = ProtoCodecs.toCredentialIssuanceStatusProto(credentialIssuance.status),
           createdAt = credentialIssuance.createdAt.toEpochMilli,
           credentialIssuanceContacts = credentialIssuance.contacts.map(contact =>
             CredentialIssuanceContact(

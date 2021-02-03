@@ -3,6 +3,7 @@ package io.iohk.atala.prism.management.console.grpc
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.protos.common_models.SortByDirection
+import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics}
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
@@ -60,14 +61,6 @@ object ProtoCodecs {
       .into[console_api.GetStatisticsResponse]
       .withFieldConst(_.numberOfCredentialsInDraft, statistics.numberOfCredentialsInDraft)
       .transform
-  }
-
-  def toCredentialIssuanceStatusProto(status: CredentialIssuance.Status): console_models.CredentialIssuanceStatus = {
-    status match {
-      case CredentialIssuance.Status.Draft => console_models.CredentialIssuanceStatus.DRAFT
-      case CredentialIssuance.Status.Ready => console_models.CredentialIssuanceStatus.READY
-      case CredentialIssuance.Status.Completed => console_models.CredentialIssuanceStatus.COMPLETED
-    }
   }
 
   def toContactsPaginatedQuery(request: console_api.GetContactsRequest): Try[Contact.PaginatedQuery] = {
