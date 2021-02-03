@@ -102,7 +102,11 @@ object DataPreparation {
       credentialIssuanceContactId = credentialIssuanceContactId
     )
 
-    CredentialsDAO.create(request).transact(database).unsafeRunSync()
+    val credential = CredentialsDAO.create(request).transact(database).unsafeRunSync()
+    // Sleep 1 ms to ensure DB queries sorting by creation time are deterministic (this only happens during testing as
+    // creating more than one credential by/to the same participant at the exact time is rather hard)
+    Thread.sleep(1)
+    credential
   }
 
   def createCredentialType(institutionId: ParticipantId, name: String)(implicit
