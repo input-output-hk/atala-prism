@@ -187,7 +187,7 @@ const validateContactExistence = (
   if (isExternalID) {
     return allExternalIds.includes(importedExternalID)
       ? null
-      : generateCommonFieldError('inexistentExternalID', dataRow, header, allExpectedHeaders);
+      : generateCommonFieldError('nonexistentExternalID', dataRow, header, allExpectedHeaders);
   }
 
   const expectedName = contacts.find(c => c.externalid === importedExternalID)?.contactName;
