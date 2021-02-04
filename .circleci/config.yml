@@ -398,7 +398,7 @@ jobs:
       - slack/status:
           # mention Mark Griffin (Product Owner), Jacek Kurkowski (QA)
           mentions: 'UFHNXC9RC,UGFJQ5ZBN'
-          only_for_branches: 'develop'
+          only_for_branches: 'qa'
 
   build-prism-android-wallet:
     working_directory: ~/repo
@@ -738,6 +738,7 @@ workflows:
                 - /test.*/
                 - /geud-test.*/
                 - /demo.*/
+                - /qa.*/
           requires:
             - build-prism-management-console-web
             - build-prism-interactive-demo-web
@@ -773,6 +774,7 @@ workflows:
             branches:
               only:
                 - /develop.*/
+                - /qa.*/
           requires:
             - deploy-ecr-images
       - rebuild-prism-env:
@@ -810,6 +812,6 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - qa
           requires:
             - rebuild-intdemo-and-geud
