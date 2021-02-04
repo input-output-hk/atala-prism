@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.credentials.utils
 
+import cats.data.{NonEmptyList, Validated}
+import scala.util.parsing.combinator.JavaTokenParsers
+
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.EitherValues
 
-import scala.util.parsing.combinator.JavaTokenParsers
 import io.iohk.atala.prism.credentials.utils.Mustache._
 
 class MustacheSpec extends AnyWordSpec with Matchers with EitherValues with JavaTokenParsers {
@@ -112,8 +114,47 @@ class MustacheSpec extends AnyWordSpec with Matchers with EitherValues with Java
       case class Context(title: String)
       val context = Context("<variable>")
 
-      mustache.render(template, (_) => Some(context.title)) mustBe Right("Content with &lt;variable&gt; included.")
+      mustache.render(template, (_) => Some(context.title), validate = true) mustBe Right(
+        "Content with &lt;variable&gt; included."
+      )
     }
+  }
+
+  "validate a template with given context" in new Fixtures {
+    val template = Template(
+      List(
+        Variable("variable1", escape = true),
+        Variable("variable2", escape = true),
+        Literal(" literal")
+      )
+    )
+
+    val invalidContext = (variable: String) =>
+      variable match {
+        case "variable1" => Some("content1")
+        case _ => None
+      }
+
+    val validContext = (variable: String) =>
+      variable match {
+        case "variable1" => Some("content1")
+        case "variable2" => Some("content2")
+        case _ => None
+      }
+
+    template.isValid(invalidContext) mustBe Validated.Invalid(
+      NonEmptyList.one(
+        MustacheValidationError("Variable not found: variable2")
+      )
+    )
+
+    template.isValid(validContext) mustBe Validated.Valid(())
+
+    // Check with the top level render metchod
+    mustache.render(template, invalidContext, validate = true) mustBe Left(
+      MustacheValidationError("Variable not found: variable2")
+    )
+    mustache.render(template, invalidContext, validate = false) mustBe Right("content1 literal")
   }
 
   "escape html" in {

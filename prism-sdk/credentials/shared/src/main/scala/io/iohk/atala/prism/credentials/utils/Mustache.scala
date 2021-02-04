@@ -3,6 +3,9 @@ package io.iohk.atala.prism.credentials.utils
 import scala.util.parsing.input.Positional
 import scala.util.parsing.combinator.JavaTokenParsers
 
+import cats.data.ValidatedNel
+import cats.implicits._
+
 import io.iohk.atala.prism.credentials.utils.Mustache._
 
 /**
@@ -19,8 +22,8 @@ import io.iohk.atala.prism.credentials.utils.Mustache._
   *
   * {{{
   *   val mustache = new Mustache
-  *   val context: TemplateContext = (variable: String) => Some("\$variable content")
-  *   mustache.render("Template with {{ variable }}.", context) == Right("Template with variable content".)
+  *   val context: TemplateContext = (variable: String) => Some(variable)
+  *   mustache.render("Template with {{ variable }}.", context) == Right("Template with variable".)
   * }}}
   */
 class Mustache extends JavaTokenParsers {
@@ -57,44 +60,50 @@ class Mustache extends JavaTokenParsers {
   def parse(content: String): Either[MustacheError, Template] = {
     parse(template, content) match {
       case Success(matched, _) => Right(matched)
-      case Failure(msg, _) => Left(MustacheError(s"Template parsing failure: $msg"))
-      case Error(msg, _) => Left(MustacheError(s"Template parsing error: $msg"))
+      case Failure(msg, _) => Left(MustacheParsingError(s"Template parsing failure: $msg"))
+      case Error(msg, _) => Left(MustacheParsingError(s"Template parsing error: $msg"))
     }
   }
 
   /**
     * Render given template with provided context.
+    *
+    * @param validate Check if the given context contains all variables from the template.
     */
-  def render(template: Template, context: TemplateContext): Either[MustacheError, String] = {
-    Right(template.tags.map {
+  def render(template: Template, context: TemplateContext, validate: Boolean): Either[MustacheError, String] = {
+    for {
+      _ <-
+        if (validate) template.isValid(context).toEither.leftMap(_.head) // Return first validation error only.
+        else Right(template)
+    } yield template.tags.map {
       case Literal(content) => content
       case _: Comment => ""
       case Variable(variable, escape) =>
         context(variable) match {
           case Some(value) if escape => Mustache.escapeHtml(value.toString)
           case Some(value) if escape == false => value.toString
-          case None => "" // TODO: Create strict mode and retrun error if variable desn't exist.
+          case None => "" // if validate == false insert an empty string in place of nonexistent variables
         }
-    }.mkString)
+    }.mkString
   }
 
   /**
     * Render given string template with provided context.
+    *
+    * @param validate Check if the given context contains all variables from the template.
     */
-  def render(content: String, context: TemplateContext): Either[MustacheError, String] =
-    parse(content).flatMap(render(_, context))
+  def render(content: String, context: TemplateContext, validate: Boolean = true): Either[MustacheError, String] =
+    parse(content).flatMap(render(_, context, validate))
 
   /**
     * Render given string template with provided context.
     *
     * @throws MustacheError
+    *
+    * @param validate Check if the given context contains all variables from the template.
     */
-  def unsafeRender(content: String, context: TemplateContext): String = {
-    render(content, context) match {
-      case Left(error) => throw error
-      case Right(result) => result
-    }
-  }
+  def unsafeRender(content: String, context: TemplateContext, validate: Boolean = true): String =
+    render(content, context, validate).valueOr(throw _)
 
   /**
     * Trim whitespaces.
@@ -114,17 +123,40 @@ object Mustache {
   case class Literal(content: String) extends MustacheNode
   case class Comment(content: String) extends MustacheNode
   case class Variable(name: String, escape: Boolean) extends MustacheNode
-  case class Template(tags: Seq[MustacheNode])
 
-  case class MustacheError(message: String) extends Exception
+  case class Template(tags: Seq[MustacheNode]) {
+
+    /**
+      * Validate template with the given context, and return all errors or self.
+      */
+    def isValid(context: TemplateContext): MustacheProcessingResult[Unit] = {
+      tags.toList
+        .traverse {
+          case variable @ Variable(name, _) =>
+            Either
+              .cond(context(name).isDefined, variable, MustacheValidationError(s"Variable not found: $name"))
+              .toValidatedNel
+          case other => other.validNel
+        }
+        .map(_ => ())
+    }
+  }
+
+  sealed trait MustacheError extends Exception
+  case class MustacheParsingError(message: String) extends MustacheError
+  case class MustacheValidationError(message: String) extends MustacheError
+
+  type MustacheProcessingResult[A] = ValidatedNel[MustacheError, A]
 
   type TemplateContext = String => Option[Any]
 
   /**
     * Render given string template with provided context.
+    *
+    * @param validate Check if the given context contains all variables from the template.
     */
-  def render(content: String, context: TemplateContext): Either[MustacheError, String] =
-    (new Mustache).render(content, context)
+  def render(content: String, context: TemplateContext, validate: Boolean = true): Either[MustacheError, String] =
+    (new Mustache).render(content, context, validate)
 
   /**
     * Determine if given string is a Mustache template.

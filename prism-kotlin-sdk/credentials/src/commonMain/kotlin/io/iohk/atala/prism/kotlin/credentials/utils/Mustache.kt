@@ -9,9 +9,31 @@ sealed class MustacheNode
 data class Literal(val content: String) : MustacheNode()
 data class Comment(val content: String) : MustacheNode()
 data class Variable(val name: String, val escape: Boolean) : MustacheNode()
-data class Template(val tags: List<MustacheNode>)
 
-typealias TemplateContext = (String) -> String
+data class Template(val tags: List<MustacheNode>) {
+    /**
+     * Validate template with the given context.
+     */
+    fun validate(context: TemplateContext): List<MustacheValidationError> {
+        return tags.mapNotNull { tag ->
+            when (tag) {
+                is Variable ->
+                    if (context(tag.name) == null) MustacheValidationError("Variable not found: ${tag.name}") else null
+
+                else -> null
+            }
+        }
+    }
+}
+
+sealed class MustacheError(message: String) : Exception(message)
+class MustacheParsingError(message: String) : MustacheError(message)
+data class MustacheValidationError(
+    override val message: String,
+    val errors: List<MustacheValidationError> = emptyList()
+) : MustacheError(message)
+
+typealias TemplateContext = (String) -> String?
 
 /**
  * Subset of Mustache templates (https://mustache.github.io/) for internal usage in Prism SDK.
@@ -69,21 +91,36 @@ object Mustache {
             -open and parser and -close
     }
 
-    fun render(template: Template, context: TemplateContext): String =
-        template.tags.joinToString("") {
+    fun render(template: Template, context: TemplateContext, validate: Boolean): String {
+        if (validate) {
+            val errors = template.validate(context)
+            if (errors.isNotEmpty()) {
+                throw MustacheValidationError(
+                    "Given context doesn't contain all variables from the template.",
+                    errors
+                )
+            }
+        }
+
+        return template.tags.joinToString("") {
             when (it) {
                 is Literal -> it.content
                 is Comment -> ""
                 is Variable ->
                     when (it.escape) {
-                        true -> escapeHtml(context(it.name))
-                        false -> context(it.name)
+                        true -> escapeHtml(context(it.name) ?: "")
+                        false -> context(it.name) ?: ""
                     }
             }
         }
+    }
 
-    fun render(template: String, context: TemplateContext): String =
-        render(Mustache.mustacheGrammar.parseToEnd(template), context)
+    fun render(template: String, context: TemplateContext, validate: Boolean = true): String =
+        try {
+            render(mustacheGrammar.parseToEnd(template), context, validate)
+        } catch (e: ParseException) {
+            throw MustacheParsingError(e.message!!)
+        }
 
     /**
      * Escape html entities.

@@ -14,6 +14,10 @@ class MustacheTest {
         assertFails { Mustache.mustacheGrammar.parseToEnd("{{") }
         assertFails { Mustache.mustacheGrammar.parseToEnd("}}") }
         assertFails { Mustache.mustacheGrammar.parseToEnd("Content {{ variable }.") }
+
+        // check if render returns a proper exception
+        val context = { _: String -> "variable" }
+        assertFailsWith<MustacheParsingError> { Mustache.render("{{", context, validate = true) }
     }
 
     @Test
@@ -100,9 +104,38 @@ class MustacheTest {
         )
         val stringTemplate = "Content with {{ title }} included."
         val context = { _: String -> "variable" }
+        val invalidContext = { _: String -> null }
 
-        assertEquals("Content with variable included.", Mustache.render(template, context))
+        assertEquals("Content with variable included.", Mustache.render(template, context, validate = true))
         assertEquals("Content with variable included.", Mustache.render(stringTemplate, context))
+        assertFailsWith<MustacheValidationError> { Mustache.render(template, invalidContext, validate = true) }
+        assertEquals("Content with  included.", Mustache.render(template, invalidContext, validate = false))
+    }
+
+    @Test
+    fun testTemplateValidation() {
+        val template = Template(
+            listOf(
+                Variable("variable1", escape = true),
+                Variable("variable2", escape = true),
+                Literal(" literal")
+            )
+        )
+        val invalidContext = { variable: String ->
+            when (variable) {
+                "variable1" -> "content1"
+                else -> null
+            }
+        }
+        val validContext = { _: String -> "variable" }
+
+        assertTrue(template.validate(validContext).isEmpty())
+
+        val errors = template.validate(invalidContext)
+        assertEquals(
+            listOf(MustacheValidationError("Variable not found: variable2")),
+            errors
+        )
     }
 
     @Test
