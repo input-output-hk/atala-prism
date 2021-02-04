@@ -119,7 +119,6 @@ object PrismBuild {
             enumeratumDoobie,
             flyway,
             monix,
-            odyssey,
             postgresql,
             scalapbRuntimeGrpc,
             slf4j,

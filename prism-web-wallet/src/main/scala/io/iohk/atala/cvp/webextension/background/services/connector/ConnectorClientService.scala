@@ -2,13 +2,19 @@ package io.iohk.atala.cvp.webextension.background.services.connector
 
 import com.google.protobuf.ByteString
 import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
-import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
+import io.iohk.atala.cvp.webextension.background.models.console.ConsoleCredentialId
+import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.cvp.webextension.background.services._
+import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.console_api.{PublishCredentialRequest, PublishCredentialResponse}
+import io.iohk.atala.prism.protos.common_models.MerkleProof
+import io.iohk.atala.prism.protos.console_api.{
+  PublishBatchRequest,
+  PublishBatchResponse,
+  StorePublishedCredentialRequest
+}
 import io.iohk.atala.prism.protos.connector_api.{
   GetCurrentUserRequest,
   GetCurrentUserResponse,
@@ -17,10 +23,10 @@ import io.iohk.atala.prism.protos.connector_api.{
   RegisterDIDRequest,
   RegisterDIDResponse
 }
-import io.iohk.atala.prism.protos.{console_api, connector_api}
+import io.iohk.atala.prism.protos.{connector_api, console_api}
 import scalapb.grpc.Channels
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js.JSConverters._
 
 class ConnectorClientService(url: String) {
@@ -37,39 +43,39 @@ class ConnectorClientService(url: String) {
     connectorApi.getCurrentUser(request, metadata.toJSDictionary)
   }
 
-  def signAndPublishCredential(
+  def signAndPublishBatch(
       ecKeyPair: ECKeyPair,
       did: DID,
       signingKeyId: String,
-      credentialId: String, //Credential Manager Id
-      credentialClaims: String
-  ): Future[PublishCredentialResponse] = {
-    val (issuanceOperation, signedCredential, signedCredentialHash) =
-      issuerOperation(did, signingKeyId, ecKeyPair, credentialClaims)
+      credentialsData: List[CredentialData]
+  )(implicit ec: ExecutionContext): Future[PublishBatchResponse] = {
+    val (issuanceOperation, credentialsAndProofs) =
+      issuerOperation(did, signingKeyId, ecKeyPair, credentialsData)
     val operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
-    val atalaOperationSHA256 = SHA256Digest.compute(issuanceOperation.toByteArray)
-    // until we update the flow, we will post a credential batch where the merkle root
-    // is the hash of the signed credential. The reason for this is that we need to be
-    // able to query the credential transaction data associated to the issuance event
-    // Eventually, we will update this to use real merkle trees and the system will share
-    // merkle proofs as part of the information exchanged between parties.
-    val merkleRoot = MerkleRoot(signedCredentialHash)
-    val credentialBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
-    val request = PublishCredentialRequest()
-      .withCmanagerCredentialId(credentialId)
-      .withEncodedSignedCredential(signedCredential)
-      .withIssueCredentialOperation(operation)
-      .withOperationHash(ByteString.copyFrom(atalaOperationSHA256.value.toArray))
-      .withNodeCredentialId(credentialBatchId.id)
-    val metadata = metadataForRequest(ecKeyPair, did, request)
 
-    credentialsServiceApi.publishCredential(request, metadata.toJSDictionary)
+    val publishBatchRequest = PublishBatchRequest()
+      .withIssueCredentialBatchOperation(operation)
+
+    val batchMetadata = metadataForRequest(ecKeyPair, did, publishBatchRequest)
+
+    for {
+      // we first publish the batch
+      batchResponse <- credentialsServiceApi.publishBatch(publishBatchRequest, batchMetadata.toJSDictionary)
+      // now we store all the credentials data
+      _ <- publishCredentials(
+        ecKeyPair,
+        did,
+        credentialsData.map(_.credentialId),
+        credentialsAndProofs,
+        batchResponse.batchId
+      )
+    } yield batchResponse
   }
 
   def getMessageStream(
       ecKeyPair: ECKeyPair,
       did: DID,
-      stramObserver: StreamObserver[GetMessageStreamResponse],
+      streamObserver: StreamObserver[GetMessageStreamResponse],
       lastSeenMessageId: String
   ): ClientCallStreamObserver = {
     val request = GetMessageStreamRequest(lastSeenMessageId = lastSeenMessageId)
@@ -77,11 +83,47 @@ class ConnectorClientService(url: String) {
     connectorApi.getMessageStream(
       request,
       metadata,
-      stramObserver
+      streamObserver
     )
+  }
+
+  private def publishCredentials(
+      ecKeyPair: ECKeyPair,
+      did: DID,
+      credentialConsoleIds: List[ConsoleCredentialId],
+      canonicalFormsAndProofs: List[(String, MerkleInclusionProof)],
+      batchId: String
+  )(implicit ex: ExecutionContext): Future[Unit] = {
+    // we want to sequentially store the credentials information
+    credentialConsoleIds.zip(canonicalFormsAndProofs).foldLeft(Future.unit) {
+      case (acc, (consoleId, (encodedSignedCredential, proof))) =>
+        val request = StorePublishedCredentialRequest()
+          .withBatchId(batchId)
+          .withEncodedSignedCredential(encodedSignedCredential)
+          .withConsoleCredentialId(consoleId.id)
+          .withProofOfInclusion(
+            MerkleProof(
+              ByteString.copyFrom(proof.hash.value.toArray),
+              proof.index,
+              proof.siblings.map(h => ByteString.copyFrom(h.value.toArray))
+            )
+          )
+
+        val metadata = metadataForRequest(ecKeyPair, did, request)
+
+        for {
+          _ <- credentialsServiceApi.storePublishedCredential(request, metadata.toJSDictionary)
+          _ <- acc
+        } yield ()
+    }
   }
 }
 
 object ConnectorClientService {
   def apply(url: String): ConnectorClientService = new ConnectorClientService(url)
+
+  case class CredentialData(
+      credentialId: ConsoleCredentialId, //Credential Manager Id
+      credentialClaims: String // JSON
+  )
 }

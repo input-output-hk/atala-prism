@@ -57,3 +57,11 @@ enum TransactionStatus {
     IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM
     CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable
 }
+
+// encodes a merkle proof of inclusion
+// this is used to represent proofs that credentials are included in batches
+message MerkleProof {
+    bytes itemHash = 1; // the hash (32 bytes) of the item which this proof is for
+    int32 index = 2; // index for the given item's position in the tree
+    repeated bytes siblings = 3; // the item's siblings at each level of the tree starting from the bottom
+}

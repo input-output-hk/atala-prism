@@ -1,18 +1,15 @@
 package io.iohk.atala.prism.management.console.services
 
-import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleErrorSupport
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.genericCredentialToProto
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, CredentialsRepository}
-import io.iohk.atala.prism.models.ProtoCodecs
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{console_api, node_api}
+import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
-import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -90,60 +87,6 @@ class CredentialsServiceImpl(
         }
     }
 
-  /** Publish an encoded signed credential into the blockchain
-    */
-  override def publishCredential(request: PublishCredentialRequest): Future[PublishCredentialResponse] = {
-    authenticator.authenticated("publishCredential", request) { participantId =>
-      for {
-        issuerId <- ParticipantId(participantId.uuid).tryF
-        credentialId = GenericCredential.Id.unsafeFrom(request.cmanagerCredentialId)
-        credentialProtocolId = request.nodeCredentialId
-        issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray.toVector)
-        encodedSignedCredential = request.encodedSignedCredential
-        issueCredentialOp =
-          request.issueCredentialOperation
-            .getOrElse(throw new RuntimeException("Missing IssueCredential operation"))
-        // validation for sanity check
-        _ = require(
-          credentialProtocolId == issuanceOperationHash.hexValue,
-          "operation hash and credential id don't match"
-        )
-        _ = require(encodedSignedCredential.nonEmpty, "Empty encoded credential")
-        // Verify issuer
-        maybeCredential <- credentialsRepository.getBy(credentialId).toFuture
-        credential =
-          maybeCredential.getOrElse(throw new RuntimeException(s"Credential with ID $credentialId does not exist"))
-        _ = require(credential.issuedBy == issuerId, "The credential was not issued by the specified issuer")
-        // Issue the credential in the Node
-        credentialIssued <- nodeService.issueCredential {
-          node_api
-            .IssueCredentialRequest()
-            .withSignedOperation(issueCredentialOp)
-        }
-        transactionInfo =
-          credentialIssued.transactionInfo.getOrElse(throw new RuntimeException("Credential issues has no transaction"))
-        // Update the database
-        _ <-
-          credentialsRepository
-            .storePublicationData(
-              issuerId,
-              PublishCredential(
-                credentialId,
-                issuanceOperationHash,
-                credentialProtocolId,
-                encodedSignedCredential,
-                ProtoCodecs.fromTransactionInfo(transactionInfo)
-              )
-            )
-            .value
-            .map {
-              case Right(x) => x
-              case Left(e) => throw new RuntimeException(s"FAILED: $e")
-            }
-      } yield console_api.PublishCredentialResponse().withTransactionInfo(transactionInfo)
-    }
-  }
-
   private def authenticatedHandler[Request <: scalapb.GeneratedMessage, Response <: scalapb.GeneratedMessage](
       methodName: String,
       request: Request
@@ -208,4 +151,20 @@ class CredentialsServiceImpl(
   /** Retrieves node information associated to a credential
     */
   override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = ???
+
+  /** Publishes a credential batch to the blockchain.
+    * This method also stores the published batch on the database.
+    * However, it does not store the individual credentials on the console
+    */
+  override def publishBatch(request: PublishBatchRequest): Future[PublishBatchResponse] = {
+    println(nodeService.toString) // added only to remove "no use" error
+    ???
+  }
+
+  /** This request stores in the console database the information associated to a credential.
+    * The endpoint assumes that the credential has been publish in a batch though the PublishBatch endpoint
+    */
+  override def storePublishedCredential(
+      request: StorePublishedCredentialRequest
+  ): Future[StorePublishedCredentialResponse] = ???
 }

@@ -56,11 +56,6 @@ service CredentialsService {
   // Retrieves the contact credentials created by the authenticated institution
   rpc GetContactCredentials (GetContactCredentialsRequest) returns (GetContactCredentialsResponse) {}
 
-  // Publishes a signed credential to the blockchain.
-  // This method stores the published credential on the database, and invokes the necessary
-  // methods to get it published to the blockchain.
-  rpc PublishCredential (PublishCredentialRequest) returns (PublishCredentialResponse) {}
-
   // Marks a credential as shared.
   // NOTE: This doesn't send the actual credential to the related contact, but is supposed to be
   //       invoked everytime such credential is sent.
@@ -68,6 +63,16 @@ service CredentialsService {
 
   // Retrieves node information associated to a credential
   rpc GetBlockchainData (GetBlockchainDataRequest) returns (GetBlockchainDataResponse) {}
+
+  // Publishes a credential batch to the blockchain.
+  // This method also stores the published batch on the database.
+  // However, it does not store the individual credentials on the
+  // console (see StorePublishedCredential)
+  rpc PublishBatch (PublishBatchRequest) returns (PublishBatchResponse) {}
+
+  // This request stores in the console database the information associated to a credential.
+  // The endpoint assumes that the credential has been published in a batch through the PublishBatch endpoint
+  rpc StorePublishedCredential (StorePublishedCredentialRequest) returns (StorePublishedCredentialResponse) {}
 }
 
 // The Groups API
@@ -299,23 +304,6 @@ message GetGenericCredentialsResponse {
   repeated CManagerGenericCredential credentials = 1; // the retrieved credentials
 }
 
-// Request to publish a credential to the blockchain
-message PublishCredentialRequest {
-  string encodedSignedCredential = 1; // the encoded credential to publish
-  string cmanagerCredentialId = 2; // cmanager internal credential id
-  SignedAtalaOperation issueCredentialOperation = 3; // a signed instance of IssueCredential operation
-  string nodeCredentialId = 4; // the credentialId computed by the protocol
-
-  // The hash of the AtalaOperation sent inside the SignedAtalaOperation represented by the
-  // issueCredential field.
-  // This is needed for revocation as it represents the previous operation hash.
-  bytes operationHash = 5;
-}
-// Response after publishing a credential
-message PublishCredentialResponse {
-  TransactionInfo transactionInfo = 1; // the blockchain transaction details where the credential was published
-}
-
 // Request to share a credential, which ends up just marking the credential as sent.
 //
 // This is intended to be invoked after sending the credential through the connector.
@@ -375,3 +363,23 @@ message GetLatestCredentialExternalIdRequest {}
 message GetLatestCredentialExternalIdResponse {
   string latestCredentialExternalId = 1;
 }
+
+// Request to publish a credential batch to the blockchain
+message PublishBatchRequest {
+  SignedAtalaOperation issueCredentialBatchOperation = 1; // a signed instance of IssueCredentialBatch operation
+}
+
+// Response after publishing a batch
+message PublishBatchResponse {
+  string batchId = 1; // the protocol assigned id for the batch
+  TransactionInfo transactionInfo = 2; // the blockchain transaction details where the batch was published
+}
+
+// Request to store a credential for which its batch has been published
+message StorePublishedCredentialRequest {
+  string encodedSignedCredential = 1; // the encoded credential to sotre
+  string consoleCredentialId = 2; // management console internal credential id
+  string batchId = 3; // the protocol id associated to the batch that contains this credential
+  MerkleProof proofOfInclusion = 4; // the merkle proof of inclusion for the batch associated to the credential
+}
+message StorePublishedCredentialResponse {}

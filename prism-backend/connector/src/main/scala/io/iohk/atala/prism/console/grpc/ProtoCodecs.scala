@@ -45,7 +45,7 @@ object ProtoCodecs {
 
     credential.publicationData.fold(model) { data =>
       model
-        .withNodeCredentialId(data.nodeCredentialId)
+        .withNodeCredentialId("") // this field is not needed anymore, it will be deprecated soon
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withPublicationStoredAt(data.storedAt.toEpochMilli)

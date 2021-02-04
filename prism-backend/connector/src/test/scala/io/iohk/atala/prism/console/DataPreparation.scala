@@ -8,16 +8,23 @@ import io.circe.syntax._
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType, TokenString}
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
 import io.iohk.atala.prism.console.models._
-import io.iohk.atala.prism.console.repositories.{daos => consoleDaos}
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
+
+import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.daos.BaseDAO
+import io.iohk.atala.prism.console.repositories.{CredentialsRepository, daos => consoleDaos}
+import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.migrations.Student.ConnectionStatus
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 
 import java.time.LocalDate
 
-object DataPreparation {
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+
+object DataPreparation extends BaseDAO {
 
   import connectorDaos._
   import consoleDaos._
@@ -156,5 +163,71 @@ object DataPreparation {
 
   def newDID(): DID = {
     DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+  }
+
+  def readMerkleProof(batchId: CredentialBatchId)(implicit database: Transactor[IO]): Option[MerkleInclusionProof] = {
+    sql"""
+         | SELECT inclusion_proof_hash, inclusion_proof_index, inclusion_proof_siblings
+         | FROM published_batches
+         | WHERE batch_id = $batchId
+         |""".stripMargin
+      .query[MerkleInclusionProof]
+      .option
+      .transact(database)
+      .unsafeRunSync()
+  }
+
+  def publishBatch(
+      batchId: CredentialBatchId,
+      previousOperationHash: SHA256Digest,
+      mockTransactionInfo: TransactionInfo
+  )(implicit credentialsRepository: CredentialsRepository): Unit = {
+    credentialsRepository
+      .storeBatchData(
+        StoreBatchData(
+          batchId,
+          previousOperationHash,
+          mockTransactionInfo
+        )
+      )
+      .value
+      .futureValue
+    ()
+  }
+
+  def publishCredential(
+      issuerId: Institution.Id,
+      batchId: CredentialBatchId,
+      consoleId: GenericCredential.Id,
+      encodedSignedCredential: String,
+      mockMerkleProof: MerkleInclusionProof
+  )(implicit credentialsRepository: CredentialsRepository): Unit = {
+    credentialsRepository
+      .storeCredentialPublicationData(
+        issuerId,
+        CredentialPublicationData(
+          consoleId,
+          batchId,
+          encodedSignedCredential,
+          mockMerkleProof
+        )
+      )
+      .value
+      .futureValue
+    ()
+  }
+
+  def getBatchData(
+      batchId: CredentialBatchId
+  )(implicit database: Transactor[IO]): Option[(TransactionId, Ledger, SHA256Digest)] = {
+    sql"""
+         |SELECT issued_on_transaction_id, ledger, issuance_operation_hash
+         |FROM published_batches
+         |WHERE batch_id = $batchId
+         |""".stripMargin
+      .query[(TransactionId, Ledger, SHA256Digest)]
+      .option
+      .transact(database)
+      .unsafeRunSync()
   }
 }

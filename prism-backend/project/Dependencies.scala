@@ -51,6 +51,7 @@ object Dependencies {
   val doobieCore = "org.tpolecat" %% "doobie-core" % versions.doobie
   val doobiePostgresCirce = "org.tpolecat" %% "doobie-postgres-circe" % versions.doobie
   val doobieHikari = "org.tpolecat" %% "doobie-hikari" % versions.doobie
+  val doobiePostgres = "org.tpolecat" %% "doobie-postgres" % versions.doobie
   val enumeratum = "com.beachape" %% "enumeratum" % versions.enumeratum
   val enumeratumDoobie = "com.beachape" %% "enumeratum-doobie" % versions.enumeratum
   val flyway = "org.flywaydb" % "flyway-core" % versions.flyway
@@ -63,7 +64,6 @@ object Dependencies {
   val monocleCore = "com.github.julien-truffaut" %% "monocle-core" % versions.monocle
   val monocleGeneric = "com.github.julien-truffaut" %% "monocle-generic" % versions.monocle
   val monocleMacro = "com.github.julien-truffaut" %% "monocle-macro" % versions.monocle
-  val odyssey = "net.jtownson" %% "odyssey" % versions.odyssey
   val osLib = "com.lihaoyi" %% "os-lib" % versions.osLib
   val playJson = "com.typesafe.play" %% "play-json" % versions.playJson
   val postgresql = "org.postgresql" % "postgresql" % versions.postgresql
@@ -99,7 +99,7 @@ object Dependencies {
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val circeDependencies = Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
   val dockerDependencies = Seq(dockerClient, dockerTestkitScalatest, dockerTestkitSpotify)
-  val doobieDependencies = Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobieScalatest)
+  val doobieDependencies = Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobiePostgres, doobieScalatest)
   val grpcDependencies = Seq(grpcNetty, grpcServices, grpcContext)
   val logbackDependencies = Seq(logbackCore, logbackClassic)
   val mockitoDependencies = Seq(mockito, mockitoScalatest)

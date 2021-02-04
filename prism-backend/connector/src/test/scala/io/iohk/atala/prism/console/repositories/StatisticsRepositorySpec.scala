@@ -2,7 +2,9 @@ package io.iohk.atala.prism.console.repositories
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.console.DataPreparation._
-import io.iohk.atala.prism.console.models.{IssuerGroup, PublishCredential}
+import io.iohk.atala.prism.console.models.{CredentialPublicationData, IssuerGroup, StoreBatchData}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
@@ -27,19 +29,28 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
       // credentials
       val credential1 = createGenericCredential(issuerId, contact3.contactId)
       createGenericCredential(issuerId, contact3.contactId)
+      val batchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes())).value
       credentialsRepository
-        .storePublicationData(
-          issuerId,
-          PublishCredential(
-            credential1.credentialId,
-            SHA256Digest.compute("test".getBytes),
-            "mockNodeCredentialId",
-            "mockEncodedSignedCredential",
+        .storeBatchData(
+          StoreBatchData(
+            batchId,
+            SHA256Digest.compute("issuanceOp".getBytes),
             TransactionInfo(
               TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
               Ledger.InMemory,
               None
             )
+          )
+        )
+      val aHash = SHA256Digest.compute("random hash".getBytes())
+      credentialsRepository
+        .storeCredentialPublicationData(
+          issuerId,
+          CredentialPublicationData(
+            credential1.credentialId,
+            batchId,
+            "mockEncodedSignedCredential",
+            MerkleInclusionProof(aHash, 1, List(aHash))
           )
         )
         .value

@@ -9,8 +9,10 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.CredentialsCopyJob
+import io.iohk.atala.cvp.webextension.background.models.console.ConsoleCredentialId
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
+import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager.{
@@ -154,12 +156,11 @@ private[background] class WalletManager(
       claims = request.subject.properties.asJson.noSpaces
       signingKeyId = ECKeyOperation.firstMasterKeyId // TODO: this key id should eventually be selected by the user
       //       this should be done when we complete the key derivation flow
-      _ <- connectorClientService.signAndPublishCredential(
+      _ <- connectorClientService.signAndPublishBatch(
         ecKeyPair,
         walletData.did,
         signingKeyId,
-        request.subject.id,
-        claims
+        List(CredentialData(ConsoleCredentialId(request.subject.id), claims))
       )
     } yield {
       signingRequests -= requestId

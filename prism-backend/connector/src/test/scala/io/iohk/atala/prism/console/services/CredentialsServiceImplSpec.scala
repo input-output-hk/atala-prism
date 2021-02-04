@@ -13,13 +13,14 @@ import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
-import io.iohk.atala.prism.console.models.{GenericCredential, Institution, IssuerGroup, PublishCredential}
+import io.iohk.atala.prism.console.models.{GenericCredential, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
+import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.models.Ledger.InMemory
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GetBlockchainDataRequest}
 import io.iohk.atala.prism.protos.console_models.CManagerGenericCredential
@@ -34,7 +35,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 
-  private lazy val credentialsRepository = new CredentialsRepository(database)
+  private lazy implicit val credentialsRepository = new CredentialsRepository(database)
   private lazy val contactsRepository = new ContactsRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
@@ -179,7 +180,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     }
   }
 
-  "publishCredential" should {
+  "publishBatch" should {
     "forward request to node and store data in database" in {
       val issuerName = "Issuer 1"
       val keyPair = EC.generateKeyPair()
@@ -200,12 +201,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       )
 
       val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
-      val mockNodeCredentialId =
-        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
+      val mockCredentialBatchId =
+        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash))
       val mockTransactionInfo =
         common_models
           .TransactionInfo()
-          .withTransactionId(mockNodeCredentialId)
+          .withTransactionId(mockCredentialBatchId.id)
           .withLedger(common_models.Ledger.IN_MEMORY)
 
       val nodeRequest = node_api
@@ -218,24 +219,31 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
             node_api
               .IssueCredentialBatchResponse()
               .withTransactionInfo(mockTransactionInfo)
-              .withBatchId(mockNodeCredentialId)
+              .withBatchId(mockCredentialBatchId.id)
           )
       ).when(nodeMock)
         .issueCredentialBatch(nodeRequest)
 
       val request = console_api
-        .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.toString)
-        .withIssueCredentialOperation(issuanceOp)
-        .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withNodeCredentialId(mockNodeCredentialId)
-        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+        .PublishBatchRequest()
+        .withIssueCredentialBatchOperation(issuanceOp)
+
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
-        serviceStub.publishCredential(request)
-
+        val publishResponse = serviceStub.publishBatch(request)
         verify(nodeMock).issueCredentialBatch(nodeRequest)
+
+        // we publish the credential data
+        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+        publishCredential(
+          issuerId,
+          mockCredentialBatchId,
+          originalCredential.credentialId,
+          mockEncodedSignedCredential,
+          mockMerkleProof
+        )
 
         val credentialList =
           credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
@@ -243,19 +251,76 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         credentialList.length must be(1)
 
         val updatedCredential = credentialList.headOption.value
+
         val publicationData = updatedCredential.publicationData.value
 
-        publicationData.nodeCredentialId must be(mockNodeCredentialId)
+        publicationData.credentialBatchId must be(mockCredentialBatchId)
         publicationData.issuanceOperationHash must be(mockOperationHash)
         publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
         publicationData.transactionId must be(TransactionId.from(mockTransactionInfo.transactionId).value)
         publicationData.ledger must be(Ledger.InMemory)
         // the rest should remain unchanged
         updatedCredential.copy(publicationData = None) must be(originalCredential)
+
+        publishResponse.batchId mustBe mockCredentialBatchId.id
+        publishResponse.transactionInfo.value mustBe mockTransactionInfo
       }
     }
 
-    "fail if issuer is trying to publish a credential he didn't create" in {
+    "fail if batch id returned by the node is different from the one computed by the console" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      DataPreparation.createIssuer("issuerName", publicKey = Some(publicKey), did = Some(did))
+
+      val mockDIDSuffix = did.suffix
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
+
+      val issuanceOp = buildSignedIssueCredentialOp(
+        mockEncodedSignedCredentialHash,
+        mockDIDSuffix
+      )
+
+      val request = console_api
+        .PublishBatchRequest()
+        .withIssueCredentialBatchOperation(issuanceOp)
+
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+      val mockTransactionInfo =
+        common_models
+          .TransactionInfo()
+          .withTransactionId(mockCredentialBatchId.id)
+          .withLedger(common_models.Ledger.IN_MEMORY)
+
+      val nodeRequest = node_api
+        .IssueCredentialBatchRequest()
+        .withSignedOperation(issuanceOp)
+
+      doReturn(
+        Future
+          .successful(
+            node_api
+              .IssueCredentialBatchResponse()
+              .withBatchId(mockCredentialBatchId.id)
+              .withTransactionInfo(mockTransactionInfo)
+          )
+      ).when(nodeMock)
+        .issueCredentialBatch(nodeRequest)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        intercept[Exception](
+          serviceStub.publishBatch(request)
+        )
+      }
+    }
+  }
+
+  "storePublishedCredential" should {
+    "store a credential when the batch was published" in {
       val issuerName = "Issuer 1"
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
@@ -265,198 +330,54 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 
-      val issuanceOp = buildSignedIssueCredentialOp(
-        mockEncodedSignedCredentialHash,
-        mockDIDSuffix
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
       )
 
-      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
-      val mockNodeCredentialId =
-        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
 
-      val request = console_api
-        .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.toString)
-        .withIssueCredentialOperation(issuanceOp)
-        .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withNodeCredentialId(mockNodeCredentialId)
-        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-
-      val issuerName2 = "Issuer 2"
-      val keyPair2 = EC.generateKeyPair()
-      val publicKey2 = keyPair2.publicKey
-      val did2 = generateDid(publicKey2)
-      DataPreparation.createIssuer(issuerName2, publicKey = Some(publicKey2), did = Some(did2))
-
-      val wrongRpcRequest = SignedRpcRequest.generate(keyPair2, did2, request)
-
-      usingApiAs(wrongRpcRequest) { serviceStub =>
-        val err = intercept[RuntimeException](
-          serviceStub.publishCredential(request)
-        )
-
-        err.getMessage must be("INTERNAL: requirement failed: The credential was not issued by the specified issuer")
-
-        val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
-
-        credentialList.length must be(1)
-
-        val updatedCredential = credentialList.headOption.value
-
-        updatedCredential must be(originalCredential)
-        updatedCredential.publicationData must be(empty)
-      }
-    }
-
-    "fail if issuer is trying to publish a credential that does not exist in the db" in {
-      val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-
-      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
-      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
-
-      val issuanceOp = buildSignedIssueCredentialOp(
-        mockEncodedSignedCredentialHash,
-        mockDIDSuffix
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      val mockMerkleProofProto = common_models.MerkleProof(
+        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
+        mockMerkleProof.index,
+        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
       )
-
-      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
-      val mockNodeCredentialId =
-        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
-
-      val unknownCredentialId = GenericCredential.Id.random()
       val request = console_api
-        .PublishCredentialRequest()
-        .withCmanagerCredentialId(unknownCredentialId.toString)
-        .withIssueCredentialOperation(issuanceOp)
+        .StorePublishedCredentialRequest()
+        .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withNodeCredentialId(mockNodeCredentialId)
-        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val err = intercept[RuntimeException](
-          serviceStub.publishCredential(request)
-        )
-
-        err.getMessage.startsWith("INTERNAL: Credential with ID") must be(true)
-
-        val credentialList =
-          credentialsRepository.getBy(issuerId, 10, None).value.futureValue.toOption.value
-
-        credentialList must be(empty)
-      }
-    }
-
-    "fail if the issuer uses an incorrect protocol credential id" in {
-      val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
-
-      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
-      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
-
-      val issuanceOp = buildSignedIssueCredentialOp(
-        mockEncodedSignedCredentialHash,
-        mockDIDSuffix
-      )
-
-      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
-      val mockIncorrectNodeCredentialId = SHA256Digest.compute("AN INCORRECT VALUE".getBytes()).hexValue
-
-      val request = console_api
-        .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.toString)
-        .withIssueCredentialOperation(issuanceOp)
-        .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withNodeCredentialId(mockIncorrectNodeCredentialId)
-        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+        .withProofOfInclusion(mockMerkleProofProto)
+        .withBatchId(mockCredentialBatchId.id)
 
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
-        val err = intercept[RuntimeException](
-          serviceStub.publishCredential(request)
-        )
+        serviceStub.storePublishedCredential(request)
 
-        err.getMessage.endsWith("Invalid batch protocol id") must be(true)
+        val storedPublicationData = credentialsRepository
+          .getBy(originalCredential.credentialId)
+          .value
+          .futureValue
+          .toOption
+          .value
+          .value
+          .publicationData
+          .value
 
-        val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
-
-        credentialList.length must be(1)
-
-        val updatedCredential = credentialList.headOption.value
-
-        updatedCredential must be(originalCredential)
-        updatedCredential.publicationData must be(empty)
-      }
-    }
-
-    "fail if the issuer provides a hash which does not match with the provided operation" in {
-      val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
-
-      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
-      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
-
-      val issuanceOp = buildSignedIssueCredentialOp(
-        mockEncodedSignedCredentialHash,
-        mockDIDSuffix
-      )
-
-      val mockIncorrectOperationHash = SHA256Digest.compute("AN INVALID VALUE".getBytes())
-      val mockNodeCredentialId =
-        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
-
-      val request = console_api
-        .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.toString)
-        .withIssueCredentialOperation(issuanceOp)
-        .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withNodeCredentialId(mockNodeCredentialId)
-        .withOperationHash(ByteString.copyFrom(mockIncorrectOperationHash.value.toArray))
-
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val err = intercept[RuntimeException](
-          serviceStub.publishCredential(request)
-        )
-
-        err.getMessage.endsWith("Operation hash does not match the provided operation") must be(true)
-
-        val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
-
-        credentialList.length must be(1)
-
-        val updatedCredential = credentialList.headOption.value
-
-        updatedCredential must be(originalCredential)
-        updatedCredential.publicationData must be(empty)
+        storedPublicationData.credentialBatchId mustBe mockCredentialBatchId
+        storedPublicationData.issuanceOperationHash mustBe issuanceOpHash
+        storedPublicationData.encodedSignedCredential mustBe mockEncodedSignedCredential
+        storedPublicationData.transactionId mustBe mockTransactionInfo.transactionId
+        storedPublicationData.ledger mustBe mockTransactionInfo.ledger
       }
     }
 
@@ -470,44 +391,226 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
 
-      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
       val mockEmptyEncodedSignedCredential = ""
-      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEmptyEncodedSignedCredential.getBytes())
 
-      val issuanceOp = buildSignedIssueCredentialOp(
-        mockEncodedSignedCredentialHash,
-        mockDIDSuffix
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
       )
 
-      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
-      val mockNodeCredentialId =
-        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash)).id
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
 
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      val mockMerkleProofProto = common_models.MerkleProof(
+        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
+        mockMerkleProof.index,
+        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
+      )
       val request = console_api
-        .PublishCredentialRequest()
-        .withCmanagerCredentialId(originalCredential.credentialId.toString)
-        .withIssueCredentialOperation(issuanceOp)
+        .StorePublishedCredentialRequest()
+        .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
         .withEncodedSignedCredential(mockEmptyEncodedSignedCredential)
-        .withNodeCredentialId(mockNodeCredentialId)
-        .withOperationHash(ByteString.copyFrom(mockOperationHash.value.toArray))
+        .withProofOfInclusion(mockMerkleProofProto)
+        .withBatchId(mockCredentialBatchId.id)
+
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
         val err = intercept[RuntimeException](
-          serviceStub.publishCredential(request)
+          serviceStub.storePublishedCredential(request)
         )
 
-        err.getMessage.endsWith("Empty encoded credential") must be(true)
+        err.getMessage.endsWith("Empty encoded credential") mustBe true
 
-        val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
+        val storedPublicationData = credentialsRepository
+          .getBy(originalCredential.credentialId)
+          .value
+          .futureValue
+          .toOption
+          .value
+          .value
+          .publicationData
 
-        credentialList.length must be(1)
+        storedPublicationData mustBe empty
+      }
+    }
 
-        val updatedCredential = credentialList.headOption.value
+    "fail if issuer is trying to publish a credential that does not exist in the db" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
 
-        updatedCredential must be(originalCredential)
-        updatedCredential.publicationData must be(empty)
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
+      )
+
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      val mockMerkleProofProto = common_models.MerkleProof(
+        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
+        mockMerkleProof.index,
+        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
+      )
+      val aRandomId = GenericCredential.Id.random()
+      val request = console_api
+        .StorePublishedCredentialRequest()
+        .withConsoleCredentialId(aRandomId.uuid.toString)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withProofOfInclusion(mockMerkleProofProto)
+        .withBatchId(mockCredentialBatchId.id)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val err = intercept[RuntimeException](
+          serviceStub.storePublishedCredential(request)
+        )
+
+        err.getMessage.endsWith(s"Credential with ID $aRandomId does not exist") mustBe true
+
+        val storedCredential = credentialsRepository
+          .getBy(aRandomId)
+          .value
+          .futureValue
+          .toOption
+          .value
+
+        storedCredential mustBe empty
+      }
+    }
+
+    "fail if issuer is trying to publish a credential he didn't create" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
+      )
+
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      val mockMerkleProofProto = common_models.MerkleProof(
+        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
+        mockMerkleProof.index,
+        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
+      )
+
+      // another issuer's data
+      val issuerName2 = "Issuer 2"
+      val keyPair2 = EC.generateKeyPair()
+      val publicKey2 = keyPair2.publicKey
+      val did2 = generateDid(publicKey2)
+      DataPreparation.createIssuer(issuerName2, publicKey = Some(publicKey2), did = Some(did2))
+
+      val request = console_api
+        .StorePublishedCredentialRequest()
+        .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withProofOfInclusion(mockMerkleProofProto)
+        .withBatchId(mockCredentialBatchId.id)
+
+      val rpcRequestIssuer2 = SignedRpcRequest.generate(keyPair2, did2, request)
+
+      usingApiAs(rpcRequestIssuer2) { serviceStub =>
+        val err = intercept[RuntimeException](
+          serviceStub.storePublishedCredential(request)
+        )
+
+        err.getMessage.endsWith("The credential was not issued by the specified issuer") mustBe true
+
+        val storedPublicationData = credentialsRepository
+          .getBy(originalCredential.credentialId)
+          .value
+          .futureValue
+          .toOption
+          .value
+          .value
+          .publicationData
+
+        storedPublicationData mustBe empty
+      }
+    }
+
+    "fail if the associated batch was not stored yet" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
+      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      val mockMerkleProofProto = common_models.MerkleProof(
+        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
+        mockMerkleProof.index,
+        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
+      )
+      val request = console_api
+        .StorePublishedCredentialRequest()
+        .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
+        .withEncodedSignedCredential(mockEncodedSignedCredential)
+        .withProofOfInclusion(mockMerkleProofProto)
+        .withBatchId(mockCredentialBatchId.id)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.storePublishedCredential(request)
+        )
+
+        val storedPublicationData = credentialsRepository
+          .getBy(originalCredential.credentialId)
+          .value
+          .futureValue
+          .toOption
+          .value
+          .value
+          .publicationData
+
+        storedPublicationData mustBe empty
       }
     }
   }
@@ -708,22 +811,18 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
   private def publish(
       issuerId: Institution.Id,
-      id: GenericCredential.Id,
+      consoleId: GenericCredential.Id,
       encodedSignedCredential: String,
       mockTransactionInfo: TransactionInfo
-  ): Unit = {
-    val _ = credentialsRepository
-      .storePublicationData(
-        issuerId,
-        PublishCredential(
-          id,
-          SHA256Digest.compute("test".getBytes),
-          "mockNodeCredentialId",
-          encodedSignedCredential,
-          mockTransactionInfo
-        )
-      )
-      .value
-      .futureValue
+  )(implicit credentialsRepository: CredentialsRepository): Unit = {
+    val mockHash = SHA256Digest.compute("test".getBytes)
+    val mockMerkleProof = MerkleInclusionProof(
+      mockHash,
+      1, // a random index
+      List(mockHash)
+    )
+    val mockBatchId = CredentialBatchId.fromDigest(mockHash).value
+    DataPreparation.publishBatch(mockBatchId, mockHash, mockTransactionInfo)
+    DataPreparation.publishCredential(issuerId, mockBatchId, consoleId, encodedSignedCredential, mockMerkleProof)
   }
 }

@@ -53,9 +53,21 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def storePublicationData(issuerId: Institution.Id, credentialData: PublishCredential): FutureEither[Nothing, Int] = {
+  def storeCredentialPublicationData(
+      issuerId: Institution.Id,
+      credentialData: CredentialPublicationData
+  ): FutureEither[Nothing, Int] = {
     CredentialsDAO
-      .storePublicationData(issuerId, credentialData)
+      .storeCredentialPublicationData(issuerId, credentialData)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def storeBatchData(batchData: StoreBatchData): FutureEither[Nothing, Int] = {
+    CredentialsDAO
+      .storeBatchData(batchData)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

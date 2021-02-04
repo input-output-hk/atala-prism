@@ -9,13 +9,17 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.console.models.{
   Contact,
   CreateGenericCredential,
+  CredentialPublicationData,
   GenericCredential,
   Institution,
-  PublishCredential
+  StoreBatchData
 }
+import io.iohk.atala.prism.console.repositories.daos._
+import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 
-object CredentialsDAO {
+object CredentialsDAO extends BaseDAO {
+
   def create(data: CreateGenericCredential): doobie.ConnectionIO[GenericCredential] = {
     val id = GenericCredential.Id.random()
     val createdOn = Instant.now()
@@ -29,14 +33,19 @@ object CredentialsDAO {
          |  SELECT id AS issuer_id, name
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+         |), PC AS (
+         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
+         |         issued_on_transaction_id, ledger, shared_at
+         |  FROM published_credentials JOIN published_batches USING (batch_id)
+         |  WHERE credential_id = $id
          |)
          |SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, connection_status,
-         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-         |       pc.transaction_id, pc.ledger, pc.shared_at
+         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
+         |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (inserted.subject_id = contacts.contact_id)
-         |     LEFT JOIN published_credentials pc USING (credential_id)
+         |     LEFT JOIN PC USING (credential_id)
          |""".stripMargin.query[GenericCredential].unique
   }
 
@@ -46,15 +55,20 @@ object CredentialsDAO {
          |  SELECT id AS issuer_id, name
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+         |), PC AS (
+         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
+         |         issued_on_transaction_id, ledger, shared_at
+         |  FROM published_credentials JOIN published_batches USING (batch_id)
+         |  WHERE credential_id = $credentialId
          |)
          |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
          |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-         |       pc.transaction_id, pc.ledger, pc.shared_at
+         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
+         |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.subject_id = contacts.contact_id)
-         |     LEFT JOIN published_credentials pc USING (credential_id)
+         |     LEFT JOIN PC USING (credential_id)
          |WHERE credential_id = $credentialId
          |""".stripMargin.query[GenericCredential].option
   }
@@ -76,15 +90,20 @@ object CredentialsDAO {
              |  SELECT id AS issuer_id, name
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+             |), PC AS (
+             |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
+             |         issued_on_transaction_id, ledger, shared_at
+             |  FROM published_credentials JOIN published_batches USING (batch_id)
+             |  WHERE credential_id = $lastSeen
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
              |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-             |       pc.transaction_id, pc.ledger, pc.shared_at
+             |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
+             |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.subject_id = contacts.contact_id)
-             |     LEFT JOIN published_credentials pc USING (credential_id)
+             |     LEFT JOIN PC USING (credential_id)
              |WHERE c.issuer_id = $issuedBy AND
              |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
              |ORDER BY c.created_on ASC, credential_id
@@ -96,15 +115,19 @@ object CredentialsDAO {
              |  SELECT id AS issuer_id, name
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+             |), PC AS (
+             |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
+             |         issued_on_transaction_id, ledger, shared_at
+             |  FROM published_credentials JOIN published_batches USING (batch_id)
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
              |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-             |       pc.transaction_id, pc.ledger, pc.shared_at
+             |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
+             |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.subject_id = contacts.contact_id)
-             |     LEFT JOIN published_credentials pc USING (credential_id)
+             |     LEFT JOIN PC USING (credential_id)
              |WHERE c.issuer_id = $issuedBy
              |ORDER BY c.created_on ASC, credential_id
              |LIMIT $limit
@@ -119,38 +142,60 @@ object CredentialsDAO {
          |  SELECT id AS issuer_id, name
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+         |), PC AS (
+         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
+         |         issued_on_transaction_id, ledger, shared_at
+         |  FROM published_credentials JOIN published_batches USING (batch_id)
          |)
          |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
          |       external_id, PTS.name AS issuer_name, contacts.contact_data, connection_status,
-         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-         |       pc.transaction_id, pc.ledger, pc.shared_at
+         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
+         |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.subject_id = contacts.contact_id)
-         |     LEFT JOIN published_credentials pc USING (credential_id)
+         |     LEFT JOIN PC USING (credential_id)
          |WHERE c.issuer_id = $issuedBy AND
          |      c.subject_id = $subjectId
          |ORDER BY c.created_on ASC, credential_id
          |""".stripMargin.query[GenericCredential].to[List]
   }
 
-  def storePublicationData(issuerId: Institution.Id, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {
+  def storeCredentialPublicationData(
+      issuerId: Institution.Id,
+      credentialData: CredentialPublicationData
+  ): doobie.ConnectionIO[Int] = {
+    import doobie.postgres.implicits._
     sql"""
          |INSERT INTO published_credentials (
-         |  credential_id, node_credential_id, operation_hash, encoded_signed_credential, transaction_id, ledger, stored_at)
+         |  credential_id, batch_id, encoded_signed_credential,
+         |   inclusion_proof_hash, inclusion_proof_index, inclusion_proof_siblings)
          |SELECT credential_id,
-         |       ${credentialData.nodeCredentialId},
-         |       ${credentialData.issuanceOperationHash},
+         |       ${credentialData.credentialBatchId},
          |       ${credentialData.encodedSignedCredential},
-         |       ${credentialData.transactionInfo.transactionId},
-         |       ${credentialData.transactionInfo.ledger},
-         |       now()
+         |       ${credentialData.proofOfInclusion.hash},
+         |       ${credentialData.proofOfInclusion.index},
+         |       ${credentialData.proofOfInclusion.siblings.map(_.hexValue)}
          |FROM credentials
-         |WHERE credential_id = ${credentialData.credentialId} AND
+         |WHERE credential_id = ${credentialData.consoleCredentialId} AND
          |      issuer_id = $issuerId
          |""".stripMargin.update.run.flatTap { n =>
       FC.raiseError(new RuntimeException(s"The credential was not issued by the specified issuer")).whenA(n != 1)
     }
+  }
+
+  def storeBatchData(batchData: StoreBatchData): doobie.ConnectionIO[Int] = {
+    sql"""
+         |INSERT INTO published_batches (
+         |  batch_id, issued_on_transaction_id, ledger, issuance_operation_hash, stored_at
+         |)
+         |VALUES (${batchData.batchId},
+         |        ${batchData.issuanceTransactionInfo.transactionId},
+         |        ${batchData.issuanceTransactionInfo.ledger},
+         |        ${batchData.issuanceOperationHash},
+         |        now()
+         |)
+         |""".stripMargin.update.run
   }
 
   def markAsShared(institutionId: Institution.Id, credentialId: GenericCredential.Id): doobie.ConnectionIO[Unit] = {

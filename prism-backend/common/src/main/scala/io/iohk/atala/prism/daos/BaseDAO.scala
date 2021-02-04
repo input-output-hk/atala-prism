@@ -7,8 +7,9 @@ import io.circe.Json
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
-
 import java.util.UUID
+
+import io.iohk.atala.prism.credentials.CredentialBatchId
 
 trait BaseDAO {
   implicit val uuidMeta: Meta[UUID] = doobie.postgres.implicits.UuidType
@@ -37,6 +38,13 @@ trait BaseDAO {
   protected def uuidValueMeta[T <: UUIDValue: TypeTag](builder: UUIDValue.Builder[T]): Meta[T] = {
     Meta[UUID].timap(builder.apply)(_.uuid)
   }
+
+  implicit val credentialBatchId: Meta[CredentialBatchId] =
+    Meta[String].timap(x =>
+      CredentialBatchId
+        .fromString(x)
+        .getOrElse(throw new RuntimeException(s"Invalid batch id: $x"))
+    )(_.id)
 }
 
 object BaseDAO extends BaseDAO

@@ -4,9 +4,11 @@ import io.circe.Json
 import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, TokenString}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo, UUIDValue}
-
 import java.time.Instant
 import java.util.UUID
+
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 
 package object models {
   case class CreateContact(
@@ -85,7 +87,7 @@ package object models {
   )
 
   case class PublicationData(
-      nodeCredentialId: String, // the id assigned by the protocol
+      credentialBatchId: CredentialBatchId, // the id assigned by the protocol to the batch
       issuanceOperationHash: SHA256Digest, // the hex representation of the associated issuance operation hash
       encodedSignedCredential: String, // the actual published credential
       storedAt: Instant, // the time when the publication data was stored in the database
@@ -93,12 +95,17 @@ package object models {
       ledger: Ledger
   )
 
-  case class PublishCredential(
-      credentialId: GenericCredential.Id,
-      issuanceOperationHash: SHA256Digest,
-      nodeCredentialId: String, // TODO: Move node CredentialId class to common
+  case class CredentialPublicationData(
+      consoleCredentialId: GenericCredential.Id,
+      credentialBatchId: CredentialBatchId,
       encodedSignedCredential: String,
-      transactionInfo: TransactionInfo
+      proofOfInclusion: MerkleInclusionProof
+  )
+
+  case class StoreBatchData(
+      batchId: CredentialBatchId,
+      issuanceOperationHash: SHA256Digest,
+      issuanceTransactionInfo: TransactionInfo
   )
 
   object GenericCredential {

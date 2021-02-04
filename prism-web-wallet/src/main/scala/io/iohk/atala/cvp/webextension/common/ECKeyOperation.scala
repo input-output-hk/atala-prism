@@ -1,9 +1,11 @@
 package io.iohk.atala.cvp.webextension.common
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
+import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_models._
@@ -37,25 +39,30 @@ object ECKeyOperation {
       issuerDID: DID,
       signingKeyId: String,
       signingKey: ECKeyPair,
-      claimsString: String
-  ): (AtalaOperation, String, SHA256Digest) = {
-    val credentialContent: CredentialContent =
-      CredentialContent(
-        CredentialContent.JsonFields.IssuerDid.field -> issuerDID.value,
-        CredentialContent.JsonFields.IssuanceKeyId.field -> signingKeyId,
-        CredentialContent.JsonFields.CredentialSubject.field -> claimsString
-      )
+      credentialsData: List[CredentialData]
+  ): (AtalaOperation, List[(String, MerkleInclusionProof)]) = {
+    val signedCredentials: List[Credential] = credentialsData.map { cd =>
+      Credential
+        .fromCredentialContent(
+          CredentialContent(
+            CredentialContent.JsonFields.IssuerDid.field -> issuerDID.value,
+            CredentialContent.JsonFields.IssuanceKeyId.field -> signingKeyId,
+            CredentialContent.JsonFields.CredentialSubject.field -> cd.credentialClaims
+          )
+        )
+        .sign(signingKey.privateKey)
+    }
 
-    val unsignedCredential = Credential.fromCredentialContent(credentialContent)
-    val signedCredential = unsignedCredential.sign(signingKey.privateKey)
-    val signedCredentialHash = signedCredential.hash
-    val contentHash = ByteString.copyFrom(signedCredentialHash.value.toArray)
-    val credentialBatchData = CredentialBatchData(issuerDID = issuerDID.suffix.value, merkleRoot = contentHash)
+    val (merkleRoot, proofs) = CredentialBatches.batch(signedCredentials)
+    val merkleRootProto = ByteString.copyFrom(merkleRoot.hash.value.toArray)
+    val credentialBatchData = CredentialBatchData(issuerDID = issuerDID.suffix.value, merkleRoot = merkleRootProto)
     val issueCredentialOperation = IssueCredentialBatchOperation(Some(credentialBatchData))
+    val credentialsAndProofs =
+      signedCredentials.map(_.canonicalForm).zip(proofs)
+
     (
       AtalaOperation(AtalaOperation.Operation.IssueCredentialBatch(issueCredentialOperation)),
-      signedCredential.canonicalForm,
-      signedCredentialHash
+      credentialsAndProofs
     )
   }
 

@@ -5,27 +5,28 @@ import io.iohk.atala.prism.console.grpc.ProtoCodecs._
 import io.iohk.atala.prism.console.models.{
   Contact,
   CreateGenericCredential,
+  CredentialPublicationData,
   GenericCredential,
   Institution,
-  PublishCredential
+  StoreBatchData
 }
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
+import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.ProtoCodecs
+import io.iohk.atala.prism.models.{TransactionId, TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{console_api, node_api, common_models}
+import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.dsl._
-
 import java.util.UUID
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsServiceImpl(
@@ -94,73 +95,6 @@ class CredentialsServiceImpl(
           console_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
         }
     }
-
-  /** Publish an encoded signed credential into the blockchain
-    *
-    * NOTE: We will update this method when we migrate to credential batching.
-    *       Until then, this RPC will expect a signed IssueCredentialBatch instead of
-    *       in the `issueCredentialOperation` field. This operation will contain the hash
-    *       of the encodedSignedCredential instead of an actual merkle root.
-    *       This hack will be changed when we implement actual batching, but we need it for
-    *       now to allow retrieving credential timestamp data (to keep backward compatibility).
-    */
-  override def publishCredential(request: PublishCredentialRequest): Future[PublishCredentialResponse] = {
-    authenticator.authenticated("publishCredential", request) { participantId =>
-      for {
-        issuerId <- Institution.Id(participantId.uuid).tryF
-        credentialId = GenericCredential.Id.unsafeFrom(request.cmanagerCredentialId)
-        batchProtocolId = request.nodeCredentialId
-        issuanceOperationHash = SHA256Digest(request.operationHash.toByteArray.toVector)
-        encodedSignedCredential = request.encodedSignedCredential
-        signedIssueCredentialBatchOp =
-          request.issueCredentialOperation
-            .getOrElse(throw new RuntimeException("Missing IssueCredential operation"))
-        // validation for sanity check
-        (merkleRoot, did, operationHash) = extractValues(signedIssueCredentialBatchOp)
-        batchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
-        _ = require(
-          batchProtocolId == batchId.id,
-          "Invalid batch protocol id"
-        )
-        _ = require(
-          issuanceOperationHash == operationHash,
-          "Operation hash does not match the provided operation"
-        )
-        _ = require(encodedSignedCredential.nonEmpty, "Empty encoded credential")
-        // Verify issuer
-        maybeCredential <- credentialsRepository.getBy(credentialId).toFuture
-        credential =
-          maybeCredential.getOrElse(throw new RuntimeException(s"Credential with ID $credentialId does not exist"))
-        _ = require(credential.issuedBy == issuerId, "The credential was not issued by the specified issuer")
-        // Issue the credential in the Node
-        credentialIssued <- nodeService.issueCredentialBatch {
-          node_api
-            .IssueCredentialBatchRequest()
-            .withSignedOperation(signedIssueCredentialBatchOp)
-        }
-        transactionInfo =
-          credentialIssued.transactionInfo.getOrElse(throw new RuntimeException("Credential issues has no transaction"))
-        // Update the database
-        _ <-
-          credentialsRepository
-            .storePublicationData(
-              issuerId,
-              PublishCredential(
-                credentialId,
-                issuanceOperationHash,
-                batchProtocolId,
-                encodedSignedCredential,
-                ProtoCodecs.fromTransactionInfo(transactionInfo)
-              )
-            )
-            .value
-            .map {
-              case Right(x) => x
-              case Left(e) => throw new RuntimeException(s"FAILED: $e")
-            }
-      } yield console_api.PublishCredentialResponse().withTransactionInfo(transactionInfo)
-    }
-  }
 
   private def extractValues(signedAtalaOperation: SignedAtalaOperation): (MerkleRoot, DID, SHA256Digest) = {
     val maybePair = for {
@@ -269,6 +203,124 @@ class CredentialsServiceImpl(
             .withLedger(ledgerData.ledger)
         )
       )
+    }
+  }
+
+  /** Publishes a credential batch to the blockchain.
+    * This method stores the published credentials on the database, and invokes the necessary
+    * methods to get it published to the blockchain.
+    */
+  override def publishBatch(request: PublishBatchRequest): Future[PublishBatchResponse] = {
+    def storeBatch(
+        batchId: CredentialBatchId,
+        signedIssueCredentialBatchOp: SignedAtalaOperation,
+        transactionInfo: common_models.TransactionInfo
+    ): Future[Unit] = {
+      for {
+        ledger <- CommonProtoCodecs.fromLedger(transactionInfo.ledger).tryF
+        transactionId <-
+          TransactionId
+            .from(transactionInfo.transactionId)
+            .getOrElse(throw new RuntimeException("Corrupted transaction ID"))
+            .tryF
+        (merkleRoot, did, operationHash) = extractValues(signedIssueCredentialBatchOp)
+        computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
+        // validation for sanity check
+        // The `batchId` parameter is the id returned by the node.
+        // We make this check to be sure that the node and the console are
+        // using the same id (if this fails, they are using different versions
+        // of the protocol)
+        _ = assert(batchId == computedBatchId, "The batch id provided by the node does not match the one computed")
+        _ <-
+          credentialsRepository
+            .storeBatchData(
+              StoreBatchData(
+                batchId = batchId,
+                issuanceOperationHash = operationHash,
+                issuanceTransactionInfo = TransactionInfo(
+                  transactionId = transactionId,
+                  ledger = ledger,
+                  block = None
+                )
+              )
+            )
+            .value
+            .map {
+              case Right(x) => x
+              case Left(e) => throw new RuntimeException(s"FAILED: $e")
+            }
+      } yield ()
+    }
+
+    authenticator.authenticated("publishBatch", request) { _ =>
+      for {
+        signedIssueCredentialBatchOp <-
+          request.issueCredentialBatchOperation
+            .getOrElse(throw new RuntimeException("Missing IssueCredentialBatch operation"))
+            .tryF
+        // Issue the batch in the Node
+        credentialIssued <- nodeService.issueCredentialBatch {
+          node_api
+            .IssueCredentialBatchRequest()
+            .withSignedOperation(signedIssueCredentialBatchOp)
+        }
+        returnedBatchId =
+          CredentialBatchId
+            .fromString(credentialIssued.batchId)
+            .getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
+        transactionInfo =
+          credentialIssued.transactionInfo
+            .getOrElse(throw new RuntimeException("We could not generate a transaction"))
+        // Update the database
+        _ <- storeBatch(returnedBatchId, signedIssueCredentialBatchOp, transactionInfo)
+      } yield console_api
+        .PublishBatchResponse()
+        .withTransactionInfo(transactionInfo)
+        .withBatchId(credentialIssued.batchId)
+    }
+  }
+
+  // This request stores in the console database the information associated to a credential. The endpoint assumes that
+  // the credential has been publish in a batch though the PublishBatch endpoint
+  override def storePublishedCredential(
+      request: StorePublishedCredentialRequest
+  ): Future[StorePublishedCredentialResponse] = {
+    authenticator.authenticated("storePublishedCredential", request) { participantId =>
+      for {
+        issuerId <- Institution.Id(participantId.uuid).tryF
+        encodedSignedCredential = request.encodedSignedCredential
+        consoleCredentialId <- GenericCredential.Id(UUID.fromString(request.consoleCredentialId)).tryF
+        _ = require(encodedSignedCredential.nonEmpty, "Empty encoded credential")
+        maybeCredential <- credentialsRepository.getBy(consoleCredentialId).toFuture
+        credential = maybeCredential.getOrElse(
+          throw new RuntimeException(s"Credential with ID $consoleCredentialId does not exist")
+        )
+        // Verify issuer
+        _ = require(credential.issuedBy == issuerId, "The credential was not issued by the specified issuer")
+        batchId <- CredentialBatchId.fromString(request.batchId).get.tryF
+        proofOfInclusionProto = request.proofOfInclusion.getOrElse(throw new RuntimeException("Empty inclusion proof"))
+        proof = MerkleInclusionProof(
+          hash = SHA256Digest(proofOfInclusionProto.itemHash.toByteArray.toVector),
+          index = proofOfInclusionProto.index,
+          siblings = proofOfInclusionProto.siblings.map(b => SHA256Digest(b.toByteArray.toVector)).toList
+        )
+        _ <-
+          credentialsRepository
+            .storeCredentialPublicationData(
+              issuerId,
+              CredentialPublicationData(
+                consoleCredentialId = consoleCredentialId,
+                credentialBatchId = batchId,
+                encodedSignedCredential = encodedSignedCredential,
+                proofOfInclusion = proof
+              )
+            )
+            .value
+            .map {
+              case Right(x) => x
+              case Left(e) => throw new RuntimeException(s"FAILED: $e")
+            }
+      } yield StorePublishedCredentialResponse()
     }
   }
 }
