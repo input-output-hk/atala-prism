@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, WarningOutlined } from '@ant-design/icons';
 import { Col, Tabs, Input, Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
 
@@ -47,8 +47,15 @@ const RecipientsSelection = ({
               onChange={({ target: { value } }) => setGroupsFilter(value)}
             />
             <div className="selectGroupCheckbox">
-              <Checkbox onChange={toggleShouldSelectRecipients} checked={!shouldSelectRecipients}>
-                {t('newCredential.targetsSelection.checkbox')}
+              <Checkbox className="checkboxReverse">Select All</Checkbox>
+            </div>
+            <div className="selectGroupCheckbox noRecipientsCheckbox">
+              <Checkbox
+                className="checkboxReverse"
+                onChange={toggleShouldSelectRecipients}
+                checked={!shouldSelectRecipients}
+              >
+                <WarningOutlined className="icon" /> {t('newCredential.targetsSelection.checkbox')}
               </Checkbox>
             </div>
           </div>
@@ -77,7 +84,15 @@ const RecipientsSelection = ({
               onChange={({ target: { value } }) => setSubjectsFilter(value)}
             />
             <div className="selectGroupCheckbox">
-              <Checkbox onChange={toggleShouldSelectRecipients} checked={!shouldSelectRecipients}>
+              <Checkbox className="checkboxReverse">Select All</Checkbox>
+            </div>
+            <div className="selectGroupCheckbox noRecipientsCheckbox">
+              <Checkbox
+                className="checkboxReverse"
+                onChange={toggleShouldSelectRecipients}
+                checked={!shouldSelectRecipients}
+              >
+                <WarningOutlined className="icon" />
                 {t('newCredential.targetsSelection.checkbox')}
               </Checkbox>
             </div>

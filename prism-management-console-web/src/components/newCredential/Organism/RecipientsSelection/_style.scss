@@ -34,7 +34,7 @@
     }
   }
   .selectionGroups {
-    width: 20%;
+    width: 15%;
   }
   .selectionGroups {
     .ant-input:focus {
@@ -57,19 +57,46 @@
   .selectGroupSubtitle {
     margin: 0 3em;
     span {
-      @include body-text($h3, #728099, 400);
+      @include body-text($body, #728099, 400);
     }
   }
   .selectGroupCheckbox {
     margin-right: 3em;
+    display: flex;
+    flex-direction: row-reverse;
     span {
-      @include primary-text($body, $black);
+      @include primary-text($label, $black);
     }
   }
+
   .selectionGroupsContainer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    .checkboxReverse {
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center!important;
+      .icon {
+        margin-right: 0.5em;
+      }
+      .ant-checkbox-wrapper {
+        display: flex!important;
+        align-items: center!important;
+        flex-direction: row-reverse!important;
+      }
+      span {
+        display: flex!important;
+        align-items: center;
+        top: 0;
+      }
+    }
+    .noRecipientsCheckbox {
+      background-color: $light-grey;
+      border: 1px solid $medium-grey;
+      padding: 0.5em 1.5em 0.5em 1em;
+      border-radius: 2em;
+    }
   }
   .groupsTableContainer {
     margin: 0em 3em;
