@@ -710,7 +710,9 @@
     "table": {
       "required": "{{field}} is required",
       "pastDateRequirement": "{{field}} must be earlier than today",
-      "futureDateRequirement": "{{field}} must be later than today"
+      "futureDateRequirement": "{{field}} must be later than today",
+      "uniqueFieldRequirement": "{{field}} must be unique",
+      "checkPreexistingRequirement": "{{field}} already exists"
     },
     "importSuccess": {
       "importContacts": {

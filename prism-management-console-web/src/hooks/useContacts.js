@@ -258,3 +258,17 @@ export const useContactsWithFilteredListAndNotInGroup = (
     hasMore
   };
 };
+
+export const useAllContacts = contactsManager => {
+  const [contacts, setContacts] = useState(null);
+  const [getContacts] = useGetContacts(contactsManager, setContacts);
+
+  useEffect(() => {
+    getContacts({
+      pageSize: MAX_CONTACTS,
+      lastId: null
+    });
+  }, []);
+
+  return { contacts };
+};

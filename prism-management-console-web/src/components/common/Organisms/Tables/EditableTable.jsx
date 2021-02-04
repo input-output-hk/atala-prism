@@ -23,11 +23,18 @@ class EditableTable extends Component {
   };
 
   render() {
-    const { t, deleteRow, dataSource, columns } = this.props;
+    const { t, deleteRow, dataSource, columns, preExistingEntries } = this.props;
     const components = {
       body: {
         row: props => <EditableRow {...props} EditableContext={EditableContext} />,
-        cell: props => <EditableCell {...props} EditableContext={EditableContext} />
+        cell: props => (
+          <EditableCell
+            {...props}
+            preExistingEntries={preExistingEntries}
+            dataSource={dataSource}
+            EditableContext={EditableContext}
+          />
+        )
       }
     };
 
@@ -83,5 +90,18 @@ class EditableTable extends Component {
     );
   }
 }
+
+EditableTable.defaultProps = {
+  preExistingEntries: []
+};
+
+EditableTable.propTypes = {
+  t: PropTypes.func.isRequired,
+  updateDataSource: PropTypes.func.isRequired,
+  dataSource: PropTypes.shape({}).isRequired,
+  deleteRow: PropTypes.func.isRequired,
+  columns: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  preExistingEntries: PropTypes.arrayOf(PropTypes.shape({}))
+};
 
 export default withTranslation()(EditableTable);

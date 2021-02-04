@@ -16,6 +16,8 @@ const EditableCell = ({
   handleSave,
   type,
   validations,
+  preExistingEntries,
+  dataSource,
   ...restProps
 }) => {
   const { t } = useTranslation();
@@ -27,6 +29,27 @@ const EditableCell = ({
 
   const allRules = {
     required: generateRequiredRule(isDate, dataIndex),
+    unique: {
+      validator: (rule, value, cb) => {
+        const shouldSendMessage = dataSource.some(
+          row => row.key !== record.key && row[dataIndex] === value
+        );
+        const message = shouldSendMessage ? rule.message : undefined;
+        cb(message);
+      },
+      message: t('manualImport.table.uniqueFieldRequirement', {
+        field: t(`contacts.table.columns.${dataIndex}`)
+      })
+    },
+    checkPreexisting: {
+      validator: (rule, value, cb) => {
+        if (preExistingEntries.some(row => row[dataIndex] === value)) cb(rule.message);
+        else cb();
+      },
+      message: t('manualImport.table.checkPreexistingRequirement', {
+        field: t(`contacts.table.columns.${dataIndex}`)
+      })
+    },
     futureDate: {
       validator: (_rule, value, cb) => futureDate(value, cb, moment.now()),
       message: t('manualImport.table.futureDateRequirement', {
@@ -92,18 +115,22 @@ EditableCell.defaultProps = {
   record: null,
   dataIndex: '',
   editable: false,
-  validations: []
+  validations: [],
+  dataSource: [],
+  preExistingEntries: null
 };
 
 EditableCell.propTypes = {
   EditableContext: PropTypes.element.isRequired,
-  record: PropTypes.shape({}),
+  record: PropTypes.shape({ key: PropTypes.number }),
   children: PropTypes.oneOf([PropTypes.bool, PropTypes.string]).isRequired,
   dataIndex: PropTypes.string,
   type: PropTypes.string.isRequired,
   editable: PropTypes.bool,
   handleSave: PropTypes.func.isRequired,
-  validations: PropTypes.arrayOf(PropTypes.string)
+  validations: PropTypes.arrayOf(PropTypes.string),
+  dataSource: PropTypes.arrayOf(PropTypes.shape({ externalid: PropTypes.string })),
+  preExistingEntries: PropTypes.arrayOf(PropTypes.shape({ externalid: PropTypes.string }))
 };
 
 export default EditableCell;

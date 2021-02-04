@@ -2,10 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import EditableTable from '../../../common/Organisms/Tables/EditableTable';
-import { contactCreationShape } from '../../../../helpers/propShapes';
+import { useAllContacts } from '../../../../hooks/useContacts';
+import { withApi } from '../../../providers/withApi';
 
-const ContactCreationTable = ({ tableProps, setDisableSave }) => {
+const ContactCreationTable = ({ api, tableProps, setDisableSave }) => {
   const { t } = useTranslation();
+  const { contacts } = useAllContacts(api.contactsManager);
 
   const columns = [
     {
@@ -20,18 +22,26 @@ const ContactCreationTable = ({ tableProps, setDisableSave }) => {
       dataIndex: 'externalid',
       editable: true,
       type: 'string',
-      validations: ['required']
+      validations: ['required', 'unique', 'checkPreexisting']
     }
   ];
 
-  return <EditableTable {...tableProps} columns={columns} setDisableSave={setDisableSave} />;
+  return (
+    <EditableTable
+      {...tableProps}
+      columns={columns}
+      setDisableSave={setDisableSave}
+      preExistingEntries={contacts}
+    />
+  );
 };
 
 ContactCreationTable.propTypes = {
-  contacts: PropTypes.arrayOf(contactCreationShape).isRequired,
-  updateDataSource: PropTypes.func.isRequired,
-  deleteContact: PropTypes.func.isRequired,
+  api: PropTypes.shape({
+    contactsManager: PropTypes.shape({ getContact: PropTypes.func })
+  }).isRequired,
+  tableProps: PropTypes.shape({}).isRequired,
   setDisableSave: PropTypes.func.isRequired
 };
 
-export default ContactCreationTable;
+export default withApi(ContactCreationTable);
