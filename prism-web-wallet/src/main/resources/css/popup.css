@@ -1,5 +1,63 @@
+.jss11 {
+  font-size: 12px;
+  text-align: left;
+  line-height: 10px;
+  font-weight: bold;
+}
+
+.width {
+  width: 100%;
+}
+
+.minHeight {
+  width: 100%;
+  min-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 5px 0 5px 0;
+  padding: 0 16px;
+  overflow: hidden;
+}
+
+.spaceBetween {
+  height: 94vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.errorContainer {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 1em;
+}
+
+.errorImg {
+  margin-right: 0.5em;
+}
+
+.sidePadding {
+  padding: 0 16px;
+  overflow: hidden;
+}
+
+.bottomPadding {
+  padding-bottom: 16px;
+}
+
+.backArrow {
+  display: flex;
+}
+
+.leftArrow {
+  width: 15px;
+  padding-right: 0.5em;
+}
+
 .div__btngroup {
-  width: 80%;
+  width: 90%;
   min-width: 240px;
   margin: 0 20px 10px auto;
   padding: 10px;
@@ -22,23 +80,27 @@
   max-width: 300px;
 }
 
+.progressBtn,
 .btn_register,
 .btn_verify,
 .btn_sign {
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
+  width: 90%;
   user-select: none;
   cursor: pointer;
   display: block;
-  padding: 15px;
+  padding: 10px 15px;
   border-radius: 2px;
   color: #fff;
   text-align: center;
-  font-size: 16px;
+  font-size: 14px;
   background-color: #ff2d3b;
   transition: none;
   position: relative;
   border-radius: 30px;
 }
+
+.progressBtn:hover,
 .btn_register:hover,
 .btn_verify:hover {
   background-color: #d3000e;
@@ -46,19 +108,20 @@
 
 .btn_recover,
 .btn_cancel {
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
   user-select: none;
   cursor: pointer;
   display: block;
-  padding: 15px;
+  padding: 10px 15px;
   border-radius: 2px;
   color: #fff;
   text-align: center;
-  font-size: 16px;
+  font-size: 14px;
   background-color: #263238;
   transition: none;
   position: relative;
   border-radius: 30px;
+  width: 90%;
 }
 
 .btn_recover:hover {
@@ -68,7 +131,7 @@
 #containerId.container {
   display: block;
   padding: 20px;
-  width: 375px;
+  width: 360px;
   font-family: "Source Sans Pro", sans-serif;
 }
 
@@ -128,6 +191,17 @@
 
 ._label_update {
   color: #ff2d3b;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  width: 100%;
+  background: #FED7D6;
+  padding: 16px;
+  border-radius: 6px;
+  width:100%;
+  margin: 0.5em 0;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
 }
 
 .h3_title,
@@ -137,16 +211,16 @@
 }
 
 .h1_title {
-  font-size: 28px;
+  font-size: 22px;
 }
 
 .h3_title {
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .description {
   color: #979797;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .description_signature {
@@ -156,14 +230,24 @@
 }
 
 .div_img {
-  margin: 36px 0 40px 0;
+  width: 250px;
+  margin-bottom: 1em;
 }
+
+.img_center {
+  width: 100%;
+  text-align: center;
+}
+
 .img_unlock {
-  margin: 0px 0 20px 0;
+  width: 250px;
+  margin-bottom: 1em;
 }
 
 .div_logo {
-  margin-bottom: 25px;
+  margin-bottom: 1em;
+  padding: 0 16px 2em 16px;
+  border-bottom: 1px solid #CCD1D4;
 }
 
 /**** REGISTRATION VIEW *****/
@@ -171,17 +255,17 @@
 .h3_register,
 .h3_recover {
   color: #ff2d3b;
-  font-size: 18px;
+  font-size: 14px;
   margin: 0;
 }
 .h3_pending {
   color: #ff2d3b;
-  font-size: 22px;
+  font-size: 18px;
   margin: 0;
 }
 .h3_welcome_back {
   color: #ff2d3b;
-  font-size: 22px;
+  font-size: 18px;
   text-align: center;
 }
 
@@ -214,7 +298,7 @@
 
 .h4_enter_pass {
   font-size: 14px;
-  margin-top: 18px;
+  margin-top: 14px;
   margin-bottom: 0;
 }
 
@@ -224,11 +308,11 @@
 
 .span_container {
   background-color: rgba(255, 45, 59, 0.1);
-  padding: 10px 12px;
-  width: 20%;
+  padding: 8px 10px;
+  width: 66px;
   border-radius: 20px;
   color: #ff2d3b;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 100%;
   margin: 0 10px 10px 0;
 }
@@ -377,10 +461,6 @@ select:focus {
   color: rgba(255, 45, 59, 0.5);
 }
 
-input:focus {
-  outline: none !important;
-  border: 1px solid #ff2d3b;
-}
 
 .inputfile {
   width: 0.1px;
@@ -436,7 +516,7 @@ input:focus {
 }
 .data {
   color: #ffffff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   margin: 7px 0 0 0;
 }
@@ -479,19 +559,18 @@ input:focus {
 
 .img-no-pending {
   text-align: center;
-  margin-top: 100px;
-  margin-bottom : 23px
+  width: 100px;
 }
 
 .welcome_img{
-    margin-top: 100px;
     display: flex;
     justify-content: center;
+    width: 150px;
 }
 .welcome_text {
   text-align: center;
   color: #17282f;
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .lock_button {
@@ -525,7 +604,7 @@ input:focus {
     margin-bottom: 80px;
     text-align: center;
     color: #17282f;
-    font-size: 22px;
+    font-size: 16px;
 }
 
 .progress_bar {
@@ -533,13 +612,12 @@ input:focus {
   left: 50%;
   color: #4caf50;
   position: absolute;
-  margin-top: -18px;
+  margin-top: -14px;
   margin-left: -12px;
 }
 
 .disabled {
   pointer-events: none;
-  /* for "disabled" effect */
   opacity: 0.5;
   background: #CCC;
 }
@@ -571,14 +649,14 @@ p.padding  { padding:0; margin:0;}
 }
 
 .button_fail_mui {
-    color: #FF2D3B !important;
-    text-transform: none !important;
-    background:rgba(255, 45, 59, 0.2) !important;
-    border: 1px solid #FF2D3B !important;
-    display: flex !important;
-    margin: 10px auto 0 auto !important;
-    width: 314px;
-    height: 40px;
+  color: #FF2D3B !important;
+  text-transform: none !important;
+  background: #FED7D6 !important;
+  border: 1px solid transparent !important;
+  display: flex !important;
+  margin: 10px 0!important;
+  width: 300px;
+  height: 40px;
 }
 
 .buttons_container{
@@ -627,3 +705,90 @@ p.padding  { padding:0; margin:0;}
   height: 306px;
 }
 
+
+/**mui style*/
+.inputChip {
+    background-color: rgba(255, 45, 59, 0.1) !important;
+    color: #ff2d3b !important;
+    font-size: 11px !important;
+    margin: 0 10px 10px 0 !important;
+    width: fit-content;
+    float: left !important;
+    border-radius: 20px !important;
+    height: 25px !important;
+    font-family: SF Pro Display !important;
+    font-style: normal !important;
+    font-weight: 600 !important;
+    line-height: 14px !important;
+}
+.inputChipDelete {
+    border: none;
+    height: 15px !important;
+    color: #ff2d3b !important;
+    fill: #ff2d3b !important;
+}
+
+.inputBtnChip:focus {
+    border: none !important;
+    outline: none !important;
+    border-bottom: none !important;
+}
+.inputBtnText{
+    border: none !important;
+    outline: none !important;
+    color: #ff2d3b !important;
+    width: 100%;
+}
+
+.inputBtnText input {
+  padding: 0;
+}
+
+.inputBtnText::before,
+.inputBtnText::after
+ {
+    border: none !important;
+    outline: none !important;
+    color: #ff2d3b !important;
+    border-bottom: none !important;
+}
+
+input:focus {
+  outline: none !important;
+  border: 1px solid #ff2d3b;
+}
+
+inputChip::placeholder {
+  font-size: 1rem;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  padding: 0;
+  color: #FF2D3B;
+}
+.card {
+    display: flex !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #FF2D3B !important;
+    box-sizing: border-box !important;
+    border-radius: 10px !important;
+}
+
+.formControl {
+    display: inline-flex !important;
+    padding: 6px 0 7px !important;
+    flex-grow: 1 !important;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    margin: 8px !important;
+    flex-direction: row !important;
+    min-height: 68px;
+}
+
+.muiButton {
+    padding: 0px 3px !important;
+    min-width: 64px !important;
+    font-size: 0.8125rem !important;
+    text-transform : none !important;
+    border-radius: 4px !important;
+    line-height: 0 !important;
+}

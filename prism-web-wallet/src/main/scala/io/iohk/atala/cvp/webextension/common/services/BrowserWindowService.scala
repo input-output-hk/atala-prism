@@ -23,8 +23,8 @@ class BrowserWindowService {
       * to position the window to the center from left we move it leftCenter position i.e. (screen.width / 2) - (windowWidth / 2) (
       * we need the window not in center but towards more right in screen from center i.e. leftCenter + leftCenter / 2
       */
-    val windowWidth = 375
-    val windowHeight = 700
+    val windowWidth = 360
+    val windowHeight = 650
     val leftCenter = (screen.width / 2) - (windowWidth / 2)
     val left = leftCenter + leftCenter / 2
     val top = (screen.height / 2) - (windowHeight / 2)

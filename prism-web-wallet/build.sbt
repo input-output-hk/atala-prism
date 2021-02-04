@@ -153,7 +153,8 @@ npmDependencies in Compile ++= Seq(
   "dompurify" -> "2.0.3",
   "@types/dompurify" -> "2.0.3",
   "@material-ui/core" -> "3.9.4",
-  "@material-ui/icons" -> "3.0.2"
+  "@material-ui/icons" -> "3.0.2",
+  "@material-ui/styles" -> "3.0.0-alpha.10"
 )
 
 // material-ui is provided by a pre-packaged library

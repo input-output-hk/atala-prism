@@ -23,7 +23,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   case class State(mayBeTransactionId: Option[String])
 
   override def render(): ReactElement = {
-    div(id := "welcomeRegisterScreen", className := "status_container")(
+    div(id := "welcomeRegisterScreen", className := "sidePadding, spaceBetween")(
       div(className := "welcome_img")(
         img(src := "/assets/images/Done.png")
       ),

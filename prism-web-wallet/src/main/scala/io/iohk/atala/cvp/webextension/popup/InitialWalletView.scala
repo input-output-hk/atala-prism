@@ -13,44 +13,49 @@ import slinky.web.html._
   case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   override def render(): ReactElement = {
-    div(className := "container", className := "status_container")(
+    div(className := "container", className := "sidePadding, spaceBetween")(
       div(
         className := "title_container",
         id := "title_container"
       )(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
-        h2(className := "h3_title", id := "h3_title", "Welcome to your"),
-        h1(
-          className := "h1_title",
-          id := "h1_title",
-          "Atala PRISM Browser Wallet"
-        ),
-        p(
-          className := "description",
-          id := "description",
-          "Register a new wallet or recover an existing wallet"
-        ),
-        p(
-          className := "div_img",
-          id := "div_img",
-          img(src := "/assets/images/img-wallet-register.svg")
+        div(
+          className := "mainTitle",
+          h2(className := "h3_title", id := "h3_title", "Welcome to your"),
+          h1(
+            className := "h1_title",
+            id := "h1_title",
+            "Atala PRISM Browser Wallet"
+          ),
+          p(
+            className := "description",
+            id := "description",
+            "Register a new wallet or recover an existing wallet"
+          ),
+          div(
+            className := "img_center",
+            img(className := "div_img", id := "div_img", src := "/assets/images/img-wallet-register.svg")
+          )
         )
       ),
       div(
-        className := "btn_register",
-        id := "registrationScreenButton",
-        "Register",
-        onClick := { () =>
-          props.switchToView(DisplayMnemonic)
-        }
-      ),
-      div(
-        className := "btn_recover",
-        id := "recoveryScreenButton",
-        "Recover",
-        onClick := { () =>
-          props.switchToView(Recover)
-        }
+        className := "div__field_group",
+        div(
+          className := "btn_register",
+          id := "registrationScreenButton",
+          "Register",
+          onClick := { () =>
+            props.switchToView(DisplayMnemonic)
+          }
+        ),
+        div(
+          className := "btn_recover",
+          id := "recoveryScreenButton",
+          "Recover",
+          onClick := { () =>
+            props.switchToView(Recover)
+          }
+        )
       )
     )
   }

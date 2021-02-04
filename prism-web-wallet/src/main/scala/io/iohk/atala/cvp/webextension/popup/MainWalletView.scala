@@ -55,7 +55,7 @@ import scala.util.{Failure, Success}
     if (state.requests.nonEmpty) {
       val signingRequest = state.requests(state.id)
 
-      div(id := "mainView", className := "status_container")(
+      div(id := "mainView", className := "width")(
         h3(className := "h3_pending")(
           "Signature request"
         ),
@@ -69,10 +69,16 @@ import scala.util.{Failure, Success}
         lockButton()
       )
     } else {
-      div(className := "no-pending-container", id := "mainView")(
-        div(className := "img-no-pending")(img(src := "/assets/images/img-no-pending.png")),
-        p(className := "welcome_text")(
-          "There are no requests pending"
+      div(className := "minHeight", id := "mainView")(
+        div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
+        div(
+          div(
+            className := "img_center",
+            img(className := "img-no-pending", src := "/assets/images/img-no-pending.png")
+          ),
+          p(className := "welcome_text")(
+            "There are no requests pending"
+          )
         ),
         lockButton()
       )

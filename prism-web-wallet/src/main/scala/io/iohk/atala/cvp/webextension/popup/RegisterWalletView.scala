@@ -1,5 +1,6 @@
 package io.iohk.atala.cvp.webextension.popup
 
+import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.popup.models.View.{Default, VerifyMnemonic}
@@ -8,8 +9,6 @@ import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html.{p, _}
-import com.alexitc.materialui.facade.materialUiCore.{components => mui}
-import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
 
 @react class RegisterWalletView extends Component {
 
@@ -51,8 +50,36 @@ import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
 
   override def render(): ReactElement = {
 
-    div(id := "registrationScreen", className := "status_container")(
-      mui.IconButton.onClick(_ => props.switchToView(Default))(muiIcons.ArrowBackSharp()),
+    def error() = {
+      if (state.message.nonEmpty) {
+        div(className := "errorContainer")(
+          label(className := "_label_update")(
+            state.message,
+            img(className := "errorImg", src := "/assets/images/error.svg")
+          )
+        )
+      } else {
+        div(className := "errorContainer")()
+      }
+    }
+
+    div(id := "registrationScreen", className := "sidePadding")(
+      div(className := "logo_container", id := "logo_container")(
+        div(
+          className := "div_logo",
+          id := "logoPrism",
+          img(className := "hola", src := "/assets/images/prism-logo.svg")
+        )
+      ),
+      mui
+        .Button(
+          div(className := "backArrow", onClick := { () => props.switchToView(Default) })(
+            img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
+            p("Back")
+          )
+        )
+        .className("muiButton")
+        .size(materialUiCoreStrings.small),
       h3(className := "h3_register", id := "h3_register", "Account Registration"),
       div(className := "div__field_group")(
         h4(className := "h4_register")("Save your recovery phrase"),
@@ -63,7 +90,7 @@ import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
         ),
         mnemonicElement
       ),
-      div(className := "div__field_group")(
+      div(className := "bottomPadding")(
         p(
           className := "description",
           id := "description1",
@@ -76,7 +103,7 @@ import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
         )
       ),
       h4(className := "h4_register", id := "h4_register", "Wallet information"),
-      div(className := "div__field_group")(
+      div(className := "")(
         label(className := "_label")("Password "),
         div(className := "input__container")(
           input(
@@ -88,7 +115,7 @@ import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
             onChange := (e => setPassword(e.target.value))
           )
         ),
-        div(className := "div__field_group")(
+        div(className := "")(
           label(className := "_label")("Confirm password "),
           div(className := "input__container")(
             input(
@@ -106,11 +133,7 @@ import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
             )
           )
         ),
-        div(className := "status_container")(
-          div(className := "input__container")(
-            label(className := "_label_update")(state.message)
-          )
-        ),
+        error(),
         div(className := "div__field_group")(
           div(
             id := "registerButton",

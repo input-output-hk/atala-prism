@@ -2,8 +2,7 @@ package io.iohk.atala.cvp.webextension.popup
 
 import com.alexitc.materialui.facade.materialUiCore.anon.PartialClassNameMapCircul
 import com.alexitc.materialui.facade.materialUiCore.materialUiCoreStrings.indeterminate
-import com.alexitc.materialui.facade.materialUiCore.{components => mui}
-import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
+import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.models.Role
 import io.iohk.atala.cvp.webextension.popup.models.View.{DisplayMnemonic, Welcome}
@@ -79,105 +78,135 @@ import scala.util.{Failure, Success}
       }
     }
 
-    div(id := "organizationDetails", className := "status_container")(
-      mui.IconButton.onClick(_ => props.switchToView(DisplayMnemonic))(muiIcons.ArrowBackSharp()),
-      h3(className := "h3_register", id := "h3_register", "Account Registration"),
-      div(className := "div__field_group")(
-        h4(className := "h4_register")("Organization Information")
-      ),
-      div(className := "div__field_group")(
-        p(
-          className := "description",
-          id := "description2",
-          "Complete the following information. When uploading the logo please it should be 50px per 50px."
+    def error() = {
+      if (state.message.nonEmpty) {
+        div(className := "errorContainer")(
+          label(className := "_label_update")(
+            state.message,
+            img(className := "errorImg", src := "/assets/images/error.svg")
+          )
         )
-      ),
-      div(className := "div__field_group")(
-        label(className := "_label")("Organization name"),
-        div(className := "input__container")(
-          input(
-            id := "orgname",
-            className := "_input",
-            placeholder := "Enter your organization's name",
-            value := state.orgName,
-            onChange := (e => setOrgName(e.target.value))
-          )
-        ),
-        div(className := "div__field_group")(
-          label(htmlFor := "logo")("Supported files types: png or jpeg"),
-          div(className := "input__container")(
-            input(
-              className := "inputfile",
-              id := "logo",
-              `type` := "file",
-              accept := "image/png, image/jpeg",
-              onChange := (e => setFile(e.target.asInstanceOf[HTMLInputElement].files(0)))
-            ),
-            label(htmlFor := "logo")("Upload your logo")
+      } else {
+        div(className := "errorContainer")()
+      }
+    }
+
+    div(id := "organizationDetails", className := "sidePadding")(
+      div(
+        className := "spaceBetween",
+        div(
+          div(className := "logo_container", id := "logo_container")(
+            div(
+              className := "div_logo",
+              id := "logoPrism",
+              img(className := "hola", src := "/assets/images/prism-logo.svg")
+            )
           ),
-          state.fileOpt.map(f =>
-            if (state.imageWidth > 50 || state.imageHeight > 50) {
-              div(className := "upload_status_container")(
-                p(f.name),
-                p(
-                  s"The logo you are trying to upload has invalid dimensions. " +
-                    s"Please change your image to match the required upload dimensions and " +
-                    s"try again. Invalid logo dimensions ${state.imageWidth}px per ${state.imageHeight}px " +
-                    s"supported logo dimensions must be maximum 50px per 50px"
-                )
+          mui
+            .Button(
+              div(className := "backArrow", onClick := { () => props.switchToView(DisplayMnemonic) })(
+                img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
+                p("Back")
               )
-            } else {
-              div(className := "upload_status_container")(f.name)
-            }
-          )
-        ),
-        div(className := "div__field_group")(
-          div(className := "input__container")(
-            div()(
+            )
+            .className("muiButton")
+            .size(materialUiCoreStrings.small),
+          h3(className := "h3_register", id := "h3_register", "Account Registration"),
+          div(className := "div__field_group")(
+            h4(className := "h4_register")("Organization Information")
+          ),
+          div(className := "")(
+            p(
+              className := "description",
+              id := "description2",
+              "Complete the following information. When uploading the logo please it should be 50px per 50px."
+            )
+          ),
+          div(className := "div__field_group")(
+            label(className := "_label")("Organization name"),
+            div(className := "input__container, bottomPadding")(
               input(
-                id := "tandc",
-                `type` := "checkbox",
-                onChange := (e => setTandC(e.currentTarget.checked))
+                id := "orgname",
+                className := "_input",
+                placeholder := "Enter your organization's name",
+                value := state.orgName,
+                onChange := (e => setOrgName(e.target.value))
+              )
+            ),
+            div(className := s"div__field_group" + s"bottomPadding")(
+              div(className := "div__field_group", label(htmlFor := "logo")("Supported files types: png or jpeg")),
+              div(className := "input__container, bottomPadding")(
+                input(
+                  className := "inputfile",
+                  id := "logo",
+                  `type` := "file",
+                  accept := "image/png, image/jpeg",
+                  onChange := (e => setFile(e.target.asInstanceOf[HTMLInputElement].files(0)))
+                ),
+                label(htmlFor := "logo")("Upload your logo")
               ),
-              label(className := "_label_txt", htmlFor := "tandc")(
-                "Accept",
-                a(
-                  href := s"${props.termsUrl}",
-                  target := "_blank",
-                  className := "_label_link"
-                )(
-                  "Terms and Conditions"
+              state.fileOpt.map(f =>
+                if (state.imageWidth > 50 || state.imageHeight > 50) {
+                  div(className := "upload_status_container")(
+                    p(f.name),
+                    p(
+                      s"The logo you are trying to upload has invalid dimensions. " +
+                        s"Please change your image to match the required upload dimensions and " +
+                        s"try again. Invalid logo dimensions ${state.imageWidth}px per ${state.imageHeight}px " +
+                        s"supported logo dimensions must be maximum 50px per 50px"
+                    )
+                  )
+                } else {
+                  div(className := "upload_status_container")(f.name)
+                }
+              )
+            ),
+            div(className := "")(
+              div(className := "input__container")(
+                div()(
+                  input(
+                    id := "tandc",
+                    `type` := "checkbox",
+                    onChange := (e => setTandC(e.currentTarget.checked))
+                  ),
+                  label(className := "_label_txt", htmlFor := "tandc")(
+                    "Accept",
+                    a(
+                      href := s"${props.termsUrl}",
+                      target := "_blank",
+                      className := "_label_link"
+                    )(
+                      "Terms and Conditions"
+                    )
+                  )
                 )
               )
-            )
-          )
-        ),
-        div(className := "div__field_group")(
-          div(className := "input__container")(
-            input(
-              id := "privacyPolicy",
-              `type` := "checkbox",
-              onChange := (e => setPrivacyPolicy(e.currentTarget.checked))
             ),
-            label(className := "_label_txt", htmlFor := "privacyPolicy")(
-              "Accept",
-              a(
-                href := s"${props.privacyPolicyUrl}",
-                target := "_blank",
-                className := "_label_link"
-              )(
-                "Privacy Policy Agreement"
+            div(className := "div__field_group")(
+              div(className := "input__container")(
+                input(
+                  id := "privacyPolicy",
+                  `type` := "checkbox",
+                  onChange := (e => setPrivacyPolicy(e.currentTarget.checked))
+                ),
+                label(className := "_label_txt", htmlFor := "privacyPolicy")(
+                  "Accept",
+                  a(
+                    href := s"${props.privacyPolicyUrl}",
+                    target := "_blank",
+                    className := "_label_link"
+                  )(
+                    "Privacy Policy Agreement"
+                  )
+                )
               )
-            )
-          )
-        ),
-        div(className := "status_container")(
-          div(className := "input__container")(
-            label(className := "_label_update")(state.message)
+            ),
+            error()
           )
         ),
         div(className := "div__field_group")(
           div(
+            className := "div__field_group",
             id := "registerButton",
             enableButton,
             onClick := { () =>
