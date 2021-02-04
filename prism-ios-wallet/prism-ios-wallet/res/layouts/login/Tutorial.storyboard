@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -17,7 +19,7 @@
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fxh-Bi-3n7">
                                 <rect key="frame" x="31" y="725" width="352" height="44"/>
-                                <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" systemColor="systemRedColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
                                 <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
                                 <state key="normal" title="Button">
@@ -29,15 +31,15 @@
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
                                     <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="tutorial_3_button_register"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="next"/>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="tappedButtonContinue:" destination="p9s-5k-8iE" eventType="touchUpInside" id="ZxD-aS-j69"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pbz-0C-RCw">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pbz-0C-RCw">
                                 <rect key="frame" x="31" y="787" width="352" height="44"/>
-                                <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" systemColor="systemRedColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
                                 <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
                                 <state key="normal" title="Button">
@@ -66,14 +68,14 @@
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZFw-fo-heR" customClass="Dot" customModule="Atala_PRISM" customModuleProvider="target">
                                                 <rect key="frame" x="11.5" y="15" width="10" height="10"/>
-                                                <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="backgroundColor" systemColor="systemRedColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="10" id="BXs-2v-2ZL"/>
                                                     <constraint firstAttribute="width" constant="10" id="W85-TQ-gnH"/>
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstItem="ZFw-fo-heR" firstAttribute="centerX" secondItem="b8k-ma-0cJ" secondAttribute="centerX" id="fHQ-8G-nGU"/>
                                             <constraint firstItem="ZFw-fo-heR" firstAttribute="centerY" secondItem="b8k-ma-0cJ" secondAttribute="centerY" id="fZM-sB-vQg"/>
@@ -84,7 +86,7 @@
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="anZ-Qc-USg" customClass="Dot" customModule="Atala_PRISM" customModuleProvider="target">
                                                 <rect key="frame" x="11.5" y="15" width="10" height="10"/>
-                                                <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="backgroundColor" systemColor="systemRedColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="10" id="832-xk-tC7"/>
                                                     <constraint firstAttribute="height" constant="10" id="oE3-OZ-MA3"/>
@@ -94,7 +96,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                         </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstItem="anZ-Qc-USg" firstAttribute="centerX" secondItem="t6M-Wx-x9h" secondAttribute="centerX" id="6cY-zE-2ET"/>
                                             <constraint firstItem="anZ-Qc-USg" firstAttribute="centerY" secondItem="t6M-Wx-x9h" secondAttribute="centerY" id="mGc-vX-IoV"/>
@@ -105,7 +107,7 @@
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CbK-Gm-cQA" customClass="Dot" customModule="Atala_PRISM" customModuleProvider="target">
                                                 <rect key="frame" x="12" y="15" width="10" height="10"/>
-                                                <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="backgroundColor" systemColor="systemRedColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="10" id="DgI-SG-erQ"/>
                                                     <constraint firstAttribute="width" constant="10" id="jpH-y7-LPZ"/>
@@ -115,7 +117,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                         </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstItem="CbK-Gm-cQA" firstAttribute="centerX" secondItem="KHk-W5-hJT" secondAttribute="centerX" id="MJt-RO-8fO"/>
                                             <constraint firstItem="CbK-Gm-cQA" firstAttribute="centerY" secondItem="KHk-W5-hJT" secondAttribute="centerY" id="UPw-KY-vFT"/>
@@ -128,7 +130,8 @@
                                 </constraints>
                             </stackView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="OJM-se-7av"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="OJM-se-7av" firstAttribute="trailing" secondItem="Pbz-0C-RCw" secondAttribute="trailing" constant="31" id="1Cm-gR-njB"/>
                             <constraint firstItem="7jO-E0-suf" firstAttribute="top" secondItem="OJM-se-7av" secondAttribute="top" constant="70" id="AIc-mN-rjC"/>
@@ -143,7 +146,6 @@
                             <constraint firstItem="OJM-se-7av" firstAttribute="trailing" secondItem="Fxh-Bi-3n7" secondAttribute="trailing" constant="31" id="qEZ-r2-09Z"/>
                             <constraint firstItem="OJM-se-7av" firstAttribute="bottom" secondItem="Pbz-0C-RCw" secondAttribute="bottom" constant="31" id="zBY-Of-ze3"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="OJM-se-7av"/>
                     </view>
                     <connections>
                         <outlet property="buttonContinue" destination="Fxh-Bi-3n7" id="Mzd-VR-P3j"/>
@@ -184,4 +186,12 @@
             <point key="canvasLocation" x="718" y="193"/>
         </scene>
     </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemRedColor">
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
 </document>

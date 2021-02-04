@@ -44,7 +44,6 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
 
         // Setup (views thar require others to be resized first)
         setupTutorialPages()
-        changePage(to: currentPageIndex, animated: false)
     }
 
     static func openThisView(_ caller: UIViewController?) {
@@ -95,7 +94,11 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
 
     // MARK: Buttons
     @IBAction func tappedButtonContinue(_ sender: Any) {
-        presenterImpl.tappedRegisterButton()
+        if currentPageIndex == 2 {
+            presenterImpl.tappedRegisterButton()
+        } else {
+            changePage(to: currentPageIndex + 1, animated: true)
+        }
     }
 
     @IBAction func tappedButtonRestoreAccount(_ sender: Any) {
@@ -141,11 +144,13 @@ class TutorialViewController: BaseViewController, UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let pageIndex = Int(round(scrollView.contentOffset.x/view.frame.width))
-//         pageControl.currentPage = Int(pageIndex)
+        currentPageIndex = Int(round(scrollView.contentOffset.x/view.frame.width))
         for pos in 0 ..< pages.count {
-            pageIndicatorIcons[pos].backgroundColor = pageIndex != pos ? .appGrey : .appRed
+            pageIndicatorIcons[pos].backgroundColor = currentPageIndex != pos ? .appGrey : .appRed
         }
+        buttonRestore.isHidden = currentPageIndex != 2
+        buttonContinue.setTitle(currentPageIndex == 2 ? "tutorial_3_button_register".localize() : "next".localize(),
+                                for: .normal)
     }
 
     // MARK: Screens
