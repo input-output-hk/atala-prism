@@ -5,6 +5,7 @@ import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
+import io.iohk.atala.prism.management.console.models.CredentialTypeId
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.protos.{console_api, console_models}
@@ -14,6 +15,7 @@ import org.scalatest.OptionValues._
 import java.time.Instant
 import java.util.UUID
 
+//sbt "project management-console" "testOnly *CredentialIssuanceServiceImplSpec"
 class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
 
   "createCredentialIssuance and getCredentialIssuance" should {
@@ -23,11 +25,12 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val otherDid = generateDid(otherKeyPair.publicKey)
 
     def createCredentialIssuanceRequest(
-        contacts: List[console_models.CredentialIssuanceContact]
+        contacts: List[console_models.CredentialIssuanceContact],
+        credentialTypeId: CredentialTypeId
     ): console_api.CreateCredentialIssuanceRequest = {
       console_api.CreateCredentialIssuanceRequest(
         name = "2021 Class",
-        credentialTypeId = 1,
+        credentialTypeId = credentialTypeId.uuid.toString,
         credentialIssuanceContacts = contacts
       )
     }
@@ -36,8 +39,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       val institutionId = createParticipant("Institution", did)
       val contacts = createRandomCredentialIssuanceContacts(institutionId)
 
+      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+
       // Create the credential issuance
-      val createRequest = createCredentialIssuanceRequest(contacts)
+      val createRequest = createCredentialIssuanceRequest(contacts, credentialTypeWithRequiredFields.credentialType.id)
       usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
         val creationTime = Instant.now
         val createResponse = serviceStub.createCredentialIssuance(createRequest)
@@ -88,8 +93,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       val contacts = createRandomCredentialIssuanceContacts(institutionId)
       val otherInstitutionId = createParticipant("Other Institution", otherDid)
       val otherContacts = List(createRandomCredentialIssuanceContact(otherInstitutionId))
+      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
 
-      val createRequest = createCredentialIssuanceRequest(contacts ++ otherContacts)
+      val createRequest =
+        createCredentialIssuanceRequest(contacts ++ otherContacts, credentialTypeWithRequiredFields.credentialType.id)
       usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
         assertThrows[Exception] {
           serviceStub.createCredentialIssuance(createRequest)

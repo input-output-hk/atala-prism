@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.models
 
 import java.util.UUID
 import enumeratum.{DoobieEnum, Enum, EnumEntry}
+import io.iohk.atala.prism.models.UUIDValue
 
 import java.time.Instant
 
@@ -42,9 +43,11 @@ final case class CredentialTypeField(
 
 case class CredentialTypeWithRequiredFields(credentialType: CredentialType, requiredFields: List[CredentialTypeField])
 
-final case class CredentialTypeId(uuid: UUID) extends AnyVal
+final case class CredentialTypeId(uuid: UUID) extends AnyVal with UUIDValue
+object CredentialTypeId extends UUIDValue.Builder[CredentialTypeId]
 
-final case class CredentialTypeFieldId(uuid: UUID) extends AnyVal
+final case class CredentialTypeFieldId(uuid: UUID) extends AnyVal with UUIDValue
+object CredentialTypeFieldId extends UUIDValue.Builder[CredentialTypeFieldId]
 
 sealed abstract class CredentialTypeState(value: String) extends EnumEntry {
   override def entryName: String = value

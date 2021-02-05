@@ -63,6 +63,11 @@ class CredentialsServiceImpl(
             .withFieldConst(_.subjectId, contactId)
             .withFieldConst(_.credentialData, json)
             .withFieldConst(_.credentialIssuanceContactId, None)
+            .withFieldConst(
+              _.credentialTypeId,
+              if (request.credentialTypeId.isEmpty) None
+              else CredentialTypeId.from(request.credentialTypeId).toOption
+            )
             .enableUnsafeOption
             .transform
 

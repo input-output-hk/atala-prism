@@ -87,7 +87,8 @@ object DataPreparation {
       issuedBy: ParticipantId,
       subjectId: Contact.Id,
       tag: String = "",
-      credentialIssuanceContactId: Option[CredentialIssuance.ContactId] = None
+      credentialIssuanceContactId: Option[CredentialIssuance.ContactId] = None,
+      credentialTypeId: Option[CredentialTypeId] = None
   )(implicit
       database: Transactor[IO]
   ): GenericCredential = {
@@ -99,7 +100,8 @@ object DataPreparation {
         "enrollmentDate" -> LocalDate.now().asJson,
         "graduationDate" -> LocalDate.now().plusYears(5).asJson
       ),
-      credentialIssuanceContactId = credentialIssuanceContactId
+      credentialIssuanceContactId = credentialIssuanceContactId,
+      credentialTypeId = credentialTypeId
     )
 
     val credential = CredentialsDAO.create(request).transact(database).unsafeRunSync()

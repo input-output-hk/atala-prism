@@ -222,7 +222,7 @@ message GenerateConnectionTokenForContactResponse {
 // Request to create a new credential issuance
 message CreateCredentialIssuanceRequest {
   string name = 1; // Name of the credential issuance
-  int32 credentialTypeId = 2; // ID of the type of credential to issue
+  string credentialTypeId = 2; // // The id (UUID) of credential type which is used as a template for this credential.
   repeated CredentialIssuanceContact credentialIssuanceContacts = 3; // The contacts and their credential data
 }
 // Response to creating a credential issuance
@@ -237,7 +237,7 @@ message GetCredentialIssuanceRequest {
 // Response to getting a credential issuance
 message GetCredentialIssuanceResponse {
   string name = 1; // Name of the credential issuance
-  int32 credentialTypeId = 2; // ID of the type of credential to issue
+  string credentialTypeId = 2; // // The id (UUID) of credential type which is used as a template for this credential.
   int64 createdAt = 3; // Timestamp (millis since epoch) when the credential issuance was created
   repeated CredentialIssuanceContact credentialIssuanceContacts = 4; // The contacts and their credential data
 }
@@ -286,6 +286,9 @@ message CreateGenericCredentialRequest {
   // The id provided by the institution at contact creation time, when this isn't provided,
   // the contactId is expected.
   string externalId = 4;
+
+  // The id (UUID) of credential type which is used as a template for this credential.
+  string credentialTypeId = 5;
 }
 // Response when a credential is created
 message CreateGenericCredentialResponse {

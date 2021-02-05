@@ -11,6 +11,7 @@ import io.iohk.atala.prism.management.console.models.{
   Contact,
   CreateGenericCredential,
   CredentialIssuance,
+  CredentialTypeId,
   CredentialIssuanceContact,
   GenericCredential,
   InstitutionGroup,
@@ -95,7 +96,8 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
                 issuedBy = createCredentialIssuance.createdBy,
                 subjectId = contact.contactId,
                 credentialData = contact.credentialData,
-                credentialIssuanceContactId = Some(issuanceContactId)
+                credentialIssuanceContactId = Some(issuanceContactId),
+                credentialTypeId = Some(createCredentialIssuance.credentialTypeId)
               )
             )
       }.sequence
@@ -156,7 +158,7 @@ object CredentialIssuancesRepository {
   case class CreateCredentialIssuance(
       name: String,
       createdBy: ParticipantId,
-      credentialTypeId: Int,
+      credentialTypeId: CredentialTypeId,
       contacts: List[CreateCredentialIssuanceContact]
   )
 

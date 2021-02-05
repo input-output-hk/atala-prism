@@ -15,9 +15,9 @@ object CredentialsDAO {
     sql"""
          |WITH inserted AS (
          |  INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data,
-         |    created_on, credential_issuance_contact_id)
+         |    created_on, credential_issuance_contact_id, credential_type_id)
          |  VALUES ($id, ${data.issuedBy}, ${data.subjectId}, ${data.credentialData},
-         |    $createdOn, ${data.credentialIssuanceContactId})
+         |    $createdOn, ${data.credentialIssuanceContactId}, ${data.credentialTypeId})
          |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id,
          |    credential_issuance_contact_id
          |)

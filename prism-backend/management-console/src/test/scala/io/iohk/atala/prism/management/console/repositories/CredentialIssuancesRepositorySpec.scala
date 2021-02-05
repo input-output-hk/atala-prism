@@ -23,12 +23,14 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
         DataPreparation.createContact(institutionId, groupName = Some(aGroup.name)) -> Some(aGroup)
       )
 
+      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+
       val credentialIssuanceId = credentialIssuancesRepository
         .create(
           CreateCredentialIssuance(
             name = "Credentials for everyone",
             createdBy = institutionId,
-            credentialTypeId = 1,
+            credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
             contacts = contactsWithGroup.map { contactWithGroup =>
               val (contact: Contact, group: Option[InstitutionGroup]) = contactWithGroup
               CreateCredentialIssuanceContact(
@@ -48,7 +50,7 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
         credentialIssuancesRepository.get(credentialIssuanceId, institutionId).value.futureValue.toOption.value
       credentialIssuance.id mustBe credentialIssuanceId
       credentialIssuance.name mustBe "Credentials for everyone"
-      credentialIssuance.credentialTypeId mustBe 1
+      credentialIssuance.credentialTypeId mustBe credentialTypeWithRequiredFields.credentialType.id
       credentialIssuance.contacts.size mustBe contactsWithGroup.size
       val issuanceContactsByContactId = credentialIssuance.contacts.map(contact => (contact.contactId, contact)).toMap
       for ((contact, group) <- contactsWithGroup) {

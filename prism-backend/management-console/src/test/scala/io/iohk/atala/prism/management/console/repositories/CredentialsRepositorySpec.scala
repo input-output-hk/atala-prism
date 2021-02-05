@@ -4,6 +4,7 @@ import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
@@ -21,6 +22,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant(issuerName)
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val subject = createContact(issuerId, subjectName, Some(group.name))
+      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(issuerId, "name")
       val request = CreateGenericCredential(
         issuedBy = issuerId,
         subjectId = subject.contactId,
@@ -29,7 +31,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
           "enrollmentDate" -> LocalDate.now().asJson,
           "graduationDate" -> LocalDate.now().plusYears(5).asJson
         ),
-        credentialIssuanceContactId = None
+        credentialIssuanceContactId = None,
+        credentialTypeId = Some(credentialTypeWithRequiredFields.credentialType.id)
       )
 
       val result = credentialsRepository.create(request).value.futureValue
@@ -48,7 +51,13 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
-      val credential = createGenericCredential(issuerId, subjectId, "A")
+      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(issuerId, "name")
+      val credential = createGenericCredential(
+        issuerId,
+        subjectId,
+        "A",
+        credentialTypeId = Some(credentialTypeWithRequiredFields.credentialType.id)
+      )
 
       val returnedCredential =
         credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value

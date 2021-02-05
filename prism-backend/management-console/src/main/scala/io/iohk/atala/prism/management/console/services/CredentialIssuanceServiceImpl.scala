@@ -7,7 +7,13 @@ import io.iohk.atala.prism.management.console.errors.{
   ManagementConsoleError,
   ManagementConsoleErrorSupport
 }
-import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CredentialIssuance,
+  CredentialTypeId,
+  InstitutionGroup,
+  ParticipantId
+}
 import io.iohk.atala.prism.management.console.repositories.{
   ContactsRepository,
   CredentialIssuancesRepository,
@@ -92,7 +98,7 @@ class CredentialIssuanceServiceImpl(
               CredentialIssuancesRepository.CreateCredentialIssuance(
                 name = request.name,
                 createdBy = institutionId,
-                credentialTypeId = request.credentialTypeId,
+                credentialTypeId = CredentialTypeId.unsafeFrom(request.credentialTypeId),
                 contacts = contacts
               )
             )
@@ -128,7 +134,7 @@ class CredentialIssuanceServiceImpl(
         credentialIssuance <- credentialIssuancesRepository.get(credentialIssuanceId, institutionId)
         response = GetCredentialIssuanceResponse(
           name = credentialIssuance.name,
-          credentialTypeId = credentialIssuance.credentialTypeId,
+          credentialTypeId = credentialIssuance.credentialTypeId.uuid.toString,
           createdAt = credentialIssuance.createdAt.toEpochMilli,
           credentialIssuanceContacts = credentialIssuance.contacts.map(contact =>
             CredentialIssuanceContact(

@@ -4,7 +4,13 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.circe.Json
-import io.iohk.atala.prism.management.console.models.{Contact, CredentialIssuance, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CredentialIssuance,
+  CredentialTypeId,
+  InstitutionGroup,
+  ParticipantId
+}
 
 import java.time.Instant
 
@@ -99,7 +105,7 @@ object CredentialIssuancesDAO {
   case class CreateCredentialIssuance(
       name: String,
       createdBy: ParticipantId,
-      credentialTypeId: Int
+      credentialTypeId: CredentialTypeId
   )
 
   case class CreateCredentialIssuanceContact(
@@ -116,7 +122,7 @@ object CredentialIssuancesDAO {
   case class CredentialIssuanceWithoutContacts(
       id: CredentialIssuance.Id,
       name: String,
-      credentialTypeId: Int,
+      credentialTypeId: CredentialTypeId,
       createdAt: Instant
   )
 

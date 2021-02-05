@@ -10,7 +10,7 @@ import java.util.UUID
 case class CredentialIssuance(
     id: CredentialIssuance.Id,
     name: String,
-    credentialTypeId: Int,
+    credentialTypeId: CredentialTypeId,
     createdAt: Instant,
     contacts: List[CredentialIssuanceContact]
 )
