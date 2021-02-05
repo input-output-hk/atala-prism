@@ -379,27 +379,6 @@ jobs:
           name: Move to target folder then run linting validation script
           command: cd prism-management-console-web && ./web-linting-validation-script.sh
 
-  trigger-integration-tests:
-    working_directory: ~/repo
-    environment:
-      BRANCH_TO_TRIGGER: "master"
-      PROJECT_NAME_TO_TRIGGER: "atala-qa-automation"
-    docker:
-      - image: circleci/python:3.8.6
-    steps:
-      - checkout
-      - run:
-          # TODO: remove this part when https://jira.iohk.io/browse/ATA-3535 is implemented
-          name: wait till environment is fully operable
-          command: sleep 9m
-      - run:
-          name: trigger a job in atala-qa-automation project
-          command: python trigger_tests.py
-      - slack/status:
-          # mention Mark Griffin (Product Owner), Jacek Kurkowski (QA)
-          mentions: 'UFHNXC9RC,UGFJQ5ZBN'
-          only_for_branches: 'qa'
-
   build-prism-android-wallet:
     working_directory: ~/repo
     docker:
@@ -703,6 +682,37 @@ jobs:
       - store_test_results:
           path: prism-kotlin-sdk/build/test-results
 
+  schedule-merge-to-qa:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/python:3.8.6
+    steps:
+      - checkout
+      - run:
+          name: Make qa branch even to develop
+          command: git switch qa && git rebase develop && git push
+
+  trigger-integration-tests:
+    working_directory: ~/repo
+    environment:
+      BRANCH_TO_TRIGGER: "master"
+      PROJECT_NAME_TO_TRIGGER: "atala-qa-automation"
+    docker:
+      - image: circleci/python:3.8.6
+    steps:
+      - checkout
+      - run:
+          # TODO: remove this part when https://jira.iohk.io/browse/ATA-3535 is implemented
+          name: wait till environment is fully operable
+          command: sleep 9m
+      - run:
+          name: trigger a job in atala-qa-automation project
+          command: python trigger_tests.py
+      - slack/status:
+          # mention Mark Griffin (Product Owner), Jacek Kurkowski (QA)
+          mentions: 'UFHNXC9RC,UGFJQ5ZBN'
+          only_for_branches: 'qa'
+
 workflows:
   version: 2.1
   build-and-deploy:
@@ -815,3 +825,14 @@ workflows:
                 - qa
           requires:
             - rebuild-intdemo-and-geud
+  test:
+    triggers:
+      - schedule:
+          # each day at 04:00
+          cron: "0 4 * * *"
+          filters:
+            branches:
+              only:
+                - qa
+    jobs:
+      - schedule-merge-to-qa
