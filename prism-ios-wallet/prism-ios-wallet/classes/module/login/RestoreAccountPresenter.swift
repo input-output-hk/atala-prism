@@ -8,6 +8,7 @@
 
 import UIKit
 import SwiftGRPC
+import crypto
 
 class RestoreAccountPresenter: BasePresenter {
 
@@ -112,7 +113,7 @@ class RestoreAccountPresenter: BasePresenter {
 
     func tappedVerifyButton(mnemonics: [String]) {
         CryptoUtils.global.usedMnemonics = mnemonics
-        CryptoUtils.global.generateSeed()
+        CryptoUtils.global.generateSeed(mnemonics: MnemonicCode(words: mnemonics))
         if CryptoUtils.global.seed == nil {
             viewImpl?.showErrorMessage(doShow: true, message: "restore_phrase_invalid_error".localize())
         } else {

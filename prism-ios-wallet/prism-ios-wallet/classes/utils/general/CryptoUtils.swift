@@ -13,7 +13,6 @@ class CryptoUtils: NSObject {
 
     static let SEED_COUNT = 12
 
-    var mnemonics: MnemonicCode?
     var usedMnemonics: [String]?
     var seed: [KotlinByte]?
     var lastUsedKeyIndex: Int?
@@ -25,20 +24,19 @@ class CryptoUtils: NSObject {
         self.lastUsedKeyIndex = SharedMemory.global.loggedUser?.lastUsedKeyIndex
         self.usedMnemonics = SharedMemory.global.loggedUser?.mnemonics
         if usedMnemonics != nil {
-            self.mnemonics = MnemonicCode(words: usedMnemonics!)
-            self.generateSeed()
+            self.generateSeed(mnemonics: MnemonicCode(words: usedMnemonics!))
         }
     }
 
     func setupMnemonics() {
-        mnemonics = SwiftKeyDerivation.global.randomMnemonicCode()
-        usedMnemonics = mnemonics?.words
+        let mnemonics = SwiftKeyDerivation.global.randomMnemonicCode()
+        usedMnemonics = mnemonics.words
 
-        generateSeed()
+        generateSeed(mnemonics: mnemonics)
     }
 
-     func generateSeed() {
-        seed = SwiftKeyDerivation.global.binarySeed(seed: mnemonics!, passphrase: "")
+    func generateSeed(mnemonics: MnemonicCode) {
+        seed = SwiftKeyDerivation.global.binarySeed(seed: mnemonics, passphrase: "")
     }
 
     func getNextPublicKeyPath() -> String {

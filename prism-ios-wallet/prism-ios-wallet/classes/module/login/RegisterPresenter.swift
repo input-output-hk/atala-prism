@@ -58,9 +58,9 @@ class RegisterPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         DispatchQueue.global(qos: .background).async {
 
             self.cleanData()
+            // Generate the mnemonics and get the used ones
+            self.cryptoUtils.setupMnemonics()
             DispatchQueue.main.async {
-                // Generate the mnemonics and get the used ones
-                self.cryptoUtils.setupMnemonics()
                 self.data = self.cryptoUtils.usedMnemonics!
                 self.startListing()
             }
