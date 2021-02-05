@@ -1,4 +1,5 @@
 import com.google.protobuf.gradle.*
+import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
@@ -66,6 +67,19 @@ kotlin {
             }
         }
     }
+    js(IR) {
+        nodejs()
+        binaries.executable()
+        useCommonJs()
+
+        compilations["main"].packageJson {
+            version = "0.1.0"
+        }
+
+        compilations["test"].packageJson {
+            version = "0.1.0"
+        }
+    }
     ios("ios") {
         compilations.all {
             kotlinOptions {
@@ -98,6 +112,12 @@ kotlin {
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
             }
         }
+        val jsMain by getting
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
+            }
+        }
         val iosMain by getting
         val iosTest by getting
     }
@@ -123,6 +143,7 @@ tasks {
         .all {
             val compileTasks = listOf<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>(
                 named<KotlinCompile>("compileKotlinJvm").get(),
+                named<KotlinJsCompile>("compileKotlinJs").get(),
                 named<KotlinNativeCompile>("compileKotlinIosX64").get(),
                 named<KotlinNativeCompile>("compileKotlinIosArm64").get(),
                 named<KotlinCompileCommon>("compileKotlinMetadata").get()

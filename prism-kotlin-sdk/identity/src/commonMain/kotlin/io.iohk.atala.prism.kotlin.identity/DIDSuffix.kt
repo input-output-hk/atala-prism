@@ -1,7 +1,11 @@
 package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
 
+@ExperimentalJsExport
+@JsExport
 data class DIDSuffix(val value: String) {
     companion object {
         private val suffixRegex = Regex("[:A-Za-z0-9_-]+$")
