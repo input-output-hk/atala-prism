@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.kotlin.crypto.keys
 
-import cocoapods.bitcoin_secp256k1.*
+import cocoapods.Secp256k1Kit.*
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
 import io.iohk.atala.prism.kotlin.crypto.ECConfig

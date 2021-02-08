@@ -1,9 +1,6 @@
 package io.iohk.atala.prism.kotlin.crypto.signature
 
-import cocoapods.bitcoin_secp256k1.SECP256K1_CONTEXT_SIGN
-import cocoapods.bitcoin_secp256k1.secp256k1_context_create
-import cocoapods.bitcoin_secp256k1.secp256k1_ecdsa_signature
-import cocoapods.bitcoin_secp256k1.secp256k1_ecdsa_signature_serialize_der
+import cocoapods.Secp256k1Kit.*
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
 import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
 import io.iohk.atala.prism.kotlin.util.BytesOps.bytesToHex

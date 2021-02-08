@@ -6,7 +6,7 @@ val pbandkVersion: String by rootProject.extra
 
 dependencies {
     commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-    commonMainImplementation("com.github.h0tk3y.betterParse:better-parse:0.4.1")
+    commonMainImplementation("com.github.h0tk3y.betterParse:better-parse-ng:0.5.0-M5")
 }
 
 kotlin {
@@ -26,7 +26,7 @@ kotlin {
         }
         binaries.all {
             // Linker options required to link to libsecp256k1.
-            linkerOpts("-L../prism-ios-wallet/Pods/BitcoinKit/Libraries/secp256k1/lib", "-lsecp256k1")
+            linkerOpts("-L$rootDir/crypto/build/cocoapods/synthetic/IOS/crypto/Pods/Secp256k1Kit.swift/Secp256k1Kit/Libraries/lib", "-lsecp256k1")
         }
     }
 

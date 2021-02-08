@@ -29,7 +29,7 @@ kotlin {
     ios("ios") {
         binaries.all {
             // Linker options required to link to libsecp256k1.
-            linkerOpts("-L../prism-ios-wallet/Pods/BitcoinKit/Libraries/secp256k1/lib", "-lsecp256k1")
+            linkerOpts("-L$rootDir/crypto/build/cocoapods/synthetic/IOS/crypto/Pods/Secp256k1Kit.swift/Secp256k1Kit/Libraries/lib", "-lsecp256k1")
         }
     }
 
@@ -87,13 +87,7 @@ kotlin {
 
         ios.deploymentTarget = "13.0"
 
-        // This is a self-written Pod hosted in a custom spec repository (see definition below):
-        // https://github.com/itegulov/Specs/blob/main/bitcoin-secp256k1/0.1.0/bitcoin-secp256k1.podspec.json
-        pod("bitcoin-secp256k1", version = "0.1.0")
-
-        specRepos {
-            url("https://github.com/itegulov/Specs")
-        }
+        pod("Secp256k1Kit.swift", version = "1.1", moduleName = "Secp256k1Kit")
     }
 }
 

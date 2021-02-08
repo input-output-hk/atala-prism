@@ -637,8 +637,8 @@ jobs:
 
   build-prism-kotlin-sdk:
     working_directory: ~/repo
-    docker:
-      - image: circleci/openjdk:8-jdk-node
+    macos:
+      xcode: 12.3.0
     steps:
       - checkout
 
@@ -656,6 +656,20 @@ jobs:
             - prism-kotlin-sdk-cache-
 
       - run:
+          name: Install dependencies
+          command: brew install automake libtool
+
+      - run:
+          name: Install cocoapods-generate
+          command: gem install cocoapods-generate
+
+      - run:
+          name: Generate podspecs
+          command: |
+            cd prism-kotlin-sdk
+            ./gradlew podspec
+
+      - run:
           name: Test Kotlin code is properly formatted
           command: cd prism-kotlin-sdk && ./gradlew ktlintCheck
 
@@ -671,10 +685,10 @@ jobs:
           key: prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/settings.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/protos/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/crypto/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/identity/build.gradle.kts" }}
 
       - run:
-          name: Run JVM tests
+          name: Run tests
           command: |
             cd prism-kotlin-sdk
-            ./gradlew jvmTest
+            ./gradlew allTests
 
       - aggregate-gradle-test-reports:
           directory: "prism-kotlin-sdk"
