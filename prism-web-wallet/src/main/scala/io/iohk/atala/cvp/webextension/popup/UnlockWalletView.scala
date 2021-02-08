@@ -1,6 +1,7 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
+import io.iohk.atala.cvp.webextension.popup.components.PasswordInput
 import io.iohk.atala.cvp.webextension.popup.models.View
 import io.iohk.atala.cvp.webextension.popup.models.View.{Main, Recover}
 import slinky.core._
@@ -71,20 +72,8 @@ import scala.util.{Failure, Success}
             id := "h4_unlock",
             "Enter your password"
           ),
-          div(className := "div__field_group")(
-            label(className := "label_unlock")("Password"),
-            div(className := "input__container")(
-              input(
-                id := "password",
-                className := "_input",
-                `type` := "password",
-                placeholder := "Enter Password",
-                value := state.password,
-                onChange := (e => setPassword(e.target.value))
-              )
-            ),
-            error()
-          )
+          PasswordInput("Password", "Enter Password", state.password, password => setPassword(password)),
+          error()
         ),
         div(
           div(

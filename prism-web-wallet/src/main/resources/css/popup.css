@@ -1,8 +1,14 @@
-.jss11 {
-  font-size: 12px;
-  text-align: left;
-  line-height: 10px;
-  font-weight: bold;
+.eye-btn {
+  position: absolute;
+  right: 1em;
+  top:1.3em;
+  fill: grey;
+  cursor: pointer;
+}
+
+/* sepia(1) saturate(93) hue-rotate(1deg) */
+.eye-btn:hover {
+  filter: invert(.5) grayscale(100%) saturate(93) hue-rotate(1deg);
 }
 
 .width {

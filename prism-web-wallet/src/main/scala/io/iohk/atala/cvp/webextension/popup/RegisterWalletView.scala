@@ -3,6 +3,7 @@ package io.iohk.atala.cvp.webextension.popup
 import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.popup.components.PasswordInput
 import io.iohk.atala.cvp.webextension.popup.models.View.{Default, VerifyMnemonic}
 import io.iohk.atala.cvp.webextension.popup.models.{Data, View}
 import slinky.core._
@@ -104,35 +105,8 @@ import slinky.web.html.{p, _}
       ),
       h4(className := "h4_register", id := "h4_register", "Wallet information"),
       div(className := "")(
-        label(className := "_label")("Password "),
-        div(className := "input__container")(
-          input(
-            id := "password",
-            className := "_input",
-            `type` := "password",
-            placeholder := "Enter password",
-            value := state.password,
-            onChange := (e => setPassword(e.target.value))
-          )
-        ),
-        div(className := "")(
-          label(className := "_label")("Confirm password "),
-          div(className := "input__container")(
-            input(
-              id := "password2",
-              className := "_input",
-              `type` := "password",
-              placeholder := "Re-enter password",
-              value := state.password2,
-              onChange := (e => setPassword2(e.target.value)),
-              onKeyDown := { e =>
-                if (e.key == "Enter") {
-                  next()
-                }
-              }
-            )
-          )
-        ),
+        PasswordInput("Password", "Enter Password", state.password, password => setPassword(password)),
+        PasswordInput("Confirm password", "Re-enter Password", state.password2, password => setPassword2(password)),
         error(),
         div(className := "div__field_group")(
           div(

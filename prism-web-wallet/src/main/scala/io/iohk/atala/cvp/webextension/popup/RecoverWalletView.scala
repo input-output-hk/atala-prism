@@ -3,15 +3,17 @@ package io.iohk.atala.cvp.webextension.popup
 import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.popup.components.{ChipInput, ErrorMessage, ProgressButton}
+import io.iohk.atala.cvp.webextension.popup.components.{ChipInput, ErrorMessage, PasswordInput, ProgressButton}
 import io.iohk.atala.cvp.webextension.popup.models.View
 import io.iohk.atala.cvp.webextension.popup.models.View.{Default, Recover}
 import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.ReactElement
 import slinky.web.html.{onChange, _}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
+
 @react class RecoverWalletView extends Component {
 
   case class Props(
@@ -60,33 +62,9 @@ import scala.util.{Failure, Success}
           .size(materialUiCoreStrings.small),
         h3(className := "h3_recover")("Recover your wallet"),
         ChipInput(chips => setChips(chips)),
-        div(className := "")(
-          h4(className := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it"),
-          label(className := "_label")("Password"),
-          div(className := "input__container")(
-            input(
-              id := "password",
-              className := "_input",
-              `type` := "password",
-              placeholder := "Enter password",
-              value := state.password,
-              onChange := (e => setPassword(e.target.value))
-            )
-          )
-        ),
-        div(className := "")(
-          label(className := "_label")("Confirm password"),
-          div(className := "input__container")(
-            input(
-              id := "password2",
-              className := "_input",
-              `type` := "password",
-              placeholder := "Re-enter password",
-              value := state.password2,
-              onChange := (e => setPassword2(e.target.value))
-            )
-          )
-        ),
+        h4(className := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it"),
+        PasswordInput("Password", "Enter Password", state.password, password => setPassword(password)),
+        PasswordInput("Confirm password", "Re-enter Password", state.password2, password => setPassword2(password)),
         div(className := "bottomPadding")(
           div(className := "input__container")(
             div()(
@@ -134,7 +112,6 @@ import scala.util.{Failure, Success}
         enableButton,
         state.isLoading,
         (isLoading: Boolean) => {
-          setState(_.copy(isLoading = isLoading))
           recoverWallet()
         }
       )
