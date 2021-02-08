@@ -3,7 +3,7 @@ version: "3.5"
 
 services:
   cardano-node:
-    image: inputoutput/cardano-node:1.24.2
+    image: inputoutput/cardano-node:1.25.1
     environment:
       - NETWORK=${cardano_network}
     volumes:
@@ -11,7 +11,7 @@ services:
       - node-ipc:/ipc
 
   cardano-db-sync:
-    image: inputoutput/cardano-db-sync:7.1.0
+    image: inputoutput/cardano-db-sync:8.0.0
     environment:
       - NETWORK=${cardano_network}
       - POSTGRES_HOST=${postgres_host}
@@ -27,7 +27,7 @@ services:
       - node-ipc:/node-ipc
 
   cardano-wallet:
-    image: inputoutput/cardano-wallet:2020.12.8-shelley
+    image: inputoutput/cardano-wallet:2021.1.28-shelley
     depends_on:
       - cardano-node
     command: |
