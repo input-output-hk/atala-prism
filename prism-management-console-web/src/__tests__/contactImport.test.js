@@ -16,11 +16,11 @@ import { mockContactHeadersMapping } from './__mocks__/mockHelpers';
 
 const parseAndValidate = input => {
   const parsedAoA = arrayOfArraysToObjects(input);
-  const { containsErrors, validationErrors } = validateContactsBulk(
-    parsedAoA,
-    input[0],
-    mockContactHeadersMapping
-  );
+  const { containsErrors, validationErrors } = validateContactsBulk({
+    newContacts: parsedAoA,
+    inputHeaders: input[0],
+    headersMapping: mockContactHeadersMapping
+  });
   const translatedBackContacts = translateBackSpreadsheetNamesToContactKeys(
     parsedAoA,
     mockContactHeadersMapping

@@ -1,10 +1,16 @@
 import _ from 'lodash';
+import { EXTERNAL_ID_KEY } from './constants';
 import { isEmptyRow, trimEmptyRows } from './fileHelpers';
 
 // Contact's bulk-import validations
-export const validateContactsBulk = (contacts, inputHeaders, headersMapping) => {
+export const validateContactsBulk = ({
+  newContacts,
+  inputHeaders,
+  headersMapping,
+  preExistingContacts = []
+}) => {
   // trim last empty rows
-  const trimmedContacts = trimEmptyRows(contacts);
+  const trimmedContacts = trimEmptyRows(newContacts);
 
   if (!trimmedContacts.length) return generateEmptyFileError();
 
@@ -15,7 +21,12 @@ export const validateContactsBulk = (contacts, inputHeaders, headersMapping) => 
 
   // validate contacts data only if headers are valid
   if (!arrayContainsErrors(headerErrors)) {
-    contactDataErrors = validateContactsData(trimmedContacts, expectedHeaders);
+    contactDataErrors = validateContactsData(
+      trimmedContacts,
+      expectedHeaders,
+      preExistingContacts,
+      headersMapping
+    );
   }
 
   const validationErrors = [...headerErrors, ...contactDataErrors];
@@ -26,8 +37,16 @@ export const validateContactsBulk = (contacts, inputHeaders, headersMapping) => 
   };
 };
 
-const validateContactsData = (contacts, expectedHeaders) =>
-  contacts.map((contact, index) => contactDataValidation({ ...contact, index }, expectedHeaders));
+const validateContactsData = (newContacts, expectedHeaders, preExistingContacts, headersMapping) =>
+  newContacts.map((contact, index) =>
+    contactDataValidation(
+      { ...contact, index },
+      expectedHeaders,
+      newContacts,
+      preExistingContacts,
+      headersMapping
+    )
+  );
 
 const validateHeaders = (inputHeaders, expectedHeaders) => {
   const trimmedHeaders = trimLastEmptyElements(inputHeaders);
@@ -45,13 +64,34 @@ const trimLastEmptyElements = array => {
 };
 
 // validate that parsed-csv contains correct contact data
-const contactDataValidation = (contact, expectedHeaders) => {
+const contactDataValidation = (
+  contact,
+  expectedHeaders,
+  newContacts,
+  preExistingContacts,
+  headersMapping
+) => {
   if (isEmptyRow(contact)) return generateEmptyRowError(contact.index);
+
+  const externalIdTranlation = headersMapping.find(({ key }) => key === EXTERNAL_ID_KEY)
+    .translation;
 
   const requiredFieldsErrors = validateRequiredFields(contact, expectedHeaders);
   const extraFieldsErrors = validateNoExtraFields(contact, expectedHeaders);
+  const repeatedIdErrors = validateUniqueness(
+    contact,
+    newContacts,
+    expectedHeaders,
+    externalIdTranlation
+  );
+  const preExistingIdErrors = validatePreExisting(
+    contact,
+    preExistingContacts,
+    expectedHeaders,
+    externalIdTranlation
+  );
 
-  return [...requiredFieldsErrors, ...extraFieldsErrors];
+  return requiredFieldsErrors.concat(extraFieldsErrors, repeatedIdErrors, preExistingIdErrors);
 };
 
 // validate that each contact contains required data
@@ -73,6 +113,25 @@ const validateNoExtraFields = (contact, headers) => {
     ? generateExtraFieldsErrors(contact.index, contact.originalArray, expectedLength)
     : [];
 };
+
+// validates externalid is not repeated
+const validateUniqueness = (contact, newContacts, expectedHeaders, externalIdTranlation) =>
+  newContacts.some(
+    (row, index) =>
+      index !== contact.index &&
+      contact[externalIdTranlation] &&
+      row[externalIdTranlation] === contact[externalIdTranlation]
+  )
+    ? generateRepeatedIdError(contact, externalIdTranlation, expectedHeaders)
+    : [];
+
+// validates externalid is not already assigned to another contact
+const validatePreExisting = (contact, preExistingContacts, expectedHeaders, externalIdTranlation) =>
+  preExistingContacts.some(
+    row => contact[externalIdTranlation] && row.externalid === contact[externalIdTranlation]
+  )
+    ? generatePreExistingError(contact, expectedHeaders)
+    : [];
 
 // Error objects generation
 const generateEmptyFileError = () => ({
@@ -145,6 +204,18 @@ const generateExtraFieldsErrors = (rowIdx, data, lastValidIndex) =>
         : null
     )
     .filter(Boolean);
+
+const generateRepeatedIdError = (contact, header, expectedHeaders) => ({
+  error: 'notUnique',
+  row: { index: contact.index },
+  col: { index: expectedHeaders.indexOf(header), name: header }
+});
+
+const generatePreExistingError = (contact, header, expectedHeaders) => ({
+  error: 'preExisting',
+  row: { index: contact.index },
+  col: { index: expectedHeaders.indexOf(header), name: header }
+});
 
 const arrayContainsErrors = validationsArray => validationsArray.some(array => array.length);
 

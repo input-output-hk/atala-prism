@@ -69,11 +69,16 @@ const ImportDataContainer = ({
     const inputHeaders = fileData.data[0];
     const dataObjects = arrayOfArraysToObjects(fileData.data);
 
-    const { containsErrors, validationErrors } = validator(
-      dataObjects,
+    const dataObjectsKey = {
+      [IMPORT_CONTACTS]: 'newContacts',
+      [IMPORT_CREDENTIALS_DATA]: 'newCredentials'
+    };
+
+    const { containsErrors, validationErrors } = validator({
+      [dataObjectsKey[useCase]]: dataObjects,
       inputHeaders,
       headersMapping
-    );
+    });
 
     return {
       dataObjects,

@@ -764,7 +764,9 @@
         "extraField": "Extra field containing [ {{fieldContent}} ]",
         "dateFormat": "Date format is incorrect",
         "notAFutureDate": "Date must be a future date",
-        "notAPastDate": "Date must be a past date"
+        "notAPastDate": "Date must be a past date",
+        "notUnique": "{{headerName}} must be unique",
+        "preExisting": "{{headerName}} already exists"
       },
       "extraHeaderErrorDescriptionWithName": "named: [ {{headerName}} ]",
       "extraHeaderErrorDescriptionWithNoName": "with no name"

@@ -19,13 +19,13 @@ import { translateBackSpreadsheetNamesToContactKeys } from '../helpers/contactVa
 const parseAndValidate = input => {
   const parsedAoA = arrayOfArraysToObjects(input);
 
-  const { containsErrors, validationErrors } = validateCredentialDataBulk(
-    mockGovernmentId,
-    parsedAoA,
-    input[0],
-    mockGovernmentIdHeadersMapping,
-    contacts
-  );
+  const { containsErrors, validationErrors } = validateCredentialDataBulk({
+    credentialType: mockGovernmentId,
+    newCredentials: parsedAoA,
+    inputHeaders: input[0],
+    headersMapping: mockGovernmentIdHeadersMapping,
+    recipients: contacts
+  });
 
   const translatedBackCredentials = translateBackSpreadsheetNamesToContactKeys(
     parsedAoA,

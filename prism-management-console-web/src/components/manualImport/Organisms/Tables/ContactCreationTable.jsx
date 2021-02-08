@@ -7,7 +7,7 @@ import { withApi } from '../../../providers/withApi';
 
 const ContactCreationTable = ({ api, tableProps, setDisableSave }) => {
   const { t } = useTranslation();
-  const { contacts } = useAllContacts(api.contactsManager);
+  const { allContacts } = useAllContacts(api.contactsManager);
 
   const columns = [
     {
@@ -31,7 +31,7 @@ const ContactCreationTable = ({ api, tableProps, setDisableSave }) => {
       {...tableProps}
       columns={columns}
       setDisableSave={setDisableSave}
-      preExistingEntries={contacts}
+      preExistingEntries={allContacts}
     />
   );
 };

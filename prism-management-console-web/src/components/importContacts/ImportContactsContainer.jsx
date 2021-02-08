@@ -9,11 +9,14 @@ import { COMMON_CONTACT_HEADERS, IMPORT_CONTACTS } from '../../helpers/constants
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { validateContactsBulk } from '../../helpers/contactValidations';
+import { useAllContacts } from '../../hooks/useContacts';
 
 import './_style.scss';
 
 const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) => {
   const { t } = useTranslation();
+  const { allContacts } = useAllContacts(api.contactsManager);
+
   const [loading, setLoading] = useState(false);
 
   // TODO: replace with bulk request
@@ -75,7 +78,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
 
   return (
     <ImportDataContainer
-      bulkValidator={validateContactsBulk}
+      bulkValidator={args => validateContactsBulk({ ...args, preExistingContacts: allContacts })}
       onFinish={handleRequests}
       onCancel={redirectToContacts}
       headersMapping={headersMapping}

@@ -35,15 +35,14 @@ const ImportCredentialsData = ({
   const headersMapping = generateHeadersMapping();
 
   // append credential type to validator function arguments
-  const validatorWithCredentialType = (credentialsData, headers) =>
-    validateCredentialDataBulk(
+  const validatorWithCredentialType = args =>
+    validateCredentialDataBulk({
+      ...args,
       credentialType,
-      credentialsData,
-      headers,
       headersMapping,
       recipients,
       contacts
-    );
+    });
 
   return (
     <ImportDataContainer

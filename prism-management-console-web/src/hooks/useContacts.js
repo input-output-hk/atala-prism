@@ -260,8 +260,8 @@ export const useContactsWithFilteredListAndNotInGroup = (
 };
 
 export const useAllContacts = contactsManager => {
-  const [contacts, setContacts] = useState(null);
-  const [getContacts] = useGetContacts(contactsManager, setContacts);
+  const [allContacts, setAllContacts] = useState(null);
+  const [getContacts] = useGetContacts(contactsManager, setAllContacts);
 
   useEffect(() => {
     getContacts({
@@ -270,5 +270,5 @@ export const useAllContacts = contactsManager => {
     });
   }, []);
 
-  return { contacts };
+  return { allContacts };
 };

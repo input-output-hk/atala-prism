@@ -4,16 +4,16 @@ import { COMMON_CREDENTIALS_HEADERS, DEFAULT_DATE_FORMAT, EXTERNAL_ID_KEY } from
 import { isEmptyRow, trimEmptyRows } from './fileHelpers';
 
 // Credentials data bulk-import validations
-export const validateCredentialDataBulk = (
+export const validateCredentialDataBulk = ({
   credentialType,
-  credentialsData,
+  newCredentials,
   inputHeaders,
   headersMapping,
   recipients,
   contacts
-) => {
+}) => {
   // trim last empty rows
-  const trimmedCredentials = trimEmptyRows(credentialsData);
+  const trimmedCredentials = trimEmptyRows(newCredentials);
 
   if (!trimmedCredentials.length) return generateEmptyFileError();
 
