@@ -46,14 +46,15 @@ $height-sizes: (
   font-family: 'Circular-bold';
   src: url(../fonts/CircularStd-Bold.woff) format('woff');
   font-weight: bold;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Circular-book';
   src: url(../fonts/CircularStd-Book.woff) format('woff');
+  font-display: swap;
 }
 
 // Fonts
-
 
 @mixin primary-text($font-size, $font-color) {
   margin: 0;
@@ -136,28 +137,29 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
-.ant-select-selection__placeholder{
+.ant-select-selection__placeholder {
   color: #989898;
 }
-.ant-input, .ant-select-selection{
+.ant-input,
+.ant-select-selection {
   border: 1px solid #3e3e3e;
 }
-.ant-input::placeholder{
-  color: #989898; 
+.ant-input::placeholder {
+  color: #989898;
 }
-.ant-input:focus{
+.ant-input:focus {
   border-color: $primary-color;
-  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2)
+  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2);
 }
-.ant-select-selection:hover{
-  border-color: $primary-color;
-}
-.ant-input-affix-wrapper:hover .ant-input:not(.ant-input-disabled){
+.ant-select-selection:hover {
   border-color: $primary-color;
 }
-.ant-select-selection:focus{
+.ant-input-affix-wrapper:hover .ant-input:not(.ant-input-disabled) {
   border-color: $primary-color;
-  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2)
+}
+.ant-select-selection:focus {
+  border-color: $primary-color;
+  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2);
 }
 // Responsive
 
@@ -180,6 +182,26 @@ $screen-lg-min: 1024px;
     }
   } @else if $media == lg {
     @media only screen and (max-width: $screen-lg-min) {
+      @content;
+    }
+  }
+}
+
+@mixin breakpointMin($media) {
+  @if $media == xs {
+    @media only screen and (min-width: $screen-xs-min) {
+      @content;
+    }
+  } @else if $media == sm {
+    @media only screen and (min-width: $screen-sm-min) {
+      @content;
+    }
+  } @else if $media == md {
+    @media only screen and (min-width: $screen-md-min) {
+      @content;
+    }
+  } @else if $media == lg {
+    @media only screen and (min-width: $screen-lg-min) {
       @content;
     }
   }

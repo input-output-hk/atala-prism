@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import preloginLogo from '../../images/logo-login.svg';
-import preloginImg from '../../images/img-wallet-login.svg';
+import { ReactComponent as PreloginLogo } from '../../images/logo-login.svg';
+import { ReactComponent as PreloginImg } from '../../images/img-wallet-login.svg';
 import { withRedirector } from '../providers/withRedirector';
-import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelector';
 import { useSession } from '../providers/SessionContext';
 
 import './_style.scss';
 
-const Landing = ({ redirector: { redirectToRegistration } }) => {
+const Landing = () => {
   const { t } = useTranslation();
   const { login } = useSession();
 
@@ -29,8 +27,8 @@ const Landing = ({ redirector: { redirectToRegistration } }) => {
   return (
     <div className="LandingContainer">
       <div className="LandingCard">
-        <img className="imgLogo" src={preloginLogo} alt={t('landing.logoAlt')} />
-        <img className="loginImg" src={preloginImg} alt={t('landing.logoAlt')} />
+        <PreloginLogo className="imgLogo" alt={t('landing.logoAlt')} width={200} height={120} />
+        <PreloginImg className="loginImg" alt={t('landing.logoAlt')} width={185} height={120} />
         <div className="WelcomeText">
           <h3>{t('landing.welcome')}</h3>
           <h2>{t('landing.description')}</h2>
@@ -51,12 +49,6 @@ const Landing = ({ redirector: { redirectToRegistration } }) => {
       </div>
     </div>
   );
-};
-
-Landing.propTypes = {
-  redirector: PropTypes.shape({
-    redirectToRegistration: PropTypes.func
-  }).isRequired
 };
 
 export default withRedirector(Landing);
