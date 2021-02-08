@@ -60,7 +60,7 @@ ConnectionsTable.defaultProps = {
   searching: false,
   columns: undefined,
   handleContactsRequest: null,
-  shouldSelectRecipients: false
+  shouldSelectRecipients: true
 };
 
 ConnectionsTable.propTypes = {

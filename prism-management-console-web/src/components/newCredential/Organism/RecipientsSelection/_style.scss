@@ -76,17 +76,17 @@
     .checkboxReverse {
       display: flex;
       flex-direction: row-reverse;
-      align-items: center!important;
+      align-items: center !important;
       .icon {
         margin-right: 0.5em;
       }
       .ant-checkbox-wrapper {
-        display: flex!important;
-        align-items: center!important;
-        flex-direction: row-reverse!important;
+        display: flex !important;
+        align-items: center !important;
+        flex-direction: row-reverse !important;
       }
       span {
-        display: flex!important;
+        display: flex !important;
         align-items: center;
         top: 0;
       }
