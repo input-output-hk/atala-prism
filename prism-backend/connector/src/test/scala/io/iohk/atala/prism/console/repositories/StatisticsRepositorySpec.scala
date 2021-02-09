@@ -42,6 +42,8 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
             )
           )
         )
+        .value
+        .futureValue
       val aHash = SHA256Digest.compute("random hash".getBytes())
       credentialsRepository
         .storeCredentialPublicationData(
