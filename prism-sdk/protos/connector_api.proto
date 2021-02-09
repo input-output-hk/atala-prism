@@ -40,13 +40,6 @@ service ConnectorService {
   // DID Document does not match DID (INVALID_ARGUMENT).
   rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
 
-  // Change billing plan of participant who wants to generate connection tokens.
-  // TODO: Remove, this is not useful anymore.
-  // Errors:
-  // Unknown billing plan (UNKNOWN).
-  // User not allowed to set this billing plan (PERMISSION_DENIED).
-  rpc ChangeBillingPlan (ChangeBillingPlanRequest) returns (ChangeBillingPlanResponse) {}
-
   // Generate connection token that can be used to instantiate connection.
   // Errors:
   // Billing plan doesn't allow token generation (PERMISSION_DENIED).
@@ -69,17 +62,6 @@ service ConnectorService {
   // Unknown connection (UNKNOWN).
   // Connection closed (FAILED_PRECONDITION).
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
-
-  // Generate a URL that can be used to do a payment.
-  rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
-
-  // @exclude
-  // TODO: Remove unnecessary method
-  rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
-
-  // @exclude
-  // TODO: Remove unnecessary method
-  rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
 
   // Return the information about the Connector and Node builds
   rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
@@ -133,8 +115,11 @@ message AddConnectionFromTokenRequest {
   reserved 2;
   reserved "holderPublicKey";
 
+  // this was used to allow taking payments while creating connections which is not required anymore
+  reserved 3;
+  reserved "paymentNonce";
+
   string token = 1; // token to instantiate connection
-  string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
   io.iohk.atala.prism.protos.EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
 }
 
@@ -265,41 +250,6 @@ message GetCurrentUserResponse {
 message RegisterDIDResponse {
   string did = 1;
   TransactionInfo transactionInfo = 2;
-}
-
-// Request to change the billing plan.
-//
-// TODO: Remove unnecessary method.
-message ChangeBillingPlanRequest {
-  io.iohk.atala.prism.protos.BillingPlan billingPlan = 1; // new billing plan
-}
-
-// Confirmation of billing plan change
-message ChangeBillingPlanResponse {
-}
-
-// @exclude
-// TODO: Remove unnecessary method
-message GetBraintreePaymentsConfigRequest {}
-message GetBraintreePaymentsConfigResponse {
-  string tokenizationKey = 1;
-}
-
-// @exclude
-// TODO: Remove unnecessary method
-message ProcessPaymentRequest {
-  string amount = 1; // exact decimal amount
-  string nonce = 2; // client nonce
-}
-message ProcessPaymentResponse {
-  io.iohk.atala.prism.protos.Payment payment = 1;
-}
-
-// @exclude
-// TODO: Remove unnecessary method
-message GetPaymentsRequest {}
-message GetPaymentsResponse {
-  repeated io.iohk.atala.prism.protos.Payment payments = 1;
 }
 
 // Request to get information about this service

@@ -4,7 +4,6 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaSpecBase.implicits.{contextShift, timer}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model._
-import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.repositories.daos.{
   ConnectionTokensDAO,
@@ -48,11 +47,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
       new connector_api.ConnectorServiceGrpc.ConnectorServiceStub(_, _)
     )
 
-  lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
   lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
-  lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
-  lazy val connectionsService =
-    new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, nodeMock)
+  lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
@@ -74,8 +70,6 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
     messagesService,
     registrationService,
     messageNotificationService,
-    braintreePayments,
-    paymentsRepository,
     authenticator,
     nodeMock,
     participantsRepository

@@ -4,7 +4,6 @@ import doobie.postgres.implicits._
 import doobie.Meta
 import doobie.util.invariant.InvalidEnum
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.atala.prism.connector.model.{ConnectionStatus, MessageId, ParticipantLogo, ParticipantType}
 
 package object daos extends BaseDAO {
@@ -19,12 +18,6 @@ package object daos extends BaseDAO {
 
   implicit val participantLogoMeta: Meta[ParticipantLogo] =
     Meta[Array[Byte]].timap(b => ParticipantLogo.apply(b.toVector))(_.bytes.toArray)
-
-  implicit val paymentIdMeta: Meta[Payment.Id] = uuidMeta.timap(Payment.Id.apply)(_.uuid)
-  implicit val clientNonceMeta: Meta[ClientNonce] = Meta[String].timap(new ClientNonce(_))(_.string)
-
-  implicit val paymentStatusMeta: Meta[Payment.Status] =
-    Meta[String].timap(Payment.Status.withNameInsensitive)(_.value)
 
   implicit val contactConnectionStatusMeta: Meta[ConnectionStatus] =
     Meta[String].timap(ConnectionStatus.withNameInsensitive)(_.entryName)

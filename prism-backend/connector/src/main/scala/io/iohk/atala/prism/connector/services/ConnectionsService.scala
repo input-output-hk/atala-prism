@@ -1,28 +1,22 @@
 package io.iohk.atala.prism.connector.services
 
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
-import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
-import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment}
-import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
-import io.iohk.atala.prism.connector.payments.BraintreePayments
-import io.iohk.atala.prism.connector.repositories.{ConnectionsRepository, PaymentsRepository}
+import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ConnectionsService(
-    connectionsRepository: ConnectionsRepository,
-    paymentsRepository: PaymentsRepository,
-    braintreePayments: BraintreePayments,
-    nodeService: NodeServiceGrpc.NodeService
-)(implicit ec: ExecutionContext) {
+class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeService: NodeServiceGrpc.NodeService)(
+    implicit ec: ExecutionContext
+) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -40,31 +34,9 @@ class ConnectionsService(
 
   def addConnectionFromToken(
       tokenString: TokenString,
-      publicKey: ECPublicKey,
-      paymentNonce: Option[ClientNonce]
+      publicKey: ECPublicKey
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
-    val connectionPrice = 5
-    def tryProcessingPayment() =
-      paymentNonce match {
-        case Some(value) => braintreePayments.processPayment(connectionPrice, value).map(Option.apply)
-        case None => Future.successful(Right(Option.empty)).toFutureEither
-      }
-
-    def tryStoringPayment(userId: ParticipantId) =
-      paymentNonce match {
-        case Some(value) =>
-          val request = CreatePaymentRequest(value, connectionPrice, Payment.Status.Charged, None)
-          paymentsRepository.create(userId, request).map(Option.apply)
-
-        case None =>
-          Future.successful(Right(Option.empty)).toFutureEither
-      }
-
-    for {
-      _ <- tryProcessingPayment().failOnLeft(e => new RuntimeException(s"Failed to process payment: ${e.reason}"))
-      x <- connectionsRepository.addConnectionFromToken(tokenString, publicKey)
-      _ <- tryStoringPayment(x._1)
-    } yield x
+    connectionsRepository.addConnectionFromToken(tokenString, publicKey)
   }
 
   def getConnectionsPaginated(

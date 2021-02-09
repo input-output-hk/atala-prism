@@ -105,26 +105,6 @@ message ReceivedMessage {
     bytes message = 4; // raw message, which needs to be parsed to get something meaningful, AtalaMessage is the common choice
 }
 
-// Enumeration representing billing plan of Issuer. Possible values are hardcoded as new billing options would require implementation changes anyway.
-//
-// TODO: Remove unnecessary model
-enum BillingPlan {
-    NO_PLAN = 0; // participant not able to generate connection tokens
-    FREE_PLAN = 1; // connections are created for free
-    SENDER_PAYS = 2; // side generating the token pays for the connection
-    RECEIVER_PAYS = 3; // side receiving the token and using it to instantiate connection pays for it
-}
-
-// @exclude
-// TODO: Remote unnecessary model
-message Payment {
-    string id = 1;
-    string amount = 2;
-    int64 createdOn = 3;
-    string status = 4;
-    string failureReason = 5;
-}
-
 message ContactConnection {
     string connectionId = 1;
     string connectionToken = 2;

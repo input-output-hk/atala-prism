@@ -9,10 +9,7 @@ import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
-import io.iohk.atala.prism.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
-import io.iohk.atala.prism.connector.model.requests.CreatePaymentRequest
-import io.iohk.atala.prism.connector.payments.BraintreePayments
-import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, PaymentsRepository}
+import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.connector.services.{
   ConnectionsService,
   MessageNotificationService,
@@ -38,8 +35,6 @@ class ConnectorService(
     messages: MessagesService,
     registrationService: RegistrationService,
     messageNotificationService: MessageNotificationService,
-    braintreePayments: BraintreePayments,
-    paymentsRepository: PaymentsRepository,
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     nodeService: NodeServiceGrpc.NodeService,
     participantsRepository: ParticipantsRepository
@@ -178,7 +173,6 @@ class ConnectorService(
     def f() = {
       Future
         .fromTry(Try {
-          val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
           val publicKey: ECPublicKey = request.holderEncodedPublicKey
             .map { encodedKey =>
               EC.toPublicKey(encodedKey.publicKey.toByteArray)
@@ -188,8 +182,7 @@ class ConnectorService(
           val result = for {
             _ <- verifyRequestSignature(publicKey)
             connectionCreationResult <-
-              connections
-                .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
+              connections.addConnectionFromToken(new model.TokenString(request.token), publicKey)
           } yield connectionCreationResult
 
           result.wrapExceptions
@@ -257,22 +250,6 @@ class ConnectorService(
       } yield connector_api
         .RegisterDIDResponse(did = result.did.value)
         .withTransactionInfo(ProtoCodecs.toTransactionInfo(result.transactionInfo))
-    }
-  }
-
-  /** Change billing plan of participant who wants to generate connection tokens
-    *
-    * Available to: Issuer, Validator
-    *
-    * Errors:
-    * Unknown billing plan (UNKNOWN)
-    * User not allowed to set this billing plan (PERMISSION_DENIED)
-    */
-  override def changeBillingPlan(
-      request: connector_api.ChangeBillingPlanRequest
-  ): Future[connector_api.ChangeBillingPlanResponse] = {
-    authenticator.authenticated("changeBillingPlan", request) { _ =>
-      Future.failed(new NotImplementedError)
     }
   }
 
@@ -485,89 +462,6 @@ class ConnectorService(
     authenticator.authenticated("sendMessage", request) { participantId =>
       f(participantId)
     }
-  }
-
-  override def getBraintreePaymentsConfig(
-      request: connector_api.GetBraintreePaymentsConfigRequest
-  ): Future[connector_api.GetBraintreePaymentsConfigResponse] = {
-    authenticator.public("getBraintreePaymentsConfig", request) {
-      Future.successful(
-        connector_api.GetBraintreePaymentsConfigResponse(tokenizationKey = braintreePayments.tokenizationKey)
-      )
-    }
-  }
-
-  override def processPayment(
-      request: connector_api.ProcessPaymentRequest
-  ): Future[connector_api.ProcessPaymentResponse] = {
-
-    def tryProcessingPayment(
-        userId: ParticipantId,
-        amount: BigDecimal,
-        nonce: ClientNonce
-    ): FutureEither[Nothing, ConnectorPayment] = {
-      braintreePayments
-        .processPayment(amount, nonce)
-        .value
-        .map {
-          case Left(error) => CreatePaymentRequest(nonce, amount, ConnectorPayment.Status.Failed, Some(error.reason))
-          case Right(_) => CreatePaymentRequest(nonce, amount, ConnectorPayment.Status.Charged, None)
-        }
-        .flatMap { r =>
-          paymentsRepository.create(userId, r).value
-        }
-        .toFutureEither
-    }
-
-    def f(userId: ParticipantId) = {
-      Future {
-        val nonce: ClientNonce = new ClientNonce(request.nonce)
-        val amount: BigDecimal = BigDecimal(request.amount)
-
-        val result = for {
-          maybe <- paymentsRepository.find(userId, nonce)
-          payment <- maybe match {
-            case None => tryProcessingPayment(userId, amount, nonce)
-            case Some(payment) => Future.successful(Right(payment)).toFutureEither
-          }
-        } yield payment
-
-        result.value
-          .map {
-            case Left(_) => throw new RuntimeException("Impossible")
-            case Right(p) =>
-              connector_api.ProcessPaymentResponse().withPayment(toPaymentProto(p))
-          }
-      }.flatten
-
-    }
-
-    authenticator.authenticated("processPayment", request) { participantId =>
-      f(participantId)
-    }
-  }
-
-  override def getPayments(request: connector_api.GetPaymentsRequest): Future[connector_api.GetPaymentsResponse] = {
-    def f(userId: ParticipantId) = {
-      paymentsRepository.find(userId).value.map {
-        case Left(_) => throw new RuntimeException("Impossible")
-        case Right(payments) => connector_api.GetPaymentsResponse(payments.map(toPaymentProto))
-      }
-    }
-
-    authenticator.authenticated("getPayments", request) { participantId =>
-      f(participantId)
-    }
-  }
-
-  private def toPaymentProto(payment: ConnectorPayment): connector_models.Payment = {
-    connector_models
-      .Payment()
-      .withAmount(payment.amount.toString())
-      .withCreatedOn(payment.createdOn.toEpochMilli)
-      .withId(payment.id.uuid.toString)
-      .withStatus(payment.status.entryName)
-      .withFailureReason(payment.failureReason.getOrElse(""))
   }
 
   override def getBuildInfo(request: connector_api.GetBuildInfoRequest): Future[connector_api.GetBuildInfoResponse] = {

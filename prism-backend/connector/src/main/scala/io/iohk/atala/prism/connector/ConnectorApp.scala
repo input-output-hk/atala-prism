@@ -1,11 +1,10 @@
 package io.iohk.atala.prism.connector
 
 import cats.effect.{ContextShift, IO}
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
-import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
 import io.iohk.atala.prism.console.repositories._
@@ -20,11 +19,9 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   InsuranceServiceGrpc
 }
 import io.iohk.atala.prism.protos.admin_api.AdminServiceGrpc
-import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GroupsServiceGrpc}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
-import io.iohk.atala.prism.protos.console_api.{ConsoleServiceGrpc, ContactsServiceGrpc}
-import io.iohk.atala.prism.protos.console_api.CredentialsStoreServiceGrpc
+import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
@@ -63,10 +60,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     logger.info("Connecting to the database")
     val (xa, releaseXa) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
 
-    logger.info("Initializing Payment Wall")
-    val braintreePayments =
-      BraintreePayments(braintreePaymentsConfig(globalConfig.getConfig("braintreePayments")))(executionContext)
-
     logger.info("Loading DID whitelist")
     val didWhitelist = DidWhitelistLoader.load(globalConfig)
 
@@ -78,7 +71,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
 
     // connector repositories
     val connectionsRepository = new ConnectionsRepository.PostgresImpl(xa)(executionContext)
-    val paymentsRepository = new PaymentsRepository(xa)(executionContext)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
     val participantsRepository = new ParticipantsRepository(xa)(executionContext)
@@ -98,8 +90,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     messageNotificationService.start()
 
     // connector services
-    val connectionsService =
-      new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, node)(executionContext)
+    val connectionsService = new ConnectionsService(connectionsRepository, node)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
     val registrationService = new RegistrationService(participantsRepository, node)(executionContext)
     val contactConnectionService = new ContactConnectionService(connectionsService, authenticator, didWhitelist)(
@@ -110,8 +101,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       messagesService,
       registrationService,
       messageNotificationService,
-      braintreePayments,
-      paymentsRepository,
       authenticator,
       node,
       participantsRepository
@@ -212,20 +201,5 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     } else {
       logger.info(s"$appliedMigrations migration scripts applied")
     }
-  }
-
-  private def braintreePaymentsConfig(config: Config): BraintreePayments.Config = {
-    val publicKey = config.getString("publicKey")
-    val privateKey = config.getString("privateKey")
-    val merchantId = config.getString("merchantId")
-    val tokenizationKey = config.getString("tokenizationKey")
-    val production = config.getBoolean("production")
-    BraintreePayments.Config(
-      production = production,
-      publicKey = publicKey,
-      privateKey = privateKey,
-      merchantId = merchantId,
-      tokenizationKey = tokenizationKey
-    )
   }
 }

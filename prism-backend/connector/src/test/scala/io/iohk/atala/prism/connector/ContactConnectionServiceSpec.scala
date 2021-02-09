@@ -1,16 +1,15 @@
 package io.iohk.atala.prism.connector
 
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model.ConnectionStatus
-import io.iohk.atala.prism.connector.payments.BraintreePayments
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, ContactConnectionService}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.{connector_api, connector_models, console_models}
+import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar.mock
 
 class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with ConnectorRepositorySpecBase {
@@ -20,11 +19,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
 
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val braintreePayments = BraintreePayments(
-    BraintreePayments.Config(false, "none", "none", "none", "none")
-  )
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
-  private lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
 
@@ -32,8 +27,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
   val publicKey = keyPair.publicKey
   val did = DID.createUnpublishedDID(publicKey)
 
-  lazy val connectionsService =
-    new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments, nodeMock)
+  lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
 
   private lazy val authenticator =
     new ConnectorAuthenticator(
