@@ -14,7 +14,19 @@ While software provisioning is done automatically using Terraform, the wallet fo
 
 ## Upgrading
 
-When upgrading it's better to first do it manually, to ensure nothing breaks.
+To define which versions to update to:
+1. Visit the [Cardano Node release page](https://github.com/input-output-hk/cardano-node/releases) and grab the latest version, or the one you are interested in upgrading to.
+
+2. Visit the [Cardano DB Sync release page](https://github.com/input-output-hk/cardano-db-sync/releases) and grab the latest version matching the Cardano Node version.
+
+3. Visit the [Cardano Wallet release page](https://github.com/input-output-hk/cardano-wallet/releases) and grab the latest version matching the Cardano Node version.
+
+* If you have doubts about the actual Docker image names (particularly Cardano Wallet which has a different version convention), visit their Docker Hub pages:
+  * [cardano-node](https://hub.docker.com/repository/docker/inputoutput/cardano-node/tags)
+  * [cardano-db-sync](https://hub.docker.com/repository/docker/inputoutput/cardano-db-sync/tags)
+  * [cardano-wallet](https://hub.docker.com/repository/docker/inputoutput/cardano-wallet/tags)
+    
+When upgrading, it's better to first do it manually, to ensure nothing breaks.
 
 1. SSH to the server
 ([see how](../../../../docs/cardano/integration.md#managing-the-services)).
@@ -50,7 +62,7 @@ sudo docker-compose up
     sudo docker image rm <IMAGE>:<TAG>
     ```
 
-6. When everything works update local `docker-compose.yml.tmpl` accordingly
+6. When everything works, update local [docker-compose.yml.tmpl](https://github.com/input-output-hk/atala/blob/develop/prism-backend/infra/stage/base/cardano/docker-compose.yml.tmpl) accordingly
 
 7. Apply the changes (that is going to destroy old instance and deploy a new one, leaving the data intact):
 ```

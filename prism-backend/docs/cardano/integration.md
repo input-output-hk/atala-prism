@@ -45,6 +45,13 @@ cardano_instance_public_ip = "3.15.237.14"
 $ ssh ubuntu@3.15.237.14
 ```
 
+* If you cannot connect to the Cardano server on AWS, you may want to reboot it from the AWS Console [here](https://us-east-2.console.aws.amazon.com/ec2/v2/home?region=us-east-2#InstanceDetails:instanceId=i-0f4f60f51dca39179).
+  If you do so, the `/data` directory will no longer exist as it will need to be mounted manually, but you can mount it with:
+```
+sudo mkdir -p /data
+sudo mount /dev/xvdh /data || (mkfs.ext4 /dev/xvdh && mount /dev/xvdh /data)
+```
+
 Services are deployed using docker-compose definition in `/cardano/docker-compose.yml`, configured as a systemd service. You can query its state (e.g. `systemctl status cardano`), you can see its logs via journalctl (e.g. `journalctl -u cardano --since today`).
 
 You can also check docker containers directly, e.g. `sudo docker ps`, `sudo docker logs [container id]`, `sudo docker exec [container id] bash`.
