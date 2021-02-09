@@ -2,15 +2,15 @@ package io.iohk.atala.prism.app.ui.main.credentials
 
 import android.content.res.Resources
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import javax.inject.Inject
 
-class MyCredentialsViewModel @Inject constructor(private val dataManager: DataManager, private val resources: Resources) : ViewModel() {
+class MyCredentialsViewModel @Inject constructor(private val credentialsRepository: CredentialsRepository, private val resources: Resources) : ViewModel() {
 
     val searchText = MutableLiveData<String>("")
 
-    private val _credentials: LiveData<List<Credential>> = dataManager.allCredentials()
+    private val _credentials: LiveData<List<Credential>> = credentialsRepository.allCredentials()
 
     val filteredCredentials: LiveData<List<Credential>> = MediatorLiveData<List<Credential>>().apply {
         addSource(searchText) { value = computeCredentials() }

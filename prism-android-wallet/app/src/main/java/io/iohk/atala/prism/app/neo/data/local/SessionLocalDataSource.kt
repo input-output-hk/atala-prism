@@ -35,4 +35,12 @@ class SessionLocalDataSource(context: Context) : BaseLocalDataSource(context), S
     override fun getLastSyncedIndex(): Int {
         return preferences.getInt(LAST_SYNCED_INDEX, -1)
     }
+
+    override fun increaseSyncedIndex(): Int {
+        val newIndex = getLastSyncedIndex() + 1
+        val editor = preferences.edit()
+        editor.putInt(LAST_SYNCED_INDEX, newIndex)
+        editor.apply()
+        return newIndex
+    }
 }

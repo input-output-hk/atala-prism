@@ -82,8 +82,7 @@ class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectIte
     override fun onSelect(item: ActivityHistoryWithCredential) {
         // TODO This is logic inherited from old code we need to use the navigation components
         item.credential?.let {
-            val credentialFragment = CredentialDetailFragment()
-            credentialFragment.setCredential(it)
+            val credentialFragment = CredentialDetailFragment.build(it.credentialId)
             navigator.showFragmentOnTop(
                     requireActivity().supportFragmentManager, credentialFragment)
         }

@@ -5,7 +5,7 @@ import androidx.room.*
 import io.iohk.atala.prism.app.data.local.db.model.*
 
 @Dao
-abstract class ProofRequestDao {
+abstract class ProofRequestDao : ActivityHistoryDao() {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun insertSync(proofRequest: ProofRequest): Long
@@ -31,14 +31,17 @@ abstract class ProofRequestDao {
     }
 
     @Query("SELECT * FROM proofRequests ORDER BY id asc")
-    abstract fun allWithCredentials(): LiveData<List<ProofRequestWithCredentials>>
+    abstract fun all(): LiveData<List<ProofRequest>>
 
     @Query("SELECT * FROM proofRequests ORDER BY id asc")
-    abstract suspend fun getAllWithCredentials(): List<ProofRequestWithCredentials>
+    abstract fun allWithCredentials(): LiveData<List<ProofRequestWithContactAndCredentials>>
+
+    @Query("SELECT * FROM proofRequests ORDER BY id asc")
+    abstract suspend fun getAllWithCredentials(): List<ProofRequestWithContactAndCredentials>
 
     @Delete
     abstract suspend fun delete(proofRequest: ProofRequest)
 
     @Query("SELECT * from proofRequests where id = :id LIMIT 1")
-    abstract suspend fun getProofRequestById(id: Long): ProofRequestWithCredentials?
+    abstract suspend fun getProofRequestById(id: Long): ProofRequestWithContactAndCredentials?
 }

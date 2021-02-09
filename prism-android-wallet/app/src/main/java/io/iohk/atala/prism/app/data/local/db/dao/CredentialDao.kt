@@ -55,9 +55,15 @@ abstract class CredentialDao : ActivityHistoryDao() {
     @Query("SELECT * FROM activityHistories WHERE credential_id = :credentialId AND connection_id IS NOT NULL ORDER BY date asc, id")
     abstract suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact>
 
-    @Query("SELECT * FROM activityHistories WHERE needs_to_be_notified = 1 AND credential_id IS NOT NULL AND type = :type ORDER BY date asc, id")
-    abstract fun allIssuedCredentialsNotifications(type: Int = ActivityHistory.Type.CredentialIssued.value): LiveData<List<ActivityHistoryWithCredential>>
-
     @Query("UPDATE activityHistories set needs_to_be_notified = 0 WHERE credential_id = :credentialId")
     abstract suspend fun clearCredentialNotifications(credentialId: String)
+
+    /**
+     * Returns a list of contacts to whom a credential can be shared
+     * *
+     * @param credentialConnectionId [String] connectionId of the Credential
+     * @return a [List] of [Contact]
+     */
+    @Query("SELECT * FROM contacts WHERE connection_id != :credentialConnectionId AND deleted = 0 order by id asc")
+    abstract suspend fun contactsToShareCredential(credentialConnectionId: String): List<Contact>
 }

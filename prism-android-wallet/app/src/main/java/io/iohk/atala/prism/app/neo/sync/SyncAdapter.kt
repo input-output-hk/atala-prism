@@ -31,7 +31,7 @@ class SyncAdapter @JvmOverloads constructor(
     }
 
     private val connectorApi: ConnectorRemoteDataSource by lazy {
-        ConnectorRemoteDataSource(PreferencesLocalDataSource(context))
+        ConnectorRemoteDataSource(PreferencesLocalDataSource(context), SessionLocalDataSource(context))
     }
 
     override fun onPerformSync(account: Account?, extras: Bundle?, authority: String?, provider: ContentProviderClient?, syncResult: SyncResult?) {

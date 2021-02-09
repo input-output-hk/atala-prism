@@ -1,18 +1,14 @@
 package io.iohk.atala.prism.app.ui.commondialogs
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
-import io.iohk.atala.prism.app.data.local.db.mappers.ContactMapper
-import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.grpc.ParticipantInfoResponse
 import io.iohk.atala.prism.app.neo.common.EventWrapper
-import io.iohk.atala.prism.app.utils.CryptoUtils
+import io.iohk.atala.prism.app.neo.data.ContactsRepository
 import io.iohk.atala.prism.protos.ParticipantInfo
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class AcceptConnectionDialogViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class AcceptConnectionDialogViewModel @Inject constructor(private val repository: ContactsRepository) : ViewModel() {
 
     private var token: String? = null
 
@@ -53,16 +49,10 @@ class AcceptConnectionDialogViewModel @Inject constructor(private val dataManage
 
     fun fetchConnectionTokenInfo(token: String) {
         this.token = token
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 _isLoading.postValue(true)
-                // TODO - move this logic into a repository including logic to know if we are already connected to that connection
-                val participantInfoResponse = dataManager.getConnectionTokenInfo(token)
-                val connectionsList = dataManager.getAllContacts()
-                val found = connectionsList.any { connection: Contact ->
-                    connection.name == participantInfoResponse.creator.issuer.name || connection.name == participantInfoResponse.creator.holder.name
-                }
-                _participantInfoResponse.postValue(ParticipantInfoResponse(participantInfoResponse.creator, token, found))
+                _participantInfoResponse.postValue(repository.getParticipantInfoResponse(token))
             } catch (ex: Exception) {
                 _connectionError.postValue(EventWrapper(true))
             } finally {
@@ -72,16 +62,11 @@ class AcceptConnectionDialogViewModel @Inject constructor(private val dataManage
     }
 
     fun confirm() {
-        token?.let {
-            viewModelScope.launch(Dispatchers.IO) {
+        token?.let { token ->
+            viewModelScope.launch {
                 try {
                     _isLoading.postValue(true)
-                    // TODO - move this logic into a repository, it could be something like repository.confirmConnection(tokenString)
-                    val currentIndex = dataManager.getCurrentIndex()
-                    val addConnectionFromTokenResponse = dataManager.addConnection(dataManager.getKeyPairFromPath(CryptoUtils.getNextPathFromIndex(currentIndex)), it, "")
-                    dataManager.saveContact(ContactMapper.mapToContact(addConnectionFromTokenResponse.connection, CryptoUtils.getNextPathFromIndex(currentIndex)))
-                    dataManager.increaseIndex()
-                    //_newConnectionInfoLiveData.postValue(AsyncTaskResult(addConnectionFromTokenResponse))
+                    repository.acceptConnection(token)
                     _connectionIsConfirmed.postValue(EventWrapper(true))
                 } catch (ex: Exception) {
                     _connectionError.postValue(EventWrapper(true))

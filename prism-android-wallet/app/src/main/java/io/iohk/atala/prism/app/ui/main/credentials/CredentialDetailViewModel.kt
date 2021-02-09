@@ -1,32 +1,44 @@
 package io.iohk.atala.prism.app.ui.main.credentials
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import io.iohk.atala.prism.app.data.DataManager
+import androidx.lifecycle.*
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
+import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-/*
-* TODO This ViewModel is being used by 3 independent views [CredentialDetailFragment], [DeleteCredentialDialogFragment],
-*  and [HomeFragment] it is necessary to split this into 3 independent ViewModel´s.
-**/
-class CredentialDetailViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
 
-    fun setCredentialViewed(credential: Credential) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataManager.clearCredentialNotifications(credential.credentialId)
+class CredentialDetailViewModel @Inject constructor(private val credentialsRepository: CredentialsRepository) : ViewModel() {
+
+    private val _credential = MutableLiveData<Credential>()
+
+    val credential: LiveData<Credential> = _credential
+
+    private val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
+        viewModelScope.launch {
+            value = credentialsRepository.getCustomDateFormat()
         }
     }
 
-    /*
-    * TODO this is for [CredentialDetailFragment] delete this when there is an appropriate ViewModel for that fragment
-    * */
-    val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
+    val receivedDate = MediatorLiveData<String>().apply {
+        value = ""
+        addSource(customDateFormat) { value = computeCredentialDate() }
+        addSource(_credential) { value = computeCredentialDate() }
+    }
+
+    fun fetchCredentialInfo(credentialId: String) {
         viewModelScope.launch {
-            value = dataManager.getCurrentDateFormat()
+            credentialsRepository.getCredentialByCredentialId(credentialId)?.let {
+                _credential.postValue(it)
+                credentialsRepository.clearCredentialNotifications(it.credentialId)
+            }
         }
+    }
+
+    private fun computeCredentialDate(): String {
+        if (_credential.value == null || customDateFormat.value == null) {
+            return ""
+        }
+        return customDateFormat.value!!.dateFormat.format(_credential.value!!.dateReceived)
     }
 }

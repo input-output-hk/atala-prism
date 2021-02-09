@@ -1,18 +1,15 @@
 package io.iohk.atala.prism.app.ui.main.credentials
 
 import androidx.lifecycle.*
-import com.google.protobuf.ByteString
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
-import io.iohk.atala.prism.app.data.dtos.ConnectionDataDto
-import kotlinx.coroutines.Dispatchers
+import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ShareCredentialDialogViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class ShareCredentialDialogViewModel @Inject constructor(private val repository: CredentialsRepository) : ViewModel() {
 
     enum class ErrorType { CantLoadContactsError, CantShareCredentialError }
 
@@ -50,15 +47,11 @@ class ShareCredentialDialogViewModel @Inject constructor(private val dataManager
     private lateinit var credential: Credential
 
     fun fetchData(credentialId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 _contactsAreLoading.postValue(true)
-                credential = dataManager.getCredentialByCredentialId(credentialId)!!
-                val contacts = dataManager.getAllContacts().filter {
-                    // you can't share to the contact who issued the current credential
-                    it.connectionId != credential.connectionId
-                }
-                val checkableContacts = contacts.map {
+                credential = repository.getCredentialByCredentialId(credentialId)!!
+                val checkableContacts = repository.contactsToShareCredential(credential).map {
                     CheckableData(it)
                 }
                 _contacts.postValue(checkableContacts)
@@ -89,19 +82,12 @@ class ShareCredentialDialogViewModel @Inject constructor(private val dataManager
     }
 
     fun share() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val selectedCheckableContacts = filteredContacts.value?.filter { it.isChecked }
             if (selectedCheckableContacts?.isNotEmpty() == true) {
                 try {
-                    val credentialByteArray = ByteString.copyFrom(credential.credentialEncoded.toByteArray())
                     _credentialSharingIsInProcess.postValue(true)
-                    // TODO - I think all the following logic should be in a repository
-                    val connections = selectedCheckableContacts.map {
-                        ConnectionDataDto(it.data.connectionId, dataManager.getKeyPairFromPath(it.data.keyDerivationPath))
-                    }
-                    dataManager.sendMessageToMultipleConnections(connections, credentialByteArray!!)
-                    val selectedContacts = selectedCheckableContacts.map { it.data }
-                    dataManager.insertShareCredentialActivityHistories(credential, selectedContacts)
+                    repository.shareCredential(credential, selectedCheckableContacts.map { it.data })
                     _credentialHasBeenShared.postValue(EventWrapper(true))
                 } catch (ex: Exception) {
                     _error.postValue(EventWrapper(ErrorType.CantShareCredentialError))

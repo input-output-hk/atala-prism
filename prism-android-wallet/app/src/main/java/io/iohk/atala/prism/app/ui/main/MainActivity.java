@@ -25,7 +25,7 @@ import javax.inject.Inject;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
-import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithCredentials;
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequest;
 import io.iohk.atala.prism.app.neo.sync.AuthenticatorService;
 import io.iohk.atala.prism.app.ui.CvpActivity;
 import io.iohk.atala.prism.app.ui.main.notifications.NotificationsFragment;
@@ -34,7 +34,6 @@ import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.exception.CaseNotFoundException;
 import io.iohk.atala.prism.app.core.exception.ErrorCode;
 import io.iohk.atala.prism.app.ui.Navigator;
-import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.app.ui.main.contacts.ContactsFragment;
 import io.iohk.atala.prism.app.ui.CvpFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsFragment;
@@ -113,13 +112,11 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
         init();
 
-        Preferences prefs = new Preferences(this);
-        if (prefs.isPinConfigured())
-            navigator.showUnlockScreen(this);
         genericSyncAccount = AuthenticatorService.Companion.buildGenericAccountForSync(this);
     }
 
     private void init() {
+        viewModel.checkSecuritySettings();
         onNavigation(BottomAppBarOption.NOTIFICATIONS);
 
         // handle when exist a message with a proof requests
@@ -127,9 +124,9 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
             if (event == null) {
                 return;
             }
-            ProofRequestWithCredentials proofRequestWithCredentials = event.getContentIfNotHandled();
-            if (proofRequestWithCredentials != null) {
-                ProofRequestDialogFragment dialog = ProofRequestDialogFragment.Companion.build(proofRequestWithCredentials.getProofRequest().getId());
+            ProofRequest proofRequest = event.getContentIfNotHandled();
+            if (proofRequest != null) {
+                ProofRequestDialogFragment dialog = ProofRequestDialogFragment.Companion.build(proofRequest.getId());
                 dialog.show(getSupportFragmentManager(), null);
             }
         });
@@ -137,6 +134,12 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         viewModel.getRequestSync().observe(this, event -> {
             if (event.getContentIfNotHandled()) {
                 requestForSync();
+            }
+        });
+
+        viewModel.getSecurityViewShouldBeVisible().observe(this, event -> {
+            if (event.getContentIfNotHandled()) {
+                navigator.showUnlockScreen(this);
             }
         });
     }

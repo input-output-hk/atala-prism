@@ -1,12 +1,9 @@
 package io.iohk.atala.prism.app.data.local.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContactAndCredential
+import androidx.room.*
+import io.iohk.atala.prism.app.data.local.db.model.*
+import java.util.*
 
 @Dao
 abstract class ActivityHistoryDao {
@@ -24,4 +21,21 @@ abstract class ActivityHistoryDao {
 
     @Query("SELECT * FROM activityHistories ORDER BY date DESC, id")
     abstract fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>>
+
+    /**
+     * Inserts [ActivityHistory]´s of requests for [Credential]´s from a [Contact]
+     *
+     * @param contact [Contact] the contact that makes the requests.
+     * @param credentials [List] of [Credential] the credentials requested.
+     * */
+    @Transaction
+    open suspend fun insertRequestedCredentialActivities(contact: Contact, credentials: List<Credential>) {
+        val activitiesHistories = credentials.map {
+            ActivityHistory(contact.connectionId, it.credentialId, Date().time, ActivityHistory.Type.CredentialRequested)
+        }
+        insertActivityHistories(activitiesHistories)
+    }
+
+    @Query("SELECT * FROM activityHistories WHERE needs_to_be_notified = 1 AND credential_id IS NOT NULL AND type = :type ORDER BY date asc, id")
+    abstract fun allIssuedCredentialsNotifications(type: Int = ActivityHistory.Type.CredentialIssued.value): LiveData<List<ActivityHistoryWithCredential>>
 }

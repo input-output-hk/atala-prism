@@ -1,15 +1,15 @@
 package io.iohk.atala.prism.app.ui.main.contacts
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
+import io.iohk.atala.prism.app.neo.data.ContactsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class DeleteContactAlertDialogViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class DeleteContactAlertDialogViewModel @Inject constructor(private val repository: ContactsRepository) : ViewModel() {
 
     private val _contact = MutableLiveData<Contact>()
 
@@ -34,10 +34,10 @@ class DeleteContactAlertDialogViewModel @Inject constructor(private val dataMana
 
     fun fetchContactInfo(contactId: Int) {
         _uiEnabled.value = false
-        viewModelScope.launch(Dispatchers.IO) {
-            dataManager.contactById(contactId)?.let {
+        viewModelScope.launch {
+            repository.getContactById(contactId)?.let {
                 _contact.postValue(it)
-                _credentials.postValue(dataManager.getCredentialsByConnectionId(it.connectionId))
+                _credentials.postValue(repository.getIssuedCredentials(it.connectionId))
             }
             _uiEnabled.postValue(true)
         }
@@ -47,7 +47,7 @@ class DeleteContactAlertDialogViewModel @Inject constructor(private val dataMana
         contact.value?.let {
             _uiEnabled.value = false
             viewModelScope.launch(Dispatchers.IO) {
-                dataManager.deleteContact(it)
+                repository.deleteContact(it)
                 _contactDeleted.postValue(EventWrapper(true))
             }
         }

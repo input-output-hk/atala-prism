@@ -1,12 +1,22 @@
 package io.iohk.atala.prism.app.ui.main.profile
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.local.preferences.Preferences
+import io.iohk.atala.prism.app.neo.common.EventWrapper
+import io.iohk.atala.prism.app.neo.common.FileUtils
+import io.iohk.atala.prism.app.neo.data.PreferencesRepository
+import io.iohk.atala.prism.app.neo.model.UserProfile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ProfileViewModel @Inject constructor(private val preferences: Preferences) : ViewModel() {
+class ProfileViewModel @Inject constructor(private val repository:PreferencesRepository) : ViewModel() {
+
+    companion object {
+        private const val MAX_PROFILE_PHOTO_PX_SIZE = 800
+    }
 
     private val _editMode = MutableLiveData<Boolean>()
 
@@ -22,16 +32,17 @@ class ProfileViewModel @Inject constructor(private val preferences: Preferences)
 
     val profileImage: LiveData<Bitmap> = _profileImage
 
-    private val _showLoading = MutableLiveData<Boolean>()
+    private val _showLoading = MutableLiveData<EventWrapper<Boolean>>()
 
-    val showLoading: LiveData<Boolean> = _showLoading
+    val showLoading: LiveData<EventWrapper<Boolean>> = _showLoading
 
     fun loadPreferences() {
         viewModelScope.launch {
-            fullName.value = preferences.getString(Preferences.USER_PROFILE_NAME)
-            country.value = preferences.getString(Preferences.USER_PROFILE_COUNTRY)
-            email.value = preferences.getString(Preferences.USER_PROFILE_EMAIL)
-            _profileImage.value = preferences.getProfileImage()
+            val userProfile = repository.getUserProfile()
+            fullName.value = userProfile.name
+            country.value = userProfile.country
+            email.value = userProfile.email
+            _profileImage.value = userProfile.profileImage
         }
     }
 
@@ -41,20 +52,26 @@ class ProfileViewModel @Inject constructor(private val preferences: Preferences)
 
     fun savePreferences() {
         if (editMode.value == true) {
-            _showLoading.value = true
+            _showLoading.value = EventWrapper(true)
             viewModelScope.launch {
-                preferences.saveUserProfile(fullName.value, country.value, email.value, profileImage.value)
+                repository.storeUserProfile(UserProfile(fullName.value,country.value,email.value,profileImage.value))
                 _editMode.value = false
-                _showLoading.value = false
+                _showLoading.value = EventWrapper(false)
             }
         }
     }
 
-    fun setProfileImage(image: Bitmap) {
-        _profileImage.value = image
-    }
-
     fun clearProfileImage() {
         _profileImage.value = null
+    }
+
+    fun handleProfilePhotoUri(imageUri: Uri, ctx:Context){
+        viewModelScope.launch(Dispatchers.Main) {
+            _showLoading.postValue(EventWrapper(true))
+            FileUtils.decodeBitmapFromUri(ctx, imageUri, MAX_PROFILE_PHOTO_PX_SIZE)?.let {
+                _profileImage.postValue(it)
+            }
+            _showLoading.postValue(EventWrapper(false))
+        }
     }
 }

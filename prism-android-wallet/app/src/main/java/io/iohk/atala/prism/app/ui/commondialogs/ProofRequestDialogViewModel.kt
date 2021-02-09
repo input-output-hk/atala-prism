@@ -1,21 +1,18 @@
 package io.iohk.atala.prism.app.ui.commondialogs
 
 import androidx.lifecycle.*
-import com.google.protobuf.ByteString
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
-import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithContactAndCredentials
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
-import kotlinx.coroutines.Dispatchers
+import io.iohk.atala.prism.app.neo.data.ProofRequestRepository
 import kotlinx.coroutines.launch
-import java.util.stream.Collectors
 import javax.inject.Inject
 
-class ProofRequestDialogViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class ProofRequestDialogViewModel @Inject constructor(private val repository: ProofRequestRepository) : ViewModel() {
 
-    private var proofRequest: ProofRequest? = null
+    private var proofRequestData: ProofRequestWithContactAndCredentials? = null
 
     private val _contact = MutableLiveData<Contact>()
 
@@ -43,12 +40,11 @@ class ProofRequestDialogViewModel @Inject constructor(private val dataManager: D
 
     fun fetchProofRequestInfo(proofRequestId: Long) {
         _showLoading.value = true
-        viewModelScope.launch(Dispatchers.IO) {
-            dataManager.getProofRequestById(proofRequestId)?.let { proofRequestWhitCredentials ->
-                proofRequest = proofRequestWhitCredentials.proofRequest
-                val contact = dataManager.getContactByConnectionId(proofRequestWhitCredentials.proofRequest.connectionId)
-                _contact.postValue(contact)
-                val checkableCredentials = proofRequestWhitCredentials.credentials.map {
+        viewModelScope.launch {
+            repository.getProofRequestById(proofRequestId)?.let { proofRequestWhitContactAndCredentials ->
+                proofRequestData = proofRequestWhitContactAndCredentials
+                _contact.postValue(proofRequestWhitContactAndCredentials.contact)
+                val checkableCredentials = proofRequestWhitContactAndCredentials.credentials.map {
                     CheckableData(it)
                 }
                 _requestedCredentials.postValue(checkableCredentials)
@@ -67,31 +63,21 @@ class ProofRequestDialogViewModel @Inject constructor(private val dataManager: D
     }
 
     fun declineProofRequest() {
-        _contact.value?.let { contact ->
+        proofRequestData?.let {
             _showLoading.value = true
-            viewModelScope.launch(Dispatchers.IO) {
-                // TODO this logic requires an appropriate repository
-                _proofRequestAccepted.postValue(EventWrapper(false))
-                dataManager.removeProofRequest(proofRequest!!)
+            viewModelScope.launch {
+                repository.declineProofRequest(it.proofRequest)
                 _showLoading.postValue(false)
             }
         }
     }
 
     fun acceptProofRequest() {
-        _contact.value?.let { contact ->
+        proofRequestData?.let {
             _showLoading.value = true
-            viewModelScope.launch(Dispatchers.IO) {
-                // TODO this logic requires an appropriate repository
-                val credentials = _requestedCredentials.value!!.map { it.data }
-                val messages: List<ByteString> = credentials.stream().map {
-                    it.credentialEncoded
-                }.collect(Collectors.toList())
-                val keyPath = dataManager.getKeyPairFromPath(contact.keyDerivationPath)
+            viewModelScope.launch {
                 try {
-                    dataManager.sendMultipleMessage(keyPath, contact.connectionId, messages)
-                    dataManager.insertRequestedCredentialActivities(contact, credentials)
-                    dataManager.removeProofRequest(proofRequest!!)
+                    repository.acceptProofRequest(it.proofRequest.id)
                     _proofRequestAccepted.postValue(EventWrapper(true))
                 } catch (ex: Exception) {
                     ex.printStackTrace()

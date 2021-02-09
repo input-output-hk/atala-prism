@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.app.ui.main.settings
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
-import kotlinx.coroutines.Dispatchers
+import io.iohk.atala.prism.app.neo.data.PreferencesRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class SettingsDateFormatViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class SettingsDateFormatViewModel @Inject constructor(private val repository: PreferencesRepository) : ViewModel() {
 
     private val _checkableCustomDateFormats = MutableLiveData<List<CheckableData<CustomDateFormat>>>()
 
@@ -26,19 +25,19 @@ class SettingsDateFormatViewModel @Inject constructor(private val dataManager: D
     val preferencesSavedSuccessfully: LiveData<EventWrapper<Boolean>> = _preferencesSavedSuccessfully
 
     fun loadPreferences() {
-        viewModelScope.launch(Dispatchers.IO) {
-            currentDateFormat = dataManager.getCurrentDateFormat()
-            _checkableCustomDateFormats.postValue(dataManager.getCustomDateFormats().map {
+        viewModelScope.launch {
+            currentDateFormat = repository.getCustomDateFormat()
+            _checkableCustomDateFormats.postValue(repository.getAvailableCustomDateFormats().map {
                 CheckableData(it, it == currentDateFormat)
             })
-            _defaultDateFormat.postValue(dataManager.getDefaultDateFormat())
+            _defaultDateFormat.postValue(repository.getDefaultDateFormat())
         }
     }
 
     fun savePreferences() {
         currentDateFormat?.let {
-            viewModelScope.launch(Dispatchers.IO) {
-                dataManager.saveCustomDateFormat(it)
+            viewModelScope.launch {
+                repository.saveCustomDateFormat(it)
                 _preferencesSavedSuccessfully.postValue(EventWrapper(true))
             }
         }

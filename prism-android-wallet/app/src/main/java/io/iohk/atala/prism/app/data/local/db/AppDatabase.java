@@ -10,6 +10,7 @@ import androidx.room.TypeConverters;
 
 import io.iohk.atala.prism.app.data.local.db.converters.ByteStringConverter;
 import io.iohk.atala.prism.app.data.local.db.converters.ActivityHistoryTypeConverter;
+import io.iohk.atala.prism.app.data.local.db.dao.ActivityHistoryDao;
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao;
 import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao;
 import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao;

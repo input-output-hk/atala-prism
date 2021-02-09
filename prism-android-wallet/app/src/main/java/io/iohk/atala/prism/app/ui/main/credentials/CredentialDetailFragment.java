@@ -28,7 +28,6 @@ import io.iohk.cvp.databinding.FragmentCredentialDetailBinding;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// TODO This needs its own ViewModel
 @Setter
 @NoArgsConstructor
 public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewModel> {
@@ -38,9 +37,18 @@ public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewMo
 
     private static final int REQUEST_DELETE_CREDENTIAL = 22;
 
-    private Credential credential;
-
     private FragmentCredentialDetailBinding binding;
+
+    private String credentialId;
+
+    /*
+     * TODO this will be removed, replacing it with safeArgs
+     * */
+    public static CredentialDetailFragment build(String credentialId) {
+        CredentialDetailFragment instance = new CredentialDetailFragment();
+        instance.credentialId = credentialId;
+        return instance;
+    }
 
     @Override
     protected int getViewId() {
@@ -50,11 +58,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewMo
     @Override
     protected AppBarConfigurator getAppBarConfigurator() {
         setHasOptionsMenu(true);
-
-        if (credential != null) {
-            return new StackedAppBar(CredentialUtil.getNameResource(credential.credentialType));
-        }
-        return new StackedAppBar(R.string.education);
+        return new StackedAppBar(R.string.home_title);
     }
 
     @Override
@@ -78,7 +82,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewMo
                 getDeleteCredentialFragment().show(requireActivity().getSupportFragmentManager(), null);
                 return true;
             case R.id.action_credential_history:
-                CredentialHistoryFragment fragment = CredentialHistoryFragment.Companion.build(credential.credentialId);
+                CredentialHistoryFragment fragment = CredentialHistoryFragment.Companion.build(credentialId);
                 navigator.showFragmentOnTop(
                         requireActivity().getSupportFragmentManager(), fragment);
                 return true;
@@ -90,13 +94,13 @@ public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewMo
     private ShareCredentialDialogFragment getShareFragment() {
         ShareCredentialDialogFragment fragment = new ShareCredentialDialogFragment();
         Bundle args = new Bundle();
-        args.putString(IntentDataConstants.CREDENTIAL_ID_KEY, credential.credentialId);
+        args.putString(IntentDataConstants.CREDENTIAL_ID_KEY, credentialId);
         fragment.setArguments(args);
         return fragment;
     }
 
     private DeleteCredentialDialogFragment getDeleteCredentialFragment() {
-        DeleteCredentialDialogFragment dialog = DeleteCredentialDialogFragment.Companion.build(credential.credentialId);
+        DeleteCredentialDialogFragment dialog = DeleteCredentialDialogFragment.Companion.build(credentialId);
         dialog.setTargetFragment(this, REQUEST_DELETE_CREDENTIAL);
         return dialog;
     }
@@ -105,7 +109,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewMo
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, getViewId(), container, false);
         binding.setLifecycleOwner(this);
-        fillData(credential);
+        binding.setViewModel(getViewModel());
         setObservers();
         return binding.getRoot();
     }
@@ -114,22 +118,21 @@ public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewMo
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getViewModel().setCredentialViewed(credential);
-    }
-
-    private void fillData(Credential credential) {
-        String credentialHtmlView = CredentialUtil.getHtml(credential);
-        String encodedHtml = Base64.encodeToString(credentialHtmlView.getBytes(), Base64.NO_PADDING);
-        binding.webView.loadData(encodedHtml, "text/html", "base64");
+        getViewModel().fetchCredentialInfo(credentialId);
     }
 
     private void setObservers() {
-        viewModel.getCustomDateFormat().observe(getViewLifecycleOwner(), customFormat -> {
-            if (customFormat != null && credential != null) {
-                String formattedDate = customFormat.getDateFormat().format(credential.dateReceived);
-                binding.setFormattedIssuedDate(getString(R.string.received, formattedDate));
-            }
+        viewModel.getCredential().observe(getViewLifecycleOwner(), credential -> {
+            fillWebView(credential);
+            // TODO this is a hack to support the behavior of [CvpFragment] and the current custom navigation system, when we migrate to a native Android navigation and [CvpFragment] inheritance is removed this has to be deleted
+            setActionBarTitle(CredentialUtil.getNameResource(credential.credentialType));
         });
+    }
+
+    private void fillWebView(Credential credential) {
+        String credentialHtmlView = CredentialUtil.getHtml(credential);
+        String encodedHtml = Base64.encodeToString(credentialHtmlView.getBytes(), Base64.NO_PADDING);
+        binding.webView.loadData(encodedHtml, "text/html", "base64");
     }
 
     @Override
@@ -137,10 +140,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialDetailViewMo
         CredentialDetailViewModel viewModel = ViewModelProviders.of(this, factory)
                 .get(CredentialDetailViewModel.class);
         return viewModel;
-    }
-
-    public void setCredential(Credential credential) {
-        this.credential = credential;
     }
 
     @Override

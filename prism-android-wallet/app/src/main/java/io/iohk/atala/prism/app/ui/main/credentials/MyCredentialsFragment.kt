@@ -51,8 +51,7 @@ class MyCredentialsFragment : CvpFragment<MyCredentialsViewModel>(), OnSelectIte
 
     override fun onSelect(item: Credential) {
         // TODO This is logic inherited from old code we need to use the navigation components
-        val credentialFragment = CredentialDetailFragment()
-        credentialFragment.setCredential(item)
+        val credentialFragment = CredentialDetailFragment.build(item.credentialId)
         navigator.showFragmentOnTop(
                 requireActivity().supportFragmentManager, credentialFragment)
     }

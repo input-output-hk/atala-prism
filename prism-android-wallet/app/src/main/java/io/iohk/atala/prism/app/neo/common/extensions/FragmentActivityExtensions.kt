@@ -39,10 +39,8 @@ fun FragmentActivity.showBlockUILoading() {
 }
 
 fun FragmentActivity.hideBlockUILoading() {
-    if (getBlockUIDialog()?.dialog?.isShowing == true) {
-        getBlockUIDialog()?.dismiss()
-        window.decorView.setTag(R.string.TAG_LOADING_UI_BLOCK, null)
-    }
+    getBlockUIDialog()?.dismiss()
+    window.decorView.setTag(R.string.TAG_LOADING_UI_BLOCK, null)
 }
 
 private fun FragmentActivity.getBlockUIDialog(): DialogFragment? {

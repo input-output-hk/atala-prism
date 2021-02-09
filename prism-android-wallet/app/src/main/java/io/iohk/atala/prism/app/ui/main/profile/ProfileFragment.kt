@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.*
@@ -13,16 +12,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.iohk.atala.prism.app.neo.common.FileUtils
+import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.extensions.*
 import io.iohk.atala.prism.app.ui.CvpFragment
 import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator
 import io.iohk.atala.prism.app.ui.utils.RootAppBar
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentProfileBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
@@ -32,7 +28,6 @@ class ProfileFragment : CvpFragment<ProfileViewModel>() {
         private const val REQUEST_CAMERA = 1
         private const val REQUEST_LIBRARY = 2
         private const val PERMISSION_REQUEST_CAMERA = 3
-        private const val MAX_PROFILE_PHOTO_PX_SIZE = 800
     }
 
     @Inject
@@ -97,12 +92,10 @@ class ProfileFragment : CvpFragment<ProfileViewModel>() {
         viewModel.editMode.observe(viewLifecycleOwner) {
             setActionBar()
         }
-        viewModel.showLoading.observe(viewLifecycleOwner) {
-            if (it)
-                requireActivity().showBlockUILoading()
-            else
-                requireActivity().hideBlockUILoading()
-        }
+        viewModel.showLoading.observe(viewLifecycleOwner,EventWrapperObserver{
+            if (it) requireActivity().showBlockUILoading()
+            else requireActivity().hideBlockUILoading()
+        })
     }
 
     private fun configureEditPicButton() {
@@ -136,23 +129,13 @@ class ProfileFragment : CvpFragment<ProfileViewModel>() {
         if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             // Handle when take a photo from the camera app
             if (temporalPhotoFile.exists()) {
-                handleProfilePhotoUri(temporalPhotoFile.toUri())
+                viewModel.handleProfilePhotoUri(temporalPhotoFile.toUri(),requireContext())
             }
         } else if (requestCode == REQUEST_LIBRARY && resultCode == Activity.RESULT_OK && data != null) {
             data.data?.let { imageUri ->
                 // Handle when selected a photo from the library
-                handleProfilePhotoUri(imageUri)
+                viewModel.handleProfilePhotoUri(imageUri,requireContext())
             }
-        }
-    }
-
-    private fun handleProfilePhotoUri(imageUri: Uri) {
-        CoroutineScope(Dispatchers.Main).launch {
-            requireActivity().showBlockUILoading()
-            FileUtils.decodeBitmapFromUri(requireContext(), imageUri, MAX_PROFILE_PHOTO_PX_SIZE)?.let {
-                viewModel.setProfileImage(it)
-            }
-            requireActivity().hideBlockUILoading()
         }
     }
 

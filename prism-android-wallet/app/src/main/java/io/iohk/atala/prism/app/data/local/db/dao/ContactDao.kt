@@ -278,20 +278,6 @@ abstract class ContactDao : ActivityHistoryDao() {
     @Query("SELECT * FROM activityHistories WHERE connection_id = :connectionId ORDER BY date asc")
     abstract suspend fun getActivityHistoriesByConnection(connectionId: String): List<ActivityHistoryWithCredential>
 
-    /**
-     * Inserts [ActivityHistory]´s of requests for [Credential]´s from a [Contact]
-     *
-     * @param contact [Contact] the contact that makes the requests.
-     * @param credentials [List] of [Credential] the credentials requested.
-     * */
-    @Transaction
-    open suspend fun insertRequestedCredentialActivities(contact: Contact, credentials: List<Credential>) {
-        val activitiesHistories = credentials.map {
-            ActivityHistory(contact.connectionId, it.credentialId, Date().time, ActivityHistory.Type.CredentialRequested)
-        }
-        insertActivityHistories(activitiesHistories)
-    }
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertCredentials(credentials: List<Credential>): List<Long>
 

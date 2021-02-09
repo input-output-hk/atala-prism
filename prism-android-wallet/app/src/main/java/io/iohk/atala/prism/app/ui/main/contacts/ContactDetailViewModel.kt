@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.app.ui.main.contacts
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
-import kotlinx.coroutines.Dispatchers
+import io.iohk.atala.prism.app.neo.data.ContactsRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ContactDetailViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class ContactDetailViewModel @Inject constructor(private val repository: ContactsRepository) : ViewModel() {
 
     private val _contact = MutableLiveData<Contact>()
 
@@ -17,7 +16,7 @@ class ContactDetailViewModel @Inject constructor(private val dataManager: DataMa
 
     val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
         viewModelScope.launch {
-            value = dataManager.getCurrentDateFormat()
+            value = repository.getCustomDateFormat()
         }
     }
 
@@ -31,16 +30,17 @@ class ContactDetailViewModel @Inject constructor(private val dataManager: DataMa
     val credentialActivityHistories: LiveData<List<ActivityHistoryWithCredential>> = _credentialActivityHistories
 
     fun fetchContact(contactId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataManager.contactById(contactId.toInt())?.let {
+        viewModelScope.launch {
+            repository.getContactById(contactId.toInt())?.let {
                 _contact.postValue(it)
-                _credentialActivityHistories.postValue(dataManager.getCredentialsActivityHistoriesByConnection(it.connectionId))
+                _credentialActivityHistories.postValue(repository.getCredentialsActivityHistories(it.connectionId))
             }
         }
     }
 
     private fun computeContactCreatedDate(): String? {
-        val customDateFormat = customDateFormat.value ?: dataManager.getDefaultDateFormat()
-        return if (contact.value == null) null else customDateFormat.dateFormat.format(contact.value!!.dateCreated)
+        return contact.value?.let {
+            customDateFormat.value?.dateFormat?.format(it.dateCreated)
+        }
     }
 }

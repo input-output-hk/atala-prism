@@ -1,15 +1,15 @@
 package io.iohk.atala.prism.app.ui.main.contacts
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Contact
+import io.iohk.atala.prism.app.neo.data.ContactsRepository
 import javax.inject.Inject
 
-class ContactsViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class ContactsViewModel @Inject constructor(private val repository: ContactsRepository) : ViewModel() {
 
     val searchText = MutableLiveData<String>("")
 
-    private val _contacts = dataManager.allContacts()
+    private val _contacts = repository.allContacts()
 
     val contacts = MediatorLiveData<List<Contact>>().apply {
         value = listOf()

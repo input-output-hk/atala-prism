@@ -13,4 +13,6 @@ interface SessionLocalDataSourceInterface {
     fun storeLastSyncedIndex(index: Int)
 
     fun getLastSyncedIndex(): Int
+
+    fun increaseSyncedIndex(): Int
 }

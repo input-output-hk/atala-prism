@@ -1,16 +1,15 @@
 package io.iohk.atala.prism.app.ui.main.credentials
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
-import kotlinx.coroutines.Dispatchers
+import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class CredentialHistoryViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class CredentialHistoryViewModel @Inject constructor(private val repository: CredentialsRepository) : ViewModel() {
 
     private val _credential = MutableLiveData<Credential>()
 
@@ -22,7 +21,7 @@ class CredentialHistoryViewModel @Inject constructor(private val dataManager: Da
 
     val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
         viewModelScope.launch {
-            value = dataManager.getCurrentDateFormat()
+            value = repository.getCustomDateFormat()
         }
     }
 
@@ -32,11 +31,11 @@ class CredentialHistoryViewModel @Inject constructor(private val dataManager: Da
     }
 
     fun fetchData(credentialId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataManager.getCredentialByCredentialId(credentialId)?.let { credential ->
+        viewModelScope.launch {
+            repository.getCredentialByCredentialId(credentialId)?.let { credential ->
                 _credential.postValue(credential)
                 // Only need shared and requested activity stories
-                val activityHistories = dataManager.getContactsActivityHistoriesByCredentialId(credentialId).filter {
+                val activityHistories = repository.getContactsActivityHistoriesByCredentialId(credentialId).filter {
                     it.activityHistory.type == ActivityHistory.Type.CredentialShared || it.activityHistory.type == ActivityHistory.Type.CredentialRequested
                 }
                 _activityHistories.postValue(activityHistories)
@@ -45,7 +44,8 @@ class CredentialHistoryViewModel @Inject constructor(private val dataManager: Da
     }
 
     private fun computeContactCreatedDate(): String? {
-        val customDateFormat = customDateFormat.value ?: dataManager.getDefaultDateFormat()
-        return if (_credential.value == null) null else customDateFormat.dateFormat.format(_credential.value!!.dateReceived)
+        return _credential.value?.let {
+            customDateFormat.value?.dateFormat?.format(it.dateReceived)
+        }
     }
 }

@@ -1,14 +1,13 @@
 package io.iohk.atala.prism.app.ui.main.credentials
 
 import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.DataManager
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
-import kotlinx.coroutines.Dispatchers
+import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class DeleteCredentialDialogViewModel @Inject constructor(private val dataManager: DataManager) : ViewModel() {
+class DeleteCredentialDialogViewModel @Inject constructor(private val repository: CredentialsRepository) : ViewModel() {
 
     private val _credential = MutableLiveData<Credential>()
 
@@ -23,8 +22,8 @@ class DeleteCredentialDialogViewModel @Inject constructor(private val dataManage
     val credentialDeleted: LiveData<EventWrapper<Boolean>> = _credentialDeleted
 
     fun fetchCredentialInfo(credentialId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataManager.getCredentialByCredentialId(credentialId)?.let {
+        viewModelScope.launch {
+            repository.getCredentialByCredentialId(credentialId)?.let {
                 _credential.postValue(it)
             }
         }
@@ -32,8 +31,8 @@ class DeleteCredentialDialogViewModel @Inject constructor(private val dataManage
 
     fun deleteCredential() {
         _credential.value?.let {
-            viewModelScope.launch(Dispatchers.IO) {
-                dataManager.deleteCredential(it)
+            viewModelScope.launch {
+                repository.deleteCredential(it)
                 _credentialDeleted.postValue(EventWrapper(true))
             }
         }
