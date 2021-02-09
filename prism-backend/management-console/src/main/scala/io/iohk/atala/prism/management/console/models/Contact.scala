@@ -15,6 +15,16 @@ final case class CreateContact(
     name: String
 )
 
+object CreateContact {
+  final case class NoOwner(
+      externalId: Contact.ExternalId,
+      data: Json,
+      name: String
+  )
+
+  final case class Batch(groups: Set[InstitutionGroup.Id], contacts: List[NoOwner])
+}
+
 final case class Contact(
     contactId: Contact.Id,
     externalId: Contact.ExternalId,

@@ -4,13 +4,8 @@ import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateContact,
-  Helpers,
-  InstitutionGroup,
-  PaginatedQueryConstraints
-}
+import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDate, Period}
@@ -161,6 +156,198 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       subject.data must be(json)
       subject.contactId must be(initialResponse.contactId)
       subject.externalId must be(externalId)
+    }
+  }
+
+  "createBatch" should {
+    "work when there are no contacts nor groups" in {
+      val institutionId = createParticipant("Institution-1")
+      val request = CreateContact.Batch(Set.empty, List.empty)
+
+      val result = repository.createBatch(institutionId, request).value.futureValue
+      result.isRight must be(true)
+    }
+
+    "create several contacts with no groups" in {
+      val institutionId = createParticipant("Institution-1")
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateContact.Batch(
+        Set.empty,
+        List(
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 1"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
+        )
+      )
+      val result = repository.createBatch(institutionId, request).value.futureValue
+      result.isRight must be(true)
+
+      // check that the contacts were created
+      val stored = repository
+        .getBy(institutionId, Helpers.legacyQuery())
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      stored.map(_.details.name).toSet must be(Set("Dusty 1", "Dusty 2", "Dusty 3"))
+    }
+
+    "create several contacts and assign them to several groups" in {
+      val institutionId = createParticipant("Institution-1")
+      val groups = List(
+        createInstitutionGroup(institutionId, InstitutionGroup.Name("Group 1")),
+        createInstitutionGroup(institutionId, InstitutionGroup.Name("Group 2"))
+      )
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateContact.Batch(
+        groups.map(_.id).toSet,
+        List(
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 1"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
+        )
+      )
+      val result = repository.createBatch(institutionId, request).value.futureValue
+      result.isRight must be(true)
+
+      // we check that the contact was added to the intended group
+      groups.foreach { group =>
+        listGroupContacts(group.id).map(_.name).toSet must be(Set("Dusty 1", "Dusty 2", "Dusty 3"))
+      }
+    }
+
+    "fail to create contacts when there are duplicates by externalId in the batch" in {
+      val institutionId = createParticipant("Institution-1")
+      val externalId = Contact.ExternalId.random()
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateContact.Batch(
+        Set.empty,
+        List(
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 1"),
+          CreateContact.NoOwner(externalId, json, "Dusty 2"),
+          CreateContact.NoOwner(externalId, json, "Dusty 3")
+        )
+      )
+
+      intercept[RuntimeException] {
+        repository.createBatch(institutionId, request).value.futureValue
+      }
+
+      // check that no contacts were created
+      val stored = repository
+        .getBy(institutionId, Helpers.legacyQuery())
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      stored must be(empty)
+    }
+
+    "fail to create contacts when there are duplicates by externalId in the database" in {
+      val institutionId = createParticipant("Institution-1")
+      val externalId = Contact.ExternalId.random()
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+
+      val result1 = repository
+        .createBatch(
+          institutionId,
+          CreateContact.Batch(
+            Set.empty,
+            List(
+              CreateContact.NoOwner(externalId, json, "Dusty 1")
+            )
+          )
+        )
+        .value
+        .futureValue
+      result1.isRight must be(true)
+
+      val request = CreateContact.Batch(
+        Set.empty,
+        List(
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
+          CreateContact.NoOwner(externalId, json, "Dusty 3")
+        )
+      )
+
+      intercept[RuntimeException] {
+        repository.createBatch(institutionId, request).value.futureValue
+      }
+
+      // check that no contacts were created
+      val stored = repository
+        .getBy(institutionId, Helpers.legacyQuery())
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      stored.map(_.details.name) must be(List("Dusty 1"))
+    }
+
+    "fail to create contacts when there is a group that doesn't belong to the institution" in {
+      val institutionId = createParticipant("Institution-1")
+      val institution2Id = createParticipant("Institution-2")
+      val groups = List(
+        createInstitutionGroup(institutionId, InstitutionGroup.Name("Group 1")),
+        createInstitutionGroup(institution2Id, InstitutionGroup.Name("Group 2"))
+      )
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateContact.Batch(
+        groups.map(_.id).toSet,
+        List(
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 1"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
+        )
+      )
+      val result = repository.createBatch(institutionId, request).value.futureValue
+      result.isLeft must be(true)
+    }
+
+    "fail to create contacts when there is a group that doesn't exist" in {
+      val institutionId = createParticipant("Institution-1")
+      val groups = List(
+        createInstitutionGroup(institutionId, InstitutionGroup.Name("Group 1")),
+        createInstitutionGroup(institutionId, InstitutionGroup.Name("Group 2"))
+      )
+      val json = Json.obj(
+        "universityId" -> Json.fromString("uid"),
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val request = CreateContact.Batch(
+        groups.map(_.id).toSet[InstitutionGroup.Id] + InstitutionGroup.Id.random(),
+        List(
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 1"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
+          CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
+        )
+      )
+      val result = repository.createBatch(institutionId, request).value.futureValue
+      result.isLeft must be(true)
     }
   }
 
@@ -603,5 +790,15 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .map(r => (r.contactId, (r.counts.numberOfCredentialsCreated, r.counts.numberOfCredentialsReceived)))
         .toMap must be(expected)
     }
+  }
+
+  private def listGroupContacts(groupId: InstitutionGroup.Id) = {
+
+    import doobie.implicits._
+
+    InstitutionGroupsDAO
+      .listContacts(groupId)
+      .transact(database)
+      .unsafeRunSync()
   }
 }

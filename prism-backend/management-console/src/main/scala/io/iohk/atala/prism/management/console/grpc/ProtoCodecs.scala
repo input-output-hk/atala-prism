@@ -4,12 +4,13 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics}
+import io.iohk.atala.prism.management.console.validations.JsonValidator
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
 import java.time.LocalDate
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object ProtoCodecs {
 
@@ -61,6 +62,48 @@ object ProtoCodecs {
       .into[console_api.GetStatisticsResponse]
       .withFieldConst(_.numberOfCredentialsInDraft, statistics.numberOfCredentialsInDraft)
       .transform
+  }
+
+  def toCreateContactBatch(request: console_api.CreateContactsRequest): Try[CreateContact.Batch] = {
+    for {
+      validatedGroups <- toGroupIdSet(request.groups)
+      validatedContacts <- toCreateContacts(request.contacts)
+      _ = if (validatedContacts.isEmpty) throw new RuntimeException("There are no contacts to create")
+    } yield CreateContact.Batch(validatedGroups, validatedContacts)
+  }
+
+  def toCreateContacts(request: Seq[console_api.CreateContactsRequest.Contact]): Try[List[CreateContact.NoOwner]] = {
+    val validatedContacts = request.map(toCreateContact).flatMap(_.toOption)
+    val externalIdCount = validatedContacts.map(_.externalId).distinct.size
+    if (externalIdCount != request.size) {
+      Failure(
+        new RuntimeException(
+          "The contact list is invalid, make sure that all externalId are unique, and the contact format is correct"
+        )
+      )
+    } else {
+      Success(validatedContacts.toList)
+    }
+  }
+
+  def toCreateContact(request: console_api.CreateContactsRequest.Contact): Try[CreateContact.NoOwner] = {
+    for {
+      json <- JsonValidator.jsonData(request.jsonData)
+      externalId <- Contact.ExternalId.validated(request.externalId)
+    } yield CreateContact.NoOwner(externalId, json, request.name)
+  }
+
+  def toGroupIdSet(request: Seq[String]): Try[Set[InstitutionGroup.Id]] = {
+    val validatedGroups = request.map(InstitutionGroup.Id.from).flatMap(_.toOption).toSet
+    if (validatedGroups.size != request.size) {
+      Failure(
+        new RuntimeException(
+          "The given group list is invalid, make sure that all ids have the correct format, and there aren't repeated groups"
+        )
+      )
+    } else {
+      Success(validatedGroups)
+    }
   }
 
   def toContactsPaginatedQuery(request: console_api.GetContactsRequest): Try[Contact.PaginatedQuery] = {

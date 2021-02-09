@@ -23,6 +23,9 @@ service ContactsService {
   // Creates a contact for the authenticated institution
   rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
 
+  // Create the contacts atomically for the authenticated institution
+  rpc CreateContacts (CreateContactsRequest) returns (CreateContactsResponse) {}
+
   // Retrieves the available contacts for the authenticated institution
   rpc GetContacts (GetContactsRequest) returns (GetContactsResponse) {}
 
@@ -158,6 +161,36 @@ message CreateContactRequest {
 message CreateContactResponse {
   Contact contact = 1; // the created contact
 }
+
+// Request to create contacts on the authenticated institution
+// The request is rejected when:
+// - No contacts provided
+// - Any contact is invalid
+// - A contact is repeated (by externalId)
+// - There are repeated groups
+// - A group doesn't exist in the authenticated institution
+message CreateContactsRequest {
+  // Optional, when present, the contacts get assigned to these groups (identified by id).
+  repeated string groups = 1;
+
+  // The contacts to create
+  repeated Contact contacts = 2;
+
+  message Contact {
+    // The id provided by the institution at contact creation time.
+    // An institution cannot have two contacts with the same external id.
+    // The id could be repeated in different institutions.
+    string externalId = 3;
+
+    // The contact's name
+    string name = 4;
+
+    // Arbitrary data for the contact, should be a valid json, when missing, "{}" will be used
+    string jsonData = 5;
+  }
+}
+// Response after creating contacts
+message CreateContactsResponse {}
 
 // Request to retrieve the contacts from the authenticated institution.
 //

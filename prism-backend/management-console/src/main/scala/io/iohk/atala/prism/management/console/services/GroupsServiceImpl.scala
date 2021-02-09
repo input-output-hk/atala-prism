@@ -81,8 +81,8 @@ class GroupsServiceImpl(
         .updateGroup(
           institutionId,
           InstitutionGroup.Id.unsafeFrom(request.groupId),
-          request.contactIdsToAdd.map(id => Contact.Id.unsafeFrom(id)).to(List),
-          request.contactIdsToRemove.map(id => Contact.Id.unsafeFrom(id)).to(List)
+          request.contactIdsToAdd.map(id => Contact.Id.unsafeFrom(id)).to(Set),
+          request.contactIdsToRemove.map(id => Contact.Id.unsafeFrom(id)).to(Set)
         )
         .value
         .map {

@@ -3,9 +3,9 @@ package io.iohk.atala.prism.management.console.models
 object Helpers {
   // helper to keep the behavior before adding sorting/filters
   def legacyQuery(
-      scrollId: Option[Contact.Id],
-      groupName: Option[InstitutionGroup.Name],
-      limit: Int
+      scrollId: Option[Contact.Id] = None,
+      groupName: Option[InstitutionGroup.Name] = None,
+      limit: Int = 10
   ): Contact.PaginatedQuery = {
     import PaginatedQueryConstraints._
 

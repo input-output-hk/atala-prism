@@ -1,15 +1,16 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
-import java.time.Instant
-
 import cats.data.NonEmptyList
 import cats.implicits.catsStdInstancesForList
-import doobie.Update
 import doobie.Fragments.{in, whereAnd}
+import doobie._
+import doobie.free.connection
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+
+import java.time.Instant
 
 object InstitutionGroupsDAO {
 
@@ -82,13 +83,18 @@ object InstitutionGroupsDAO {
          |""".stripMargin.update.run.map(_ => ())
   }
 
-  def addContacts(groupId: InstitutionGroup.Id, contactIds: List[Contact.Id]): ConnectionIO[Unit] = {
+  def addContacts(groupIds: Set[InstitutionGroup.Id], contactIds: Set[Contact.Id]): ConnectionIO[Unit] = {
+    val data = for {
+      groupId <- groupIds
+      contactId <- contactIds
+    } yield (groupId, contactId)
+
     val sql = """INSERT INTO contacts_per_group (group_id, contact_id, added_at)
                 |VALUES (?, ?, now())
                 |ON CONFLICT (group_id, contact_id) DO NOTHING
                 |""".stripMargin
     Update[(InstitutionGroup.Id, Contact.Id)](sql)
-      .updateMany(contactIds.map(contactId => (groupId, contactId)))
+      .updateMany(data.toList)
       .map(_ => ())
   }
 
@@ -100,6 +106,23 @@ object InstitutionGroupsDAO {
         fragment.update.run.map(_ => ())
       case None =>
         unit
+    }
+  }
+
+  def findGroups(
+      institutionId: ParticipantId,
+      groupIds: List[InstitutionGroup.Id]
+  ): doobie.ConnectionIO[List[InstitutionGroup]] = {
+    NonEmptyList.fromList(groupIds) match {
+      case Some(groupIdsNonEmpty) =>
+        val fragment = fr"""
+                        |SELECT group_id, name, institution_id, created_at
+                        |FROM institution_groups
+       """.stripMargin ++
+          whereAnd(fr"institution_id = $institutionId", in(fr"group_id", groupIdsNonEmpty))
+        fragment.query[InstitutionGroup].to[List]
+
+      case None => connection.pure(List.empty)
     }
   }
 }

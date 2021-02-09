@@ -2,13 +2,12 @@ package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
 import cats.syntax.either._
-import doobie.ConnectionIO
 import doobie.free.connection
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors._
-import io.iohk.atala.prism.management.console.models.{Contact, ParticipantId, InstitutionGroup}
-import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, InstitutionGroupsDAO}
+import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -55,20 +54,9 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
   def updateGroup(
       institutionId: ParticipantId,
       groupId: InstitutionGroup.Id,
-      contactIdsToAdd: List[Contact.Id],
-      contactIdsToRemove: List[Contact.Id]
+      contactIdsToAdd: Set[Contact.Id],
+      contactIdsToRemove: Set[Contact.Id]
   ): FutureEither[ManagementConsoleError, Unit] = {
-    def checkContacts(contactIds: List[Contact.Id]): ConnectionIO[Option[ManagementConsoleError]] = {
-      ContactsDAO.findContacts(institutionId, contactIds).map { validContactsToAdd =>
-        val difference = contactIds.toSet.diff(validContactsToAdd.map(_.contactId).toSet)
-        if (difference.nonEmpty) {
-          Some(ContactsInstitutionsDoNotMatch(difference.toList, institutionId))
-        } else {
-          None
-        }
-      }
-    }
-
     val connectionIo = for {
       groupOpt <- InstitutionGroupsDAO.find(groupId)
       result <- groupOpt match {
@@ -78,15 +66,15 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
             connection.pure(groupInstitutionDoesNotMatch[Unit](group.institutionId, institutionId))
           } else {
             for {
-              contactsCheckToAdd <- checkContacts(contactIdsToAdd)
-              contactsCheckToRemove <- checkContacts(contactIdsToRemove)
+              contactsCheckToAdd <- institutionHelper.checkContacts(institutionId, contactIdsToAdd)
+              contactsCheckToRemove <- institutionHelper.checkContacts(institutionId, contactIdsToRemove)
               contactsCheck = contactsCheckToAdd.orElse(contactsCheckToRemove)
               result <- contactsCheck match {
                 case Some(consoleError) => connection.pure(consoleError.asLeft[Unit])
                 case None =>
                   for {
-                    _ <- InstitutionGroupsDAO.addContacts(groupId, contactIdsToAdd)
-                    _ <- InstitutionGroupsDAO.removeContacts(groupId, contactIdsToRemove)
+                    _ <- InstitutionGroupsDAO.addContacts(Set(groupId), contactIdsToAdd)
+                    _ <- InstitutionGroupsDAO.removeContacts(groupId, contactIdsToRemove.toList)
                   } yield ().asRight[ManagementConsoleError]
               }
             } yield result

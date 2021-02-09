@@ -2,7 +2,11 @@ package io.iohk.atala.prism.management.console.services
 
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.{GetContactsInvalidRequest, ManagementConsoleErrorSupport}
+import io.iohk.atala.prism.management.console.errors.{
+  CreateContactsInvalidRequest,
+  GetContactsInvalidRequest,
+  ManagementConsoleErrorSupport
+}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
@@ -99,9 +103,8 @@ class ContactsServiceImpl(
     authenticator.authenticated("getSubjects", request) { participantId =>
       ProtoCodecs.toContactsPaginatedQuery(request) match {
         case Failure(exception) =>
-          implicit val loggingContext: LoggingContext = LoggingContext("request" -> request)
           val response = GetContactsInvalidRequest(exception.getMessage)
-          Future.successful(Left(response)).toFutureEither.wrapExceptions.flatten
+          respondWith(request, response)
 
         case Success(query) => f(participantId, query)
       }
@@ -134,7 +137,35 @@ class ContactsServiceImpl(
     }
   }
 
+  // TODO: Is this actually required?
   override def generateConnectionTokenForContact(
       request: GenerateConnectionTokenForContactRequest
   ): Future[GenerateConnectionTokenForContactResponse] = ???
+
+  override def createContacts(request: CreateContactsRequest): Future[CreateContactsResponse] = {
+    def f(participantId: ParticipantId, query: CreateContact.Batch): Future[CreateContactsResponse] = {
+      implicit val loggingContext: LoggingContext = LoggingContext(
+        "participantId" -> participantId
+      )
+
+      contactsIntegrationService
+        .createContacts(participantId, query)
+        .toFutureEither
+        .map { _ =>
+          console_api.CreateContactsResponse()
+        }
+        .wrapExceptions
+        .flatten
+    }
+
+    authenticator.authenticated("createContacts", request) { participantId =>
+      ProtoCodecs.toCreateContactBatch(request) match {
+        case Failure(exception) =>
+          val response = CreateContactsInvalidRequest(exception.getMessage)
+          respondWith(request, response)
+
+        case Success(query) => f(participantId, query)
+      }
+    }
+  }
 }

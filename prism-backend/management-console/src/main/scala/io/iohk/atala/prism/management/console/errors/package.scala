@@ -34,6 +34,14 @@ package object errors {
       )
   }
 
+  case class GroupsInstitutionDoNotMatch(groupIds: List[InstitutionGroup.Id], participantInstitutionId: ParticipantId)
+      extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Groups [${groupIds.mkString(", ")}] do not belong to institution $participantInstitutionId"
+      )
+  }
+
   case class UnknownValueError(tpe: String, value: String) extends ManagementConsoleError {
     override def toStatus: Status = {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
@@ -82,6 +90,10 @@ package object errors {
   }
 
   case class GetContactsInvalidRequest(reason: String) extends ManagementConsoleError {
+    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
+  }
+
+  case class CreateContactsInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 

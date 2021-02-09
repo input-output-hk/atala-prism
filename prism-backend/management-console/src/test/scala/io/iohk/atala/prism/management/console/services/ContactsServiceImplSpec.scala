@@ -8,7 +8,7 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
-import io.iohk.atala.prism.management.console.models.{Contact, Helpers, InstitutionGroup}
+import io.iohk.atala.prism.management.console.models.{Contact, Helpers, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.protos.connector_api.ConnectionsStatusResponse
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
 import org.mockito.ArgumentMatchersSugar.*
@@ -17,6 +17,7 @@ import org.scalatest.OptionValues._
 
 import java.time.LocalDate
 import scala.concurrent.Future
+import scala.util.Try
 
 class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
   private val invitationMissing = connector_models.ContactConnection(
@@ -284,6 +285,220 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         storedContact.contactId.toString must be(initialResponse.contactId)
         storedContact.externalId must be(externalId)
       }
+    }
+  }
+
+  "createContacts" should {
+
+    def runTest(requestBuilder: ParticipantId => console_api.CreateContactsRequest) = {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution", did)
+
+      val request = requestBuilder(institutionId)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      lazy val response = usingApiAsContacts(rpcRequest) { serviceStub =>
+        serviceStub.createContacts(request)
+      }
+
+      institutionId -> Try(response)
+    }
+
+    def testAvailableContacts(institutionId: ParticipantId, expected: Int) = {
+      val result = contactsRepository
+        .getBy(institutionId, Helpers.legacyQuery())
+        .value
+        .futureValue
+        .toOption
+        .value
+      result.size must be(expected)
+    }
+
+    val json = Json.obj(
+      "universityAssignedId" -> Json.fromString("noneyet"),
+      "email" -> Json.fromString("alice@bkm.me"),
+      "admissionDate" -> Json.fromString(LocalDate.now().toString)
+    )
+
+    "work when no groups are provided" in {
+      val request = console_api
+        .CreateContactsRequest()
+        .withContacts(
+          List(
+            console_api.CreateContactsRequest
+              .Contact()
+              .withName("Alice")
+              .withExternalId(Contact.ExternalId.random().value)
+              .withJsonData(json.toString()),
+            console_api.CreateContactsRequest
+              .Contact()
+              .withName("Bob")
+              .withExternalId(Contact.ExternalId.random().value)
+              .withJsonData(json.toString())
+          )
+        )
+        .withGroups(List.empty)
+
+      val (institutionId, responseT) = runTest(_ => request)
+      responseT.isSuccess must be(true)
+      testAvailableContacts(institutionId, 2)
+    }
+
+    "work when groups are provided assigning the contacts to the given groups" in {
+      val groups = List("group 1", "group 2").map(InstitutionGroup.Name.apply)
+      def request(institutionId: ParticipantId) = {
+        val group1 = createInstitutionGroup(institutionId, groups(0))
+        val group2 = createInstitutionGroup(institutionId, groups(1))
+        console_api
+          .CreateContactsRequest()
+          .withContacts(
+            List(
+              console_api.CreateContactsRequest
+                .Contact()
+                .withName("Alice")
+                .withExternalId(Contact.ExternalId.random().value)
+                .withJsonData(json.toString()),
+              console_api.CreateContactsRequest
+                .Contact()
+                .withName("Bob")
+                .withExternalId(Contact.ExternalId.random().value)
+                .withJsonData(json.toString())
+            )
+          )
+          .withGroups(List(group1, group2).map(_.id.uuid.toString))
+      }
+
+      val (institutionId, responseT) = runTest(request)
+      responseT.isSuccess must be(true)
+
+      // the new contacts need to be assigned to the groups
+      groups.foreach { group =>
+        institutionGroupsRepository
+          .listContacts(institutionId, group)
+          .value
+          .futureValue
+          .toOption
+          .value
+          .size must be(2)
+      }
+    }
+
+    "fail when there are unknown groups" in {
+      def request(institutionId: ParticipantId) = {
+        val group1 = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
+        val group2 = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 2"))
+        console_api
+          .CreateContactsRequest()
+          .withContacts(
+            List(
+              console_api.CreateContactsRequest
+                .Contact()
+                .withName("Alice")
+                .withExternalId(Contact.ExternalId.random().value)
+                .withJsonData(json.toString()),
+              console_api.CreateContactsRequest
+                .Contact()
+                .withName("Bob")
+                .withExternalId(Contact.ExternalId.random().value)
+                .withJsonData(json.toString())
+            )
+          )
+          .withGroups("wrong" :: List(group1, group2).map(_.id.uuid.toString))
+      }
+
+      val (institutionId, responseT) = runTest(request)
+      responseT.isFailure must be(true)
+      testAvailableContacts(institutionId, 0)
+    }
+
+    "fail when there are repeated groups" in {
+      def request(institutionId: ParticipantId) = {
+        val group1 = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
+        val group2 = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 2"))
+        console_api
+          .CreateContactsRequest()
+          .withContacts(
+            List(
+              console_api.CreateContactsRequest
+                .Contact()
+                .withName("Alice")
+                .withExternalId(Contact.ExternalId.random().value)
+                .withJsonData(json.toString()),
+              console_api.CreateContactsRequest
+                .Contact()
+                .withName("Bob")
+                .withExternalId(Contact.ExternalId.random().value)
+                .withJsonData(json.toString())
+            )
+          )
+          .withGroups(List(group1, group1, group2).map(_.id.uuid.toString))
+      }
+
+      val (institutionId, responseT) = runTest(request)
+      responseT.isFailure must be(true)
+      testAvailableContacts(institutionId, 0)
+    }
+
+    "fail when there are repeated contacts by externalId" in {
+      val externalId = Contact.ExternalId.random().value
+      val request = console_api
+        .CreateContactsRequest()
+        .withContacts(
+          List(
+            console_api.CreateContactsRequest
+              .Contact()
+              .withName("Alice")
+              .withExternalId(externalId)
+              .withJsonData(json.toString()),
+            console_api.CreateContactsRequest
+              .Contact()
+              .withName("Bob")
+              .withExternalId(externalId)
+              .withJsonData(json.toString())
+          )
+        )
+        .withGroups(List.empty)
+
+      val (institutionId, responseT) = runTest(_ => request)
+      responseT.isFailure must be(true)
+      testAvailableContacts(institutionId, 0)
+    }
+
+    "fail when there are invalid contacts" in {
+      val request = console_api
+        .CreateContactsRequest()
+        .withContacts(
+          List(
+            console_api.CreateContactsRequest
+              .Contact()
+              .withName("Alice")
+              .withExternalId(Contact.ExternalId.random().value)
+              .withJsonData("{{{{}"),
+            console_api.CreateContactsRequest
+              .Contact()
+              .withName("Bob")
+              .withExternalId(Contact.ExternalId.random().value)
+              .withJsonData(json.toString())
+          )
+        )
+        .withGroups(List.empty)
+
+      val (institutionId, responseT) = runTest(_ => request)
+      responseT.isFailure must be(true)
+      testAvailableContacts(institutionId, 0)
+    }
+
+    "fail when there are no contacts" in {
+      val request = console_api
+        .CreateContactsRequest()
+        .withContacts(List.empty)
+        .withGroups(List.empty)
+
+      val (institutionId, responseT) = runTest(_ => request)
+      responseT.isFailure must be(true)
+      testAvailableContacts(institutionId, 0)
     }
   }
 

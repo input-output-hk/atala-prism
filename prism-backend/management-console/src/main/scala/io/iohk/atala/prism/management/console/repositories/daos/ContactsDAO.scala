@@ -1,11 +1,13 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import cats.data.NonEmptyList
+import cats.implicits._
+import doobie._
 import doobie.free.connection
-import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments._
+import io.circe.Json
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.daos.queries.FindContactsQueryBuilder
 
@@ -22,6 +24,33 @@ object ContactsDAO {
          |  ($contactId, ${data.data}, $createdAt, ${data.createdBy}, ${data.externalId}, ${data.name})
          |RETURNING contact_id, external_id, contact_data, created_at, name
          |""".stripMargin.query[Contact].unique
+  }
+
+  def createContacts(
+      institutionId: ParticipantId,
+      contacts: List[CreateContact.NoOwner],
+      createdAt: Instant
+  ): ConnectionIO[List[Contact.Id]] = {
+    type CreateContactItem = (Contact.Id, Json, Instant, ParticipantId, Contact.ExternalId, String)
+    val contactIds = List.tabulate(contacts.size)(_ => Contact.Id.random())
+    val data = contacts
+      .zip(contactIds)
+      .map {
+        case (item, id) =>
+          (id, item.data, createdAt, institutionId, item.externalId, item.name)
+      }
+
+    val statement = """
+                    |INSERT INTO contacts (contact_id, contact_data, created_at, created_by, external_id, name)
+                    |VALUES (?, ?, ?, ?, ?, ?)
+                    |""".stripMargin
+    Update[CreateContactItem](statement)
+      .updateMany(data)
+      .flatTap { affectedRows =>
+        FC.raiseError(new RuntimeException(s"Unknown error while inserting ${contacts.size} contacts"))
+          .whenA(contacts.size != affectedRows)
+      }
+      .map(_ => contactIds)
   }
 
   def findContact(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Option[Contact]] = {

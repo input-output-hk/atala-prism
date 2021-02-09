@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.effect.IO
+import cats.effect._
+import cats.implicits._
+import doobie.free._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
@@ -34,6 +36,31 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
+      .toFutureEither
+  }
+
+  def createBatch(
+      institutionId: ParticipantId,
+      request: CreateContact.Batch
+  ): FutureEither[ManagementConsoleError, Unit] = {
+    def unsafe = {
+      for {
+        contactIds <- ContactsDAO.createContacts(institutionId, request.contacts, Instant.now())
+        _ <- InstitutionGroupsDAO.addContacts(request.groups, contactIds.toSet)
+      } yield ().asRight[ManagementConsoleError]
+    }
+
+    val connectionIO = for {
+      errorMaybe <- institutionHelper.checkGroups(institutionId, request.groups)
+      result <- errorMaybe match {
+        case Some(consoleError) => connection.pure(consoleError.asLeft[Unit])
+        case None => unsafe
+      }
+    } yield result
+
+    connectionIO
+      .transact(xa)
+      .unsafeToFuture()
       .toFutureEither
   }
 
