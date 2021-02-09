@@ -141,6 +141,18 @@ object CredentialTypeDao {
          |""".stripMargin.query[CredentialType].option
   }
 
+  def findCredentialType(
+      institution: ParticipantId,
+      credentialTypeId: CredentialTypeId
+  ): doobie.ConnectionIO[Option[CredentialType]] = {
+    sql"""
+         |SELECT credential_type_id, name, institution_id, state, template, created_at
+         |FROM credential_types
+         |WHERE institution_id = $institution AND
+         |      credential_type_id = ${credentialTypeId}
+         |""".stripMargin.query[CredentialType].option
+  }
+
   def findCredentialTypes(institution: ParticipantId): doobie.ConnectionIO[List[CredentialType]] = {
     sql"""
          |SELECT credential_type_id, name, institution_id, state, template, created_at

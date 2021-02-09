@@ -53,6 +53,14 @@ package object errors {
       )
   }
 
+  case class CredentialTypeDoesNotBelongToInstitution(credentialTypeId: CredentialTypeId, institutionId: ParticipantId)
+      extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credential type with id: $credentialTypeId does not belong to institution: $institutionId"
+      )
+  }
+
   case class CredentialTypeUpdateIncorrectState(
       credentialTypeId: CredentialTypeId,
       name: String,

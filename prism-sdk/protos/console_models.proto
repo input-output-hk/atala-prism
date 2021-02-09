@@ -35,6 +35,65 @@ message CredentialIssuanceContact {
   repeated string groupIds = 3; // IDs of the groups the contact was taken from, empty if added directly
 }
 
+enum CredentialIssuanceStatus {
+  CREDENTIAL_ISSUANCE_STATUS_UNKNOWN = 0; // Invalid value, should not happen
+  DRAFT = 1; // The credential issuance is still being defined and is not final
+  READY = 2; // The credential issuance has been defined but not all credentials have been issued
+  COMPLETED = 3; // All the credentials from the credential issuance have been issued
+}
+
+// Indicates the state of the credential type
+enum CredentialTypeState {
+  CREDENTIAL_TYPE_UNKNOWN = 0; // Invalid value, should not happen
+  CREDENTIAL_TYPE_DRAFT = 1; // The credential type is still being defined and is not final, it cannot be used to create a new credential
+  CREDENTIAL_TYPE_READY = 2; // The credential type is ready to use, it can be used to create a new credential
+  CREDENTIAL_TYPE_ARCHIVED = 3; // The credential type is archived, it cannot be used to create a new credential
+}
+
+// Part of the credential type
+message CredentialTypeField {
+  string id = 1; // UUID
+  string credentialTypeId = 2; // Parent credenital type
+  string name = 3; // The credential type field name
+  string description = 4; // The credential type field description
+}
+
+// Create new credential type field
+message CreateCredentialTypeField {
+  string name = 1; // The credential type field name
+  string description = 2; // The credential type field description
+}
+
+// Credential type entity
+message CredentialType {
+  string id = 1; // UUID
+  string name = 2; // The credential type name
+  CredentialTypeState state = 3; // The credential type state, can be: draft, ready and archived
+  string template = 4; // The credential type template
+  int64 createdAt = 5; // the timestamp (in milliseconds) when the credential type was created
+}
+
+// Credential type entity needed to create a new record, all fields are required
+message CreateCredentialType {
+  string name = 1; // The credential type name, required field
+  string template = 2; // The credential type template, HTML with optional mustache syntax variables
+  repeated CreateCredentialTypeField fields = 3; // List of the credential type fields
+}
+
+// Credential type entity needed for the update
+message UpdateCredentialType {
+  string id = 1; // UUID, required field
+  string name = 2; // The credential type name, optional field
+  string template = 3; // The credential type template, optional field
+  repeated CreateCredentialTypeField fields = 4; // List of the credential type fields, optional field, if present then the fields will be overwritten
+}
+
+// Credential type with required fields
+message CredentialTypeWithRequiredFields {
+  CredentialType credentialType = 1; // Credential type
+  repeated CredentialTypeField requiredFields = 2; // List of the credential type fields
+}
+
 // Represents a group, where contacts can be assigned to.
 //
 // A group is generally used to collect the contacts related to the same issuance event,

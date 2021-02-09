@@ -75,6 +75,27 @@ service CredentialsService {
   rpc StorePublishedCredential (StorePublishedCredentialRequest) returns (StorePublishedCredentialResponse) {}
 }
 
+// The Credential Types API
+service CredentialTypesService {
+  // Retrieves the available credential types on the authenticated institution
+  rpc GetCredentialTypes (GetCredentialTypesRequest) returns (GetCredentialTypesResponse) {}
+
+  // Retrieves the credential type on the authenticated institution
+  rpc GetCredentialType (GetCredentialTypeRequest) returns (GetCredentialTypeResponse) {}
+
+  // Creates a credential type on the authenticated institution
+  rpc CreateCredentialType (CreateCredentialTypeRequest) returns (CreateCredentialTypeResponse) {}
+
+  // Updates an existing credential type
+  rpc UpdateCredentialType (UpdateCredentialTypeRequest) returns (UpdateCredentialTypeResponse) {}
+
+  // Updates an existing credential type - mark as ready
+  rpc MarkAsReadyCredentialType (MarkAsReadyCredentialTypeRequest) returns (MarkAsReadyCredentialTypeResponse) {}
+
+  // Updates an existing credential type - mark as archived
+  rpc MarkAsArchivedCredentialType (MarkAsArchivedCredentialTypeRequest) returns (MarkAsArchivedCredentialTypeResponse) {}
+}
+
 // The Groups API
 service GroupsService {
   // Creates a group on the authenticated institution
@@ -241,6 +262,54 @@ message GetCredentialIssuanceResponse {
   int64 createdAt = 3; // Timestamp (millis since epoch) when the credential issuance was created
   repeated CredentialIssuanceContact credentialIssuanceContacts = 4; // The contacts and their credential data
 }
+
+// Credential Types
+
+// Request to get a list of all credential types on the authenticated institution 
+message GetCredentialTypesRequest {}
+// Response with the retrieved credential types
+message GetCredentialTypesResponse {
+  repeated CredentialType credentialTypes = 1; // List of the credential types
+}
+
+// Request to get a credential type on the authenticated institution 
+message GetCredentialTypeRequest {
+  string credentialTypeId = 1; // Id of the credential type
+}
+// Response with the retrieved credential type
+message GetCredentialTypeResponse {
+  CredentialTypeWithRequiredFields credentialType = 1; // The retrieved credential type 
+}
+
+// Request to create a credential type on the authenticated institution 
+message CreateCredentialTypeRequest {
+  CreateCredentialType credentialType = 2; // New credential type 
+}
+// Response with the created credential type
+message CreateCredentialTypeResponse {
+  CredentialTypeWithRequiredFields credentialType = 1; // The created credential type
+}
+
+// Request to update a credential type on the authenticated institution 
+message UpdateCredentialTypeRequest {
+  UpdateCredentialType credentialType = 2; // Credential type to update
+}
+// Empty response after credential type update
+message UpdateCredentialTypeResponse {}
+
+// Request to change state to ready in credential type on the authenticated institution 
+message MarkAsReadyCredentialTypeRequest {
+  string credentialTypeId = 1; // Credential type to update
+}
+// Empty response after state update
+message MarkAsReadyCredentialTypeResponse {}
+
+// Request to change state to archived in credential type on the authenticated institution 
+message MarkAsArchivedCredentialTypeRequest {
+  string credentialTypeId = 1; // Credential type to update
+}
+// Empty response after state update
+message MarkAsArchivedCredentialTypeResponse {}
 
 // Request to create a group on the authenticated institution
 message CreateGroupRequest {

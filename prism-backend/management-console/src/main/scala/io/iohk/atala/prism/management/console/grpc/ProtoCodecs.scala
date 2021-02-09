@@ -135,4 +135,39 @@ object ProtoCodecs {
 
     Try(unsafe)
   }
+
+  def toCredentialTypeStateProto(state: CredentialTypeState): console_models.CredentialTypeState = {
+    state match {
+      case CredentialTypeState.Archived => console_models.CredentialTypeState.CREDENTIAL_TYPE_ARCHIVED
+      case CredentialTypeState.Draft => console_models.CredentialTypeState.CREDENTIAL_TYPE_DRAFT
+      case CredentialTypeState.Ready => console_models.CredentialTypeState.CREDENTIAL_TYPE_READY
+    }
+  }
+
+  def toCredentialTypeFieldProto(credentialTypeField: CredentialTypeField): console_models.CredentialTypeField = {
+    credentialTypeField
+      .into[console_models.CredentialTypeField]
+      .withFieldConst(_.credentialTypeId, credentialTypeField.credentialTypeId.uuid.toString)
+      .withFieldConst(_.id, credentialTypeField.id.uuid.toString)
+      .transform
+  }
+
+  def toCredentialTypeProto(credentialType: CredentialType): console_models.CredentialType = {
+    credentialType
+      .into[console_models.CredentialType]
+      .withFieldConst(_.state, toCredentialTypeStateProto(credentialType.state))
+      .withFieldConst(_.createdAt, credentialType.createdAt.toEpochMilli)
+      .withFieldConst(_.id, credentialType.id.uuid.toString)
+      .transform
+  }
+
+  def toCredentialTypeWithRequiredFieldsProto(
+      withFields: CredentialTypeWithRequiredFields
+  ): console_models.CredentialTypeWithRequiredFields = {
+    withFields
+      .into[console_models.CredentialTypeWithRequiredFields]
+      .withFieldConst(_.credentialType, Some(toCredentialTypeProto(withFields.credentialType)))
+      .withFieldConst(_.requiredFields, withFields.requiredFields.map(toCredentialTypeFieldProto))
+      .transform
+  }
 }

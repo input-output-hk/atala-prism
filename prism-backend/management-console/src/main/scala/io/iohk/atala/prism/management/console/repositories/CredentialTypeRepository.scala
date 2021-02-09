@@ -6,6 +6,7 @@ import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors.{
+  CredentialTypeDoesNotBelongToInstitution,
   CredentialTypeDoesNotExist,
   CredentialTypeMarkArchivedAsReady,
   CredentialTypeUpdateIncorrectState,
@@ -40,9 +41,10 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
   }
 
   def update(
-      updateCredentialType: UpdateCredentialType
+      updateCredentialType: UpdateCredentialType,
+      institutionId: ParticipantId
   ): FutureEither[ManagementConsoleError, Unit] = {
-    withCredentialType(updateCredentialType.id) { credentialType =>
+    withCredentialType(updateCredentialType.id, institutionId) { credentialType =>
       if (credentialType.state != CredentialTypeState.Draft) {
         connection.pure[Either[ManagementConsoleError, Unit]](
           Left(CredentialTypeUpdateIncorrectState(credentialType.id, credentialType.name, credentialType.state))
@@ -56,9 +58,10 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
   }
 
   def markAsArchived(
-      credentialTypeId: CredentialTypeId
+      credentialTypeId: CredentialTypeId,
+      institutionId: ParticipantId
   ): FutureEither[ManagementConsoleError, Unit] = {
-    withCredentialType(credentialTypeId) { _ =>
+    withCredentialType(credentialTypeId, institutionId) { _ =>
       CredentialTypeDao
         .markAsArchived(credentialTypeId)
         .map(_ => Right(())): ConnectionIO[Either[ManagementConsoleError, Unit]]
@@ -66,9 +69,10 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
   }
 
   def markAsReady(
-      credentialTypeId: CredentialTypeId
+      credentialTypeId: CredentialTypeId,
+      institutionId: ParticipantId
   ): FutureEither[ManagementConsoleError, Unit] = {
-    withCredentialType(credentialTypeId) { credentialType =>
+    withCredentialType(credentialTypeId, institutionId) { credentialType =>
       if (credentialType.state == CredentialTypeState.Archived) {
         connection.pure[Either[ManagementConsoleError, Unit]](
           Left(CredentialTypeMarkArchivedAsReady(credentialTypeId))
@@ -81,7 +85,7 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
     }
   }
 
-  private def withCredentialType[A](credentialTypeId: CredentialTypeId)(
+  private def withCredentialType[A](credentialTypeId: CredentialTypeId, institutionId: ParticipantId)(
       callback: CredentialType => ConnectionIO[Either[ManagementConsoleError, A]]
   ): FutureEither[ManagementConsoleError, A] = {
     (for {
@@ -89,7 +93,13 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
       result <- credentialTypeOption match {
         case None =>
           connection.pure[Either[ManagementConsoleError, A]](Left(CredentialTypeDoesNotExist(credentialTypeId)))
-        case Some(credentialType) => callback(credentialType)
+        case Some(credentialType) =>
+          if (credentialType.institution != institutionId)
+            connection.pure[Either[ManagementConsoleError, A]](
+              Left(CredentialTypeDoesNotBelongToInstitution(credentialTypeId, institutionId))
+            )
+          else
+            callback(credentialType)
       }
     } yield result)
       .transact(xa)
@@ -106,6 +116,13 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
       name: String
   ): FutureEither[Nothing, Option[CredentialTypeWithRequiredFields]] = {
     withRequiredFields(CredentialTypeDao.findCredentialType(institution, name))
+  }
+
+  def find(
+      institution: ParticipantId,
+      credentialTypeId: CredentialTypeId
+  ): FutureEither[Nothing, Option[CredentialTypeWithRequiredFields]] = {
+    withRequiredFields(CredentialTypeDao.findCredentialType(institution, credentialTypeId))
   }
 
   def findByInstitution(institution: ParticipantId): FutureEither[Nothing, List[CredentialType]] = {

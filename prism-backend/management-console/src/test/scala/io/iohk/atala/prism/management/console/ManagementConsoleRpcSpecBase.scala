@@ -6,7 +6,8 @@ import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services.{
   ConsoleServiceImpl,
   ContactsServiceImpl,
-  CredentialIssuanceServiceImpl
+  CredentialIssuanceServiceImpl,
+  CredentialTypesServiceImpl
 }
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
@@ -31,6 +32,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
         .bindService(
           credentialIssuanceService,
           executionContext
+        ),
+      console_api.CredentialTypesServiceGrpc
+        .bindService(
+          credentialTypeService,
+          executionContext
         )
     )
   }
@@ -42,6 +48,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val institutionGroupsRepository = new InstitutionGroupsRepository(database)(executionContext)
   lazy val credentialIssuancesRepository = new CredentialIssuancesRepository(database)(executionContext)
   lazy val credentialsRepository = new CredentialsRepository(database)(executionContext)
+  lazy val credentialTypeRepository = new CredentialTypeRepository(database)(executionContext)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val connectorMock =
@@ -71,6 +78,10 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     executionContext
   )
 
+  lazy val credentialTypeService = new CredentialTypesServiceImpl(credentialTypeRepository, authenticator)(
+    executionContext
+  )
+
   val usingApiAsConsole: ApiTestHelper[console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub] = {
     usingApiAsConstructor(
       new console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub(_, _)
@@ -87,6 +98,13 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
       : ApiTestHelper[console_api.CredentialIssuanceServiceGrpc.CredentialIssuanceServiceBlockingStub] = {
     usingApiAsConstructor(
       new CredentialIssuanceServiceGrpc.CredentialIssuanceServiceBlockingStub(_, _)
+    )
+  }
+
+  val usingApiAsCredentialType
+      : ApiTestHelper[console_api.CredentialTypesServiceGrpc.CredentialTypesServiceBlockingStub] = {
+    usingApiAsConstructor(
+      new console_api.CredentialTypesServiceGrpc.CredentialTypesServiceBlockingStub(_, _)
     )
   }
 }
