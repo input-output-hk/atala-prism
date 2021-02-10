@@ -69,6 +69,17 @@ variable node_port {
   default     = 50053
 }
 
+variable management_console_docker_image {
+  description = "Docker image for the management console."
+  type        = string
+}
+
+variable management_console_port {
+  description = "Port number for the management console."
+  type        = number
+  default     = 50054
+}
+
 variable landing_docker_image {
   description = "Docker image for the interactive demo web app."
 }

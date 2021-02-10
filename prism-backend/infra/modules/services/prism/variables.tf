@@ -34,6 +34,15 @@ variable node_port {
   type        = number
 }
 
+variable management_console_docker_image {
+  description = "Docker image for the management console."
+}
+
+variable management_console_port {
+  description = "Port number for the management console."
+  type        = number
+}
+
 variable landing_docker_image {
   description = "Docker image for the interactive demo web app."
 }
@@ -104,6 +113,14 @@ variable node_psql_username {
 
 variable node_psql_password {
   description = "PostgreSQL password to use for node"
+}
+
+variable management_console_psql_username {
+  description = "PostgreSQL username to use for management console"
+}
+
+variable management_console_psql_password {
+  description = "PostgreSQL password to use for management console"
 }
 
 variable cardano_confirmation_blocks {

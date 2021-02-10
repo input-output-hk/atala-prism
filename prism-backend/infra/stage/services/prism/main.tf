@@ -76,6 +76,12 @@ resource random_password node_psql_password {
   special = false
 }
 
+# PostgreSQL password for the created management console user
+resource random_password management_console_psql_password {
+  length  = 16
+  special = false
+}
+
 provider "postgresql" {
   host      = data.aws_db_instance.credentials_database.address
   port      = data.aws_db_instance.credentials_database.port
@@ -85,12 +91,14 @@ provider "postgresql" {
 }
 
 locals {
-  psql_host               = "${data.aws_db_instance.credentials_database.address}:${data.aws_db_instance.credentials_database.port}"
-  psql_database           = "postgres"
-  connector_psql_username = "prism-connector-${var.env_name_short}"
-  connector_psql_password = random_password.connector_psql_password.result
-  node_psql_username      = "prism-node-${var.env_name_short}"
-  node_psql_password      = random_password.node_psql_password.result
+  psql_host                        = "${data.aws_db_instance.credentials_database.address}:${data.aws_db_instance.credentials_database.port}"
+  psql_database                    = "postgres"
+  connector_psql_username          = "prism-connector-${var.env_name_short}"
+  connector_psql_password          = random_password.connector_psql_password.result
+  node_psql_username               = "prism-node-${var.env_name_short}"
+  node_psql_password               = random_password.node_psql_password.result
+  management_console_psql_username = "prism-management-console-${var.env_name_short}"
+  management_console_psql_password = random_password.management_console_psql_password.result
 }
 
 # Create connector user
@@ -128,6 +136,25 @@ resource postgresql_schema node_schema {
     usage             = true
     create_with_grant = true
     role              = postgresql_role.node_role.name
+  }
+}
+
+# Create management console user
+resource postgresql_role management_console_role {
+  name                = local.management_console_psql_username
+  login               = true
+  password            = random_password.management_console_psql_password.result
+  encrypted_password  = true
+  skip_reassign_owned = true
+}
+
+resource postgresql_schema management_console_schema {
+  name = local.management_console_psql_username
+  policy {
+    create            = true
+    usage             = true
+    create_with_grant = true
+    role              = postgresql_role.management_console_role.name
   }
 }
 
@@ -182,6 +209,14 @@ module security_group {
       cidr_blocks = "0.0.0.0/0"
     },
 
+    // management console inbound
+    {
+      from_port   = var.management_console_port
+      to_port     = var.management_console_port
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+
     // allows all traffic within the vpc
     {
       # -1/-1 means all ports here
@@ -225,18 +260,20 @@ module "prism_service" {
   intdemo_enabled = var.intdemo_enabled
   geud_enabled    = var.geud_enabled
 
-  connector_docker_image     = var.connector_docker_image
-  connector_port             = var.connector_port
-  node_docker_image          = var.node_docker_image
-  node_port                  = var.node_port
-  landing_docker_image       = var.landing_docker_image
-  landing_port               = var.landing_port
+  connector_docker_image              = var.connector_docker_image
+  connector_port                      = var.connector_port
+  node_docker_image                   = var.node_docker_image
+  node_port                           = var.node_port
+  management_console_docker_image     = var.management_console_docker_image
+  management_console_port             = var.management_console_port
+  landing_docker_image                = var.landing_docker_image
+  landing_port                        = var.landing_port
   prism_sdk_website_docs_docker_image = var.prism_sdk_website_docs_docker_image
-  prism_sdk_website_docs_port = var.prism_sdk_website_docs_port
-  prism_console_docker_image = var.prism_console_docker_image
-  prism_console_port         = var.prism_console_port
-  envoy_docker_image         = var.prism_lb_envoy_docker_image
-  grpc_web_proxy_port        = var.grpc_web_proxy_port
+  prism_sdk_website_docs_port         = var.prism_sdk_website_docs_port
+  prism_console_docker_image          = var.prism_console_docker_image
+  prism_console_port                  = var.prism_console_port
+  envoy_docker_image                  = var.prism_lb_envoy_docker_image
+  grpc_web_proxy_port                 = var.grpc_web_proxy_port
 
   vpc_id                     = local.vpc_id
   component_subnets          = local.priv_subnet_ids
@@ -252,12 +289,15 @@ module "prism_service" {
   ecs_cluster_id            = module.ecs_cluster.ecs_cluster_id
   ecs_cluster_iam_role_name = module.ecs_cluster.iam_role_name
 
-  psql_host               = local.psql_host
-  psql_database           = local.psql_database
-  connector_psql_username = local.connector_psql_username
-  connector_psql_password = local.connector_psql_password
-  node_psql_username      = local.node_psql_username
-  node_psql_password      = local.node_psql_password
+  psql_host                        = local.psql_host
+  psql_database                    = local.psql_database
+  connector_psql_username          = local.connector_psql_username
+  connector_psql_password          = local.connector_psql_password
+  node_psql_username               = local.node_psql_username
+  node_psql_password               = local.node_psql_password
+  management_console_psql_username = local.management_console_psql_username
+  management_console_psql_password = local.management_console_psql_password
+
 
   cardano_confirmation_blocks   = var.cardano_confirmation_blocks
   cardano_db_sync_psql_host     = local.cardano_db_sync_psql_host

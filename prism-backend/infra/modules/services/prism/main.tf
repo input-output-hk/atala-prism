@@ -67,6 +67,39 @@ module "node" {
   log_group_name = var.log_group_name
 }
 
+module "management_console" {
+  source = "../../components/prism-management-console"
+
+  management_console_docker_image = var.management_console_docker_image
+  port                            = var.management_console_port
+
+  # use Envoy as a service mesh / local load balancer for node
+  node_host = module.envoy.envoy_host
+  node_port = var.node_port
+  connector_host = module.envoy.envoy_host
+  connector_port = var.connector_port
+
+  psql_host     = var.psql_host
+  psql_database = var.psql_database
+  psql_username = var.management_console_psql_username
+  psql_password = var.management_console_psql_password
+
+  parent_name               = "prism-${var.env_name_short}"
+  aws_region                = var.aws_region
+  ecs_cluster_id            = var.ecs_cluster_id
+  ecs_cluster_iam_role_name = var.ecs_cluster_iam_role_name
+  execution_role_arn        = var.execution_role_arn
+
+  vpc_id            = var.vpc_id
+  security_group_id = var.security_group_id
+  subnets           = var.component_subnets
+
+  private_dns_namespace_id   = var.private_dns_namespace_id
+  private_dns_namespace_name = var.private_dns_namespace_name
+
+  log_group_name = var.log_group_name
+}
+
 module "landing_page" {
   source  = "../../components/intdemo-landing"
   enabled = var.intdemo_enabled
@@ -156,6 +189,8 @@ module "envoy" {
     { name = "CONNECTOR_PORT", value = var.connector_port },
     { name = "NODE_ADDRESS", value = module.node.node_host },
     { name = "NODE_PORT", value = var.node_port },
+    { name = "MANAGEMENT_CONSOLE_ADDRESS", value = module.management_console.management_console_host },
+    { name = "MANAGEMENT_CONSOLE_PORT", value = var.management_console_port },
     { name = "ATALA_PRISM_DOMAIN", value = var.atala_prism_domain },
     { name = "ATALA_PRISM_LANDING_DOMAIN", value = "${var.env_name_short}.${var.atala_prism_domain}" },
     { name = "ATALA_PRISM_CONSOLE_DOMAIN", value = "console-${var.env_name_short}.${var.atala_prism_domain}" },

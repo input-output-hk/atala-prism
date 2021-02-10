@@ -59,3 +59,17 @@ services:
       NODE_BITCOIND_PORT: 18333
       NODE_BITCOIND_USERNAME: bitcoin
       NODE_BITCOIND_PASSWORD: bitcoin
+
+  management-console:
+    build:
+      context: ../../out/management-console/docker-build/dest
+      dockerfile: ../../../../management-console/Dockerfile
+    ports:
+      - 127.0.0.1:50054:50054
+    depends_on:
+      - postgres
+    environment:
+      MANAGEMENT_CONSOLE_PSQL_HOST: postgres
+      MANAGEMENT_CONSOLE_PSQL_DATABASE: management_console
+      MANAGEMENT_CONSOLE_PSQL_USERNAME: management_console
+      MANAGEMENT_CONSOLE_PSQL_PASSWORD: management_console

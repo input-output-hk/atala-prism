@@ -27,3 +27,7 @@ output "connector_db_details" {
 output "node_db_details" {
   value = "node db: ${local.psql_host}:${local.node_psql_username}:${local.node_psql_password}:${local.psql_database}"
 }
+
+output "management_console_db_details" {
+  value = "management console db: ${local.psql_host}:${local.management_console_psql_username}:${local.management_console_psql_password}:${local.psql_database}"
+}
