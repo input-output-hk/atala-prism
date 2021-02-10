@@ -263,6 +263,7 @@
         "contactName": "Contact Name",
         "externalId": "External ID",
         "dateSigned": "Date Signed",
+        "dateReceived": "Date Received",
         "contactStatus": "Contact Status",
         "credentialStatus": "Credential Status"
       }

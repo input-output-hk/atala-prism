@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Row } from 'antd';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';

@@ -141,6 +141,12 @@ const getCredentialsIssuedColumns = (
 const getCredentialsReceivedColumns = (viewText, onView) => [
   ...commonColumns,
   {
+    key: 'dateReceived',
+    render: ({ storedat }) => (
+      <CellRenderer title={tp('dateReceived')} value={dateFormat(storedat)} />
+    )
+  },
+  {
     key: 'actions',
     render: credential => {
       const actionButtons = (
