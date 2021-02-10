@@ -1,16 +1,15 @@
 package io.iohk.atala.prism.management.console
 
 import scala.concurrent.ExecutionContext
-
-import cats.effect.{IO, Resource, ExitCode, IOApp}
+import cats.effect.{ExitCode, IO, IOApp, Resource}
 import org.slf4j.LoggerFactory
 import io.grpc.Server
 import com.typesafe.config.ConfigFactory
-
 import io.iohk.atala.prism.utils.GrpcUtils
 import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.config.NodeConfig
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.console_api
@@ -43,6 +42,7 @@ object ManagementConsoleApp extends IOApp {
         logger.info("Loading config")
         ConfigFactory.load(classLoader)
       })
+      defaultCredentialTypeConfig = DefaultCredentialTypeConfig(globalConfig)
 
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
@@ -67,7 +67,7 @@ object ManagementConsoleApp extends IOApp {
 
       // repositories
       contactsRepository = new ContactsRepository(tx)
-      participantsRepository = new ParticipantsRepository(tx)
+      participantsRepository = new ParticipantsRepository(tx, defaultCredentialTypeConfig)
       requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(tx)
       statisticsRepository = new StatisticsRepository(tx)
       credentialsRepository = new CredentialsRepository(tx)

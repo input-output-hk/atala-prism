@@ -142,9 +142,9 @@ object Mustache {
     }
   }
 
-  sealed trait MustacheError extends Exception
-  case class MustacheParsingError(message: String) extends MustacheError
-  case class MustacheValidationError(message: String) extends MustacheError
+  sealed abstract class MustacheError(message: String) extends Exception(message)
+  case class MustacheParsingError(message: String) extends MustacheError(message)
+  case class MustacheValidationError(message: String) extends MustacheError(message)
 
   type MustacheProcessingResult[A] = ValidatedNel[MustacheError, A]
 

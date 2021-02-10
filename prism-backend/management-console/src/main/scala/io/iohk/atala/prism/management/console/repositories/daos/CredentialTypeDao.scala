@@ -18,8 +18,23 @@ import io.iohk.atala.prism.management.console.models.{
   UpdateCredentialType
 }
 import doobie.free.connection
+import cats.implicits._
+import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
+import io.scalaland.chimney.dsl._
 
 object CredentialTypeDao {
+
+  def insertDefaultCredentialTypes(
+      institutionId: ParticipantId,
+      defaultCredentialTypeConfig: DefaultCredentialTypeConfig
+  ): ConnectionIO[List[CredentialTypeWithRequiredFields]] = {
+    defaultCredentialTypeConfig.defaultCredentialTypes
+      .map { defaultCredentialType =>
+        defaultCredentialType.into[CreateCredentialType].withFieldConst(_.institution, institutionId).transform
+      }
+      .map(create)
+      .sequence
+  }
 
   def create(
       createCredentialType: CreateCredentialType

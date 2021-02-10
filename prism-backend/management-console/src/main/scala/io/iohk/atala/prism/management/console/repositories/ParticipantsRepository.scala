@@ -1,24 +1,29 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
+import com.typesafe.config.ConfigFactory
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors.{
   ManagementConsoleError,
   ManagementConsoleErrorSupport,
   UnknownValueError
 }
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, ParticipantLogo}
-import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
+import io.iohk.atala.prism.management.console.repositories.daos.{CredentialTypeDao, ParticipantsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
-class ParticipantsRepository(xa: Transactor[IO])(implicit
+class ParticipantsRepository(
+    xa: Transactor[IO],
+    defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
+)(implicit
     ec: ExecutionContext
 ) extends ManagementConsoleErrorSupport {
   import ParticipantsRepository._
@@ -33,8 +38,10 @@ class ParticipantsRepository(xa: Transactor[IO])(implicit
       logo = Option(request.logo)
     )
 
-    ParticipantsDAO
-      .insert(info)
+    (for {
+      _ <- ParticipantsDAO.insert(info)
+      _ <- CredentialTypeDao.insertDefaultCredentialTypes(request.id, defaultCredentialTypeConfig)
+    } yield ())
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
