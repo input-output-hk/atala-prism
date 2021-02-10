@@ -346,16 +346,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
-      val mockMerkleProofProto = common_models.MerkleProof(
-        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
-        mockMerkleProof.index,
-        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
-      )
+
       val request = console_api
         .StorePublishedCredentialRequest()
         .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withProofOfInclusion(mockMerkleProofProto)
+        .withEncodedInclusionProof(mockMerkleProof.encode)
         .withBatchId(mockCredentialBatchId.id)
 
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -407,16 +403,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
-      val mockMerkleProofProto = common_models.MerkleProof(
-        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
-        mockMerkleProof.index,
-        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
-      )
+
       val request = console_api
         .StorePublishedCredentialRequest()
         .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
         .withEncodedSignedCredential(mockEmptyEncodedSignedCredential)
-        .withProofOfInclusion(mockMerkleProofProto)
+        .withEncodedInclusionProof(mockMerkleProof.encode)
         .withBatchId(mockCredentialBatchId.id)
 
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -464,17 +456,13 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
-      val mockMerkleProofProto = common_models.MerkleProof(
-        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
-        mockMerkleProof.index,
-        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
-      )
+
       val aRandomId = GenericCredential.Id.random()
       val request = console_api
         .StorePublishedCredentialRequest()
         .withConsoleCredentialId(aRandomId.uuid.toString)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withProofOfInclusion(mockMerkleProofProto)
+        .withEncodedInclusionProof(mockMerkleProof.encode)
         .withBatchId(mockCredentialBatchId.id)
 
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -523,11 +511,6 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
-      val mockMerkleProofProto = common_models.MerkleProof(
-        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
-        mockMerkleProof.index,
-        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
-      )
 
       // another issuer's data
       val issuerName2 = "Issuer 2"
@@ -540,7 +523,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         .StorePublishedCredentialRequest()
         .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withProofOfInclusion(mockMerkleProofProto)
+        .withEncodedInclusionProof(mockMerkleProof.encode)
         .withBatchId(mockCredentialBatchId.id)
 
       val rpcRequestIssuer2 = SignedRpcRequest.generate(keyPair2, did2, request)
@@ -582,16 +565,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
-      val mockMerkleProofProto = common_models.MerkleProof(
-        ByteString.copyFrom(mockMerkleProof.hash.value.toArray),
-        mockMerkleProof.index,
-        mockMerkleProof.siblings.map(x => ByteString.copyFrom(x.value.toArray))
-      )
+
       val request = console_api
         .StorePublishedCredentialRequest()
         .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
         .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withProofOfInclusion(mockMerkleProofProto)
+        .withEncodedInclusionProof(mockMerkleProof.encode)
         .withBatchId(mockCredentialBatchId.id)
 
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)

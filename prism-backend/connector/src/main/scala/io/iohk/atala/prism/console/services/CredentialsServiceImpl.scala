@@ -298,12 +298,10 @@ class CredentialsServiceImpl(
         // Verify issuer
         _ = require(credential.issuedBy == issuerId, "The credential was not issued by the specified issuer")
         batchId <- CredentialBatchId.fromString(request.batchId).get.tryF
-        proofOfInclusionProto = request.proofOfInclusion.getOrElse(throw new RuntimeException("Empty inclusion proof"))
-        proof = MerkleInclusionProof(
-          hash = SHA256Digest(proofOfInclusionProto.itemHash.toByteArray.toVector),
-          index = proofOfInclusionProto.index,
-          siblings = proofOfInclusionProto.siblings.map(b => SHA256Digest(b.toByteArray.toVector)).toList
-        )
+        proof =
+          MerkleInclusionProof
+            .decode(request.encodedInclusionProof)
+            .getOrElse(throw new RuntimeException("Empty inclusion proof"))
         _ <-
           credentialsRepository
             .storeCredentialPublicationData(

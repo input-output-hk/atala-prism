@@ -485,6 +485,6 @@ message StorePublishedCredentialRequest {
   string encodedSignedCredential = 1; // the encoded credential to sotre
   string consoleCredentialId = 2; // management console internal credential id
   string batchId = 3; // the protocol id associated to the batch that contains this credential
-  MerkleProof proofOfInclusion = 4; // the merkle proof of inclusion for the batch associated to the credential
+  string encodedInclusionProof = 4; // the merkle proof of inclusion for the batch associated to the credential
 }
 message StorePublishedCredentialResponse {}

@@ -2,7 +2,6 @@ package io.iohk.atala.prism.console.repositories
 
 import doobie.implicits.legacy.instant._
 import doobie.{Meta, Read, Write}
-import doobie.postgres.implicits._
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models.{
   Contact,
@@ -32,15 +31,10 @@ package object daos extends BaseDAO {
     Meta[String].timap(ConnectionStatus.withNameInsensitive)(_.entryName)
   implicit val institutionIdMeta: Meta[Institution.Id] = uuidValueMeta(Institution.Id)
 
-  implicit val merkleProofWrite: Write[MerkleInclusionProof] =
-    Write[(SHA256Digest, Int, List[String])].contramap[MerkleInclusionProof] { proof =>
-      (proof.hash, proof.index, proof.siblings.map(_.hexValue))
-    }
-
-  implicit val merkleProofRead: Read[MerkleInclusionProof] =
-    Read[(SHA256Digest, Int, List[String])].map[MerkleInclusionProof] {
-      case (hash, index, siblings) => MerkleInclusionProof(hash, index, siblings.map(SHA256Digest.fromHex))
-    }
+  implicit val merkleProofMeta: Meta[MerkleInclusionProof] =
+    Meta[String].timap(s =>
+      MerkleInclusionProof.decode(s).getOrElse(throw new RuntimeException(s"Invalid inclusion proof: $s"))
+    )(_.encode)
 
   implicit val publicationDataWrite: Write[PublicationData] =
     Write[(CredentialBatchId, SHA256Digest, String, Instant, TransactionId, Ledger)].contramap(pc =>

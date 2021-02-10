@@ -1,5 +1,8 @@
 package io.iohk.atala.prism.crypto
 
+import io.circe.JsonObject
+import io.circe.syntax.EncoderOps
+
 import scala.annotation.tailrec
 
 object MerkleTree {
@@ -52,6 +55,38 @@ object MerkleTree {
           }
       }
       MerkleRoot(root)
+    }
+
+    // this method encodes merkle proofs to a string representation
+    def encode: String = {
+      import MerkleInclusionProof.json._
+      JsonObject(
+        hashField -> hash.hexValue.asJson,
+        indexField -> index.asJson,
+        siblingsField -> siblings.map(_.hexValue).asJson
+      ).asJson.noSpaces
+    }
+  }
+
+  object MerkleInclusionProof {
+    private object json {
+      val hashField = "hash"
+      val indexField = "index"
+      val siblingsField = "siblings"
+    }
+
+    // decodes a MerkleInclusionProof from a valid string
+    def decode(proof: String): Option[MerkleInclusionProof] = {
+      io.circe.parser.parse(proof) match {
+        case Left(_) => None
+        case Right(parsedProof) =>
+          val tryProof = for {
+            h <- parsedProof.hcursor.get[String](json.hashField).toTry.map(SHA256Digest.fromHex)
+            i <- parsedProof.hcursor.get[Int](json.indexField).toTry
+            s <- parsedProof.hcursor.get[List[String]](json.siblingsField).toTry.map(_.map(SHA256Digest.fromHex))
+          } yield MerkleInclusionProof(h, i, s)
+          tryProof.toOption
+      }
     }
   }
 

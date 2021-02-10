@@ -1,6 +1,5 @@
 package io.iohk.atala.cvp.webextension.background.services.connector
 
-import com.google.protobuf.ByteString
 import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
 import io.iohk.atala.cvp.webextension.background.models.console.ConsoleCredentialId
 import io.iohk.atala.prism.crypto.ECKeyPair
@@ -9,7 +8,6 @@ import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorCli
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.common_models.MerkleProof
 import io.iohk.atala.prism.protos.console_api.{
   PublishBatchRequest,
   PublishBatchResponse,
@@ -101,13 +99,7 @@ class ConnectorClientService(url: String) {
           .withBatchId(batchId)
           .withEncodedSignedCredential(encodedSignedCredential)
           .withConsoleCredentialId(consoleId.id)
-          .withProofOfInclusion(
-            MerkleProof(
-              ByteString.copyFrom(proof.hash.value.toArray),
-              proof.index,
-              proof.siblings.map(h => ByteString.copyFrom(h.value.toArray))
-            )
-          )
+          .withEncodedInclusionProof(proof.encode)
 
         val metadata = metadataForRequest(ecKeyPair, did, request)
 

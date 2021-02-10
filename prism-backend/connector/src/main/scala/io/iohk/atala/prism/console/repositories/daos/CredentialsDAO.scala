@@ -165,17 +165,14 @@ object CredentialsDAO extends BaseDAO {
       issuerId: Institution.Id,
       credentialData: CredentialPublicationData
   ): doobie.ConnectionIO[Int] = {
-    import doobie.postgres.implicits._
     sql"""
          |INSERT INTO published_credentials (
-         |  credential_id, batch_id, encoded_signed_credential,
-         |   inclusion_proof_hash, inclusion_proof_index, inclusion_proof_siblings)
+         |  credential_id, batch_id, encoded_signed_credential, inclusion_proof
+         |)
          |SELECT credential_id,
          |       ${credentialData.credentialBatchId},
          |       ${credentialData.encodedSignedCredential},
-         |       ${credentialData.proofOfInclusion.hash},
-         |       ${credentialData.proofOfInclusion.index},
-         |       ${credentialData.proofOfInclusion.siblings.map(_.hexValue)}
+         |       ${credentialData.proofOfInclusion}
          |FROM credentials
          |WHERE credential_id = ${credentialData.consoleCredentialId} AND
          |      issuer_id = $issuerId

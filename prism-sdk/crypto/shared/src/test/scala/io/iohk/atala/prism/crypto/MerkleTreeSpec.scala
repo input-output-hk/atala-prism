@@ -3,6 +3,7 @@ package io.iohk.atala.prism.crypto
 import org.scalacheck.{Gen, Shrink}
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.OptionValues._
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
 
 import scala.math.{ceil, log}
@@ -95,5 +96,14 @@ class MerkleTreeSpec extends AnyWordSpec {
         assert(proofs.forall(_.derivedRoot == root))
       }
     }
+
+    "decode an encoded proof" in {
+      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
+        val (root, proofs) = MerkleTree.generateProofs(hashes)
+
+        assert(proofs.forall(p => MerkleTree.MerkleInclusionProof.decode(p.encode).value == p))
+      }
+    }
+
   }
 }
