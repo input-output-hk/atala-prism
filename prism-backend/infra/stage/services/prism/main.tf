@@ -169,6 +169,9 @@ module security_group {
   vpc_id      = local.vpc_id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
+
+  # note: add new entries at the end of the list, NEVER IN THE MIDDLE
+  # if you do, you'll make Terraform sad and it won't work for existing deployments
   ingress_with_cidr_blocks = [
     {
       from_port   = 22
@@ -209,14 +212,6 @@ module security_group {
       cidr_blocks = "0.0.0.0/0"
     },
 
-    // management console inbound
-    {
-      from_port   = var.management_console_port
-      to_port     = var.management_console_port
-      protocol    = "tcp"
-      cidr_blocks = "0.0.0.0/0"
-    },
-
     // allows all traffic within the vpc
     {
       # -1/-1 means all ports here
@@ -232,6 +227,14 @@ module security_group {
       from_port   = 32768
       to_port     = 65535
       description = "NLB access"
+      cidr_blocks = "0.0.0.0/0"
+    },
+
+    // management console inbound
+    {
+      from_port   = var.management_console_port
+      to_port     = var.management_console_port
+      protocol    = "tcp"
       cidr_blocks = "0.0.0.0/0"
     },
   ]
