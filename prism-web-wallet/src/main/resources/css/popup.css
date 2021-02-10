@@ -15,22 +15,38 @@
   width: 100%;
 }
 
-.minHeight {
+.text {
   width: 100%;
-  min-height: 95vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin: 5px 0 5px 0;
-  padding: 0 16px;
-  overflow: hidden;
+  text-align: left;
+  margin-top: 2em;
+}
+
+.text p {
+  color: #17282f;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.paddingLeft {
+  width: 90%;
+  margin-top: -1em;
+  margin-left: 2em;
 }
 
 .spaceBetween {
-  height: 94vh;
+  height: 96vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 0 1em;
+  overflow: auto;
+}
+
+#recoveryScreen .errorContainer  {
+  margin-top: 0!important;
 }
 
 .errorContainer {
@@ -40,13 +56,10 @@
   margin-top: 1em;
 }
 
+
+
 .errorImg {
   margin-right: 0.5em;
-}
-
-.sidePadding {
-  padding: 0 16px;
-  overflow: hidden;
 }
 
 .bottomPadding {
@@ -55,11 +68,13 @@
 
 .backArrow {
   display: flex;
+  width: 50px;
 }
 
 .leftArrow {
   width: 15px;
   padding-right: 0.5em;
+  display: block;
 }
 
 .div__btngroup {
@@ -240,19 +255,19 @@
   margin-bottom: 1em;
 }
 
-.img_center {
+.img_cover {
   width: 100%;
   text-align: center;
+  margin-bottom: 2em;
 }
 
 .img_unlock {
-  width: 250px;
-  margin-bottom: 1em;
+  width: 220px;
 }
 
 .div_logo {
   margin-bottom: 1em;
-  padding: 0 16px 2em 16px;
+  padding: 1em;
   border-bottom: 1px solid #CCD1D4;
 }
 
@@ -352,6 +367,10 @@ select:focus {
   border: 1px solid #ff2d3b;
 }
 
+.inputBtnChip::placeholder {
+  font-size: 0.8em!important;
+}
+
 ._label {
   position: relative;
   z-index: 1;
@@ -376,7 +395,7 @@ select:focus {
   z-index: 1;
   top: 10px;
   left: 9px;
-  background-color: white;
+  background-color: transparent;
   padding: 0 7px;
   color: black;
   text-decoration: none;
@@ -568,10 +587,16 @@ select:focus {
   width: 100px;
 }
 
-.welcome_img{
-    display: flex;
-    justify-content: center;
-    width: 150px;
+.welcome_img_Container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.Welcome_img{
+  width: 150px;
+  margin: 0 auto;
 }
 .welcome_text {
   text-align: center;
@@ -690,7 +715,6 @@ p.padding  { padding:0; margin:0;}
 }
 
 .div_main {
-    padding: 10px 0;
     position: relative;
     display: flex;
     justify-content: center;
@@ -797,4 +821,5 @@ inputChip::placeholder {
     text-transform : none !important;
     border-radius: 4px !important;
     line-height: 0 !important;
+    width: 50px;
 }

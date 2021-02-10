@@ -13,7 +13,7 @@ import slinky.web.html._
   case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   override def render(): ReactElement = {
-    div(className := "container", className := "sidePadding, spaceBetween")(
+    div(className := "container", className := "spaceBetween")(
       div(
         className := "title_container",
         id := "title_container"
@@ -31,15 +31,15 @@ import slinky.web.html._
             className := "description",
             id := "description",
             "Register a new wallet or recover an existing wallet"
-          ),
-          div(
-            className := "img_center",
-            img(className := "div_img", id := "div_img", src := "/assets/images/img-wallet-register.svg")
           )
         )
       ),
       div(
         className := "div__field_group",
+        div(
+          className := "img_cover",
+          img(className := "div_img", id := "div_img", src := "/assets/images/img-wallet-register.svg")
+        ),
         div(
           className := "btn_register",
           id := "registrationScreenButton",

@@ -55,7 +55,7 @@ import scala.util.{Failure, Success}
     if (state.requests.nonEmpty) {
       val signingRequest = state.requests(state.id)
 
-      div(id := "mainView", className := "width")(
+      div(id := "mainView", className := "spaceBetween")(
         h3(className := "h3_pending")(
           "Signature request"
         ),
@@ -69,11 +69,11 @@ import scala.util.{Failure, Success}
         lockButton()
       )
     } else {
-      div(className := "minHeight", id := "mainView")(
+      div(className := "spaceBetween", id := "mainView")(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
         div(
           div(
-            className := "img_center",
+            className := "img_cover",
             img(className := "img-no-pending", src := "/assets/images/img-no-pending.png")
           ),
           p(className := "welcome_text")(

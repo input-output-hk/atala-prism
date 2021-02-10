@@ -1,7 +1,5 @@
 package io.iohk.atala.cvp.webextension.popup
 
-import com.alexitc.materialui.facade.materialUiCore.buttonButtonMod.ButtonProps
-import com.alexitc.materialui.facade.materialUiCore.mod.PropTypes.Color
 import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
@@ -48,7 +46,7 @@ import slinky.web.html._
       }
     }
 
-    div(id := "verifyMnemonic", className := "sidePadding, spaceBetween")(
+    div(id := "verifyMnemonic", className := "spaceBetween")(
       div(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
         mui
@@ -103,7 +101,7 @@ import slinky.web.html._
               word2Status()
             )
           ),
-          alertMessage()
+          error()
         )
       ),
       div(className := "div__field_group")(
@@ -118,24 +116,17 @@ import slinky.web.html._
     )
   }
 
-  private def alertMessage() = {
-    val emptyElement = div()()
-
-    val failMessage = (message: String) =>
-      div(className := "div__field_group_mui")(
-        mui.Button.withProps(
-          ButtonProps()
-            .setColor(Color.default)
-            .setVariant(materialUiCoreStrings.outlined)
-            .setClassName("button_fail_mui")
-        )(muiIcons.Cancel().className("buttonIcon_fail").fontSize(materialUiCoreStrings.small))(message)
+  def error() = {
+    if (state.message.nonEmpty) {
+      div(className := "errorContainer")(
+        label(className := "_label_update")(
+          state.message,
+          img(className := "errorImg", src := "/assets/images/error.svg")
+        )
       )
-
-    state.message match {
-      case Some(m) => failMessage(m)
-      case _ => emptyElement
+    } else {
+      div(className := "errorContainer")()
     }
-
   }
 
   private def word1Status() = {

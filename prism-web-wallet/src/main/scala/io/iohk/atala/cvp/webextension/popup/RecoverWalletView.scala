@@ -28,7 +28,6 @@ import scala.util.{Failure, Success}
       password2: String,
       message: Option[String],
       tandc: Boolean,
-      privacyPolicy: Boolean,
       isLoading: Boolean,
       value: String,
       var values: Seq[String] = Nil
@@ -37,7 +36,7 @@ import scala.util.{Failure, Success}
   }
 
   override def initialState: State = {
-    State("", "", None, false, false, false, "", Nil)
+    State("", "", None, false, false, "", Nil)
   }
 
   private def setChips(values: Seq[String]): Unit = {
@@ -46,9 +45,9 @@ import scala.util.{Failure, Success}
 
   override def render(): ReactElement = {
 
-    val enableButton = state.tandc && state.privacyPolicy
+    val enableButton = state.tandc
 
-    div(id := "recoveryScreen", className := "minHeight")(
+    div(id := "recoveryScreen", className := "spaceBetween")(
       div(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
         mui
@@ -65,7 +64,7 @@ import scala.util.{Failure, Success}
         h4(className := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it"),
         PasswordInput("Password", "Enter Password", state.password, password => setPassword(password)),
         PasswordInput("Confirm password", "Re-enter Password", state.password2, password => setPassword2(password)),
-        div(className := "bottomPadding")(
+        div()(
           div(className := "input__container")(
             div()(
               input(
@@ -74,33 +73,25 @@ import scala.util.{Failure, Success}
                 onChange := (e => setTandC(e.currentTarget.checked))
               ),
               label(className := "_label_txt", htmlFor := "tandc")(
-                "Accept",
-                a(
-                  href := s"${props.termsUrl}",
-                  target := "_blank",
-                  className := "_label_link"
-                )(
-                  "Terms and Conditions"
+                div(
+                  className := "paddingLeft",
+                  "Accept",
+                  a(
+                    href := s"${props.termsUrl}",
+                    target := "_blank",
+                    className := "_label_link"
+                  )(
+                    "Terms and Conditions"
+                  ),
+                  "and",
+                  a(
+                    href := s"${props.privacyPolicyUrl}",
+                    target := "_blank",
+                    className := "_label_link"
+                  )(
+                    "Privacy Policy Agreement"
+                  )
                 )
-              )
-            )
-          )
-        ),
-        div(className := "")(
-          div(className := "input__container")(
-            input(
-              id := "privacyPolicy",
-              `type` := "checkbox",
-              onChange := (e => setPrivacyPolicy(e.currentTarget.checked))
-            ),
-            label(className := "_label_txt", htmlFor := "privacyPolicy")(
-              "Accept",
-              a(
-                href := s"${props.privacyPolicyUrl}",
-                target := "_blank",
-                className := "_label_link"
-              )(
-                "Privacy Policy Agreement"
               )
             )
           )
@@ -128,10 +119,6 @@ import scala.util.{Failure, Success}
 
   private def setTandC(newValue: Boolean): Unit = {
     setState(_.copy(tandc = newValue))
-  }
-
-  private def setPrivacyPolicy(newValue: Boolean): Unit = {
-    setState(_.copy(privacyPolicy = newValue))
   }
 
   private def recoverWallet(): Unit = {

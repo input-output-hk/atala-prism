@@ -64,7 +64,7 @@ import slinky.web.html.{p, _}
       }
     }
 
-    div(id := "registrationScreen", className := "sidePadding")(
+    div(id := "registrationScreen", className := "spaceBetween")(
       div(className := "logo_container", id := "logo_container")(
         div(
           className := "div_logo",
