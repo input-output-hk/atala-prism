@@ -305,13 +305,15 @@ class NodeServiceImpl(
     } yield stateEither match {
       case Left(error) =>
         throw error.toStatus.asRuntimeException()
-      case Right(state) =>
-        val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
-        val responseBase = GetBatchStateResponse()
-          .withIssuerDID(state.issuerDIDSuffix.value)
-          .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.hash.value.toArray))
-          .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
-        val response = revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
+      case Right(maybeState) =>
+        val response = maybeState.fold(GetBatchStateResponse()) { state =>
+          val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
+          val responseBase = GetBatchStateResponse()
+            .withIssuerDID(state.issuerDIDSuffix.value)
+            .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.hash.value.toArray))
+            .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
+          revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
+        }
         logAndReturnResponse(
           "getBatchState",
           response

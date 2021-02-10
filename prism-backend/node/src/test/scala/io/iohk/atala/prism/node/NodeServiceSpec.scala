@@ -487,23 +487,37 @@ class NodeServiceSpec
       error.getMessage must be(expectedMessage)
     }
 
-    "fail when the CredentialBatchesRepository reports an error" in {
+    "return an error when the CredentialBatchesRepository fails" in {
       val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
-      val expectedMessage = s"UNKNOWN: Unknown BatchId: ${validBatchId.id}"
 
-      val repositoryError = new FutureEither[NodeError, CredentialBatchState](
-        Future.successful(
-          Left(UnknownValueError("BatchId", validBatchId.id))
-        )
+      val errorMsg = "an unexpected error"
+      val repositoryError = new FutureEither[NodeError, Option[CredentialBatchState]](
+        Future.failed(new RuntimeException(errorMsg))
       )
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
 
-      val serviceError = intercept[RuntimeException] {
+      val err = intercept[RuntimeException](
         service.getBatchState(requestWithValidId)
-      }
-      serviceError.getMessage must be(expectedMessage)
+      )
+      err.getMessage.endsWith(errorMsg) must be(true)
+    }
+
+    "return empty response when the CredentialBatchesRepository reports no results" in {
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
+
+      val repositoryError = new FutureEither[NodeError, Option[CredentialBatchState]](
+        Future.successful(Right(None))
+      )
+
+      doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
+
+      val response = service.getBatchState(requestWithValidId)
+      response.issuerDID must be("")
+      response.merkleRoot must be(empty)
+      response.publicationLedgerData must be(empty)
     }
 
     "return batch state when CredentialBatchesRepository succeeds" in {
@@ -523,9 +537,9 @@ class NodeServiceSpec
           lastOperation = SHA256Digest.compute("lastOp".getBytes())
         )
 
-      val repositoryResponse = new FutureEither[NodeError, CredentialBatchState](
+      val repositoryResponse = new FutureEither[NodeError, Option[CredentialBatchState]](
         Future.successful(
-          Right(credState)
+          Right(Some(credState))
         )
       )
 
@@ -575,6 +589,7 @@ class NodeServiceSpec
           batchId = validBatchId.id,
           credentialHash = ByteString.EMPTY
         )
+
       val expectedMessage = "INTERNAL: requirement failed"
 
       val error = intercept[RuntimeException] {

@@ -6,7 +6,6 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
@@ -80,18 +79,17 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
   }
 
   "CredentialsRepository.getBatchState" should {
-    "fail when the batch is unknown" in {
+    "return empty when the batch is unknown" in {
       val randomBatchId = CredentialBatchId.random()
 
-      val err = repository
+      val response = repository
         .getBatchState(randomBatchId)
         .value
         .futureValue
-        .left
         .toOption
         .value
 
-      err must be(UnknownValueError("batchId", randomBatchId.id))
+      response must be(empty)
     }
 
     "return proper data when there is non-revoked batch data" in {
@@ -129,7 +127,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         .value
         .futureValue
         .toOption
-        .value must be(expectedState)
+        .value must be(Some(expectedState))
     }
 
     "return proper data when the batch was revoked" in {
@@ -172,7 +170,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         .value
         .futureValue
         .toOption
-        .value must be(expectedState)
+        .value must be(Some(expectedState))
     }
   }
 }
