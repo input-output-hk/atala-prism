@@ -130,7 +130,7 @@ const validatePreExisting = (contact, preExistingContacts, expectedHeaders, exte
   preExistingContacts.some(
     row => contact[externalIdTranlation] && row.externalid === contact[externalIdTranlation]
   )
-    ? generatePreExistingError(contact, expectedHeaders)
+    ? generatePreExistingError(contact, externalIdTranlation, expectedHeaders)
     : [];
 
 // Error objects generation
