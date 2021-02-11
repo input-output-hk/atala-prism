@@ -89,6 +89,17 @@ package object errors {
       )
   }
 
+  case class CredentialTypeIncorrectMustacheTemplate(
+      name: String,
+      templateError: String
+  ) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credential type with name: $name " +
+          s"has incorrect mustache template: $templateError"
+      )
+  }
+
   case class GetContactsInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }

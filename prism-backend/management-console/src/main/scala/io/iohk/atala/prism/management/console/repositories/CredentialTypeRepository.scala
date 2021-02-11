@@ -8,12 +8,14 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors.{
   CredentialTypeDoesNotBelongToInstitution,
   CredentialTypeDoesNotExist,
+  CredentialTypeIncorrectMustacheTemplate,
   CredentialTypeMarkArchivedAsReady,
   CredentialTypeUpdateIncorrectState,
   ManagementConsoleError
 }
 import io.iohk.atala.prism.management.console.models.{
   CreateCredentialType,
+  CreateCredentialTypeField,
   CredentialType,
   CredentialTypeId,
   CredentialTypeState,
@@ -25,18 +27,22 @@ import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDa
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import doobie.free.connection
+import io.iohk.atala.prism.credentials.utils.Mustache
 
-import scala.concurrent.ExecutionContext
-
-class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+class CredentialTypeRepository(xa: Transactor[IO]) {
   def create(
       createCredentialType: CreateCredentialType
-  ): FutureEither[Nothing, CredentialTypeWithRequiredFields] = {
-    CredentialTypeDao
-      .create(createCredentialType)
+  ): FutureEither[ManagementConsoleError, CredentialTypeWithRequiredFields] = {
+    validateMustacheTemplate(createCredentialType.template, createCredentialType.fields)
+      .fold(
+        mustacheError =>
+          connection.pure[Either[ManagementConsoleError, CredentialTypeWithRequiredFields]](
+            Left(CredentialTypeIncorrectMustacheTemplate(createCredentialType.name, mustacheError.getMessage))
+          ),
+        _ => CredentialTypeDao.create(createCredentialType).map(Right(_))
+      )
       .transact(xa)
       .unsafeToFuture()
-      .map(Right(_))
       .toFutureEither
   }
 
@@ -50,9 +56,16 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
           Left(CredentialTypeUpdateIncorrectState(credentialType.id, credentialType.name, credentialType.state))
         )
       } else {
-        CredentialTypeDao
-          .update(updateCredentialType)
-          .map(Right(_)): ConnectionIO[Either[ManagementConsoleError, Unit]]
+        validateMustacheTemplate(updateCredentialType.template, updateCredentialType.fields).fold(
+          mustacheError =>
+            connection.pure[Either[ManagementConsoleError, Unit]](
+              Left(CredentialTypeIncorrectMustacheTemplate(credentialType.name, mustacheError.getMessage))
+            ),
+          _ =>
+            CredentialTypeDao
+              .update(updateCredentialType)
+              .map(Right(_)): ConnectionIO[Either[ManagementConsoleError, Unit]]
+        )
       }
     }
   }
@@ -105,6 +118,13 @@ class CredentialTypeRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
+  }
+
+  private def validateMustacheTemplate(template: String, fields: List[CreateCredentialTypeField]) = {
+    Mustache.render(
+      content = template,
+      context = name => fields.find(_.name == name).map(_.name)
+    )
   }
 
   def find(credentialTypeId: CredentialTypeId): FutureEither[Nothing, Option[CredentialTypeWithRequiredFields]] = {

@@ -37,6 +37,15 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
         repository.create(sampleCreateCredentialType(institutionId, templateName)).value.futureValue
       )
     }
+
+    "return error when mustache template is incorrect" in {
+      val institutionId = createParticipant("Institution-1")
+      val createCredentialType = sampleCreateCredentialType(institutionId, "name")
+        .copy(template = "incorrect {{name1}")
+
+      val result = repository.create(createCredentialType).value.futureValue
+      result mustBe a[Left[_, _]]
+    }
   }
 
   "find" should {
@@ -121,6 +130,14 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
       val updateRequest = prepareUpdateCredentialType(credentialType1.credentialType.id)
 
       val result = repository.update(updateRequest, institution2).value.futureValue
+      result mustBe a[Left[_, _]]
+    }
+
+    "return error when mustache template is incorrect" in new Fixtures {
+      val updateRequest = prepareUpdateCredentialType(credentialType1.credentialType.id)
+        .copy(template = "incorrect {{name}")
+
+      val result = repository.update(updateRequest, institution1).value.futureValue
       result mustBe a[Left[_, _]]
     }
   }
