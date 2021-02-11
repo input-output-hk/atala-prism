@@ -704,7 +704,7 @@ jobs:
       - checkout
       - run:
           name: Make qa branch even to develop
-          command: git switch qa && git rebase develop && git push
+          command: git checkout qa && git rebase develop && git push
 
   trigger-integration-tests:
     working_directory: ~/repo
