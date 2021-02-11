@@ -56,12 +56,11 @@ const commonColumns = [
 ];
 
 const getCredentialsIssuedColumns = (
-  viewText,
-  signText,
-  sendText,
   onView,
+  revokeSingleCredential,
   signSingleCredential,
   sendSingleCredential,
+  loadingRevokeSingle,
   loadingSignSingle,
   loadingSendSingle
 ) => [
@@ -99,15 +98,27 @@ const getCredentialsIssuedColumns = (
     key: 'actions',
     render: credential => {
       const { status, credentialid, contactData } = credential;
+      const loadingProps = { size: 3, color: '#F83633' };
       const actionButtons = (
         <div>
+          {status === CREDENTIAL_STATUSES.credentialSigned && (
+            <CustomButton
+              buttonProps={{
+                className: 'theme-link',
+                onClick: () => revokeSingleCredential(credentialid)
+              }}
+              buttonText={i18n.t('credentials.actions.revokeOneCredential')}
+              loading={loadingRevokeSingle}
+              loadingProps={loadingProps}
+            />
+          )}
           {status === CREDENTIAL_STATUSES.credentialDraft && (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
                 onClick: () => signSingleCredential(credentialid)
               }}
-              buttonText={signText}
+              buttonText={i18n.t('credentials.actions.signOneCredential')}
               loading={loadingSignSingle}
               loadingProps={{ size: 3, color: '#F83633' }}
             />
@@ -119,7 +130,7 @@ const getCredentialsIssuedColumns = (
                 onClick: () => sendSingleCredential(credentialid),
                 disabled: contactData.status !== CONNECTION_STATUSES.connectionAccepted
               }}
-              buttonText={sendText}
+              buttonText={i18n.t('credentials.actions.sendOneCredential')}
               loading={loadingSendSingle}
               loadingProps={{ size: 3, color: '#F83633' }}
             />
@@ -129,7 +140,7 @@ const getCredentialsIssuedColumns = (
               className: 'theme-link',
               onClick: () => onView(credential)
             }}
-            buttonText={viewText}
+            buttonText={i18n.t('actions.view')}
           />
         </div>
       );
@@ -171,14 +182,22 @@ const CredentialsTable = ({
   getMoreData,
   hasMore,
   onView,
+  revokeSingleCredential,
   signSingleCredential,
   sendSingleCredential,
   selectionType,
   tab
 }) => {
   const { t } = useTranslation();
+  const [loadingRevokeSingle, setLoadingRevokeSingle] = useState();
   const [loadingSignSingle, setLoadingSignSingle] = useState();
   const [loadingSendSingle, setLoadingSendSingle] = useState();
+
+  const wrapRevokeSingleCredential = async credentialid => {
+    setLoadingRevokeSingle(true);
+    await revokeSingleCredential(credentialid);
+    setLoadingRevokeSingle(false);
+  };
 
   const wrapSignSingleCredential = async credentialid => {
     setLoadingSignSingle(true);
@@ -194,12 +213,11 @@ const CredentialsTable = ({
 
   const columns = {
     [CREDENTIALS_ISSUED]: getCredentialsIssuedColumns(
-      t('actions.view'),
-      t('credentials.actions.signOneCredential'),
-      t('credentials.actions.sendOneCredential'),
       onView,
+      wrapRevokeSingleCredential,
       wrapSignSingleCredential,
       wrapSendSingleCredential,
+      loadingRevokeSingle,
       loadingSignSingle,
       loadingSendSingle
     ),
@@ -237,6 +255,7 @@ CredentialsTable.propTypes = {
   loading: PropTypes.bool.isRequired,
   hasMore: PropTypes.bool.isRequired,
   onView: PropTypes.func.isRequired,
+  revokeSingleCredential: PropTypes.func.isRequired,
   signSingleCredential: PropTypes.func.isRequired,
   sendSingleCredential: PropTypes.func.isRequired,
   selectionType: PropTypes.shape({

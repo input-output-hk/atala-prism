@@ -135,6 +135,14 @@ export const ARROW_RIGHT = 'ArrowRight';
 export const IMPORT_CONTACTS = 'importContacts';
 export const IMPORT_CREDENTIALS_DATA = 'importCredentialsData';
 
+// Credentials action types
+export const REVOKE_CREDENTIALS = 'revokeCredentials';
+export const SIGN_CREDENTIALS = 'signCredentials';
+export const SEND_CREDENTIALS = 'sendCredentials';
+export const REVOKE_SINGLE_CREDENTIAL = 'revokeSingleCredential';
+export const SIGN_SINGLE_CREDENTIAL = 'signSingleCredential';
+export const SEND_SINGLE_CREDENTIAL = 'sendSingleCredential';
+
 // Status badge use cases
 export const CONTACT_STATUS = 'contacts';
 export const CREDENTIAL_STATUS = 'credentials';

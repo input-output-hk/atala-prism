@@ -1,78 +1,101 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'antd';
+import { RedoOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { withRedirector } from '../../../providers/withRedirector';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import refreshIcon from '../../../../images/Refresh.svg';
 
 import './_style.scss';
+import {
+  REVOKE_CREDENTIALS,
+  SEND_CREDENTIALS,
+  SIGN_CREDENTIALS
+} from '../../../../helpers/constants';
 
-const CredentialsButtons = ({
+const CredentialButtons = ({
   refreshCredentials,
+  revokeSelectedCredentials,
   signSelectedCredentials,
   sendSelectedCredentials,
+  disableRevoke,
   disableSign,
   disableSend
 }) => {
   const { t } = useTranslation();
 
-  const [loadingSignSelected, setLoadingSignSelected] = useState(false);
-  const [loadingSendSelected, setLoadingSendSelected] = useState(false);
+  const [loadingByKey, setLoadingByKey] = useState(null);
+
+  const handleRevokeSelectedCredentials = async () => {
+    setLoadingByKey(REVOKE_CREDENTIALS);
+    await revokeSelectedCredentials();
+    setLoadingByKey(null);
+  };
 
   const handleSignSelectedCredentials = async () => {
-    setLoadingSignSelected(true);
+    setLoadingByKey(SIGN_CREDENTIALS);
     await signSelectedCredentials();
-    setLoadingSignSelected(false);
+    setLoadingByKey(null);
   };
 
   const handleSendSelectedCredentials = async () => {
-    setLoadingSendSelected(true);
+    setLoadingByKey(SEND_CREDENTIALS);
     await sendSelectedCredentials();
-    setLoadingSendSelected(false);
+    setLoadingByKey(null);
   };
 
   return (
     <div className="ControlButtons CredentialsOptions">
       <div className="BulkOptions">
-        <Button className="RefreshButton" onClick={refreshCredentials}>
-          <img src={refreshIcon} alt="refresh" />
-          Refresh Table
-        </Button>
         <CustomButton
           buttonProps={{
-            className: 'buttonSignSelected theme-outline',
+            className: 'BulkActionButton theme-outline',
+            onClick: handleRevokeSelectedCredentials,
+            disabled: disableRevoke
+          }}
+          loading={loadingByKey === REVOKE_CREDENTIALS}
+          buttonText={t('credentials.actions.revokeSelectedCredentials')}
+        />
+        <CustomButton
+          buttonProps={{
+            className: 'BulkActionButton theme-outline',
             onClick: handleSignSelectedCredentials,
             disabled: disableSign
           }}
-          loading={loadingSignSelected}
+          loading={loadingByKey === SIGN_CREDENTIALS}
           buttonText={t('credentials.actions.signSelectedCredentials')}
         />
         <CustomButton
           buttonProps={{
-            className: 'buttonSignSelected theme-outline',
+            className: 'BulkActionButton theme-outline',
             onClick: handleSendSelectedCredentials,
             disabled: disableSend
           }}
-          loading={loadingSendSelected}
+          loading={loadingByKey === SEND_CREDENTIALS}
           buttonText={t('credentials.actions.sendSelectedCredentials')}
         />
       </div>
+      <Button className="RefreshButton" icon={<RedoOutlined />} onClick={refreshCredentials}>
+        {t('credentials.actions.refreshTable')}
+      </Button>
     </div>
   );
 };
 
-CredentialsButtons.defaultProps = {
+CredentialButtons.defaultProps = {
+  disableRevoke: true,
   disableSign: true,
   disableSend: true
 };
 
-CredentialsButtons.propTypes = {
+CredentialButtons.propTypes = {
   refreshCredentials: PropTypes.func.isRequired,
+  revokeSelectedCredentials: PropTypes.func.isRequired,
   signSelectedCredentials: PropTypes.func.isRequired,
   sendSelectedCredentials: PropTypes.func.isRequired,
+  disableRevoke: PropTypes.bool,
   disableSign: PropTypes.bool,
   disableSend: PropTypes.bool
 };
 
-export default withRedirector(CredentialsButtons);
+export default withRedirector(CredentialButtons);

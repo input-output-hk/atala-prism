@@ -4,9 +4,9 @@ import { message } from 'antd';
 import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
-import SendCredentialsConfirmationModal from './Molecules/Modals/SendCredentialConfirmationModal';
+import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActionConfirmationModal';
 import { withApi } from '../providers/withApi';
-import { credentialMapper, credentialReceivedMapper } from '../../APIs/helpers/credentialHelpers';
+import { credentialMapper } from '../../APIs/helpers/credentialHelpers';
 import {
   CREDENTIAL_STATUSES,
   CREDENTIAL_STATUSES_TRANSLATOR,
@@ -14,18 +14,20 @@ import {
   CREDENTIALS_ISSUED,
   CREDENTIALS_RECEIVED,
   CONNECTION_STATUSES,
-  UNKNOWN_DID_SUFFIX_ERROR_CODE
+  UNKNOWN_DID_SUFFIX_ERROR_CODE,
+  REVOKE_CREDENTIALS,
+  SIGN_CREDENTIALS,
+  SEND_CREDENTIALS,
+  REVOKE_SINGLE_CREDENTIAL,
+  SIGN_SINGLE_CREDENTIAL,
+  SEND_SINGLE_CREDENTIAL
 } from '../../helpers/constants';
 import {
   useCredentialsIssuedListWithFilters,
   useCredentialsReceivedListWithFilters
 } from '../../hooks/useCredentials';
 import { useSession } from '../providers/SessionContext';
-
-const SEND_CREDENTIALS = 'SEND_CREDENTIALS';
-const SIGN_CREDENTIALS = 'SIGN_CREDENTIALS';
-const SEND_SINGLE_CREDENTIAL = 'SEND_SINGLE_CREDENTIAL';
-const SIGN_SINGLE_CREDENTIAL = 'SIGN_SINGLE_CREDENTIAL';
+import { mockDelay } from '../../helpers/genericHelpers';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -56,11 +58,11 @@ const CredentialContainer = ({ api }) => {
 
   const [selectedCredentials, setSelectedCredentials] = useState([]);
 
-  const [selectAll, setSelectAll] = useState(false);
+  const [selectAll, setSelectAll] = useState(null);
   const [indeterminateSelectAll, setIndeterminateSelectAll] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState(false);
 
   const setLoadingByKey = (key, value) =>
     setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
@@ -129,6 +131,9 @@ const CredentialContainer = ({ api }) => {
     setSelectAll(!hasMoreIssued && selectedRowKeys.length === credentialsIssued.length);
   };
 
+  // eslint-disable-next-line no-magic-numbers
+  const revokeCredentials = credentials => mockDelay(3000);
+
   const signCredentials = credentials => api.wallet.signCredentials(credentials);
 
   const sendCredentials = credentials => {
@@ -141,7 +146,12 @@ const CredentialContainer = ({ api }) => {
 
     const sendCredentialsRequests = credentials.map(handleSendCredential);
 
-    return Promise.all(sendCredentialsRequests).then(() => setShowConfirmationModal(false));
+    return Promise.all(sendCredentialsRequests).then(() => setConfirmationModal(false));
+  };
+
+  const showRevokeSuccess = () => {
+    Logger.info('Successfully revoked the selected credentials');
+    message.success(t('credentials.success.successRevoke'));
   };
 
   const showSignSuccess = () => {
@@ -150,8 +160,13 @@ const CredentialContainer = ({ api }) => {
   };
 
   const showSendSuccess = () => {
-    Logger.info('Successfully sent the credential(s) to the wallet');
+    Logger.info('Successfully sent the selected credentials');
     message.success(t('credentials.success.successSend'));
+  };
+
+  const showRevokeError = error => {
+    Logger.error(error);
+    message.error(t('credentials.errors.errorRevoking'));
   };
 
   const showSignError = error => {
@@ -164,6 +179,10 @@ const CredentialContainer = ({ api }) => {
     message.error(t('credentials.errors.errorSending'));
   };
 
+  const revokeCredentialsRequiredStatus = {
+    credential: CREDENTIAL_STATUSES.credentialSigned
+  };
+
   const signCredentialsRequiredStatus = {
     credential: CREDENTIAL_STATUSES.credentialDraft
   };
@@ -174,6 +193,12 @@ const CredentialContainer = ({ api }) => {
   };
 
   const actions = {
+    [REVOKE_CREDENTIALS]: {
+      apiCall: revokeCredentials,
+      requiredStatus: revokeCredentialsRequiredStatus,
+      onSuccess: showRevokeSuccess,
+      onError: showRevokeError
+    },
     [SIGN_CREDENTIALS]: {
       apiCall: signCredentials,
       requiredStatus: signCredentialsRequiredStatus,
@@ -185,6 +210,11 @@ const CredentialContainer = ({ api }) => {
       requiredStatus: sendCredentialsRequiredStatus,
       onSuccess: showSendSuccess,
       onError: showSendError
+    },
+    [REVOKE_SINGLE_CREDENTIAL]: {
+      apiCall: revokeCredentials,
+      onSuccess: showRevokeSuccess,
+      onError: showRevokeError
     },
     [SIGN_SINGLE_CREDENTIAL]: {
       apiCall: signCredentials,
@@ -238,27 +268,30 @@ const CredentialContainer = ({ api }) => {
       }
       if (apiCall) await apiCall(targetCredentials);
       if (onSuccess) onSuccess();
+      setConfirmationModal(null);
       refreshCredentialsIssued();
     } catch (error) {
       if (onError) onError(error);
     }
   };
 
+  const revokeSelectedCredentials = () => setConfirmationModal(REVOKE_CREDENTIALS);
   const signSelectedCredentials = () => performBackendAction(SIGN_CREDENTIALS);
+
+  const revokeSingleCredential = credentialid =>
+    performBackendAction(REVOKE_SINGLE_CREDENTIAL, credentialid);
   const signSingleCredential = credentialid =>
     performBackendAction(SIGN_SINGLE_CREDENTIAL, credentialid);
   const sendSingleCredential = credentialid =>
     performBackendAction(SEND_SINGLE_CREDENTIAL, credentialid);
 
-  const sendSelectedCredentials = () => {
-    setShowConfirmationModal(true);
-  };
+  const sendSelectedCredentials = () => setConfirmationModal(SEND_CREDENTIALS);
+
+  const handleConfirmRevoke = () => performBackendAction(REVOKE_CREDENTIALS);
 
   const handleConfirmSend = () => performBackendAction(SEND_CREDENTIALS);
 
-  const handleCancel = () => {
-    setShowConfirmationModal(false);
-  };
+  const handleCancel = () => setConfirmationModal(false);
 
   const tabProps = {
     [CREDENTIALS_ISSUED]: {
@@ -266,6 +299,7 @@ const CredentialContainer = ({ api }) => {
         credentials: filteredCredentialsIssued,
         hasMore: hasMoreIssued,
         searching: searching.issued,
+        revokeSingleCredential,
         signSingleCredential,
         sendSingleCredential,
         selectionType: {
@@ -277,6 +311,7 @@ const CredentialContainer = ({ api }) => {
       fetchCredentials: fetchCredentialsIssued,
       bulkActionsProps: {
         refreshCredentials: refreshCredentialsIssued,
+        revokeSelectedCredentials,
         signSelectedCredentials,
         sendSelectedCredentials,
         selectAll,
@@ -300,14 +335,31 @@ const CredentialContainer = ({ api }) => {
     }
   };
 
+  const modalProps = {
+    [REVOKE_CREDENTIALS]: {
+      onOk: handleConfirmRevoke
+    },
+    [SEND_CREDENTIALS]: {
+      onOk: handleConfirmSend
+    }
+  };
+
+  const renderModal = () => {
+    const credentialsRequiredStatus = actions[confirmationModal]?.requiredStatus;
+    const targetCredentialsProps = getTargetCredentials(credentialsRequiredStatus);
+    return (
+      <CredentialActionConfirmationModal
+        type={confirmationModal}
+        onCancel={handleCancel}
+        {...modalProps[confirmationModal]}
+        {...targetCredentialsProps}
+      />
+    );
+  };
+
   return (
     <>
-      <SendCredentialsConfirmationModal
-        visible={showConfirmationModal}
-        onOk={handleConfirmSend}
-        onCancel={handleCancel}
-        {...getTargetCredentials(sendCredentialsRequiredStatus)}
-      />
+      {confirmationModal && renderModal()}
       <Credentials tabProps={tabProps} setActiveTab={setActiveTab} loading={loading} />
     </>
   );

@@ -13,8 +13,10 @@ const BulkActionsHeader = ({
 }) => {
   const { t } = useTranslation();
   const { selectAll, indeterminateSelectAll, toggleSelectAll } = bulkActionsProps;
+  const disableActions = !selectedRowKeys?.length || loadingSelection;
+
   return (
-    <div className="bulkActionsRow">
+    <div className="BulkActionsRow">
       <Checkbox
         indeterminate={indeterminateSelectAll}
         className="checkboxCredential"
@@ -33,8 +35,9 @@ const BulkActionsHeader = ({
       </Checkbox>
       <CredentialButtons
         {...bulkActionsProps}
-        disableSign={!selectedRowKeys?.length || loadingSelection}
-        disableSend={!selectedRowKeys?.length || loadingSelection}
+        disableRevoke={disableActions}
+        disableSign={disableActions}
+        disableSend={disableActions}
       />
     </div>
   );

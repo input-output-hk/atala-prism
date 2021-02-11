@@ -207,10 +207,19 @@
       }
     },
     "modal": {
-      "title": "You are about to send:",
-      "sendables": "{{sendables}} credential(s)",
-      "nonSendables": "{{nonSendables}} credential(s) ",
-      "nonSendablesText": "cannot be sent because their connections are pending and/or the credentials have not been signed."
+      "revokeCredentials": {
+        "title": "You are about to revoke:",
+        "actionables": "{{actionables}} credential(s)",
+        "actionablesHelperText": "Revoked credentials will not be able to be shared",
+        "nonActionables": "{{nonActionables}} credential(s) ",
+        "nonActionablesHelperText": "cannot be revoked because they have not been signed"
+      },
+      "sendCredentials": {
+        "title": "You are about to send:",
+        "actionables": "{{actionables}} credential(s)",
+        "nonActionables": "{{nonActionables}} credential(s) ",
+        "nonActionablesHelperText": "cannot be sent because their connections are pending and/or the credentials have not been signed."
+      }
     },
     "tabs": {
       "credentialsIssued": "Credentials Issued",
@@ -218,8 +227,11 @@
     },
     "actions": {
       "createCredential": "Create Credential",
-      "signSelectedCredentials": "Sign Credentials",
-      "sendSelectedCredentials": "Send Credentials",
+      "revokeSelectedCredentials": "Revoke",
+      "signSelectedCredentials": "Sign",
+      "sendSelectedCredentials": "Send",
+      "revokeOneCredential": "Revoke",
+      "refreshTable": "Refresh Table",
       "signOneCredential": "Sign",
       "sendOneCredential": "Send",
       "selectAll": "Select All",
@@ -313,10 +325,12 @@
       "notImplementedYet": "This functionality is not implemented yet"
     },
     "success": {
+      "successRevoke": "Successfully revoked credential(s)",
       "successSign": "Successfully sent credential(s) to the wallet",
       "successSend": "Successfully sent credential(s) to the contact"
     },
     "errors": {
+      "errorRevoking": "An error occurred while revoking the credential(s)",
       "errorSigning": "An error occurred while signing the credential(s)",
       "errorSending": "An error occurred while sending the credential(s)"
     }
