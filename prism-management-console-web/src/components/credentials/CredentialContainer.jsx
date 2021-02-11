@@ -97,8 +97,8 @@ const CredentialContainer = ({ api }) => {
   };
 
   useEffect(() => {
-    fetchCredentialsReceived();
-  }, []);
+    if (activeTab === CREDENTIALS_RECEIVED) fetchCredentialsReceived();
+  }, [activeTab]);
 
   const getAllCredentialsIssued = async () => {
     const allCredentials = await api.credentialsManager.getCredentials(MAX_CREDENTIALS, null);
