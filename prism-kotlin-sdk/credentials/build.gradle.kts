@@ -61,6 +61,11 @@ kotlin {
         }
         val iosMain by getting
         val iosTest by getting
+
+        all {
+            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
+            languageSettings.useExperimentalAnnotation("kotlin.js.ExperimentalJsExport")
+        }
     }
 
     publishing {

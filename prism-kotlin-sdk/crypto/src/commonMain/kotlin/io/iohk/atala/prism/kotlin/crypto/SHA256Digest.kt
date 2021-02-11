@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.kotlin.crypto
 
-import io.iohk.atala.prism.kotlin.util.BytesOps
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 import kotlin.jvm.JvmStatic
 
-@ExperimentalUnsignedTypes
 data class SHA256Digest(val value: List<UByte>) {
     companion object {
         val BYTE_LENGTH = 32

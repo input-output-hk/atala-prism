@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.kotlin.crypto.derivation
 
-import io.iohk.atala.prism.kotlin.util.BytesOps
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.test.*
@@ -37,7 +37,6 @@ class JvmKeyDerivationTest {
         assertFalse(JvmKeyDerivation.isValidMnemonicWord("hocus"))
     }
 
-    @ExperimentalUnsignedTypes
     @Test
     fun testComputeRightBinarySeed() {
         val password = "TREZOR"
@@ -76,7 +75,6 @@ class JvmKeyDerivationTest {
         }
     }
 
-    @ExperimentalUnsignedTypes
     @Test
     fun testDeriveKey() {
         @Serializable

@@ -5,7 +5,6 @@ import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.kotlin.protos.*
 import kotlin.test.*
 
-@ExperimentalUnsignedTypes
 class DIDTest {
     @Test
     fun testCreateTheExpectedLongFormDid() {

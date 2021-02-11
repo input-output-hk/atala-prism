@@ -5,7 +5,6 @@ import kotlin.math.log2
 import kotlin.random.Random
 import kotlin.test.*
 
-@ExperimentalUnsignedTypes
 class MerkleTreeTest {
 
     private fun randomHexString(length: Int): String = List(length) {

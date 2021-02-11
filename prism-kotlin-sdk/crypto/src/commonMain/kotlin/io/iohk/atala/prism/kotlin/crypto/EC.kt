@@ -45,30 +45,25 @@ expect object EC {
     /**
      * Returns the signature represented by the given encoded byte array.
      */
-    @ExperimentalUnsignedTypes
     fun toSignature(encoded: List<Byte>): ECSignature
 
     /**
      * Signs the given text with the given private key.
      */
-    @ExperimentalUnsignedTypes
     fun sign(text: String, privateKey: ECPrivateKey): ECSignature
 
     /**
      * Signs the given data with the given private key.
      */
-    @ExperimentalUnsignedTypes
     fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature
 
     /**
      * Verifies whether the given text matches the given signature with the given public key.
      */
-    @ExperimentalUnsignedTypes
     fun verify(text: String, publicKey: ECPublicKey, signature: ECSignature): Boolean
 
     /**
      * Verifies whether the given data matches the given signature with the given public key.
      */
-    @ExperimentalUnsignedTypes
     fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean
 }

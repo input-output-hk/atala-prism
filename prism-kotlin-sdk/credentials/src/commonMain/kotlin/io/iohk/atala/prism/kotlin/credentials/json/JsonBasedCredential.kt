@@ -8,7 +8,6 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.util.Base64Utils
 
-@ExperimentalUnsignedTypes
 data class JsonBasedCredential constructor(
     override val content: CredentialContent,
     override val signature: ECSignature? = null

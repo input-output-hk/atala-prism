@@ -42,7 +42,6 @@ object MerkleTree {
         val siblings: List<Hash> // given hash's siblings at each level of the tree starting from the bottom
     ) {
         // merkle root of which this proof is for
-        @ExperimentalUnsignedTypes
         fun derivedRoot(): MerkleRoot {
             val n = siblings.size
             val root = siblings.indices.fold(
@@ -59,11 +58,9 @@ object MerkleTree {
         }
     }
 
-    @ExperimentalUnsignedTypes
     private fun combineHashes(left: Hash, right: Hash): Hash =
         SHA256Digest.compute(listOf(NodePrefix) + (left.value + right.value).map { it.toByte() })
 
-    @ExperimentalUnsignedTypes
     private fun prefixHash(data: Hash): Hash =
         SHA256Digest.compute(listOf(LeafPrefix) + data.value.map { it.toByte() })
 

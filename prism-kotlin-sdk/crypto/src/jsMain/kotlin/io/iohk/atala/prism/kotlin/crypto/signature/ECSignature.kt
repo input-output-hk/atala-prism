@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.kotlin.crypto.signature
 
-import io.iohk.atala.prism.kotlin.util.BytesOps.bytesToHex
-import io.iohk.atala.prism.kotlin.util.BytesOps.hexToBytes
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.bytesToHex
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
-@ExperimentalUnsignedTypes
 actual class ECSignature constructor(val sig: String) {
     actual constructor(data: List<UByte>) : this(bytesToHex(data))
 

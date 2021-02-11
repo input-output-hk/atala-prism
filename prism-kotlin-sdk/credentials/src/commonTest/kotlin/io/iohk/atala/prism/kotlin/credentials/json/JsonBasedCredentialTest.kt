@@ -18,7 +18,6 @@ class JsonBasedCredentialTest {
     val customCredential = "eyAiY3JlZGVudGlhbFN1YmplY3QiOiB7ICJpZCI6IDEgfSB9.c2lnbmF0dXJl"
 
     @Test
-    @ExperimentalUnsignedTypes
     fun `reconstruct the original credential form signed string`() {
         assertEquals(
             JsonBasedCredential.fromString(signedCredentialString),
@@ -30,7 +29,6 @@ class JsonBasedCredentialTest {
     }
 
     @Test
-    @ExperimentalUnsignedTypes
     fun `allow to parse custom credential subject`() {
         val credential = JsonBasedCredential.fromString(customCredential)
 
@@ -41,7 +39,6 @@ class JsonBasedCredentialTest {
     }
 
     @Test
-    @ExperimentalUnsignedTypes
     fun `fail to construct when bytes are not from a valid JSON`() {
         assertFails {
             JsonBasedCredential.fromString("invalid")
@@ -49,7 +46,6 @@ class JsonBasedCredentialTest {
     }
 
     @Test
-    @ExperimentalUnsignedTypes
     fun `sign credential`() {
         val unsignedCredential = JsonBasedCredential(content = emptyCredentialContent)
 
@@ -57,7 +53,6 @@ class JsonBasedCredentialTest {
     }
 
     @Test
-    @ExperimentalUnsignedTypes
     fun `compute canonical form`() {
         val unsignedCredential = JsonBasedCredential.fromString(emptyCredential)
         val signedCredential = unsignedCredential.sign(keys.privateKey)

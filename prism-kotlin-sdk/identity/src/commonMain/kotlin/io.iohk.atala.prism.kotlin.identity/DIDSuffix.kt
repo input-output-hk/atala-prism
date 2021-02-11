@@ -1,10 +1,8 @@
 package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 
-@ExperimentalJsExport
 @JsExport
 data class DIDSuffix(val value: String) {
     companion object {
@@ -13,7 +11,6 @@ data class DIDSuffix(val value: String) {
         fun fromString(suffix: String): DIDSuffix =
             apply(suffix)
 
-        @ExperimentalUnsignedTypes
         fun fromDigest(digest: SHA256Digest): DIDSuffix =
             apply(digest.hexValue())
 

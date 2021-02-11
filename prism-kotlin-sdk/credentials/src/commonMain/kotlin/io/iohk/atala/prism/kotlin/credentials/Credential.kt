@@ -12,23 +12,18 @@ abstract class Credential {
 
     abstract val content: CredentialContent
 
-    @ExperimentalUnsignedTypes
     abstract val signature: ECSignature?
 
     abstract val canonicalForm: String
 
-    @ExperimentalUnsignedTypes
     fun isSigned(): Boolean = signature != null
 
-    @ExperimentalUnsignedTypes
     fun isUnverifiable(): Boolean = signature == null
 
-    @ExperimentalUnsignedTypes
     fun hash(): SHA256Digest = SHA256Digest.compute(canonicalForm.encodeToByteArray().toList())
 
     abstract fun sign(privateKey: ECPrivateKey): Credential
 
-    @ExperimentalUnsignedTypes
     fun isValidSignature(publicKey: ECPublicKey): Boolean {
         return signature?.let { EC.verify(contentBytes, publicKey, it) } ?: false
     }

@@ -8,13 +8,11 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.crypto.util.toCArrayPointer
 import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
-import io.iohk.atala.prism.kotlin.util.toUByteArray
 import kotlinx.cinterop.*
 import platform.posix.fclose
 import platform.posix.fopen
 import platform.posix.fread
 
-@ExperimentalUnsignedTypes
 actual object EC {
     // secp256k1 private key is just a sequence of random bytes, hence
     // we ask /dev/urandom to produce the necessary amount of random bytes

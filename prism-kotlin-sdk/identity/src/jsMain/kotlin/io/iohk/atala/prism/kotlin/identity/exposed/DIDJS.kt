@@ -1,13 +1,11 @@
 package io.iohk.atala.prism.kotlin.identity.exposed
 
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DIDFormat
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
-import io.iohk.atala.prism.kotlin.util.BytesOps
 
-@ExperimentalUnsignedTypes
-@ExperimentalJsExport
 @JsExport
 class DIDJS private constructor(private val did: DID) {
     companion object {

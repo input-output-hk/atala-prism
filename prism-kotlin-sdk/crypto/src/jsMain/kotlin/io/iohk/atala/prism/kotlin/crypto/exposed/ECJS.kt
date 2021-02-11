@@ -3,7 +3,7 @@ package io.iohk.atala.prism.kotlin.crypto.exposed
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.util.BytesOps.hexToBytes
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
 /* Exportable Kotlin.js types are limited at the time to the following:
  * - dynamic, Any, String, Boolean, Byte, Short, Int, Float, Double
@@ -16,8 +16,6 @@ import io.iohk.atala.prism.kotlin.util.BytesOps.hexToBytes
  * Hence we need a separate exportable API for Javascript users, which this is.
  */
 
-@ExperimentalJsExport
-@ExperimentalUnsignedTypes
 @JsExport
 object ECJS {
     fun generateKeyPair(): ECKeyPairJS {

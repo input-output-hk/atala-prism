@@ -8,10 +8,10 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.crypto.util.toJavaBigInteger
 import io.iohk.atala.prism.kotlin.crypto.util.toKotlinBigInteger
-import io.iohk.atala.prism.kotlin.util.toByteArray
-import io.iohk.atala.prism.kotlin.util.toUByteArray
+import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
 import org.spongycastle.jce.ECNamedCurveTable
 import org.spongycastle.jce.provider.BouncyCastleProvider
 import org.spongycastle.jce.spec.ECNamedCurveSpec
@@ -89,19 +89,16 @@ actual object EC {
         return ECPublicKey(keyFactory.generatePublic(pubSpec))
     }
 
-    @ExperimentalUnsignedTypes
     @JvmStatic
     actual fun toSignature(encoded: List<Byte>): ECSignature {
         return ECSignature(encoded.map { it.toUByte() })
     }
 
-    @ExperimentalUnsignedTypes
     @JvmStatic
     actual fun sign(text: String, privateKey: ECPrivateKey): ECSignature {
         return sign(text.toByteArray().toList(), privateKey)
     }
 
-    @ExperimentalUnsignedTypes
     @JvmStatic
     actual fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature {
         val signer = Signature.getInstance(SIGNATURE_ALGORITHM, provider)
@@ -110,13 +107,11 @@ actual object EC {
         return ECSignature(signer.sign().toUByteArray().toList())
     }
 
-    @ExperimentalUnsignedTypes
     @JvmStatic
     actual fun verify(text: String, publicKey: ECPublicKey, signature: ECSignature): Boolean {
         return verify(text.toByteArray().toList(), publicKey, signature)
     }
 
-    @ExperimentalUnsignedTypes
     @JvmStatic
     actual fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean {
         val verifier = Signature.getInstance(SIGNATURE_ALGORITHM, provider)

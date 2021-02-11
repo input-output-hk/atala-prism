@@ -7,7 +7,6 @@ import platform.Foundation.create
 import platform.posix.memcpy
 
 actual object Base64Utils {
-    @ExperimentalUnsignedTypes
     actual fun encode(bytes: List<Byte>): String {
         val byteArray = bytes.toByteArray()
         val nsData = memScoped {
@@ -21,7 +20,6 @@ actual object Base64Utils {
         return base64Encoded.replace('/', '_').replace('+', '-').dropLastWhile { it == '=' }
     }
 
-    @ExperimentalUnsignedTypes
     actual fun decode(src: String): List<Byte> {
         val expectedLength = (src.length + 3) / 4 * 4
         val base64encoded =

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.kotlin.crypto.keys
 
-import io.iohk.atala.prism.kotlin.util.BytesOps
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 
 abstract class ECKey {
     /**
@@ -15,7 +15,6 @@ abstract class ECKey {
      */
     abstract fun getEncoded(): List<Byte>
 
-    @ExperimentalUnsignedTypes
     fun getHexEncoded(): String {
         return BytesOps.bytesToHex(getEncoded().map { it.toUByte() })
     }

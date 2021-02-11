@@ -2,13 +2,12 @@ package io.iohk.atala.prism.kotlin.crypto
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
-import io.iohk.atala.prism.kotlin.util.BytesOps.hexToBytes
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@ExperimentalUnsignedTypes
 class ECTest {
     val testData = listOf<Byte>(-107, 101, 68, 118, 27, 74, 29, 50, -32, 72, 47, -127, -49, 3, -8, -55, -63, -66, 46, 125)
 

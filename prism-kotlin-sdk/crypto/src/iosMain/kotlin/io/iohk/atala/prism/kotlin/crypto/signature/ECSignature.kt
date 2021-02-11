@@ -2,12 +2,11 @@ package io.iohk.atala.prism.kotlin.crypto.signature
 
 import cocoapods.Secp256k1Kit.*
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.bytesToHex
 import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
-import io.iohk.atala.prism.kotlin.util.BytesOps.bytesToHex
 import kotlinx.cinterop.*
 import platform.posix.size_tVar
 
-@ExperimentalUnsignedTypes
 actual data class ECSignature actual constructor(val data: List<UByte>) {
     actual fun getEncoded(): List<Byte> =
         data.map { it.toByte() }

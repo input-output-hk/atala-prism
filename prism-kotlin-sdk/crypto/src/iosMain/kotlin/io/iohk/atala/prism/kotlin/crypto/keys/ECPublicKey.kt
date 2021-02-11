@@ -8,7 +8,6 @@ import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
 import kotlinx.cinterop.*
 import platform.posix.size_tVar
 
-@ExperimentalUnsignedTypes
 actual class ECPublicKey(internal val key: UByteArray) : ECKey() {
     override fun getEncoded(): List<Byte> {
         return memScoped {

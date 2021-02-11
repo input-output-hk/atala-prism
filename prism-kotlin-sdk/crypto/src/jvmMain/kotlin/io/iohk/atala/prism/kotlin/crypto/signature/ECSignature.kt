@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.kotlin.crypto.signature
 
-import io.iohk.atala.prism.kotlin.util.BytesOps.bytesToHex
-import io.iohk.atala.prism.kotlin.util.toByteArray
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.bytesToHex
+import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import kotlin.experimental.and
 
-@ExperimentalUnsignedTypes
 actual data class ECSignature actual constructor(val data: List<UByte>) {
     actual fun getEncoded(): List<Byte> =
         data.map { it.toByte() }

@@ -5,7 +5,6 @@ import kotlinx.cinterop.convert
 import kotlinx.cinterop.usePinned
 import platform.CoreCrypto.*
 
-@ExperimentalUnsignedTypes
 actual object SHA256 {
     actual fun compute(bytes: List<Byte>): List<Byte> {
         val digest = UByteArray(CC_SHA256_DIGEST_LENGTH)

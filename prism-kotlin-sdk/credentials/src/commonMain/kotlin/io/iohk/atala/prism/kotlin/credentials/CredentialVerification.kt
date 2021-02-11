@@ -18,7 +18,6 @@ data class KeyWasRevoked(val credentialIssuedOn: TimestampInfo, val keyRevokedOn
 
 object InvalidSignature : VerificationException("Invalid signature")
 
-@ExperimentalUnsignedTypes
 object CredentialVerification {
 
     /**

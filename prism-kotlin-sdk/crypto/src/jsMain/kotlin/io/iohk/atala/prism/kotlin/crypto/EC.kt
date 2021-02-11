@@ -9,7 +9,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.util.BytesOps.bytesToHex
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.bytesToHex
 
 actual object EC {
     private val ecjs = ec("secp256k1")
@@ -29,7 +29,6 @@ actual object EC {
         return ECPrivateKey(BN(d.toString()))
     }
 
-    @ExperimentalUnsignedTypes
     actual fun toPublicKey(encoded: List<Byte>): ECPublicKey {
         val encodedArray = encoded.toByteArray()
         val xBytes = encodedArray.copyOfRange(1, 1 + ECConfig.PRIVATE_KEY_BYTE_SIZE)
@@ -37,7 +36,6 @@ actual object EC {
         return toPublicKey(xBytes.toList(), yBytes.toList())
     }
 
-    @ExperimentalUnsignedTypes
     actual fun toPublicKey(
         x: List<Byte>,
         y: List<Byte>
@@ -47,7 +45,6 @@ actual object EC {
         return toPublicKey(xInteger, yInteger)
     }
 
-    @ExperimentalUnsignedTypes
     actual fun toPublicKey(
         x: BigInteger,
         y: BigInteger
@@ -68,12 +65,10 @@ actual object EC {
         return ECPublicKey(keyPair.getPublic())
     }
 
-    @ExperimentalUnsignedTypes
     actual fun toSignature(encoded: List<Byte>): ECSignature {
         return ECSignature(encoded.map { it.toUByte() })
     }
 
-    @ExperimentalUnsignedTypes
     actual fun sign(
         text: String,
         privateKey: ECPrivateKey
@@ -81,7 +76,6 @@ actual object EC {
         return sign(text.encodeToByteArray().toList(), privateKey)
     }
 
-    @ExperimentalUnsignedTypes
     actual fun sign(
         data: List<Byte>,
         privateKey: ECPrivateKey
@@ -91,7 +85,6 @@ actual object EC {
         return ECSignature(signature.toDER(enc = "hex").unsafeCast<String>())
     }
 
-    @ExperimentalUnsignedTypes
     actual fun verify(
         text: String,
         publicKey: ECPublicKey,
@@ -100,7 +93,6 @@ actual object EC {
         return verify(text.encodeToByteArray().toList(), publicKey, signature)
     }
 
-    @ExperimentalUnsignedTypes
     actual fun verify(
         data: List<Byte>,
         publicKey: ECPublicKey,

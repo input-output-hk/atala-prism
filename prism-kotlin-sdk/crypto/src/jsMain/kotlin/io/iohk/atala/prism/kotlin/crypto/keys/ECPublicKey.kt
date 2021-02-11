@@ -27,7 +27,6 @@ actual class ECPublicKey(val basePoint: base.BasePoint) : ECKey() {
         return ECPoint(x, y)
     }
 
-    @ExperimentalUnsignedTypes
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class.js != other::class.js) return false
@@ -40,7 +39,6 @@ actual class ECPublicKey(val basePoint: base.BasePoint) : ECKey() {
         return true
     }
 
-    @ExperimentalUnsignedTypes
     override fun hashCode(): Int =
         getHexEncoded().hashCode()
 }

@@ -39,7 +39,6 @@ class DID private constructor(val value: String) {
         private fun buildSuffix(stateHash: String, encodedState: String): String =
             "$stateHash:$encodedState"
 
-        @ExperimentalUnsignedTypes
         @JvmStatic
         fun createUnpublishedDID(masterKey: ECPublicKey): DID {
             val createDidOp = CreateDIDOperation(

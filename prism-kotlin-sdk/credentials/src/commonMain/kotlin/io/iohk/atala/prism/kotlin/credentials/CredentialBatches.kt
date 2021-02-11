@@ -2,7 +2,6 @@ package io.iohk.atala.prism.kotlin.credentials
 
 import io.iohk.atala.prism.kotlin.crypto.MerkleTree
 
-@ExperimentalUnsignedTypes
 object CredentialBatches {
 
     fun batch(

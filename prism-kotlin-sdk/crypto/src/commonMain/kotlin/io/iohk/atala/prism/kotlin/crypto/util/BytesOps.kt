@@ -1,16 +1,13 @@
-package io.iohk.atala.prism.kotlin.util
+package io.iohk.atala.prism.kotlin.crypto.util
 
-@ExperimentalUnsignedTypes
 fun List<Byte>.toUByteArray(): UByteArray {
     return this.toByteArray().toUByteArray()
 }
 
-@ExperimentalUnsignedTypes
 fun ByteArray.toUByteArray(): UByteArray {
     return this.map { it.toUByte() }.toUByteArray()
 }
 
-@ExperimentalUnsignedTypes
 fun List<UByte>.toByteArray(): ByteArray {
     return this.map { it.toByte() }.toByteArray()
 }
@@ -18,7 +15,6 @@ fun List<UByte>.toByteArray(): ByteArray {
 object BytesOps {
     private val HEX_ARRAY = "0123456789abcdef".toCharArray()
 
-    @ExperimentalUnsignedTypes
     fun bytesToHex(bytes: List<UByte>): String {
         val hexChars = CharArray(bytes.size * 2)
         for (j in bytes.indices) {
@@ -30,7 +26,6 @@ object BytesOps {
         return hexChars.concatToString()
     }
 
-    @ExperimentalUnsignedTypes
     fun hexToBytes(string: String): List<UByte> {
         val result = MutableList(string.length / 2) { UByte.MIN_VALUE }
 
