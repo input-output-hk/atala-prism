@@ -1,7 +1,6 @@
 package io.iohk.atala.mirror
 
 import scala.concurrent.duration._
-import scala.util.Try
 import monix.eval.Task
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
@@ -11,14 +10,13 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.mirror.services._
 import io.iohk.atala.mirror.db.UserCredentialDao
 import io.iohk.atala.mirror.models.UserCredential
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import cats.implicits._
@@ -31,11 +29,12 @@ import io.iohk.atala.prism.services.BaseGrpcClientService.PublicKeyBasedAuthConf
 import io.iohk.atala.prism.services.{
   BaseGrpcClientService,
   ConnectorClientServiceImpl,
-  NodeClientServiceImpl,
-  ConnectorMessagesService
+  ConnectorMessagesService,
+  NodeClientServiceImpl
 }
 import io.iohk.atala.prism.E2ETestUtils._
 
+// sbt "project mirror" "testOnly *MirrorE2eSpec"
 class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with MirrorFixtures {
 
   implicit val ecTrait = EC
@@ -79,10 +78,16 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
           PublicKeyBasedAuthConfig(walletKey)
         ) {}
 
-        // Mirror: create new credential
+        // Mirror: create a new credential and a credential batch
         credential = signedCredential(did)
-        credentialResponse <- nodeService.issueCredential(credential.canonicalForm)
-        _ = logger.info(s"Credential: ${credentialResponse.id}")
+        (root, proof :: _) = CredentialBatches.batch(List(credential))
+        credentialResponse <- nodeService.issueCredentialBatch(root)
+        _ = logger.info(s"Credential batch issued, batchId: ${credentialResponse.batchId}")
+
+        credentialMessage = credential_models.PlainTextCredential(
+          encodedCredential = credential.canonicalForm,
+          encodedMerkleProof = proof.encode
+        )
 
         // Wallet: generate connection token
         connectionToken <- mirrorService.createAccount.map(_.connectionToken)
@@ -98,7 +103,7 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
         // Mirror: start connection stream to update ConnectionId
         _ <-
           credentialService
-            .connectionUpdatesStream(CredentialProofRequestType.SignedCredential(credentialResponse.id))
+            .connectionUpdatesStream(CredentialProofRequestType.RedlandIdCredential)
             .interruptAfter(5.second)
             .compile
             .drain
@@ -111,8 +116,10 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
         _ = logger.info(s"proofRequests: $proofRequests")
 
         // Wallet: confirm proof requests
-        _ <- Task(proofRequests.flatMap(parseProofRequest(credential.canonicalForm, connectionId)))
-          .flatMap(_.map(r => walletConnectorClientService.authenticatedCall(r, _.sendMessage)).toList.sequence)
+        _ <- walletConnectorClientService.authenticatedCall(
+          sendMessageRequest(connectionId, credentialMessage.toByteString),
+          _.sendMessage
+        )
 
         // Mirror: process incoming messages
         cardanoAddressService = new CardanoAddressInfoService(database, mirrorConfig.httpConfig, nodeService)
@@ -139,8 +146,8 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
 
     def signedCredential(did: DID) = {
       val credentialContent = CredentialContent(
-        "issuerDid" -> did.value,
-        "issuanceKeyId" -> keyId
+        CredentialContent.JsonFields.IssuerDid.field -> did.value,
+        CredentialContent.JsonFields.IssuanceKeyId.field -> keyId
       )
 
       Credential
@@ -152,16 +159,6 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
       SendMessageRequest(connectionId = connectionId, message = message)
 
     val getMessagesPaginatedRequest = GetMessagesPaginatedRequest(limit = Int.MaxValue)
-
-    def parseProofRequest(credentialDocument: String, connectionId: String)(message: ReceivedMessage) = {
-      for {
-        message <- Try(credential_models.AtalaMessage.parseFrom(message.message.toByteArray)).toOption
-        getIssuerSentCredential = message.getIssuerSentCredential
-        proofRequest <- message.message.proofRequest
-        credential =
-          credential_models.Credential(typeId = proofRequest.typeIds.head, credentialDocument = credentialDocument)
-      } yield sendMessageRequest(connectionId, credential.toByteString)
-    }
 
     def createConnectorConfig(did: DID, keys: ECKeyPair) = {
       ConnectorConfig(

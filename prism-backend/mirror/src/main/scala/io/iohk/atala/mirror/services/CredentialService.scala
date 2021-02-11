@@ -1,7 +1,6 @@
 package io.iohk.atala.mirror.services
 
 import java.time.Instant
-
 import scala.concurrent.duration.DurationInt
 import scala.util.Try
 import cats.data.{EitherT, ValidatedNel}
@@ -21,21 +20,23 @@ import io.iohk.atala.prism.models.{
 }
 import io.iohk.atala.mirror.models.{Connection, UserCredential}
 import io.iohk.atala.prism.credentials.{
+  BatchData,
   Credential,
-  CredentialData,
+  CredentialBatchId,
   PrismCredentialVerification,
-  SlayerCredentialId,
+  TimestampInfo,
   VerificationError
 }
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.crypto.{EC, MerkleTree, SHA256Digest}
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
+import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import cats.implicits._
 import doobie.implicits._
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.services.{ConnectorClientService, NodeClientService, MessageProcessor}
-import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, MessageProcessorException}
+import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
+import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor, NodeClientService}
+import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorException, MessageProcessorResult}
 
 class CredentialService(
     tx: Transactor[Task],
@@ -104,12 +105,15 @@ class CredentialService(
       .map(saveMessage(receivedMessage, _))
   }
 
-  private def saveMessage(receivedMessage: ReceivedMessage, rawCredential: RawCredential): MessageProcessorResult = {
+  private def saveMessage(
+      receivedMessage: ReceivedMessage,
+      plainTextCredential: PlainTextCredential
+  ): MessageProcessorResult = {
     (for {
       connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
       userCredentials <-
         EitherT
-          .liftF(createUserCredential(receivedMessage, connection.token, rawCredential))
+          .liftF(createUserCredential(receivedMessage, connection.token, plainTextCredential))
           .leftMap(MessageProcessorException.apply)
       _ <-
         EitherT
@@ -118,11 +122,9 @@ class CredentialService(
     } yield ()).value
   }
 
-  private[services] def parseCredential(message: ReceivedMessage): Option[RawCredential] = {
-    Try(credential_models.Credential.parseFrom(message.message.toByteArray)).toOption
-      .map(_.credentialDocument)
-      .filterNot(_.isEmpty)
-      .map(RawCredential)
+  private[services] def parseCredential(message: ReceivedMessage): Option[PlainTextCredential] = {
+    Try(PlainTextCredential.parseFrom(message.message.toByteArray)).toOption
+      .filter(credential => credential.encodedCredential.nonEmpty)
   }
 
   private[services] def getIssuersDid(rawCredential: RawCredential): Option[DID] = {
@@ -135,9 +137,9 @@ class CredentialService(
   private def createUserCredential(
       receivedMessage: ReceivedMessage,
       token: ConnectionToken,
-      rawCredential: RawCredential
+      plainTextCredential: PlainTextCredential
   ): Task[UserCredential] = {
-    verifyCredential(rawCredential.rawCredential).map { result =>
+    verifyCredential(plainTextCredential).map { result =>
       val credentialStatus = result match {
         case Right(verificationResult) => parseCredentialStatus(verificationResult)
         case Left(parsingError) =>
@@ -147,8 +149,8 @@ class CredentialService(
 
       UserCredential(
         token,
-        rawCredential,
-        getIssuersDid(rawCredential),
+        RawCredential(plainTextCredential.encodedCredential),
+        getIssuersDid(RawCredential(plainTextCredential.encodedCredential)),
         ConnectorMessageId(receivedMessage.id),
         MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received)),
         credentialStatus
@@ -173,29 +175,74 @@ class CredentialService(
     }
 
   private[services] def verifyCredential(
-      signedCredentialStringRepresentation: String
+      plainTextCredential: PlainTextCredential
   ): Task[Either[String, ValidatedNel[VerificationError, Unit]]] = {
     (for {
-      credential <- Credential.fromString(signedCredentialStringRepresentation).left.map(_.message).toEitherT[Task]
+      credential <- Credential.fromString(plainTextCredential.encodedCredential).left.map(_.message).toEitherT[Task]
       issuerDid <- credential.content.issuerDid.left.map(_.getMessage).toEitherT[Task]
       issuanceKeyId <- credential.content.issuanceKeyId.left.map(_.getMessage).toEitherT[Task]
       keyData <- NodeClientService.getKeyData(issuerDid, issuanceKeyId, nodeService)
-      credentialData <- getCredentialData(SlayerCredentialId.compute(credential.hash, issuerDid))
-    } yield PrismCredentialVerification.verify(keyData, credentialData, credential)).value
+      merkleInclusionProof <- getMerkleInclusionProof(credential, plainTextCredential)
+      batchId = CredentialBatchId.fromBatchData(issuerDid.suffix, merkleInclusionProof.derivedRoot)
+      batchData <- getBatchData(batchId)
+      credentialRevocationTime <- getCredentialRevocationTime(batchId, credential.hash)
+    } yield PrismCredentialVerification
+      .verify(
+        keyData,
+        batchData,
+        credentialRevocationTime,
+        merkleInclusionProof.derivedRoot,
+        merkleInclusionProof,
+        credential
+      )).value
   }
 
-  private[services] def getCredentialData(id: SlayerCredentialId): EitherT[Task, String, CredentialData] = {
-    for {
-      response <- EitherT[Task, String, GetCredentialStateResponse](
-        nodeService.getCredentialState(id.string).map(Right(_))
+  def getMerkleInclusionProof(
+      credential: Credential,
+      plainTextCredential: PlainTextCredential
+  ): EitherT[Task, String, MerkleTree.MerkleInclusionProof] = {
+    Either
+      .fromOption(
+        MerkleInclusionProof.decode(plainTextCredential.encodedMerkleProof),
+        s"Credential $credential is missing inclusion proof"
       )
-      publishedOn <-
-        response.publicationDate
-          .map(NodeClientService.fromTimestampInfoProto)
-          .toRight(s"Missing publication date ${id.string}")
+      .toEitherT[Task]
+  }
+
+  private[services] def getCredentialRevocationTime(
+      credentialBatchId: CredentialBatchId,
+      credentialHash: SHA256Digest
+  ): EitherT[Task, String, Option[TimestampInfo]] = {
+    EitherT[Task, String, Option[TimestampInfo]](
+      nodeService.getCredentialRevocationTime(credentialBatchId, credentialHash).map { response =>
+        Right {
+          response.revocationLedgerData
+            .flatMap(_.timestampInfo)
+            .map(NodeClientService.fromTimestampInfoProto)
+        }
+      }
+    )
+  }
+
+  private[services] def getBatchData(credentialBatchId: CredentialBatchId): EitherT[Task, String, BatchData] = {
+    for {
+      response <- EitherT[Task, String, GetBatchStateResponse](
+        nodeService
+          .getBatchState(credentialBatchId)
+          .map(_.toRight(s"Credential batch with id: $credentialBatchId not found"))
+      )
+
+      batchIssuanceDate <-
+        Either
+          .fromOption(
+            response.publicationLedgerData.flatMap(_.timestampInfo).map(NodeClientService.fromTimestampInfoProto),
+            s"Credential batch: $credentialBatchId doesn't contain publication ledger data"
+          )
           .toEitherT[Task]
 
-      revokedOn = response.revocationDate map NodeClientService.fromTimestampInfoProto
-    } yield CredentialData(issuedOn = publishedOn, revokedOn = revokedOn)
+      batchRevocationDate =
+        response.revocationLedgerData.flatMap(_.timestampInfo).map(NodeClientService.fromTimestampInfoProto)
+
+    } yield BatchData(batchIssuanceDate, batchRevocationDate)
   }
 }

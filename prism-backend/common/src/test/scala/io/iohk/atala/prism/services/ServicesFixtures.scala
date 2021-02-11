@@ -1,25 +1,24 @@
 package io.iohk.atala.prism.services
 
 import java.time.Instant
-
 import io.circe.Encoder
 import io.circe.syntax._
 import com.google.protobuf.ByteString
-
-import io.iohk.atala.prism.credentials.{SlayerCredentialId, TimestampInfo}
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
+import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches, TimestampInfo}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.node_api.GetCredentialStateResponse
+import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
-import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, PublicKey}
+import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, LedgerData, PublicKey}
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.credentials.Credential
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
-import io.iohk.atala.prism.services.NodeClientService
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.config.ConnectorConfig
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
+import org.scalatest.OptionValues._
 
 trait ServicesFixtures {
 
@@ -40,7 +39,7 @@ trait ServicesFixtures {
   object CredentialFixtures {
 
     val issuanceKeyId = "Issuance-0"
-    val issuerDID = DID.buildPrismDID("123456678abcdefg")
+    val issuerDID = newDID()
 
     val keyAddedDate: TimestampInfo = TimestampInfo(Instant.now().minusSeconds(1), 1, 1)
     val credentialIssueDate: TimestampInfo = TimestampInfo(Instant.now(), 2, 2)
@@ -53,35 +52,6 @@ trait ServicesFixtures {
       revokedOn = None,
       keyData = EcKeyData(NodeClientService.toTimestampInfoProto(keys.publicKey))
     )
-
-    val didData: DIDData = DIDData("", Seq(publicKey))
-    val getCredentialStateResponse: GetCredentialStateResponse =
-      GetCredentialStateResponse(
-        issuerDID = issuerDID.value,
-        publicationDate = Some(NodeClientService.toInfoProto(credentialIssueDate)),
-        revocationDate = None
-      )
-
-    val nodeCredentialId1: SlayerCredentialId = SlayerCredentialId
-      .compute(
-        credentialHash = SHA256Digest.compute(jsonBasedCredential1.canonicalForm.getBytes),
-        did = issuerDID
-      )
-
-    val nodeCredentialId2: SlayerCredentialId = SlayerCredentialId
-      .compute(
-        credentialHash = SHA256Digest.compute(jsonBasedCredential2.canonicalForm.getBytes),
-        did = issuerDID
-      )
-
-    val defaultNodeClientStub: NodeClientServiceStub =
-      new NodeClientServiceStub(
-        Map(issuerDID -> didData),
-        Map(
-          nodeCredentialId1.string -> getCredentialStateResponse,
-          nodeCredentialId2.string -> getCredentialStateResponse
-        )
-      )
 
     val rawMessage: ByteString = createRawMessage("{}")
 
@@ -126,6 +96,37 @@ trait ServicesFixtures {
         .fromCredentialContent(makeCredentialContent(redlandIdCredential2))
         .sign(keys.privateKey)
 
+    val didData: DIDData = DIDData("", Seq(publicKey))
+
+    val (root, List(proof1, proof2)) = CredentialBatches.batch(List(jsonBasedCredential1, jsonBasedCredential2))
+    val credentialBatchId: CredentialBatchId = CredentialBatchId.fromBatchData(issuerDID.suffix, root)
+    val getBatchStateResponse: GetBatchStateResponse =
+      GetBatchStateResponse(
+        issuerDID = issuerDID.value,
+        merkleRoot = NodeClientService.toByteString(root.hash),
+        publicationLedgerData = Some(
+          LedgerData(
+            timestampInfo = Some(NodeClientService.toInfoProto(credentialIssueDate))
+          )
+        ),
+        revocationLedgerData = None
+      )
+
+    val defaultNodeClientStub: NodeClientServiceStub =
+      new NodeClientServiceStub(
+        didDocument = Map(issuerDID -> didData),
+        getBatchStateResponse = Map(credentialBatchId -> getBatchStateResponse)
+      )
+
+    def plainTextCredentialMessage(
+        credential: Credential,
+        merkleInclusionProof: MerkleInclusionProof
+    ): PlainTextCredential =
+      PlainTextCredential(
+        credential.canonicalForm,
+        encodedMerkleProof = merkleInclusionProof.encode
+      )
+
     def makeCredentialContent(redlandIdCredential: RedlandIdCredential): CredentialContent =
       CredentialContent(
         CredentialContent.JsonFields.CredentialType.field -> CredentialContent
@@ -134,5 +135,9 @@ trait ServicesFixtures {
         CredentialContent.JsonFields.IssuanceKeyId.field -> issuanceKeyId,
         CredentialContent.JsonFields.CredentialSubject.field -> redlandIdCredential.asJson.noSpaces
       )
+  }
+
+  def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

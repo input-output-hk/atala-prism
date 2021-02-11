@@ -1,20 +1,19 @@
 package io.iohk.atala.mirror.services
 
-import java.time.{Instant, LocalDateTime, ZoneOffset}
-
+import java.time.Instant
 import cats.data.ValidatedNel
 import monix.eval.Task
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.UserCredential
-import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
+import io.iohk.atala.prism.protos.connector_models.ConnectionInfo
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.mirror.models.UserCredential.{CredentialStatus, MessageReceivedDate, RawCredential}
 import io.iohk.atala.mirror.db.{ConnectionDao, UserCredentialDao}
-import io.iohk.atala.prism.credentials.{Credential, SlayerCredentialId, VerificationError}
+import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches, VerificationError}
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import monix.execution.Scheduler.Implicits.global
-import io.iohk.atala.prism.crypto.{EC, ECTrait, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC, ECTrait}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
 import org.mockito.scalatest.MockitoSugar
@@ -30,6 +29,7 @@ import io.iohk.atala.prism.models.{
   ConnectorMessageId,
   CredentialProofRequestType
 }
+import io.iohk.atala.prism.services.NodeClientService
 
 // sbt "project mirror" "testOnly *services.CredentialServiceSpec"
 class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with MirrorFixtures {
@@ -87,27 +87,19 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
       ConnectionFixtures.insertAll(database).runSyncUnsafe(1.minute)
 
       val credentialSignedWithWrongKey = jsonBasedCredential1.sign(EC.generateKeyPair().privateKey)
+      val (root, proof :: _) = CredentialBatches.batch(List(credentialSignedWithWrongKey))
+      val credentialBatchId = CredentialBatchId.fromBatchData(issuerDID.suffix, root)
 
       val receivedMessage =
-        credentialMessage1.copy(message =
-          credential_models
-            .Credential(
-              typeId = "VerifiableCredential/RedlandIdCredential",
-              credentialDocument = credentialSignedWithWrongKey.canonicalForm
-            )
-            .toByteString
-        )
+        credentialMessage1.copy(message = plainTextCredentialMessage(credentialSignedWithWrongKey, proof).toByteString)
 
       val connectorClientStub = new ConnectorClientServiceStub()
 
-      val nodeCredentialId = SlayerCredentialId
-        .compute(
-          credentialHash = SHA256Digest.compute(credentialSignedWithWrongKey.canonicalForm.getBytes),
-          did = issuerDID
-        )
-
       val nodeClientStub =
-        new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
+        new NodeClientServiceStub(
+          Map(issuerDID -> didData),
+          Map(credentialBatchId -> getBatchStateResponse.copy(merkleRoot = NodeClientService.toByteString(root.hash)))
+        )
       val credentialService = new CredentialService(database, connectorClientStub, nodeClientStub)
 
       // when
@@ -185,15 +177,9 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
 
   "CredentialService#parseCredential" should {
     "parse credential" in new ConnectionServiceFixtures {
-      val json = """{ "key": "value" }"""
-      val receivedMessage = ReceivedMessage(
-        "id1",
-        LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
-        connectionId1.uuid.toString,
-        createRawMessage(json)
+      credentialService.parseCredential(credentialMessage1) mustBe Some(
+        plainTextCredentialMessage(jsonBasedCredential1, proof1)
       )
-
-      credentialService.parseCredential(receivedMessage) mustBe Some(RawCredential(json))
     }
   }
 
@@ -233,7 +219,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
   "verifyCredential" should {
     "verifyCredential" in new ConnectionServiceFixtures {
       val result: Either[String, ValidatedNel[VerificationError, Unit]] =
-        credentialService.verifyCredential(jsonBasedCredential1.canonicalForm).runSyncUnsafe()
+        credentialService.verifyCredential(plainTextCredentialMessage(jsonBasedCredential1, proof1)).runSyncUnsafe()
       result mustBe a[Right[_, _]]
       result.toOption.value.isValid mustBe true
     }
@@ -243,35 +229,38 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
       val nodeClientStub = new NodeClientServiceStub
       val credentialService = new CredentialService(database, connectorClientStub, nodeClientStub)
 
-      credentialService.verifyCredential(jsonBasedCredential1.canonicalForm).runSyncUnsafe() mustBe a[Left[_, _]]
+      credentialService
+        .verifyCredential(plainTextCredentialMessage(jsonBasedCredential1, proof1))
+        .runSyncUnsafe() mustBe a[Left[_, _]]
     }
 
     "return error when credential is invalid" in {
       val credentialSignedWithWrongKey = jsonBasedCredential1.sign(EC.generateKeyPair().privateKey)
 
-      val connectorClientStub = new ConnectorClientServiceStub
-
-      val nodeCredentialId = SlayerCredentialId
-        .compute(
-          credentialHash = SHA256Digest.compute(credentialSignedWithWrongKey.canonicalForm.getBytes),
-          did = issuerDID
-        )
+      val (root, proof :: _) = CredentialBatches.batch(List(credentialSignedWithWrongKey))
+      val credentialBatchId = CredentialBatchId.fromBatchData(issuerDID.suffix, root)
 
       val nodeClientStub =
-        new NodeClientServiceStub(Map(issuerDID -> didData), Map(nodeCredentialId.string -> getCredentialStateResponse))
+        new NodeClientServiceStub(
+          Map(issuerDID -> didData),
+          Map(credentialBatchId -> getBatchStateResponse.copy(merkleRoot = NodeClientService.toByteString(root.hash)))
+        )
 
+      val connectorClientStub = new ConnectorClientServiceStub
       val credentialService = new CredentialService(database, connectorClientStub, nodeClientStub)
 
       val result: Either[String, ValidatedNel[VerificationError, Unit]] =
-        credentialService.verifyCredential(credentialSignedWithWrongKey.canonicalForm).runSyncUnsafe()
+        credentialService
+          .verifyCredential(plainTextCredentialMessage(credentialSignedWithWrongKey, proof))
+          .runSyncUnsafe()
       result mustBe a[Right[_, _]]
       result.toOption.value.isValid mustBe false
     }
   }
 
-  "getCredentialData" should {
+  "getCredentialBatchData" should {
     "return credential data" in new ConnectionServiceFixtures {
-      credentialService.getCredentialData(nodeCredentialId1).value.runSyncUnsafe() mustBe a[Right[_, _]]
+      credentialService.getBatchData(credentialBatchId).value.runSyncUnsafe() mustBe a[Right[_, _]]
     }
 
     "return error when credential is not available" in {
@@ -279,16 +268,12 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
       val nodeClientStub = new NodeClientServiceStub
       val credentialService = new CredentialService(database, connectorClientStub, nodeClientStub)
 
-      credentialService.getCredentialData(nodeCredentialId1).value.runSyncUnsafe() mustBe a[Left[_, _]]
+      credentialService.getBatchData(credentialBatchId).value.runSyncUnsafe() mustBe a[Left[_, _]]
     }
   }
 
   trait ConnectionServiceFixtures {
     val connectorClientStub = new ConnectorClientServiceStub
     val credentialService = new CredentialService(database, connectorClientStub, defaultNodeClientStub)
-  }
-
-  private def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

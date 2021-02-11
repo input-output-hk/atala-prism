@@ -1,28 +1,32 @@
 package io.iohk.atala.prism.services
 
 import java.time.Instant
-
 import cats.data.EitherT
 import monix.eval.Task
 import com.google.protobuf.ByteString
-
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.credentials
-import io.iohk.atala.prism.protos.node_models
-
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import cats.implicits._
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 
 trait NodeClientService {
 
   def getDidDocument(did: DID): Task[Option[DIDData]]
 
-  def getCredentialState(credentialId: String): Task[GetCredentialStateResponse]
+  def getBatchState(credentialBatchId: CredentialBatchId): Task[Option[GetBatchStateResponse]]
 
-  def issueCredential(content: String): Task[IssueCredentialResponse]
+  def issueCredentialBatch(merkleRoot: MerkleRoot): Task[IssueCredentialBatchResponse]
+
+  def getCredentialRevocationTime(
+      credentialBatchId: CredentialBatchId,
+      credentialHash: SHA256Digest
+  ): Task[GetCredentialRevocationTimeResponse]
 
 }
 
@@ -32,12 +36,17 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
   def getDidDocument(did: DID): Task[Option[DIDData]] =
     Task.fromFuture(node.getDidDocument(GetDidDocumentRequest(did.value))).map(_.document)
 
-  def getCredentialState(credentialId: String): Task[GetCredentialStateResponse] =
-    Task.fromFuture(node.getCredentialState(GetCredentialStateRequest(credentialId)))
+  def getBatchState(credentialBatchId: CredentialBatchId): Task[Option[GetBatchStateResponse]] =
+    Task
+      .fromFuture(node.getBatchState(GetBatchStateRequest(credentialBatchId.id)))
+      .map { response =>
+        if (response.issuerDID.nonEmpty) Some(response)
+        else None
+      }
 
-  def issueCredential(content: String): Task[IssueCredentialResponse] = {
+  def issueCredentialBatch(merkleRoot: MerkleRoot): Task[IssueCredentialBatchResponse] = {
     val operation =
-      NodeClientService.issueCredentialOperation(SHA256Digest.compute(content.getBytes), authConfig.did)
+      NodeClientService.issueBatchOperation(authConfig.did, merkleRoot)
 
     val signedAtalaOperation =
       SignedAtalaOperation(
@@ -46,7 +55,21 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
         signature = ByteString.copyFrom(EC.sign(operation.toByteArray, authConfig.didKeyPair.privateKey).data)
       )
 
-    Task.fromFuture(node.issueCredential(IssueCredentialRequest().withSignedOperation(signedAtalaOperation)))
+    Task.fromFuture(node.issueCredentialBatch(IssueCredentialBatchRequest().withSignedOperation(signedAtalaOperation)))
+  }
+
+  def getCredentialRevocationTime(
+      credentialBatchId: CredentialBatchId,
+      credentialHash: SHA256Digest
+  ): Task[GetCredentialRevocationTimeResponse] = {
+    Task.fromFuture(
+      node.getCredentialRevocationTime(
+        node_api
+          .GetCredentialRevocationTimeRequest()
+          .withBatchId(credentialBatchId.id)
+          .withCredentialHash(ByteString.copyFrom(credentialHash.value.toArray))
+      )
+    )
   }
 
 }
@@ -115,33 +138,42 @@ object NodeClientService {
     )
   }
 
-  def computeNodeCredentialId(
-      credentialHash: SHA256Digest,
-      did: DID
-  ): String = {
-    SHA256Digest
-      .compute(
-        issueCredentialOperation(credentialHash, did).toByteArray
-      )
-      .hexValue
-  }
-
-  def issueCredentialOperation(
-      credentialHash: SHA256Digest,
-      did: DID
-  ): AtalaOperation = {
+  def issueBatchOperation(issuerDID: DID, merkleRoot: MerkleRoot): node_models.AtalaOperation = {
     node_models
       .AtalaOperation(
-        operation = node_models.AtalaOperation.Operation.IssueCredential(
-          node_models.IssueCredentialOperation(
-            credentialData = Some(
-              node_models.CredentialData(
-                issuer = did.suffix.value,
-                contentHash = ByteString.copyFrom(credentialHash.value.toArray)
+        operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
+          value = node_models
+            .IssueCredentialBatchOperation(
+              credentialBatchData = Some(
+                node_models.CredentialBatchData(
+                  issuerDID = issuerDID.suffix.value,
+                  merkleRoot = toByteString(merkleRoot.hash)
+                )
               )
             )
-          )
         )
       )
   }
+
+  def revokeCredentialsOperation(
+      previousOperationHash: SHA256Digest,
+      batchId: CredentialBatchId,
+      credentialsToRevoke: Seq[SHA256Digest] = Nil
+  ): node_models.AtalaOperation = {
+    node_models
+      .AtalaOperation(
+        operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+          value = node_models
+            .RevokeCredentialsOperation(
+              previousOperationHash = toByteString(previousOperationHash),
+              credentialBatchId = batchId.id,
+              credentialsToRevoke = credentialsToRevoke.map(toByteString)
+            )
+        )
+      )
+  }
+
+  def toByteString(hash: SHA256Digest): ByteString = ByteString.copyFrom(hash.value.toArray)
+
+  def toSHA256Digest(byteString: ByteString): SHA256Digest = SHA256Digest(byteString.toByteArray.toVector)
 }

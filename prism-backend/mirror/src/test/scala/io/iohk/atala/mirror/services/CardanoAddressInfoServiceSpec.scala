@@ -6,8 +6,6 @@ import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
 import io.iohk.atala.mirror.models.Connection
 import io.iohk.atala.mirror.models.Connection.PayIdName
-import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
@@ -16,7 +14,6 @@ import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.Assertion
-import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationInt
 
@@ -284,9 +281,5 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     val cardanoAddressMessageProcessor = cardanoAddressInfoService.cardanoAddressInfoMessageProcessor
     val paymentInformationMessageProcessor = cardanoAddressInfoService.payIdMessageProcessor
     val payIdNameRegistrationMessageProcessor = cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
-  }
-
-  def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 }

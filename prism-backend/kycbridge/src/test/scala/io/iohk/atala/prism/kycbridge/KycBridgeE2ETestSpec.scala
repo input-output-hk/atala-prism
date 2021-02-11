@@ -5,7 +5,12 @@ import io.grpc.ManagedChannelBuilder
 import io.iohk.atala.kycbridge.protos.kycbridge_api.KycBridgeServiceGrpc
 import io.iohk.atala.kycbridge.protos.kycbridge_api.CreateAccountRequest
 import io.iohk.atala.prism.E2ETestUtils._
-import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage, KycBridgeMessage}
+import io.iohk.atala.prism.protos.credential_models.{
+  AcuantProcessFinished,
+  AtalaMessage,
+  KycBridgeMessage,
+  PlainTextCredential
+}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.identity.DID
@@ -24,7 +29,6 @@ import monix.execution.Scheduler.Implicits.global
 import org.http4s.client.Client
 import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.kycbridge.services.ServiceUtils.runRequestToEither
-import io.iohk.atala.prism.protos.credential_models
 import org.http4s.{AuthScheme, Credentials, Uri}
 import org.http4s.Method.POST
 import org.http4s.headers.Authorization
@@ -123,9 +127,9 @@ class KycBridgeE2ETestSpec extends AnyWordSpec with Matchers with KycBridgeFixtu
 
         credentialMessage <- fetchConnectorMessage(baseGrpcClientService, lastSeenMessageId = Some(receivedMessage.id))
 
-        credential = credential_models.Credential.parseFrom(credentialMessage.message.toByteArray)
+        credential = PlainTextCredential.parseFrom(credentialMessage.message.toByteArray)
 
-        _ = logger.info(s"Credential successfully obtained from kyc bridge: ${credential.credentialDocument}")
+        _ = logger.info(s"Credential successfully obtained from kyc bridge: ${credential.encodedCredential}")
 
         _ <- releaseHttpClient
       } yield ()).runSyncUnsafe()

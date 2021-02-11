@@ -1,13 +1,11 @@
 package io.iohk.atala.prism.node.poc.batch
 
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
-import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.VerificationError.{BatchWasRevoked, CredentialWasRevoked}
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
@@ -15,7 +13,8 @@ import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, Crede
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService}
 import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
-import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 
@@ -100,8 +99,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
   "The batch issuance/verification flow" should {
     "work" in {
-
-      import FlowPoC._
 
       // the idea of the flow to implement
       // 1. issuer generates a DID with the wallet
@@ -222,43 +219,4 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       wallet.verifyCredential(c4, p4).isValid mustBe true
     }
   }
-}
-
-object FlowPoC {
-  def issueBatchOperation(issuerDID: DID, merkleRoot: MerkleRoot): node_models.AtalaOperation = {
-    node_models
-      .AtalaOperation(
-        operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
-          value = node_models
-            .IssueCredentialBatchOperation(
-              credentialBatchData = Some(
-                node_models.CredentialBatchData(
-                  issuerDID = issuerDID.suffix.value,
-                  merkleRoot = toByteString(merkleRoot.hash)
-                )
-              )
-            )
-        )
-      )
-  }
-
-  def revokeCredentialsOperation(
-      previousOperationHash: SHA256Digest,
-      batchId: CredentialBatchId,
-      credentialsToRevoke: Seq[SHA256Digest] = Nil
-  ): node_models.AtalaOperation = {
-    node_models
-      .AtalaOperation(
-        operation = node_models.AtalaOperation.Operation.RevokeCredentials(
-          value = node_models
-            .RevokeCredentialsOperation(
-              previousOperationHash = toByteString(previousOperationHash),
-              credentialBatchId = batchId.id,
-              credentialsToRevoke = credentialsToRevoke.map(toByteString)
-            )
-        )
-      )
-  }
-
-  def toByteString(hash: SHA256Digest): ByteString = ByteString.copyFrom(hash.value.toArray)
 }

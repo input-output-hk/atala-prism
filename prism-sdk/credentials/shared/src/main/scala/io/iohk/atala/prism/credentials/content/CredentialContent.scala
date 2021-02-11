@@ -101,9 +101,9 @@ object CredentialContent {
   type Fields = IndexedSeq[Field]
   def Fields(xs: Field*): Fields = IndexedSeq(xs: _*)
 
-  sealed trait CredentialContentException extends Exception
-  case class FieldNotFoundException(message: String) extends CredentialContentException
-  case class WrongTypeException(message: String) extends CredentialContentException
+  sealed class CredentialContentException(message: String) extends Exception(message)
+  case class FieldNotFoundException(message: String) extends CredentialContentException(message)
+  case class WrongTypeException(message: String) extends CredentialContentException(message)
 
   object JsonFields {
     sealed abstract class Field(val field: String)
