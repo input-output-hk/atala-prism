@@ -117,14 +117,14 @@
       "title": "Credentials List",
       "dataTitle": "Group Name",
       "contacts": "Contacts",
-      "credIssued": "Credential Issued ",
-      "credReceived": "Credential Received",
+      "credIssued": "Credential(s) Issued",
+      "credReceived": "Credential(s) Received",
       "detailSection": {
-        "title": "Contact Detail",
+        "title": "Contact Details",
         "subtitle": "General Information",
-        "groupsSubtitle": "Groups where this contact belongs",
-        "credentialsIssuedSubtitle": "View the credentials that you have issued for this contact",
-        "credentialsReceivedSubtitle": "View the credentials that you have received from this contact"
+        "groupsSubtitle": "Group(s) that this contact is part of",
+        "credentialsIssuedSubtitle": "View the credential(s) that you have issued to this contact",
+        "credentialsReceivedSubtitle": "View the credential(s) that you have received from this contact"
       }
     }
   },
