@@ -81,6 +81,7 @@ locals {
   availability_zone = data.terraform_remote_state.vpc.outputs.azs[0]
   subnet_id         = data.terraform_remote_state.vpc.outputs.public_subnets[0]
   vpc_id            = data.terraform_remote_state.vpc.outputs.vpc_id
+  vpc_cidr_block    = data.terraform_remote_state.vpc.outputs.vpc_cidr_block
 }
 
 # security group for the instance
@@ -89,8 +90,8 @@ module "security_group" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 3.0"
 
-  name        = "${var.name}-prometheus-security-group"
-  description = "Security group for Prometheus & Grafana instance"
+  name        = "${var.name}-cardano-security-group"
+  description = "Security group for Cardano components"
   vpc_id      = local.vpc_id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
@@ -100,6 +101,7 @@ module "security_group" {
       to_port     = 8090,
       protocol    = "tcp",
       description = "cardano-wallet",
+      # TODO: Hide it behind auth
       cidr_blocks = "0.0.0.0/0"
     },
     {
@@ -108,6 +110,13 @@ module "security_group" {
       protocol    = "tcp",
       description = "ssh",
       cidr_blocks = "0.0.0.0/0"
+    },
+    {
+      from_port   = 9100,
+      to_port     = 9100,
+      protocol    = "tcp",
+      description = "Prometheus Node Exporter",
+      cidr_blocks = local.vpc_cidr_block
     },
   ]
   egress_rules = ["all-all"]
