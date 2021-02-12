@@ -54,6 +54,7 @@ const getExtendedColumns = ({ inviteContact, viewContactDetail }) => [
   },
   {
     key: 'actions',
+    width: 200,
     render: contact => {
       const actionButtons = (
         <ActionButtons

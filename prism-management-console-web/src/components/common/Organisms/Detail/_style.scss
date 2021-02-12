@@ -256,14 +256,20 @@
 .moreButton {
   border: none;
   background-color: white;
-  width: 30px;
+  border: 0.2em solid $grey;
+  border-radius: 5px;
+  width: 15px;
   color: grey;
-  height: 20px;
+  height: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
   span {
     @include body-text($label, grey, 400);
     padding-bottom: 7px;
+    font-weight: bold;
+  }
+  &:hover {
+    border: 0.2em solid $grey!important;
   }
 }

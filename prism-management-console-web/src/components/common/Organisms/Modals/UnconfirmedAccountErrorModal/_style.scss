@@ -7,22 +7,24 @@
   }
   .ant-modal-body {
     display: flex;
-    align-items: center;
-    text-align: center;
-    justify-content: center;
     flex-direction: column;
-    padding: 3em 2em;
+    padding: 3em;
+    text-align: center;
+    align-items: center;
     h2 {
       @include secondary-text($h2, $primary-color);
       font-feature-settings: normal;
       font-variant: normal;
-      font-size: x-large;
-      margin-bottom: 1em;
     }
     p {
-      @include secondary-text($body, $black);
+      @include secondary-text($body, $grey);
       font-variant: normal;
-      margin-bottom: 1.5em;
+      margin-bottom: 2em;
+      line-height: 1.2em;
+    }
+    img {
+      height: 152px;
+      margin-left: -10%;
     }
     canvas {
       border: 2px solid $light-grey;
