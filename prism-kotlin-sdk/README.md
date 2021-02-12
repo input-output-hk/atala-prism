@@ -54,7 +54,15 @@ Now install the dependencies:
 $ pod install
 ```
 
-Lastly, re-import your iOS project in XCode, and you should be all good to go.
+Re-import your iOS project in XCode, and you should be all good to go.
+
+At last, make sure to run some Kotlin code in the Main thread to avoid memory leaks (until [KT-44132](https://youtrack.jetbrains.com/issue/KT-44132) is resolved), for example:
+
+```swift
+// Add this as the last line of this method:
+// application(_ application: UIApplication, didFinishLaunchingWithOptions  launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
+SHA256Digest.Companion().compute(bytes: [0, 1, 2])
+```
 
 ## How to serve Orchid docs
 
