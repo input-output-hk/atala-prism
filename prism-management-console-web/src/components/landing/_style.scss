@@ -23,20 +23,19 @@
     height: 100%;
     display: flex;
     flex-flow: column;
-    align-items: center;
-
+    justify-content: space-between;
+    text-align: center;
     .imgLogo {
-      margin: 30px auto 0 auto;
-      @include breakpoint(md) {
-        width: 100% !important;
-        height: auto !important;
+      text-align: center;
+      img {
+        width: 150px;
       }
     }
     .loginImg {
-      margin: auto 0 0 0;
-      @include breakpoint(md) {
-        width: 100% !important;
-        height: auto !important;
+      text-align: center;
+      margin:0 auto;
+      img {
+        width: 150px;
       }
     }
 
@@ -74,7 +73,6 @@
 .browserWalletOption {
   border-top: 1px solid #d6dbe2;
   padding: 20px 0 0 0;
-  margin-top: auto;
   p {
     @include primary-text($body, #728099);
     text-align: center;
