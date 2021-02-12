@@ -1,17 +1,15 @@
 package io.iohk.atala.prism.connector
 
-import java.time.{LocalDateTime, ZoneOffset}
-import java.util.UUID
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.prism.crypto.{EC, ECConfig}
-import io.iohk.atala.prism.connector.model.ParticipantType.Holder
-import io.iohk.atala.prism.connector.model._
-import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.connector.model.ParticipantType.Holder
+import io.iohk.atala.prism.connector.model._
+import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
+import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
@@ -19,7 +17,10 @@ import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
 
+import java.time.{LocalDateTime, ZoneOffset}
+import java.util.UUID
 import scala.concurrent.Future
+import scala.util.Random
 
 class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
@@ -158,6 +159,48 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
         status.getCode mustBe Status.Code.UNKNOWN
         status.getDescription must include(token.token)
+      }
+    }
+  }
+
+  "RevokeConnection" should {
+    "work" in {
+      val issuerId = createIssuer("Issuer")
+      val token = createToken(issuerId)
+      val keys = EC.generateKeyPair()
+      val encodedPubKey = connector_models.EncodedPublicKey(ByteString.copyFrom(keys.publicKey.getEncoded))
+      val addTokenRequest = connector_api
+        .AddConnectionFromTokenRequest(token.token)
+        .withHolderEncodedPublicKey(encodedPubKey)
+
+      // create connection
+      val connectionId = usingApiAs(Random.nextBytes(80).toVector, keys, addTokenRequest) { blockingStub =>
+        val response = blockingStub.addConnectionFromToken(addTokenRequest)
+        val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
+        ConnectionsDAO
+          .exists(connectionId)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue mustBe true
+
+        connectionId
+      }
+
+      // revoke connection
+      val revokeRequest = connector_api
+        .RevokeConnectionRequest()
+        .withConnectionId(connectionId.uuid.toString)
+
+      usingApiAs(Random.nextBytes(80).toVector, keys, revokeRequest) { blockingStub =>
+        blockingStub.revokeConnection(revokeRequest)
+        val existing = ConnectionsDAO
+          .getRawConnection(connectionId)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+          .value
+
+        existing.status must be(ConnectionStatus.ConnectionRevoked)
       }
     }
   }

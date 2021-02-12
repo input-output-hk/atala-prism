@@ -208,11 +208,25 @@ class ConnectorService(
     * Errors:
     * Connection does not exist (UNKNOWN)
     */
-  override def deleteConnection(
-      request: connector_api.DeleteConnectionRequest
-  ): Future[connector_api.DeleteConnectionResponse] = {
-    authenticator.authenticated("deleteConnection", request) { _ =>
-      Future.failed(new NotImplementedError)
+  override def revokeConnection(
+      request: connector_api.RevokeConnectionRequest
+  ): Future[connector_api.RevokeConnectionResponse] = {
+
+    def f(participantId: ParticipantId, connectionId: ConnectionId) = {
+      connections
+        .revokeConnection(participantId, connectionId)
+        .map(_ => connector_api.RevokeConnectionResponse())
+        .successMap(identity)
+    }
+
+    authenticator.authenticated("revokeConnection", request) { participantId =>
+      ConnectionId.from(request.connectionId) match {
+        case Failure(_) =>
+          val error = InvalidArgumentError("connectionId", "valid id", request.connectionId)
+          respondWith(request, error)
+
+        case Success(connectionId) => f(participantId, connectionId)
+      }
     }
   }
 

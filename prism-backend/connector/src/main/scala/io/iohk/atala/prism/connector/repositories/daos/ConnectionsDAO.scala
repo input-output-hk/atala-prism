@@ -12,6 +12,7 @@ import io.iohk.atala.prism.connector.model.{
   ConnectionInfo,
   ConnectionStatus,
   ContactConnection,
+  RawConnection,
   TokenString
 }
 
@@ -59,22 +60,30 @@ object ConnectionsDAO {
       .map(_.isDefined)
   }
 
+  def getRawConnection(connectionId: ConnectionId): doobie.ConnectionIO[Option[RawConnection]] = {
+    sql"""
+         |SELECT id, initiator, acceptor, token, instantiated_at, status
+         |FROM connections
+         |WHERE id = $connectionId""".stripMargin
+      .query[RawConnection]
+      .option
+  }
+
+  def revoke(connectionId: ConnectionId): doobie.ConnectionIO[Int] = {
+    val connectionStatus: ConnectionStatus = ConnectionStatus.ConnectionRevoked
+    sql"""
+         |UPDATE connections
+         |SET status = $connectionStatus::CONTACT_CONNECTION_STATUS_TYPE
+         |WHERE id = $connectionId
+         """.stripMargin.update.run
+  }
+
   def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[Option[ParticipantId]] = {
     sql"""
          |SELECT acceptor AS other_side FROM connections WHERE id = $connection AND initiator = $participant
          | UNION
          | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant""".stripMargin
       .query[ParticipantId]
-      .option
-  }
-
-  def getConnection(id: ConnectionId): doobie.ConnectionIO[Option[Connection]] = {
-    sql"""
-         |SELECT token, id
-         |FROM connections
-         |WHERE id = $id
-         |""".stripMargin
-      .query[Connection]
       .option
   }
 

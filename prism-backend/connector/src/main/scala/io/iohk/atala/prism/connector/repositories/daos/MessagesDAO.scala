@@ -74,6 +74,13 @@ object MessagesDAO {
        """.stripMargin.query[Message].to[Seq]
   }
 
+  def deleteConnectionMessages(connectionId: ConnectionId): doobie.ConnectionIO[Unit] = {
+    sql"""
+         |DELETE FROM messages
+         |WHERE connection = $connectionId
+       """.stripMargin.update.run.map(_ => ())
+  }
+
   def getMessageStream(
       recipientId: ParticipantId,
       lastSeenMessageId: Option[MessageId]

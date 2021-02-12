@@ -2,6 +2,7 @@ package io.iohk.atala.prism.connector.repositories
 
 import cats.data.{EitherT, OptionT}
 import cats.effect.IO
+import cats.implicits.catsSyntaxEitherId
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.crypto.ECPublicKey
@@ -10,7 +11,12 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
-import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
+import io.iohk.atala.prism.connector.repositories.daos.{
+  ConnectionTokensDAO,
+  ConnectionsDAO,
+  MessagesDAO,
+  ParticipantsDAO
+}
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
 import io.iohk.atala.prism.errors.LoggingContext
@@ -28,6 +34,8 @@ trait ConnectionsRepository {
       token: TokenString,
       publicKey: ECPublicKey
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)]
+
+  def revokeConnection(participantId: ParticipantId, connectionId: ConnectionId): FutureEither[ConnectorError, Unit]
 
   def getConnectionsPaginated(
       participant: ParticipantId,
@@ -128,6 +136,61 @@ object ConnectionsRepository {
         token,
         ConnectionStatus.ConnectionAccepted
       )
+
+      query
+        .transact(xa)
+        .value
+        .unsafeToFuture()
+        .toFutureEither
+    }
+
+    override def revokeConnection(
+        participantId: ParticipantId,
+        connectionId: ConnectionId
+    ): FutureEither[ConnectorError, Unit] = {
+      // verify the connection belongs to the participant, and its connected
+      def verifyOwnership = {
+        for {
+          connectionMaybe <- EitherT(ConnectionsDAO.getRawConnection(connectionId).map(_.asRight[ConnectorError]))
+          resultE = connectionMaybe match {
+            // The connection can't be revoked when the participant is not involved in the connection,
+            // or the connection is not established
+            case Some(connection)
+                if connection.contains(participantId) && connection.status == ConnectionStatus.ConnectionAccepted =>
+              doobie.free.connection.pure(().asRight[ConnectorError])
+            case _ =>
+              val error: ConnectorError = UnknownValueError("connectionId", connectionId.uuid.toString)
+              doobie.free.connection.pure(error.asLeft[Unit])
+          }
+          _ <- EitherT(resultE)
+        } yield ()
+      }
+
+      val query = for {
+        _ <- verifyOwnership
+        affectedRows <- EitherT {
+          ConnectionsDAO.revoke(connectionId).map(_.asRight[ConnectorError])
+        }
+        resultE = {
+          if (affectedRows == 1) {
+            doobie.free.connection.pure(().asRight[ConnectorError])
+          } else {
+            val error: ConnectorError = InternalServerError(
+              new RuntimeException("Unable to revoke the connection, please try again later")
+            )
+            doobie.free.connection.pure(error.asLeft[Unit])
+          }
+        }
+        _ <- EitherT(resultE)
+        // TODO: Remove it when management console is fully decoupled from connector
+        _ <- EitherT.right[ConnectorError] {
+          ContactsDAO.setConnectionAsRevoked(connectionId).map(_.asRight[ConnectorError])
+        }
+        // TODO: Remove once messages are being removed after they are read
+        _ <- EitherT {
+          MessagesDAO.deleteConnectionMessages(connectionId).map(_.asRight[ConnectorError])
+        }
+      } yield ()
 
       query
         .transact(xa)

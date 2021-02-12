@@ -2,18 +2,22 @@ package io.iohk.atala.prism.connector.repositories
 
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
+import io.circe.Json
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.console.DataPreparation
+import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
+import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
+import io.iohk.atala.prism.repositories.ops.SqlTestOps._
 import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)
+  lazy val contactsRepository = new ContactsRepository(database)
 
   "insertToken" should {
     "correctly generate token" in {
@@ -69,6 +73,112 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token AND used_at IS NOT NULL"""
         .runUnique[Int]() mustBe 1
       sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token AND used_at IS NULL""".runUnique[Int]() mustBe 0
+    }
+  }
+
+  "revokeConnection" should {
+    def prepare() = {
+      val initiator = createIssuer()
+      val publicKey = EC.generateKeyPair().publicKey
+
+      val contactId = contactsRepository
+        .create(
+          CreateContact(Institution.Id(initiator.uuid), Contact.ExternalId.random(), Json.obj()),
+          None
+        )
+        .value
+        .futureValue
+        .toOption
+        .value
+        .contactId
+      val token = contactsRepository
+        .generateToken(Institution.Id(initiator.uuid), contactId)
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      val (acceptor, connection) = connectionsRepository
+        .addConnectionFromToken(token, publicKey)
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      (connection.id, initiator, acceptor, contactId)
+    }
+
+    "work when the initiator revokes the connection" in {
+      val (connectionId, initiator, _, _) = prepare()
+      val result = connectionsRepository.revokeConnection(initiator, connectionId).value.futureValue
+
+      result.isRight must be(true)
+    }
+
+    "work when the acceptor revokes the connection" in {
+      val (connectionId, _, acceptor, _) = prepare()
+      val result = connectionsRepository.revokeConnection(acceptor, connectionId).value.futureValue
+      result.isRight must be(true)
+    }
+
+    "marks the connection as revoked" in {
+      val (connectionId, initiator, _, _) = prepare()
+      connectionsRepository.revokeConnection(initiator, connectionId).value.futureValue
+      val result = ConnectionsDAO
+        .getRawConnection(connectionId)
+        .unsafeRun()
+        .value
+        .status
+      result must be(ConnectionStatus.ConnectionRevoked)
+    }
+
+    "update the contact related to the connection" in {
+      val (connectionId, initiator, _, contactId) = prepare()
+      connectionsRepository.revokeConnection(initiator, connectionId).value.futureValue
+      val contact = contactsRepository
+        .find(Institution.Id(initiator.uuid), contactId)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .value
+
+      contact.connectionStatus must be(ConnectionStatus.ConnectionRevoked)
+    }
+
+    "delete the messages related to the connection" in {
+      val (connectionId, initiator, acceptor, _) = prepare()
+      MessagesDAO.insert(MessageId.random(), connectionId, initiator, acceptor, "Hello".getBytes).unsafeRun()
+      MessagesDAO.insert(MessageId.random(), connectionId, acceptor, initiator, "ACK".getBytes).unsafeRun()
+      connectionsRepository.revokeConnection(initiator, connectionId).value.futureValue
+
+      MessagesDAO.getConnectionMessages(initiator, connectionId).unsafeRun().isEmpty must be(true)
+      MessagesDAO.getConnectionMessages(acceptor, connectionId).unsafeRun().isEmpty must be(true)
+    }
+
+    "fail when the participant doesn't belong to the connection" in {
+      val (connectionId, _, _, _) = prepare()
+
+      val initiator = createIssuer()
+      val result = connectionsRepository.revokeConnection(initiator, connectionId).value.futureValue
+      result.isLeft must be(true)
+    }
+
+    "fail when the connection doesn't exist" in {
+      val initiator = createIssuer()
+      val result = connectionsRepository.revokeConnection(initiator, ConnectionId.random()).value.futureValue
+      result.isLeft must be(true)
+    }
+
+    ConnectionStatus.values.filterNot(_ == ConnectionStatus.ConnectionAccepted).foreach { status =>
+      s"fail when the connection status is $status" in {
+        val (connectionId, initiator, _, _) = prepare()
+
+        sql"""UPDATE connections SET status = $status::CONTACT_CONNECTION_STATUS_TYPE WHERE id=$connectionId"""
+          .runUpdate()
+        val result = connectionsRepository.revokeConnection(initiator, connectionId).value.futureValue
+        result.isLeft must be(true)
+      }
     }
   }
 

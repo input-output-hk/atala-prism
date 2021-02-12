@@ -39,6 +39,13 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeServi
     connectionsRepository.addConnectionFromToken(tokenString, publicKey)
   }
 
+  def revokeConnection(
+      participantId: ParticipantId,
+      connectionId: ConnectionId
+  ): FutureEither[ConnectorError, Unit] = {
+    connectionsRepository.revokeConnection(participantId, connectionId)
+  }
+
   def getConnectionsPaginated(
       userId: ParticipantId,
       limit: Int,

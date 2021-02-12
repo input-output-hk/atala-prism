@@ -27,4 +27,10 @@ object SqlTestOps {
       sql.query[T].to[Seq].transact(database).unsafeRunSync()
     }
   }
+
+  implicit class ConnectionIOImplicits[A](val cio: doobie.ConnectionIO[A]) {
+    def unsafeRun()(implicit database: Transactor[IO]): A = {
+      cio.transact(database).unsafeRunSync()
+    }
+  }
 }

@@ -11,6 +11,13 @@ trait ErrorSupport[E <: PrismError, ES <: E with PrismServerError] {
 
   def wrapAsServerError(cause: Throwable): ES
 
+  protected def respondWith[T](request: scalapb.GeneratedMessage, error: E)(implicit
+      ec: ExecutionContext
+  ): Future[T] = {
+    implicit val loggingContext: LoggingContext = LoggingContext("request" -> request)
+    Future.successful(Left(error)).toFutureEither.wrapExceptions.flatten
+  }
+
   implicit class ErrorLoggingOps(error: E) {
     def logWarn(implicit lc: LoggingContext): E = {
       val status = error.toStatus

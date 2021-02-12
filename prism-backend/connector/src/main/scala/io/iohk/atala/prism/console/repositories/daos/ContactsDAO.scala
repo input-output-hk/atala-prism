@@ -151,4 +151,12 @@ object ContactsDAO {
          |      created_by = $createdBy
          |""".stripMargin.update.run.map(_ => ())
   }
+
+  def setConnectionAsRevoked(connectionId: ConnectionId): ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE contacts
+         |SET connection_status = ${ConnectionStatus.ConnectionRevoked: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
+         |WHERE connection_id = $connectionId
+         |""".stripMargin.update.run.map(_ => ())
+  }
 }

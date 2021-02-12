@@ -27,8 +27,12 @@ service ConnectorService {
   // Instantiate connection from connection token.
   rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {}
 
-  // Delete active connection.
-  rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {}
+  // Revoke an active connection. Which can be done from any of the sides involved in the connection.
+  // Once the connection is revoked:
+  // - No messages will be accepted
+  // - The existing messages are deleted (the table is supposed to be eventually emptied anyway)
+  // - The related contact connection status gets updated
+  rpc RevokeConnection (RevokeConnectionRequest) returns (RevokeConnectionResponse) {}
 
   // Bind DID to institution.
   // This is commonly expected for institutions that need to use a public DID, the method
@@ -132,13 +136,13 @@ message AddConnectionFromTokenResponse {
   string userId = 2;
 }
 
-// Request to delete a connection
-message DeleteConnectionRequest {
+// Request to revoke a connection
+message RevokeConnectionRequest {
   string connectionId = 1; // id of connection to delete
 }
 
-// Confirmation of connection deletion
-message DeleteConnectionResponse {
+// Confirmation of connection revocation
+message RevokeConnectionResponse {
 }
 
 // Request to generate a connection token

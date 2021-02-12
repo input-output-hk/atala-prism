@@ -109,6 +109,19 @@ case class Connection(connectionToken: TokenString, connectionId: ConnectionId) 
   }
 }
 
+case class RawConnection(
+    id: ConnectionId,
+    initiator: ParticipantId,
+    acceptor: ParticipantId,
+    token: TokenString,
+    instantiatedAt: Instant,
+    status: ConnectionStatus
+) {
+  def contains(participant: ParticipantId): Boolean = {
+    List(acceptor, initiator).contains(participant)
+  }
+}
+
 case class TokenString(token: String) extends AnyVal
 
 object TokenString {
