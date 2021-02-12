@@ -11,6 +11,19 @@ $description-height: 124px;
     display: flex;
     flex-direction: column;
     height: calc(100% - #{$header-height});
+    .filterContainer {
+      display: flex;
+      align-items: center;
+      .connectionFilter {
+        .FilterControls {
+          margin: 0 !important;
+          .ant-input-affix-wrapper {
+            width: 200px;
+            margin-right: 2em;
+          }
+        }
+      }
+    }
     .ContactsContainer {
       height: calc(100% - #{$description-height});
       padding: 1em 0;
@@ -19,6 +32,7 @@ $description-height: 124px;
       .ConnectionsTable {
         width: 100%;
         height: 100%;
+        margin: 0;
       }
       .SaveButtonContainer {
         display: flex;

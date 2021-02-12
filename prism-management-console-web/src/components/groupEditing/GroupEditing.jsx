@@ -174,8 +174,11 @@ const GroupEditing = ({
           </Col>
         </Row>
         <h3>{t('groupEditing.contacts')}</h3>
-        <Row type="flex" align="middle" className="mb-0">
-          <Col span={3}>
+        <div className="filterContainer">
+          <div className="connectionFilter">
+            <ConnectionsFilter {...filterProps} withStatus={false} />
+          </div>
+          <div>
             {loading ? (
               <SimpleLoading size="xs" />
             ) : (
@@ -184,11 +187,8 @@ const GroupEditing = ({
                 {selectedGroupContacts.length ? `(${selectedGroupContacts.length})` : null}
               </>
             )}
-          </Col>
-          <Col span={19}>
-            <ConnectionsFilter {...filterProps} withStatus={false} />
-          </Col>
-        </Row>
+          </div>
+        </div>
         <Row gutter={10} align="bottom" type="flex" className="ContactsContainer">
           <GroupContacts
             contacts={contacts}

@@ -28,8 +28,6 @@
   }
   .ManualImportContent {
     display: flex;
-    align-items: center;
-    justify-content: center;
     height: 100%;
     width: 100%;
     overflow-y: auto;
@@ -37,8 +35,15 @@
     .ant-col {
       margin: 7px;
     }
+    .ant-table-container {
+      width: 100%;
+    }
+    .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table > tbody > tr > td:last-child{
+      width: 200px!important;
+    }
     .ant-table-wrapper {
       height: 100%;
+      width: 100%;
     }
   }
 }

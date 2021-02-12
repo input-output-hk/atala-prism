@@ -1,4 +1,35 @@
+@import '../../../css/general_styling';
+
 .FooterContainer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  padding-bottom: 1em;
+}
+
+.ant-modal-footer {
+  border: 1px solid transparent;
+}
+
+.ant-modal-header {
+  border: 1px solid transparent;
+}
+
+.ant-modal-title {
+  @include primary-text($h3, $secondary-color);
+  font-weight: bold;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
+  align-items: center;
+  img {
+    margin-bottom: 1em;
+  }
+  h3 {
+    width: 50%;
+    text-align: center;
+    @include primary-text($h3, $primary-color);
+  }
 }

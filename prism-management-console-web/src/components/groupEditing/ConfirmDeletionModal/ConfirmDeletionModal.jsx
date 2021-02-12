@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { Modal, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
+import Delete from '../../../images/delete.svg';
+import './_style.scss';
 
 const ConfirmDeletionModal = ({ visible, onConfirm, onCancel, length }) => {
   const { t } = useTranslation();
@@ -18,14 +20,14 @@ const ConfirmDeletionModal = ({ visible, onConfirm, onCancel, length }) => {
           <Col span={24} className="FooterContainer">
             <CustomButton
               buttonProps={{
-                className: 'theme-link',
+                className: 'theme-secondary',
                 onClick: onCancel
               }}
               buttonText={t('groupEditing.buttons.cancel')}
             />
             <CustomButton
               buttonProps={{
-                className: 'theme-secondary',
+                className: 'theme-primary',
                 onClick: onConfirm
               }}
               buttonText={t('groupEditing.buttons.remove')}
@@ -34,9 +36,12 @@ const ConfirmDeletionModal = ({ visible, onConfirm, onCancel, length }) => {
         </Row>
       }
     >
-      <h3>
-        {length === 1 ? t('groupEditing.wantToRemoveOne') : t('groupEditing.wantToRemoveMany')}
-      </h3>
+      <div className="modalContent">
+        <h3>
+          {length === 1 ? t('groupEditing.wantToRemoveOne') : t('groupEditing.wantToRemoveMany')}
+        </h3>
+        <img src={Delete} alt="remove" />
+      </div>
     </Modal>
   );
 };
