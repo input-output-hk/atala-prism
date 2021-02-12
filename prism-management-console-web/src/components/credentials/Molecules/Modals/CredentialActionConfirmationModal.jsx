@@ -3,10 +3,15 @@ import PropTypes from 'prop-types';
 import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { credentialShape } from '../../../../helpers/propShapes';
-import sendConfirmationIcon from '../../../../images/sendConfirmationIcon.svg';
 import revokeConfirmationIcon from '../../../../images/revokeConfirmationIcon.svg';
+import signConfirmationIcon from '../../../../images/signConfirmationIcon.svg';
+import sendConfirmationIcon from '../../../../images/sendConfirmationIcon.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { REVOKE_CREDENTIALS, SEND_CREDENTIALS } from '../../../../helpers/constants';
+import {
+  REVOKE_CREDENTIALS,
+  SIGN_CREDENTIALS,
+  SEND_CREDENTIALS
+} from '../../../../helpers/constants';
 import './style.scss';
 
 const CredentialActionConfirmationModal = ({
@@ -28,6 +33,7 @@ const CredentialActionConfirmationModal = ({
 
   const icon = {
     [REVOKE_CREDENTIALS]: revokeConfirmationIcon,
+    [SIGN_CREDENTIALS]: signConfirmationIcon,
     [SEND_CREDENTIALS]: sendConfirmationIcon
   };
 

@@ -276,7 +276,8 @@ const CredentialContainer = ({ api }) => {
   };
 
   const revokeSelectedCredentials = () => setConfirmationModal(REVOKE_CREDENTIALS);
-  const signSelectedCredentials = () => performBackendAction(SIGN_CREDENTIALS);
+  const signSelectedCredentials = () => setConfirmationModal(SIGN_CREDENTIALS);
+  const sendSelectedCredentials = () => setConfirmationModal(SEND_CREDENTIALS);
 
   const revokeSingleCredential = credentialid =>
     performBackendAction(REVOKE_SINGLE_CREDENTIAL, credentialid);
@@ -285,11 +286,7 @@ const CredentialContainer = ({ api }) => {
   const sendSingleCredential = credentialid =>
     performBackendAction(SEND_SINGLE_CREDENTIAL, credentialid);
 
-  const sendSelectedCredentials = () => setConfirmationModal(SEND_CREDENTIALS);
-
-  const handleConfirmRevoke = () => performBackendAction(REVOKE_CREDENTIALS);
-
-  const handleConfirmSend = () => performBackendAction(SEND_CREDENTIALS);
+  const handleConfirm = () => performBackendAction(confirmationModal);
 
   const handleCancel = () => setConfirmationModal(false);
 
@@ -335,23 +332,14 @@ const CredentialContainer = ({ api }) => {
     }
   };
 
-  const modalProps = {
-    [REVOKE_CREDENTIALS]: {
-      onOk: handleConfirmRevoke
-    },
-    [SEND_CREDENTIALS]: {
-      onOk: handleConfirmSend
-    }
-  };
-
   const renderModal = () => {
     const credentialsRequiredStatus = actions[confirmationModal]?.requiredStatus;
     const targetCredentialsProps = getTargetCredentials(credentialsRequiredStatus);
     return (
       <CredentialActionConfirmationModal
         type={confirmationModal}
+        onOk={handleConfirm}
         onCancel={handleCancel}
-        {...modalProps[confirmationModal]}
         {...targetCredentialsProps}
       />
     );
