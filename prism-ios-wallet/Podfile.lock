@@ -5,7 +5,6 @@ PODS:
   - AlamofireObjectMapper (5.2.1):
     - Alamofire (~> 4.7)
     - ObjectMapper (~> 3.4)
-  - bitcoin-secp256k1 (0.1.0)
   - BitcoinKit (1.1.0)
   - BoringSSL-GRPC (0.0.3):
     - BoringSSL-GRPC/Implementation (= 0.0.3)
@@ -44,8 +43,8 @@ PODS:
     - Braintree/UnionPay (~> 4.30)
     - BraintreeDropIn/UIKit
   - BraintreeDropIn/UIKit (7.5.0)
-  - crypto (0.1.0-f0cf1a03):
-    - bitcoin-secp256k1 (= 0.1.0)
+  - crypto (0.1.0-85e31f7f):
+    - Secp256k1Kit.swift (= 1.1)
   - Firebase/Analytics (6.23.0):
     - Firebase/Core
   - Firebase/Core (6.23.0):
@@ -240,6 +239,7 @@ PODS:
   - Presentr (1.9)
   - PromisesObjC (1.2.8)
   - Protobuf (3.11.4)
+  - Secp256k1Kit.swift (1.1)
   - SwiftGRPC (0.10.0):
     - gRPC-Core (~> 1.23.0)
     - SwiftProtobuf (~> 1.7.0)
@@ -272,8 +272,6 @@ DEPENDENCIES:
   - Toast-Swift (~> 5.0.0)
 
 SPEC REPOS:
-  https://github.com/itegulov/Specs.git:
-    - bitcoin-secp256k1
   trunk:
     - Alamofire
     - AlamofireImage
@@ -310,6 +308,7 @@ SPEC REPOS:
     - Presentr
     - PromisesObjC
     - Protobuf
+    - Secp256k1Kit.swift
     - SwiftGRPC
     - SwiftLint
     - SwiftProtobuf
@@ -325,12 +324,11 @@ SPEC CHECKSUMS:
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
-  bitcoin-secp256k1: ef8eca90d844cb16fbb9ab81c9b0bb2be98b4503
   BitcoinKit: a8c198d2a57caf64dc43271901f8c5a2309aced2
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 586e4d274398fabe9d70ab790eefca41660b8a17
   BraintreeDropIn: 15d6f53bf80bc0ae7809ab17803100c0a5448fd2
-  crypto: 5bdbf49299b245238b5991150d1973c1a4a94ed4
+  crypto: 3aba77ad2d18dd9aa32b1f3e5fdfb0c94dc0c4c2
   Firebase: 585ae467b3edda6a5444e788fda6888f024d8d6f
   FirebaseABTesting: 821a3a3e4a145987e80fee3657c4de1cb9adf693
   FirebaseAnalytics: 558f7a03d19de451093032c806f39d5f9dff096e
@@ -359,6 +357,7 @@ SPEC CHECKSUMS:
   Presentr: 7078d7eb5d1661ebeaae60c9e42a1e534de1b993
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
+  Secp256k1Kit.swift: 322a66c4b3e95e96a397d73d45ad4d79af991bab
   SwiftGRPC: f8fcfecb547c96cc6913de619f95fa3cd09838ee
   SwiftLint: 22ccbbe3b8008684be5955693bab135e0ed6a447
   SwiftProtobuf: 4fd9645e69b72cbae6ec8da5be0cdd20ca6565dd

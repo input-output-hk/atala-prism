@@ -3,6 +3,7 @@ import FirebaseCrashlytics
 import Firebase
 import UIKit
 import CoreData
+import crypto
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,6 +22,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             Common.URL_API = SharedMemory.global.loggedUser?.apiUrl ?? Common.URL_API
             Logger.d("API URL: \(Common.URL_API)")
         }
+
+        // There is a known bug in Kotlin Native that sometimes causes memory leaks, making the app crash, the suggested workaround is to invoke any Kotlin method from the Main thread
+        SHA256Digest.Companion().compute(bytes: [0, 1, 2])
 
         return true
     }

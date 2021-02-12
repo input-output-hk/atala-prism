@@ -198,12 +198,6 @@ class CredentialsViewController: ListingBaseViewController {
         shareDialogViewController.config(enableButton: enableButton)
     }
 
-    func changeScreenToPayment(degree: Degree?) {
-
-        let params = CredentialPayViewController.makeSeguedParams(degree: degree)
-        ViewControllerUtils.changeScreenSegued(caller: self, segue: "CredentialPaySegue", params: params)
-    }
-
     // MARK: Delete
 
     func showDeleteCredentialConfirmation() {

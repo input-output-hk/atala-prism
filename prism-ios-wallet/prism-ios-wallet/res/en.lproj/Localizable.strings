@@ -226,39 +226,9 @@
 "success_email_support_title" = "Your message has been sent successfully!";
 "success_email_support_subtitle" = "Someone from our Support Team will contact you as soon as possible";
 "success_email_support_button" = "Got it";
-"success_payment_title" = "Congrats!";
-"success_payment_subtitle" = "Your credential payment has been made successfully";
-"success_payment_button" = "Continue";
 "success_restore_title" = "Welcome Back!";
 "success_restore_subtitle" = "Your account has been\nsuccessfully restored";
 "success_restore_button" = "Next";
-
-// <!-- Wallet -->
-"wallet_initial_nav_title" = "Payments";
-"wallet_initial_row_credit_cards" = "Credit Cards";
-"wallet_initial_row_digital_lari" = "Digital Lari";
-"wallet_initial_row_cash" = "Cash";
-"wallet_initial_row_wire_transfer" = "Wire Transfer";
-"wallet_history_nav_title" = "Payment History";
-"wallet_history_status_completed" = "Completed";
-"wallet_history_status_pending" = "Rejected";
-"wallet_history_empty_title" = "Empty Payment History";
-"wallet_history_empty_subtitle" = "All your payments will be listed here";
-"wallet_history_empty_button" = "Go Back";
-"wallet_history_retrieve_error" = "Failed to retrieve payment history. Try again.";
-"wallet_cards_empty_title" = "No Credit Cards";
-"wallet_cards_empty_subtitle" = "Please link a credit card\nto your account";
-"wallet_cards_empty_button" = "Add New Payment Method";
-
-// <!-- Credential Pay -->
-"credentialpay_nav_title" = "Payment";
-"credentialpay_main_title" = "Receive Credential";
-"credentialpay_main_subtitle" = "In order to receive your digital credential please pay issuance fee";
-"credentialpay_amount" = "Amount";
-"credentialpay_card_number" = "Credit Card Number";
-"credentialpay_card_expiration" = "Expiry Date MM/YY";
-"credentialpay_card_cvv" = "CVV Number";
-"credentialpay_card_name" = "Cardholder Name";
 
 // <!-- About -->
 "about_tite"= "About";

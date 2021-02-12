@@ -82,46 +82,12 @@ class ConnectionsWorker: NSObject {
 
     func confirmQrCode() {
 
-        // 1. Get the connection payment token.
-        // 2. Call the payment library.
-        // 3. On library response, add new connection.
-
         self.delegate?.config(isLoading: true)
 
         // Call the service
         ApiService.call(async: {
             do {
-                let response = try ApiService.global.getPaymentToken()
-                Logger.d("getPaymentToken response: \(response)")
-                // Save the payment token
-                if response.tokenizationKey.isEmpty {
-                    throw SimpleLocalizedError("Payment token failed to retrieve")
-                }
-                self.connectionRequest!.paymentToken = response.tokenizationKey
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            self.delegate?.config(isLoading: false)
-
-            self.connectionRequest!.paymentNonce = ""
-            self.sendNewConnectionToServer()
-        }, error: { _ in
-            self.delegate?.config(isLoading: false)
-            self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
-        })
-    }
-
-    func sendNewConnectionToServer() {
-
-        self.delegate?.config(isLoading: true)
-
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!,
-                                                                        nonce: self.connectionRequest!.paymentNonce!)
+                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!)
                 Logger.d("addConnectionToken response: \(response)")
                 // Save the contact
                 let keyPath = CryptoUtils.global.confirmNewKeyUsed()

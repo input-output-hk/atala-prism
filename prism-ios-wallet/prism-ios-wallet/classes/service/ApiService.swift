@@ -60,14 +60,12 @@ class ApiService: NSObject {
         }, metadata: makeMeta(userId))
     }
 
-    func addConnectionToken(token: String,
-                            nonce: String) throws -> Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenResponse {
+    func addConnectionToken(token: String) throws -> Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenResponse {
         let keyPath = CryptoUtils.global.getNextPublicKeyPath()
         let encodedPublicKey = CryptoUtils.global.encodedPublicKey(keyPath: keyPath)
         let request = Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenRequest.with {
             $0.token = token
             $0.holderEncodedPublicKey = encodedPublicKey
-            $0.paymentNonce = nonce
         }
         let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: keyPath)
         return try service.addConnectionFromToken(request, metadata: metadata)
@@ -143,18 +141,4 @@ class ApiService: NSObject {
         return responseList
     }
 
-    // MARK: Payments
-
-    func getPaymentToken() throws -> Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigResponse {
-
-        return try service.getBraintreePaymentsConfig(Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigRequest.with { _ in
-        }, metadata: makeMeta())
-    }
-
-    func getPaymentsHistory(userIds: [String]?) throws -> [Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigResponse] {
-
-        var responseList: [Io_Iohk_Atala_Prism_Protos_GetBraintreePaymentsConfigResponse] = []
-
-        return responseList
-    }
 }

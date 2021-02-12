@@ -137,11 +137,6 @@
 		EE7185752384D5EE00C58F62 /* TabsViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE7185742384D5EE00C58F62 /* TabsViewCell.xib */; };
 		EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7185762384F39500C58F62 /* PaddingViewCell.swift */; };
 		EE7185792384F40500C58F62 /* PaddingViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE7185782384F40500C58F62 /* PaddingViewCell.xib */; };
-		EE71857C2384F9EE00C58F62 /* CredentialPayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71857B2384F9EE00C58F62 /* CredentialPayViewController.swift */; };
-		EE71857E2384F9FE00C58F62 /* CredentialPayPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71857D2384F9FE00C58F62 /* CredentialPayPresenter.swift */; };
-		EE7185862384FBC200C58F62 /* CredentialPay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE7185852384FBC200C58F62 /* CredentialPay.storyboard */; };
-		EE7185882384FC6A00C58F62 /* CredentialPayViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7185872384FC6A00C58F62 /* CredentialPayViewCell.swift */; };
-		EE71858B2384FCAD00C58F62 /* CredentialPayViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE71858A2384FCAD00C58F62 /* CredentialPayViewCell.xib */; };
 		EE7D49D12366B697007C31A8 /* AppConfigs.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D49CF2366B697007C31A8 /* AppConfigs.swift */; };
 		EE7D49D22366B697007C31A8 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D49D02366B697007C31A8 /* Common.swift */; };
 		EE7D4BB82366B9C4007C31A8 /* TableUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4A102366B9C2007C31A8 /* TableUtils.swift */; };
@@ -228,16 +223,11 @@
 		EE8CD814237BA29700614578 /* ScanQrUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8CD813237BA29700614578 /* ScanQrUtils.swift */; };
 		EE8CD816237CFCF300614578 /* InformationView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE8CD815237CFCF300614578 /* InformationView.xib */; };
 		EE8CD818237CFDB700614578 /* InformationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8CD817237CFDB700614578 /* InformationView.swift */; };
-		EE8CD81B237D0E5E00614578 /* HistoryViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8CD81A237D0E5E00614578 /* HistoryViewCell.swift */; };
-		EE8CD81E237D10D700614578 /* HistoryViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE8CD81D237D10D700614578 /* HistoryViewCell.xib */; };
 		EE8FD4DE23726A1000EFF62E /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4DD23726A1000EFF62E /* ProfileViewController.swift */; };
 		EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4DF23726A2700EFF62E /* ProfilePresenter.swift */; };
 		EE8FD4E223726A3600EFF62E /* SettingsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4E123726A3600EFF62E /* SettingsPresenter.swift */; };
 		EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4E323726A4000EFF62E /* SettingsViewController.swift */; };
-		EE8FD4E623726A5500EFF62E /* WalletPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4E523726A5500EFF62E /* WalletPresenter.swift */; };
-		EE8FD4E823726A5F00EFF62E /* WalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4E723726A5F00EFF62E /* WalletViewController.swift */; };
 		EE8FD4EA23726AC000EFF62E /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE8FD4E923726AC000EFF62E /* Settings.storyboard */; };
-		EE8FD4EC23726AC900EFF62E /* Wallet.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE8FD4EB23726AC900EFF62E /* Wallet.storyboard */; };
 		EE8FD4EE23726AD000EFF62E /* Profile.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE8FD4ED23726AD000EFF62E /* Profile.storyboard */; };
 		EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4EF2372864900EFF62E /* FakeData.swift */; };
 		EE904F042373AA5A00EE6344 /* DegreeViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE904F032373AA5A00EE6344 /* DegreeViewCell.swift */; };
@@ -418,11 +408,6 @@
 		EE7185742384D5EE00C58F62 /* TabsViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TabsViewCell.xib; sourceTree = "<group>"; };
 		EE7185762384F39500C58F62 /* PaddingViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingViewCell.swift; sourceTree = "<group>"; };
 		EE7185782384F40500C58F62 /* PaddingViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PaddingViewCell.xib; sourceTree = "<group>"; };
-		EE71857B2384F9EE00C58F62 /* CredentialPayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialPayViewController.swift; sourceTree = "<group>"; };
-		EE71857D2384F9FE00C58F62 /* CredentialPayPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialPayPresenter.swift; sourceTree = "<group>"; };
-		EE7185852384FBC200C58F62 /* CredentialPay.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CredentialPay.storyboard; sourceTree = "<group>"; };
-		EE7185872384FC6A00C58F62 /* CredentialPayViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialPayViewCell.swift; sourceTree = "<group>"; };
-		EE71858A2384FCAD00C58F62 /* CredentialPayViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CredentialPayViewCell.xib; sourceTree = "<group>"; };
 		EE7D49C32366B5A7007C31A8 /* protoc-gen-swift */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "protoc-gen-swift"; sourceTree = "<group>"; };
 		EE7D49C42366B5A7007C31A8 /* package.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
 		EE7D49C52366B5A7007C31A8 /* simple_proto_server.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = simple_proto_server.js; sourceTree = "<group>"; };
@@ -517,16 +502,11 @@
 		EE8CD813237BA29700614578 /* ScanQrUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQrUtils.swift; sourceTree = "<group>"; };
 		EE8CD815237CFCF300614578 /* InformationView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InformationView.xib; sourceTree = "<group>"; };
 		EE8CD817237CFDB700614578 /* InformationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationView.swift; sourceTree = "<group>"; };
-		EE8CD81A237D0E5E00614578 /* HistoryViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewCell.swift; sourceTree = "<group>"; };
-		EE8CD81D237D10D700614578 /* HistoryViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HistoryViewCell.xib; sourceTree = "<group>"; };
 		EE8FD4DD23726A1000EFF62E /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		EE8FD4DF23726A2700EFF62E /* ProfilePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePresenter.swift; sourceTree = "<group>"; };
 		EE8FD4E123726A3600EFF62E /* SettingsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPresenter.swift; sourceTree = "<group>"; };
 		EE8FD4E323726A4000EFF62E /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		EE8FD4E523726A5500EFF62E /* WalletPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletPresenter.swift; sourceTree = "<group>"; };
-		EE8FD4E723726A5F00EFF62E /* WalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViewController.swift; sourceTree = "<group>"; };
 		EE8FD4E923726AC000EFF62E /* Settings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Settings.storyboard; sourceTree = "<group>"; };
-		EE8FD4EB23726AC900EFF62E /* Wallet.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Wallet.storyboard; sourceTree = "<group>"; };
 		EE8FD4ED23726AD000EFF62E /* Profile.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Profile.storyboard; sourceTree = "<group>"; };
 		EE8FD4EF2372864900EFF62E /* FakeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeData.swift; sourceTree = "<group>"; };
 		EE904F032373AA5A00EE6344 /* DegreeViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DegreeViewCell.swift; sourceTree = "<group>"; };
@@ -872,41 +852,6 @@
 			path = cells;
 			sourceTree = "<group>";
 		};
-		EE71857A2384F9AD00C58F62 /* payment */ = {
-			isa = PBXGroup;
-			children = (
-				EE7185832384FAA200C58F62 /* cells */,
-				EE71857D2384F9FE00C58F62 /* CredentialPayPresenter.swift */,
-				EE71857B2384F9EE00C58F62 /* CredentialPayViewController.swift */,
-			);
-			path = payment;
-			sourceTree = "<group>";
-		};
-		EE7185832384FAA200C58F62 /* cells */ = {
-			isa = PBXGroup;
-			children = (
-				EE7185872384FC6A00C58F62 /* CredentialPayViewCell.swift */,
-			);
-			path = cells;
-			sourceTree = "<group>";
-		};
-		EE7185842384FBA700C58F62 /* payment */ = {
-			isa = PBXGroup;
-			children = (
-				EE7185892384FC9B00C58F62 /* cells */,
-				EE7185852384FBC200C58F62 /* CredentialPay.storyboard */,
-			);
-			path = payment;
-			sourceTree = "<group>";
-		};
-		EE7185892384FC9B00C58F62 /* cells */ = {
-			isa = PBXGroup;
-			children = (
-				EE71858A2384FCAD00C58F62 /* CredentialPayViewCell.xib */,
-			);
-			path = cells;
-			sourceTree = "<group>";
-		};
 		EE7D49BE2366B5A7007C31A8 /* protobuf */ = {
 			isa = PBXGroup;
 			children = (
@@ -958,12 +903,10 @@
 				EE48AC1A23775DD800C0A441 /* other */,
 				EE48AC07237753EB00C0A441 /* login */,
 				EE7D4D0B23693514007C31A8 /* connections */,
-				EE71857A2384F9AD00C58F62 /* payment */,
 				EE7D4CFF236761F3007C31A8 /* credentials */,
 				EE7D4A672366B9C2007C31A8 /* main */,
 				EE8FD4D92372696300EFF62E /* profile */,
 				EE8FD4DB2372697A00EFF62E /* settings */,
-				EE8FD4DA2372696D00EFF62E /* wallet */,
 			);
 			path = module;
 			sourceTree = "<group>";
@@ -1178,10 +1121,8 @@
 				EE7D4B6B2366B9C3007C31A8 /* listing */,
 				EE7D4B7A2366B9C3007C31A8 /* login */,
 				EE7D4D06236762E5007C31A8 /* dashboard */,
-				EE7185842384FBA700C58F62 /* payment */,
 				EE7D4D05236762DB007C31A8 /* credentials */,
 				EE7D4D13236939F5007C31A8 /* settings */,
-				EE7D4D12236939EF007C31A8 /* wallet */,
 				EE7D4D11236939E9007C31A8 /* profile */,
 				EE7D4D10236939DC007C31A8 /* connections */,
 				EE7D4B792366B9C3007C31A8 /* Main.storyboard */,
@@ -1330,15 +1271,6 @@
 			path = profile;
 			sourceTree = "<group>";
 		};
-		EE7D4D12236939EF007C31A8 /* wallet */ = {
-			isa = PBXGroup;
-			children = (
-				EE8CD81C237D10C600614578 /* cells */,
-				EE8FD4EB23726AC900EFF62E /* Wallet.storyboard */,
-			);
-			path = wallet;
-			sourceTree = "<group>";
-		};
 		EE7D4D13236939F5007C31A8 /* settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -1376,22 +1308,6 @@
 			path = cells;
 			sourceTree = "<group>";
 		};
-		EE8CD819237D0E4800614578 /* cells */ = {
-			isa = PBXGroup;
-			children = (
-				EE8CD81A237D0E5E00614578 /* HistoryViewCell.swift */,
-			);
-			path = cells;
-			sourceTree = "<group>";
-		};
-		EE8CD81C237D10C600614578 /* cells */ = {
-			isa = PBXGroup;
-			children = (
-				EE8CD81D237D10D700614578 /* HistoryViewCell.xib */,
-			);
-			path = cells;
-			sourceTree = "<group>";
-		};
 		EE8FD4D92372696300EFF62E /* profile */ = {
 			isa = PBXGroup;
 			children = (
@@ -1400,16 +1316,6 @@
 				EE8FD4DD23726A1000EFF62E /* ProfileViewController.swift */,
 			);
 			path = profile;
-			sourceTree = "<group>";
-		};
-		EE8FD4DA2372696D00EFF62E /* wallet */ = {
-			isa = PBXGroup;
-			children = (
-				EE8CD819237D0E4800614578 /* cells */,
-				EE8FD4E523726A5500EFF62E /* WalletPresenter.swift */,
-				EE8FD4E723726A5F00EFF62E /* WalletViewController.swift */,
-			);
-			path = wallet;
 			sourceTree = "<group>";
 		};
 		EE8FD4DB2372697A00EFF62E /* settings */ = {
@@ -1637,7 +1543,6 @@
 				B33B708E249BA09D00F620D6 /* ResetData.storyboard in Resources */,
 				EE7D4C792366B9C4007C31A8 /* Localizable.strings in Resources */,
 				B309A9A8250FF2F200C62B50 /* CredentialSectionViewCell.xib in Resources */,
-				EE7185862384FBC200C58F62 /* CredentialPay.storyboard in Resources */,
 				B3F94E86247455650087EBFD /* Lock.storyboard in Resources */,
 				EE7D4C832366B9C4007C31A8 /* LaunchScreen.storyboard in Resources */,
 				EE71855E23835EB000C58F62 /* ShareItemViewCell.xib in Resources */,
@@ -1660,7 +1565,6 @@
 				EE7185712384D5CB00C58F62 /* ProfileViewCell.xib in Resources */,
 				EE48AC292379221000C0A441 /* SwitchCustomView.xib in Resources */,
 				EE7D4C7A2366B9C4007C31A8 /* Localizable.stringsdict in Resources */,
-				EE8CD81E237D10D700614578 /* HistoryViewCell.xib in Resources */,
 				EE71855A2383530D00C58F62 /* ShareDialog.storyboard in Resources */,
 				EE71855823831BDB00C58F62 /* ConnectionConfirm.storyboard in Resources */,
 				B3491C07251A31B10040F89E /* ContactDetailSharedViewCell.xib in Resources */,
@@ -1669,7 +1573,6 @@
 				B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */,
 				EE7D4CC22366B9C5007C31A8 /* Assets.xcassets in Resources */,
 				B36233D124F5886500AC96A6 /* NoResultsViewCell.xib in Resources */,
-				EE8FD4EC23726AC900EFF62E /* Wallet.storyboard in Resources */,
 				B32B6356250BB02B00162A49 /* CredentialDetailView.xib in Resources */,
 				EEDAF2C32389EC2400121206 /* ConfirmationViewCell.xib in Resources */,
 				EE8CD816237CFCF300614578 /* InformationView.xib in Resources */,
@@ -1679,7 +1582,6 @@
 				EE7D4CC42366B9C5007C31A8 /* SteradianMedium.otf in Resources */,
 				EE7D4CB72366B9C5007C31A8 /* ListingLoadingViewCell.xib in Resources */,
 				EE8FD4EA23726AC000EFF62E /* Settings.storyboard in Resources */,
-				EE71858B2384FCAD00C58F62 /* CredentialPayViewCell.xib in Resources */,
 				EE48AC06237753C600C0A441 /* Terms.storyboard in Resources */,
 				EE7185792384F40500C58F62 /* PaddingViewCell.xib in Resources */,
 				EE7D4D30236FB379007C31A8 /* ConnectionMainViewCell.xib in Resources */,
@@ -1858,7 +1760,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EE8CD81B237D0E5E00614578 /* HistoryViewCell.swift in Sources */,
 				EE7185622384B76B00C58F62 /* BrowserViewController.swift in Sources */,
 				EE7D4C402366B9C4007C31A8 /* String+Extensions.swift in Sources */,
 				B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */,
@@ -1895,7 +1796,6 @@
 				EE7D4C3D2366B9C4007C31A8 /* SelectorAction.swift in Sources */,
 				EE7D4C412366B9C4007C31A8 /* Collection+Extension.swift in Sources */,
 				B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */,
-				EE7185882384FC6A00C58F62 /* CredentialPayViewCell.swift in Sources */,
 				B3F94E96247455A60087EBFD /* SecurityMainViewCell.swift in Sources */,
 				B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */,
 				B36233CF24F5880700AC96A6 /* NoResultsViewCell.swift in Sources */,
@@ -1940,7 +1840,6 @@
 				EE7D4D17236A89AE007C31A8 /* NavBarCustom.swift in Sources */,
 				EE7D4C6E2366B9C4007C31A8 /* CrashReporter.swift in Sources */,
 				EEEFB91223ADD5A4005BA755 /* WalletDtos.swift in Sources */,
-				EE71857E2384F9FE00C58F62 /* CredentialPayPresenter.swift in Sources */,
 				EE7D4C392366B9C4007C31A8 /* BaseNibLoadingView.swift in Sources */,
 				EE7D4CE823673C39007C31A8 /* LocalizedUI+Extensions.swift in Sources */,
 				B309C16624BF5CD600AF70DF /* Credential+CoreDataProperties.swift in Sources */,
@@ -1988,7 +1887,6 @@
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
 				B37FDA4A253897F00024766B /* common_models.proto in Sources */,
 				EE7D4CE423673C39007C31A8 /* Locale+Extensions.swift in Sources */,
-				EE8FD4E823726A5F00EFF62E /* WalletViewController.swift in Sources */,
 				EE7D4D0F23693596007C31A8 /* ConnectionsPresenter.swift in Sources */,
 				B32B6352250AAA8900162A49 /* BaseDAO.swift in Sources */,
 				EE7D4BBF2366B9C4007C31A8 /* ViewControllerUtils.swift in Sources */,
@@ -2016,11 +1914,9 @@
 				B30255012449E33D00C8E9C0 /* NotificationsViewController.swift in Sources */,
 				EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */,
 				05BDBB1B25A6D44300D56D03 /* KotlinConverters.swift in Sources */,
-				EE8FD4E623726A5500EFF62E /* WalletPresenter.swift in Sources */,
 				B309C16A24BF5CD600AF70DF /* Contact+CoreDataProperties.swift in Sources */,
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
 				EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */,
-				EE71857C2384F9EE00C58F62 /* CredentialPayViewController.swift in Sources */,
 				EE7D4CE723673C39007C31A8 /* UIColor+Extensions.swift in Sources */,
 				05BDBA7B25A6D15F00D56D03 /* SwiftExtendedKey.swift in Sources */,
 				EE48AC0D2377542600C0A441 /* RegisterPresenter.swift in Sources */,
@@ -2222,7 +2118,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 130;
+				CURRENT_PROJECT_VERSION = 134;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
@@ -2249,7 +2145,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 130;
+				CURRENT_PROJECT_VERSION = 134;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "prism-ios-wallet/Info.plist";
