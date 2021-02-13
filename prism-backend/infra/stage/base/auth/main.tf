@@ -1,14 +1,11 @@
-terraform {
-  required_version = "= 0.12.25"
-  backend "s3" {
-    bucket = "atala-cvp"
-    region = "us-east-2"
-  }
-}
 
 variable aws_profile {
   description = "The AWS CLI profile to use."
   default     = "default"
+}
+
+provider aws {
+  region  = "us-east-1"
 }
 
 // NB "us-east-1"

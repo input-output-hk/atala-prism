@@ -1,10 +1,3 @@
-terraform {
-  required_version = "= 0.12.25"
-  backend "s3" {
-    bucket = "atala-cvp"
-    region = "us-east-2"
-  }
-}
 
 provider aws {
   profile = var.aws_profile
@@ -244,7 +237,7 @@ module security_group {
 # create ECS cluster with underlying EC2 instances
 module "ecs_cluster" {
   source = "../../../modules/ecs_cluster"
-
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
   name = "${var.env_name_short}-prism-ecs-cluster"
 }
 
@@ -316,6 +309,7 @@ module "prism_service" {
   tls_certificate_arn = data.aws_acm_certificate.prism_tls_cert.arn
 
   atala_prism_domain = var.atala_prism_domain
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 // Monitoring config
@@ -382,7 +376,7 @@ locals {
   env_prod = "www"
   env_demo = "demo"
   # prism console develop
-  envs = ["develop", "demo"]
+  envs = ["develop", "demo", "sandbox"]
   # cloud front is enabled to redirect traffic
   is_cf_enabled = (contains(local.envs,var.env_name_short))
   # cloud front enabled geud

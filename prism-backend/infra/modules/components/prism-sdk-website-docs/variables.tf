@@ -6,6 +6,11 @@ variable aws_region {
   description = "The AWS region to create resources in."
 }
 
+variable aws_ecs_capacity_provider {
+  description = "Capacity provider strategy FARGATE_SPOT or FARGATE"
+  type = string
+}
+
 variable execution_role_arn {
   type = string
 }

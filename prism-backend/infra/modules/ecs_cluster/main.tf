@@ -19,7 +19,14 @@ module "ecs_fargate_role" {
 
 resource aws_ecs_cluster ecs_cluster {
   name               = var.name
-  capacity_providers = ["FARGATE"]
+  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
+
+  default_capacity_provider_strategy {
+    capacity_provider = var.aws_ecs_capacity_provider
+    base              = 1
+    weight            = 1
+  }
+
   tags = {
     Name = var.name
   }

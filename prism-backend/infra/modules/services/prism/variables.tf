@@ -2,6 +2,11 @@ variable env_name_short {
   description = "A short abbreviation for the environment name, used as in resource an DNS names."
 }
 
+variable aws_ecs_capacity_provider {
+  description = "Capacity provider strategy FARGATE_SPOT or FARGATE"
+  type = string
+}
+
 variable aws_region {
   description = "The AWS region to create resources in."
 }

@@ -155,6 +155,9 @@ The basic use-case for creating, working with and destroying an environment is a
 
 # To modify/query a different environment to your branch, specify the environment name explicitly as the last arg to prism.sh
 ./prism.sh -s 
+
+# To update the default aws capacity provider from FARGATE_SPOT to FARGATE 
+./prism.sh -pF or ./prism.sh -aF or ./prism.sh -AF
 ```
 
 ### Automatic environment builds

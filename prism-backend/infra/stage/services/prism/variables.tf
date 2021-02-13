@@ -2,6 +2,12 @@ variable env_name_short {
   description = "A short abbreviation for the environment name, used as in resource an DNS names."
 }
 
+variable aws_ecs_capacity_provider {
+  description = "Capacity provider strategy FARGATE_SPOT or FARGATE"
+  type = string
+  default = "FARGATE_SPOT"
+}
+
 variable aws_profile {
   description = "The AWS CLI profile to use."
   default     = "default"
@@ -190,4 +196,8 @@ variable monitoring_alerts_enabled {
 variable "function_name" {
   type = string
   default = "basic_auth"
+}
+
+variable "postgres_passowrd" {
+  type = string
 }

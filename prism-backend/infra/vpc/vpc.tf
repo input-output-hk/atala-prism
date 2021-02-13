@@ -1,7 +1,3 @@
-terraform {
-  required_version = "= 0.12.25"
-  backend local {}
-}
 
 provider aws {
   profile = var.aws_profile

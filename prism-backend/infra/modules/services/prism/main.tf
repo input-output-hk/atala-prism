@@ -27,6 +27,7 @@ module "connector" {
   private_dns_namespace_name = var.private_dns_namespace_name
 
   log_group_name = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 module "node" {
@@ -65,6 +66,7 @@ module "node" {
   private_dns_namespace_name = var.private_dns_namespace_name
 
   log_group_name = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 module "management_console" {
@@ -98,6 +100,7 @@ module "management_console" {
   private_dns_namespace_name = var.private_dns_namespace_name
 
   log_group_name = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 module "landing_page" {
@@ -122,6 +125,7 @@ module "landing_page" {
   private_dns_namespace_name = var.private_dns_namespace_name
 
   log_group_name = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 module "console" {
@@ -146,6 +150,7 @@ module "console" {
   private_dns_namespace_name = var.private_dns_namespace_name
 
   log_group_name = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 module "prism_sdk_website_docs" {
@@ -168,6 +173,7 @@ module "prism_sdk_website_docs" {
   private_dns_namespace_name = var.private_dns_namespace_name
 
   log_group_name = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 module "envoy" {
@@ -211,6 +217,8 @@ module "envoy" {
   private_dns_namespace_name = var.private_dns_namespace_name
 
   log_group_name = var.log_group_name
+
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 locals {

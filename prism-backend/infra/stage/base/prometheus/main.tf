@@ -1,10 +1,3 @@
-terraform {
-  required_version = "= 0.12.25"
-  backend "s3" {
-    bucket = "atala-cvp"
-    region = "us-east-2"
-  }
-}
 
 provider aws {
   profile = var.aws_profile

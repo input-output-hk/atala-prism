@@ -38,6 +38,7 @@ usage () {
   -t    'taint'. Forces a reploy on the next apply.
   -c    'clean', Remove .terraform/<env name>.tfvars file if it exists.
   -m    'monitor'. Set to enable monitoring alerts from this environment to the atala-prism-service-alerts channel.
+  -F    'capacity_provider'. Set to FARGATE_SPOT by default for production can be FARGATE e.g env www.
   "
   exit 1
 }
@@ -134,6 +135,9 @@ prism_lb_envoy_docker_image         = "$prism_lb_envoy_docker_image"
 intdemo_enabled = $intdemo_enabled
 geud_enabled    = $geud_enabled
 
+# Capacity provider for AWS ECS possible values are FARGATE and FARGATE_SPOT, If not set defaults to FARGATE_SPOT.
+aws_ecs_capacity_provider = "$capacity_provider"
+
 # Toggle alerts to slack. 1 for on, 0 for off.
 monitoring_alerts_enabled          = "$monitor"
 EOF
@@ -171,7 +175,8 @@ clean_config() {
 
 action="plan"
 monitor="0"
-while getopts ':aAdDpswgtcm' arg; do
+capacity_provider="FARGATE_SPOT"
+while getopts ':aAdDpswgtcmF' arg; do
   case $arg in
     (a) action="apply";;
     (A) action="auto-apply";;
@@ -184,6 +189,7 @@ while getopts ':aAdDpswgtcm' arg; do
     (t) action="taint";;
     (c) action="clean-config";;
     (m) monitor="1";;
+    (F) capacity_provider="FARGATE";;
     (\*) usage
          exit 1;;
     (\?) usage
@@ -223,6 +229,7 @@ fi
 
 echo "Using env name '$env_name_short'."
 echo "Performing action '$action'."
+echo "Using Capacity Provider '$capacity_provider'."
 
 case $intdemo_enabled in
   true  ) echo "Intdemo enabled";;

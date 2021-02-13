@@ -6,6 +6,11 @@ variable aws_region {
   description = "The AWS region to create resources in."
 }
 
+variable aws_ecs_capacity_provider {
+  description = "Capacity provider strategy FARGATE_SPOT or FARGATE"
+  type = string
+}
+
 variable enabled {
   description = "Whether or not this module is enabled (as 'count' for modules doesn't work in Terraform 0.12)"
   type        = bool

@@ -96,13 +96,18 @@ resource aws_ecs_service node_service {
   count = var.enabled ? 1 : 0
 
   name            = "${var.parent_name}-node-service"
-  launch_type     = "FARGATE"
   cluster         = var.ecs_cluster_id
   task_definition = aws_ecs_task_definition.node_task_definition[0].arn
   desired_count   = 1
 
   service_registries {
     registry_arn = aws_service_discovery_service.node_discovery[0].arn
+  }
+
+  capacity_provider_strategy {
+    capacity_provider = var.aws_ecs_capacity_provider
+    base              = 1
+    weight            = 1
   }
 
   network_configuration {
