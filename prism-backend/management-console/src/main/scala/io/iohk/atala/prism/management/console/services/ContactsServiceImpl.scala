@@ -5,11 +5,18 @@ import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{
   CreateContactsInvalidRequest,
   GetContactsInvalidRequest,
-  ManagementConsoleErrorSupport
+  ManagementConsoleErrorSupport,
+  UpdateContactInvalidRequest
 }
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CreateContact,
+  InstitutionGroup,
+  ParticipantId,
+  UpdateContact
+}
 import io.iohk.atala.prism.management.console.validations.JsonValidator
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
@@ -134,6 +141,33 @@ class ContactsServiceImpl(
 
     authenticator.authenticated("getSubject", request) { participantId =>
       f(participantId)
+    }
+  }
+
+  override def updateContact(request: UpdateContactRequest): Future[UpdateContactResponse] = {
+    def f(participantId: ParticipantId, query: UpdateContact): Future[UpdateContactResponse] = {
+      implicit val loggingContext: LoggingContext = LoggingContext(
+        "participantId" -> participantId
+      )
+
+      contactsIntegrationService
+        .updateContact(participantId, query)
+        .toFutureEither
+        .map { _ =>
+          console_api.UpdateContactResponse()
+        }
+        .wrapExceptions
+        .flatten
+    }
+
+    authenticator.authenticated("updateContact", request) { participantId =>
+      ProtoCodecs.toUpdateContact(request) match {
+        case Failure(exception) =>
+          val response = UpdateContactInvalidRequest(exception.getMessage)
+          respondWith(request, response)
+
+        case Success(query) => f(participantId, query)
+      }
     }
   }
 

@@ -25,6 +25,13 @@ object CreateContact {
   final case class Batch(groups: Set[InstitutionGroup.Id], contacts: List[NoOwner])
 }
 
+final case class UpdateContact(
+    id: Contact.Id,
+    newExternalId: Contact.ExternalId,
+    newData: Json,
+    newName: String
+)
+
 final case class Contact(
     contactId: Contact.Id,
     externalId: Contact.ExternalId,

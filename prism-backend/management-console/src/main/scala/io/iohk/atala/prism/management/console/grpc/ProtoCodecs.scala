@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.management.console.grpc
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.protos.common_models.SortByDirection
-import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics}
+import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics, _}
 import io.iohk.atala.prism.management.console.validations.JsonValidator
+import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
@@ -212,5 +211,14 @@ object ProtoCodecs {
       .withFieldConst(_.credentialType, Some(toCredentialTypeProto(withFields.credentialType)))
       .withFieldConst(_.requiredFields, withFields.requiredFields.map(toCredentialTypeFieldProto))
       .transform
+  }
+
+  def toUpdateContact(request: console_api.UpdateContactRequest): Try[UpdateContact] = {
+    for {
+      contactId <- Contact.Id.from(request.contactId)
+      newExternalId <- Contact.ExternalId.validated(request.newExternalId)
+      newName = request.newName.trim
+      newJsonData <- JsonValidator.jsonData(request.newJsonData)
+    } yield UpdateContact(contactId, newExternalId, newJsonData, newName)
   }
 }

@@ -8,6 +8,7 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
+import io.iohk.atala.prism.management.console.models.Contact.ExternalId
 import io.iohk.atala.prism.management.console.models.{Contact, Helpers, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.protos.connector_api.ConnectionsStatusResponse
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
@@ -499,6 +500,129 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val (institutionId, responseT) = runTest(_ => request)
       responseT.isFailure must be(true)
       testAvailableContacts(institutionId, 0)
+    }
+  }
+
+  "updateContact" should {
+    def prepare[T](
+        f: (Contact.Id, ParticipantId) => console_api.UpdateContactRequest
+    )(g: Try[console_api.UpdateContactResponse] => T) = {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution", did)
+      val externalId = Contact.ExternalId.random()
+      val json = Json.obj(
+        "email" -> Json.fromString("alice@bkm.me"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+      val createRequest = console_api.CreateContactRequest(
+        jsonData = json.noSpaces,
+        externalId = externalId.value
+      )
+      val createRpcRequest = SignedRpcRequest.generate(keyPair, did, createRequest)
+
+      val contactId = usingApiAsContacts(createRpcRequest) { serviceStub =>
+        val str = serviceStub.createContact(createRequest).contact.value.contactId
+        Contact.Id.from(str).toOption.value
+      }
+
+      val updateRequest = f(contactId, institutionId)
+      val updateRpcRequest = SignedRpcRequest.generate(keyPair, did, updateRequest)
+      usingApiAsContacts(updateRpcRequest) { serviceStub =>
+        val response = Try {
+          serviceStub.updateContact(updateRequest)
+        }
+        g(response)
+      }
+    }
+
+    "update a contact" in {
+      val newJson = Json.obj(
+        "who" -> Json.fromString("me"),
+        "when" -> Json.fromString(LocalDate.now().toString)
+      )
+      prepare((id, _) =>
+        console_api.UpdateContactRequest(
+          contactId = id.uuid.toString,
+          newJsonData = newJson.noSpaces,
+          newExternalId = ExternalId.random().toString,
+          newName = "new dusty"
+        )
+      ) { result =>
+        result.isSuccess must be(true)
+      }
+    }
+
+    "work with empty name" in {
+      val newJson = Json.obj(
+        "who" -> Json.fromString("me"),
+        "when" -> Json.fromString(LocalDate.now().toString)
+      )
+      prepare((id, _) =>
+        console_api
+          .UpdateContactRequest(
+            contactId = id.uuid.toString,
+            newJsonData = newJson.noSpaces,
+            newExternalId = ExternalId.random().toString
+          )
+          .withNewName("")
+      ) { result =>
+        result.isSuccess must be(true)
+      }
+    }
+
+    "fail when the external id is invalid" in {
+      val newJson = Json.obj(
+        "who" -> Json.fromString("me"),
+        "when" -> Json.fromString(LocalDate.now().toString)
+      )
+      prepare((id, _) =>
+        console_api
+          .UpdateContactRequest(
+            contactId = id.uuid.toString,
+            newJsonData = newJson.noSpaces,
+            newName = "new dusty"
+          )
+          .withNewExternalId("")
+      ) { result =>
+        result.isFailure must be(true)
+      }
+    }
+
+    "fail on duplicated external id" in {
+      val newJson = Json.obj(
+        "who" -> Json.fromString("me"),
+        "when" -> Json.fromString(LocalDate.now().toString)
+      )
+      def build(id: Contact.Id, institutionId: ParticipantId) = {
+        val existing = createContact(institutionId, "test")
+
+        console_api
+          .UpdateContactRequest(
+            contactId = id.uuid.toString,
+            newJsonData = newJson.noSpaces,
+            newName = "new dusty"
+          )
+          .withNewExternalId(existing.externalId.value)
+      }
+      prepare(build) { result =>
+        result.isFailure must be(true)
+      }
+    }
+
+    "fail on invalid json data" in {
+      prepare((id, _) =>
+        console_api
+          .UpdateContactRequest(
+            contactId = id.uuid.toString,
+            newJsonData = "{",
+            newName = "new dusty",
+            newExternalId = Contact.ExternalId.random().toString
+          )
+      ) { result =>
+        result.isFailure must be(true)
+      }
     }
   }
 

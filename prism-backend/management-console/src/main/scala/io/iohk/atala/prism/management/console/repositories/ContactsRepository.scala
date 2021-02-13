@@ -6,7 +6,13 @@ import doobie.free._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CreateContact,
+  InstitutionGroup,
+  ParticipantId,
+  UpdateContact
+}
 import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, InstitutionGroupsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -60,6 +66,15 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
     connectionIO
       .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither
+  }
+
+  def updateContact(institutionId: ParticipantId, request: UpdateContact): FutureEither[Nothing, Unit] = {
+    ContactsDAO
+      .updateContact(institutionId, request)
+      .transact(xa)
+      .map(Right(_))
       .unsafeToFuture()
       .toFutureEither
   }

@@ -32,6 +32,9 @@ service ContactsService {
   // Retrieves a contact for the authenticated institution
   rpc GetContact (GetContactRequest) returns (GetContactResponse) {}
 
+  // Updates the given contact on the authenticated institution
+  rpc UpdateContact (UpdateContactRequest) returns (UpdateContactResponse) {}
+
   // Generates a connection token for the given contact.
   // This is a necessary step before being able to connect to the contact.
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
@@ -263,6 +266,17 @@ message GetContactRequest {
 message GetContactResponse {
   Contact contact = 1; // the retrieved contact
 }
+
+// Request to update a contact from the authenticated institution.
+// All fields are required, and its what the contact will get updated to.
+message UpdateContactRequest {
+  string contactId = 1; // the id for the contact to update
+  string newExternalId = 2; // the new externalId
+  string newName = 3; // the new name
+  string newJsonData = 4; // the new arbitrary json data, when missing, "{}" will be used
+}
+// Response after updating the contact
+message UpdateContactResponse {}
 
 // Request to generate a connection token for the given contact on the authenticated institution
 message GenerateConnectionTokenForContactRequest {

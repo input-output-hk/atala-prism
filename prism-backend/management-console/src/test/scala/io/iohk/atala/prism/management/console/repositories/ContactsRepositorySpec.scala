@@ -351,6 +351,94 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
     }
   }
 
+  "updateContact" should {
+    "work" in {
+      val institution = createParticipant("Institution-1")
+      val json = Json.obj(
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+
+      val contactId = repository
+        .create(CreateContact(institution, Contact.ExternalId.random(), json, "Dusty Here"), None)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .contactId
+
+      val newData = Json.obj(
+        "level" -> Json.fromString("expert"),
+        "blockchain" -> Json.fromString("true")
+      )
+      val request = UpdateContact(
+        id = contactId,
+        newName = "new dusty",
+        newExternalId = Contact.ExternalId.random(),
+        newData = newData
+      )
+
+      val result = repository.updateContact(institution, request).value.futureValue
+      result.isRight must be(true)
+
+      // we check that the contact was updated
+      val storedContact = repository.find(institution, contactId).value.futureValue.toOption.value.value
+      storedContact.name must be(request.newName)
+      storedContact.externalId must be(request.newExternalId)
+      storedContact.data must be(request.newData)
+    }
+
+    "fail when the contact doesn't exists" in {
+      val institution = createParticipant("Institution-1")
+      val json = Json.obj(
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+
+      val request = UpdateContact(
+        id = Contact.Id.random(),
+        newName = "new dusty",
+        newExternalId = Contact.ExternalId.random(),
+        newData = json
+      )
+
+      intercept[RuntimeException] {
+        repository.updateContact(institution, request).value.futureValue
+      }
+    }
+
+    "fail when the contact doesn't belong to the given institution" in {
+      val institution = createParticipant("Institution-1")
+      val json = Json.obj(
+        "email" -> Json.fromString("d.here@iohk.io"),
+        "admissionDate" -> Json.fromString(LocalDate.now().toString)
+      )
+
+      val contactId = repository
+        .create(CreateContact(institution, Contact.ExternalId.random(), json, "Dusty Here"), None)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .contactId
+
+      val newData = Json.obj(
+        "level" -> Json.fromString("expert"),
+        "blockchain" -> Json.fromString("true")
+      )
+      val request = UpdateContact(
+        id = contactId,
+        newName = "new dusty",
+        newExternalId = Contact.ExternalId.random(),
+        newData = newData
+      )
+
+      intercept[RuntimeException] {
+        repository.updateContact(ParticipantId.random(), request).value.futureValue
+      }
+    }
+  }
+
   "find by subjectId" should {
     "return the correct subject when present" in {
       val institutionId = createParticipant("Institution X")

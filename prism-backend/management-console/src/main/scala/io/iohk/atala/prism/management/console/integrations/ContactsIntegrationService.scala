@@ -41,6 +41,13 @@ class ContactsIntegrationService(
     contactsRepository.createBatch(institutionId, request).value
   }
 
+  def updateContact(
+      institutionId: ParticipantId,
+      request: UpdateContact
+  ): Future[Either[errors.ManagementConsoleError, Unit]] = {
+    contactsRepository.updateContact(institutionId, request).value
+  }
+
   def getContacts(
       institutionId: ParticipantId,
       paginatedQuery: Contact.PaginatedQuery

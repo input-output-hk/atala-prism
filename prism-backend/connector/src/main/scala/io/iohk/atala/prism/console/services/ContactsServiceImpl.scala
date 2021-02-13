@@ -116,6 +116,10 @@ class ContactsServiceImpl(contactsRepository: ContactsRepository, authenticator:
     }
   }
 
+  override def updateContact(request: UpdateContactRequest): Future[UpdateContactResponse] = {
+    ???
+  }
+
   override def generateConnectionTokenForContact(
       request: GenerateConnectionTokenForContactRequest
   ): Future[GenerateConnectionTokenForContactResponse] = {

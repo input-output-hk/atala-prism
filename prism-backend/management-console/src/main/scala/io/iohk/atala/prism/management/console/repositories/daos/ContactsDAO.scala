@@ -8,7 +8,7 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments._
 import io.circe.Json
-import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, ParticipantId, UpdateContact}
 import io.iohk.atala.prism.management.console.repositories.daos.queries.FindContactsQueryBuilder
 
 import java.time.Instant
@@ -51,6 +51,22 @@ object ContactsDAO {
           .whenA(contacts.size != affectedRows)
       }
       .map(_ => contactIds)
+  }
+
+  def updateContact(institutionId: ParticipantId, data: UpdateContact): ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE contacts
+         |SET external_id = ${data.newExternalId},
+         |    name = ${data.newName},
+         |    contact_data = ${data.newData}
+         |WHERE contact_id = ${data.id} AND
+         |      created_by = $institutionId
+         |""".stripMargin.update.run
+      .flatTap { affectedRows =>
+        FC.raiseError(new RuntimeException(s"Unable to update contact, it is likely that it doesn't exist"))
+          .whenA(1 != affectedRows)
+      }
+      .map(_ => ())
   }
 
   def findContact(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Option[Contact]] = {
