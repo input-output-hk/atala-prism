@@ -47,7 +47,8 @@ def get_workflow_id(pipeline_id):
             text_response = json.loads(workflow_details_response.text)
             all_items = text_response["items"]
             if not all_items:
-                print(f"Pipeline has no workflow ready yet, waiting... Iteration nr: [{iteration}]")
+                print(f"Pipeline has no workflow ready yet, "
+                      f"waiting [{SECONDS_TO_WAIT}] seconds... Iteration nr: [{iteration}]")
             else:
                 return text_response["items"][0]["id"]
         else:
@@ -57,52 +58,35 @@ def get_workflow_id(pipeline_id):
     raise RuntimeError("ERROR! There were no possibility to get workflow")
 
 
-def get_workflows_jobs_numbers(workflow_id):
-    workflow_jobs_url = f"{CIRCLE_CI_URL}/workflow/{workflow_id}/job"
-    workflow_jobs_details_response = requests.get(workflow_jobs_url, auth=(token, ""), timeout=10, headers=HEADERS)
-    if workflow_jobs_details_response.ok:
-        job_numbers = []
-        text_response = json.loads(workflow_jobs_details_response.text)
-        all_jobs = text_response["items"]
-        for job in all_jobs:
-            job_numbers.append(job["job_number"])
-        return job_numbers
-    else:
-        handle_error_response(workflow_jobs_details_response)
-
-
-def get_all_jobs_details(jobs_numbers):
-    jobs_details = []
-    for job_number in jobs_numbers:
-        job_url = f"{project_url}/job/{job_number}"
-        finished = False
-        iteration = 1
-        while not finished:
-            job_details_response = requests.get(job_url, auth=(token, ""), timeout=10, headers=HEADERS)
-            if job_details_response.ok:
-                text_response = json.loads(job_details_response.text)
-                finished = False if text_response["stopped_at"] is None else True
-                name = text_response["name"]
-                if finished:
-                    web_url = text_response["web_url"]
-                    status = text_response["status"]
-                    jobs_details.append((name, web_url, status))
-                    continue
-                time.sleep(SECONDS_TO_WAIT)
-                print(f"Waiting for [{name}] to be finished. Iteration nr: [{iteration}]. "
-                      f"Waiting another [{SECONDS_TO_WAIT}] seconds...")
-                iteration += 1
+def get_finished_workflow_details(workflow_id):
+    workflow_url = f"{CIRCLE_CI_URL}/workflow/{workflow_id}"
+    iteration = 1
+    while True:
+        workflow_details_response = requests.get(workflow_url, auth=(token, ""), timeout=10, headers=HEADERS)
+        if workflow_details_response.ok:
+            text_response = json.loads(workflow_details_response.text)
+            if text_response["stopped_at"] is None:
+                print(f"Workflow is not finished yet, waiting... Iteration nr: [{iteration}]")
             else:
-                handle_error_response(job_details_response)
-    return jobs_details
+                status = text_response["status"]
+                pipeline_number = text_response["pipeline_number"]
+                url = f"https://app.circleci.com/pipelines/github/{ORG_NAME}" \
+                      f"/{project_name}/{pipeline_number}/workflows/{workflow_id}"
+                return status, url
+        else:
+            handle_error_response(workflow_details_response)
+        time.sleep(SECONDS_TO_WAIT)
+        iteration += 1
 
 
-def check_jobs_results(results):
-    if all(result[2] == "success" for result in results):
+def check_workflow_result(details):
+    status = details[0]
+    url = details[1]
+    print(f"Workflow is finished with [{status}] status. More info under: \n{url}")
+    if status == "success":
         print("All jobs ended up successfully!")
     else:
-        [print(f"Build name: [{result[0]}], url: [{result[1]}] resulted in [{result[2]}]") for result in results]
-        raise ValueError("ERROR: A least one of the jobs did not return in success! See the logs above.")
+        raise ValueError(f"ERROR: Workflow status is [{status}]! See the logs above.")
 
 
 token = get_env_variable("CIRCLE_CI_TOKEN")
@@ -114,6 +98,5 @@ project_url = f"{CIRCLE_CI_URL}{PROJECT_ENDPOINT}{project_slug}"
 
 new_pipeline_id = get_new_pipeline_id(branch_to_trigger)
 new_workflow_id = get_workflow_id(new_pipeline_id)
-created_jobs_numbers = get_workflows_jobs_numbers(new_workflow_id)
-jobs_results = get_all_jobs_details(created_jobs_numbers)
-check_jobs_results(jobs_results)
+workflow_details = get_finished_workflow_details(new_workflow_id)
+check_workflow_result(workflow_details)
