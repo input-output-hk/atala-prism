@@ -21,6 +21,16 @@ variable "geud_enabled" {
   type        = bool
 }
 
+variable "mirror_enabled" {
+  description = "Whether or not deploy mirror components"
+  type        = bool
+}
+
+variable "kycbridge_enabled" {
+  description = "Whether or not deploy KYC bridge components"
+  type        = bool
+}
+
 variable "connector_docker_image" {
   description = "Docker image for the connector."
 }
@@ -79,6 +89,24 @@ variable "envoy_docker_image" {
   description = "Docker image for the envoy grpc proxy."
 }
 
+variable "mirror_docker_image" {
+  description = "Docker image for the Mirror backend."
+}
+
+variable "mirror_port" {
+  description = "Port number for the Mirror backend"
+  type        = number
+}
+
+variable "kycbridge_docker_image" {
+  description = "Docker image for the KYC bridge."
+}
+
+variable "kycbridge_port" {
+  description = "Port number for the KYC bridge"
+  type        = number
+}
+
 variable "ecs_cluster_id" {
   description = "ID of ECS cluster"
 }
@@ -131,6 +159,50 @@ variable "management_console_psql_username" {
 
 variable "management_console_psql_password" {
   description = "PostgreSQL password to use for management console"
+}
+
+variable "mirror_psql_username" {
+  description = "PostgreSQL username to use for mirror"
+}
+
+variable "mirror_psql_password" {
+  description = "PostgreSQL password to use for mirror"
+}
+
+variable "kycbridge_psql_username" {
+  description = "PostgreSQL username to use for kycbridge"
+}
+
+variable "kycbridge_psql_password" {
+  description = "PostgreSQL password to use for kycbridge"
+}
+
+variable "mirror_did" {
+  description = "DID that mirror should use to issue credentials and interact with connector"
+}
+
+variable "mirror_did_private_key" {
+  description = "Serialization of mirror DID master private key"
+}
+
+variable "kycbridge_did" {
+  description = "DID that kycbridge should use to issue credentials and interact with connector"
+}
+
+variable "kycbridge_did_private_key" {
+  description = "Serialization of kycbridge DID master private key"
+}
+
+variable "acuant_username" {
+  description = "Username for interacting with Acuant API"
+}
+
+variable "acuant_password" {
+  description = "Password for interacting with Acuant API"
+}
+
+variable "acuant_subscription_id" {
+  description = "Subscription ID for interacting with Acuant API"
 }
 
 variable "cardano_confirmation_blocks" {

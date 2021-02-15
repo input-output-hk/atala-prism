@@ -103,6 +103,90 @@ module "management_console" {
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
+module "mirror" {
+  source  = "../../components/mirror"
+  enabled = var.mirror_enabled
+
+  mirror_docker_image = var.mirror_docker_image
+  port                = var.mirror_port
+
+  # use Envoy as a service mesh / local load balancer for node and connector
+
+  node_host      = module.envoy.envoy_host
+  node_port      = var.node_port
+  connector_host = module.envoy.envoy_host
+  connector_port = var.connector_port
+
+  psql_host     = var.psql_host
+  psql_database = var.psql_database
+
+  psql_username = var.mirror_psql_username
+  psql_password = var.mirror_psql_password
+
+  did             = var.mirror_did
+  did_private_key = var.mirror_did_private_key
+
+  parent_name               = "prism-${var.env_name_short}"
+  aws_region                = var.aws_region
+  ecs_cluster_id            = var.ecs_cluster_id
+  ecs_cluster_iam_role_name = var.ecs_cluster_iam_role_name
+  execution_role_arn        = var.execution_role_arn
+
+  vpc_id            = var.vpc_id
+  security_group_id = var.security_group_id
+  subnets           = var.component_subnets
+
+  private_dns_namespace_id   = var.private_dns_namespace_id
+  private_dns_namespace_name = var.private_dns_namespace_name
+
+  log_group_name            = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
+}
+
+module "kycbridge" {
+  source  = "../../components/kycbridge"
+  enabled = var.kycbridge_enabled
+
+  kycbridge_docker_image = var.kycbridge_docker_image
+  port                   = var.kycbridge_port
+
+  # use Envoy as a service mesh / local load balancer for node and connector
+
+  node_host      = module.envoy.envoy_host
+  node_port      = var.node_port
+  connector_host = module.envoy.envoy_host
+  connector_port = var.connector_port
+
+  psql_host     = var.psql_host
+  psql_database = var.psql_database
+
+  psql_username = var.kycbridge_psql_username
+  psql_password = var.kycbridge_psql_password
+
+  did             = var.kycbridge_did
+  did_private_key = var.kycbridge_did_private_key
+
+  acuant_username        = var.acuant_username
+  acuant_password        = var.acuant_password
+  acuant_subscription_id = var.acuant_subscription_id
+
+  parent_name               = "prism-${var.env_name_short}"
+  aws_region                = var.aws_region
+  ecs_cluster_id            = var.ecs_cluster_id
+  ecs_cluster_iam_role_name = var.ecs_cluster_iam_role_name
+  execution_role_arn        = var.execution_role_arn
+
+  vpc_id            = var.vpc_id
+  security_group_id = var.security_group_id
+  subnets           = var.component_subnets
+
+  private_dns_namespace_id   = var.private_dns_namespace_id
+  private_dns_namespace_name = var.private_dns_namespace_name
+
+  log_group_name            = var.log_group_name
+  aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
+}
+
 module "landing_page" {
   source  = "../../components/intdemo-landing"
   enabled = var.intdemo_enabled
@@ -197,6 +281,10 @@ module "envoy" {
     { name = "NODE_PORT", value = var.node_port },
     { name = "MANAGEMENT_CONSOLE_ADDRESS", value = module.management_console.management_console_host },
     { name = "MANAGEMENT_CONSOLE_PORT", value = var.management_console_port },
+    { name = "MIRROR_ADDRESS", value = var.mirror_enabled ? module.mirror.mirror_host : "0.0.0.0" },
+    { name = "MIRROR_PORT", value = var.mirror_port },
+    { name = "KYC_BRIDGE_ADDRESS", value = var.kycbridge_enabled ? module.kycbridge.kycbridge_host : "0.0.0.0" },
+    { name = "KYC_BRIDGE_PORT", value = var.kycbridge_port },
     { name = "ATALA_PRISM_DOMAIN", value = var.atala_prism_domain },
     { name = "ATALA_PRISM_LANDING_DOMAIN", value = "${var.env_name_short}.${var.atala_prism_domain}" },
     { name = "ATALA_PRISM_CONSOLE_DOMAIN", value = "console-${var.env_name_short}.${var.atala_prism_domain}" },

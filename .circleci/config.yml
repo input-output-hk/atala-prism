@@ -240,6 +240,18 @@ jobs:
             sbt management-console/dockerBuildAndPush
 
       - run:
+          name: Build and push prism-backend/mirror
+          command: |
+            cd prism-backend
+            sbt mirror/dockerBuildAndPush
+
+      - run:
+          name: Build and push prism-backend/kycbridge
+          command: |
+            cd prism-backend
+            sbt kycbridge/dockerBuildAndPush
+
+      - run:
           name: Build and push prism-lb-envoy
           command: |
             cd prism-backend/infra/docker/prism-lb-envoy
@@ -251,12 +263,15 @@ jobs:
     docker:
       - image: << pipeline.parameters.prism-scala-common-docker-image >>
     parameters:
-      geud-enabled:
-        type: boolean
-        default: true
-      intdemo-enabled:
-        type: boolean
-        default: true
+      enabled-components:
+        # components to be included in the deployment
+        # possible values:
+        # "all" - enable all components
+        # "geud,intdemo", etc. - comma-delimited names of components
+        #   avaliable components: intdemo, geud, mirror, kycbridge
+        # "" (empty string) - only components which name is in the branch name will be included
+        type: string
+        default: ""
     steps:
       - checkout
 
@@ -274,9 +289,13 @@ jobs:
             tag="${branchPrefix}-${revCount}-${shaShort}"
             echo "export TAG=$tag" >> $BASH_ENV;
             echo "export ENV=$branchPrefix" >> $BASH_ENV;
-            echo "export INTDEMO_ENABLED=<< parameters.intdemo-enabled >>" >> $BASH_ENV;
-            echo "export GEUD_ENABLED=<< parameters.geud-enabled >>" >> $BASH_ENV;
-            . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED"
+            echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $BASH_ENV;
+            echo 'export ENABLED_COMPONENTS="<< parameters.enabled-components >>"' >> $BASH_ENV;
+            echo 'export INTDEMO_ENABLED=$(is_enabled "intdemo")' >> $BASH_ENV;
+            echo 'export GEUD_ENABLED=$(is_enabled "geud")' >> $BASH_ENV;
+            echo 'export MIRROR_ENABLED=$(is_enabled "mirror")' >> $BASH_ENV;
+            echo 'export KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")' >> $BASH_ENV;
+            . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
 
       - run:
           name: Rebuild prism environment
@@ -812,21 +831,27 @@ workflows:
             - slack/approval-notification
 
       - rebuild-prism-env:
-          name: rebuild-intdemo-and-geud
-          intdemo-enabled: true
-          geud-enabled: true
+          name: rebuild-develop
+          enabled-components: all
           filters:
             branches:
               only:
                 - /develop.*/
+          requires:
+            - deploy-ecr-images
+      - rebuild-prism-env:
+          name: rebuild-qa
+          enabled-components: "geud,intdemo"
+          filters:
+            branches:
+              only:
                 - /qa.*/
                 - /sandbox.*/
           requires:
             - deploy-ecr-images
       - rebuild-prism-env:
-          name: rebuild-intdemo-only
-          intdemo-enabled: true
-          geud-enabled: false
+          name: rebuild-test
+          enabled-components: ""
           filters:
             branches:
               only:
@@ -834,19 +859,8 @@ workflows:
           requires:
             - deploy-ecr-images
       - rebuild-prism-env:
-          name: rebuild-geud-only
-          intdemo-enabled: false
-          geud-enabled: true
-          filters:
-            branches:
-              only:
-                - /geud-test.*/
-          requires:
-            - deploy-ecr-images
-      - rebuild-prism-env:
-          name: rebuild-management-console-demo-only
-          intdemo-enabled: false
-          geud-enabled: true
+          name: rebuild-demo
+          enabled-components: "geud"
           filters:
             branches:
               only:
@@ -860,7 +874,7 @@ workflows:
               only:
                 - qa
           requires:
-            - rebuild-intdemo-and-geud
+            - rebuild-qa
   test:
     triggers:
       - schedule:

@@ -33,6 +33,18 @@ variable "geud_enabled" {
   default     = true
 }
 
+variable "mirror_enabled" {
+  description = "Whether or not deploy mirror components"
+  type        = bool
+  default     = true
+}
+
+variable "kycbridge_enabled" {
+  description = "Whether or not deploy KYC bridge components"
+  type        = bool
+  default     = true
+}
+
 variable "autoscale_min" {
   description = "Minimum autoscale (number of EC2 instances in ECS cluster)"
   default     = "1"
@@ -84,6 +96,28 @@ variable "management_console_port" {
   description = "Port number for the management console."
   type        = number
   default     = 50054
+}
+
+variable "mirror_docker_image" {
+  description = "Docker image for the Mirror backend."
+  type        = string
+}
+
+variable "mirror_port" {
+  description = "Port number for the Mirror backend"
+  type        = number
+  default     = 50057
+}
+
+variable "kycbridge_docker_image" {
+  description = "Docker image for the KYC bridge."
+  type        = string
+}
+
+variable "kycbridge_port" {
+  description = "Port number for the KYC bridge"
+  type        = number
+  default     = 50050
 }
 
 variable "landing_docker_image" {
@@ -157,6 +191,34 @@ variable "cardano_wallet_passphrase" {
 variable "cardano_payment_address" {
   description = "Address to send funds to when publishing PRISM transactions"
   default     = ""
+}
+
+variable "mirror_did" {
+  description = "DID that mirror should use to issue credentials and interact with connector"
+}
+
+variable "mirror_did_private_key" {
+  description = "Serialization of mirror DID master private key"
+}
+
+variable "kycbridge_did" {
+  description = "DID that kycbridge should use to issue credentials and interact with connector"
+}
+
+variable "kycbridge_did_private_key" {
+  description = "Serialization of kycbridge DID master private key"
+}
+
+variable "acuant_username" {
+  description = "Username for interacting with Acuant API"
+}
+
+variable "acuant_password" {
+  description = "Password for interacting with Acuant API"
+}
+
+variable "acuant_subscription_id" {
+  description = "Subscription ID for interacting with Acuant API"
 }
 
 variable "vpc_name" {

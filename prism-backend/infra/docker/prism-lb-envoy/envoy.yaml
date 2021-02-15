@@ -102,6 +102,12 @@ static_resources:
                           route: { cluster: management_console_service }
                         - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
                           route: { cluster: management_console_service }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
+                          route: { cluster: node_service }
+                        - match: { prefix: "/io.iohk.atala.mirror.protos." }
+                          route: { cluster: mirror_service }
+                        - match: { prefix: "/io.iohk.atala.kycbridge.protos." }
+                          route: { cluster: kycbridge_service }
                 http_filters:
                   - name: envoy.filters.http.grpc_stats
                   - name: envoy.router
@@ -222,6 +228,48 @@ static_resources:
                     socket_address:
                       address: "$MANAGEMENT_CONSOLE_ADDRESS"
                       port_value: "$MANAGEMENT_CONSOLE_PORT"
+      outlier_detection:
+        # eject instance that has failure rate > 50% (default is 85%) ...
+        failure_percentage_threshold: 50
+        # ... when there are at least two instances active ...
+        failure_percentage_minimum_hosts: 2
+        # ... for 2 minutes
+        base_ejection_time: "120s"
+    - name: mirror_service
+      connect_timeout: 5s
+      type: strict_dns
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: mirror_service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: "$MIRROR_ADDRESS"
+                      port_value: "$MIRROR_PORT"
+      outlier_detection:
+        # eject instance that has failure rate > 50% (default is 85%) ...
+        failure_percentage_threshold: 50
+        # ... when there are at least two instances active ...
+        failure_percentage_minimum_hosts: 2
+        # ... for 2 minutes
+        base_ejection_time: "120s"
+    - name: kycbridge_service
+      connect_timeout: 5s
+      type: strict_dns
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: kycbridge_service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: "$KYC_BRIDGE_ADDRESS"
+                      port_value: "$KYC_BRIDGE_PORT"
       outlier_detection:
         # eject instance that has failure rate > 50% (default is 85%) ...
         failure_percentage_threshold: 50

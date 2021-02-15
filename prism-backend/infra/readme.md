@@ -24,13 +24,17 @@ need to code this.
 
 Services (e.g. intdemo) are deployed into Virtual LAN network - VPC in AWS nomenclature. All testing services - ones built from `develop` branch or feature branches should go into one network. That means that networks and services have different lifetime cycles.
 
-VPC is generally deployed once and then only modified when needed. Default network's name is `prism-test`. Each network should have an associated private DNS namespace for [Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html), default defined as `<vpc name>.atala.local`. Another component that comes with a network is monitoring: [Prometheus](https://prometheus.io/) as time-series database backend and [Grafana](https://grafana.com/) as dashboards UI. All such services are defined in `base` subdirectory.
+VPC is generally deployed once and then only modified when needed. Default network's name is `prism-test`. Each network should have an associated private DNS namespace for [Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html), default defined as `<vpc name>.atala.local`. Another component that comes with a network is monitoring: [Prometheus](https://prometheus.io/) as time-series database backend and [Grafana](https://grafana.com/) as dashboards UI. Apart from infrastructural services, there is also a shared Cardano Wallet deployed, so that it doesn't need to be re-synced on each new environment. All such services are defined in `base` subdirectory.
 
 Services in staging/testing tier have much shorter lifetimes as they are redeployed after each build. It is responsibility of service deployment to spin up its load balancers (Envoy / AWS LB), set up DNS addresses, etc. Metrics exposed can be automatically discovered by monitoring corresponding to the VPC.
 
 #### Networking
 
 All development instances are deployed to the same VPC/VLAN defined in `stage/base/vpc`. It contains one public and one private subnet in two availability zones with NATs assinged for private ones. Identifiers and IP ranges used in services should not be hardcoded and should be loaded from the state stored in the bucket instead.
+
+#### TLS support
+
+TLS support is provided by AWS Elastic Load Balancer. TLS is terminated there and all traffic is routed unsecured to components in private network. TLS certificates are stored in AWS Certificate Manager.
 
 #### Monitoring
 
@@ -43,7 +47,7 @@ Metrics from instances are collected using Prometheus instance and can be viewed
 
 Services running in the cluster consist of one Envoy ECS task serving as loadbalancer and one or more ECS tasks with implementations and supporting services. Service instances use `awsvpc` networking mode under with private subnet and are discoverable using DNS-based server discovery.
 
-As Envoy needs to configure listeners corresponding to ports used by services, each service needs its own Envoy docker image.
+As Envoy needs to configure listeners corresponding to ports used by services, each service needs its own entry in Envoy configuration. Connector and Node components have their own listeners, other use path-based routing.
 
 ### Usage
 
@@ -51,11 +55,9 @@ As Envoy needs to configure listeners corresponding to ports used by services, e
 
 All development EC2 instances should include SSH keys of team members no allow them logging in. To make management easier they are provided by `modules/ssh_keys` terraform module. If you want to gain access, add your key there.
 
-ECS clusters are running on AWS Linux 2 and username is `ec2-user` while Prometheus instance is running on Ubuntu with `ubuntu` as the username.
+ECS clusters are managed by AWS (Fargate) while Prometheus instance is running on Ubuntu with `ubuntu` as the username.
 
 ### Possible improvements
-
-#### TLS support
 
 For now all data is transported over unsecured HTTP protocol. TLS keys and certificates should be added to Envoy in order secure the communication before going to production.
 
@@ -103,7 +105,10 @@ There are few setup steps if you wish to create and work with your own testing e
 * Install jq (https://stedolan.github.io/jq/).
 * Optional: Install graphviz from https://graphviz.gitlab.io/. This enables the `prism.sh -g` flag which
   produces a diagrammatic hierarchy for your environment.
-* Install 'terraform' from https://www.terraform.io/downloads.html.
+* Install 'terraform' from https://www.terraform.io/downloads.html. It needs to be in proper version, the easiest way to find is to run:
+```
+cat ./stage/services/prism/versions.tf
+```
 * Optional: Install dbeaver. To connect to the RDS test database instance, the use the following hostname: credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com:5432
 * If you want to access the EC2 instances (e.g. to examine the output of `docker ps`), you should
  * Go to the aws console, find the ECS cluster and drill down to the EC2 instances. Copy-and-paste the public IP.
@@ -161,10 +166,11 @@ The basic use-case for creating, working with and destroying an environment is a
 ```
 
 ### Automatic environment builds
-Circleci will create docker images and an AWS environment for pushes to branches with names matching `develop`, `test*`
-(Intdemo deployment only) and `geud-test*` (GEUD deployment only).
+Circleci will create docker images and an AWS environment for pushes to branches with names matching `develop*`, `qa*`, `sandbox*`, `demo`, `test*`.
 For any other branch name, it will do nothing infra related (no docker images, no AWS env).
 If you want to test a story on AWS, before merging to develop, you should merge your changes into branch `test-ata-9876` and push.
+
+Components that are crucial (`connector`, `node`) are deployed always, other are deployed selectively, for lowering costs. In case of some branches the set is fixed: all components for `develop`, management console for `demo`, management console + intdemo for `qa` and `sandbox`. In case of `test*` branch only components deployed are the ones contained in branch name (available ones: `geud`, `intdemo`, `mirror`, `kycbridge`). For example `test-mirror-intdemo-ata-1234` will deploy Mirror and Intdemo components.
 
 ### Terraform conventions
 

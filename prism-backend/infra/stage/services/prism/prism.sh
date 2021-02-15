@@ -110,13 +110,17 @@ env_name_short                = "$env_name_short"
 connector_docker_image              = "$connector_docker_image"
 node_docker_image                   = "$node_docker_image"
 management_console_docker_image     = "$management_console_docker_image"
+mirror_docker_image                 = "$mirror_docker_image"
+kycbridge_docker_image              = "$kycbridge_docker_image"
 landing_docker_image                = "$landing_docker_image"
 prism_sdk_website_docs_docker_image = "$prism_sdk_website_docs_docker_image"
 prism_console_docker_image          = "$prism_console_docker_image"
 prism_lb_envoy_docker_image         = "$prism_lb_envoy_docker_image"
 
-intdemo_enabled = $intdemo_enabled
-geud_enabled    = $geud_enabled
+intdemo_enabled   = $intdemo_enabled
+geud_enabled      = $geud_enabled
+mirror_enabled    = $mirror_enabled
+kycbridge_enabled = $kycbridge_enabled
 
 # Capacity provider for AWS ECS possible values are FARGATE and FARGATE_SPOT, If not set defaults to FARGATE_SPOT.
 aws_ecs_capacity_provider = "$capacity_provider"
@@ -133,6 +137,8 @@ set_vars () {
   connector_docker_image=$(get_docker_image "connector" "$env_name_short" "develop")
   node_docker_image=$(get_docker_image "node" "$env_name_short" "develop")
   management_console_docker_image=$(get_docker_image "management-console" "$env_name_short" "develop")
+  mirror_docker_image=$(get_docker_image "mirror" "$env_name_short" "develop")
+  kycbridge_docker_image=$(get_docker_image "kycbridge" "$env_name_short" "develop")
   landing_docker_image=$(get_docker_image "landing" "$env_name_short" "develop")
   prism_sdk_website_docs_docker_image=$(get_docker_image "prism-docs-website" "$env_name_short" "develop")
   prism_console_docker_image=$(get_docker_image "web" "$env_name_short" "develop")
@@ -193,6 +199,8 @@ state_key="infra/stage/services/prism/$env_name_short/terraform.tfstate"
 
 intdemo_enabled=${INTDEMO_ENABLED:-"false"}
 geud_enabled=${GEUD_ENABLED:-"false"}
+mirror_enabled=${MIRROR_ENABLED:-"false"}
+kycbridge_enabled=${KYC_BRIDGE_ENABLED:-"false"}
 
 if [ -z ${TF_VAR_cardano_confirmation_blocks:-} ] && [ -n "${NODE_CARDANO_CONFIRMATION_BLOCKS:-}" ]; then
   export TF_VAR_cardano_confirmation_blocks=$NODE_CARDANO_CONFIRMATION_BLOCKS
@@ -210,6 +218,34 @@ if [ -z ${TF_VAR_cardano_payment_address:-} ] && [ -n "${NODE_CARDANO_PAYMENT_AD
   export TF_VAR_cardano_payment_address=$NODE_CARDANO_PAYMENT_ADDRESS
 fi
 
+if [ -z ${TF_VAR_mirror_did:-} ] && [ -n "${ATALA_MIRROR_CONNECTOR_DID:-}" ]; then
+  export TF_VAR_mirror_did=$ATALA_MIRROR_CONNECTOR_DID
+fi
+
+if [ -z ${TF_VAR_mirror_did_private_key:-} ] && [ -n "${ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY:-}" ]; then
+  export TF_VAR_mirror_did_private_key=$ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY
+fi
+
+if [ -z ${TF_VAR_kycbridge_did:-} ] && [ -n "${KYC_BRIDGE_CONNECTOR_DID:-}" ]; then
+  export TF_VAR_kycbridge_did=$KYC_BRIDGE_CONNECTOR_DID
+fi
+
+if [ -z ${TF_VAR_kycbridge_did_private_key:-} ] && [ -n "${KYC_BRIDGE_CONNECTOR_DID_PRIVATE_KEY:-}" ]; then
+  export TF_VAR_kycbridge_did_private_key=$KYC_BRIDGE_CONNECTOR_DID_PRIVATE_KEY
+fi
+
+if [ -z ${TF_VAR_acuant_username:-} ] && [ -n "${KYC_BRIDGE_ACUANT_USERNAME:-}" ]; then
+  export TF_VAR_acuant_username=$KYC_BRIDGE_ACUANT_USERNAME
+fi
+
+if [ -z ${TF_VAR_acuant_password:-} ] && [ -n "${KYC_BRIDGE_ACUANT_PASSWORD:-}" ]; then
+  export TF_VAR_acuant_password=$KYC_BRIDGE_ACUANT_PASSWORD
+fi
+
+if [ -z ${TF_VAR_acuant_subscription_id:-} ] && [ -n "${KYC_BRIDGE_ACUANT_SUBSCRIPTION_ID:-}" ]; then
+  export TF_VAR_acuant_subscription_id=$KYC_BRIDGE_ACUANT_SUBSCRIPTION_ID
+fi
+
 echo "Using env name '$env_name_short'."
 echo "Performing action '$action'."
 echo "Using Capacity Provider '$capacity_provider'."
@@ -224,6 +260,18 @@ case $geud_enabled in
   true  ) echo "GEUD enabled";;
   false ) echo "GEUD disabled, use GEUD_ENABLED=true to enable";;
   *     ) echo "Warning: unknown value GEUD_ENABLED=$geud_enabled";;
+esac
+
+case $mirror_enabled in
+  true  ) echo "MIRROR enabled";;
+  false ) echo "MIRROR disabled, use MIRROR_ENABLED=true to enable";;
+  *     ) echo "Warning: unknown value MIRROR_ENABLED=$mirror_enabled";;
+esac
+
+case $kycbridge_enabled in
+  true  ) echo "KYC bridge enabled";;
+  false ) echo "KYC bridge disabled, use KYC_BRIDGE_ENABLED=true to enable";;
+  *     ) echo "Warning: unknown value KYC_BRIDGE_ENABLED=$kycbridge_enabled";;
 esac
 
 case $action in

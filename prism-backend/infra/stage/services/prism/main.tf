@@ -74,6 +74,18 @@ resource "random_password" "management_console_psql_password" {
   length  = 16
   special = false
 }
+#
+# PostgreSQL password for the created mirror user
+resource "random_password" "mirror_psql_password" {
+  length  = 16
+  special = false
+}
+#
+# PostgreSQL password for the created mirror user
+resource "random_password" "kycbridge_psql_password" {
+  length  = 16
+  special = false
+}
 
 provider "postgresql" {
   host      = data.aws_db_instance.credentials_database.address
@@ -92,6 +104,10 @@ locals {
   node_psql_password               = random_password.node_psql_password.result
   management_console_psql_username = "prism-management-console-${var.env_name_short}"
   management_console_psql_password = random_password.management_console_psql_password.result
+  kycbridge_psql_username          = "kycbridge-${var.env_name_short}"
+  kycbridge_psql_password          = random_password.kycbridge_psql_password.result
+  mirror_psql_username             = "mirror-${var.env_name_short}"
+  mirror_psql_password             = random_password.mirror_psql_password.result
 }
 
 # Create connector user
@@ -151,6 +167,50 @@ resource "postgresql_schema" "management_console_schema" {
     usage             = true
     create_with_grant = true
     role              = postgresql_role.management_console_role.name
+  }
+}
+
+# Create mirror user
+resource "postgresql_role" "mirror_role" {
+  count               = var.mirror_enabled ? 1 : 0
+  name                = local.mirror_psql_username
+  login               = true
+  password            = random_password.mirror_psql_password.result
+  encrypted_password  = true
+  skip_reassign_owned = true
+}
+
+resource "postgresql_schema" "mirror_schema" {
+  count        = var.mirror_enabled ? 1 : 0
+  name         = local.mirror_psql_username
+  drop_cascade = true
+  policy {
+    create            = true
+    usage             = true
+    create_with_grant = true
+    role              = postgresql_role.mirror_role[0].name
+  }
+}
+
+# Create kycbridge user
+resource "postgresql_role" "kycbridge_role" {
+  count               = var.kycbridge_enabled ? 1 : 0
+  name                = local.kycbridge_psql_username
+  login               = true
+  password            = random_password.kycbridge_psql_password.result
+  encrypted_password  = true
+  skip_reassign_owned = true
+}
+
+resource "postgresql_schema" "kycbridge_schema" {
+  count        = var.kycbridge_enabled ? 1 : 0
+  name         = local.kycbridge_psql_username
+  drop_cascade = true
+  policy {
+    create            = true
+    usage             = true
+    create_with_grant = true
+    role              = postgresql_role.kycbridge_role[0].name
   }
 }
 
@@ -264,8 +324,10 @@ module "prism_service" {
   env_name_short = var.env_name_short
   aws_region     = var.aws_region
 
-  intdemo_enabled = var.intdemo_enabled
-  geud_enabled    = var.geud_enabled
+  intdemo_enabled   = var.intdemo_enabled
+  geud_enabled      = var.geud_enabled
+  mirror_enabled    = var.mirror_enabled
+  kycbridge_enabled = var.kycbridge_enabled
 
   connector_docker_image              = var.connector_docker_image
   connector_port                      = var.connector_port
@@ -273,6 +335,10 @@ module "prism_service" {
   node_port                           = var.node_port
   management_console_docker_image     = var.management_console_docker_image
   management_console_port             = var.management_console_port
+  mirror_docker_image                 = var.mirror_docker_image
+  mirror_port                         = var.mirror_port
+  kycbridge_docker_image              = var.kycbridge_docker_image
+  kycbridge_port                      = var.kycbridge_port
   landing_docker_image                = var.landing_docker_image
   landing_port                        = var.landing_port
   prism_sdk_website_docs_docker_image = var.prism_sdk_website_docs_docker_image
@@ -306,6 +372,19 @@ module "prism_service" {
   management_console_psql_username = local.management_console_psql_username
   management_console_psql_password = local.management_console_psql_password
 
+  mirror_psql_username    = local.mirror_psql_username
+  mirror_psql_password    = local.mirror_psql_password
+  kycbridge_psql_username = local.kycbridge_psql_username
+  kycbridge_psql_password = local.kycbridge_psql_password
+
+  mirror_did             = var.mirror_did
+  mirror_did_private_key = var.mirror_did_private_key
+
+  acuant_username           = var.acuant_username
+  acuant_password           = var.acuant_password
+  acuant_subscription_id    = var.acuant_subscription_id
+  kycbridge_did             = var.kycbridge_did
+  kycbridge_did_private_key = var.kycbridge_did_private_key
 
   cardano_confirmation_blocks   = var.cardano_confirmation_blocks
   cardano_db_sync_psql_host     = local.cardano_db_sync_psql_host
@@ -594,7 +673,7 @@ resource "aws_route53_record" "docs_dns_entry" {
 # public DNS record for the browser wallet / management / mobile grpc calls
 # This is required to bypass the cloud front for grpc calls
 resource "aws_route53_record" "grpc_console_dns_entry" {
-  count   = var.geud_enabled ? 1 : 0
+  count   = 1
   zone_id = var.atala_prism_zoneid
   name    = "grpc-${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
