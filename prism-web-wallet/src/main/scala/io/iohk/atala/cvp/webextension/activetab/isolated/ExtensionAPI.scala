@@ -74,9 +74,10 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
 
   def verifySignedCredential(
       sessionId: String,
-      signedCredentialStringRepresentation: String
+      signedCredentialStringRepresentation: String,
+      encodedMerkleProof: String
   ): Future[Event.SignedCredentialVerified] = {
-    val cmd = Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation)
+    val cmd = Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof)
     processCommand(cmd).collect {
       case r: Event.SignedCredentialVerified => r
       case x => throw new RuntimeException(s"Unknown response: $x")

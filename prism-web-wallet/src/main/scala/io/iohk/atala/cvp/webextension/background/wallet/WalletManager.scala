@@ -29,6 +29,7 @@ import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
 import org.scalajs.dom.crypto
@@ -311,7 +312,8 @@ private[background] class WalletManager(
   def verifySignedCredential(
       origin: Origin,
       sessionID: String,
-      signedCredentialStringRepresentation: String
+      signedCredentialStringRepresentation: String,
+      encodedMerkleProof: String
   ): Future[ValidatedNel[VerificationError, Unit]] = {
     val validSessionF = Future.fromTry {
       Try {
@@ -323,7 +325,11 @@ private[background] class WalletManager(
 
     for {
       _ <- validSessionF
-      x <- nodeClientService.verifyCredential(signedCredentialStringRepresentation)
+      merkleProof =
+        MerkleInclusionProof
+          .decode(encodedMerkleProof)
+          .getOrElse(throw new RuntimeException(s"Unable to decode merkle proof: $encodedMerkleProof"))
+      x <- nodeClientService.verifyCredential(signedCredentialStringRepresentation, merkleProof)
     } yield x
   }
 

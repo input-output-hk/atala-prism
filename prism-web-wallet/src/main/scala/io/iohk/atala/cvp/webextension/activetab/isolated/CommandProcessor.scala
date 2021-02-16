@@ -33,9 +33,9 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
           .signConnectorRequest(sessionId, request)
           .map(response => Event.GotSignedResponse(response.signedMessage))
 
-      case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation) =>
+      case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof) =>
         backgroundAPI
-          .verifySignedCredential(sessionId, signedCredentialStringRepresentation)
+          .verifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof)
           .map(response => Event.SignedCredentialVerified(response.result))
 
     }

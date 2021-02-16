@@ -20,8 +20,11 @@ private[activetab] object Command {
   final case class RequestSignature(sessionId: String, subject: CredentialSubject) extends Command
 
   final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest) extends Command
-  final case class VerifySignedCredential(sessionId: String, signedCredentialStringRepresentation: String)
-      extends Command
+  final case class VerifySignedCredential(
+      sessionId: String,
+      signedCredentialStringRepresentation: String,
+      encodedMerkleProof: String
+  ) extends Command
 
   def decode(string: String): Try[Command] = {
     parse(string).toTry

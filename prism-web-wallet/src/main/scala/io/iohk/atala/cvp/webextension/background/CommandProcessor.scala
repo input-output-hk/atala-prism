@@ -38,9 +38,9 @@ private[background] class CommandProcessor(
           .signConnectorRequest(origin, sessionId, request)
           .map(SignedConnectorResponse.apply)
           .map(CommandResponse.apply)
-      case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation) =>
+      case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof) =>
         walletManager
-          .verifySignedCredential(origin, sessionId, signedCredentialStringRepresentation)
+          .verifySignedCredential(origin, sessionId, signedCredentialStringRepresentation, encodedMerkleProof)
           .map(Command.VerifySignedCredentialResponse.apply)
           .map(CommandResponse.apply)
       case Command.GetWalletStatus =>

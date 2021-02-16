@@ -26,8 +26,11 @@ private[background] object Command {
       extends CommandWithResponse[SignedConnectorResponse]
   final case class SignedConnectorResponse(signedMessage: SignedMessage)
 
-  final case class VerifySignedCredential(sessionId: String, signedCredentialStringRepresentation: String)
-      extends CommandWithResponse[VerifySignedCredentialResponse]
+  final case class VerifySignedCredential(
+      sessionId: String,
+      signedCredentialStringRepresentation: String,
+      encodedMerkleProof: String
+  ) extends CommandWithResponse[VerifySignedCredentialResponse]
   final case class VerifySignedCredentialResponse(result: ValidatedNel[VerificationError, Unit])
 
   final case class SignatureResult(signature: String)

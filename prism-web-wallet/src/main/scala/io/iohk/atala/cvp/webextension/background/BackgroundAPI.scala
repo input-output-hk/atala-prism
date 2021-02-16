@@ -69,9 +69,10 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
 
   def verifySignedCredential(
       sessionId: String,
-      signedCredentialStringRepresentation: String
+      signedCredentialStringRepresentation: String,
+      encodedMerkleProof: String
   ): Future[Command.VerifySignedCredentialResponse] = {
-    process(Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation))
+    process(Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof))
   }
 
   def signRequestAndPublish(requestId: Int): Future[Unit] = {

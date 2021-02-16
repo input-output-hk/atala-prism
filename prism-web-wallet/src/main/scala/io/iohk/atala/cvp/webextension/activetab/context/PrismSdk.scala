@@ -50,7 +50,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
           "login" -> js.Any.fromFunction0(() => login()),
           "requestSignature" -> js.Any.fromFunction2(requestSignature),
           "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest),
-          "verifySignedCredential" -> js.Any.fromFunction2(verifySignedCredential)
+          "verifySignedCredential" -> js.Any.fromFunction3(verifySignedCredential)
         ): js.UndefOr[js.Any]
       }
     )
@@ -105,10 +105,11 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
 
   def verifySignedCredential(
       sessionId: String,
-      signedCredentialStringRepresentation: String
+      signedCredentialStringRepresentation: String,
+      encodedMerkleProof: String
   ): js.Promise[js.Array[String]] = {
     extensionAPI
-      .verifySignedCredential(sessionId, signedCredentialStringRepresentation)
+      .verifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof)
       .map(event => toJsErrorList(event.result))
       .toJSPromise
   }
