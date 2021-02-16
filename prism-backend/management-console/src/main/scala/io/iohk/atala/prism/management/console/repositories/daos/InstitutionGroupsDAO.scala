@@ -109,6 +109,9 @@ object InstitutionGroupsDAO {
     }
   }
 
+  def removeContact(contactId: Contact.Id): ConnectionIO[Unit] =
+    sql"DELETE FROM contacts_per_group WHERE contact_id = $contactId".update.run.map(_ => ())
+
   def findGroups(
       institutionId: ParticipantId,
       groupIds: List[InstitutionGroup.Id]

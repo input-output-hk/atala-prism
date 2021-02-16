@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import java.time.Instant
-
 import cats.implicits._
 import doobie._
 import doobie.implicits._
@@ -158,5 +157,21 @@ object CredentialsDAO {
           .whenA(n != 1)
       }
       .map(_ => ())
+  }
+
+  def deleteBy(contactId: Contact.Id): doobie.ConnectionIO[Int] = {
+    sql"""
+         |DELETE FROM draft_credentials
+         |WHERE contact_id = $contactId
+         |""".stripMargin.update.run
+  }
+
+  def deletePublishedCredentialsBy(contactId: Contact.Id): doobie.ConnectionIO[Int] = {
+    sql"""
+         |DELETE FROM published_credentials
+         |USING draft_credentials
+         |WHERE published_credentials.credential_id = draft_credentials.credential_id AND
+         |      draft_credentials.contact_id = $contactId
+         |""".stripMargin.update.run
   }
 }

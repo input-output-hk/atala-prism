@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.repositories
 import doobie._
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
-import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, InstitutionGroupsDAO}
+import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialsDAO, InstitutionGroupsDAO}
 
 object institutionHelper {
   // Make sure that all contacts belong to the given institution
@@ -34,5 +34,20 @@ object institutionHelper {
         None
       }
     }
+  }
+
+  def checkCredentialsAreEmpty(
+      institutionId: ParticipantId,
+      contactId: Contact.Id
+  ): ConnectionIO[Option[ManagementConsoleError]] = {
+    for {
+      credentials <- CredentialsDAO.getBy(institutionId, contactId)
+      result =
+        if (credentials.isEmpty) {
+          None
+        } else {
+          Some(ContactHasExistingCredentials(contactId))
+        }
+    } yield result
   }
 }

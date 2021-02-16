@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.integrations
 
 import io.iohk.atala.prism.management.console.errors
+import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.ContactsRepository
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
@@ -101,6 +102,14 @@ class ContactsIntegrationService(
     } yield result
 
     resultFE.value
+  }
+
+  def deleteContact(
+      institutionId: ParticipantId,
+      contactId: Contact.Id,
+      deleteCredentials: Boolean
+  ): Future[Either[ManagementConsoleError, Unit]] = {
+    contactsRepository.delete(institutionId, contactId, deleteCredentials).value
   }
 }
 

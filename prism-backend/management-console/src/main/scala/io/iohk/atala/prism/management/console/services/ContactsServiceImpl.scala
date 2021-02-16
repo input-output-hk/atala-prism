@@ -202,4 +202,28 @@ class ContactsServiceImpl(
       }
     }
   }
+
+  override def deleteContact(request: DeleteContactRequest): Future[DeleteContactResponse] = {
+    def f(participantId: ParticipantId): Future[DeleteContactResponse] = {
+      implicit val loggingContext: LoggingContext =
+        LoggingContext("request" -> request, "institutionId" -> participantId)
+
+      for {
+        contactId <- Future.fromTry(Contact.Id.from(request.contactId))
+        response <-
+          contactsIntegrationService
+            .deleteContact(participantId, contactId, request.deleteCredentials)
+            .toFutureEither
+            .map { _ =>
+              console_api.DeleteContactResponse()
+            }
+            .wrapExceptions
+            .flatten
+      } yield response
+    }
+
+    authenticator.authenticated("deleteContact", request) { participantId =>
+      f(participantId)
+    }
+  }
 }

@@ -6,11 +6,12 @@ import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase, ManagementConsoleTestUtil}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
 import io.iohk.atala.prism.management.console.models.Contact.ExternalId
 import io.iohk.atala.prism.management.console.models.{Contact, Helpers, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.protos.connector_api.ConnectionsStatusResponse
+import io.iohk.atala.prism.protos.console_api.DeleteContactResponse
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
@@ -20,7 +21,7 @@ import java.time.LocalDate
 import scala.concurrent.Future
 import scala.util.Try
 
-class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
+class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator with ManagementConsoleTestUtil {
   private val invitationMissing = connector_models.ContactConnection(
     connectionStatus = console_models.ContactConnectionStatus.INVITATION_MISSING
   )
@@ -917,6 +918,122 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         val response = serviceStub.getContact(request)
         response.contact must be(empty)
       }
+    }
+  }
+
+  "deleteContact" should {
+    "delete the correct contact along with its credentials" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution X", did)
+      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val contact = createContact(institutionId, "Alice", Some(groupName))
+      val credential = createGenericCredential(institutionId, contact.contactId)
+      val deleteRequest = console_api.DeleteContactRequest(
+        contactId = contact.contactId.toString,
+        deleteCredentials = true
+      )
+      val deleteRpcRequest = SignedRpcRequest.generate(keyPair, did, deleteRequest)
+
+      usingApiAsContacts(deleteRpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing)
+            )
+          )
+        }
+
+        val response = serviceStub.deleteContact(deleteRequest)
+        response must be(DeleteContactResponse())
+      }
+
+      // Confirm that the contact was deleted
+      checkContactExists(keyPair, did, contact) must be(false)
+
+      // Confirm that the credential was deleted
+      checkCredentialExists(keyPair, did, contact, credential) must be(false)
+    }
+
+    "do not delete a contact without deleting its credentials" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution X", did)
+      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val contact = createContact(institutionId, "Alice", Some(groupName))
+      val credential = createGenericCredential(institutionId, contact.contactId)
+      val deleteRequest = console_api.DeleteContactRequest(
+        contactId = contact.contactId.toString,
+        deleteCredentials = false
+      )
+      val deleteRpcRequest = SignedRpcRequest.generate(keyPair, did, deleteRequest)
+
+      usingApiAsContacts(deleteRpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing)
+            )
+          )
+        }
+
+        val statusException = intercept[StatusRuntimeException] {
+          serviceStub.deleteContact(deleteRequest)
+        }
+        statusException.getStatus.getDescription must be(
+          s"Contact with id '${contact.contactId.uuid}' has some existing credentials"
+        )
+      }
+
+      // Confirm that the contact was not deleted
+      checkContactExists(keyPair, did, contact) must be(true)
+
+      // Confirm that the credential was not deleted
+      checkCredentialExists(keyPair, did, contact, credential) must be(true)
+    }
+
+    "do not delete a contact who belongs to the wrong institution" in {
+      val realKeyPair = EC.generateKeyPair()
+      val realPublicKey = realKeyPair.publicKey
+      val realDid = generateDid(realPublicKey)
+      val realInstitutionId = createParticipant("Institution X", realDid)
+      val fakeKeyPair = EC.generateKeyPair()
+      val fakePublicKey = fakeKeyPair.publicKey
+      val fakeDid = generateDid(fakePublicKey)
+      val fakeInstitutionId = createParticipant("Institution Y", fakeDid)
+      val groupName = createInstitutionGroup(realInstitutionId, InstitutionGroup.Name("Group A")).name
+      val contact = createContact(realInstitutionId, "Alice", Some(groupName))
+      val credential = createGenericCredential(realInstitutionId, contact.contactId)
+      val deleteRequest = console_api.DeleteContactRequest(
+        contactId = contact.contactId.toString,
+        deleteCredentials = true
+      )
+      val deleteRpcRequest = SignedRpcRequest.generate(fakeKeyPair, fakeDid, deleteRequest)
+
+      usingApiAsContacts(deleteRpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            ConnectionsStatusResponse(
+              connections = List(invitationMissing)
+            )
+          )
+        }
+
+        val statusException = intercept[StatusRuntimeException] {
+          serviceStub.deleteContact(deleteRequest)
+        }
+        statusException.getStatus.getDescription must be(
+          s"Contacts [${contact.contactId.uuid}] do not belong to institution ${fakeInstitutionId.uuid}"
+        )
+      }
+
+      // Confirm that the contact was not deleted
+      checkContactExists(realKeyPair, realDid, contact) must be(true)
+
+      // Confirm that the credential was not deleted
+      checkCredentialExists(realKeyPair, realDid, contact, credential) must be(true)
     }
   }
 }

@@ -7,7 +7,8 @@ import io.iohk.atala.prism.management.console.services.{
   ConsoleServiceImpl,
   ContactsServiceImpl,
   CredentialIssuanceServiceImpl,
-  CredentialTypesServiceImpl
+  CredentialTypesServiceImpl,
+  CredentialsServiceImpl
 }
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
@@ -36,6 +37,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
       console_api.CredentialTypesServiceGrpc
         .bindService(
           credentialTypeService,
+          executionContext
+        ),
+      console_api.CredentialsServiceGrpc
+        .bindService(
+          credentialsService,
           executionContext
         )
     )
@@ -82,6 +88,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     executionContext
   )
 
+  lazy val credentialsService =
+    new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, nodeMock)(
+      executionContext
+    )
+
   val usingApiAsConsole: ApiTestHelper[console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub] = {
     usingApiAsConstructor(
       new console_api.ConsoleServiceGrpc.ConsoleServiceBlockingStub(_, _)
@@ -105,6 +116,12 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
       : ApiTestHelper[console_api.CredentialTypesServiceGrpc.CredentialTypesServiceBlockingStub] = {
     usingApiAsConstructor(
       new console_api.CredentialTypesServiceGrpc.CredentialTypesServiceBlockingStub(_, _)
+    )
+  }
+
+  val usingApiAsCredentials: ApiTestHelper[console_api.CredentialsServiceGrpc.CredentialsServiceBlockingStub] = {
+    usingApiAsConstructor(
+      new console_api.CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _)
     )
   }
 }

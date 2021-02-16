@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.data.EitherT
 import cats.effect._
 import cats.implicits._
 import doobie.free._
@@ -13,7 +14,7 @@ import io.iohk.atala.prism.management.console.models.{
   ParticipantId,
   UpdateContact
 }
-import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, InstitutionGroupsDAO}
+import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialsDAO, InstitutionGroupsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -27,9 +28,9 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       createdAt: Instant = Instant.now()
   ): FutureEither[ManagementConsoleError, Contact] = {
     val query = maybeGroupName match {
-      case None => // if we do not request the subject to be added to a group
+      case None => // if we do not request the contact to be added to a group
         ContactsDAO.createContact(contactData, createdAt)
-      case Some(groupName) => // if we are requesting to add a subject to a group
+      case Some(groupName) => // if we are requesting to add a contact to a group
         for {
           contact <- ContactsDAO.createContact(contactData, createdAt)
           groupMaybe <- InstitutionGroupsDAO.find(contactData.createdBy, groupName)
@@ -79,9 +80,9 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def find(institutionId: ParticipantId, subjectId: Contact.Id): FutureEither[Nothing, Option[Contact]] = {
+  def find(institutionId: ParticipantId, contactId: Contact.Id): FutureEither[Nothing, Option[Contact]] = {
     ContactsDAO
-      .findContact(institutionId, subjectId)
+      .findContact(institutionId, contactId)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -115,6 +116,48 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
+      .toFutureEither
+  }
+
+  def delete(
+      institutionId: ParticipantId,
+      contactId: Contact.Id,
+      deleteCredentials: Boolean
+  ): FutureEither[ManagementConsoleError, Unit] = {
+    def performDeletion(): ConnectionIO[Either[ManagementConsoleError, Unit]] =
+      for {
+        _ <-
+          if (deleteCredentials) {
+            // First we delete published credentials and then we delete all the draft credentials
+            // The order is important as published credentials depend on draft ones
+            CredentialsDAO.deletePublishedCredentialsBy(contactId) *>
+              CredentialsDAO.deleteBy(contactId)
+          } else {
+            doobie.free.connection.unit
+          }
+        _ <- InstitutionGroupsDAO.removeContact(contactId)
+        isDeleted <- ContactsDAO.delete(institutionId, contactId)
+        // If the contact was not deleted after all the checks, something is wrong
+        _ = if (!isDeleted) throw new IllegalStateException("The requested contact was not deleted")
+      } yield Right(())
+
+    val connectionIO = for {
+      // Check that the contact belongs to the correct institution
+      _ <- EitherT(institutionHelper.checkContacts(institutionId, Set(contactId)).map(_.toLeft(())))
+      _ <-
+        if (deleteCredentials) {
+          EitherT.rightT[ConnectionIO, ManagementConsoleError][Unit](())
+        } else {
+          // Check if we are trying to delete a contact without deleting its existing credentials
+          EitherT(institutionHelper.checkCredentialsAreEmpty(institutionId, contactId).map(_.toLeft(())))
+        }
+      // All checks have passed, we can actually start deleting now
+      result <- EitherT(performDeletion())
+    } yield result
+
+    connectionIO.value
+      .transact(xa)
+      .unsafeToFuture()
       .toFutureEither
   }
 }

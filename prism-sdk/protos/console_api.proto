@@ -35,6 +35,9 @@ service ContactsService {
   // Updates the given contact on the authenticated institution
   rpc UpdateContact (UpdateContactRequest) returns (UpdateContactResponse) {}
 
+  // Delete a contact from the authenticated institution
+  rpc DeleteContact (DeleteContactRequest) returns (DeleteContactResponse) {}
+
   // Generates a connection token for the given contact.
   // This is a necessary step before being able to connect to the contact.
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
@@ -277,6 +280,19 @@ message UpdateContactRequest {
 }
 // Response after updating the contact
 message UpdateContactResponse {}
+
+// Request to delete a contact from the authenticated institution
+message DeleteContactRequest {
+  string contactId = 1; // the id used to delete the contact
+  // if true, related credentials will be deleted along with the contact
+  // if false and there are any related credentials, the request will fail to delete the contact
+  // if false and there no related credentials, only the contact will be deleted
+  bool deleteCredentials = 2;
+}
+
+// Response for the deleted contact
+message DeleteContactResponse {
+}
 
 // Request to generate a connection token for the given contact on the authenticated institution
 message GenerateConnectionTokenForContactRequest {

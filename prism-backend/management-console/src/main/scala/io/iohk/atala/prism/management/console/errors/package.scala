@@ -112,6 +112,13 @@ package object errors {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
+  case class ContactHasExistingCredentials(contactId: Contact.Id) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Contact with id '${contactId.uuid}' has some existing credentials"
+      )
+  }
+
   def groupDoesNotExist[A](groupId: InstitutionGroup.Id): Either[ManagementConsoleError, A] =
     Left(GroupDoesNotExist(groupId))
 

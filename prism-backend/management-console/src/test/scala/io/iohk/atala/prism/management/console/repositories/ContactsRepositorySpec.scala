@@ -4,16 +4,19 @@ import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
+import io.iohk.atala.prism.management.console.errors.{ContactHasExistingCredentials, ContactsInstitutionsDoNotMatch}
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDate, Period}
+import java.util.UUID
 
 class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   import PaginatedQueryConstraints._
 
   lazy val repository = new ContactsRepository(database)
+  lazy val credentialsRepository = new CredentialsRepository(database)
 
   "create" should {
     "create a new subject and assign it to an specified group" in {
@@ -877,6 +880,141 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       result
         .map(r => (r.contactId, (r.counts.numberOfCredentialsCreated, r.counts.numberOfCredentialsReceived)))
         .toMap must be(expected)
+    }
+  }
+
+  "delete" should {
+    "delete the correct contact along with its credentials" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "iohk1")
+      val contactB = createContact(institutionId, "iohk2")
+
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      val contactBCredential1 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+      val contactBCredential2 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+
+      repository
+        .delete(institutionId, contactA.contactId, deleteCredentials = true)
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      // Check that contact A was deleted
+      repository
+        .find(institutionId, contactA.contactId)
+        .value
+        .futureValue
+        .toOption
+        .flatten must be(None)
+
+      // Check that contact B was not deleted
+      repository
+        .find(institutionId, contactB.contactId)
+        .value
+        .futureValue
+        .toOption
+        .flatten must be(Some(contactB))
+
+      // Check that contact A credentials were deleted
+      credentialsRepository
+        .getBy(institutionId, contactA.contactId)
+        .value
+        .futureValue
+        .toOption
+        .value must be(List.empty)
+
+      // Check that contact B credentials were not deleted
+      credentialsRepository
+        .getBy(institutionId, contactB.contactId)
+        .value
+        .futureValue
+        .toOption
+        .value must be(List(contactBCredential1, contactBCredential2))
+    }
+
+    "delete the correct contact along without deleting its credentials" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "iohk1")
+      val contactB = createContact(institutionId, "iohk2")
+
+      val contactBCredential1 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+      val contactBCredential2 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+
+      repository
+        .delete(institutionId, contactA.contactId, deleteCredentials = false)
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      // Check that contact A was deleted
+      repository
+        .find(institutionId, contactA.contactId)
+        .value
+        .futureValue
+        .toOption
+        .flatten must be(None)
+
+      // Check that contact B was not deleted
+      repository
+        .find(institutionId, contactB.contactId)
+        .value
+        .futureValue
+        .toOption
+        .flatten must be(Some(contactB))
+
+      // Check that contact B credentials were not deleted
+      credentialsRepository
+        .getBy(institutionId, contactB.contactId)
+        .value
+        .futureValue
+        .toOption
+        .value must be(List(contactBCredential1, contactBCredential2))
+    }
+
+    "fail to delete contact without deleting its existing credentials" in {
+      val institutionId = createParticipant("Institution X")
+      val contact = createContact(institutionId, "iohk")
+
+      DataPreparation.createGenericCredential(institutionId, contact.contactId)
+      DataPreparation.createGenericCredential(institutionId, contact.contactId)
+
+      val result = repository
+        .delete(institutionId, contact.contactId, deleteCredentials = false)
+        .value
+        .futureValue
+
+      result must be(Left(ContactHasExistingCredentials(contact.contactId)))
+    }
+
+    "fail to delete contact belonging to a different institution" in {
+      val institutionId1 = createParticipant("Institution X")
+      val institutionId2 = createParticipant("Institution Y")
+      val contact = createContact(institutionId1, "iohk")
+
+      DataPreparation.createGenericCredential(institutionId1, contact.contactId)
+      DataPreparation.createGenericCredential(institutionId1, contact.contactId)
+
+      val result = repository
+        .delete(institutionId2, contact.contactId, deleteCredentials = false)
+        .value
+        .futureValue
+
+      result must be(Left(ContactsInstitutionsDoNotMatch(List(contact.contactId), institutionId2)))
+    }
+
+    "fail to delete a non-existing contact" in {
+      val institutionId = createParticipant("Institution X")
+      val contactId = Contact.Id(UUID.randomUUID())
+
+      val result = repository
+        .delete(institutionId, contactId, deleteCredentials = false)
+        .value
+        .futureValue
+
+      result must be(Left(ContactsInstitutionsDoNotMatch(List(contactId), institutionId)))
     }
   }
 

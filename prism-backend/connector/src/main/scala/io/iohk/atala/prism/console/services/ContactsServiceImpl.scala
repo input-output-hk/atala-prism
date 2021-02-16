@@ -145,4 +145,5 @@ class ContactsServiceImpl(contactsRepository: ContactsRepository, authenticator:
   // This applies only to the management console
   override def createContacts(request: CreateContactsRequest): Future[CreateContactsResponse] = ???
 
+  override def deleteContact(request: DeleteContactRequest): Future[DeleteContactResponse] = ???
 }

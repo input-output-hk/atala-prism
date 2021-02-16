@@ -113,4 +113,12 @@ object ContactsDAO {
       .query[Contact.WithCredentialCounts]
       .to[List]
   }
+
+  def delete(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Boolean] = {
+    sql"""
+         |DELETE FROM contacts
+         |WHERE contact_id = $contactId AND
+         |      created_by = $participantId
+         |""".stripMargin.update.run.map(_ == 1)
+  }
 }
