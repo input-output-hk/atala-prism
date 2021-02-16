@@ -91,6 +91,7 @@ object CredentialsCopyJob {
             .withConnectionId(receivedMessage.connectionId)
             .withCredentialExternalId(receivedMessage.id)
             .withEncodedSignedCredential(credentialMessage.encodedCredential)
+            .withBatchInclusionProof(credentialMessage.encodedMerkleProof)
         )
       case Success(_) => // Other AtalaMessages
         Left(new RuntimeException("The message received was not a plain text credential"))

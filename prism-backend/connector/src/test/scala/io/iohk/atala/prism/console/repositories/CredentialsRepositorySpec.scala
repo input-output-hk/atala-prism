@@ -11,10 +11,11 @@ import io.iohk.atala.prism.console.models.{
   GenericCredential,
   Institution,
   IssuerGroup,
+  PublicationData,
   StoreBatchData
 }
 import org.scalatest.OptionValues._
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.credentials.CredentialBatchId
@@ -24,6 +25,16 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   lazy implicit val credentialsRepository: CredentialsRepository = new CredentialsRepository(database)
+
+  private val aHash = SHA256Digest.compute("random string".getBytes())
+  private val aBatchId = CredentialBatchId.fromDigest(aHash).value
+  private val aTxInfo = TransactionInfo(
+    TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+    Ledger.InMemory,
+    None
+  )
+  private val aProof = MerkleInclusionProof(aHash, 1, List(aHash))
+  private val anEncodedCred = "encodedSignedCredenital"
 
   "create" should {
     "create a new credential" in {
@@ -76,8 +87,28 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credential = createGenericCredential(issuerId, subjectId, "A")
       publish(issuerId, credential.credentialId)
 
-      credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
-      succeed
+      val aTimestamp = Instant.now()
+      val publicationData = credentialsRepository
+        .getBy(credential.credentialId)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .value
+        .publicationData
+        .value
+
+      val expectedPublicationData = PublicationData(
+        aBatchId,
+        aHash,
+        anEncodedCred,
+        aProof,
+        aTimestamp,
+        aTxInfo.transactionId,
+        aTxInfo.ledger
+      )
+
+      publicationData.copy(storedAt = aTimestamp) must be(expectedPublicationData)
     }
 
     "return no credential when not found" in {
@@ -461,16 +492,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       issuerId: Institution.Id,
       consoleId: GenericCredential.Id
   ): Unit = {
-    val aHash = SHA256Digest.compute("random string".getBytes())
-    val batchId = CredentialBatchId.fromDigest(aHash).value
-    val txInfo = TransactionInfo(
-      TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
-      Ledger.InMemory,
-      None
-    )
-    val proof = MerkleInclusionProof(aHash, 1, List(aHash))
-    val encodedCred = "encodedSignedCredenital"
-    DataPreparation.publishBatch(batchId, aHash, txInfo)
-    DataPreparation.publishCredential(issuerId, batchId, consoleId, encodedCred, proof)
+    DataPreparation.publishBatch(aBatchId, aHash, aTxInfo)
+    DataPreparation.publishCredential(issuerId, aBatchId, consoleId, anEncodedCred, aProof)
   }
 }

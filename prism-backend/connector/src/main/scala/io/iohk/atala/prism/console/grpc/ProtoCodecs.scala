@@ -50,6 +50,8 @@ object ProtoCodecs {
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withPublicationStoredAt(data.storedAt.toEpochMilli)
         .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
+        .withBatchInclusionProof(data.inclusionProof.encode)
+        .withBatchId(data.credentialBatchId.id)
     }
   }
 

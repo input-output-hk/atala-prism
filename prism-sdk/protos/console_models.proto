@@ -132,7 +132,7 @@ message CManagerGenericCredential {
   // @exclude
   // the fields below will only be populated after the credential is published in the blockchain
 
-  string nodeCredentialId = 8; // the id assigned to the published credential by the protocol
+  string nodeCredentialId = 8; // DEPRECATED - will be removed after it is not used anymore
   bytes issuanceOperationHash = 9; // the hash of the associated issuance operation
   string encodedSignedCredential = 10; // the actual published credential
   uint64 publicationStoredAt = 11; // the time when the publication data was stored in the database
@@ -140,6 +140,8 @@ message CManagerGenericCredential {
   ContactConnectionStatus connectionStatus = 13; // used to know if contact has accepted the connection
   uint64 sharedAt = 14; // the last time when the credential was sent to the related contact
   TransactionInfo issuanceProof = 15; // underlying transaction information related to the credential issuance
+  string batchInclusionProof = 16; // inclusion proof that shows that encodedSignedCredential is a member of a batch
+  string batchId = 17; // the batch id defined by protocol, representing the batch that contains the encodedSignedCredential
 }
 
 // Represents a received credential
@@ -151,4 +153,5 @@ message StoredSignedCredential {
   string encodedSignedCredential = 2; // The signed credential encoded as a string
   int64 storedAt = 3; // the time when the credential was stored in the database
   string externalId = 4; // the external id associated to the contact that sent the credential
+  string batchInclusionProof = 5; // the inclusion proof associated to the encodedSignedCredential
 }

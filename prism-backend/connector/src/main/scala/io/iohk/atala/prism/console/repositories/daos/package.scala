@@ -37,27 +37,39 @@ package object daos extends BaseDAO {
     )(_.encode)
 
   implicit val publicationDataWrite: Write[PublicationData] =
-    Write[(CredentialBatchId, SHA256Digest, String, Instant, TransactionId, Ledger)].contramap(pc =>
-      (
-        pc.credentialBatchId,
-        pc.issuanceOperationHash,
-        pc.encodedSignedCredential,
-        pc.storedAt,
-        pc.transactionId,
-        pc.ledger
-      )
+    Write[(CredentialBatchId, SHA256Digest, String, MerkleInclusionProof, Instant, TransactionId, Ledger)].contramap(
+      pc =>
+        (
+          pc.credentialBatchId,
+          pc.issuanceOperationHash,
+          pc.encodedSignedCredential,
+          pc.inclusionProof,
+          pc.storedAt,
+          pc.transactionId,
+          pc.ledger
+        )
     )
 
   implicit val publicationDataRead: Read[PublicationData] =
-    Read[(CredentialBatchId, SHA256Digest, String, Instant, TransactionId, Ledger)].map[PublicationData] {
-      case (nodeCredentialId, issuanceOperationHash, encodedSignedCredential, storedAt, transactionId, ledger) =>
-        PublicationData(
-          nodeCredentialId,
-          issuanceOperationHash,
-          encodedSignedCredential,
-          storedAt,
-          transactionId,
-          ledger
-        )
-    }
+    Read[(CredentialBatchId, SHA256Digest, String, MerkleInclusionProof, Instant, TransactionId, Ledger)]
+      .map[PublicationData] {
+        case (
+              nodeCredentialId,
+              issuanceOperationHash,
+              encodedSignedCredential,
+              proof,
+              storedAt,
+              transactionId,
+              ledger
+            ) =>
+          PublicationData(
+            nodeCredentialId,
+            issuanceOperationHash,
+            encodedSignedCredential,
+            proof,
+            storedAt,
+            transactionId,
+            ledger
+          )
+      }
 }

@@ -42,9 +42,10 @@ package object models {
       connectionId: Option[ConnectionId]
   )
 
-  case class StoredSignedCredential(
+  case class ReceivedSignedCredential(
       individualId: Contact.Id,
       encodedSignedCredential: String,
+      merkleInclusionProof: MerkleInclusionProof,
       storedAt: Instant,
       externalId: Contact.ExternalId
   )
@@ -90,6 +91,7 @@ package object models {
       credentialBatchId: CredentialBatchId, // the id assigned by the protocol to the batch
       issuanceOperationHash: SHA256Digest, // the hex representation of the associated issuance operation hash
       encodedSignedCredential: String, // the actual published credential
+      inclusionProof: MerkleInclusionProof, // the proof that the encodedSignedCredential belongs to the associated batch
       storedAt: Instant, // the time when the publication data was stored in the database
       transactionId: TransactionId,
       ledger: Ledger
@@ -125,6 +127,8 @@ package object models {
     def numberOfCredentialsInDraft: Int = numberOfCredentials - numberOfCredentialsPublished
   }
 
+  // The external id is populated with the id field extracted from the connector
+  // message that carried the associated credential
   class CredentialExternalId private (val value: String) extends AnyVal
 
   object CredentialExternalId {

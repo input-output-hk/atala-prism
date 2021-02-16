@@ -34,14 +34,14 @@ object CredentialsDAO extends BaseDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |), PC AS (
-         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
-         |         issued_on_transaction_id, ledger, shared_at
+         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
+         |         stored_at, issued_on_transaction_id, ledger, shared_at
          |  FROM published_credentials JOIN published_batches USING (batch_id)
          |  WHERE credential_id = $id
          |)
          |SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, connection_status,
-         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
-         |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
+         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
+         |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (inserted.subject_id = contacts.contact_id)
@@ -56,15 +56,15 @@ object CredentialsDAO extends BaseDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |), PC AS (
-         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
-         |         issued_on_transaction_id, ledger, shared_at
+         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
+         |         stored_at, issued_on_transaction_id, ledger, shared_at
          |  FROM published_credentials JOIN published_batches USING (batch_id)
          |  WHERE credential_id = $credentialId
          |)
          |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
          |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
-         |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
+         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
+         |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.subject_id = contacts.contact_id)
@@ -91,15 +91,15 @@ object CredentialsDAO extends BaseDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |), PC AS (
-             |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
-             |         issued_on_transaction_id, ledger, shared_at
+             |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
+             |         stored_at, issued_on_transaction_id, ledger, shared_at
              |  FROM published_credentials JOIN published_batches USING (batch_id)
              |  WHERE credential_id = $lastSeen
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
              |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-             |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
-             |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
+             |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
+             |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.subject_id = contacts.contact_id)
@@ -116,14 +116,14 @@ object CredentialsDAO extends BaseDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |), PC AS (
-             |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
-             |         issued_on_transaction_id, ledger, shared_at
+             |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
+             |         stored_at, issued_on_transaction_id, ledger, shared_at
              |  FROM published_credentials JOIN published_batches USING (batch_id)
              |)
              |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
              |       external_id, PTS.name AS issuer_name, contact_data, connection_status,
-             |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
-             |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
+             |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
+             |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.subject_id = contacts.contact_id)
@@ -143,14 +143,14 @@ object CredentialsDAO extends BaseDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |), PC AS (
-         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, stored_at,
-         |         issued_on_transaction_id, ledger, shared_at
+         |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
+         |         stored_at, issued_on_transaction_id, ledger, shared_at
          |  FROM published_credentials JOIN published_batches USING (batch_id)
          |)
          |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on,
          |       external_id, PTS.name AS issuer_name, contacts.contact_data, connection_status,
-         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.stored_at,
-         |       PC.issued_on_transaction_id, PC.ledger, PC.shared_at
+         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
+         |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.subject_id = contacts.contact_id)

@@ -11,7 +11,8 @@ import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, Reque
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution}
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
-import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, StoredCredentialsDAO}
+import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, ReceivedCredentialsDAO}
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
@@ -29,6 +30,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
   private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private val aHash = SHA256Digest.compute("".getBytes())
+  private val inclusionProof = MerkleInclusionProof(aHash, 0, List())
 
   private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
@@ -80,7 +83,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
       verifierId: ParticipantId,
       connectionId: ConnectionId,
       contactId: Contact.Id,
-      encodedSignedCredential: String
+      encodedSignedCredential: String,
+      proof: MerkleInclusionProof
   ): Unit = {
     val connectionToken =
       DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
@@ -94,7 +98,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
     val storeRequest = console_api.StoreCredentialRequest(
       connectionId.toString,
       encodedSignedCredential,
-      mockCredentialExternalId.value
+      mockCredentialExternalId.value,
+      proof.encode
     )
     val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
     usingApiAs(rpcStoreRequest) { serviceStub =>
@@ -110,7 +115,9 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId
+      val contact = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "")
+      val contactId = contact.contactId
+      val contactExternalId = contact.externalId
       val connectionToken = DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
       val mockConnectionId = ConnectionId.random()
       ContactsDAO
@@ -125,15 +132,16 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         console_api.StoreCredentialRequest(
           mockConnectionId.toString,
           encodedSignedCredential,
-          mockCredentialExternalId.value
+          mockCredentialExternalId.value,
+          inclusionProof.encode
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
         serviceStub.storeCredential(request)
 
-        val credential = StoredCredentialsDAO
-          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
+        val credential = ReceivedCredentialsDAO
+          .getReceivedCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -141,6 +149,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
 
         credential.individualId mustBe contactId
         credential.encodedSignedCredential mustBe encodedSignedCredential
+        credential.externalId mustBe contactExternalId
+        credential.merkleInclusionProof mustBe inclusionProof
       }
     }
 
@@ -150,7 +160,9 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
-      val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId
+      val contact = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "")
+      val contactId = contact.contactId
+      val contactExternalId = contact.externalId
       val connectionToken = DataPreparation.generateConnectionToken(Institution.Id(verifierId.uuid), contactId)
       val mockConnectionId = ConnectionId.random()
       ContactsDAO
@@ -165,15 +177,16 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         console_api.StoreCredentialRequest(
           mockConnectionId.toString,
           encodedSignedCredential,
-          mockCredentialExternalId.value
+          mockCredentialExternalId.value,
+          inclusionProof.encode
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
         serviceStub.storeCredential(request)
 
-        val credential = StoredCredentialsDAO
-          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
+        val credential = ReceivedCredentialsDAO
+          .getReceivedCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -181,6 +194,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
 
         credential.individualId mustBe contactId
         credential.encodedSignedCredential mustBe encodedSignedCredential
+        credential.externalId mustBe contactExternalId
+        credential.merkleInclusionProof mustBe inclusionProof
       }
 
       val encodedSignedCredential2 = "b3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
@@ -188,15 +203,16 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         console_api.StoreCredentialRequest(
           mockConnectionId.toString,
           encodedSignedCredential2,
-          mockCredentialExternalId.value
+          mockCredentialExternalId.value,
+          inclusionProof.encode
         )
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
 
       usingApiAs(rpcRequest2) { serviceStub =>
         serviceStub.storeCredential(request2)
 
-        val credentials = StoredCredentialsDAO
-          .getStoredCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
+        val credentials = ReceivedCredentialsDAO
+          .getReceivedCredentialsFor(Institution.Id(verifierId.uuid), Some(contactId))
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -208,6 +224,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         credential.individualId mustBe contactId
         // the credential should be the original one
         credential.encodedSignedCredential mustBe encodedSignedCredential
+        credential.externalId mustBe contactExternalId
+        credential.merkleInclusionProof mustBe inclusionProof
       }
 
     }
@@ -230,8 +248,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
       val connectionId1 = ConnectionId.random()
       val connectionId2 = ConnectionId.random()
 
-      storeCredentialFor(keyPair, did, verifierId, connectionId1, contactId1, encodedSignedCredential1)
-      storeCredentialFor(keyPair, did, verifierId, connectionId2, contactId2, encodedSignedCredential2)
+      storeCredentialFor(keyPair, did, verifierId, connectionId1, contactId1, encodedSignedCredential1, inclusionProof)
+      storeCredentialFor(keyPair, did, verifierId, connectionId2, contactId2, encodedSignedCredential2, inclusionProof)
 
       val getStoredRequest = console_api.GetStoredCredentialsForRequest(contactId1.toString)
       val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
@@ -243,6 +261,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         credential.individualId mustBe contactId1.toString
         credential.encodedSignedCredential mustBe encodedSignedCredential1
         credential.externalId mustBe contact1.externalId.value
+        credential.batchInclusionProof mustBe inclusionProof.encode
       }
     }
 
@@ -261,8 +280,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
       val connectionId1 = ConnectionId.random()
       val connectionId2 = ConnectionId.random()
 
-      storeCredentialFor(keyPair, did, verifierId, connectionId1, contactId1, encodedSignedCredential1)
-      storeCredentialFor(keyPair, did, verifierId, connectionId2, contactId2, encodedSignedCredential2)
+      storeCredentialFor(keyPair, did, verifierId, connectionId1, contactId1, encodedSignedCredential1, inclusionProof)
+      storeCredentialFor(keyPair, did, verifierId, connectionId2, contactId2, encodedSignedCredential2, inclusionProof)
 
       val getStoredRequest = console_api.GetStoredCredentialsForRequest()
       val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
@@ -272,12 +291,12 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         response.credentials.size mustBe 2
 
         val credentials = response.credentials.map { cred =>
-          (cred.individualId, cred.encodedSignedCredential, cred.externalId)
+          (cred.individualId, cred.encodedSignedCredential, cred.externalId, cred.batchInclusionProof)
         }
 
         credentials must contain theSameElementsAs List(
-          (contactId1.toString, encodedSignedCredential1, contact1.externalId.value),
-          (contactId2.toString, encodedSignedCredential2, contact2.externalId.value)
+          (contactId1.toString, encodedSignedCredential1, contact1.externalId.value, inclusionProof.encode),
+          (contactId2.toString, encodedSignedCredential2, contact2.externalId.value, inclusionProof.encode)
         )
       }
     }
@@ -308,7 +327,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
         console_api.StoreCredentialRequest(
           mockConnectionId.toString,
           encodedSignedCredential,
-          messageId.value
+          messageId.value,
+          inclusionProof.encode
         )
       }
 

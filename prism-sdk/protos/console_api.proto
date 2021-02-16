@@ -477,6 +477,7 @@ message StoreCredentialRequest {
   string connectionId = 1; // connection id retrieved from the connector message that carried the credential
   string encodedSignedCredential = 2; // the encoded signed data
   string credentialExternalId = 3; // credential external id (currently, id of the connector message that carried it)
+  string batchInclusionProof = 4; // inclusion proof associated to the encodedSignedCredential
 }
 // Response after storing a received credential
 message StoreCredentialResponse {
