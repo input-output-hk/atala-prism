@@ -2,7 +2,7 @@ import chrome._
 import chrome.permissions.Permission
 import chrome.permissions.Permission.API
 import com.alexitc.{Chrome, ChromeSbtPlugin}
-import org.scalablytyped.converter.Flavour.Slinky
+import org.scalablytyped.converter.Flavour
 import org.scalajs.jsenv.selenium.SeleniumJSEnv
 
 resolvers += Resolver.sonatypeRepo("releases")
@@ -119,8 +119,7 @@ val scalaDomVersion = "1.0.0"
 val scalaJsChromeVersion = "0.7.0"
 val enumeratumVersion = "1.6.1"
 val scalaJsJavaTimeVersion = "1.0.0"
-val slinkyVersion = "0.6.6"
-val slinkyIjextVerion = "0.6.6"
+val slinkyVersion = "0.6.7"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaDomVersion
 libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % scalaJsChromeVersion
@@ -135,7 +134,6 @@ libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % scalaJsJavaTimeV
 // React
 libraryDependencies += "me.shadaj" %%% "slinky-core" % slinkyVersion // core React functionality, no React DOM
 libraryDependencies += "me.shadaj" %%% "slinky-web" % slinkyVersion // React DOM, HTML and SVG tags
-libraryDependencies += "me.shadaj" %% "slinky-core-ijext" % slinkyIjextVerion // Intellij plugin for slinky
 libraryDependencies += "com.alexitc" %%% "sjs-material-ui-facade" % "0.1.3" // material-ui bindings
 
 // Test

@@ -3,10 +3,9 @@ package io.iohk.atala.cvp.webextension.background.models
 import cats.data.ValidatedNel
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.prism.credentials.VerificationError
-import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models._
+import io.iohk.atala.cvp.webextension.common.models.{PendingRequest, _}
+import io.iohk.atala.prism.credentials.VerificationError
 
 import scala.util.Try
 
@@ -36,7 +35,7 @@ private[background] object Command {
   final case class SignatureResult(signature: String)
 
   final case object GetSigningRequests extends CommandWithResponse[SigningRequests]
-  final case class SigningRequests(requests: List[SigningRequest])
+  final case class SigningRequests(requests: List[PendingRequest])
 
   final case class SignRequest(requestId: Int) extends CommandWithResponse[Unit]
   final case class RejectRequest(requestId: Int) extends CommandWithResponse[Unit]

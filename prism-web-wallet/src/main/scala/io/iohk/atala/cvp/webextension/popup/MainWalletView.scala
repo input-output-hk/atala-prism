@@ -7,7 +7,7 @@ import com.alexitc.materialui.facade.materialUiCore.mod.PropTypes.Color
 import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-import io.iohk.atala.cvp.webextension.background.wallet.SigningRequest
+import io.iohk.atala.cvp.webextension.common.models.PendingRequest
 import io.iohk.atala.cvp.webextension.popup.models.View
 import io.iohk.atala.cvp.webextension.popup.models.View.Unlock
 import org.scalajs.dom.raw.DOMParser
@@ -29,7 +29,7 @@ import scala.util.{Failure, Success}
   case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   case class State(
-      requests: List[SigningRequest],
+      requests: List[PendingRequest.IssueCredential],
       id: Int,
       message: String,
       status: Option[Boolean],
@@ -42,7 +42,7 @@ import scala.util.{Failure, Success}
 
   override def initialState: State = State(requests = Nil, 0, "", None, false)
 
-  private def renderTemplate(request: SigningRequest) = {
+  private def renderTemplate(request: PendingRequest.IssueCredential) = {
     val sanitisedHtml = dompurify.sanitize(request.subject.properties.getOrElse("html", emptyDiv))
     domParser
       .parseFromString(sanitisedHtml, "text/html")
@@ -85,7 +85,7 @@ import scala.util.{Failure, Success}
     }
   }
 
-  private def templateElement(signingRequest: SigningRequest) = {
+  private def templateElement(signingRequest: PendingRequest.IssueCredential) = {
     div(
       div(
         className := "credentialContainer",
@@ -101,7 +101,7 @@ import scala.util.{Failure, Success}
     )
   }
 
-  private def signatureElement(signingRequest: SigningRequest, appendClass: String) = {
+  private def signatureElement(signingRequest: PendingRequest.IssueCredential, appendClass: String) = {
     div(className := "buttons_container")(
       rejectButton(signingRequest, appendClass),
       nextElement(signingRequest, appendClass),
@@ -121,7 +121,7 @@ import scala.util.{Failure, Success}
     )
   }
 
-  private def rejectButton(signingRequest: SigningRequest, appendClass: String) =
+  private def rejectButton(signingRequest: PendingRequest.IssueCredential, appendClass: String) =
     div(
       className := s"btn_cancel btn_cancel_width $appendClass",
       id := "btn_cancel",
@@ -141,7 +141,7 @@ import scala.util.{Failure, Success}
       )
     )
 
-  private def signButton(signingRequest: SigningRequest, appendClass: String) = {
+  private def signButton(signingRequest: PendingRequest.IssueCredential, appendClass: String) = {
     div(
       className := s"btn_sign btn_sign_width $appendClass",
       id := signingRequest.id.toString,
@@ -162,7 +162,7 @@ import scala.util.{Failure, Success}
       }
     )
 
-  private def nextElement(signingRequest: SigningRequest, appendClass: String) = {
+  private def nextElement(signingRequest: PendingRequest.IssueCredential, appendClass: String) = {
     state.status match {
       case Some(true) => nextButton()
       case Some(false) => signButton(signingRequest, appendClass)
@@ -217,7 +217,11 @@ import scala.util.{Failure, Success}
 
   private def loadRequests(): Unit = {
     props.backgroundAPI.getSignatureRequests().map { req =>
-      setState(_.copy(requests = req.requests, status = None))
+      // TODO: Fow now, this is the only supported request, add support for the other ones
+      val issueCredentialRequests = req.requests.collect {
+        case r: PendingRequest.IssueCredential => r
+      }
+      setState(_.copy(requests = issueCredentialRequests, status = None))
     }
   }
 

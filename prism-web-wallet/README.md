@@ -1,4 +1,5 @@
-Proof of Concept for a ScalaJS browser extension wallet that can be used to sign credentials and authenticate communication with the backend. Currently it is compatible with Chrome only, in the future support of Firefox and new Edge versions is going to be added.
+# PRISM Web Wallet
+The ScalaJS browser extension wallet that can be used to sign credentials and authenticate communication with the backend. Currently it is compatible with Chrome only, in the future support of Firefox and new Edge versions is going to be added.
 
 Browser extension model imposes rescrictions on what can be done - e.g. the code running in the tab cannot invoke directly methods of the extension popup. Because of that the wallet consists of three parts:
 * background - it is the core of the wallet, manages the keys and signing requests; that is the place where the cryptography is run,
@@ -8,13 +9,6 @@ Browser extension model imposes rescrictions on what can be done - e.g. the code
 ## Dependencies
 
 This project uses [scalajs-bundler](https://github.com/scalacenter/scalajs-bundler) to fetch JavaScript dependencies, so `npm` is required to build it.
-
-Until this [PR](https://github.com/lucidd/scala-js-chrome/pull/46) gets merged, we need a custom plugin to support [content_scripts](https://developer.chrome.com/extensions/content_scripts), if you don't need those, feel free to replace the forked plugin on the [plugins.sbt](project/plugins.sbt).
-
-Before being able to build the extension, you'll need to install a plugin locally.
-- Clone `https://github.com/AlexITC/scala-js-chrome`
-- Move to the `add-content-script` branch (`git checkout add-content-script`).
-- Install the custom `scala-js-chrome` locally (`sbt publishLocal`).
 
 Then, running `sbt chromePackage` on this project is enough.
 
@@ -29,6 +23,7 @@ Then, running `sbt chromePackage` on this project is enough.
     **NOTE**: You have to have the PostgreSQL DB running already.
     **WARNING**: Beware that killing the session may leave `envoy` running and, next time you try to run it, it will fail to run again, but it's a harmless problem because it would be running anyway.
 - Be sure to integrate scalafmt on your IntelliJ to format the source code on save (see https://scalameta.org/scalafmt/docs/installation.html#intellij).
+- Be sure to install the [Slinky plugin](https://plugins.jetbrains.com/plugin/15748-slinky-library-support) for IntelliJ to get proper support.
 
 ### Run tests
 You are required to have Chrome installed in order to run the tests, then, run:

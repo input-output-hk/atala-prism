@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-import io.iohk.atala.cvp.webextension.background.wallet.WalletStatus
+import io.iohk.atala.cvp.webextension.common.models.WalletStatus
 import io.iohk.atala.cvp.webextension.popup.models.View
 import io.iohk.atala.cvp.webextension.popup.models.View._
 import org.scalajs.dom.experimental.URLSearchParams

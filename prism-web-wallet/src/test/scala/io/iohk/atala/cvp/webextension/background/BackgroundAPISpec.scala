@@ -1,8 +1,7 @@
 package io.iohk.atala.cvp.webextension.background
 
-import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models.CredentialSubject
+import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, PendingRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.models.Role.Verifier
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
 import org.scalatest.matchers.must.Matchers._
@@ -63,7 +62,7 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
         _ <- api.requestSignature(u.sessionId, subject)
         signingRequests <- api.getSignatureRequests()
       } yield {
-        signingRequests.requests mustBe List(SigningRequest(1, origin, u.sessionId, subject))
+        signingRequests.requests mustBe List(PendingRequest.IssueCredential(0, origin, u.sessionId, subject))
       }
     }
 

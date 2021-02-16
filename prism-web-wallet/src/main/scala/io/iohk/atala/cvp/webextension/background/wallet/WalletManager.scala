@@ -1,12 +1,8 @@
 package io.iohk.atala.cvp.webextension.background.wallet
 
-import java.util.{Base64, UUID}
-
 import cats.data.ValidatedNel
 import com.google.protobuf.ByteString
-import io.circe.Json
 import io.circe.generic.auto._
-import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.CredentialsCopyJob
 import io.iohk.atala.cvp.webextension.background.models.console.ConsoleCredentialId
@@ -15,15 +11,8 @@ import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorCli
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
-import io.iohk.atala.cvp.webextension.background.wallet.WalletManager.{
-  AES_KEY_LENGTH,
-  AES_MODE,
-  GCM_IV_LENGTH,
-  TAG_LENGTH_BIT
-}
+import io.iohk.atala.cvp.webextension.background.wallet.models._
 import io.iohk.atala.cvp.webextension.circe._
-import io.iohk.atala.cvp.webextension.common.ECKeyOperation.{didFromMasterKey, ecKeyPairFromSeed, _}
-import io.iohk.atala.cvp.webextension.common.models.Role.{Issuer, Verifier}
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.prism.connector.RequestAuthenticator
@@ -31,72 +20,21 @@ import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.connector_api.{GetCurrentUserResponse, RegisterDIDRequest, RegisterDIDResponse}
+import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
 import org.scalajs.dom.crypto
-import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
+import org.scalajs.dom.crypto.CryptoKey
 
+import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, _}
 import scala.util.{Failure, Success, Try}
 
-object WalletManager {
-  val CURVE_NAME = "secp256k1"
+private object WalletManager {
 
   val LOCAL_STORAGE_KEY = "atala-wallet-data"
-  val PASSWORD_SALT = "kkmarcbr/a"
-  val AES_MODE = "AES-GCM"
-  val AES_KEY_LENGTH: Short = 256
-  // GCM MODE
-  val GCM_IV_LENGTH = 12 // Initialization Vector
-  val TAG_LENGTH_BIT: Short = 128 // Authentication Tag
-  // GCM MODE
-}
 
-case class SigningRequest(id: Int, origin: String, sessionId: String, subject: CredentialSubject)
-
-sealed trait WalletStatus
-
-object WalletStatus {
-
-  final case object Missing extends WalletStatus
-
-  final case object Unlocked extends WalletStatus
-
-  final case object Locked extends WalletStatus
-
-}
-
-object Role {
-  def toConnectorApiRole(role: Role): RegisterDIDRequest.Role = {
-    role match {
-      case Issuer => RegisterDIDRequest.Role.issuer
-      case Verifier => RegisterDIDRequest.Role.verifier
-    }
-  }
-
-  def toRole(role: GetCurrentUserResponse.Role): Role = {
-    role match {
-      case GetCurrentUserResponse.Role.issuer => Issuer
-      case GetCurrentUserResponse.Role.verifier => Verifier
-      case GetCurrentUserResponse.Role.Unrecognized(roleValue) =>
-        throw new IllegalArgumentException(s"Unrecognized role $roleValue")
-    }
-  }
-}
-
-case class WalletData(
-    keys: Map[String, String],
-    mnemonic: Mnemonic,
-    organisationName: String,
-    did: DID,
-    transactionId: Option[String] = None,
-    role: Role,
-    logo: Array[Byte]
-) {
-  def addKey(name: String, key: String): WalletData = {
-    copy(keys = keys + (name -> key))
-  }
+  type SessionID = String
+  type Origin = String
 }
 
 private[background] class WalletManager(
@@ -108,18 +46,26 @@ private[background] class WalletManager(
 )(implicit
     ec: ExecutionContext
 ) {
+
+  import WalletManager._
+
   private val requestAuthenticator = new RequestAuthenticator(EC)
 
-  type SessionID = String
-  type Origin = String
   private[this] var session = Set[(SessionID, Origin)]()
-  var walletData: Option[WalletData] = None
-  var signingRequests: Map[Int, (SigningRequest, Promise[String])] = Map.empty
-  var requestCounter: Int = 0
+  private var walletData: Option[WalletData] = None
+  private var pendingRequestsQueue = PendingRequestsQueue.empty
 
   private def updateBadge(): Unit = {
-    val badgeText = if (signingRequests.nonEmpty) signingRequests.size.toString else ""
+    val badgeText = Option(pendingRequestsQueue.size)
+      .filter(_ > 0)
+      .map(_.toString)
+      .getOrElse("")
     browserActionService.setBadgeText(badgeText)
+  }
+
+  private def updateState(newState: PendingRequestsQueue): Unit = {
+    this.pendingRequestsQueue = newState
+    updateBadge()
   }
 
   private def reloadPopup(): Unit = {
@@ -130,30 +76,16 @@ private[background] class WalletManager(
     this.walletData = Some(walletData)
   }
 
-  def getSigningRequests(): Seq[SigningRequest] = {
-    signingRequests.values.map(_._1).toSeq
+  def getSigningRequests(): Seq[PendingRequest] = {
+    pendingRequestsQueue.list
   }
 
+  // TODO: Support credential revocation requests
   def signRequestAndPublish(requestId: Int): Future[Unit] = {
-
-    val signingRequestsF = Future.fromTry {
-      Try {
-        signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
-      }
-    }
-
-    val walletDataF = Future.fromTry {
-      Try {
-        walletData.getOrElse(
-          throw new RuntimeException("You need to create the wallet before logging in and creating session")
-        )
-      }
-    }
-
     for {
-      (request, _) <- signingRequestsF
-      walletData <- walletDataF
-      ecKeyPair = ecKeyPairFromSeed(walletData.mnemonic)
+      (request, _) <- issueCredentialRequestF(requestId)
+      walletData <- walletDataF()
+      ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
       claims = request.subject.properties.asJson.noSpaces
       signingKeyId = ECKeyOperation.firstMasterKeyId // TODO: this key id should eventually be selected by the user
       //       this should be done when we complete the key derivation flow
@@ -164,64 +96,18 @@ private[background] class WalletManager(
         List(CredentialData(ConsoleCredentialId(request.subject.id), claims))
       )
     } yield {
-      signingRequests -= requestId
       println(s"Signed and Published = ${request.subject.id}")
-      updateBadge()
+      updateState(pendingRequestsQueue - requestId)
     }
   }
 
   def rejectRequest(requestId: Int): Future[Unit] = {
-    val signingRequestsF = Future.fromTry {
-      Try {
-        signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
+    issueCredentialRequestF(requestId)
+      .map {
+        case (request, _) =>
+          updateState(pendingRequestsQueue - requestId)
+          println(s"Rejected = ${request.subject.id}")
       }
-    }
-    signingRequestsF.map {
-      case (request, _) =>
-        signingRequests -= requestId
-        println(s"Rejected = ${request.subject.id}")
-        updateBadge()
-      case _ => throw new IllegalArgumentException("Unknown request")
-    }
-  }
-
-  def initialAesGcm: crypto.AesGcmParams = {
-    val ivBytes = Array.ofDim[Byte](GCM_IV_LENGTH)
-    crypto.crypto.getRandomValues(ivBytes.toTypedArray)
-    //Additional data is quite interesting it is data that can be authenticated data that won't be encrypted
-    //but will be part of integrity, Hence I was thinking if we can.
-    //We can use as origin so we know the request for encryption/decryption came from the same origin
-    val additionalData = ""
-    crypto.AesGcmParams(
-      name = AES_MODE,
-      iv = ivBytes.toTypedArray.buffer,
-      additionalData = additionalData.getBytes.toTypedArray.buffer,
-      tagLength = TAG_LENGTH_BIT
-    )
-  }
-
-  def save(key: CryptoKey, walletData: WalletData): Future[Unit] = {
-    val json = walletData.asJson.noSpaces
-    println(s"Serialized wallet: $json")
-    val result = for {
-      arrayBuffer <-
-        crypto.crypto.subtle
-          .encrypt(initialAesGcm, key, json.getBytes.toTypedArray.buffer)
-          .toFuture
-          .asInstanceOf[Future[ArrayBuffer]]
-      arr = Array.ofDim[Byte](arrayBuffer.byteLength)
-      _ = TypedArrayBuffer.wrap(arrayBuffer).get(arr)
-      encodedJson = new String(Base64.getEncoder.encode(arr))
-      _ = println(s"Encrypted wallet: $encodedJson")
-      _ = storageService.store(WalletManager.LOCAL_STORAGE_KEY, encodedJson)
-    } yield ()
-
-    result.onComplete {
-      case Success(value) => println("Successfully saved wallet")
-      case Failure(exception) => println("Failed saving wallet"); exception.printStackTrace()
-    }
-
-    result
   }
 
   def getStatus(): Future[WalletStatus] = {
@@ -279,26 +165,11 @@ private[background] class WalletManager(
   }
 
   def signConnectorRequest(origin: Origin, sessionID: SessionID, request: ConnectorRequest): Future[SignedMessage] = {
-    val walletDataF = Future.fromTry {
-      Try {
-        walletData.getOrElse(
-          throw new RuntimeException("You need to create the wallet before logging in and creating session")
-        )
-      }
-    }
-    val validSessionF = Future.fromTry {
-      Try {
-        session
-          .find(_ == (sessionID -> origin))
-          .getOrElse(throw new RuntimeException("You need a valid session to sign the request"))
-      }
-    }
-
     for {
-      walletData <- walletDataF
-      _ <- validSessionF
+      walletData <- walletDataF()
+      _ <- validateSessionF(origin = origin, sessionID = sessionID)
     } yield {
-      val ecKeyPair = ecKeyPairFromSeed(walletData.mnemonic)
+      val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
       val signedRequest = requestAuthenticator.signConnectorRequest(request.bytes, ecKeyPair.privateKey)
       SignedMessage(
         did = walletData.did,
@@ -315,16 +186,8 @@ private[background] class WalletManager(
       signedCredentialStringRepresentation: String,
       encodedMerkleProof: String
   ): Future[ValidatedNel[VerificationError, Unit]] = {
-    val validSessionF = Future.fromTry {
-      Try {
-        session
-          .find(_ == (sessionID -> origin))
-          .getOrElse(throw new RuntimeException("You need a valid session"))
-      }
-    }
-
     for {
-      _ <- validSessionF
+      _ <- validateSessionF(origin = origin, sessionID = sessionID)
       merkleProof =
         MerkleInclusionProof
           .decode(encodedMerkleProof)
@@ -334,57 +197,16 @@ private[background] class WalletManager(
   }
 
   def requestSignature(origin: Origin, sessionID: SessionID, subject: CredentialSubject): Future[Unit] = {
-
-    Future.fromTry {
-      Try {
-        session
-          .find(_ == (sessionID -> origin))
-          .map { _ =>
-            val signaturePromise = Promise[String]()
-            requestCounter += 1
-            val request = SigningRequest(requestCounter, origin, sessionID, subject)
-            signingRequests += requestCounter -> ((request, signaturePromise))
-            updateBadge()
-            reloadPopup()
-            signaturePromise.future
-          }
-          .getOrElse(
-            throw new RuntimeException("Invalid request not associated with a session")
-          )
-      }
-    }
-  }
-
-  def generateSecretKey(password: String): Future[CryptoKey] = {
-    val pbdkf2 =
-      crypto.Pbkdf2Params("PBKDF2", WalletManager.PASSWORD_SALT.getBytes.toTypedArray.buffer, 100L, "SHA-512")
-
     for {
-      pbkdf2Key <-
-        crypto.crypto.subtle
-          .importKey(
-            KeyFormat.raw,
-            password.getBytes.toTypedArray.buffer,
-            "PBKDF2",
-            false,
-            js.Array(crypto.KeyUsage.deriveKey, crypto.KeyUsage.deriveBits)
-          )
-          .toFuture
-          .asInstanceOf[Future[crypto.CryptoKey]]
-
-      aesCtr = crypto.AesDerivedKeyParams(AES_MODE, AES_KEY_LENGTH)
-      aesKey <-
-        crypto.crypto.subtle
-          .deriveKey(
-            pbdkf2,
-            pbkdf2Key,
-            aesCtr,
-            true,
-            js.Array(crypto.KeyUsage.encrypt, crypto.KeyUsage.decrypt)
-          )
-          .toFuture
-          .asInstanceOf[Future[crypto.CryptoKey]]
-    } yield aesKey
+      _ <- validateSessionF(origin = origin, sessionID = sessionID)
+    } yield {
+      val (newState, promise) = pendingRequestsQueue.issueCredential(origin, sessionID, subject)
+      updateState(newState)
+      reloadPopup()
+      // TODO: Avoid ignoring the future result
+      println(s"Future ${promise.future} ignored on purpose to keep compatibility, be kind and fix the bug")
+      ()
+    }
   }
 
   def createWallet(
@@ -395,7 +217,7 @@ private[background] class WalletManager(
       logo: Array[Byte]
   ): Future[Unit] = {
     val result = for {
-      aesKey <- generateSecretKey(password)
+      aesKey <- CryptoUtils.generateSecretKey(password)
       (response, did) <- registerDid(mnemonic, role, organisationName, logo)
       newWalletData = WalletData(
         Map.empty,
@@ -422,13 +244,10 @@ private[background] class WalletManager(
     result
   }
 
-  def recoverWallet(
-      password: String,
-      mnemonic: Mnemonic
-  ): Future[Unit] = {
+  def recoverWallet(password: String, mnemonic: Mnemonic): Future[Unit] = {
     val result = for {
       newWalletData <- recoverAccount(mnemonic)
-      aesKey <- generateSecretKey(password)
+      aesKey <- CryptoUtils.generateSecretKey(password)
       _ <- save(aesKey, newWalletData)
       _ = updateWalletData(newWalletData)
     } yield ()
@@ -447,7 +266,7 @@ private[background] class WalletManager(
 
   def unlock(password: String): Future[Unit] = {
     val result = for {
-      aesKey <- generateSecretKey(password)
+      aesKey <- CryptoUtils.generateSecretKey(password)
       storedEncryptedJsonOption <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
       json <-
         storedEncryptedJsonOption
@@ -455,7 +274,7 @@ private[background] class WalletManager(
             val encryptedJson = storedEncryptedJson.asInstanceOf[String]
             val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
             crypto.crypto.subtle
-              .decrypt(initialAesGcm, aesKey, encryptedBytes)
+              .decrypt(CryptoUtils.initialAesGcm, aesKey, encryptedBytes)
               .toFuture
               .asInstanceOf[Future[ArrayBuffer]]
               .map { buffer =>
@@ -465,7 +284,9 @@ private[background] class WalletManager(
               }
           }
           .getOrElse(throw new RuntimeException("You need to create the wallet before unlocking it"))
-      _ = updateWalletData(parseWalletDataFromJson(json))
+
+      walletData <- Future.fromTry(WalletData.fromJson(json))
+      _ = updateWalletData(walletData)
     } yield ()
 
     result.onComplete {
@@ -481,19 +302,12 @@ private[background] class WalletManager(
     result
   }
 
-  private def parseWalletDataFromJson(json: String): WalletData = {
-    println(s"Parsing wallet data from: $json")
-    parse(json)
-      .getOrElse(Json.obj())
-      .as[WalletData]
-      .getOrElse(throw new RuntimeException("Wallet could not be loaded from JSON"))
-  }
-
   def lock(): Future[Unit] = {
-    Future {
+    val t = Try {
       credentialsCopyJob.stop()
       this.walletData = None
     }
+    Future.fromTry(t)
   }
 
   private def registerDid(
@@ -503,12 +317,13 @@ private[background] class WalletManager(
       logo: Array[Byte]
   ): Future[(RegisterDIDResponse, DID)] = {
 
-    val connectRole = Role.toConnectorApiRole(role)
+    val connectRole = RoleHepler.toConnectorApiRole(role)
     val logoByteString = ByteString.copyFrom(logo)
     val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
 
+    val createDIDOperation = ECKeyOperation.createDIDAtalaOperation(ecKeyPair)
     val registerDIDRequest = RegisterDIDRequest(
-      Some(signedAtalaOperation(ecKeyPair, createDIDAtalaOperation(ecKeyPair))),
+      Some(ECKeyOperation.signedAtalaOperation(ecKeyPair, createDIDOperation)),
       connectRole,
       organisationName,
       logoByteString
@@ -522,14 +337,14 @@ private[background] class WalletManager(
 
   private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {
     val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
-    val did = didFromMasterKey(ecKeyPair)
+    val did = ECKeyOperation.didFromMasterKey(ecKeyPair)
     connectorClientService.getCurrentUser(ecKeyPair, did).map { res =>
       WalletData(
         keys = Map.empty,
         mnemonic = mnemonic,
         did = did,
         organisationName = res.name,
-        role = Role.toRole(res.role),
+        role = RoleHepler.toRole(res.role),
         logo = res.logo.bytes
       )
     }
@@ -537,8 +352,70 @@ private[background] class WalletManager(
 
   private def subscribeForReceivedCredentials(data: WalletData): Unit = {
     credentialsCopyJob.start(
-      ecKeyPairFromSeed(data.mnemonic),
+      ECKeyOperation.ecKeyPairFromSeed(data.mnemonic),
       data.did
     )
+  }
+
+  private def save(key: CryptoKey, walletData: WalletData): Future[Unit] = {
+    val json = walletData.asJson.noSpaces
+    println(s"Serialized wallet: $json")
+    val result = for {
+      arrayBuffer <-
+        crypto.crypto.subtle
+          .encrypt(CryptoUtils.initialAesGcm, key, json.getBytes.toTypedArray.buffer)
+          .toFuture
+          .asInstanceOf[Future[ArrayBuffer]]
+      arr = Array.ofDim[Byte](arrayBuffer.byteLength)
+      _ = TypedArrayBuffer.wrap(arrayBuffer).get(arr)
+      encodedJson = new String(Base64.getEncoder.encode(arr))
+      _ = println(s"Encrypted wallet: $encodedJson")
+      _ = storageService.store(WalletManager.LOCAL_STORAGE_KEY, encodedJson)
+    } yield ()
+
+    result.onComplete {
+      case Success(_) => println("Successfully saved wallet")
+      case Failure(exception) => println("Failed saving wallet"); exception.printStackTrace()
+    }
+
+    result
+  }
+
+  private def issueCredentialRequestF(requestId: Int): Future[(PendingRequest.IssueCredential, Promise[String])] = {
+    Future.fromTry {
+      Try {
+        pendingRequestsQueue
+          .get(requestId)
+          .map {
+            case (request, promise) =>
+              request match {
+                case r: PendingRequest.IssueCredential => r -> promise
+                case _ =>
+                  throw new RuntimeException("Request to issue credential expected but a different one was found")
+              }
+          }
+          .getOrElse(throw new RuntimeException("Request to issue credential not found"))
+      }
+    }
+  }
+
+  private def walletDataF(): Future[WalletData] = {
+    Future.fromTry {
+      Try {
+        walletData.getOrElse(
+          throw new RuntimeException("You need to create/unlock the wallet before being able to use it")
+        )
+      }
+    }
+  }
+
+  private def validateSessionF(origin: Origin, sessionID: SessionID): Future[Unit] = {
+    val t = Try {
+      session
+        .find(_ == (sessionID -> origin))
+        .map(_ => ())
+        .getOrElse(throw new RuntimeException("You need a valid session"))
+    }
+    Future.fromTry(t)
   }
 }
