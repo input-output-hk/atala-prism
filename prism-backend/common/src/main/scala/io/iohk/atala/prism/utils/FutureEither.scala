@@ -99,6 +99,9 @@ object FutureEither {
     }.toFutureEither
   }
 
+  def left[E, A](leftValue: E): FutureEither[E, A] =
+    Future.successful(Left(leftValue)).toFutureEither
+
   implicit class FutureEitherOps[E, A](val value: Future[Either[E, A]]) extends AnyVal {
     def toFutureEither: FutureEither[E, A] = new FutureEither[E, A](value)
     def toFutureEither[E2](mapper: E => E2)(implicit ec: ExecutionContext): FutureEither[E2, A] = {

@@ -122,7 +122,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
   ): List[console_models.CredentialIssuanceContact] = {
     val groups = List("Engineering", "Business").map { groupName =>
       institutionGroupsRepository
-        .create(institutionId, InstitutionGroup.Name(groupName))
+        .create(institutionId, InstitutionGroup.Name(groupName), Set())
         .value
         .futureValue
         .toOption

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.data.EitherT
 import cats.effect.IO
 import cats.syntax.either._
 import doobie.free.connection
@@ -14,12 +15,27 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import scala.concurrent.ExecutionContext
 
 class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
-  def create(institutionId: ParticipantId, name: InstitutionGroup.Name): FutureEither[Nothing, InstitutionGroup] = {
-    InstitutionGroupsDAO
-      .create(institutionId, name)
+  def create(
+      institutionId: ParticipantId,
+      name: InstitutionGroup.Name,
+      contactIds: Set[Contact.Id]
+  ): FutureEither[ManagementConsoleError, InstitutionGroup] = {
+    import institutionHelper._
+
+    val transaction = for {
+      _ <- EitherT.fromOptionF(checkContacts(institutionId, contactIds), ()).swap
+      institutionGroup <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.create(institutionId, name)
+      )
+      _ <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.addContacts(Set(institutionGroup.id), contactIds)
+      )
+    } yield institutionGroup
+
+    transaction
       .transact(xa)
+      .value
       .unsafeToFuture()
-      .map(Right(_))
       .toFutureEither
   }
 

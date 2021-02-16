@@ -5,6 +5,11 @@ import io.iohk.atala.prism.models.UUIDValue
 import java.time.Instant
 import java.util.UUID
 
+final case class CreateInstitutionGroup(
+    name: InstitutionGroup.Name,
+    contactIds: Set[Contact.Id]
+)
+
 final case class InstitutionGroup(
     id: InstitutionGroup.Id,
     name: InstitutionGroup.Name,

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics, _}
 import io.iohk.atala.prism.management.console.validations.JsonValidator
@@ -220,5 +221,23 @@ object ProtoCodecs {
       newName = request.newName.trim
       newJsonData <- JsonValidator.jsonData(request.newJsonData)
     } yield UpdateContact(contactId, newExternalId, newJsonData, newName)
+  }
+
+  def toCreateGroup(request: console_api.CreateGroupRequest): Try[CreateInstitutionGroup] = {
+    for {
+      contactIds <- request.contactIds.toList.map(Contact.Id.from).sequence
+      contactIdsSet = contactIds.toSet
+      _ <-
+        if (contactIdsSet.size == contactIds.size) {
+          Success(())
+        } else {
+          Failure(
+            new IllegalArgumentException(
+              s"Contact list [${contactIds.mkString(", ")}] repeats itself"
+            )
+          )
+        }
+      name = InstitutionGroup.Name(request.name)
+    } yield CreateInstitutionGroup(name, contactIdsSet)
   }
 }

@@ -65,6 +65,83 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         groups.map(_.value.name) must contain(newGroup)
       }
     }
+
+    "create a group with initial contact list" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+      val newGroup = InstitutionGroup.Name("IOHK University")
+      val contact1 = DataPreparation.createContact(institutionId)
+      val contact2 = DataPreparation.createContact(institutionId)
+      val request = console_api.CreateGroupRequest(
+        newGroup.value,
+        List(contact1.contactId.uuid.toString, contact2.contactId.uuid.toString)
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.createGroup(request)
+
+        // the data is included
+        response.group.value.name must be(newGroup.value)
+        response.group.value.id mustNot be(empty)
+        response.group.value.createdAt > 0 must be(true)
+        response.group.value.numberOfContacts must be(2)
+
+        // the new group needs to exist
+        val groups = institutionGroupsRepository.getBy(institutionId, None).value.futureValue.toOption.value
+        val result = groups.find(_.value.name == newGroup).value
+        result.value.name must be(newGroup)
+        result.numberOfContacts must be(2)
+      }
+    }
+
+    "fail to create a group with non-unique contact id list" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+      val newGroup = InstitutionGroup.Name("IOHK University")
+      val contact1 = DataPreparation.createContact(institutionId)
+      val contact2 = DataPreparation.createContact(institutionId)
+      val request = console_api.CreateGroupRequest(
+        newGroup.value,
+        List(contact1.contactId.uuid.toString, contact1.contactId.uuid.toString, contact2.contactId.uuid.toString)
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.createGroup(request)
+        )
+      }
+    }
+
+    "fail to create a group when one of the contacts does not belong to the group institution" in {
+      val keyPair1 = EC.generateKeyPair()
+      val publicKey1 = keyPair1.publicKey
+      val did1 = generateDid(publicKey1)
+      val institutionId1 = createParticipant(did1)
+      val keyPair2 = EC.generateKeyPair()
+      val publicKey2 = keyPair2.publicKey
+      val did2 = generateDid(publicKey2)
+      val institutionId2 = createParticipant(did2)
+      val newGroup = InstitutionGroup.Name("IOHK University")
+      val contact1 = DataPreparation.createContact(institutionId1)
+      val contact2 = DataPreparation.createContact(institutionId2)
+      val request = console_api.CreateGroupRequest(
+        newGroup.value,
+        List(contact1.contactId.uuid.toString, contact2.contactId.uuid.toString)
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair1, did1, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.createGroup(request)
+        )
+      }
+    }
   }
 
   "getGroups" should {
@@ -76,7 +153,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
-        institutionGroupsRepository.create(institutionId, group).value.futureValue.toOption.value
+        institutionGroupsRepository.create(institutionId, group, Set()).value.futureValue.toOption.value
       }
 
       val request = console_api.GetGroupsRequest()
@@ -96,7 +173,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
-        institutionGroupsRepository.create(institutionId, group).value.futureValue.toOption.value
+        institutionGroupsRepository.create(institutionId, group, Set()).value.futureValue.toOption.value
       }
       DataPreparation.createContact(institutionId, groupName = Some(groups(0)))
       DataPreparation.createContact(institutionId, groupName = Some(groups(0)))
@@ -120,7 +197,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
-        institutionGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
+        institutionGroupsRepository.create(issuerId, group, Set()).value.futureValue.toOption.value
       }
       DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
       val contact = DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
@@ -172,7 +249,14 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        institutionGroupsRepository.create(institutionId, groupName).value.futureValue.toOption.value.id.toString
+        institutionGroupsRepository
+          .create(institutionId, groupName, Set())
+          .value
+          .futureValue
+          .toOption
+          .value
+          .id
+          .toString
       }
       val contact = DataPreparation.createContact(institutionId)
 
@@ -206,7 +290,14 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        institutionGroupsRepository.create(institutionId, groupName).value.futureValue.toOption.value.id.toString
+        institutionGroupsRepository
+          .create(institutionId, groupName, Set())
+          .value
+          .futureValue
+          .toOption
+          .value
+          .id
+          .toString
       }
       val contact1 = DataPreparation.createContact(institutionId, groupName = Some(group1Name))
       val contact2 = DataPreparation.createContact(institutionId, groupName = Some(group2Name))
@@ -246,7 +337,14 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        institutionGroupsRepository.create(institutionId, groupName).value.futureValue.toOption.value.id.toString
+        institutionGroupsRepository
+          .create(institutionId, groupName, Set())
+          .value
+          .futureValue
+          .toOption
+          .value
+          .id
+          .toString
       }
       val contact1 = DataPreparation.createContact(institutionId, groupName = Some(group1Name))
       val contact2 = DataPreparation.createContact(institutionId)
@@ -298,7 +396,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val group1Id =
         institutionGroupsRepository
-          .create(institutionId1, group1Name)
+          .create(institutionId1, group1Name, Set())
           .value
           .futureValue
           .toOption
@@ -330,7 +428,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
       val group1Id =
         institutionGroupsRepository
-          .create(institutionId1, group1Name)
+          .create(institutionId1, group1Name, Set())
           .value
           .futureValue
           .toOption

@@ -1,26 +1,37 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.implicits._
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.errors.{CreateGroupInvalidRequest, ManagementConsoleErrorSupport}
+import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
+import io.iohk.atala.prism.management.console.models.{Contact, CreateInstitutionGroup, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.utils.FutureEither
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class GroupsServiceImpl(
     institutionGroupsRepository: InstitutionGroupsRepository,
     authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
-) extends console_api.GroupsServiceGrpc.GroupsService {
+) extends console_api.GroupsServiceGrpc.GroupsService
+    with ManagementConsoleErrorSupport {
+
+  val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createGroup(request: console_api.CreateGroupRequest): Future[console_api.CreateGroupResponse] = {
 
-    def f(institutionId: ParticipantId) = {
+    def f(institutionId: ParticipantId, request: CreateInstitutionGroup) = {
       institutionGroupsRepository
-        .create(institutionId, InstitutionGroup.Name(request.name))
+        .create(
+          institutionId,
+          request.name,
+          request.contactIds
+        )
         .value
         .map {
           case Right(g) =>
@@ -32,15 +43,21 @@ class GroupsServiceImpl(
                   .withId(g.id.toString)
                   .withCreatedAt(g.createdAt.getEpochSecond)
                   .withName(g.name.value)
-                  .withNumberOfContacts(0) // creating a group adds no contacts
+                  .withNumberOfContacts(request.contactIds.size)
               )
           case Left(e) => throw new RuntimeException(s"FAILED: $e")
         }
     }
-    authenticator.authenticated("createGroup", request) { institutionId =>
-      f(institutionId)
-    }
 
+    authenticator.authenticated("createGroup", request) { institutionId =>
+      ProtoCodecs.toCreateGroup(request) match {
+        case Failure(exception) =>
+          val response = CreateGroupInvalidRequest(exception.getMessage)
+          respondWith(request, response)
+        case Success(createInstitutionGroup) =>
+          f(institutionId, createInstitutionGroup)
+      }
+    }
   }
 
   override def getGroups(request: console_api.GetGroupsRequest): Future[console_api.GetGroupsResponse] = {

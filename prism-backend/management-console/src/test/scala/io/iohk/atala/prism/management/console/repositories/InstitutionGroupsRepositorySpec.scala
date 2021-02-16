@@ -16,8 +16,8 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId2 = createParticipant("Institution-2")
 
       // allows creating the same group on different institutions
-      repository.create(institutionId1, groupName).value.futureValue
-      repository.create(institutionId2, groupName).value.futureValue
+      repository.create(institutionId1, groupName, Set()).value.futureValue
+      repository.create(institutionId2, groupName, Set()).value.futureValue
       succeed
     }
 
@@ -25,10 +25,62 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution-1")
       val groupName = InstitutionGroup.Name("IOHK 2019")
 
-      repository.create(institutionId, groupName).value.futureValue
+      repository.create(institutionId, groupName, Set()).value.futureValue
       intercept[Exception] {
-        repository.create(institutionId, groupName).value.futureValue
+        repository.create(institutionId, groupName, Set()).value.futureValue
       }
+
+      succeed
+    }
+
+    "allow supplying the initial contacts list" in {
+      val groupName = InstitutionGroup.Name("IOHK 2019")
+      val institutionId = createParticipant("Institution-1")
+      val contact1 = createContact(institutionId)
+      val contact2 = createContact(institutionId)
+
+      val result = repository
+        .create(
+          institutionId,
+          groupName,
+          Set(contact1.contactId, contact2.contactId)
+        )
+        .value
+        .futureValue
+
+      assert(result.isRight)
+
+      // Check that the specified contacts were added to the group
+      val contactList = repository
+        .listContacts(institutionId, groupName)
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      assert(contactList.size == 2)
+      contactList.toSet must be(Set(contact1, contact2))
+
+      succeed
+    }
+
+    "fail when one of the contacts does not belong to the group institution" in {
+      val groupName = InstitutionGroup.Name("IOHK 2019")
+      val institutionId1 = createParticipant("Institution-1")
+      val institutionId2 = createParticipant("Institution-2")
+      val contact1 = createContact(institutionId1)
+      val contact2 = createContact(institutionId2)
+
+      val result = repository
+        .create(
+          institutionId1,
+          groupName,
+          Set(contact1.contactId, contact2.contactId)
+        )
+        .value
+        .futureValue
+
+      assert(result.isLeft)
 
       succeed
     }

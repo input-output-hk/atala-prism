@@ -377,6 +377,7 @@ message MarkAsArchivedCredentialTypeResponse {}
 // Request to create a group on the authenticated institution
 message CreateGroupRequest {
   string name = 1; // the group name, which must not exists
+  repeated string contactIds = 2; // contacts to put in the new group, must be non-repeating
 }
 // Response after creating a group
 message CreateGroupResponse {
