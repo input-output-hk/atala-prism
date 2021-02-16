@@ -702,6 +702,9 @@ jobs:
       - image: circleci/python:3.8.6
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "8e:6c:22:db:bc:2b:73:d2:a1:6d:d8:d0:41:4e:cc:22"
       - run:
           name: Make qa branch even to develop
           command: git checkout qa && git rebase develop && git push
