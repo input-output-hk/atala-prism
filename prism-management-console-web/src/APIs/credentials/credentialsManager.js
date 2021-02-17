@@ -1,7 +1,12 @@
 import { CredentialsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import credentialTypes from './credentialTypes';
-import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS, FAILED, SUCCESS } from '../../helpers/constants';
+import {
+  BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS,
+  BROWSER_WALLET_LONG_TIMEOUT_MS,
+  FAILED,
+  SUCCESS
+} from '../../helpers/constants';
 
 const {
   GetGenericCredentialsRequest,
@@ -50,7 +55,7 @@ async function createBatchOfCredentials(credentialsData) {
     createCredentialRequest.setCredentialdata(JSON.stringify(json));
 
     return this.auth
-      .getMetadata(createCredentialRequest)
+      .getMetadata(createCredentialRequest, BROWSER_WALLET_LONG_TIMEOUT_MS)
       .then(({ metadata }) =>
         this.client.createGenericCredential(createCredentialRequest, metadata)
       )
@@ -120,7 +125,7 @@ async function getBlockchainData(credential) {
 
   const { metadata, sessionError } = await this.auth.getMetadata(
     getBlockchainDataRequest,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+    BROWSER_WALLET_LONG_TIMEOUT_MS
   );
   if (sessionError) return {};
 

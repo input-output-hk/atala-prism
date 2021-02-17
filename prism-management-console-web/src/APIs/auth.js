@@ -9,7 +9,7 @@ function DIDBased(configs, wallet) {
       did,
       didKeyId,
       sessionError
-    } = await wallet.signMessage(unsignedRequest);
+    } = await wallet.signMessage(unsignedRequest, timeout);
 
     return {
       metadata: {
