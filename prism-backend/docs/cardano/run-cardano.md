@@ -50,7 +50,8 @@ mkdir -p \
     cardano-data/node-db \
     cardano-data/node-ipc \
     cardano-data/postgres \
-    cardano-data/wallet-db
+    cardano-data/wallet-db \
+    cardano-data/db-sync-data
 ```
 
 ## Run the components
