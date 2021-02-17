@@ -12,6 +12,7 @@ import org.scalatest.OptionValues._
 import java.time.{Instant, LocalDate, Period}
 import java.util.UUID
 
+// sbt "project management-console" "testOnly *ContactsRepositorySpec"
 class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   import PaginatedQueryConstraints._
 
@@ -65,7 +66,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       // we check that the subject was added
       val maybeSubject = repository.find(institution, subject.contactId).value.futureValue.toOption.value.value
-      maybeSubject must be(subject)
+      maybeSubject.contact must be(subject)
     }
 
     "fail to create a new subject when the specified group does not exist" in {
@@ -385,7 +386,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       result.isRight must be(true)
 
       // we check that the contact was updated
-      val storedContact = repository.find(institution, contactId).value.futureValue.toOption.value.value
+      val contactWithDetails = repository.find(institution, contactId).value.futureValue.toOption.value.value
+      val storedContact = contactWithDetails.contact
       storedContact.name must be(request.newName)
       storedContact.externalId must be(request.newExternalId)
       storedContact.data must be(request.newData)
@@ -442,15 +444,58 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
     }
   }
 
-  "find by subjectId" should {
-    "return the correct subject when present" in {
+  "find by contactId" should {
+    "return the correct contact when present" in {
       val institutionId = createParticipant("Institution X")
-      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val subjectA = createContact(institutionId, "Alice", Some(groupName))
-      createContact(institutionId, "Bob", Some(groupName))
+      val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A"))
+      val contactA = createContact(institutionId, "Alice", Some(group.name))
+      createContact(institutionId, "Bob", Some(group.name))
 
-      val result = repository.find(institutionId, subjectA.contactId).value.futureValue.toOption.value
-      result.value must be(subjectA)
+      val contactWithDetails = repository.find(institutionId, contactA.contactId).value.futureValue.toOption.value.value
+      contactWithDetails.contact must be(contactA)
+    }
+
+    "return the correct contact with groups involved" in {
+      val institutionId = createParticipant("Institution X")
+      val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A"))
+      val contactA = createContact(institutionId, "Alice", Some(group.name))
+      createContact(institutionId, "Bob", Some(group.name))
+
+      val contactWithDetails = repository.find(institutionId, contactA.contactId).value.futureValue.toOption.value.value
+
+      contactWithDetails.groupsInvolved.size mustBe 1
+      contactWithDetails.groupsInvolved.head.value mustBe group
+      contactWithDetails.groupsInvolved.head.numberOfContacts mustBe 2
+    }
+
+    "return the correct contact with issued credentials" in {
+      val institutionId = createParticipant("Institution X")
+      val contact = createContact(institutionId, "Alice", None)
+
+      val credentialType = createCredentialType(institutionId, "sample")
+      val issuedCredential = createGenericCredential(
+        issuedBy = institutionId,
+        subjectId = contact.contactId,
+        tag = "tag1",
+        credentialIssuanceContactId = None,
+        credentialTypeId = Some(credentialType.credentialType.id)
+      )
+      publishCredential(institutionId, issuedCredential.credentialId)
+
+      val contactWithDetails = repository.find(institutionId, contact.contactId).value.futureValue.toOption.value.value
+
+      contactWithDetails.issuedCredentials.size mustBe 1
+      contactWithDetails.issuedCredentials.head.copy(publicationData = None) mustBe issuedCredential
+    }
+
+    "return the correct contact with received credentials" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "Alice", None)
+      createReceivedCredential(contactA.contactId)
+
+      val contactWithDetails = repository.find(institutionId, contactA.contactId).value.futureValue.toOption.value.value
+
+      contactWithDetails.receivedCredentials.size mustBe 1
     }
 
     "return no subject when the subject is missing (institutionId and subjectId not correlated)" in {
@@ -915,7 +960,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .value
         .futureValue
         .toOption
-        .flatten must be(Some(contactB))
+        .flatten
+        .map(_.contact) must be(Some(contactB))
 
       // Check that contact A credentials were deleted
       credentialsRepository
@@ -963,7 +1009,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .value
         .futureValue
         .toOption
-        .flatten must be(Some(contactB))
+        .flatten
+        .map(_.contact) must be(Some(contactB))
 
       // Check that contact B credentials were not deleted
       credentialsRepository

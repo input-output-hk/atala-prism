@@ -8,10 +8,26 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.management.console.models._
 
 object CredentialsDAO {
+
+  private val withParticipantsPTS =
+    fr"""
+        |PTS AS (
+        |   SELECT participant_id AS issuer_id, name
+        |   FROM participants
+        |)""".stripMargin
+
+  private val selectGenericCredential =
+    fr"""
+        |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
+        |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
+        |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
+        |       pc.transaction_id, pc.ledger, pc.shared_at
+      """.stripMargin
+
   def create(data: CreateGenericCredential): doobie.ConnectionIO[GenericCredential] = {
     val id = GenericCredential.Id.random()
     val createdOn = Instant.now()
-    sql"""
+    (fr"""
          |WITH inserted AS (
          |  INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data,
          |    created_on, credential_issuance_contact_id, credential_type_id)
@@ -19,37 +35,30 @@ object CredentialsDAO {
          |    $createdOn, ${data.credentialIssuanceContactId}, ${data.credentialTypeId})
          |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id,
          |    credential_issuance_contact_id
-         |)
-         | , PTS AS (
-         |  SELECT participant_id AS issuer_id, name
-         |  FROM participants
-         |)
-         |SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data,
+         |),""".stripMargin ++ withParticipantsPTS ++
+      fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data,
          |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
          |       pc.transaction_id, pc.ledger, pc.shared_at
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (inserted.contact_id = contacts.contact_id)
          |     LEFT JOIN published_credentials pc USING (credential_id)
-         |""".stripMargin.query[GenericCredential].unique
+         |""".stripMargin)
+      .query[GenericCredential]
+      .unique
   }
 
   def getBy(credentialId: GenericCredential.Id): doobie.ConnectionIO[Option[GenericCredential]] = {
-    sql"""
-         |WITH PTS AS (
-         |  SELECT participant_id AS issuer_id, name
-         |  FROM participants
-         |)
-         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
-         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-         |       pc.transaction_id, pc.ledger, pc.shared_at
+    (fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+      fr"""
          |FROM draft_credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.contact_id = contacts.contact_id)
          |     LEFT JOIN published_credentials pc USING (credential_id)
          |WHERE credential_id = $credentialId
-         |""".stripMargin.query[GenericCredential].option
+         |""".stripMargin)
+      .query[GenericCredential]
+      .option
   }
 
   def getBy(
@@ -59,20 +68,13 @@ object CredentialsDAO {
   ): doobie.ConnectionIO[List[GenericCredential]] = {
     val query = lastSeenCredential match {
       case Some(lastSeen) =>
-        sql"""
+        fr"""
              |WITH CTE AS (
              |  SELECT created_on AS last_seen_time
              |  FROM draft_credentials
              |  WHERE credential_id = $lastSeen
-             |)
-             | , PTS AS (
-             |  SELECT participant_id AS issuer_id, name
-             |  FROM participants
-             |)
-             |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-             |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
-             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-             |       pc.transaction_id, pc.ledger, pc.shared_at
+             |),""".stripMargin ++ withParticipantsPTS ++ selectGenericCredential ++
+          fr"""
              |FROM CTE CROSS JOIN draft_credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.contact_id = contacts.contact_id)
@@ -83,15 +85,8 @@ object CredentialsDAO {
              |LIMIT $limit
              |""".stripMargin
       case None =>
-        sql"""
-             |WITH PTS AS (
-             |  SELECT participant_id AS issuer_id, name
-             |  FROM participants
-             |)
-             |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-             |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
-             |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-             |       pc.transaction_id, pc.ledger, pc.shared_at
+        fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+          fr"""
              |FROM draft_credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.contact_id = contacts.contact_id)
@@ -105,15 +100,8 @@ object CredentialsDAO {
   }
 
   def getBy(issuedBy: ParticipantId, subjectId: Contact.Id): doobie.ConnectionIO[List[GenericCredential]] = {
-    sql"""
-         |WITH PTS AS (
-         |  SELECT participant_id AS issuer_id, name
-         |  FROM participants
-         |)
-         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contacts.contact_data,
-         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-         |       pc.transaction_id, pc.ledger, pc.shared_at
+    (fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+      fr"""
          |FROM draft_credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.contact_id = contacts.contact_id)
@@ -121,7 +109,27 @@ object CredentialsDAO {
          |WHERE c.issuer_id = $issuedBy AND
          |      c.contact_id = $subjectId
          |ORDER BY c.created_on ASC, credential_id
-         |""".stripMargin.query[GenericCredential].to[List]
+         |""".stripMargin)
+      .query[GenericCredential]
+      .to[List]
+  }
+
+  def getIssuedCredentialsBy(
+      issuedBy: ParticipantId,
+      subjectId: Contact.Id
+  ): doobie.ConnectionIO[List[GenericCredential]] = {
+    (fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+      fr"""
+          |FROM draft_credentials c
+          |     JOIN PTS USING (issuer_id)
+          |     JOIN contacts ON (c.contact_id = contacts.contact_id)
+          |     JOIN published_credentials pc USING (credential_id)
+          |WHERE c.issuer_id = $issuedBy AND
+          |      c.contact_id = $subjectId
+          |ORDER BY c.created_on ASC, credential_id
+          |""".stripMargin)
+      .query[GenericCredential]
+      .to[List]
   }
 
   def storePublicationData(issuerId: ParticipantId, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {

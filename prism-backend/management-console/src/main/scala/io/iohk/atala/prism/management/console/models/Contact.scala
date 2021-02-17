@@ -42,6 +42,13 @@ final case class Contact(
 
 object Contact {
 
+  case class WithDetails(
+      contact: Contact,
+      groupsInvolved: List[InstitutionGroup.WithContactCount],
+      receivedCredentials: Seq[ReceivedSignedCredential],
+      issuedCredentials: List[GenericCredential]
+  )
+
   case class WithCredentialCounts(details: Contact, counts: CredentialCounts) {
     def contactId: Id = details.contactId
   }

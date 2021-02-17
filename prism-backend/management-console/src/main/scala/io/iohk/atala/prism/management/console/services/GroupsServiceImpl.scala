@@ -79,14 +79,7 @@ class GroupsServiceImpl(
         contactIdMaybe <- FutureEither(contactIdT)
         groups <- institutionGroupsRepository.getBy(institutionId, contactIdMaybe)
       } yield {
-        val proto = groups.map { g =>
-          console_models
-            .Group()
-            .withId(g.value.id.toString)
-            .withCreatedAt(g.value.createdAt.getEpochSecond)
-            .withName(g.value.name.value)
-            .withNumberOfContacts(g.numberOfContacts)
-        }
+        val proto = groups.map(ProtoCodecs.groupWithContactCountToProto)
         console_api.GetGroupsResponse(proto)
       }
     }

@@ -79,7 +79,7 @@ class ContactsIntegrationService(
   def getContact(
       institutionId: ParticipantId,
       contactId: Contact.Id
-  ): Future[Either[Nothing, Option[ContactWithConnection]]] = {
+  ): Future[Either[Nothing, Option[DetailedContactWithConnection]]] = {
     val resultFE = for {
       contactMaybe <- contactsRepository.find(institutionId, contactId)
 
@@ -92,7 +92,7 @@ class ContactsIntegrationService(
               )
               .map(_.connections.headOption)
               .map(contactMaybe.zip)
-              .map(_.map(ContactWithConnection.tupled.apply))
+              .map(_.map(DetailedContactWithConnection.tupled.apply))
 
           }
           .getOrElse(Future.successful(None))
@@ -116,6 +116,11 @@ class ContactsIntegrationService(
 object ContactsIntegrationService {
   case class ContactWithConnection(
       contact: Contact,
+      connection: connector_models.ContactConnection
+  )
+
+  case class DetailedContactWithConnection(
+      contactWithDetails: Contact.WithDetails,
       connection: connector_models.ContactConnection
   )
 

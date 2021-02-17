@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.data.OptionT
 import cats.data.EitherT
 import cats.effect._
 import cats.implicits._
@@ -14,7 +15,12 @@ import io.iohk.atala.prism.management.console.models.{
   ParticipantId,
   UpdateContact
 }
-import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialsDAO, InstitutionGroupsDAO}
+import io.iohk.atala.prism.management.console.repositories.daos.{
+  ContactsDAO,
+  CredentialsDAO,
+  InstitutionGroupsDAO,
+  ReceivedCredentialsDAO
+}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -80,9 +86,13 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def find(institutionId: ParticipantId, contactId: Contact.Id): FutureEither[Nothing, Option[Contact]] = {
-    ContactsDAO
-      .findContact(institutionId, contactId)
+  def find(institutionId: ParticipantId, contactId: Contact.Id): FutureEither[Nothing, Option[Contact.WithDetails]] = {
+    (for {
+      contact <- OptionT(ContactsDAO.findContact(institutionId, contactId))
+      institutionsInvolved <- OptionT.liftF(InstitutionGroupsDAO.getBy(institutionId, contactId))
+      receivedCredentials <- OptionT.liftF(ReceivedCredentialsDAO.getReceivedCredentialsFor(institutionId, contactId))
+      issuedCredentials <- OptionT.liftF(CredentialsDAO.getIssuedCredentialsBy(institutionId, contactId))
+    } yield Contact.WithDetails(contact, institutionsInvolved, receivedCredentials, issuedCredentials)).value
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()

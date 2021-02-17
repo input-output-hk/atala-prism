@@ -70,7 +70,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
-      publish(issuerId, credential.credentialId)
+      publishCredential(issuerId, credential.credentialId)
 
       credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
       succeed
@@ -105,7 +105,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credA = createGenericCredential(issuerId, subject, "A")
       val credB = createGenericCredential(issuerId, subject, "B")
       createGenericCredential(issuerId, subject, "C")
-      publish(issuerId, credA.credentialId)
+      publishCredential(issuerId, credA.credentialId)
       credentialsRepository.getBy(credA.credentialId)
 
       val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
@@ -139,7 +139,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       createGenericCredential(issuerId, subject, "A")
       createGenericCredential(issuerId, subject, "B")
       val credC = createGenericCredential(issuerId, subject, "C")
-      publish(issuerId, credC.credentialId)
+      publishCredential(issuerId, credC.credentialId)
       createGenericCredential(issuerId, subject, "D")
 
       val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
@@ -180,7 +180,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       createGenericCredential(issuerId, subjectId2, "C")
       val cred2 = createGenericCredential(issuerId, subjectId1, "D")
       createGenericCredential(issuerId, subjectId2, "E")
-      publish(issuerId, cred1.credentialId)
+      publishCredential(issuerId, cred1.credentialId)
 
       val result = credentialsRepository.getBy(issuerId, subjectId1).value.futureValue.toOption.value
       result.map(_.credentialId) must be(List(cred1.credentialId, cred2.credentialId))
@@ -315,7 +315,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
-      publish(issuerId, credential.credentialId)
+      publishCredential(issuerId, credential.credentialId)
       credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
 
       val result = credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
@@ -326,7 +326,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
-      publish(issuerId, credential.credentialId)
+      publishCredential(issuerId, credential.credentialId)
       credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
       val result1 = credentialsRepository
         .getBy(credential.credentialId)
@@ -365,30 +365,10 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId2 = createParticipant("Issuer Y")
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
-      publish(issuerId, credential.credentialId)
+      publishCredential(issuerId, credential.credentialId)
       assertThrows[Exception] {
         credentialsRepository.markAsShared(issuerId2, credential.credentialId).value.futureValue.toOption.value
       }
     }
-  }
-
-  private def publish(issuerId: ParticipantId, id: GenericCredential.Id): Unit = {
-    val _ = credentialsRepository
-      .storePublicationData(
-        issuerId,
-        PublishCredential(
-          id,
-          SHA256Digest.compute("test".getBytes),
-          "mockNodeCredentialId",
-          "mockEncodedSignedCredential",
-          TransactionInfo(
-            TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
-            Ledger.InMemory,
-            None
-          )
-        )
-      )
-      .value
-      .futureValue
   }
 }

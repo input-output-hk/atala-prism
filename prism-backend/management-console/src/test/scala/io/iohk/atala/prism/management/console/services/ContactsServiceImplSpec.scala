@@ -128,11 +128,11 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
 
         // the new contact needs to exist
         val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
-        val storedContact = result.value
-        toContactProto(storedContact, invitationMissing).copy(jsonData = "") must be(
+        val contactWithDetails = result.value
+        toContactProto(contactWithDetails.contact, invitationMissing).copy(jsonData = "") must be(
           response.copy(jsonData = "")
         )
-        storedContact.data must be(json)
+        contactWithDetails.contact.data must be(json)
       }
     }
 
@@ -157,8 +157,8 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
 
         // the new contact needs to exist
         val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
-        val storedContact = result.value
-        toContactProto(storedContact, invitationMissing) must be(response)
+        val contactWithDetails = result.value
+        toContactProto(contactWithDetails.contact, invitationMissing) must be(response)
       }
     }
 

@@ -6,11 +6,12 @@ import io.iohk.atala.prism.management.console.repositories.ReceivedCredentialsRe
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleErrorSupport
+import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.console_api.{
   GetLatestCredentialExternalIdRequest,
   GetLatestCredentialExternalIdResponse
 }
-import io.iohk.atala.prism.protos.{console_api, console_models}
+import io.iohk.atala.prism.protos.console_api
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -92,13 +93,7 @@ class CredentialsStoreServiceImpl(
             .wrapExceptions
             .successMap { credentials =>
               console_api.GetStoredCredentialsForResponse(
-                credentials = credentials.map { credential =>
-                  console_models.StoredSignedCredential(
-                    individualId = credential.individualId.toString,
-                    encodedSignedCredential = credential.encodedSignedCredential,
-                    storedAt = credential.receivedAt.toEpochMilli
-                  )
-                }
+                credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto)
               )
             }
       } yield response

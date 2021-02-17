@@ -129,10 +129,7 @@ class ContactsServiceImpl(
           contactsIntegrationService
             .getContact(participantId, contactId)
             .toFutureEither
-            .map { maybe =>
-              maybe.map(c => ProtoCodecs.toContactProto(c.contact, c.connection))
-            }
-            .map(maybe => console_api.GetContactResponse(contact = maybe))
+            .map(ProtoCodecs.toGetContactResponse)
             .wrapExceptions
             .flatten
         }

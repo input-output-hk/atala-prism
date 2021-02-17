@@ -5,7 +5,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
@@ -17,6 +17,7 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
   ParticipantsDAO,
   ReceivedCredentialsDAO
 }
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDate}
@@ -147,5 +148,26 @@ object DataPreparation {
 
   def newDID(): DID = {
     DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+  }
+
+  def publishCredential(issuerId: ParticipantId, id: GenericCredential.Id)(implicit database: Transactor[IO]): Unit = {
+    CredentialsDAO
+      .storePublicationData(
+        issuerId,
+        PublishCredential(
+          id,
+          SHA256Digest.compute("test".getBytes),
+          "mockNodeCredentialId",
+          "mockEncodedSignedCredential",
+          TransactionInfo(
+            TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+            Ledger.InMemory,
+            None
+          )
+        )
+      )
+      .transact(database)
+      .unsafeRunSync()
+    ()
   }
 }

@@ -2,9 +2,12 @@ package io.iohk.atala.prism.management.console.grpc
 
 import cats.syntax.traverse._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, Statistics, _}
+import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
+import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
 import io.iohk.atala.prism.management.console.validations.JsonValidator
 import io.iohk.atala.prism.protos.common_models.SortByDirection
+import io.iohk.atala.prism.protos.console_api.GetContactResponse
+import io.iohk.atala.prism.protos.console_models.{Group, StoredSignedCredential}
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
@@ -22,6 +25,40 @@ object ProtoCodecs {
 
   implicit val date2ProtoTransformer: Transformer[LocalDate, common_models.Date] = date => {
     common_models.Date(year = date.getYear, month = date.getMonthValue, day = date.getDayOfMonth)
+  }
+
+  def toGetContactResponse(detailedContactWithConnection: Option[DetailedContactWithConnection]): GetContactResponse = {
+    val contactWithDetails = detailedContactWithConnection.map(_.contactWithDetails)
+    console_api.GetContactResponse(
+      contact = detailedContactWithConnection.map(detailedContactWithConnection =>
+        toContactProto(
+          detailedContactWithConnection.contactWithDetails.contact,
+          detailedContactWithConnection.connection
+        )
+      ),
+      groups = contactWithDetails.map(_.groupsInvolved).getOrElse(List.empty).map(groupWithContactCountToProto),
+      receivedCredentials =
+        contactWithDetails.map(_.receivedCredentials).getOrElse(List.empty).map(receivedSignedCredentialToProto),
+      issuedCredentials =
+        contactWithDetails.map(_.issuedCredentials).getOrElse(List.empty).map(genericCredentialToProto)
+    )
+  }
+
+  def groupWithContactCountToProto(group: InstitutionGroup.WithContactCount): Group = {
+    console_models
+      .Group()
+      .withId(group.value.id.toString)
+      .withCreatedAt(group.value.createdAt.getEpochSecond)
+      .withName(group.value.name.value)
+      .withNumberOfContacts(group.numberOfContacts)
+  }
+
+  def receivedSignedCredentialToProto(receivedSignedCredential: ReceivedSignedCredential): StoredSignedCredential = {
+    console_models.StoredSignedCredential(
+      individualId = receivedSignedCredential.individualId.toString,
+      encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
+      storedAt = receivedSignedCredential.receivedAt.toEpochMilli
+    )
   }
 
   def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {

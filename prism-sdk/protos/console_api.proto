@@ -268,6 +268,9 @@ message GetContactRequest {
 // Response for the retrieved contact
 message GetContactResponse {
   Contact contact = 1; // the retrieved contact
+  repeated Group groups = 2; // the groups available
+  repeated StoredSignedCredential receivedCredentials = 3; // the received credentials
+  repeated CManagerGenericCredential issuedCredentials = 4; // the credentials found
 }
 
 // Request to update a contact from the authenticated institution.
