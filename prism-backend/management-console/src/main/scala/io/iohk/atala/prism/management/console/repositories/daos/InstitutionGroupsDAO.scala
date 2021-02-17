@@ -23,6 +23,14 @@ object InstitutionGroupsDAO {
        """.stripMargin.update.run.map(_ => InstitutionGroup(groupId, name, institutionId, now))
   }
 
+  def update(groupId: InstitutionGroup.Id, newName: InstitutionGroup.Name): ConnectionIO[Boolean] = {
+    sql"""
+         |UPDATE institution_groups
+         |SET name = $newName
+         |WHERE group_id = $groupId
+       """.stripMargin.update.run.map(_ == 1)
+  }
+
   def getBy(institutionId: ParticipantId): ConnectionIO[List[InstitutionGroup.WithContactCount]] = {
     sql"""
          |SELECT group_id, name, institution_id, created_at, (

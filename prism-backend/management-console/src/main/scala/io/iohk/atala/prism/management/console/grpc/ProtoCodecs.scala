@@ -226,18 +226,32 @@ object ProtoCodecs {
   def toCreateGroup(request: console_api.CreateGroupRequest): Try[CreateInstitutionGroup] = {
     for {
       contactIds <- request.contactIds.toList.map(Contact.Id.from).sequence
-      contactIdsSet = contactIds.toSet
-      _ <-
-        if (contactIdsSet.size == contactIds.size) {
-          Success(())
-        } else {
-          Failure(
-            new IllegalArgumentException(
-              s"Contact list [${contactIds.mkString(", ")}] repeats itself"
-            )
-          )
-        }
+      contactIdsSet <- checkListUniqueness(contactIds)
       name = InstitutionGroup.Name(request.name)
     } yield CreateInstitutionGroup(name, contactIdsSet)
+  }
+
+  def toUpdateGroup(request: console_api.UpdateGroupRequest): Try[UpdateInstitutionGroup] = {
+    for {
+      groupId <- InstitutionGroup.Id.from(request.groupId)
+      contactIdsToAdd <- request.contactIdsToAdd.toList.map(Contact.Id.from).sequence
+      contactIdsToRemove <- request.contactIdsToRemove.toList.map(Contact.Id.from).sequence
+      contactIdsToAddSet <- checkListUniqueness(contactIdsToAdd)
+      contactIdsToRemoveSet <- checkListUniqueness(contactIdsToRemove)
+      name = if (request.name.isEmpty) None else Some(InstitutionGroup.Name(request.name))
+    } yield UpdateInstitutionGroup(groupId, contactIdsToAddSet, contactIdsToRemoveSet, name)
+  }
+
+  private def checkListUniqueness[T](list: List[T]): Try[Set[T]] = {
+    val set = list.toSet
+    if (set.size == list.size) {
+      Success(set)
+    } else {
+      Failure(
+        new IllegalArgumentException(
+          s"List [${list.mkString(", ")}] repeats itself"
+        )
+      )
+    }
   }
 }

@@ -123,6 +123,17 @@ package object errors {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
+  case class GroupNameIsNotFree(name: InstitutionGroup.Name) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Group with name '${name.value}' already exists"
+      )
+  }
+
+  case class UpdateGroupInvalidRequest(reason: String) extends ManagementConsoleError {
+    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
+  }
+
   def groupDoesNotExist[A](groupId: InstitutionGroup.Id): Either[ManagementConsoleError, A] =
     Left(GroupDoesNotExist(groupId))
 

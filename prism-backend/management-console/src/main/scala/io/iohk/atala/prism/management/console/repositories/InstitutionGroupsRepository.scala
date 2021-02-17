@@ -2,8 +2,8 @@ package io.iohk.atala.prism.management.console.repositories
 
 import cats.data.EitherT
 import cats.effect.IO
-import cats.syntax.either._
-import doobie.free.connection
+import cats.syntax.apply._
+import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors._
@@ -71,33 +71,35 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
       institutionId: ParticipantId,
       groupId: InstitutionGroup.Id,
       contactIdsToAdd: Set[Contact.Id],
-      contactIdsToRemove: Set[Contact.Id]
+      contactIdsToRemove: Set[Contact.Id],
+      newNameMaybe: Option[InstitutionGroup.Name]
   ): FutureEither[ManagementConsoleError, Unit] = {
-    val connectionIo = for {
-      groupOpt <- InstitutionGroupsDAO.find(groupId)
-      result <- groupOpt match {
-        case None => connection.pure(groupDoesNotExist[Unit](groupId))
-        case Some(group) =>
-          if (group.institutionId != institutionId) {
-            connection.pure(groupInstitutionDoesNotMatch[Unit](group.institutionId, institutionId))
-          } else {
-            for {
-              contactsCheckToAdd <- institutionHelper.checkContacts(institutionId, contactIdsToAdd)
-              contactsCheckToRemove <- institutionHelper.checkContacts(institutionId, contactIdsToRemove)
-              contactsCheck = contactsCheckToAdd.orElse(contactsCheckToRemove)
-              result <- contactsCheck match {
-                case Some(consoleError) => connection.pure(consoleError.asLeft[Unit])
-                case None =>
-                  for {
-                    _ <- InstitutionGroupsDAO.addContacts(Set(groupId), contactIdsToAdd)
-                    _ <- InstitutionGroupsDAO.removeContacts(groupId, contactIdsToRemove.toList)
-                  } yield ().asRight[ManagementConsoleError]
-              }
-            } yield result
-          }
-      }
-    } yield result
+    import institutionHelper._
 
-    connectionIo.transact(xa).unsafeToFuture().toFutureEither
+    val transaction = for {
+      group <- EitherT.fromOptionF(
+        InstitutionGroupsDAO.find(groupId),
+        GroupDoesNotExist(groupId): ManagementConsoleError
+      )
+      _ <- EitherT.fromOptionF(checkGroupInstitution(institutionId, group), ()).swap
+      _ <- EitherT.fromOptionF(checkContacts(institutionId, contactIdsToAdd), ()).swap
+      _ <- EitherT.fromOptionF(checkContacts(institutionId, contactIdsToRemove), ()).swap
+      _ <- newNameMaybe match {
+        case Some(newName) =>
+          // Check that the new name is free and update the group accordingly
+          EitherT.fromOptionF(checkGroupNameIsFree(institutionId, newName), ()).swap *>
+            EitherT.right(InstitutionGroupsDAO.update(groupId, newName))
+        case None =>
+          EitherT.rightT[ConnectionIO, ManagementConsoleError](())
+      }
+      _ <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.addContacts(Set(groupId), contactIdsToAdd)
+      )
+      _ <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.removeContacts(groupId, contactIdsToRemove.toList)
+      )
+    } yield ()
+
+    transaction.transact(xa).value.unsafeToFuture().toFutureEither
   }
 }

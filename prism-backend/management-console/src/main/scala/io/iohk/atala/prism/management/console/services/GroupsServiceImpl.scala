@@ -1,10 +1,18 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.implicits._
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.{CreateGroupInvalidRequest, ManagementConsoleErrorSupport}
+import io.iohk.atala.prism.management.console.errors.{
+  CreateGroupInvalidRequest,
+  ManagementConsoleErrorSupport,
+  UpdateGroupInvalidRequest
+}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
-import io.iohk.atala.prism.management.console.models.{Contact, CreateInstitutionGroup, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  CreateInstitutionGroup,
+  ParticipantId,
+  UpdateInstitutionGroup
+}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.utils.FutureEither
@@ -93,13 +101,14 @@ class GroupsServiceImpl(
   }
 
   override def updateGroup(request: console_api.UpdateGroupRequest): Future[console_api.UpdateGroupResponse] = {
-    def f(institutionId: ParticipantId) = {
+    def f(institutionId: ParticipantId, updateInstitutionGroup: UpdateInstitutionGroup) = {
       institutionGroupsRepository
         .updateGroup(
           institutionId,
-          InstitutionGroup.Id.unsafeFrom(request.groupId),
-          request.contactIdsToAdd.map(id => Contact.Id.unsafeFrom(id)).to(Set),
-          request.contactIdsToRemove.map(id => Contact.Id.unsafeFrom(id)).to(Set)
+          updateInstitutionGroup.groupId,
+          updateInstitutionGroup.contactIdsToAdd,
+          updateInstitutionGroup.contactIdsToRemove,
+          updateInstitutionGroup.name
         )
         .value
         .map {
@@ -109,7 +118,13 @@ class GroupsServiceImpl(
     }
 
     authenticator.authenticated("updateGroups", request) { institutionId =>
-      f(institutionId)
+      ProtoCodecs.toUpdateGroup(request) match {
+        case Failure(exception) =>
+          val response = UpdateGroupInvalidRequest(exception.getMessage)
+          respondWith(request, response)
+        case Success(updateInstitutionGroup) =>
+          f(institutionId, updateInstitutionGroup)
+      }
     }
   }
 }

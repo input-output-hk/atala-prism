@@ -398,6 +398,7 @@ message UpdateGroupRequest {
   string groupId = 1; // the id of the existing group
   repeated string contactIdsToAdd = 2; // the list of contact ids to be added to the specified group
   repeated string contactIdsToRemove = 3; // the list of contact ids to be removed from the specified group
+  string name = 4; // new name for the group
 }
 // Response after updating a group
 message UpdateGroupResponse {}

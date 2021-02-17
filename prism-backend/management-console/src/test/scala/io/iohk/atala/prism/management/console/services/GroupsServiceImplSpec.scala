@@ -447,6 +447,54 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         )
       }
     }
+
+    "be able to change the group's name" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val groupNames = List(group1Name, group2Name)
+      val List(group1Id, _) = groupNames.map { groupName =>
+        institutionGroupsRepository.create(institutionId, groupName, Set()).value.futureValue.toOption.value.id.toString
+      }
+      val newName = "New Group"
+
+      val request =
+        console_api.UpdateGroupRequest(group1Id, name = newName)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        serviceStub.updateGroup(request)
+
+        // Check that the group was indeed renamed
+        val groups =
+          institutionGroupsRepository.getBy(institutionId, None).value.futureValue.toOption.value
+        groups.map(_.value.name.value) must contain(newName)
+      }
+    }
+
+    "reject when renaming into an already existing group name" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val groupNames = List(group1Name, group2Name)
+      val List(group1Id, _) = groupNames.map { groupName =>
+        institutionGroupsRepository.create(institutionId, groupName, Set()).value.futureValue.toOption.value.id.toString
+      }
+
+      val request =
+        console_api.UpdateGroupRequest(group1Id, name = group2Name.value)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        intercept[RuntimeException] {
+          serviceStub.updateGroup(request)
+        }
+      }
+    }
   }
 
   private def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): List[Contact] =
