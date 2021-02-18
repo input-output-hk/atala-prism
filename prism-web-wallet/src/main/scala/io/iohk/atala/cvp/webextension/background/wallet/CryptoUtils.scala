@@ -63,4 +63,28 @@ object CryptoUtils {
           .asInstanceOf[Future[crypto.CryptoKey]]
     } yield aesKey
   }
+
+  def encrypt(key: CryptoKey, data: String)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
+    for {
+      arrayBuffer <-
+        crypto.crypto.subtle
+          .encrypt(CryptoUtils.initialAesGcm, key, data.getBytes.toTypedArray.buffer)
+          .toFuture
+          .asInstanceOf[Future[ArrayBuffer]]
+      arr = Array.ofDim[Byte](arrayBuffer.byteLength)
+      _ = TypedArrayBuffer.wrap(arrayBuffer).get(arr)
+    } yield arr
+  }
+
+  def decrypt(key: CryptoKey, bytes: Array[Byte])(implicit ec: ExecutionContext): Future[String] = {
+    crypto.crypto.subtle
+      .decrypt(CryptoUtils.initialAesGcm, key, bytes.toTypedArray.buffer)
+      .toFuture
+      .asInstanceOf[Future[ArrayBuffer]]
+      .map { buffer =>
+        val arr = Array.ofDim[Byte](buffer.byteLength)
+        TypedArrayBuffer.wrap(buffer).get(arr)
+        new String(arr, "UTF-8")
+      }
+  }
 }

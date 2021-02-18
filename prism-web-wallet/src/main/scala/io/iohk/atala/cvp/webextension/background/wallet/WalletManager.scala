@@ -21,12 +21,10 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
-import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.CryptoKey
 
 import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.scalajs.js.typedarray.{ArrayBuffer, _}
 import scala.util.{Failure, Success, Try}
 
 private object WalletManager {
@@ -35,6 +33,22 @@ private object WalletManager {
 
   type SessionID = String
   type Origin = String
+
+  case class State(
+      sessions: Map[SessionID, Origin],
+      wallet: Option[WalletData],
+      pendingRequestsQueue: PendingRequestsQueue
+  ) {
+    def unsafeWallet(): WalletData = {
+      wallet.getOrElse(
+        throw new RuntimeException("You need to create the wallet before logging in and creating session")
+      )
+    }
+  }
+
+  object State {
+    def empty: State = State(Map.empty, None, PendingRequestsQueue.empty)
+  }
 }
 
 private[background] class WalletManager(
@@ -51,20 +65,18 @@ private[background] class WalletManager(
 
   private val requestAuthenticator = new RequestAuthenticator(EC)
 
-  private[this] var session = Set[(SessionID, Origin)]()
-  private var walletData: Option[WalletData] = None
-  private var pendingRequestsQueue = PendingRequestsQueue.empty
+  private[this] var state = State.empty
 
   private def updateBadge(): Unit = {
-    val badgeText = Option(pendingRequestsQueue.size)
+    val badgeText = Option(state.pendingRequestsQueue.size)
       .filter(_ > 0)
       .map(_.toString)
       .getOrElse("")
     browserActionService.setBadgeText(badgeText)
   }
 
-  private def updateState(newState: PendingRequestsQueue): Unit = {
-    this.pendingRequestsQueue = newState
+  private def updateState(newState: State => State): Unit = {
+    this.state = newState(state)
     updateBadge()
   }
 
@@ -73,11 +85,11 @@ private[background] class WalletManager(
   }
 
   private def updateWalletData(walletData: WalletData): Unit = {
-    this.walletData = Some(walletData)
+    updateState(_.copy(wallet = Some(walletData)))
   }
 
   def getSigningRequests(): Seq[PendingRequest] = {
-    pendingRequestsQueue.list
+    state.pendingRequestsQueue.list
   }
 
   // TODO: Support credential revocation requests
@@ -97,7 +109,13 @@ private[background] class WalletManager(
       )
     } yield {
       println(s"Signed and Published = ${request.subject.id}")
-      updateState(pendingRequestsQueue - requestId)
+      removeRequest(requestId)
+    }
+  }
+
+  private def removeRequest(requestId: Int): Unit = {
+    updateState { cur =>
+      cur.copy(pendingRequestsQueue = cur.pendingRequestsQueue - requestId)
     }
   }
 
@@ -105,14 +123,14 @@ private[background] class WalletManager(
     issueCredentialRequestF(requestId)
       .map {
         case (request, _) =>
-          updateState(pendingRequestsQueue - requestId)
+          removeRequest(requestId)
           println(s"Rejected = ${request.subject.id}")
       }
   }
 
   def getStatus(): Future[WalletStatus] = {
     // Avoid local storage call when the wallet is already loaded
-    if (this.walletData.nonEmpty) {
+    if (state.wallet.nonEmpty) {
       Future.successful(WalletStatus.Unlocked)
     } else {
       // Call local storage to figure out if the wallet actually exists
@@ -131,10 +149,7 @@ private[background] class WalletManager(
   def getTransactionId(): Future[String] = {
     Future.fromTry {
       Try {
-        val wallet = walletData.getOrElse(
-          throw new RuntimeException("You need to create the wallet before requesting did")
-        )
-        wallet.transactionId.getOrElse(throw new RuntimeException("Transaction Id not found"))
+        state.unsafeWallet().transactionId.getOrElse(throw new RuntimeException("Transaction Id not found"))
       }
     }
   }
@@ -142,18 +157,17 @@ private[background] class WalletManager(
   def getLoggedInUserSession(origin: Origin): Future[UserDetails] = {
     Future.fromTry {
       Try {
-        val wallet = walletData.getOrElse(
-          throw new RuntimeException("You need to create the wallet before logging in and creating session")
-        )
-
+        val wallet = state.unsafeWallet()
         // We need to reuse an existing session to avoid breaking the websites while using many tabs
         // otherwise, each tab would keep it's own session, breaking the others.
-        val sessionId = session
+        val sessionId = state.sessions
           .find(_._2 == origin)
           .map(_._1)
           .getOrElse { UUID.randomUUID().toString }
 
-        session += (sessionId -> origin)
+        updateState { cur =>
+          cur.copy(sessions = cur.sessions + (sessionId -> origin))
+        }
         UserDetails(
           sessionId,
           wallet.organisationName,
@@ -200,8 +214,8 @@ private[background] class WalletManager(
     for {
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
     } yield {
-      val (newState, promise) = pendingRequestsQueue.issueCredential(origin, sessionID, subject)
-      updateState(newState)
+      val (newRequestQueue, promise) = state.pendingRequestsQueue.issueCredential(origin, sessionID, subject)
+      updateState(_.copy(pendingRequestsQueue = newRequestQueue))
       reloadPopup()
       // TODO: Avoid ignoring the future result
       println(s"Future ${promise.future} ignored on purpose to keep compatibility, be kind and fix the bug")
@@ -234,7 +248,7 @@ private[background] class WalletManager(
 
     result.onComplete {
       case Success(_) =>
-        val retrievedWalletData = walletData.getOrElse(throw new RuntimeException("Failed to load wallet"))
+        val retrievedWalletData = state.unsafeWallet()
         subscribeForReceivedCredentials(retrievedWalletData)
         println("Successfully created wallet")
 
@@ -254,7 +268,7 @@ private[background] class WalletManager(
 
     result.onComplete {
       case Success(_) =>
-        val retrievedWalletData = walletData.getOrElse(throw new RuntimeException("Failed to load wallet"))
+        val retrievedWalletData = state.unsafeWallet()
         subscribeForReceivedCredentials(retrievedWalletData)
         println("Successfully recovered wallet")
 
@@ -267,21 +281,16 @@ private[background] class WalletManager(
   def unlock(password: String): Future[Unit] = {
     val result = for {
       aesKey <- CryptoUtils.generateSecretKey(password)
-      storedEncryptedJsonOption <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+      storedEncryptedBase64Option <-
+        storageService
+          .load(WalletManager.LOCAL_STORAGE_KEY)
+          .map(_.map(_.asInstanceOf[String]))
+
       json <-
-        storedEncryptedJsonOption
-          .map { storedEncryptedJson =>
-            val encryptedJson = storedEncryptedJson.asInstanceOf[String]
-            val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
-            crypto.crypto.subtle
-              .decrypt(CryptoUtils.initialAesGcm, aesKey, encryptedBytes)
-              .toFuture
-              .asInstanceOf[Future[ArrayBuffer]]
-              .map { buffer =>
-                val arr = Array.ofDim[Byte](buffer.byteLength)
-                TypedArrayBuffer.wrap(buffer).get(arr)
-                new String(arr, "UTF-8")
-              }
+        storedEncryptedBase64Option
+          .map { encryptedBase64 =>
+            val encryptedBytes = Base64.getDecoder.decode(encryptedBase64)
+            CryptoUtils.decrypt(aesKey, encryptedBytes)
           }
           .getOrElse(throw new RuntimeException("You need to create the wallet before unlocking it"))
 
@@ -291,7 +300,7 @@ private[background] class WalletManager(
 
     result.onComplete {
       case Success(_) =>
-        val retrievedWalletData = walletData.getOrElse(throw new RuntimeException("Failed to load wallet"))
+        val retrievedWalletData = state.unsafeWallet()
         subscribeForReceivedCredentials(retrievedWalletData)
         println("Successfully loaded wallet")
       case Failure(exception) =>
@@ -305,7 +314,7 @@ private[background] class WalletManager(
   def lock(): Future[Unit] = {
     val t = Try {
       credentialsCopyJob.stop()
-      this.walletData = None
+      updateState(_.copy(wallet = None))
     }
     Future.fromTry(t)
   }
@@ -361,16 +370,10 @@ private[background] class WalletManager(
     val json = walletData.asJson.noSpaces
     println(s"Serialized wallet: $json")
     val result = for {
-      arrayBuffer <-
-        crypto.crypto.subtle
-          .encrypt(CryptoUtils.initialAesGcm, key, json.getBytes.toTypedArray.buffer)
-          .toFuture
-          .asInstanceOf[Future[ArrayBuffer]]
-      arr = Array.ofDim[Byte](arrayBuffer.byteLength)
-      _ = TypedArrayBuffer.wrap(arrayBuffer).get(arr)
-      encodedJson = new String(Base64.getEncoder.encode(arr))
-      _ = println(s"Encrypted wallet: $encodedJson")
-      _ = storageService.store(WalletManager.LOCAL_STORAGE_KEY, encodedJson)
+      encryptedData <- CryptoUtils.encrypt(key, json)
+      base64EncryptedData = Base64.getEncoder.encodeToString(encryptedData)
+      _ = println(s"Encrypted wallet: $base64EncryptedData")
+      _ = storageService.store(WalletManager.LOCAL_STORAGE_KEY, base64EncryptedData)
     } yield ()
 
     result.onComplete {
@@ -384,7 +387,7 @@ private[background] class WalletManager(
   private def issueCredentialRequestF(requestId: Int): Future[(PendingRequest.IssueCredential, Promise[String])] = {
     Future.fromTry {
       Try {
-        pendingRequestsQueue
+        state.pendingRequestsQueue
           .get(requestId)
           .map {
             case (request, promise) =>
@@ -402,16 +405,14 @@ private[background] class WalletManager(
   private def walletDataF(): Future[WalletData] = {
     Future.fromTry {
       Try {
-        walletData.getOrElse(
-          throw new RuntimeException("You need to create/unlock the wallet before being able to use it")
-        )
+        state.unsafeWallet()
       }
     }
   }
 
   private def validateSessionF(origin: Origin, sessionID: SessionID): Future[Unit] = {
     val t = Try {
-      session
+      state.sessions
         .find(_ == (sessionID -> origin))
         .map(_ => ())
         .getOrElse(throw new RuntimeException("You need a valid session"))
