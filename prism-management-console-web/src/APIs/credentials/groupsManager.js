@@ -1,4 +1,4 @@
-import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
+import { REQUEST_AUTH_TIMEOUT_MS } from '../../helpers/constants';
 import { GroupsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 
 const {
@@ -13,7 +13,7 @@ async function getGroups(contactId) {
 
   const { metadata, sessionError } = await this.auth.getMetadata(
     groupRequest,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+    REQUEST_AUTH_TIMEOUT_MS
   );
   if (sessionError) return [];
 
@@ -27,10 +27,7 @@ async function createGroup(groupName) {
 
   request.setName(groupName);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(
-    request,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
-  );
+  const { metadata, sessionError } = await this.auth.getMetadata(request);
   if (sessionError) return {};
 
   const response = await this.client.createGroup(request, metadata);
@@ -45,10 +42,7 @@ async function updateGroup(groupId, contactIdsToAdd, contactIdsToRemove) {
   request.setContactidstoaddList(contactIdsToAdd || []);
   request.setContactidstoremoveList(contactIdsToRemove || []);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(
-    request,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
-  );
+  const { metadata, sessionError } = await this.auth.getMetadata(request);
   if (sessionError) return {};
 
   const response = await this.client.updateGroup(request, metadata);

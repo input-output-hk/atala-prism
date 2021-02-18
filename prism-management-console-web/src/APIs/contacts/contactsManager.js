@@ -1,22 +1,20 @@
 import { ContactsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS, HOLDER_PAGE_SIZE } from '../../helpers/constants';
+import { CONTACT_PAGE_SIZE, REQUEST_AUTH_TIMEOUT_MS } from '../../helpers/constants';
 import {
   CreateContactRequest,
   GetContactsRequest,
   GetContactRequest,
   GenerateConnectionTokenForContactRequest
 } from '../../protos/console_api_pb';
+import { getAditionalTimeout } from '../../helpers/genericHelpers';
 
 async function generateConnectionToken(contactId) {
   Logger.info('Generating connection token for:', contactId);
   const req = new GenerateConnectionTokenForContactRequest();
   req.setContactid(contactId);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(
-    req,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
-  );
+  const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
   if (sessionError) return '';
 
   const res = await this.client.generateConnectionTokenForContact(req, metadata);
@@ -33,10 +31,7 @@ async function createContact(groupName, jsonData, externalid) {
   req.setJsondata(JSON.stringify(jsonData));
   req.setExternalid(externalid);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(
-    req,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
-  );
+  const { metadata, sessionError } = await this.auth.getMetadata(req);
   if (sessionError) return {};
 
   const res = await this.client.createContact(req, metadata);
@@ -45,17 +40,16 @@ async function createContact(groupName, jsonData, externalid) {
   return contact;
 }
 
-async function getContacts(lastSeenContactId, limit = HOLDER_PAGE_SIZE, groupName) {
+async function getContacts(lastSeenContactId, limit = CONTACT_PAGE_SIZE, groupName) {
   Logger.info(`Getting up to ${limit} contacts from ${lastSeenContactId} for group ${groupName}`);
   const req = new GetContactsRequest();
   req.setLimit(limit);
   req.setLastseencontactid(lastSeenContactId);
   if (groupName) req.setGroupname(groupName);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(
-    req,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
-  );
+  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
+
+  const { metadata, sessionError } = await this.auth.getMetadata(req, timeout);
   if (sessionError) return [];
 
   const res = await this.client.getContacts(req, metadata);
@@ -70,7 +64,7 @@ async function getContact(contactId) {
   const req = new GetContactRequest();
   req.setContactid(contactId);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(req);
+  const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
   if (sessionError) return {};
 
   const res = await this.client.getContact(req, metadata);

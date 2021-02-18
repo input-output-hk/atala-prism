@@ -1,29 +1,20 @@
 import __ from 'lodash';
 
-// eslint-disable-next-line camelcase
-export const BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS = 3000; // The allowed delay for the extension to inject it's sdk
-// eslint-disable-next-line camelcase
-export const BROWSER_WALLET_LONG_TIMEOUT_MS = 9000; // Delay for heavy requests like sign credentials
-// eslint-disable-next-line camelcase
-export const BROWSER_WALLET_CHECK_INTERVAL_MS = 500; // Delay before checking if the extension has injected it's SDK
-// eslint-disable-next-line no-magic-numbers
+// The allowed delay for the extension to inject it's sdk
+export const BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS = 3000;
+export const REQUEST_AUTH_TIMEOUT_MS = 9000; // Delay for heavy requests like sign credentials
+export const TIMEOUT_MULTIPLIER_MS = 100; // Delay for fetching each entity
+
+// Delay before checking if the extension has injected its SDK
+export const BROWSER_WALLET_CHECK_INTERVAL_MS = 500;
 export const SEARCH_DELAY_MS = 1000;
-// eslint-disable-next-line camelcase
-const DEFAUlT_PAGE_SIZE = 10;
-// eslint-disable-next-line camelcase
-export const HOLDER_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
-// eslint-disable-next-line camelcase
-export const CONTACT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
-// eslint-disable-next-line camelcase
+export const DEFAULT_PAGE_SIZE = 10;
+export const CONTACT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
+export const GROUP_PAGE_SIZE = DEFAULT_PAGE_SIZE;
+export const CREDENTIAL_PAGE_SIZE = DEFAULT_PAGE_SIZE;
+export const PAYMENT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const MAX_CONTACTS = 10000;
-// eslint-disable-next-line camelcase
 export const MAX_CREDENTIALS = 10000;
-// eslint-disable-next-line camelcase
-export const GROUP_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
-// eslint-disable-next-line camelcase
-export const CREDENTIAL_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
-// eslint-disable-next-line camelcase
-export const PAYMENT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 
 export const xScroll = 1300;
 export const yScroll = 600;

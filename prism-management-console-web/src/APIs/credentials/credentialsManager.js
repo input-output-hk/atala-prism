@@ -2,11 +2,12 @@ import { CredentialsServicePromiseClient } from '../../protos/console_api_grpc_w
 import Logger from '../../helpers/Logger';
 import credentialTypes from './credentialTypes';
 import {
-  BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS,
-  BROWSER_WALLET_LONG_TIMEOUT_MS,
+  REQUEST_AUTH_TIMEOUT_MS,
   FAILED,
-  SUCCESS
+  SUCCESS,
+  CREDENTIAL_PAGE_SIZE
 } from '../../helpers/constants';
+import { getAditionalTimeout } from '../../helpers/genericHelpers';
 
 const {
   GetGenericCredentialsRequest,
@@ -24,17 +25,16 @@ function mapCredential(cred) {
   return Object.assign(credential, { subjectData }, credentialData);
 }
 
-async function getCredentials(limit, lastSeenCredentialId = null) {
+async function getCredentials(limit = CREDENTIAL_PAGE_SIZE, lastSeenCredentialId = null) {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
 
   const getCredentialsRequest = new GetGenericCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
   getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(
-    getCredentialsRequest,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
-  );
+  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
+
+  const { metadata, sessionError } = await this.auth.getMetadata(getCredentialsRequest, timeout);
   if (sessionError) return [];
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
@@ -55,7 +55,7 @@ async function createBatchOfCredentials(credentialsData) {
     createCredentialRequest.setCredentialdata(JSON.stringify(json));
 
     return this.auth
-      .getMetadata(createCredentialRequest, BROWSER_WALLET_LONG_TIMEOUT_MS)
+      .getMetadata(createCredentialRequest)
       .then(({ metadata }) =>
         this.client.createGenericCredential(createCredentialRequest, metadata)
       )
@@ -94,7 +94,7 @@ async function getContactCredentials(contactId) {
   const req = new GetContactCredentialsRequest();
   req.setContactid(contactId);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(req);
+  const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
   if (sessionError) return [];
 
   const res = await this.client.getContactCredentials(req, metadata);
@@ -110,7 +110,7 @@ async function markAsSent(credentialid) {
 
   const { metadata, sessionError } = await this.auth.getMetadata(
     markCredentialRequest,
-    BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS
+    REQUEST_AUTH_TIMEOUT_MS
   );
   if (sessionError) return;
 
@@ -125,7 +125,7 @@ async function getBlockchainData(credential) {
 
   const { metadata, sessionError } = await this.auth.getMetadata(
     getBlockchainDataRequest,
-    BROWSER_WALLET_LONG_TIMEOUT_MS
+    REQUEST_AUTH_TIMEOUT_MS
   );
   if (sessionError) return {};
 

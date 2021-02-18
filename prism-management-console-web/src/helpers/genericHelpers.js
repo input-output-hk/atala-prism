@@ -1,3 +1,5 @@
+import { DEFAULT_PAGE_SIZE, TIMEOUT_MULTIPLIER_MS } from './constants';
+
 const firstLetterAsUpperCase = word => customUpperCase(word.charAt(0));
 
 export const getInitials = (name = '') => {
@@ -36,3 +38,6 @@ export const customUpperCase = string => customCharByCharModifier(string, upperC
 export const customLowerCase = string => customCharByCharModifier(string, lowerCase);
 
 export const mockDelay = timeoutMs => new Promise(resolve => setTimeout(resolve, timeoutMs));
+
+export const getAditionalTimeout = entities =>
+  entities > DEFAULT_PAGE_SIZE ? entities * TIMEOUT_MULTIPLIER_MS : 0;

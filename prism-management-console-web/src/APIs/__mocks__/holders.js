@@ -1,6 +1,6 @@
 import { internet, name, random, date } from 'faker';
 import moment from 'moment';
-import { PENDING_CONNECTION, CONNECTED, HOLDER_PAGE_SIZE } from '../../helpers/constants';
+import { PENDING_CONNECTION, CONNECTED, DEFAULT_PAGE_SIZE } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 import { createMockTransactions, toProtoDate } from './helpers';
 
@@ -17,7 +17,7 @@ const createMockHolder = () => ({
 
 const mockedHolders = [];
 
-for (let i = 0; i < 3 * HOLDER_PAGE_SIZE; i++) mockedHolders.push(createMockHolder());
+for (let i = 0; i < 3 * DEFAULT_PAGE_SIZE; i++) mockedHolders.push(createMockHolder());
 
 export const getHolders = ({
   identityNumber = 0,
