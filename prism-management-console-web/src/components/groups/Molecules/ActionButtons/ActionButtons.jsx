@@ -24,7 +24,7 @@ const ActionButtons = ({ id, setGroupToDelete, onCopy, fullInfo }) => {
         {t('groups.table.buttons.copy')}
       </Button>
       {fullInfo && (
-        <Button {...baseProps} disabled onClick={setGroupToDelete}>
+        <Button {...baseProps} onClick={setGroupToDelete}>
           {t('groups.table.buttons.delete')}
         </Button>
       )}

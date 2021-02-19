@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
 import GroupFilters from './Molecules/Filters/GroupFilter';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
-import DeleteGroupModal from './Organisms/Modals/NewGroupModal/DeleteGroupModal';
+import DeleteGroupModal from './Organisms/Modals/DeleteGroupModal/DeleteGroupModal';
 import { groupShape } from '../../helpers/propShapes';
 import noGroups from '../../images/noGroups.svg';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
@@ -55,7 +55,10 @@ const Groups = ({
 
   const { accountStatus } = useSession();
 
-  const closeDeleteModal = () => setGroupToDelete({});
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setGroupToDelete({});
+  };
   const closeCopyModal = () => setIsCopyModalOpen(false);
 
   useEffect(() => {
@@ -79,11 +82,16 @@ const Groups = ({
     setDate(newDate);
   };
 
+  const handleConfirmedGroupDeletion = () => {
+    handleGroupDeletion(groupToDelete);
+    setIsDeleteModalOpen(false);
+  };
+
   const deleteModalProps = {
-    toDelete: { name: groupToDelete.groupName, id: groupToDelete.id },
+    group: groupToDelete,
     open: isDeleteModalOpen,
     closeModal: closeDeleteModal,
-    handleGroupDeletion,
+    handleGroupDeletion: handleConfirmedGroupDeletion,
     prefix: 'groups'
   };
 

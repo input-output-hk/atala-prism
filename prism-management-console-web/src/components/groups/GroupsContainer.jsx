@@ -57,16 +57,18 @@ const GroupsContainer = ({ api }) => {
     }
   }, [groups]);
 
-  const handleGroupDeletion = (id, groupName) =>
-    api
-      .deleteGroup({ id })
+  const handleGroupDeletion = group =>
+    api.groupsManager
+      .deleteGroup(group.id)
       .then(() => {
         updateGroups();
-        message.success(t('groups.deletionSuccess', { groupName }));
+        message.success(t('groups.deletionSuccess', { groupName: group.name }));
       })
       .catch(error => {
         Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
-        message.error(t('errors.errorDeletingGroup', { groupName }));
+        message.error(t('errors.errorDeletingGroup', { groupName: group.name }));
+        // TODO: remove warn when group deletion has implemented on backend
+        message.warn(t('errors.notImplementedYet'));
       });
 
   const copyGroup = ({ numberofcontacts, name }, copyName) =>

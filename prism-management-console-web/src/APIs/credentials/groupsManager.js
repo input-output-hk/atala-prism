@@ -50,6 +50,11 @@ async function updateGroup(groupId, contactIdsToAdd, contactIdsToRemove) {
   return response.toObject();
 }
 
+async function deleteGroup(groupId) {
+  console.log(`should delete group with id: ${groupId}`);
+  throw new Error();
+}
+
 function GroupsManager(config, auth) {
   this.config = config;
   this.auth = auth;
@@ -59,5 +64,6 @@ function GroupsManager(config, auth) {
 GroupsManager.prototype.getGroups = getGroups;
 GroupsManager.prototype.createGroup = createGroup;
 GroupsManager.prototype.updateGroup = updateGroup;
+GroupsManager.prototype.deleteGroup = deleteGroup;
 
 export default GroupsManager;
