@@ -87,17 +87,19 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
       val credential1 = createGenericCredential(issuerId, contact1.contactId)
       publishCredential(issuerId, credential1)
 
-      Thread.sleep(10) // sleep to add some time padding for the inspected interval
-
+      Thread.sleep(50) // sleep to add some time padding for the inspected interval
       val start = Instant.now()
+      Thread.sleep(50) // sleep to mitigate the time difference between database and the node
+
       createInstitutionGroup(issuerId, InstitutionGroup.Name("Grp 2"))
       val contact2 = createContact(issuerId, "Contact 2", None)
       createGenericCredential(issuerId, contact2.contactId)
       val credential2 = createGenericCredential(issuerId, contact2.contactId)
       publishCredential(issuerId, credential2)
-      val end = Instant.now()
 
-      Thread.sleep(10) // sleep to add some time padding for the inspected interval
+      Thread.sleep(50) // sleep to mitigate the time difference between database and the node
+      val end = Instant.now()
+      Thread.sleep(50) // sleep to add some time padding for the inspected interval
 
       createInstitutionGroup(issuerId, InstitutionGroup.Name("Grp 3"))
       val contact3 = createContact(issuerId, "Contact 3", None)
