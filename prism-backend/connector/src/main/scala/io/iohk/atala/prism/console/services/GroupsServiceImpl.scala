@@ -3,6 +3,7 @@ package io.iohk.atala.prism.console.services
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.GroupsRepository
+import io.iohk.atala.prism.protos.console_api.{DeleteGroupRequest, DeleteGroupResponse}
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.utils.FutureEither
 
@@ -92,4 +93,6 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
       f(Institution.Id(participantId.uuid))
     }
   }
+
+  override def deleteGroup(request: DeleteGroupRequest): Future[DeleteGroupResponse] = ???
 }

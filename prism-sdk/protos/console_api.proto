@@ -115,6 +115,9 @@ service GroupsService {
 
   // Updates an existing group by adding new contacts and removing some of the old ones
   rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse) {}
+
+  // Deletes an existing group by its id
+  rpc DeleteGroup (DeleteGroupRequest) returns (DeleteGroupResponse) {}
 }
 
 // The API for the received credentials
@@ -409,6 +412,14 @@ message UpdateGroupRequest {
 }
 // Response after updating a group
 message UpdateGroupResponse {}
+
+// Request to delete a group
+message DeleteGroupRequest {
+  string groupId = 1; // the id of the existing group to delete
+}
+
+// Response after deleting a group
+message DeleteGroupResponse {}
 
 // Request to create a credential on the authenticated institution
 message CreateGenericCredentialRequest {

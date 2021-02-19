@@ -17,6 +17,10 @@ final case class UpdateInstitutionGroup(
     name: Option[InstitutionGroup.Name]
 )
 
+final case class DeleteInstitutionGroup(
+    groupId: InstitutionGroup.Id
+)
+
 final case class InstitutionGroup(
     id: InstitutionGroup.Id,
     name: InstitutionGroup.Name,

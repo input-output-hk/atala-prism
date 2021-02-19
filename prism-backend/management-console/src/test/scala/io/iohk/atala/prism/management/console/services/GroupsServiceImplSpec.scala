@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.effect.IO
+import cats.syntax.traverse._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.auth.SignedRpcRequest
@@ -19,6 +20,7 @@ import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
+import java.util.UUID
 
 class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
@@ -497,6 +499,82 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
     }
   }
 
+  "deleteGroup" should {
+    val group1 = "Group1"
+    val group1Name = InstitutionGroup.Name(group1)
+    val group2 = "Group2"
+    val group2Name = InstitutionGroup.Name(group2)
+
+    "be able to delete group with contacts in it" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val group1Id = createGroup(institutionId, group1Name)
+      val group2Id = createGroup(institutionId, group2Name)
+
+      DataPreparation.createContact(institutionId, groupName = Some(group1Name))
+      DataPreparation.createContact(institutionId, groupName = Some(group1Name))
+      DataPreparation.createContact(institutionId, groupName = Some(group2Name))
+      DataPreparation.createContact(institutionId, groupName = Some(group2Name))
+
+      // To ensure that these groups and contacts are added
+      listContacts(institutionId, group1Name).size mustBe 2
+      listContacts(institutionId, group2Name).size mustBe 2
+      getInstitutionGroups(institutionId).map(_.value.id) must contain theSameElementsAs List(group1Id, group2Id)
+
+      val requestDelete = console_api.DeleteGroupRequest(group1Id.toString)
+      val rpcRequestDelete = SignedRpcRequest.generate(keyPair, did, requestDelete)
+
+      usingApiAs(rpcRequestDelete) { serviceStub =>
+        serviceStub.deleteGroup(requestDelete)
+        // Exception as the proof that we can't get contacts for the group which doesn't exist anymore
+        intercept[RuntimeException](listContacts(institutionId, group1Name))
+        // Also, to ensure that the second group and its contacts still exist
+        listContacts(institutionId, group2Name).size mustBe 2
+        getInstitutionGroups(institutionId).map(_.value.id) must not contain group1Id
+      }
+    }
+
+    "reject group deleting if here is wrong institution id" in {
+      val keyPair = EC.generateKeyPair()
+      val imposterKeyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val imposterPublicKey = imposterKeyPair.publicKey
+      val did = generateDid(publicKey)
+      val imposterDid = generateDid(imposterPublicKey)
+      val institutionId = createParticipant(did)
+      createParticipant(imposterDid)
+
+      val group1Id = createGroup(institutionId, group1Name)
+
+      DataPreparation.createContact(institutionId, groupName = Some(group1Name))
+      DataPreparation.createContact(institutionId, groupName = Some(group1Name))
+
+      val requestDelete = console_api.DeleteGroupRequest(group1Id.toString)
+      val rpcRequestDelete = SignedRpcRequest.generate(imposterKeyPair, imposterDid, requestDelete)
+
+      usingApiAs(rpcRequestDelete) { serviceStub =>
+        intercept[RuntimeException](serviceStub.deleteGroup(requestDelete))
+      }
+    }
+
+    "reject group deleting if a group doesn't exist" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      createParticipant(did)
+
+      val requestDelete = console_api.DeleteGroupRequest(UUID.randomUUID().toString)
+      val rpcRequestDelete = SignedRpcRequest.generate(keyPair, did, requestDelete)
+
+      usingApiAs(rpcRequestDelete) { serviceStub =>
+        intercept[RuntimeException](serviceStub.deleteGroup(requestDelete))
+      }
+    }
+  }
+
   private def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): List[Contact] =
     institutionGroupsRepository.listContacts(institutionId, groupName).value.futureValue.toOption.value
 
@@ -516,4 +594,26 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
     id
   }
+
+  private def getInstitutionGroups(institutionId: ParticipantId): List[InstitutionGroup.WithContactCount] =
+    institutionGroupsRepository
+      .getBy(institutionId, None)
+      .value
+      .futureValue
+      .toOption
+      .sequence
+      .flatten
+
+  private def createGroup(
+      institutionId: ParticipantId,
+      name: InstitutionGroup.Name,
+      contactIds: Set[Contact.Id] = Set.empty
+  ): InstitutionGroup.Id =
+    institutionGroupsRepository
+      .create(institutionId, name, contactIds)
+      .value
+      .futureValue
+      .toOption
+      .value
+      .id
 }

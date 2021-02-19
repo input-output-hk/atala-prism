@@ -3,6 +3,9 @@ package io.iohk.atala.prism.management.console.repositories
 import cats.data.EitherT
 import cats.effect.IO
 import cats.syntax.apply._
+import cats.syntax.applicative._
+import cats.syntax.either._
+import cats.syntax.flatMap._
 import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -101,5 +104,31 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
     } yield ()
 
     transaction.transact(xa).value.unsafeToFuture().toFutureEither
+  }
+
+  def deleteGroup(
+      institutionId: ParticipantId,
+      groupId: InstitutionGroup.Id
+  ): FutureEither[ManagementConsoleError, Unit] = {
+    import institutionHelper._
+
+    val connectionIo = for {
+      _ <- EitherT.fromOptionF(checkGroups(institutionId, Set(groupId)), ()).swap
+      _ <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.removeAllGroupContacts(groupId))
+      _ <- EitherT(
+        InstitutionGroupsDAO
+          .deleteGroup(institutionId, groupId)
+          .ifM(
+            ().asRight[ManagementConsoleError].pure[ConnectionIO],
+            (InternalServerError(
+              new Throwable(s"Can't delete group with id $groupId for institution $institutionId")
+            ): ManagementConsoleError)
+              .asLeft[Unit]
+              .pure[ConnectionIO]
+          )
+      )
+    } yield ()
+
+    connectionIo.transact(xa).value.unsafeToFuture().toFutureEither
   }
 }

@@ -77,6 +77,14 @@ object InstitutionGroupsDAO {
        """.stripMargin.query[InstitutionGroup].option
   }
 
+  def deleteGroup(institutionId: ParticipantId, groupId: InstitutionGroup.Id): ConnectionIO[Boolean] = {
+    sql"""
+         |DELETE FROM institution_groups
+         |WHERE institution_id = $institutionId AND
+         |      group_id = $groupId
+         | """.stripMargin.update.run.map(_ == 1)
+  }
+
   def listContacts(groupId: InstitutionGroup.Id): ConnectionIO[List[Contact]] = {
     sql"""SELECT contact_id, external_id, contact_data, created_at, contacts.name
          |FROM contacts_per_group
@@ -115,6 +123,12 @@ object InstitutionGroupsDAO {
       case None =>
         unit
     }
+  }
+
+  def removeAllGroupContacts(groupId: InstitutionGroup.Id): ConnectionIO[Unit] = {
+    sql"""DELETE FROM contacts_per_group
+         |WHERE group_id = $groupId
+         |""".stripMargin.update.run.map(_ => ())
   }
 
   def removeContact(contactId: Contact.Id): ConnectionIO[Unit] =

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.management.console.services
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{
   CreateGroupInvalidRequest,
+  DeleteGroupInvalidRequest,
   ManagementConsoleErrorSupport,
   UpdateGroupInvalidRequest
 }
@@ -10,10 +11,12 @@ import io.iohk.atala.prism.management.console.grpc.ProtoCodecs
 import io.iohk.atala.prism.management.console.models.{
   Contact,
   CreateInstitutionGroup,
+  DeleteInstitutionGroup,
   ParticipantId,
   UpdateInstitutionGroup
 }
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
+import io.iohk.atala.prism.protos.console_api.{DeleteGroupRequest, DeleteGroupResponse}
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.utils.FutureEither
 import org.slf4j.{Logger, LoggerFactory}
@@ -117,6 +120,28 @@ class GroupsServiceImpl(
           respondWith(request, response)
         case Success(updateInstitutionGroup) =>
           f(institutionId, updateInstitutionGroup)
+      }
+    }
+  }
+
+  override def deleteGroup(request: DeleteGroupRequest): Future[DeleteGroupResponse] = {
+    def f(institutionId: ParticipantId, deleteInstitutionGroup: DeleteInstitutionGroup) = {
+      institutionGroupsRepository
+        .deleteGroup(institutionId, deleteInstitutionGroup.groupId)
+        .value
+        .map {
+          case Right(_) => console_api.DeleteGroupResponse()
+          case Left(e) => throw new RuntimeException(s"FAILED: $e")
+        }
+    }
+
+    authenticator.authenticated("deleteGroup", request) { institutionId =>
+      ProtoCodecs.toDeleteGroup(request) match {
+        case Failure(exception) =>
+          val response = DeleteGroupInvalidRequest(exception.getMessage)
+          respondWith(request, response)
+        case Success(deleteInstitutionGroup) =>
+          f(institutionId, deleteInstitutionGroup)
       }
     }
   }

@@ -279,6 +279,9 @@ object ProtoCodecs {
     } yield UpdateInstitutionGroup(groupId, contactIdsToAddSet, contactIdsToRemoveSet, name)
   }
 
+  def toDeleteGroup(request: console_api.DeleteGroupRequest): Try[DeleteInstitutionGroup] =
+    InstitutionGroup.Id.from(request.groupId).map(DeleteInstitutionGroup)
+
   private def checkListUniqueness[T](list: List[T]): Try[Set[T]] = {
     val set = list.toSet
     if (set.size == list.size) {
