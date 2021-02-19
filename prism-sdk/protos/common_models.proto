@@ -17,6 +17,18 @@ message Date {
     int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
 }
 
+// Represents a time interval between two given timestamps
+message TimeInterval {
+    // the starting inclusive timestamp in millis since epoch
+    // cannot be missing (i.e. the interval cannot be open-ended)
+    // has to be before or equal to endTimestamp
+    int64 startTimestamp = 1;
+    // the ending inclusive timestamp in millis since epoch
+    // cannot be missing (i.e. the interval cannot be open-ended)
+    // has to be after or equal to endTimestamp
+    int64 endTimestamp = 2;
+}
+
 // When returning results, this is how you specify the direction on how those get sorted
 enum SortByDirection {
     SORT_BY_DIRECTION_UNKNOWN = 0; // Nothing provided, each API may define whether to fail or take a default value (commonly ASCENDING)

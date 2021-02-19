@@ -133,7 +133,11 @@ service CredentialsStoreService {
 }
 
 // Request to get usage statistics for the authenticated institution
-message GetStatisticsRequest {}
+message GetStatisticsRequest {
+  // the query interval for inspection
+  // can be missing, in which case the response will contain all available statistics
+  TimeInterval interval = 1;
+}
 
 // Response with the usage statistics for the authenticated institution
 message GetStatisticsResponse {

@@ -12,7 +12,7 @@ import io.iohk.atala.prism.protos.{common_models, connector_models, console_api,
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import scala.util.{Failure, Success, Try}
 
 object ProtoCodecs {
@@ -289,6 +289,39 @@ object ProtoCodecs {
           s"List [${list.mkString(", ")}] repeats itself"
         )
       )
+    }
+  }
+
+  def toTimestamp(timeInterval: common_models.TimeInterval): Try[TimeInterval] = {
+    for {
+      _ <-
+        if (timeInterval.startTimestamp == 0)
+          Failure(new IllegalArgumentException("Starting timestamp was not specified"))
+        else
+          Success(())
+      _ <-
+        if (timeInterval.endTimestamp == 0)
+          Failure(new IllegalArgumentException("Ending timestamp was not specified"))
+        else
+          Success(())
+      startTimestamp <- Try(Instant.ofEpochMilli(timeInterval.startTimestamp))
+      endTimestamp <- Try(Instant.ofEpochMilli(timeInterval.endTimestamp))
+      _ <-
+        if (startTimestamp.isAfter(endTimestamp))
+          Failure(
+            new IllegalArgumentException("Starting timestamp cannot be after the ending timestamp")
+          )
+        else
+          Success(())
+    } yield TimeInterval(startTimestamp, endTimestamp)
+  }
+
+  def toGetStatistics(request: console_api.GetStatisticsRequest): Try[GetStatistics] = {
+    request.interval match {
+      case Some(protoInterval) =>
+        toTimestamp(protoInterval).map(timeInterval => GetStatistics(Some(timeInterval)))
+      case None =>
+        Success(GetStatistics(None))
     }
   }
 }
