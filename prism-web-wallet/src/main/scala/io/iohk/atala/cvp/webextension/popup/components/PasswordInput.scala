@@ -6,7 +6,13 @@ import slinky.core.facade.Hooks
 import slinky.web.html._
 
 @react object PasswordInput {
-  case class Props(label: String, placeHolder: String, password: String, setPassword: String => Unit)
+  case class Props(
+      label: String,
+      placeHolder: String,
+      password: String,
+      setPassword: String => Unit,
+      validate: Option[String => Unit] = None
+  )
 
   val component: FunctionalComponent[Props] = FunctionalComponent[Props] { props =>
     val (inputType, setInputType) = Hooks.useState("password")
@@ -27,7 +33,10 @@ import slinky.web.html._
           `type` := inputType,
           placeholder := props.placeHolder,
           value := props.password,
-          onChange := (e => props.setPassword(e.target.value))
+          onChange := (e => props.setPassword(e.target.value)),
+          onBlur := (e => {
+            props.validate.map(_.apply(e.target.value))
+          })
         )
       )
     )

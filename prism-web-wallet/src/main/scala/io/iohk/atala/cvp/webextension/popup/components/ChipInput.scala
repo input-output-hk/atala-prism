@@ -9,12 +9,12 @@ import slinky.core._
 import slinky.core.annotations.react
 import slinky.core.facade.Hooks
 import slinky.web.html._
-import slinky.web.{SyntheticClipboardEvent, SyntheticKeyboardEvent}
+import slinky.web.{SyntheticClipboardEvent, SyntheticFocusEvent, SyntheticKeyboardEvent}
 
 import scala.scalajs.js.|
 
 @react object ChipInput {
-  case class Props(setChips: Seq[String] => Unit)
+  case class Props(setChips: Seq[String] => Unit, validate: Option[Seq[String] => Unit] = None)
   val space = " "
 
   val component: FunctionalComponent[Props] = FunctionalComponent[Props] { props =>
@@ -23,6 +23,7 @@ import scala.scalajs.js.|
 
     def onDelete(index: Int) = {
       setValues(values.filter(_ != values(index)))
+      props.setChips(values)
     }
 
     def handleKeyDown(e: SyntheticKeyboardEvent[HTMLTextAreaElement | HTMLInputElement]) = {
@@ -42,7 +43,7 @@ import scala.scalajs.js.|
     }
 
     def handlePaste(e: SyntheticClipboardEvent[HTMLDivElement]) = {
-      val data = e.clipboardData.getData("text").split(space).toList
+      val data = e.clipboardData.getData("text").split(space).toList.take(12)
       setValues(data)
       props.setChips(data)
       setOnPaste(true)
@@ -52,6 +53,10 @@ import scala.scalajs.js.|
       if (onPaste)
         e.currentTarget.asInstanceOf[HTMLInputElement].value = ""
       setOnPaste(false)
+    }
+
+    def handleBlur(e: SyntheticFocusEvent[HTMLDivElement]) = {
+      props.validate.map(_.apply(values))
     }
 
     div(className := "div__field_group")(
@@ -93,6 +98,7 @@ import scala.scalajs.js.|
                   .onChange { e =>
                     handleChange(e)
                   }
+                  .onBlur { e => handleBlur(e) }
               )
               .classes(PartialClassNameMapFormCo().setRoot("formControl"))
           )

@@ -35,6 +35,8 @@ import scala.util.{Failure, Success}
     val seed = this.values.mkString(" ")
   }
 
+  private val passwordRegex: String => Boolean = _.length >= 30
+
   override def initialState: State = {
     State("", "", None, false, false, "", Nil)
   }
@@ -60,11 +62,23 @@ import scala.util.{Failure, Success}
           .className("muiButton")
           .size(materialUiCoreStrings.small),
         h3(className := "h3_recover")("Recover your wallet"),
-        ChipInput(chips => setChips(chips)),
+        ChipInput(chips => setChips(chips), Some(_ => isValidSeedPhrase())),
         h4(className := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it"),
-        PasswordInput("Password", "Enter Password", state.password, password => setPassword(password)),
-        PasswordInput("Confirm password", "Re-enter Password", state.password2, password => setPassword2(password)),
-        div()(
+        PasswordInput(
+          "Password",
+          "Enter Password",
+          state.password,
+          password => setPassword(password),
+          Some(_ => isValidPassphrase())
+        ),
+        PasswordInput(
+          "Confirm password",
+          "Re-enter Password",
+          state.password2,
+          password => setPassword2(password),
+          Some(_ => isPassphraseMatched())
+        ),
+        div(className := "bottomPadding")(
           div(className := "input__container")(
             div()(
               input(
@@ -95,16 +109,14 @@ import scala.util.{Failure, Success}
               )
             )
           )
-        )
+        ),
+        ErrorMessage(state.message)
       ),
-      ErrorMessage(state.message),
       ProgressButton(
         "Recover wallet",
         enableButton,
         state.isLoading,
-        (isLoading: Boolean) => {
-          recoverWallet()
-        }
+        _ => recoverWallet()
       )
     )
   }
@@ -122,7 +134,7 @@ import scala.util.{Failure, Success}
   }
 
   private def recoverWallet(): Unit = {
-    if (isValidInput(state)) {
+    if (isValidInput()) {
       setState(_.copy(isLoading = true))
       props.backgroundAPI
         .recoverWallet(state.password, Mnemonic(state.seed))
@@ -135,20 +147,45 @@ import scala.util.{Failure, Success}
     }
   }
 
-  private def isValidInput(state: State): Boolean = {
-    if (state.password.isEmpty) {
-      setState(_.copy(message = Some("Password cannot be empty")))
+  def isValidPassphrase(): Boolean = {
+    if (state.password.trim.isEmpty) {
+      setState(_.copy(message = Some("Passphrase cannot be empty.")))
       false
-    } else if (state.password != state.password2) {
-      setState(_.copy(message = Some("Password verification does not match")))
+    } else if (!passwordRegex(state.password)) {
+      setState(
+        _.copy(message = Some("The password should be a memorable passphrase with minimum total characters of 30"))
+      )
       false
-    } else if (!Mnemonic.isValid(state.seed)) {
+    } else {
+      setState(_.copy(message = None))
+      true
+    }
+  }
+
+  def isPassphraseMatched(): Boolean = {
+    if (state.password != state.password2) {
+      setState(_.copy(message = Some("The passwords do not match. Please try again")))
+      false
+    } else {
+      setState(_.copy(message = None))
+      true
+    }
+  }
+
+  def isValidSeedPhrase(): Boolean = {
+    if (!Mnemonic.isValid(state.seed)) {
       setState(_.copy(message = Some("Invalid Seed Phrase")))
       false
     } else {
       setState(_.copy(message = None))
       true
     }
+  }
+
+  private def isValidInput(): Boolean = {
+    isValidSeedPhrase() &&
+    isValidPassphrase() &&
+    isPassphraseMatched()
   }
 
 }

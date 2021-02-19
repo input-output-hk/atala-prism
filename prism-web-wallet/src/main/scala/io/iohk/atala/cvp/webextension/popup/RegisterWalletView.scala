@@ -3,7 +3,7 @@ package io.iohk.atala.cvp.webextension.popup
 import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.popup.components.PasswordInput
+import io.iohk.atala.cvp.webextension.popup.components.{ErrorMessage, PasswordInput}
 import io.iohk.atala.cvp.webextension.popup.models.View.{Default, VerifyMnemonic}
 import io.iohk.atala.cvp.webextension.popup.models.{Data, View}
 import slinky.core._
@@ -24,8 +24,10 @@ import slinky.web.html.{p, _}
       mnemonic: Mnemonic,
       password: String,
       password2: String,
-      message: String
+      message: Option[String]
   )
+
+  private val passwordRegex: String => Boolean = _.length >= 30
 
   private val mnemonicElement: ReactElement = div(className := "words_container")(
     ReactElement.iterableToElement {
@@ -46,23 +48,10 @@ import slinky.web.html.{p, _}
   }
 
   override def initialState: State = {
-    State(Mnemonic(), "", "", "")
+    State(Mnemonic(), "", "", None)
   }
 
   override def render(): ReactElement = {
-
-    def error() = {
-      if (state.message.nonEmpty) {
-        div(className := "errorContainer")(
-          label(className := "_label_update")(
-            state.message,
-            img(className := "errorImg", src := "/assets/images/error.svg")
-          )
-        )
-      } else {
-        div(className := "errorContainer")()
-      }
-    }
 
     div(id := "registrationScreen", className := "spaceBetween")(
       div(className := "logo_container", id := "logo_container")(
@@ -105,9 +94,21 @@ import slinky.web.html.{p, _}
       ),
       h4(className := "h4_register", id := "h4_register", "Wallet information"),
       div(className := "")(
-        PasswordInput("Password", "Enter Password", state.password, password => setPassword(password)),
-        PasswordInput("Confirm password", "Re-enter Password", state.password2, password => setPassword2(password)),
-        error(),
+        PasswordInput(
+          "Password",
+          "Enter Password",
+          state.password,
+          password => setPassword(password),
+          Some(_ => isValidPassphrase())
+        ),
+        PasswordInput(
+          "Confirm password",
+          "Re-enter Password",
+          state.password2,
+          password => setPassword2(password),
+          Some(_ => isPassphraseMatched())
+        ),
+        ErrorMessage(state.message),
         div(className := "div__field_group")(
           div(
             id := "registerButton",
@@ -122,22 +123,38 @@ import slinky.web.html.{p, _}
   }
 
   private def next(): Unit = {
-    if (isValidInput(state)) {
+    if (isValidInput()) {
       val data = Data(state.mnemonic, state.password)
       props.switchToView(VerifyMnemonic(data))
     }
   }
 
-  private def isValidInput(state: State): Boolean = {
-    if (state.password.isEmpty) {
-      setState(state.copy(message = "Password cannot be empty"))
+  def isValidPassphrase(): Boolean = {
+    if (state.password.trim.isEmpty) {
+      setState(_.copy(message = Some("Password cannot be empty.")))
       false
-    } else if (state.password != state.password2) {
-      setState(state.copy(message = "Password verification does not match"))
+    } else if (!passwordRegex(state.password)) {
+      setState(
+        _.copy(message = Some("The password should be a memorable passphrase with minimum total characters of 30"))
+      )
       false
     } else {
-      setState(state.copy(message = ""))
+      setState(_.copy(message = None))
       true
     }
+  }
+
+  def isPassphraseMatched(): Boolean = {
+    if (state.password != state.password2) {
+      setState(_.copy(message = Some("The passwords do not match. Please try again")))
+      false
+    } else {
+      setState(_.copy(message = None))
+      true
+    }
+  }
+
+  private def isValidInput(): Boolean = {
+    isValidPassphrase() && isPassphraseMatched()
   }
 }
