@@ -105,34 +105,35 @@
 }
 
 .credentialDetailDrawer {
-  .ant-tabs-nav {
-    @include primary-text($body, #d8d8d8);
-    width: 100%;
+  .ant-tabs-nav .ant-tabs-tab {
+    @include primary-text($h3, #a0aabb);
+    font-weight: 800;
+    margin: 0 1em;
   }
-  .ant-tabs-tab {
-    @include primary-text($body, #d8d8d8);
-    width: 50%;
-    text-align: center;
+  .ant-tabs-tab-active {
+    .ant-tabs-tab-btn {
+      @include primary-text($h3, $black);
+      font-weight: 800;
+    }
   }
-  .ant-tabs-nav .ant-tabs-tab-active {
-    color: $primary-color;
+  .ant-input {
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656);
+    }
+    &:hover {
+      border-color: $primary-color;
+    }
   }
   .ant-tabs-ink-bar {
     background-color: $primary-color;
   }
-  .ant-tabs-nav .ant-tabs-tab:hover {
-    background-color: transparent;
+  .ant-tabs-nav .ant-tabs-tab:active {
+    color: $primary-color;
   }
-  .ant-drawer-title {
-    @include primary-text($h2, $secondary-color);
+  .ant-tabs-tab:hover {
+    color: $primary-color;
   }
-  .ant-drawer-header {
-    border-bottom: none;
-  }
-  .ant-drawer-body {
-    padding-top: 0;
-  }
-
   .credentialContainer {
     padding: 1em;
   }
@@ -270,6 +271,20 @@
     font-weight: bold;
   }
   &:hover {
-    border: 0.2em solid $grey!important;
+    border: 0.2em solid $grey !important;
+  }
+}
+.revokedAlertContainer {
+  .ant-alert-message {
+    color: #ff2d3b;
+    margin: 0;
+    padding: 0 1em;
+    font-size: 14px;
+  }
+  .ant-alert-error {
+    border: none;
+  }
+  .revokedIcon {
+    margin: 1em;
   }
 }

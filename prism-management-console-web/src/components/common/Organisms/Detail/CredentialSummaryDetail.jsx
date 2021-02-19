@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
-import { Drawer, message, Tabs, Button } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { Drawer, message, Tabs, Alert, Divider } from 'antd';
+import { Trans, useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-import { drawerWidth } from '../../../../helpers/constants';
+import { CREDENTIAL_STATUSES, drawerWidth } from '../../../../helpers/constants';
 import img from '../../../../images/verified.svg';
 import cardanoLogo from '../../../../images/cardanoLogo.svg';
-import arrow from '../../../../images/right.svg';
-import hashed from '../../../../images/hashed.svg';
 import hashedFile from '../../../../images/hashedFile.svg';
 import CardDetail from './DetailCard';
 import DataDetail from './DataDetail';
 import { sanitizeView } from '../../../../helpers/credentialView';
 import CredentialRawDetail from './CredentialRawDetail/CredentialRawDetail';
+import revokedIconSrc from '../../../../images/revokeIcon.svg';
 
 const { TabPane } = Tabs;
 
@@ -117,6 +116,14 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
 
   const { transactionid, ledger } = credentialData?.issuanceproof || {};
 
+  const revokedIcon = <img className="revokedIcon" src={revokedIconSrc} alt="revoked icon" />;
+
+  const revokedMessage = (
+    <Trans i18nKey="credentials.detail.revokedAlert">
+      This Credential <strong>has been Revoked</strong> by the Issuing Authority
+    </Trans>
+  );
+
   return (
     <Drawer
       className="credentialDetailDrawer"
@@ -128,6 +135,12 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
       <Tabs defaultActiveKey={tabs.details.key} centered>
         <TabPane tab={tabs.summary.title} key={tabs.summary.key}>
           <div className="credentialContainer">{renderHtmlCredential({ ...credentialData })}</div>
+          {credentialData.status === CREDENTIAL_STATUSES.credentialRevoked && (
+            <div className="revokedAlertContainer">
+              <Divider />
+              <Alert message={revokedMessage} type="error" showIcon icon={revokedIcon} />
+            </div>
+          )}
           {/* Left commented code for when it's possible verify credential */}
           {/* <div className="actionsContainer">
             <CustomButton
@@ -180,7 +193,8 @@ CredentialSummaryDetail.propTypes = {
   credentialData: PropTypes.shape({
     html: PropTypes.string,
     credentialdata: PropTypes.string,
-    issuanceproof: PropTypes.shape({ transactionid: PropTypes.string })
+    issuanceproof: PropTypes.shape({ transactionid: PropTypes.string }),
+    status: PropTypes.number.isRequired
   }).isRequired
 };
 

@@ -55,15 +55,34 @@
       padding-top: 14px;
     }
     .CredentialInfo {
+      .ant-tabs-nav .ant-tabs-tab {
+        @include primary-text($h3, #a0aabb);
+        font-weight: 800;
+        margin: 0 1em;
+      }
+      .ant-tabs-tab-active {
+        .ant-tabs-tab-btn {
+          @include primary-text($h3, $black);
+          font-weight: 800;
+        }
+      }
+      .ant-input {
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656);
+        }
+        &:hover {
+          border-color: $primary-color;
+        }
+      }
       .ant-tabs-ink-bar {
         background-color: $primary-color;
-        height: 3px;
       }
-      .ant-tabs-tab {
-        @include primary-text($h3, #728099);
+      .ant-tabs-nav .ant-tabs-tab:active {
+        color: $primary-color;
       }
-      .ant-tabs-nav .ant-tabs-tab-active {
-        @include primary-text($h3, #303034);
+      .ant-tabs-tab:hover {
+        color: $primary-color;
       }
       padding: 0 3em 2em 3em;
       width: 55%;

@@ -117,8 +117,8 @@
       "title": "Credentials List",
       "dataTitle": "Group Name",
       "contacts": "Contacts",
-      "credIssued": "Credential(s) Issued",
-      "credReceived": "Credential(s) Received",
+      "credIssued": "Credentials Issued",
+      "credReceived": "Credentials Received",
       "detailSection": {
         "title": "Contact Details",
         "subtitle": "General Information",
@@ -309,7 +309,8 @@
       "goToCardano": "Go to Cardano",
       "fileHash": "File Hash",
       "transactionTimestamp": "Transaction Timestamp: ",
-      "viewCardanoExplorer": "View in Cardano Explorer"
+      "viewCardanoExplorer": "View in Cardano Explorer",
+      "revokedAlert": "This Credential <1>has been Revoked</1> by the Issuing Authority"
     },
     "type": {
       "governmentId": "Government ID",
