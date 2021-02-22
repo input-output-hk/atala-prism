@@ -4,9 +4,51 @@ Prism is a Self-Sovereign Identity (SSI), and Verifiable Credentials (VC) platfo
 
 [![CircleCI](https://circleci.com/gh/input-output-hk/atala/tree/develop.svg?style=svg&circle-token=1a9dcf544cec8cb581fa377d8524d2854cfb10e9)](https://circleci.com/gh/input-output-hk/cardano-enterprise/tree/develop)
 
-## Branches
+## Branches, deployment, and stability
 
-Two main branches will be maintained: `develop` and `master`. `master` contains the latest version of the code that was tested end-to-end. `develop` contains the latest version of the code that runs all the tests (unit and integration tests). Integration tests don't test all the integrations. Hence, any version in `develop` might have bugs when deployed for an end-to-end test.
+Three main branches will be maintained:
+
+* `develop`
+* `qa`
+* `master`
+
+All development happens against `develop`, which contains the latest version of the code that runs all the tests (unit and some integration tests). Integration tests don't test all the integrations. Hence, any version in `develop` might have bugs when deployed for an end-to-end test.
+
+The `qa` branch is where we can guarantee that code is stable end-to-end, meaning that all components can work flawlessly together when deployed. Periodically, `qa` is rebased onto `develop` and a series of tests (contained in [`atala-qa-automation`](https://github.com/input-output-hk/atala-qa-automation/)) that take all components into account are executed.
+
+The `master` branch contains milestones that have been tested end-to-end and have been demonstrated to work properly. The idea is to be able to create PRISM releases out of `master` and also be able to create demo environments. We expect that milestones and, especially, releases will be represented by git tags. For instance, [vAlpha-01](https://github.com/input-output-hk/atala/tree/vAlpha-01) and [vAlpha-02](https://github.com/input-output-hk/atala/tree/vAlpha-02) are existing tags that represent milestones.
+
+### Flow of commits
+
+Commits land on `develop` from Pull Requests, as soon as they are approved. There is no coordination happening there.
+
+Commits land on `qa` from `develop` periodically, currently once in a day. This is an automated process.
+
+Commits land on `master` from `qa` manually, according to the PRISM roadmap, when we have to represent a stable milestone or cut a release.
+
+### Working assumptions
+
+The current situation regarding the engineering & QA flows and processes has the following characteristics:
+
+* Running the QA pipeline is costly. Given the fact that our Pull Requests can evolve `develop` very frequently, it means that running the QA pipeline against `develop` can be ineffective: while in the middle of the QA pipeline, a new commit can appear in `develop` and, as a consequence, the so far QA work can be wasted.
+
+* Launching deployments is costly. Our CircleCI configuration declares precisely under which circumstances a deployment is created and updated.
+
+* Periodically rebasing `qa` onto `develop` almost cancels out the volatility present in the latter, so we expect QA results with less interference between changing features.
+
+* _Some_ manual testing may still be needed in `qa`.
+
+* Commits flow from `develop` to `qa` periodically in an automated way but we may choose to manually cherry-pick a few latest commits from `develop`, in case a hot fix is needed to stabilize `qa`. In any case, we may move to a full manual process when bringing patches from `develop` in `qa`.
+
+#### Future investigations
+
+As a consequence of the above, we may want to look into ways to make:
+
+* Deployments lighter-weight.
+* The QA pipeline lighter-weight.
+* The QA pipeline even more automatic.
+
+These could bring more QA automation into `develop`, could ease testing the Pull Requests, and probably bridge the gap between `develop` and `master`.
 
 
 ## Working with the codebase
