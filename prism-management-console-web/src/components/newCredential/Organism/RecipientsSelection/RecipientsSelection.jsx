@@ -39,16 +39,16 @@ const RecipientsSelection = ({
   const [activeKey, setActiveKey] = useState(GROUPS_KEY);
 
   const selectAllGroupsProps = {
-    checked: selectedGroups.length === groups.length,
+    checked: groups.length && selectedGroups.length === groups.length,
     indeterminate: selectedGroups.length && selectedGroups.length !== groups.length,
-    disabled: !shouldSelectRecipients,
+    disabled: !groups.length || !shouldSelectRecipients,
     onChange: handleSelectAllGroups
   };
 
   const selectAllSubjectsProps = {
-    checked: selectedSubjects.length === subjects.length,
+    checked: subjects.length && selectedSubjects.length === subjects.length,
     indeterminate: selectedSubjects.length && selectedSubjects.length !== subjects.length,
-    disabled: !shouldSelectRecipients,
+    disabled: !subjects.length || !shouldSelectRecipients,
     onChange: handleSelectAllContacts
   };
 
