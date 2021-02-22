@@ -81,8 +81,8 @@ export const EXCEL = 'excel';
 export const ANY = 'any';
 export const INVALID_TYPE = 'invalidType';
 export const TOO_LARGE = 'tooLarge';
-// default web encoding
-export const ENCODING_UTF = 'UTF-8';
+// default web encoding, add BOM to support special chars
+export const ENCODING_UTF = 'UTF-8 BOM';
 // default excel encoding
 export const ENCODING_ISO = 'ISO-8859-1';
 
