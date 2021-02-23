@@ -26,18 +26,71 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:paddingVertical="38dp"
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:clipToPadding="false"
-            android:paddingHorizontal="@dimen/activity_default_side_margin"
             app:layout_constraintTop_toBottomOf="@+id/title_text_view"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/accept_button"
-            android:id="@+id/date_formats_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="0dp" />
+            android:fillViewport="true"
+            android:overScrollMode="never">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:paddingHorizontal="@dimen/activity_default_side_margin"
+                    android:paddingVertical="38dp"
+                    android:clipToPadding="false"
+                    android:id="@+id/date_formats_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_marginHorizontal="@dimen/activity_default_side_margin"
+                    android:outlineAmbientShadowColor="@android:color/transparent"
+                    android:outlineSpotShadowColor="@android:color/transparent"
+                    app:cardBackgroundColor="@color/onSurfaceMedium02"
+                    app:strokeColor="@color/onSurfaceMedium20"
+                    app:strokeWidth="1dp"
+                    app:cardCornerRadius="4dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:padding="12dp"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent">
+
+                        <ImageView
+                            android:layout_marginTop="2dp"
+                            android:tint="@color/onSurfaceMedium"
+                            android:layout_gravity="top"
+                            android:src="@drawable/ic_info"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp" />
+
+                        <TextView
+                            htmlText="@{@string/date_format_setting_clarification}"
+                            android:textColor="@color/onSurfaceMedium"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:layout_gravity="top"
+                            android:gravity="center_vertical"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
         <Button
             android:onClick="@{v-> viewModel.savePreferences()}"
             android:text="@string/settings_custom_date_format_accept_button_text"

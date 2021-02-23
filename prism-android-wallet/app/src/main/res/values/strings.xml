@@ -284,4 +284,5 @@
     <string name="proof_request_dialog_requested_credentials">Requested Credential(s):</string>
     <string name="proof_request_dialog_share">Share</string>
     <string name="credential_history_title">%1$s History</string>
+    <string name="date_format_setting_clarification">&lt;b>Important:&lt;/b> This is the application\'s date format. The date format in Credentials received or shared will not change.</string>
 </resources>

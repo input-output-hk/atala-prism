@@ -10,6 +10,8 @@
     <color name="blue">#4A2DFF</color>
     <color name="violet">#AF2DFF</color>
     <color name="onSurfaceMedium">#77869E</color>
+    <color name="onSurfaceMedium02">#0577869E</color>
+    <color name="onSurfaceMedium20">#3277869E</color>
     <color name="trasparent">#80000000</color>
 
     <color name="orange">#FFB954</color>

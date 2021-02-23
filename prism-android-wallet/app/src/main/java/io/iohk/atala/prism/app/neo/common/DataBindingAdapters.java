@@ -3,10 +3,12 @@ package io.iohk.atala.prism.app.neo.common;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-
+import android.widget.TextView;
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.InverseBindingAdapter;
 import androidx.databinding.InverseBindingListener;
@@ -84,5 +86,15 @@ public class DataBindingAdapters {
     @BindingAdapter("strokeWidth")
     public static void strokeWidth(MaterialCardView cardView, Float width) {
         cardView.setStrokeWidth(width.intValue());
+    }
+
+    /**
+     * [TextView] Bindings Adapters
+     */
+
+    @BindingAdapter("htmlText")
+    public static void htmlText(TextView textView, String htmlString){
+        Spanned text = Html.fromHtml(htmlString,Html.FROM_HTML_MODE_LEGACY);
+        textView.setText(text);
     }
 }
