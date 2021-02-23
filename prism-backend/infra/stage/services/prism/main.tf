@@ -104,7 +104,8 @@ resource "postgresql_role" "connector_role" {
 }
 
 resource "postgresql_schema" "connector_schema" {
-  name = local.connector_psql_username
+  name         = local.connector_psql_username
+  drop_cascade = true
   policy {
     create            = true
     usage             = true
@@ -123,7 +124,8 @@ resource "postgresql_role" "node_role" {
 }
 
 resource "postgresql_schema" "node_schema" {
-  name = local.node_psql_username
+  name         = local.node_psql_username
+  drop_cascade = true
   policy {
     create            = true
     usage             = true
@@ -142,7 +144,8 @@ resource "postgresql_role" "management_console_role" {
 }
 
 resource "postgresql_schema" "management_console_schema" {
-  name = local.management_console_psql_username
+  name         = local.management_console_psql_username
+  drop_cascade = true
   policy {
     create            = true
     usage             = true

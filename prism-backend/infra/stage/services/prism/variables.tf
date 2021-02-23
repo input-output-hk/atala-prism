@@ -197,7 +197,3 @@ variable "function_name" {
   type    = string
   default = "basic_auth"
 }
-
-variable "postgres_passowrd" {
-  type = string
-}

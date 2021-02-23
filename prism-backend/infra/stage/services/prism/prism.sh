@@ -50,7 +50,6 @@ apply_env () {
 
 destroy_env () {
   write_vars "${1-}"
-  drop_schemas
   terraform init -backend-config="key=$state_key" && terraform destroy ${1-} -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
 }
 
@@ -86,22 +85,6 @@ taint_env () {
         echo "Tainting $path"
         terraform taint $path
     done
-}
-
-# Terraform's postgres provider will not drop a schema that we have created tables in (i.e. does not do a cascading drop)
-# See this issue https://github.com/terraform-providers/terraform-provider-postgresql/issues/101.
-drop_schemas () {
-
-  # We remove the schemas from the terraform state file.
-  terraform init -backend-config="key=$state_key"
-  terraform state rm "postgresql_schema.connector-schema"
-  terraform state rm "postgresql_schema.management-console-schema"
-
-  # Then do a cascading drop here.
-  # (PGPASSWORD must be set in the environment)
-  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA IF EXISTS \"prism-connector-${env_name_short}\" CASCADE;"
-  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA IF EXISTS \"prism-node-${env_name_short}\" CASCADE;"
-  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA IF EXISTS \"prism-management-console-${env_name_short}\" CASCADE;"
 }
 
 write_vars () {
