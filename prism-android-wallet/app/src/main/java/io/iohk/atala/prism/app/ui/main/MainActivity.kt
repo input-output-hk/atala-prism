@@ -5,7 +5,6 @@ import android.content.ContentResolver
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
@@ -25,16 +24,16 @@ class MainActivity : DaggerAppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    val viewModel:MainViewModel by lazy {
+    val viewModel: MainViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
     }
 
     // TODO this will be removed when the GRPC data stream is implemented
-    private val genericSyncAccount:Account by lazy {
+    private val genericSyncAccount: Account by lazy {
         AuthenticatorService.buildGenericAccountForSync(this)
     }
 
-    lateinit var binding:ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
     private var currentNavController: LiveData<NavController>? = null
 
@@ -64,19 +63,19 @@ class MainActivity : DaggerAppCompatActivity() {
     private fun setupBottomNavigationBar() {
 
         val navGraphIds = listOf(
-                R.navigation.credentials_navigation,
-                R.navigation.contacts_navigation,
-                R.navigation.notifications_navigation,
-                R.navigation.profile_navigation,
-                R.navigation.settings_navigation
+            R.navigation.credentials_navigation,
+            R.navigation.contacts_navigation,
+            R.navigation.notifications_navigation,
+            R.navigation.profile_navigation,
+            R.navigation.settings_navigation
         )
 
         // Setup the bottom navigation view with a list of navigation graphs
         val controller = binding.bottomNavigationView.setupWithNavController(
-                navGraphIds = navGraphIds,
-                fragmentManager = supportFragmentManager,
-                containerId = R.id.nav_host_container,
-                intent = intent
+            navGraphIds = navGraphIds,
+            fragmentManager = supportFragmentManager,
+            containerId = R.id.nav_host_container,
+            intent = intent
         )
 
         controller.observe(this) { navController ->
@@ -96,31 +95,44 @@ class MainActivity : DaggerAppCompatActivity() {
         return currentNavController?.value?.navigateUp() ?: false
     }
 
-    private fun setObservers(){
+    private fun setObservers() {
         // TODO this will be removed when the GRPC data stream is implemented
         // Handle a sync request
-        viewModel.requestSync.observe(this, EventWrapperObserver {
-            if (it) requestForSync()
-        })
-        // Handle  when exist a message with a proof requests
-        viewModel.proofRequest.observe(this, EventWrapperObserver { proofRequest ->
-            ProofRequestDialogFragment.build(proofRequest.id).show(supportFragmentManager, null)
-        })
-        // Handle security view
-        viewModel.securityViewShouldBeVisible.observe(this, EventWrapperObserver { showSecurityView ->
-            if(showSecurityView) {
-                startActivity(IntentUtils.intentUnlockScreen(this))
+        viewModel.requestSync.observe(
+            this,
+            EventWrapperObserver {
+                if (it) requestForSync()
             }
-        })
+        )
+        // Handle  when exist a message with a proof requests
+        viewModel.proofRequest.observe(
+            this,
+            EventWrapperObserver { proofRequest ->
+                ProofRequestDialogFragment.build(proofRequest.id).show(supportFragmentManager, null)
+            }
+        )
+        // Handle security view
+        viewModel.securityViewShouldBeVisible.observe(
+            this,
+            EventWrapperObserver { showSecurityView ->
+                if (showSecurityView) {
+                    startActivity(IntentUtils.intentUnlockScreen(this))
+                }
+            }
+        )
     }
 
     // TODO this will be removed when the GRPC data stream is implemented
     private fun requestForSync() {
         val settingsBundle = Bundle()
         settingsBundle.putBoolean(
-                ContentResolver.SYNC_EXTRAS_MANUAL, true)
+            ContentResolver.SYNC_EXTRAS_MANUAL,
+            true
+        )
         settingsBundle.putBoolean(
-                ContentResolver.SYNC_EXTRAS_EXPEDITED, true)
+            ContentResolver.SYNC_EXTRAS_EXPEDITED,
+            true
+        )
         /*
          * Request the sync for the generic account, authority, and manual sync settings
          */

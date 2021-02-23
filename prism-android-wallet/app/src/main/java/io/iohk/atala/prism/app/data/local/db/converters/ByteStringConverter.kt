@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 
 open class ByteStringConverter {
     @TypeConverter
-    fun fromByteArrayToByteString(byteArray : ByteArray): ByteString {
+    fun fromByteArrayToByteString(byteArray: ByteArray): ByteString {
         return ByteString.copyFrom(byteArray)
     }
 

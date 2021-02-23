@@ -9,19 +9,23 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.ActivityNavigator
 import androidx.navigation.fragment.findNavController
-import io.iohk.cvp.databinding.NeoFragmentRestoreAccountSuccessBinding
 import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoFragmentRestoreAccountSuccessBinding
 
 class RestoreAccountSuccessFragment : Fragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val binding: NeoFragmentRestoreAccountSuccessBinding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_restore_account_success, container, false)
         binding.nextBtn.setOnClickListener {
             // Navigate to Main Activity
             val extras = ActivityNavigator.Extras.Builder()
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    .build()
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .build()
             val action = RestoreAccountSuccessFragmentDirections.actionRestoreAccountSuccessFragmentToMainActivity()
             findNavController().navigate(action, extras)
         }

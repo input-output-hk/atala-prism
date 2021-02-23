@@ -14,13 +14,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.DaggerDialogFragment
-import io.iohk.cvp.R
 import io.iohk.atala.prism.app.data.local.db.model.Credential
-import io.iohk.cvp.databinding.NeoDialogDeleteContactAlertBinding
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.SimpleTextRecyclerViewAdapter
 import io.iohk.atala.prism.app.neo.common.extensions.KEY_RESULT
 import io.iohk.atala.prism.app.ui.main.credentials.CredentialUtil
+import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoDialogDeleteContactAlertBinding
 import javax.inject.Inject
 
 class DeleteContactAlertDialogFragment : DaggerDialogFragment() {
@@ -29,7 +29,7 @@ class DeleteContactAlertDialogFragment : DaggerDialogFragment() {
         const val REQUEST_DELETE_CONTACT = "REQUEST_DELETE_CONTACT"
     }
 
-    private val args:DeleteContactAlertDialogFragmentArgs by navArgs()
+    private val args: DeleteContactAlertDialogFragmentArgs by navArgs()
 
     @Inject
     lateinit var factory: ViewModelProvider.Factory
@@ -46,7 +46,11 @@ class DeleteContactAlertDialogFragment : DaggerDialogFragment() {
         return@lazy ViewModelProvider(this, factory).get(DeleteContactAlertDialogViewModel::class.java)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_dialog_delete_contact_alert, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -63,17 +67,23 @@ class DeleteContactAlertDialogFragment : DaggerDialogFragment() {
     }
 
     private fun setObservers() {
-        viewModel.dismiss.observe(viewLifecycleOwner, EventWrapperObserver {
-            if (it) {
-                findNavController().popBackStack()
+        viewModel.dismiss.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver {
+                if (it) {
+                    findNavController().popBackStack()
+                }
             }
-        })
-        viewModel.contactDeleted.observe(viewLifecycleOwner, EventWrapperObserver {
-            if (it) {
-                findNavController().popBackStack()
-                setFragmentResult(REQUEST_DELETE_CONTACT, bundleOf(KEY_RESULT to Activity.RESULT_OK))
+        )
+        viewModel.contactDeleted.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver {
+                if (it) {
+                    findNavController().popBackStack()
+                    setFragmentResult(REQUEST_DELETE_CONTACT, bundleOf(KEY_RESULT to Activity.RESULT_OK))
+                }
             }
-        })
+        )
         viewModel.credentials.observe(viewLifecycleOwner) {
             credentialsAdapter.clear()
             credentialsAdapter.addAll(it)

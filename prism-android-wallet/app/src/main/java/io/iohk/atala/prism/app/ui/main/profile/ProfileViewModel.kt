@@ -3,7 +3,10 @@ package io.iohk.atala.prism.app.ui.main.profile
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.FileUtils
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository
@@ -12,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ProfileViewModel @Inject constructor(private val repository:PreferencesRepository) : ViewModel() {
+class ProfileViewModel @Inject constructor(private val repository: PreferencesRepository) : ViewModel() {
 
     companion object {
         private const val MAX_PROFILE_PHOTO_PX_SIZE = 800
@@ -54,7 +57,7 @@ class ProfileViewModel @Inject constructor(private val repository:PreferencesRep
         if (editMode.value == true) {
             _showLoading.value = EventWrapper(true)
             viewModelScope.launch {
-                repository.storeUserProfile(UserProfile(fullName.value,country.value,email.value,profileImage.value))
+                repository.storeUserProfile(UserProfile(fullName.value, country.value, email.value, profileImage.value))
                 _editMode.value = false
                 _showLoading.value = EventWrapper(false)
             }
@@ -65,7 +68,7 @@ class ProfileViewModel @Inject constructor(private val repository:PreferencesRep
         _profileImage.value = null
     }
 
-    fun handleProfilePhotoUri(imageUri: Uri, ctx:Context){
+    fun handleProfilePhotoUri(imageUri: Uri, ctx: Context) {
         viewModelScope.launch(Dispatchers.Main) {
             _showLoading.postValue(EventWrapper(true))
             FileUtils.decodeBitmapFromUri(ctx, imageUri, MAX_PROFILE_PHOTO_PX_SIZE)?.let {

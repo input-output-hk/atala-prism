@@ -2,18 +2,17 @@
 Android Studio 4.0.0 or higher is recommended.
 
 ## Recommended configuration to maintain a good code format
-### Install "Save Actions" plugin
-- In Android Studio go to `preferences->plugins` section, search and install the "Save Actions" plugin
+### Install "Save Actions" and "Ktlint" plugins
+- In Android Studio go to `preferences->plugins` section, search and install "Save Actions" ([Plugin Page](https://plugins.jetbrains.com/plugin/7642-save-actions)) and "Ktlint (unofficial)" ([Plugin Page](https://plugins.jetbrains.com/plugin/15057-ktlint-unofficial-)) plugins
 - Restart Android Studio
 - Go to `Preferences-> Other settings-> Save actions`, in this panel you must activate the plugin by checking the "Activate save actions on save" checkbox, and after that you must activate the automatic code formatting by checking the "Reformat File" checkbox.
+- Go to `Preferences-> Tools-> Ktlint`, in this panel you must activate the plugin by checking "Enable Ktlint" checkbox
 
-## Before Building
-### Compiling the Crypto library
-In a terminal located inside the `/crypto/` folder run: 
+## Ktlint Gradle plugin
+The "Save Actions" and "Ktlint" plugins are useful for maintaining the code style, but to be completely sure of using the correct code style, the "Ktlint" plugin has been included in gradle within this project.
 
-`sbt "project cryptoJVM" "set test in assembly := {}" "assembly"`
-
-After that you should have Crypto library jar file in `/crypto/jvm/target/scala-2.12/prism-crypto-XXXXX.jar` and that's it, Android project .gradle file is already set to include that jar file.
+### Ktlint Gradle plugin basic usage
+To verify if the code has some formatting errors or not, open the terminal of your Android studio and run `./gradlew ktlintCheck`. If there is any error found you can run `./gradlew ktlintFormat`, this will try to fix it and show cases where manual fix is required.
 
 ## Build Variants
 There are only two variants: `debug` and `release`

@@ -9,14 +9,15 @@ import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 
 class ProofRequestRepository(
-        private val proofRequestsLocalDataSource: ProofRequestsLocalDataSourceInterface,
-        private val remoteDataSource: ConnectorRemoteDataSource,
-        sessionLocalDataSource: SessionLocalDataSourceInterface,
-        preferencesLocalDataSource: PreferencesLocalDataSourceInterface)
-    : BaseRepository(
+    private val proofRequestsLocalDataSource: ProofRequestsLocalDataSourceInterface,
+    private val remoteDataSource: ConnectorRemoteDataSource,
+    sessionLocalDataSource: SessionLocalDataSourceInterface,
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) :
+    BaseRepository(
         sessionLocalDataSource,
         preferencesLocalDataSource
-) {
+    ) {
     fun getAllProofRequest(): LiveData<List<ProofRequest>> = proofRequestsLocalDataSource.allProofRequest()
 
     suspend fun getProofRequestById(id: Long): ProofRequestWithContactAndCredentials? = proofRequestsLocalDataSource.getProofRequestById(id)

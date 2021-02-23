@@ -9,16 +9,15 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 
-
-val Fragment.supportActionBar:ActionBar?
+val Fragment.supportActionBar: ActionBar?
     get() = (requireActivity() as? AppCompatActivity)?.supportActionBar
 
-fun Fragment.buildActivityResultLauncher(callBack:ActivityResultCallback<ActivityResult>):ActivityResultLauncher<Intent>{
-    return registerForActivityResult(ActivityResultContracts.StartActivityForResult(),callBack)
+fun Fragment.buildActivityResultLauncher(callBack: ActivityResultCallback<ActivityResult>): ActivityResultLauncher<Intent> {
+    return registerForActivityResult(ActivityResultContracts.StartActivityForResult(), callBack)
 }
 
-fun Fragment.buildRequestPermissionLauncher(callBack:ActivityResultCallback<Boolean>):ActivityResultLauncher<String>{
-    return registerForActivityResult(ActivityResultContracts.RequestPermission(),callBack)
+fun Fragment.buildRequestPermissionLauncher(callBack: ActivityResultCallback<Boolean>): ActivityResultLauncher<String> {
+    return registerForActivityResult(ActivityResultContracts.RequestPermission(), callBack)
 }
 
 /*

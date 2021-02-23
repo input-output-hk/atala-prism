@@ -18,10 +18,11 @@ fun getWords(textInputChipsLayout: WordsTextInputLayout): List<String> {
 
 @BindingAdapter("wordsAttrChanged")
 fun setWordsListeners(textInputChipsLayout: WordsTextInputLayout, attrChange: InverseBindingListener) {
-    textInputChipsLayout.setOnWordsChangeListener(object : WordsTextInputLayout.OnWordsChangeListener {
-        override fun wordsChanged(words: List<String>) {
-            attrChange.onChange()
+    textInputChipsLayout.setOnWordsChangeListener(
+        object : WordsTextInputLayout.OnWordsChangeListener {
+            override fun wordsChanged(words: List<String>) {
+                attrChange.onChange()
+            }
         }
-
-    })
+    )
 }

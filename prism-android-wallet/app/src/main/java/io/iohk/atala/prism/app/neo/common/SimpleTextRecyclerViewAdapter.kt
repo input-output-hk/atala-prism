@@ -6,7 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-open class SimpleTextRecyclerViewAdapter<T>(private val layoutResource: Int, private val textViewResourceId: Int) : RecyclerView.Adapter<SimpleTextRecyclerViewAdapter.ViewHolder>() {
+open class SimpleTextRecyclerViewAdapter<T>(
+    private val layoutResource: Int,
+    private val textViewResourceId: Int
+) : RecyclerView.Adapter<SimpleTextRecyclerViewAdapter.ViewHolder>() {
 
     private val items: MutableList<T> = mutableListOf()
 

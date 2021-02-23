@@ -23,8 +23,8 @@ class SettingsDateFormatFragment : DaggerFragment(), OnSelectItem<CustomDateForm
     @Inject
     lateinit var factory: ViewModelProvider.Factory
 
-    private val viewModel:SettingsDateFormatViewModel by lazy {
-        ViewModelProviders.of(this,factory).get(SettingsDateFormatViewModel::class.java)
+    private val viewModel: SettingsDateFormatViewModel by lazy {
+        ViewModelProviders.of(this, factory).get(SettingsDateFormatViewModel::class.java)
     }
 
     lateinit var binding: FragmentSettingsDateFormatBinding
@@ -33,7 +33,11 @@ class SettingsDateFormatFragment : DaggerFragment(), OnSelectItem<CustomDateForm
         CustomDateFormatAdapter(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         setHasOptionsMenu(true)
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_settings_date_format, container, false)
         binding.lifecycleOwner = this
@@ -66,10 +70,13 @@ class SettingsDateFormatFragment : DaggerFragment(), OnSelectItem<CustomDateForm
         viewModel.defaultDateFormat.observe(viewLifecycleOwner) {
             adapter.setDefaultCustomDateFormat(it)
         }
-        viewModel.preferencesSavedSuccessfully.observe(viewLifecycleOwner, EventWrapperObserver {
-            if (it) {
-                findNavController().popBackStack()
+        viewModel.preferencesSavedSuccessfully.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver {
+                if (it) {
+                    findNavController().popBackStack()
+                }
             }
-        })
+        )
     }
 }

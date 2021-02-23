@@ -3,9 +3,9 @@ package io.iohk.atala.prism.app.neo.common
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import android.util.Size
+import androidx.exifinterface.media.ExifInterface
 import io.iohk.atala.prism.app.neo.common.extensions.getRotated
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

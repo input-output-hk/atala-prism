@@ -62,7 +62,6 @@ class WelcomeTutorialViewModel : ViewModel() {
         }
     }
 
-
     /*
      * If it is the last step, it should go to the create account screen
      * if it is not the last step, you must go to the next.

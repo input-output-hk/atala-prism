@@ -2,7 +2,11 @@ package io.iohk.atala
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.app.data.local.db.mappers.ContactMapper
-import io.iohk.atala.prism.protos.*
+import io.iohk.atala.prism.protos.ConnectionInfo
+import io.iohk.atala.prism.protos.HolderInfo
+import io.iohk.atala.prism.protos.IssuerInfo
+import io.iohk.atala.prism.protos.ParticipantInfo
+import io.iohk.atala.prism.protos.VerifierInfo
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -21,28 +25,28 @@ class ContactMapperTest {
         expectedConnectionID = "e7a4309e-cce4-4d4f-abac-b12be6fccbd0"
         expectedConnectionToken = "KeBg_oKlmsLqDBEkxfMWYQ=="
         verifierInfo = VerifierInfo.newBuilder()
-                .setDID("d54850e563994ecf48bff7e9fd51b9c4279af467d9b17fe01336623b178838d9")
-                .setName("Verifier Name")
-                .setLogo(ByteString.copyFrom("verifierLogoImageData", Charset.defaultCharset()))
-                .build()
+            .setDID("d54850e563994ecf48bff7e9fd51b9c4279af467d9b17fe01336623b178838d9")
+            .setName("Verifier Name")
+            .setLogo(ByteString.copyFrom("verifierLogoImageData", Charset.defaultCharset()))
+            .build()
         holderInfo = HolderInfo.newBuilder()
-                .setDID("a7d85a93-f45c-4b7b-9267-09abb64ce2c0")
-                .setName("Holder Name")
-                .build()
+            .setDID("a7d85a93-f45c-4b7b-9267-09abb64ce2c0")
+            .setName("Holder Name")
+            .build()
         issuerInfo = IssuerInfo.newBuilder()
-                .setDID("did:test:091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
-                .setName("Issuer Name")
-                .setLogo(ByteString.copyFrom("issuerLogoImageData", Charset.defaultCharset()))
-                .build()
+            .setDID("did:test:091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
+            .setName("Issuer Name")
+            .setLogo(ByteString.copyFrom("issuerLogoImageData", Charset.defaultCharset()))
+            .build()
     }
 
     @Test
     fun testMappingAVerifierConnection() {
         val connection = ConnectionInfo.newBuilder()
-                .setConnectionId(expectedConnectionID)
-                .setToken(expectedConnectionToken)
-                .setParticipantInfo(ParticipantInfo.newBuilder().setVerifier(verifierInfo))
-                .build()
+            .setConnectionId(expectedConnectionID)
+            .setToken(expectedConnectionToken)
+            .setParticipantInfo(ParticipantInfo.newBuilder().setVerifier(verifierInfo))
+            .build()
 
         val contact = ContactMapper.mapToContact(connection, "KEY_DERIVATION_PATH")
 
@@ -57,10 +61,10 @@ class ContactMapperTest {
     @Test
     fun testMappingAIssuerConnection() {
         val connection = ConnectionInfo.newBuilder()
-                .setConnectionId(expectedConnectionID)
-                .setToken(expectedConnectionToken)
-                .setParticipantInfo(ParticipantInfo.newBuilder().setIssuer(issuerInfo))
-                .build()
+            .setConnectionId(expectedConnectionID)
+            .setToken(expectedConnectionToken)
+            .setParticipantInfo(ParticipantInfo.newBuilder().setIssuer(issuerInfo))
+            .build()
 
         val contact = ContactMapper.mapToContact(connection, "KEY_DERIVATION_PATH")
 
@@ -75,10 +79,10 @@ class ContactMapperTest {
     @Test
     fun testMappingAHolderConnection() {
         val connection = ConnectionInfo.newBuilder()
-                .setConnectionId(expectedConnectionID)
-                .setToken(expectedConnectionToken)
-                .setParticipantInfo(ParticipantInfo.newBuilder().setHolder(holderInfo))
-                .build()
+            .setConnectionId(expectedConnectionID)
+            .setToken(expectedConnectionToken)
+            .setParticipantInfo(ParticipantInfo.newBuilder().setHolder(holderInfo))
+            .build()
 
         val contact = ContactMapper.mapToContact(connection, "KEY_DERIVATION_PATH")
 

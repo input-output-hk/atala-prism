@@ -43,7 +43,7 @@ class Preferences(private val context: Context) {
     fun getString(key: String?): String? {
         val sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, Context.MODE_PRIVATE)
         return sharedPreferences
-                .getString(key, "")
+            .getString(key, "")
     }
 
     fun saveBackendData(ip: String?, port: String) {
@@ -58,7 +58,7 @@ class Preferences(private val context: Context) {
     fun getInt(key: String?): Int {
         val sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, Context.MODE_PRIVATE)
         return sharedPreferences
-                .getInt(key, 0)
+            .getInt(key, 0)
     }
 
     companion object {

@@ -1,9 +1,17 @@
 package io.iohk.atala.prism.app.data.local.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
-import io.iohk.atala.prism.app.data.local.db.model.*
-import java.util.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContactAndCredential
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
+import io.iohk.atala.prism.app.data.local.db.model.Contact
+import io.iohk.atala.prism.app.data.local.db.model.Credential
+import java.util.Date
 
 @Dao
 abstract class ActivityHistoryDao {
@@ -29,7 +37,10 @@ abstract class ActivityHistoryDao {
      * @param credentials [List] of [Credential] the credentials requested.
      * */
     @Transaction
-    open suspend fun insertRequestedCredentialActivities(contact: Contact, credentials: List<Credential>) {
+    open suspend fun insertRequestedCredentialActivities(
+        contact: Contact,
+        credentials: List<Credential>
+    ) {
         val activitiesHistories = credentials.map {
             ActivityHistory(contact.connectionId, it.credentialId, Date().time, ActivityHistory.Type.CredentialRequested)
         }
@@ -37,5 +48,7 @@ abstract class ActivityHistoryDao {
     }
 
     @Query("SELECT * FROM activityHistories WHERE needs_to_be_notified = 1 AND credential_id IS NOT NULL AND type = :type ORDER BY date asc, id")
-    abstract fun allIssuedCredentialsNotifications(type: Int = ActivityHistory.Type.CredentialIssued.value): LiveData<List<ActivityHistoryWithCredential>>
+    abstract fun allIssuedCredentialsNotifications(
+        type: Int = ActivityHistory.Type.CredentialIssued.value
+    ): LiveData<List<ActivityHistoryWithCredential>>
 }

@@ -6,13 +6,13 @@ import android.util.TypedValue
 
 class DimensionsUtils {
 
-    companion object{
-        fun densityPointsToPixels(context: Context, sizeInDps:Float) : Int {
+    companion object {
+        fun densityPointsToPixels(context: Context, sizeInDps: Float): Int {
             val r: Resources = context.resources
             return TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP,
-                    sizeInDps,
-                    r.displayMetrics
+                TypedValue.COMPLEX_UNIT_DIP,
+                sizeInDps,
+                r.displayMetrics
             ).toInt()
         }
     }

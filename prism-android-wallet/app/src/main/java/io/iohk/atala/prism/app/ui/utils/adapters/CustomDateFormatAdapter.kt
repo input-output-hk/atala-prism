@@ -7,8 +7,8 @@ import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
-import io.iohk.cvp.databinding.RowCustomDateFormatBinding
 import io.iohk.cvp.R
+import io.iohk.cvp.databinding.RowCustomDateFormatBinding
 
 class CustomDateFormatAdapter(private val onSelectItem: OnSelectItem<CustomDateFormat>?) : BaseRecyclerViewAdapter<CheckableData<CustomDateFormat>>() {
 
@@ -25,7 +25,11 @@ class CustomDateFormatAdapter(private val onSelectItem: OnSelectItem<CustomDateF
         notifyDataSetChanged()
     }
 
-    class CustomDateFormatViewHolder(private val binding: RowCustomDateFormatBinding, private val adapter: CustomDateFormatAdapter, private val onSelectItem: OnSelectItem<CustomDateFormat>?) : BaseRecyclerViewAdapter.ViewHolder<CheckableData<CustomDateFormat>>(binding.root) {
+    class CustomDateFormatViewHolder(
+        private val binding: RowCustomDateFormatBinding,
+        private val adapter: CustomDateFormatAdapter,
+        private val onSelectItem: OnSelectItem<CustomDateFormat>?
+    ) : BaseRecyclerViewAdapter.ViewHolder<CheckableData<CustomDateFormat>>(binding.root) {
 
         init {
             binding.root.setOnClickListener { onSelect() }

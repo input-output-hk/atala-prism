@@ -21,7 +21,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 import java.io.IOException
-import java.util.*
+import java.util.Date
 import java.util.concurrent.Executors
 
 @RunWith(BlockJUnit4ClassRunner::class)
@@ -40,12 +40,11 @@ class ProofRequestDaoTest {
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
-                .setTransactionExecutor(Executors.newSingleThreadExecutor())
-                .setQueryExecutor(testDispatcher.asExecutor()).build()
+            .setTransactionExecutor(Executors.newSingleThreadExecutor())
+            .setQueryExecutor(testDispatcher.asExecutor()).build()
         contactDao = db.contactDao()
         credentialDao = db.credentialDao()
         proofRequestDao = db.proofRequestDao()
-
     }
 
     @After
@@ -61,26 +60,27 @@ class ProofRequestDaoTest {
     @Throws(Exception::class)
     fun insertAllAndGetAll() = runBlocking {
         contactDao.insert(
-                buildSimpleContact("connection1", "Contact 1"),
-                listOf(
-                        buildSimpleCredential("connection1", "Contact 1", "credential1"),
-                        buildSimpleCredential("connection1", "Contact 1", "credential2"),
-                        buildSimpleCredential("connection1", "Contact 1", "credential3")
-                )
+            buildSimpleContact("connection1", "Contact 1"),
+            listOf(
+                buildSimpleCredential("connection1", "Contact 1", "credential1"),
+                buildSimpleCredential("connection1", "Contact 1", "credential2"),
+                buildSimpleCredential("connection1", "Contact 1", "credential3")
+            )
         )
         contactDao.insert(buildSimpleContact("connection2", "Contact 2"))
         val credentials = contactDao.getIssuedCredentials("connection1")
 
-
-        proofRequestDao.insertAllSync(listOf(
+        proofRequestDao.insertAllSync(
+            listOf(
                 Pair(
-                        ProofRequest("connection2", "message1"),
-                        listOf(
-                                credentials[0],
-                                credentials[1]
-                        )
+                    ProofRequest("connection2", "message1"),
+                    listOf(
+                        credentials[0],
+                        credentials[1]
+                    )
                 )
-        ))
+            )
+        )
         val proofRequests = proofRequestDao.getAllWithCredentials()
 
         MatcherAssert.assertThat("Total of proof requests is wrong", proofRequests.size == 1)
@@ -96,7 +96,11 @@ class ProofRequestDaoTest {
         return contact
     }
 
-    private fun buildSimpleCredential(connectionId: String, issuerName: String, credentialId: String): Credential {
+    private fun buildSimpleCredential(
+        connectionId: String,
+        issuerName: String,
+        credentialId: String
+    ): Credential {
         val credential = Credential()
         credential.issuerName = issuerName
         credential.credentialId = credentialId

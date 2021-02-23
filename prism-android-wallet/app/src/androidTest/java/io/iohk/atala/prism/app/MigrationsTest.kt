@@ -1,10 +1,14 @@
 package io.iohk.atala.prism.app
 
 import androidx.room.Room
+import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.room.testing.MigrationTestHelper
-import io.iohk.atala.prism.app.data.local.db.*
+import io.iohk.atala.prism.app.data.local.db.AppDatabase
+import io.iohk.atala.prism.app.data.local.db.MIGRATION_1_2
+import io.iohk.atala.prism.app.data.local.db.MIGRATION_2_3
+import io.iohk.atala.prism.app.data.local.db.MIGRATION_3_4
+import io.iohk.atala.prism.app.data.local.db.MIGRATION_4_5
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,9 +28,10 @@ class MigrationsTest {
     @Before
     fun buildHelper() {
         helper = MigrationTestHelper(
-                InstrumentationRegistry.getInstrumentation(),
-                AppDatabase::class.java.canonicalName,
-                FrameworkSQLiteOpenHelperFactory())
+            InstrumentationRegistry.getInstrumentation(),
+            AppDatabase::class.java.canonicalName,
+            FrameworkSQLiteOpenHelperFactory()
+        )
     }
 
     @Test
@@ -40,11 +45,13 @@ class MigrationsTest {
 
         // Open latest version of the database. Room will validate the schema
         // once all migrations execute.
-        Room.databaseBuilder(InstrumentationRegistry.getInstrumentation().targetContext,
-                AppDatabase::class.java,
-                TEST_DB_NAME).addMigrations(*ALL_MIGRATIONS)
-                .build().apply {
-                    openHelper.writableDatabase.close()
-                }
+        Room.databaseBuilder(
+            InstrumentationRegistry.getInstrumentation().targetContext,
+            AppDatabase::class.java,
+            TEST_DB_NAME
+        ).addMigrations(*ALL_MIGRATIONS)
+            .build().apply {
+                openHelper.writableDatabase.close()
+            }
     }
 }

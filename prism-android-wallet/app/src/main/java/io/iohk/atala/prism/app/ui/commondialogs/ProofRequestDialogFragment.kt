@@ -14,11 +14,11 @@ import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
 import io.iohk.atala.prism.app.neo.common.extensions.showErrorDialog
-import io.iohk.atala.prism.app.ui.utils.interfaces.MainActivityEventHandler
 import io.iohk.atala.prism.app.ui.utils.adapters.ProofRequestDialogAdapter
+import io.iohk.atala.prism.app.ui.utils.interfaces.MainActivityEventHandler
+import io.iohk.cvp.R
 import io.iohk.cvp.databinding.DialogFragmentProofRequestBinding
 import javax.inject.Inject
-import io.iohk.cvp.R
 import kotlin.properties.Delegates
 
 class ProofRequestDialogFragment : DaggerDialogFragment(), OnSelectItem<Credential> {
@@ -47,7 +47,11 @@ class ProofRequestDialogFragment : DaggerDialogFragment(), OnSelectItem<Credenti
         ProofRequestDialogAdapter(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.dialog_fragment_proof_request, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -70,19 +74,25 @@ class ProofRequestDialogFragment : DaggerDialogFragment(), OnSelectItem<Credenti
     }
 
     private fun setObservers() {
-        viewModel.showError.observe(viewLifecycleOwner, EventWrapperObserver { existError ->
-            if (existError) {
-                requireActivity().showErrorDialog(R.string.server_error_message)
+        viewModel.showError.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver { existError ->
+                if (existError) {
+                    requireActivity().showErrorDialog(R.string.server_error_message)
+                }
             }
-        })
-        viewModel.proofRequestAccepted.observe(viewLifecycleOwner, EventWrapperObserver { accepted ->
-            if (accepted) {
-                val successDialog = SuccessDialog.newInstance(this, R.string.server_share_successfully)
-                successDialog.show(requireActivity().supportFragmentManager, null)
-                handleSyncRequest()
+        )
+        viewModel.proofRequestAccepted.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver { accepted ->
+                if (accepted) {
+                    val successDialog = SuccessDialog.newInstance(this, R.string.server_share_successfully)
+                    successDialog.show(requireActivity().supportFragmentManager, null)
+                    handleSyncRequest()
+                }
+                dismiss()
             }
-            dismiss()
-        })
+        )
         viewModel.requestedCredentials.observe(viewLifecycleOwner) {
             adapter.clear()
             adapter.addAll(it)

@@ -3,11 +3,11 @@ package io.iohk.atala.prism.app.ui.utils.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import io.iohk.cvp.R
 import io.iohk.atala.prism.app.data.local.db.model.Contact
-import io.iohk.cvp.databinding.RowContactBinding
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
+import io.iohk.cvp.R
+import io.iohk.cvp.databinding.RowContactBinding
 
 class ContactsRecyclerViewAdapter(private val onSelectItem: OnSelectItem<Contact>?) : BaseRecyclerViewAdapter<Contact>() {
 
@@ -17,7 +17,10 @@ class ContactsRecyclerViewAdapter(private val onSelectItem: OnSelectItem<Contact
         return ContactViewHolder(binding, onSelectItem)
     }
 
-    class ContactViewHolder(private val binding: RowContactBinding, private val onSelectItem: OnSelectItem<Contact>?) : BaseRecyclerViewAdapter.ViewHolder<Contact>(binding.root) {
+    class ContactViewHolder(
+        private val binding: RowContactBinding,
+        private val onSelectItem: OnSelectItem<Contact>?
+    ) : BaseRecyclerViewAdapter.ViewHolder<Contact>(binding.root) {
 
         init {
             binding.root.setOnClickListener {

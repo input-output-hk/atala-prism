@@ -8,9 +8,9 @@ import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.ui.main.credentials.CredentialUtil
-import io.iohk.cvp.databinding.RowHeaderBinding
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.RowCredentialActivityHistoryBinding
+import io.iohk.cvp.databinding.RowHeaderBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,14 +21,16 @@ import java.text.SimpleDateFormat
  * This is a Adapter for a list of [ActivityHistoryWithCredential]'s this adapter group all his items by [ActivityHistoryWithCredential.activityHistory.type]
  * and only render [ActivityHistory.Type.CredentialRequested], [ActivityHistory.Type.CredentialIssued], and [ActivityHistory.Type.CredentialShared]
  */
-class ContactDetailActivityHistoryAdapter(val context: Context, private var dateFormat: SimpleDateFormat) : BaseRecyclerViewAdapter<ContactDetailActivityHistoryAdapter.ViewType>() {
+class ContactDetailActivityHistoryAdapter(
+    val context: Context,
+    private var dateFormat: SimpleDateFormat
+) : BaseRecyclerViewAdapter<ContactDetailActivityHistoryAdapter.ViewType>() {
 
     private val adapterScope = CoroutineScope(Dispatchers.Default)
 
     companion object {
         private const val TYPE_HEADER = 0
         private const val TYPE_ACTIVITY_HISTORY = 1
-
     }
 
     fun setDateFormat(dateFormat: SimpleDateFormat) {
@@ -116,7 +118,10 @@ class ContactDetailActivityHistoryAdapter(val context: Context, private var date
         return ActivityHistoryViewHolder(binding, this)
     }
 
-    private class ActivityHistoryViewHolder(val binding: RowCredentialActivityHistoryBinding, private val adapter: ContactDetailActivityHistoryAdapter) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
+    private class ActivityHistoryViewHolder(
+        val binding: RowCredentialActivityHistoryBinding,
+        private val adapter: ContactDetailActivityHistoryAdapter
+    ) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
         override fun bind(data: ViewType) {
             (data as? ViewType.ActivityHistory)?.activityHistoryWithCredential?.let { activityHistory ->
                 val ctx = binding.root.context

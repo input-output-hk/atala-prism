@@ -25,17 +25,21 @@ class CredentialHistoryFragment : DaggerFragment(), OnSelectItem<ActivityHistory
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val args:CredentialHistoryFragmentArgs by navArgs()
+    private val args: CredentialHistoryFragmentArgs by navArgs()
 
-    private val viewModel:CredentialHistoryViewModel by lazy {
-        ViewModelProviders.of(this,viewModelFactory).get(CredentialHistoryViewModel::class.java)
+    private val viewModel: CredentialHistoryViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(CredentialHistoryViewModel::class.java)
     }
 
     private lateinit var binding: NeoFragmentCredentialHistoryBinding
 
     private val activitiesHistoriesAdapter by lazy { CredentialHistoryAdapter(requireContext(), dateFormatDDMMYYYY, onSelectItem = this) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_credential_history, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel

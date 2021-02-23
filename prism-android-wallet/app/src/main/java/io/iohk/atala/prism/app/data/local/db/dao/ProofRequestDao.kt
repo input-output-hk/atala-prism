@@ -1,8 +1,16 @@
 package io.iohk.atala.prism.app.data.local.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
-import io.iohk.atala.prism.app.data.local.db.model.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequestCredential
+import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithContactAndCredentials
 
 @Dao
 abstract class ProofRequestDao : ActivityHistoryDao() {

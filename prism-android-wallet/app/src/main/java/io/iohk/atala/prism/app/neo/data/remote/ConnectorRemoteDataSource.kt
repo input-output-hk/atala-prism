@@ -4,12 +4,21 @@ import com.google.protobuf.ByteString
 import io.grpc.stub.MetadataUtils
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
-import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.app.utils.GrpcUtils
-import io.iohk.atala.prism.protos.*
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.protos.AddConnectionFromTokenRequest
+import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse
+import io.iohk.atala.prism.protos.ConnectorServiceGrpc
+import io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest
+import io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse
+import io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest
+import io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse
+import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest
+import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse
+import io.iohk.atala.prism.protos.SendMessageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.stream.Collectors
@@ -51,7 +60,7 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
             contacts.forEach { contact ->
                 val keyPair = CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, phrases!!)
                 val request = SendMessageRequest.newBuilder()
-                        .setConnectionId(contact.connectionId).setMessage(credentialByteArray).build()
+                    .setConnectionId(contact.connectionId).setMessage(credentialByteArray).build()
                 val channel = getChannel(keyPair, request.toByteArray())
                 channel.sendMessage(request).get()
             }
@@ -60,25 +69,25 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
 
     suspend fun getConnectionTokenInfo(token: String): GetConnectionTokenInfoResponse = withContext(Dispatchers.IO) {
         val request = GetConnectionTokenInfoRequest
-                .newBuilder()
-                .setToken(token)
-                .build()
+            .newBuilder()
+            .setToken(token)
+            .build()
         return@withContext getChannel(null, request.toByteArray()).getConnectionTokenInfo(request).get()
     }
 
     suspend fun addConnection(ecKeyPair: ECKeyPair, token: String, nonce: String): AddConnectionFromTokenResponse = withContext(Dispatchers.IO) {
         val request = AddConnectionFromTokenRequest.newBuilder()
-                .setToken(token)
-                .setPaymentNonce(nonce)
-                .setHolderEncodedPublicKey(GrpcUtils.getPublicKeyEncoded(ecKeyPair))
-                .build()
+            .setToken(token)
+            .setPaymentNonce(nonce)
+            .setHolderEncodedPublicKey(GrpcUtils.getPublicKeyEncoded(ecKeyPair))
+            .build()
         return@withContext getChannel(ecKeyPair, request.toByteArray()).addConnectionFromToken(request).get()
     }
 
     fun sendMultipleMessage(ecKeyPair: ECKeyPair, connectionId: String, messages: List<ByteString>) {
         messages.forEach { byteString: ByteString ->
             val request = SendMessageRequest.newBuilder()
-                    .setConnectionId(connectionId).setMessage(byteString).build()
+                .setConnectionId(connectionId).setMessage(byteString).build()
             getChannel(ecKeyPair, request.toByteArray()).sendMessage(request).get()
         }
     }

@@ -6,9 +6,11 @@ import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterfac
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.model.UserProfile
 
-class PreferencesRepository(private val localDataSource:ContactsLocalDataSourceInterface,
-                            sessionLocalDataSource: SessionLocalDataSourceInterface,
-                            preferencesLocalDataSource: PreferencesLocalDataSourceInterface)  : BaseRepository(sessionLocalDataSource,preferencesLocalDataSource){
+class PreferencesRepository(
+    private val localDataSource: ContactsLocalDataSourceInterface,
+    sessionLocalDataSource: SessionLocalDataSourceInterface,
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
 
     fun getAvailableCustomDateFormats(): List<CustomDateFormat> = CustomDateFormat.values().toList()
 
@@ -20,7 +22,7 @@ class PreferencesRepository(private val localDataSource:ContactsLocalDataSourceI
         preferencesLocalDataSource.storeCustomDateFormat(dateFormat)
     }
 
-    suspend fun resetData(){
+    suspend fun resetData() {
         /*
         * when removing the contacts, tables ActivityHistory, Credential and ProofRequest will be remove in cascaded
         * */

@@ -406,6 +406,9 @@ jobs:
           name: Run Lint Tests
           command: cd prism-android-wallet && ./gradlew lint test
       - run:
+          name: Check Kotlin code is properly formatted
+          command: cd prism-android-wallet && ./gradlew ktlintCheck
+      - run:
           name: Run Unit Tests
           command: cd prism-android-wallet && ./gradlew test
       - run:

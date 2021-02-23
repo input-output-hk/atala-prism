@@ -25,7 +25,7 @@ class DeleteCredentialDialogFragment : DaggerDialogFragment() {
         const val REQUEST_DELETE_CREDENTIAL = "REQUEST_DELETE_CREDENTIAL"
     }
 
-    private val args:DeleteCredentialDialogFragmentArgs by navArgs()
+    private val args: DeleteCredentialDialogFragmentArgs by navArgs()
 
     private lateinit var binding: DialogFragmentDeleteCredentialBinding
 
@@ -44,7 +44,11 @@ class DeleteCredentialDialogFragment : DaggerDialogFragment() {
         viewModel.fetchCredentialInfo(args.credentialId)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.dialog_fragment_delete_credential, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -53,18 +57,24 @@ class DeleteCredentialDialogFragment : DaggerDialogFragment() {
     }
 
     private fun setObservers() {
-        viewModel.credentialDeleted.observe(viewLifecycleOwner, EventWrapperObserver {
-            if (it) {
-                findNavController().popBackStack()
-                setFragmentResult(REQUEST_DELETE_CREDENTIAL, bundleOf(KEY_RESULT to Activity.RESULT_OK))
+        viewModel.credentialDeleted.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver {
+                if (it) {
+                    findNavController().popBackStack()
+                    setFragmentResult(REQUEST_DELETE_CREDENTIAL, bundleOf(KEY_RESULT to Activity.RESULT_OK))
+                }
             }
-        })
-        viewModel.canceled.observe(viewLifecycleOwner, EventWrapperObserver {
-            if (it) {
-                findNavController().popBackStack()
-                setFragmentResult(REQUEST_DELETE_CREDENTIAL, bundleOf(KEY_RESULT to Activity.RESULT_CANCELED))
+        )
+        viewModel.canceled.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver {
+                if (it) {
+                    findNavController().popBackStack()
+                    setFragmentResult(REQUEST_DELETE_CREDENTIAL, bundleOf(KEY_RESULT to Activity.RESULT_CANCELED))
+                }
             }
-        })
+        )
         viewModel.credential.observe(viewLifecycleOwner) {
             binding.credentialNameTextView.text = CredentialUtil.getName(it, requireContext())
             binding.credentialLogoImageView.setImageDrawable(CredentialUtil.getLogo(it.credentialType, requireContext()))

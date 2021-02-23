@@ -1,13 +1,18 @@
 package io.iohk.atala.prism.app.ui.main.credentials
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class DeleteCredentialDialogViewModel @Inject constructor(private val repository: CredentialsRepository) : ViewModel() {
+class DeleteCredentialDialogViewModel @Inject constructor(
+    private val repository: CredentialsRepository
+) : ViewModel() {
 
     private val _credential = MutableLiveData<Credential>()
 

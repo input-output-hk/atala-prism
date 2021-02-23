@@ -1,6 +1,10 @@
 package io.iohk.atala.prism.app.ui.commondialogs
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.grpc.ParticipantInfoResponse
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.data.ContactsRepository
@@ -8,7 +12,9 @@ import io.iohk.atala.prism.protos.ParticipantInfo
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class AcceptConnectionDialogViewModel @Inject constructor(private val repository: ContactsRepository) : ViewModel() {
+class AcceptConnectionDialogViewModel @Inject constructor(
+    private val repository: ContactsRepository
+) : ViewModel() {
 
     private var token: String? = null
 
@@ -45,7 +51,6 @@ class AcceptConnectionDialogViewModel @Inject constructor(private val repository
     private val _connectionIsDeclined = MutableLiveData<EventWrapper<Boolean>>()
 
     val connectionIsDeclined: LiveData<EventWrapper<Boolean>> = _connectionIsDeclined
-
 
     fun fetchConnectionTokenInfo(token: String) {
         this.token = token

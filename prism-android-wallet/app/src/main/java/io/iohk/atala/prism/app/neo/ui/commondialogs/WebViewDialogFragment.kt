@@ -23,7 +23,11 @@ class WebViewDialogFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: NeoDialogFragmentWebViewBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_dialog_fragment_web_view, container, false)
         binding.lifecycleOwner = this
         configureViews()

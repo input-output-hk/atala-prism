@@ -1,6 +1,9 @@
 package io.iohk.atala.prism.app.ui.main.settings
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
@@ -27,9 +30,11 @@ class SettingsDateFormatViewModel @Inject constructor(private val repository: Pr
     fun loadPreferences() {
         viewModelScope.launch {
             currentDateFormat = repository.getCustomDateFormat()
-            _checkableCustomDateFormats.postValue(repository.getAvailableCustomDateFormats().map {
-                CheckableData(it, it == currentDateFormat)
-            })
+            _checkableCustomDateFormats.postValue(
+                repository.getAvailableCustomDateFormats().map {
+                    CheckableData(it, it == currentDateFormat)
+                }
+            )
             _defaultDateFormat.postValue(repository.getDefaultDateFormat())
         }
     }
@@ -45,7 +50,7 @@ class SettingsDateFormatViewModel @Inject constructor(private val repository: Pr
 
     fun selectCustomDateFormat(customDateFormat: CustomDateFormat) {
         val currentList: List<CheckableData<CustomDateFormat>> = checkableCustomDateFormats.value?.toList()
-                ?: listOf()
+            ?: listOf()
         // deselect
         (currentList.find { it.data == currentDateFormat })?.setChecked(false)
         // select

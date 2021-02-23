@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.app.neo.sync
 
 import android.accounts.Account
-import android.content.*
+import android.content.AbstractThreadedSyncAdapter
+import android.content.ContentProviderClient
+import android.content.Context
+import android.content.SyncResult
 import android.os.Bundle
 import android.util.Log
 import io.iohk.atala.prism.app.data.local.db.AppDatabase
@@ -15,9 +18,9 @@ import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.protos.AtalaMessage
 
 class SyncAdapter @JvmOverloads constructor(
-        context: Context,
-        autoInitialize: Boolean,
-        allowParallelSyncs: Boolean = false
+    context: Context,
+    autoInitialize: Boolean,
+    allowParallelSyncs: Boolean = false
 ) : AbstractThreadedSyncAdapter(context, autoInitialize, allowParallelSyncs) {
 
     private val logTag = javaClass.name
@@ -34,11 +37,17 @@ class SyncAdapter @JvmOverloads constructor(
         ConnectorRemoteDataSource(PreferencesLocalDataSource(context), SessionLocalDataSource(context))
     }
 
-    override fun onPerformSync(account: Account?, extras: Bundle?, authority: String?, provider: ContentProviderClient?, syncResult: SyncResult?) {
+    override fun onPerformSync(
+        account: Account?,
+        extras: Bundle?,
+        authority: String?,
+        provider: ContentProviderClient?,
+        syncResult: SyncResult?
+    ) {
         sessionLocalDataSource.getSessionData()?.let { mnemonicList ->
-            Log.i(logTag, "SYNC CONNECTIONS MESSAGES");
+            Log.i(logTag, "SYNC CONNECTIONS MESSAGES")
             syncConnectionsMessages(mnemonicList)
-            Log.i(logTag, "SYNC FINISHED");
+            Log.i(logTag, "SYNC FINISHED")
         }
     }
 
@@ -68,15 +77,20 @@ class SyncAdapter @JvmOverloads constructor(
         }
     }
 
-    private fun mapProofRequest(proofRequestMessage: io.iohk.atala.prism.protos.ProofRequest, messageId: String, connectionId: String, currentCredentials: List<Credential>): Pair<ProofRequest, List<Credential>>? {
+    private fun mapProofRequest(
+        proofRequestMessage: io.iohk.atala.prism.protos.ProofRequest,
+        messageId: String,
+        connectionId: String,
+        currentCredentials: List<Credential>
+    ): Pair<ProofRequest, List<Credential>>? {
         val credentialsFound: List<Credential> = proofRequestMessage.typeIdsList.map { typeId ->
             currentCredentials.find { credential -> credential.credentialType == typeId }
         }.filterNotNull()
         // if not all requested credentials are found, the proof request is dismissed
         if (credentialsFound.size == proofRequestMessage.typeIdsList.size) {
             return Pair(
-                    ProofRequest(connectionId, messageId),
-                    credentialsFound
+                ProofRequest(connectionId, messageId),
+                credentialsFound
             )
         }
         return null

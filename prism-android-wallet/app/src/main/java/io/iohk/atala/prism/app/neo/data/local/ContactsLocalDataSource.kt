@@ -9,7 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class ContactsLocalDataSource(private val contactDao: ContactDao) : ContactsLocalDataSourceInterface {
-    override suspend fun storeContactsWithIssuedCredentials(contactsWithIssuedCredentials: Map<Contact, List<Credential>>) {
+    override suspend fun storeContactsWithIssuedCredentials(
+        contactsWithIssuedCredentials: Map<Contact, List<Credential>>
+    ) {
         contactDao.insertAll(contactsWithIssuedCredentials)
     }
 
@@ -45,7 +47,7 @@ class ContactsLocalDataSource(private val contactDao: ContactDao) : ContactsLoca
         }
     }
 
-    override suspend fun removeAllContacts() = withContext(Dispatchers.IO){
+    override suspend fun removeAllContacts() = withContext(Dispatchers.IO) {
         contactDao.removeAllData()
     }
 }

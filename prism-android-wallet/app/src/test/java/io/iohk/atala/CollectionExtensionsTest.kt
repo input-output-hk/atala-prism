@@ -1,7 +1,8 @@
 package io.iohk.atala
 
 import io.iohk.atala.prism.app.neo.common.extensions.randomIndexes
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CollectionExtensionsTest {

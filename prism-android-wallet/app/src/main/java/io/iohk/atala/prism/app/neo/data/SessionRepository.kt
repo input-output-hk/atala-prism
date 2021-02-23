@@ -8,7 +8,10 @@ import io.iohk.atala.prism.app.utils.CryptoUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class SessionRepository(sessionLocalDataSource: SessionLocalDataSourceInterface, preferencesLocalDataSource: PreferencesLocalDataSourceInterface) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
+class SessionRepository(
+    sessionLocalDataSource: SessionLocalDataSourceInterface,
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
 
     private val _sessionDataHasStored = MutableLiveData<Boolean>()
 

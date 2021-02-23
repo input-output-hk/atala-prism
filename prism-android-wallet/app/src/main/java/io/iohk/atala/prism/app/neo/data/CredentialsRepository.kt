@@ -10,14 +10,15 @@ import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 
 class CredentialsRepository(
-        private val credentialsLocalDataSource: CredentialsLocalDataSourceInterface,
-        private val remoteDataSource: ConnectorRemoteDataSource,
-        sessionLocalDataSource: SessionLocalDataSourceInterface,
-        preferencesLocalDataSource: PreferencesLocalDataSourceInterface)
-    : BaseRepository(
+    private val credentialsLocalDataSource: CredentialsLocalDataSourceInterface,
+    private val remoteDataSource: ConnectorRemoteDataSource,
+    sessionLocalDataSource: SessionLocalDataSourceInterface,
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) :
+    BaseRepository(
         sessionLocalDataSource,
         preferencesLocalDataSource
-) {
+    ) {
 
     fun allCredentials(): LiveData<List<Credential>> = credentialsLocalDataSource.allCredentials()
 

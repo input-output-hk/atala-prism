@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.app.neo.ui.launch
 
-import androidx.lifecycle.*
-import io.iohk.atala.prism.app.core.PrismApplication
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.neo.data.SessionRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,16 +20,3 @@ class LaunchViewModel @Inject constructor(private val sessionRepository: Session
         }
     }
 }
-/*
-/**
- * Factory for [LaunchViewModel].
- * */
-object LaunchViewModelFactory : ViewModelProvider.Factory {
-
-    private val sessionRepository = PrismApplication.applicationComponent.sessionRepository()
-
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        @Suppress("UNCHECKED_CAST")
-        return LaunchViewModel(sessionRepository) as T
-    }
-}*/

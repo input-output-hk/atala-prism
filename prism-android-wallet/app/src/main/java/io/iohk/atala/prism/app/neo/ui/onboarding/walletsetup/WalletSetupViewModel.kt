@@ -1,6 +1,10 @@
 package io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.extensions.randomIndexes
 import io.iohk.atala.prism.app.neo.data.SessionRepository

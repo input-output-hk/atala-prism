@@ -1,19 +1,26 @@
 package io.iohk.atala.prism.app.ui.main.credentials
 
 import android.content.res.Resources
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import javax.inject.Inject
 
-class MyCredentialsViewModel @Inject constructor(private val credentialsRepository: CredentialsRepository, private val resources: Resources) : ViewModel() {
+class MyCredentialsViewModel @Inject constructor(
+    private val credentialsRepository: CredentialsRepository,
+    private val resources: Resources
+) : ViewModel() {
 
     val searchText = MutableLiveData<String>("")
 
     private val _credentials: LiveData<List<Credential>> = credentialsRepository.allCredentials()
 
-    val showSearchBar:LiveData<Boolean> = Transformations.map(_credentials){
-       it.isNotEmpty()
+    val showSearchBar: LiveData<Boolean> = Transformations.map(_credentials) {
+        it.isNotEmpty()
     }
 
     val filteredCredentials: LiveData<List<Credential>> = MediatorLiveData<List<Credential>>().apply {
@@ -43,8 +50,8 @@ class MyCredentialsViewModel @Inject constructor(private val credentialsReposito
     }
 
     private fun computeNoResultView(): Boolean {
-        return searchText.value?.isNotBlank() == true
-                && filteredCredentials.value?.size == 0
-                && _credentials.value?.isNotEmpty() == true
+        return searchText.value?.isNotBlank() == true &&
+            filteredCredentials.value?.size == 0 &&
+            _credentials.value?.isNotEmpty() == true
     }
 }

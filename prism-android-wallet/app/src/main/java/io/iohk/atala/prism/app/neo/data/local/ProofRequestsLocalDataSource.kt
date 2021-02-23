@@ -17,7 +17,10 @@ class ProofRequestsLocalDataSource(private val proofRequestDao: ProofRequestDao)
 
     override suspend fun removeProofRequest(proofRequest: ProofRequest) = proofRequestDao.delete(proofRequest)
 
-    override suspend fun insertRequestedCredentialActivities(contact: Contact, credentials: List<Credential>) = withContext(Dispatchers.IO) {
+    override suspend fun insertRequestedCredentialActivities(
+        contact: Contact,
+        credentials: List<Credential>
+    ) = withContext(Dispatchers.IO) {
         proofRequestDao.insertRequestedCredentialActivities(contact, credentials)
     }
 }

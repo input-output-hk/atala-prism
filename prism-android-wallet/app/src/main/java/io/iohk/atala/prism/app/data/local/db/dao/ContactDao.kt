@@ -1,13 +1,18 @@
 package io.iohk.atala.prism.app.data.local.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import java.io.InvalidObjectException
-import java.util.*
+import java.util.Date
 
 @Dao
 abstract class ContactDao : ActivityHistoryDao() {
@@ -25,12 +30,12 @@ abstract class ContactDao : ActivityHistoryDao() {
     open suspend fun insert(contact: Contact): Long {
         val contactId = rawInsert(contact)
         insertActivityHistory(
-                ActivityHistory(
-                        contact.connectionId,
-                        null,
-                        contact.dateCreated,
-                        ActivityHistory.Type.ContactAdded
-                )
+            ActivityHistory(
+                contact.connectionId,
+                null,
+                contact.dateCreated,
+                ActivityHistory.Type.ContactAdded
+            )
         )
         return contactId
     }
@@ -233,7 +238,10 @@ abstract class ContactDao : ActivityHistoryDao() {
      * @param issuedCredentials [List] of [Credential]
      */
     @Transaction
-    open suspend fun insertIssuedCredentialsToAContact(contactId: Long, issuedCredentials: List<Credential>) {
+    open suspend fun insertIssuedCredentialsToAContact(
+        contactId: Long,
+        issuedCredentials: List<Credential>
+    ) {
         val contact = contactById(contactId.toInt())!!
         issuedCredentials.find {
             it.connectionId != contact.connectionId

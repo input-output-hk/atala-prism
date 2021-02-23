@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 import java.io.IOException
 import java.io.InvalidObjectException
-import java.util.*
+import java.util.Date
 import java.util.concurrent.Executors
 
 @RunWith(BlockJUnit4ClassRunner::class)
@@ -39,8 +39,8 @@ class ContactDaoTest {
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
-                .setTransactionExecutor(Executors.newSingleThreadExecutor())
-                .setQueryExecutor(testDispatcher.asExecutor()).build()
+            .setTransactionExecutor(Executors.newSingleThreadExecutor())
+            .setQueryExecutor(testDispatcher.asExecutor()).build()
         contactDao = db.contactDao()
         credentialDao = db.credentialDao()
     }
@@ -73,7 +73,6 @@ class ContactDaoTest {
         MatcherAssert.assertThat("The type of activity is wrong", createdContactActivityHistory.type == ActivityHistory.Type.ContactAdded)
     }
 
-
     /**
      * Test for [ContactDao.insertAll] this test tries to verify that the records of all [Contact]'s have been created correctly as well
      * as the records of all their [ActivityHistory]'s of type [ActivityHistory.Type.ContactAdded]
@@ -84,11 +83,13 @@ class ContactDaoTest {
         contactDao.removeAllData()
         contactDao.removeAllData()
 
-        contactDao.insertAll(listOf(
+        contactDao.insertAll(
+            listOf(
                 buildSimpleContact("connection1", "contact 1"),
                 buildSimpleContact("connection2", "contact 2"),
                 buildSimpleContact("connection3", "contact 3")
-        ))
+            )
+        )
 
         val contacts = contactDao.getAll()
         MatcherAssert.assertThat("Total of contacts is wrong", contacts.size == 3)
@@ -186,9 +187,11 @@ class ContactDaoTest {
         val credentialsActivitiesHistories = contactDao.getCredentialsActivityHistoriesByConnection("connection1")
         MatcherAssert.assertThat("Total of credentials activities is wrong", credentialsActivitiesHistories.size == 1)
         val activityHistory = credentialsActivitiesHistories[0]
-        MatcherAssert.assertThat("The activity was not created correctly",
-                activityHistory.activityHistory.type == ActivityHistory.Type.CredentialIssued &&
-                        activityHistory.credential?.credentialId == "credential1")
+        MatcherAssert.assertThat(
+            "The activity was not created correctly",
+            activityHistory.activityHistory.type == ActivityHistory.Type.CredentialIssued &&
+                activityHistory.credential?.credentialId == "credential1"
+        )
     }
 
     @Test(expected = InvalidObjectException::class)
@@ -299,7 +302,6 @@ class ContactDaoTest {
         MatcherAssert.assertThat("there should be no activity histories", totalOfActivityHistories == 0)
     }
 
-
     private fun buildSimpleContact(connectionId: String, name: String): Contact {
         val contact = Contact()
         contact.connectionId = connectionId
@@ -308,7 +310,11 @@ class ContactDaoTest {
         return contact
     }
 
-    private fun buildSimpleCredential(connectionId: String, issuerName: String, credentialId: String): Credential {
+    private fun buildSimpleCredential(
+        connectionId: String,
+        issuerName: String,
+        credentialId: String
+    ): Credential {
         val credential = Credential()
         credential.issuerName = issuerName
         credential.credentialId = credentialId

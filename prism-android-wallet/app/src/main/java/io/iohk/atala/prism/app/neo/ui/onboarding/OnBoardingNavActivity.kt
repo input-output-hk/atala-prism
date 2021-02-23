@@ -3,8 +3,8 @@ package io.iohk.atala.prism.app.neo.ui.onboarding
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import io.iohk.cvp.databinding.NeoActivityNavOnBoardingBinding
 import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoActivityNavOnBoardingBinding
 
 /**
  *  [OnBoardingNavActivity] this class encapsulates all the navigation

@@ -8,7 +8,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
-suspend fun Bitmap.toEncodedBase64String(format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG, quality: Int = 100): String? {
+suspend fun Bitmap.toEncodedBase64String(
+    format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,
+    quality: Int = 100
+): String? {
     return withContext(Dispatchers.Default) {
         try {
             val outputStream = ByteArrayOutputStream()

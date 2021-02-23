@@ -12,10 +12,10 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.android.support.DaggerFragment
+import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
+import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoFragmentWalletSetupBinding
-import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents
-import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import javax.inject.Inject
 
 class WalletSetupFragment : DaggerFragment() {
@@ -35,7 +35,11 @@ class WalletSetupFragment : DaggerFragment() {
         FirebaseAnalytics.getInstance(requireContext())
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_wallet_setup, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -48,21 +52,31 @@ class WalletSetupFragment : DaggerFragment() {
     }
 
     private fun setObservers() {
-        viewModel.mnemonicList.observe(viewLifecycleOwner, Observer {
-            // update words adapter
-            mnemonicAdapter.clear()
-            mnemonicAdapter.addAll(it)
-            mnemonicAdapter.notifyDataSetChanged()
-        })
-        viewModel.shouldGoToNextScreen.observe(viewLifecycleOwner, EventWrapperObserver { list ->
-            firebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE_CONTINUE, null)
-            navigateToPhraseVerification(list, viewModel.userVerificationWordsIndexes[0], viewModel.userVerificationWordsIndexes[1])
-        })
+        viewModel.mnemonicList.observe(
+            viewLifecycleOwner,
+            Observer {
+                // update words adapter
+                mnemonicAdapter.clear()
+                mnemonicAdapter.addAll(it)
+                mnemonicAdapter.notifyDataSetChanged()
+            }
+        )
+        viewModel.shouldGoToNextScreen.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver { list ->
+                firebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE_CONTINUE, null)
+                navigateToPhraseVerification(list, viewModel.userVerificationWordsIndexes[0], viewModel.userVerificationWordsIndexes[1])
+            }
+        )
     }
 
-    private fun navigateToPhraseVerification(mnemonicList: List<String>, firstIndex: Int, secondIndex: Int) {
+    private fun navigateToPhraseVerification(
+        mnemonicList: List<String>,
+        firstIndex: Int,
+        secondIndex: Int
+    ) {
         val action = WalletSetupFragmentDirections
-                .actionWalletSetupFragmentToPhraseVerificationFragment(mnemonicList.toTypedArray(), firstIndex, secondIndex)
+            .actionWalletSetupFragmentToPhraseVerificationFragment(mnemonicList.toTypedArray(), firstIndex, secondIndex)
         findNavController().navigate(action)
     }
 }

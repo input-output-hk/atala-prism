@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class SettingsViewModel @Inject constructor(private val repository: PreferencesRepository) : ViewModel() {

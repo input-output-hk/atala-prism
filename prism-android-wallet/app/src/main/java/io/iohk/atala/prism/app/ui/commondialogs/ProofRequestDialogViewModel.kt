@@ -1,6 +1,10 @@
 package io.iohk.atala.prism.app.ui.commondialogs
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithContactAndCredentials
@@ -10,7 +14,9 @@ import io.iohk.atala.prism.app.neo.data.ProofRequestRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ProofRequestDialogViewModel @Inject constructor(private val repository: ProofRequestRepository) : ViewModel() {
+class ProofRequestDialogViewModel @Inject constructor(
+    private val repository: ProofRequestRepository
+) : ViewModel() {
 
     private var proofRequestData: ProofRequestWithContactAndCredentials? = null
 
@@ -50,7 +56,6 @@ class ProofRequestDialogViewModel @Inject constructor(private val repository: Pr
                 _requestedCredentials.postValue(checkableCredentials)
                 _showLoading.postValue(false)
             } ?: kotlin.run {
-
             }
         }
     }

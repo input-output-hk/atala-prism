@@ -17,7 +17,11 @@ import io.iohk.atala.prism.app.ui.main.MainViewModel
 import io.iohk.atala.prism.app.ui.main.contacts.ContactDetailViewModel
 import io.iohk.atala.prism.app.ui.main.contacts.ContactsViewModel
 import io.iohk.atala.prism.app.ui.main.contacts.DeleteContactAlertDialogViewModel
-import io.iohk.atala.prism.app.ui.main.credentials.*
+import io.iohk.atala.prism.app.ui.main.credentials.CredentialDetailViewModel
+import io.iohk.atala.prism.app.ui.main.credentials.CredentialHistoryViewModel
+import io.iohk.atala.prism.app.ui.main.credentials.DeleteCredentialDialogViewModel
+import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsViewModel
+import io.iohk.atala.prism.app.ui.main.credentials.ShareCredentialDialogViewModel
 import io.iohk.atala.prism.app.ui.main.notifications.ActivityLogViewModel
 import io.iohk.atala.prism.app.ui.main.notifications.NotificationsViewModel
 import io.iohk.atala.prism.app.ui.main.profile.ProfileViewModel
@@ -73,17 +77,23 @@ abstract class ViewModelModule {
     @Binds
     @IntoMap
     @ViewModelKey(AcceptConnectionDialogViewModel::class)
-    internal abstract fun acceptConnectionDialogViewModel(viewModel: AcceptConnectionDialogViewModel): ViewModel
+    internal abstract fun acceptConnectionDialogViewModel(
+        viewModel: AcceptConnectionDialogViewModel
+    ): ViewModel
 
     @Binds
     @IntoMap
     @ViewModelKey(DeleteCredentialDialogViewModel::class)
-    internal abstract fun deleteCredentialDialogViewModel(viewModel: DeleteCredentialDialogViewModel): ViewModel
+    internal abstract fun deleteCredentialDialogViewModel(
+        viewModel: DeleteCredentialDialogViewModel
+    ): ViewModel
 
     @Binds
     @IntoMap
     @ViewModelKey(DeleteContactAlertDialogViewModel::class)
-    internal abstract fun deleteContactAlertDialogViewModel(viewModel: DeleteContactAlertDialogViewModel): ViewModel
+    internal abstract fun deleteContactAlertDialogViewModel(
+        viewModel: DeleteContactAlertDialogViewModel
+    ): ViewModel
 
     @Binds
     @IntoMap

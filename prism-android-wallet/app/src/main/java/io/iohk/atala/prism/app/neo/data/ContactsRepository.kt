@@ -12,14 +12,16 @@ import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.app.utils.CryptoUtils
 
-class ContactsRepository(private val contactsLocalDataSource: ContactsLocalDataSourceInterface,
-                         private val remoteDataSource: ConnectorRemoteDataSource,
-                         sessionLocalDataSource: SessionLocalDataSourceInterface,
-                         preferencesLocalDataSource: PreferencesLocalDataSourceInterface)
-    : BaseRepository(
+class ContactsRepository(
+    private val contactsLocalDataSource: ContactsLocalDataSourceInterface,
+    private val remoteDataSource: ConnectorRemoteDataSource,
+    sessionLocalDataSource: SessionLocalDataSourceInterface,
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) :
+    BaseRepository(
         sessionLocalDataSource,
         preferencesLocalDataSource
-) {
+    ) {
 
     fun allContacts(): LiveData<List<Contact>> = contactsLocalDataSource.allContacts()
 

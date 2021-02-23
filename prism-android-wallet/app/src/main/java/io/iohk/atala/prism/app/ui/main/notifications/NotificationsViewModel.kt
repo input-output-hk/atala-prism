@@ -1,15 +1,21 @@
 package io.iohk.atala.prism.app.ui.main.notifications
 
-import androidx.lifecycle.*
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
+import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.data.ActivityHistoriesRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class NotificationsViewModel @Inject constructor(private val repository: ActivityHistoriesRepository) : ViewModel() {
+class NotificationsViewModel @Inject constructor(
+    private val repository: ActivityHistoriesRepository
+) : ViewModel() {
 
     val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
         viewModelScope.launch {

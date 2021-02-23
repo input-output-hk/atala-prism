@@ -1,12 +1,12 @@
 package io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup
 
 import android.annotation.SuppressLint
-import io.iohk.cvp.R
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.TextView
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
+import io.iohk.cvp.R
 
 class MnemonicAdapter : BaseRecyclerViewAdapter<String>() {
 

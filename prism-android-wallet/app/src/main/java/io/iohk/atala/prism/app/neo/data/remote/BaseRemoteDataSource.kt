@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.app.neo.data.remote
 
-import com.google.protobuf.ByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
-import io.iohk.cvp.BuildConfig
 import io.iohk.atala.prism.app.neo.model.BackendConfig
-import io.iohk.atala.prism.protos.SendMessageRequest
+import io.iohk.cvp.BuildConfig
 
-open class BaseRemoteDataSource(private val preferencesLocalDataSource: PreferencesLocalDataSourceInterface) {
+open class BaseRemoteDataSource(
+    private val preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) {
 
     companion object {
         const val QUERY_LENGTH_LIMIT = 100
@@ -20,12 +20,12 @@ open class BaseRemoteDataSource(private val preferencesLocalDataSource: Preferen
     @Synchronized
     protected fun getMainChannel(): ManagedChannel {
         val expectedConfiguration = preferencesLocalDataSource.getCustomBackendConfig()
-                ?: BackendConfig(BuildConfig.API_BASE_URL, BuildConfig.API_PORT)
+            ?: BackendConfig(BuildConfig.API_BASE_URL, BuildConfig.API_PORT)
         if (mainChannel == null || expectedConfiguration != currentBackendConfig) {
             mainChannel = ManagedChannelBuilder
-                    .forAddress(expectedConfiguration.url, expectedConfiguration.port)
-                    .usePlaintext()
-                    .build()
+                .forAddress(expectedConfiguration.url, expectedConfiguration.port)
+                .usePlaintext()
+                .build()
             currentBackendConfig = expectedConfiguration
         }
         return mainChannel!!

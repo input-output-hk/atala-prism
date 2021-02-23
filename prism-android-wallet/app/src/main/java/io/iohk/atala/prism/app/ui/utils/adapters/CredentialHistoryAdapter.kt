@@ -17,21 +17,24 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 
-class CredentialHistoryAdapter(context: Context, private var dateFormat: SimpleDateFormat, private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>? = null) : BaseRecyclerViewAdapter<CredentialHistoryAdapter.ViewType>() {
+class CredentialHistoryAdapter(
+    context: Context,
+    private var dateFormat: SimpleDateFormat,
+    private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>? = null
+) : BaseRecyclerViewAdapter<CredentialHistoryAdapter.ViewType>() {
 
     private val adapterScope = CoroutineScope(Dispatchers.Default)
 
     companion object {
         private const val TYPE_HEADER = 0
         private const val TYPE_ACTIVITY_HISTORY = 1
-
     }
 
-    private val sharedHeader = CredentialHistoryAdapter.ViewType.Header(context.getString(R.string.shared_with))
-    private val requestedHeader = CredentialHistoryAdapter.ViewType.Header(context.getString(R.string.requested_by))
+    private val sharedHeader = ViewType.Header(context.getString(R.string.shared_with))
+    private val requestedHeader = ViewType.Header(context.getString(R.string.requested_by))
 
     sealed class ViewType(val type: Int) {
-        data class Header(val title: String) : ViewType(CredentialHistoryAdapter.TYPE_HEADER)
+        data class Header(val title: String) : ViewType(TYPE_HEADER)
         data class ActivityHistory(val activityHistoryWithCredential: ActivityHistoryWithContact) : ViewType(CredentialHistoryAdapter.TYPE_ACTIVITY_HISTORY)
     }
 
@@ -104,7 +107,11 @@ class CredentialHistoryAdapter(context: Context, private var dateFormat: SimpleD
         }
     }
 
-    private class ActivityHistoryViewHolder(private val adapter: CredentialHistoryAdapter, private val binding: RowContactActivityHistoryBinding, private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>?) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
+    private class ActivityHistoryViewHolder(
+        private val adapter: CredentialHistoryAdapter,
+        private val binding: RowContactActivityHistoryBinding,
+        private val onSelectItem: OnSelectItem<ActivityHistoryWithContact>?
+    ) : BaseRecyclerViewAdapter.ViewHolder<ViewType>(binding.root) {
 
         init {
             binding.root.setOnClickListener {

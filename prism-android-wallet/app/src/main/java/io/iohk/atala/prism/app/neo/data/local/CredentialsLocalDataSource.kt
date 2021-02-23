@@ -42,7 +42,10 @@ class CredentialsLocalDataSource(private val credentialDao: CredentialDao) : Cre
         }
     }
 
-    override suspend fun insertShareCredentialActivityHistories(credential: Credential, contacts: List<Contact>) {
+    override suspend fun insertShareCredentialActivityHistories(
+        credential: Credential,
+        contacts: List<Contact>
+    ) {
         return withContext(Dispatchers.IO) {
             credentialDao.insertShareCredentialActivityHistories(credential, contacts)
         }

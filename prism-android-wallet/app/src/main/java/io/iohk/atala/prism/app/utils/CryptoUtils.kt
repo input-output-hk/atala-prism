@@ -2,10 +2,12 @@ package io.iohk.atala.prism.app.utils
 
 import android.util.Base64
 import io.grpc.Metadata
-import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.derivation.*
-import java.util.*
+import io.iohk.atala.prism.kotlin.crypto.derivation.DerivationPath
+import io.iohk.atala.prism.kotlin.crypto.derivation.JvmKeyDerivation
+import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicCode
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import java.util.UUID
 
 class CryptoUtils {
 
@@ -31,7 +33,7 @@ class CryptoUtils {
         }
 
         fun getPathFromIndex(index: Int): String {
-            return "m/${index}'/0'/0'"
+            return "m/$index'/0'/0'"
         }
 
         fun getKeyPairFromPath(keyDerivationPath: String, phrases: List<String>): ECKeyPair {

@@ -11,7 +11,10 @@ import io.iohk.cvp.R
 import io.iohk.cvp.databinding.RowNotificationBinding
 import java.text.SimpleDateFormat
 
-class NotificationsAdapter(private var dateFormat: SimpleDateFormat, private val onSelectItem: OnSelectItem<ActivityHistoryWithCredential>?) : BaseRecyclerViewAdapter<ActivityHistoryWithCredential>() {
+class NotificationsAdapter(
+    private var dateFormat: SimpleDateFormat,
+    private val onSelectItem: OnSelectItem<ActivityHistoryWithCredential>?
+) : BaseRecyclerViewAdapter<ActivityHistoryWithCredential>() {
 
     fun setDateFormat(dateFormat: SimpleDateFormat) {
         this.dateFormat = dateFormat
@@ -24,7 +27,11 @@ class NotificationsAdapter(private var dateFormat: SimpleDateFormat, private val
         return ViewHolder(this, binding, onSelectItem)
     }
 
-    private class ViewHolder(private val adapter: NotificationsAdapter, private val binding: RowNotificationBinding, private val onSelectItem: OnSelectItem<ActivityHistoryWithCredential>?) : BaseRecyclerViewAdapter.ViewHolder<ActivityHistoryWithCredential>(binding.root) {
+    private class ViewHolder(
+        private val adapter: NotificationsAdapter,
+        private val binding: RowNotificationBinding,
+        private val onSelectItem: OnSelectItem<ActivityHistoryWithCredential>?
+    ) : BaseRecyclerViewAdapter.ViewHolder<ActivityHistoryWithCredential>(binding.root) {
 
         init {
             binding.root.setOnClickListener {

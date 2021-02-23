@@ -7,14 +7,18 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import io.iohk.cvp.databinding.NeoFragmentWelcomeBinding
 import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoFragmentWelcomeBinding
 
 class WelcomeFragment : Fragment() {
 
     private lateinit var binding: NeoFragmentWelcomeBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_welcome, container, false)
         binding.lifecycleOwner = this
         setViewListeners()

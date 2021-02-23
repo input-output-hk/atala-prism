@@ -3,12 +3,12 @@ package io.iohk.atala.prism.app.ui.utils.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import io.iohk.cvp.R
 import io.iohk.atala.prism.app.data.local.db.model.Credential
-import io.iohk.cvp.databinding.RowCredentialBinding
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
 import io.iohk.atala.prism.app.ui.main.credentials.CredentialUtil
+import io.iohk.cvp.R
+import io.iohk.cvp.databinding.RowCredentialBinding
 
 class CredentialsAdapter(private val onSelectItem: OnSelectItem<Credential>? = null) : BaseRecyclerViewAdapter<Credential>() {
 
@@ -18,7 +18,10 @@ class CredentialsAdapter(private val onSelectItem: OnSelectItem<Credential>? = n
         return ViewHolder(binding, onSelectItem)
     }
 
-    private class ViewHolder(private val binding: RowCredentialBinding, private val onSelectItem: OnSelectItem<Credential>?) : BaseRecyclerViewAdapter.ViewHolder<Credential>(binding.root) {
+    private class ViewHolder(
+        private val binding: RowCredentialBinding,
+        private val onSelectItem: OnSelectItem<Credential>?
+    ) : BaseRecyclerViewAdapter.ViewHolder<Credential>(binding.root) {
 
         init {
             binding.root.setOnClickListener {

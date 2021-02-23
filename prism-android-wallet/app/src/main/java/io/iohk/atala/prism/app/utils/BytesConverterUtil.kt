@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.app.utils
 
 import java.nio.ByteBuffer
-import java.util.*
+import java.util.UUID
 
 class BytesConverterUtil {
 

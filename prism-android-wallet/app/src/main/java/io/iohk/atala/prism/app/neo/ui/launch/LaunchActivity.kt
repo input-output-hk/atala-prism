@@ -8,18 +8,17 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import dagger.android.support.DaggerAppCompatActivity
-import io.iohk.cvp.R
-import io.iohk.cvp.databinding.NeoActivityLaunchBinding
 import io.iohk.atala.prism.app.neo.ui.onboarding.OnBoardingNavActivity
 import io.iohk.atala.prism.app.ui.main.MainActivity
 import io.iohk.atala.prism.app.ui.utils.ForegroundBackgroundListener
+import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoActivityLaunchBinding
 import javax.inject.Inject
 
 class LaunchActivity : DaggerAppCompatActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-
 
     private val viewModel: LaunchViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(LaunchViewModel::class.java)
@@ -51,16 +50,22 @@ class LaunchActivity : DaggerAppCompatActivity() {
 
     private fun configureObservers() {
         // Observe when exist a stored session
-        viewModel.sessionDataHasStored.observe(this, Observer {
-            handler?.removeCallbacksAndMessages(null)
-            handler = Handler()
-            handler?.postDelayed({
-                when (it) {
-                    false -> navigateToOnBoard()
-                    true -> navigateToMainActivity()
-                }
-            }, navigationDelayInMilliseconds)
-        })
+        viewModel.sessionDataHasStored.observe(
+            this,
+            Observer {
+                handler?.removeCallbacksAndMessages(null)
+                handler = Handler()
+                handler?.postDelayed(
+                    {
+                        when (it) {
+                            false -> navigateToOnBoard()
+                            true -> navigateToMainActivity()
+                        }
+                    },
+                    navigationDelayInMilliseconds
+                )
+            }
+        )
     }
 
     private fun navigateToMainActivity() {

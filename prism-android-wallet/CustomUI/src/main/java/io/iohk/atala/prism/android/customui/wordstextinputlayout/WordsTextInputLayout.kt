@@ -17,7 +17,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import androidx.core.content.res.getDimensionPixelSizeOrThrow
-import com.google.android.flexbox.*
+import com.google.android.flexbox.AlignContent
+import com.google.android.flexbox.AlignItems
+import com.google.android.flexbox.FlexDirection
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import com.google.android.material.resources.MaterialResources
 import io.iohk.atala.prism.android.customui.R
@@ -66,7 +70,6 @@ class WordsTextInputLayout : FlexboxLayout {
         initialConfiguration(attrs)
     }
 
-
     private fun initialConfiguration(attrs: AttributeSet?) {
         alignContent = AlignContent.STRETCH
         alignItems = AlignItems.STRETCH
@@ -105,7 +108,6 @@ class WordsTextInputLayout : FlexboxLayout {
         }
     }
 
-
     @SuppressLint("RestrictedApi")
     private fun handleChipsAttributes(typedArray: TypedArray) {
         if (typedArray.hasValue(R.styleable.WordsTextInputLayout_chipsTextColor)) {
@@ -131,7 +133,6 @@ class WordsTextInputLayout : FlexboxLayout {
         addView(editText, 0, layoutParams)
         configureEditTextWatchers()
     }
-
 
     private fun configureEditTextWatchers() {
         editText?.addTextChangedListener(textWatcher)
@@ -256,7 +257,6 @@ class WordsTextInputLayout : FlexboxLayout {
         }
         return chip
     }
-
 
     private val textWatcher: TextWatcher = object : TextWatcher {
 

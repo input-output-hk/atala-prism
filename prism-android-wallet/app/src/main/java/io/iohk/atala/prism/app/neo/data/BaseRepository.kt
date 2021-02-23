@@ -7,8 +7,10 @@ import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 /*
 * Here is the data that will be shared between all repositories
 * */
-open class BaseRepository(protected val sessionLocalDataSource: SessionLocalDataSourceInterface,
-                          protected val preferencesLocalDataSource: PreferencesLocalDataSourceInterface) {
+open class BaseRepository(
+    protected val sessionLocalDataSource: SessionLocalDataSourceInterface,
+    protected val preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) {
 
     suspend fun getCustomDateFormat(): CustomDateFormat {
         return preferencesLocalDataSource.getCustomDateFormat()

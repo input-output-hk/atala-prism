@@ -1,13 +1,15 @@
 package io.iohk.atala.prism.app.data.local.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
-import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
-import java.util.*
+import java.util.Date
 
 @Dao
 abstract class CredentialDao : ActivityHistoryDao() {
@@ -39,7 +41,10 @@ abstract class CredentialDao : ActivityHistoryDao() {
     }
 
     @Transaction
-    open suspend fun insertShareCredentialActivityHistories(credential: Credential, contacts: List<Contact>) {
+    open suspend fun insertShareCredentialActivityHistories(
+        credential: Credential,
+        contacts: List<Contact>
+    ) {
         val activitiesHistories = contacts.map {
             ActivityHistory(it.connectionId, credential.credentialId, Date().time, ActivityHistory.Type.CredentialShared)
         }

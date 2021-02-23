@@ -2,7 +2,12 @@ package io.iohk.atala.prism.app.ui.main.contacts
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.ViewModelProvider
@@ -21,13 +26,13 @@ import javax.inject.Inject
 
 class ContactDetailFragment : DaggerFragment() {
 
-    private val args:ContactDetailFragmentArgs by navArgs()
+    private val args: ContactDetailFragmentArgs by navArgs()
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val viewModel:ContactDetailViewModel by lazy {
-        ViewModelProviders.of(this,viewModelFactory).get(ContactDetailViewModel::class.java)
+    private val viewModel: ContactDetailViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(ContactDetailViewModel::class.java)
     }
 
     private lateinit var binding: NeoFragmentContactDetailBinding
@@ -36,7 +41,11 @@ class ContactDetailFragment : DaggerFragment() {
         ContactDetailActivityHistoryAdapter(requireContext(), dateFormatDDMMYYYY)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_contact_detail, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -50,14 +59,14 @@ class ContactDetailFragment : DaggerFragment() {
         setHasOptionsMenu(true)
         viewModel.fetchContact(args.contactId)
         // Handle DeleteContactAlertDialogFragment result
-        setFragmentResultListener(DeleteContactAlertDialogFragment.REQUEST_DELETE_CONTACT){ requestKey, bundle ->
-            if(bundle.getInt(KEY_RESULT) == Activity.RESULT_OK){
+        setFragmentResultListener(DeleteContactAlertDialogFragment.REQUEST_DELETE_CONTACT) { requestKey, bundle ->
+            if (bundle.getInt(KEY_RESULT) == Activity.RESULT_OK) {
                 findNavController().popBackStack()
             }
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) = inflater.inflate(R.menu.contact_detail_menu,menu)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) = inflater.inflate(R.menu.contact_detail_menu, menu)
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {

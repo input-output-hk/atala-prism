@@ -3,14 +3,16 @@ package io.iohk.atala.prism.app.ui.utils.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import io.iohk.cvp.R
 import io.iohk.atala.prism.app.data.local.db.model.Contact
-import io.iohk.cvp.databinding.RowCheckableContactBinding
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
+import io.iohk.cvp.R
+import io.iohk.cvp.databinding.RowCheckableContactBinding
 
-class CheckableContactRecyclerViewAdapter(private val onSelectedContact: OnSelectItem<CheckableData<Contact>>?) : BaseRecyclerViewAdapter<CheckableData<Contact>>() {
+class CheckableContactRecyclerViewAdapter(
+    private val onSelectedContact: OnSelectItem<CheckableData<Contact>>?
+) : BaseRecyclerViewAdapter<CheckableData<Contact>>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckableCredentialViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -21,7 +23,10 @@ class CheckableContactRecyclerViewAdapter(private val onSelectedContact: OnSelec
     /*
     * A ViewHolder Class for [CheckableContactRecyclerViewAdapter]
     * */
-    class CheckableCredentialViewHolder(private val binding: RowCheckableContactBinding, private val onSelectedContact: OnSelectItem<CheckableData<Contact>>?) : BaseRecyclerViewAdapter.ViewHolder<CheckableData<Contact>>(binding.root) {
+    class CheckableCredentialViewHolder(
+        private val binding: RowCheckableContactBinding,
+        private val onSelectedContact: OnSelectItem<CheckableData<Contact>>?
+    ) : BaseRecyclerViewAdapter.ViewHolder<CheckableData<Contact>>(binding.root) {
 
         init {
             binding.root.setOnClickListener { onSelect() }

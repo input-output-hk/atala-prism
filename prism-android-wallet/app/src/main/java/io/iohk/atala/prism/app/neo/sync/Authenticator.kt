@@ -11,11 +11,26 @@ class Authenticator(context: Context) : AbstractAccountAuthenticator(context) {
         throw UnsupportedOperationException()
     }
 
-    override fun addAccount(response: AccountAuthenticatorResponse?, accountType: String?, authTokenType: String?, requiredFeatures: Array<out String>?, options: Bundle?): Bundle? = null
+    override fun addAccount(
+        response: AccountAuthenticatorResponse?,
+        accountType: String?,
+        authTokenType: String?,
+        requiredFeatures: Array<out String>?,
+        options: Bundle?
+    ): Bundle? = null
 
-    override fun confirmCredentials(response: AccountAuthenticatorResponse?, account: Account?, options: Bundle?): Bundle? = null
+    override fun confirmCredentials(
+        response: AccountAuthenticatorResponse?,
+        account: Account?,
+        options: Bundle?
+    ): Bundle? = null
 
-    override fun getAuthToken(response: AccountAuthenticatorResponse?, account: Account?, authTokenType: String?, options: Bundle?): Bundle {
+    override fun getAuthToken(
+        response: AccountAuthenticatorResponse?,
+        account: Account?,
+        authTokenType: String?,
+        options: Bundle?
+    ): Bundle {
         throw UnsupportedOperationException()
     }
 
@@ -23,11 +38,20 @@ class Authenticator(context: Context) : AbstractAccountAuthenticator(context) {
         throw UnsupportedOperationException()
     }
 
-    override fun updateCredentials(response: AccountAuthenticatorResponse?, account: Account?, authTokenType: String?, options: Bundle?): Bundle {
+    override fun updateCredentials(
+        response: AccountAuthenticatorResponse?,
+        account: Account?,
+        authTokenType: String?,
+        options: Bundle?
+    ): Bundle {
         throw UnsupportedOperationException()
     }
 
-    override fun hasFeatures(response: AccountAuthenticatorResponse?, account: Account?, features: Array<out String>?): Bundle {
+    override fun hasFeatures(
+        response: AccountAuthenticatorResponse?,
+        account: Account?,
+        features: Array<out String>?
+    ): Bundle {
         throw UnsupportedOperationException()
     }
 }

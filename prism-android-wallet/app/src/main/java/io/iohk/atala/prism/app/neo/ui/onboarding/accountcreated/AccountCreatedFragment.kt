@@ -9,21 +9,25 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.ActivityNavigator
 import androidx.navigation.fragment.findNavController
-import io.iohk.cvp.databinding.NeoFragmentAccountCreatedBinding
 import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoFragmentAccountCreatedBinding
 
 class AccountCreatedFragment : Fragment() {
 
     private lateinit var binding: NeoFragmentAccountCreatedBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_account_created, container, false)
         binding.lifecycleOwner = this
         binding.continueButton.setOnClickListener {
             val extras = ActivityNavigator.Extras.Builder()
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    .build()
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .build()
             val action = AccountCreatedFragmentDirections.actionAccountCreatedFragmentToMainActivity()
             findNavController().navigate(action, extras)
         }

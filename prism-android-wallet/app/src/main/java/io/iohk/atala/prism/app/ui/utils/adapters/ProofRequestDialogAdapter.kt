@@ -19,7 +19,10 @@ class ProofRequestDialogAdapter(private val onSelectItem: OnSelectItem<Credentia
         return ViewHolder(binding, onSelectItem)
     }
 
-    private class ViewHolder(private val binding: RowProofRequestDialogCredentialBinding, private val onSelectItem: OnSelectItem<Credential>?) : BaseRecyclerViewAdapter.ViewHolder<CheckableData<Credential>>(binding.root) {
+    private class ViewHolder(
+        private val binding: RowProofRequestDialogCredentialBinding,
+        private val onSelectItem: OnSelectItem<Credential>?
+    ) : BaseRecyclerViewAdapter.ViewHolder<CheckableData<Credential>>(binding.root) {
 
         init {
             binding.root.setOnClickListener {

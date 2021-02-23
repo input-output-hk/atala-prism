@@ -20,8 +20,8 @@ class ActivityLogFragment : DaggerFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val viewModel:ActivityLogViewModel by lazy {
-        ViewModelProviders.of(this,viewModelFactory).get(ActivityLogViewModel::class.java)
+    private val viewModel: ActivityLogViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(ActivityLogViewModel::class.java)
     }
 
     private lateinit var binding: FragmentActivityLogBinding
@@ -30,7 +30,11 @@ class ActivityLogFragment : DaggerFragment() {
         ActivityLogsAdapter(dateFormatDDMMYYYY)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_activity_log, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel

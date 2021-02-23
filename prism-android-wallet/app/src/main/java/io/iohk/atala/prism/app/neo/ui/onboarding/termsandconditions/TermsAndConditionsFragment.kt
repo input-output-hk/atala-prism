@@ -9,11 +9,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.analytics.FirebaseAnalytics
-import io.iohk.cvp.R
-import io.iohk.cvp.databinding.NeoFragmentTermsAndConditionBinding
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.utils.Constants
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents
+import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoFragmentTermsAndConditionBinding
 
 class TermsAndConditionsFragment : Fragment() {
 
@@ -27,7 +27,11 @@ class TermsAndConditionsFragment : Fragment() {
         FirebaseAnalytics.getInstance(requireContext())
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_terms_and_condition, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -40,31 +44,34 @@ class TermsAndConditionsFragment : Fragment() {
     }
 
     private fun setObservers() {
-        viewModel.shouldNavigate.observe(viewLifecycleOwner, EventWrapperObserver { navigationAction ->
-            when (navigationAction) {
-                TermsAndConditionsViewModel.NavigationAction.TERMS_AND_CONDITIONS -> {
-                    navigateTermsAndConditionsDialog()
-                }
-                TermsAndConditionsViewModel.NavigationAction.PRIVACY_POLICY -> {
-                    navigatePrivacyPolicyDialog()
-                }
-                TermsAndConditionsViewModel.NavigationAction.NEXT -> {
-                    firebaseAnalytics.logEvent(FirebaseAnalyticsEvents.CONTINUE_AFTER_TC_PP, null)
-                    findNavController().navigate(R.id.action_termsAndConditionsFragment_to_walletSetupFragment)
+        viewModel.shouldNavigate.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver { navigationAction ->
+                when (navigationAction) {
+                    TermsAndConditionsViewModel.NavigationAction.TERMS_AND_CONDITIONS -> {
+                        navigateTermsAndConditionsDialog()
+                    }
+                    TermsAndConditionsViewModel.NavigationAction.PRIVACY_POLICY -> {
+                        navigatePrivacyPolicyDialog()
+                    }
+                    TermsAndConditionsViewModel.NavigationAction.NEXT -> {
+                        firebaseAnalytics.logEvent(FirebaseAnalyticsEvents.CONTINUE_AFTER_TC_PP, null)
+                        findNavController().navigate(R.id.action_termsAndConditionsFragment_to_walletSetupFragment)
+                    }
                 }
             }
-        })
+        )
     }
 
     private fun navigateTermsAndConditionsDialog() {
         val direction = TermsAndConditionsFragmentDirections
-                .actionTermsAndConditionsFragmentToWebViewDialogFragment("${Constants.LEGAL_BASE_URL}${Constants.LEGAL_TERMS_AND_CONDITIONS}")
+            .actionTermsAndConditionsFragmentToWebViewDialogFragment("${Constants.LEGAL_BASE_URL}${Constants.LEGAL_TERMS_AND_CONDITIONS}")
         findNavController().navigate(direction)
     }
 
     private fun navigatePrivacyPolicyDialog() {
         val direction = TermsAndConditionsFragmentDirections
-                .actionTermsAndConditionsFragmentToWebViewDialogFragment("${Constants.LEGAL_BASE_URL}${Constants.LEGAL_PRIVACY_POLICY}")
+            .actionTermsAndConditionsFragmentToWebViewDialogFragment("${Constants.LEGAL_BASE_URL}${Constants.LEGAL_PRIVACY_POLICY}")
         findNavController().navigate(direction)
     }
 }

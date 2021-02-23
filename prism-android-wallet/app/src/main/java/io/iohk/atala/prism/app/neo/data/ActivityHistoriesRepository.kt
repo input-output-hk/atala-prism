@@ -8,17 +8,18 @@ import io.iohk.atala.prism.app.neo.data.local.ActivityHistoriesLocalDataSourceIn
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 
-class ActivityHistoriesRepository(private val localDataSource: ActivityHistoriesLocalDataSourceInterface,
-                                  sessionLocalDataSource: SessionLocalDataSourceInterface,
-                                  preferencesLocalDataSource: PreferencesLocalDataSourceInterface) : BaseRepository(sessionLocalDataSource,preferencesLocalDataSource) {
+class ActivityHistoriesRepository(
+    private val localDataSource: ActivityHistoriesLocalDataSourceInterface,
+    sessionLocalDataSource: SessionLocalDataSourceInterface,
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface
+) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
 
     fun allActivityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>> = localDataSource.allActivityHistories()
-
 
     /*
     * if there are no connections there should be no activity history
     * */
-    fun areThereConnections():LiveData<Boolean> = Transformations.map(localDataSource.totalOfContacts()){
+    fun areThereConnections(): LiveData<Boolean> = Transformations.map(localDataSource.totalOfContacts()) {
         it > 0
     }
 

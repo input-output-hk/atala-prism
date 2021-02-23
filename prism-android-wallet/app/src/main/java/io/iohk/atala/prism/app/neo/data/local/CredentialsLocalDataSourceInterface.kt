@@ -19,5 +19,8 @@ interface CredentialsLocalDataSourceInterface {
 
     suspend fun contactsToShareCredential(credential: Credential): List<Contact>
 
-    suspend fun insertShareCredentialActivityHistories(credential: Credential, contacts: List<Contact>)
+    suspend fun insertShareCredentialActivityHistories(
+        credential: Credential,
+        contacts: List<Contact>
+    )
 }

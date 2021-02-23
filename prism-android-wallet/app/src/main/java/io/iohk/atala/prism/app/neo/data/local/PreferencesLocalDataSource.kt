@@ -66,18 +66,17 @@ class PreferencesLocalDataSource(context: Context) : BaseLocalDataSource(context
             editor.putString(USER_PROFILE_IMAGE, userProfile.profileImage?.toEncodedBase64String(Bitmap.CompressFormat.JPEG, 70))
             editor.apply()
         }
-
     }
 
     override suspend fun getUserProfile(): UserProfile {
         return withContext(Dispatchers.IO) {
             return@withContext UserProfile(
-                    name = preferences.getString(USER_PROFILE_NAME, null),
-                    country = preferences.getString(USER_PROFILE_COUNTRY, null),
-                    email = preferences.getString(USER_PROFILE_EMAIL, null),
-                    profileImage = preferences.getString(USER_PROFILE_IMAGE, null)?.let {
-                        return@let Bitmap(encodedBase64String = it)
-                    }
+                name = preferences.getString(USER_PROFILE_NAME, null),
+                country = preferences.getString(USER_PROFILE_COUNTRY, null),
+                email = preferences.getString(USER_PROFILE_EMAIL, null),
+                profileImage = preferences.getString(USER_PROFILE_IMAGE, null)?.let {
+                    return@let Bitmap(encodedBase64String = it)
+                }
             )
         }
     }

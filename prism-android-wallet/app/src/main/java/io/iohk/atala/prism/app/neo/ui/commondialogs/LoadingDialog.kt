@@ -10,7 +10,11 @@ import androidx.fragment.app.DialogFragment
 import io.iohk.cvp.R
 
 class LoadingDialog : DialogFragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         this.isCancelable = false
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         return layoutInflater.inflate(R.layout.neo_dialog_loading, container, false)

@@ -1,6 +1,9 @@
 package io.iohk.atala.prism.app.ui.main.contacts
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
@@ -9,7 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class DeleteContactAlertDialogViewModel @Inject constructor(private val repository: ContactsRepository) : ViewModel() {
+class DeleteContactAlertDialogViewModel @Inject constructor(
+    private val repository: ContactsRepository
+) : ViewModel() {
 
     private val _contact = MutableLiveData<Contact>()
 
@@ -30,7 +35,6 @@ class DeleteContactAlertDialogViewModel @Inject constructor(private val reposito
     private val _contactDeleted = MutableLiveData<EventWrapper<Boolean>>()
 
     val contactDeleted: LiveData<EventWrapper<Boolean>> = _contactDeleted
-
 
     fun fetchContactInfo(contactId: Int) {
         _uiEnabled.value = false

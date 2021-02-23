@@ -7,10 +7,9 @@ import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContactAndCredential
 import io.iohk.atala.prism.app.neo.common.BaseRecyclerViewAdapter
 import io.iohk.atala.prism.app.ui.main.credentials.CredentialUtil
-import io.iohk.cvp.databinding.RowActivityLogBinding
 import io.iohk.cvp.R
+import io.iohk.cvp.databinding.RowActivityLogBinding
 import java.text.SimpleDateFormat
-
 
 class ActivityLogsAdapter(private var dateFormat: SimpleDateFormat) : BaseRecyclerViewAdapter<ActivityHistoryWithContactAndCredential>() {
 
@@ -25,8 +24,10 @@ class ActivityLogsAdapter(private var dateFormat: SimpleDateFormat) : BaseRecycl
         return ActivityLogViewHolder(this, binding)
     }
 
-
-    class ActivityLogViewHolder(private val adapter: ActivityLogsAdapter, private val binding: RowActivityLogBinding) : BaseRecyclerViewAdapter.ViewHolder<ActivityHistoryWithContactAndCredential>(binding.root) {
+    class ActivityLogViewHolder(
+        private val adapter: ActivityLogsAdapter,
+        private val binding: RowActivityLogBinding
+    ) : BaseRecyclerViewAdapter.ViewHolder<ActivityHistoryWithContactAndCredential>(binding.root) {
 
         override fun bind(data: ActivityHistoryWithContactAndCredential) {
             val ctx = binding.root.context

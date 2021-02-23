@@ -12,11 +12,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.android.support.DaggerFragment
-import io.iohk.cvp.R
-import io.iohk.cvp.databinding.NeoFragmentPhraseVerificationBinding
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.lowerCaseInputFilter
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents
+import io.iohk.cvp.R
+import io.iohk.cvp.databinding.NeoFragmentPhraseVerificationBinding
 import javax.inject.Inject
 
 class PhraseVerificationFragment : DaggerFragment() {
@@ -38,7 +38,11 @@ class PhraseVerificationFragment : DaggerFragment() {
         FirebaseAnalytics.getInstance(requireContext())
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_phrase_verification, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -51,14 +55,17 @@ class PhraseVerificationFragment : DaggerFragment() {
         super.onStart()
         // show soft keyboard
         requireContext()
-                .getSystemService(InputMethodManager::class.java)
-                .showSoftInput(binding.editText1, InputMethodManager.SHOW_FORCED)
+            .getSystemService(InputMethodManager::class.java)
+            .showSoftInput(binding.editText1, InputMethodManager.SHOW_FORCED)
     }
 
     private fun setObservers() {
-        viewModel.shouldNavigateToNextScreen.observe(viewLifecycleOwner, EventWrapperObserver {
-            navigateToAccountCreated()
-        })
+        viewModel.shouldNavigateToNextScreen.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver {
+                navigateToAccountCreated()
+            }
+        )
     }
 
     private fun navigateToAccountCreated() {

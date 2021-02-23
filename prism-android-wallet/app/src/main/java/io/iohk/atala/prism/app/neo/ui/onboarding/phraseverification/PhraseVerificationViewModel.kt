@@ -1,12 +1,18 @@
 package io.iohk.atala.prism.app.neo.ui.onboarding.phraseverification
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.data.SessionRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class PhraseVerificationViewModel @Inject constructor(private val sessionRepository: SessionRepository) : ViewModel() {
+class PhraseVerificationViewModel @Inject constructor(
+    private val sessionRepository: SessionRepository
+) : ViewModel() {
 
     private lateinit var mnemonicList: List<String>
     var verificationIndex1: Int = -1
@@ -18,7 +24,6 @@ class PhraseVerificationViewModel @Inject constructor(private val sessionReposit
 
     private val expectedWord1: String
         get() = mnemonicList[verificationIndex1].toLowerCase()
-
 
     private val expectedWord2: String
         get() = mnemonicList[verificationIndex2].toLowerCase()

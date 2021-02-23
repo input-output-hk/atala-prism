@@ -2,8 +2,6 @@ package io.iohk.atala.prism.app.neo.data
 
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicLengthException
 import io.iohk.atala.prism.app.data.local.db.mappers.ContactMapper
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
@@ -15,15 +13,19 @@ import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterfac
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.app.utils.CryptoUtils
+import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicLengthException
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.protos.AtalaMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
 
-class AccountRecoveryRepository(sessionLocalDataSource: SessionLocalDataSourceInterface,
-                                preferencesLocalDataSource: PreferencesLocalDataSourceInterface,
-                                private val contactsLocalDataSource: ContactsLocalDataSourceInterface,
-                                private val connectorApi: ConnectorRemoteDataSource) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
+class AccountRecoveryRepository(
+    sessionLocalDataSource: SessionLocalDataSourceInterface,
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface,
+    private val contactsLocalDataSource: ContactsLocalDataSourceInterface,
+    private val connectorApi: ConnectorRemoteDataSource
+) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
 
     suspend fun recoverAccount(words: List<String>) {
         return withContext(Dispatchers.IO) {
@@ -75,7 +77,6 @@ class AccountRecoveryRepository(sessionLocalDataSource: SessionLocalDataSourceIn
             }
         }
     }
-
 
     /*
     * For now the application is in the middle of a refactoring process, it is likely that the
