@@ -4,33 +4,23 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModel;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-
+import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.iohk.atala.prism.app.ui.CvpDialogFragment;
+import dagger.android.support.DaggerDialogFragment;
+import io.iohk.atala.prism.app.neo.common.extensions.FragmentExtensionsKt;
 import io.iohk.cvp.R;
 
-public class DeleteAllConnectionsDialogFragment extends CvpDialogFragment {
+public class DeleteAllConnectionsDialogFragment extends DaggerDialogFragment {
 
     private static final float DELETE_ALL_CONNECTIONS_DIALOG_WIDTH = 350;
     private static final float DELETE_ALL_CONNECTIONS_DIALOG_HEIGHT = 300;
 
-    public DeleteAllConnectionsDialogFragment() {
-        // Required empty public constructor
-    }
-
-    public static DeleteAllConnectionsDialogFragment newInstance() {
-        DeleteAllConnectionsDialogFragment fragment = new DeleteAllConnectionsDialogFragment();
-        return fragment;
-    }
+    static final String REQUEST_DELETE_DATA = "REQUEST_DELETE_DATA";
 
     @OnClick(R.id.cancel_button)
     void cancel() {
@@ -39,10 +29,9 @@ public class DeleteAllConnectionsDialogFragment extends CvpDialogFragment {
 
     @OnClick(R.id.reset_button)
     void resetData() {
-        Fragment targetFragment = getTargetFragment();
-        if (targetFragment != null) {
-            targetFragment.onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
-        }
+        Bundle result = new Bundle();
+        result.putInt(FragmentExtensionsKt.getKEY_RESULT(this), Activity.RESULT_OK);
+        getParentFragmentManager().setFragmentResult(REQUEST_DELETE_DATA, result);
         this.dismiss();
     }
 
@@ -63,16 +52,8 @@ public class DeleteAllConnectionsDialogFragment extends CvpDialogFragment {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    protected int getViewId() {
-        return R.layout.fragment_delete_all_connections_dialog;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
+        View view = inflater.inflate(R.layout.fragment_delete_all_connections_dialog, container, false);
+        ButterKnife.bind(this, view);
+        return view;
     }
 }

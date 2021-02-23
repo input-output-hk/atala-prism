@@ -14,9 +14,9 @@ class ProofRequestDialogViewModel @Inject constructor(private val repository: Pr
 
     private var proofRequestData: ProofRequestWithContactAndCredentials? = null
 
-    private val _contact = MutableLiveData<Contact>()
+    private val _contact = MutableLiveData<Contact?>()
 
-    val contact: LiveData<Contact> = _contact
+    val contact: LiveData<Contact?> = _contact
 
     private val _requestedCredentials = MutableLiveData<List<CheckableData<Credential>>>()
 

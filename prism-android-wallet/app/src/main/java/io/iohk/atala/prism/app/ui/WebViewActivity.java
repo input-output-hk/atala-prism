@@ -10,7 +10,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import io.iohk.cvp.R;
-import io.iohk.atala.prism.app.ui.utils.StackedAppBar;
 
 import java.util.Optional;
 
@@ -57,7 +56,8 @@ public class WebViewActivity extends AppCompatActivity {
         Optional<ActionBar> supportActionBar = Optional.ofNullable(getSupportActionBar());
         supportActionBar.ifPresent(
                 actionBar -> {
-                    new StackedAppBar(R.string.support_title).configureActionBar(actionBar);
+                    actionBar.setHomeButtonEnabled(true);
+                    actionBar.setDisplayHomeAsUpEnabled(true);
                 });
     }
 

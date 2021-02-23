@@ -6,14 +6,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.atala.prism.app.ui.Navigator;
 
 /*
  * TODO this needs to be removed to use WebViewDialogFragment
@@ -21,9 +17,6 @@ import io.iohk.atala.prism.app.ui.Navigator;
 public class WebTermsAndConditionsActivity extends Activity {
 
     public static String WEB_VIEW_URL = "webViewUrl";
-
-    @Inject
-    Navigator navigator;
 
     @BindView(R.id.web_view)
     public WebView webView;
@@ -46,5 +39,4 @@ public class WebTermsAndConditionsActivity extends Activity {
     public void onContinueClick() {
         finish();
     }
-
 }

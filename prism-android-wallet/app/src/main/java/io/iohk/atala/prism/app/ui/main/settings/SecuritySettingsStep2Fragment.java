@@ -6,25 +6,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
-import androidx.lifecycle.ViewModel;
+import androidx.navigation.Navigation;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
-import io.iohk.atala.prism.app.ui.CvpFragment;
+import butterknife.ButterKnife;
+import dagger.android.support.DaggerFragment;
+import io.iohk.atala.prism.app.neo.common.extensions.FragmentExtensionsKt;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents;
-import io.iohk.atala.prism.app.ui.Navigator;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator;
-import io.iohk.atala.prism.app.ui.utils.NoAppBar;
 import lombok.Setter;
 
 @Setter
-public class SecuritySettingsStep2Fragment extends CvpFragment {
+public class SecuritySettingsStep2Fragment extends DaggerFragment {
 
     private Preferences prefs;
     private FirebaseAnalytics mFirebaseAnalytics;
@@ -33,9 +31,6 @@ public class SecuritySettingsStep2Fragment extends CvpFragment {
     public SecuritySettingsStep2Fragment() {
     }
 
-    @Inject
-    Navigator navigator;
-
     @BindView(R.id.launchAuthentication)
     Button launchAuthentication;
 
@@ -43,45 +38,28 @@ public class SecuritySettingsStep2Fragment extends CvpFragment {
     TextView cancelButton;
 
     @Override
-    protected int getViewId() {
-        return R.layout.fragment_security_step2;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
-    }
-
-    @Override
-    protected AppBarConfigurator getAppBarConfigurator() {
-        return new NoAppBar();
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-
+        View view = inflater.inflate(R.layout.fragment_security_step2, container, false);
+        ButterKnife.bind(this, view);
         prefs = new Preferences(getContext());
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-
         launchAuthentication.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 prefs.saveSecurityTouch(true);
                 mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.SECURE_APP_FINGERPRINT, null);
-                navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
+                Navigation.findNavController(requireView()).navigate(R.id.action_securitySettingsStep2Fragment_to_securityFragment);
             }
         });
-
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 prefs.saveSecurityTouch(false);
-                navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
+                Navigation.findNavController(requireView()).navigate(R.id.action_securitySettingsStep2Fragment_to_securityFragment);
             }
         });
-
+        FragmentExtensionsKt.getSupportActionBar(this).hide();
         return view;
     }
 }

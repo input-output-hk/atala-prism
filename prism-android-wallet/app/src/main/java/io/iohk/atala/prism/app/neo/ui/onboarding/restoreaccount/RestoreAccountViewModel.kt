@@ -19,9 +19,9 @@ class RestoreAccountViewModel @Inject constructor(private val accountRecoveryRep
         return@map it.size == 12
     }
 
-    private val _error = MutableLiveData<ErrorType>()
+    private val _error = MutableLiveData<ErrorType?>()
 
-    val error: LiveData<ErrorType> = _error
+    val error: LiveData<ErrorType?> = _error
 
     private val _isLoading = MutableLiveData<Boolean>()
 

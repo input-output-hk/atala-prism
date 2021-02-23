@@ -10,7 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.biometric.BiometricManager;
-import androidx.lifecycle.ViewModel;
+import androidx.navigation.Navigation;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -25,23 +25,22 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.iohk.atala.prism.app.ui.CvpFragment;
+import dagger.android.support.DaggerFragment;
+import io.iohk.atala.prism.app.neo.common.extensions.FragmentExtensionsKt;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.exception.WrongPinLengthException;
 import io.iohk.atala.prism.app.data.local.preferences.SecurityPin;
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents;
-import io.iohk.atala.prism.app.ui.Navigator;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator;
-import io.iohk.atala.prism.app.ui.utils.NoAppBar;
 import io.iohk.atala.prism.app.ui.utils.SecurityPinHelper;
 import io.iohk.atala.prism.app.ui.utils.components.PinEditText;
 import io.iohk.atala.prism.app.ui.utils.interfaces.PinEditTextListener;
 import lombok.Setter;
 
 @Setter
-public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEditTextListener {
+public class SecuritySettingsStep1Fragment extends DaggerFragment implements PinEditTextListener {
 
     private boolean pinShowChar = false;
     private boolean repeatPinShowChar = false;
@@ -53,9 +52,6 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
     @Inject
     public SecuritySettingsStep1Fragment() {
     }
-
-    @Inject
-    Navigator navigator;
 
     @BindView(R.id.savePin)
     Button savePin;
@@ -93,25 +89,12 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
     @BindView(R.id.errorMessage)
     RelativeLayout errorMessage;
 
-    @Override
-    protected int getViewId() {
-        return R.layout.fragment_security_step1;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
-    }
-
-    @Override
-    protected AppBarConfigurator getAppBarConfigurator() {
-        return new NoAppBar();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_security_step1, container, false);
+        ButterKnife.bind(this, view);
 
         if (BiometricManager.from(getActivity()).canAuthenticate() == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE) {
             textSteps.setVisibility(View.GONE);
@@ -121,6 +104,7 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
         initPinEditTexts();
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
+        FragmentExtensionsKt.getSupportActionBar(this).hide();
         return view;
     }
 
@@ -151,9 +135,9 @@ public class SecuritySettingsStep1Fragment extends CvpFragment implements PinEdi
                 prefs.saveSecurityPin(securityPin);
                 mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.SECURE_APP_FINGERPRINT_PASSCODE, null);
                 if (BiometricManager.from(getActivity()).canAuthenticate() == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE) {
-                    navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecurityFragment());
+                    Navigation.findNavController(requireView()).navigate(R.id.action_securitySettingsStep1Fragment_to_securityFragment);
                 } else {
-                    navigator.showFragmentOnTopOfMenuNoBackstack(getFragmentManager(), new SecuritySettingsStep2Fragment());
+                    Navigation.findNavController(requireView()).navigate(R.id.action_securitySettingsStep1Fragment_to_securitySettingsStep2Fragment);
                 }
             } else {
                 Toast.makeText(getActivity(), R.string.same_pin_required, Toast.LENGTH_SHORT).show();

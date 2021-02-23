@@ -2,28 +2,30 @@ package io.iohk.atala.prism.app.ui.main.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.observe
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
-import io.iohk.atala.prism.app.ui.CvpFragment
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator
-import io.iohk.atala.prism.app.ui.utils.StackedAppBar
 import io.iohk.atala.prism.app.ui.utils.adapters.CustomDateFormatAdapter
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentSettingsDateFormatBinding
 import javax.inject.Inject
 
-class SettingsDateFormatFragment : CvpFragment<SettingsDateFormatViewModel>(), OnSelectItem<CustomDateFormat> {
+class SettingsDateFormatFragment : DaggerFragment(), OnSelectItem<CustomDateFormat> {
 
     @Inject
     lateinit var factory: ViewModelProvider.Factory
+
+    private val viewModel:SettingsDateFormatViewModel by lazy {
+        ViewModelProviders.of(this,factory).get(SettingsDateFormatViewModel::class.java)
+    }
 
     lateinit var binding: FragmentSettingsDateFormatBinding
 
@@ -32,7 +34,8 @@ class SettingsDateFormatFragment : CvpFragment<SettingsDateFormatViewModel>(), O
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, viewId, container, false)
+        setHasOptionsMenu(true)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_settings_date_format, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         configureRecyclerView()
@@ -40,27 +43,10 @@ class SettingsDateFormatFragment : CvpFragment<SettingsDateFormatViewModel>(), O
         return binding.root
     }
 
-    override fun getViewModel(): SettingsDateFormatViewModel = ViewModelProvider(this, factory).get(SettingsDateFormatViewModel::class.java)
-
-    override fun getAppBarConfigurator(): AppBarConfigurator {
-        setHasOptionsMenu(true)
-        return StackedAppBar(R.string.settings_custom_date_format_title)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.loadPreferences()
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            requireActivity().onBackPressed()
-            return true
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun getViewId(): Int = R.layout.fragment_settings_date_format
 
     override fun onSelect(item: CustomDateFormat) {
         viewModel.selectCustomDateFormat(item)
@@ -82,7 +68,7 @@ class SettingsDateFormatFragment : CvpFragment<SettingsDateFormatViewModel>(), O
         }
         viewModel.preferencesSavedSuccessfully.observe(viewLifecycleOwner, EventWrapperObserver {
             if (it) {
-                requireActivity().onBackPressed()
+                findNavController().popBackStack()
             }
         })
     }

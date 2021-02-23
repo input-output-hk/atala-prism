@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/settings_navigation"
+    app:startDestination="@id/settingsFragment">
+
+    <fragment
+        tools:layout="@layout/fragment_settings"
+        android:id="@+id/settingsFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.SettingsFragment"
+        android:label="@string/settings" >
+        <action
+            android:id="@+id/action_settingsFragment_to_deleteAllConnectionsDialogFragment"
+            app:destination="@id/deleteAllConnectionsDialogFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_securitySettingsStep1Fragment"
+            app:destination="@id/securitySettingsStep1Fragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_webViewActivity"
+            app:destination="@id/webViewActivity" />
+        <action
+            android:id="@+id/action_settingsFragment_to_aboutFragment"
+            app:destination="@id/aboutFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_settingsDateFormatFragment"
+            app:destination="@id/settingsDateFormatFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_backendIpFragment"
+            app:destination="@id/backendIpFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_securityFragment"
+            app:destination="@id/securityFragment" />
+    </fragment>
+    <dialog
+        tools:layout="@layout/fragment_delete_all_connections_dialog"
+        android:id="@+id/deleteAllConnectionsDialogFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.DeleteAllConnectionsDialogFragment"
+        android:label="DeleteAllConnectionsDialogFragment" />
+    <fragment
+        tools:layout="@layout/fragment_security"
+        android:id="@+id/securityFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.SecurityFragment"
+        android:label="SecurityFragment" >
+        <action
+            android:id="@+id/action_securityFragment_to_securityChangePinFragment"
+            app:destination="@id/securityChangePinFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_security_step1"
+        android:id="@+id/securitySettingsStep1Fragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.SecuritySettingsStep1Fragment"
+        android:label="SecuritySettingsStep1Fragment" >
+        <action
+            android:id="@+id/action_securitySettingsStep1Fragment_to_securityFragment"
+            app:destination="@id/securityFragment"
+            app:popUpTo="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_securitySettingsStep1Fragment_to_securitySettingsStep2Fragment"
+            app:destination="@id/securitySettingsStep2Fragment"
+            app:popUpTo="@id/settingsFragment" />
+    </fragment>
+    <activity
+        tools:layout="@layout/web_view_activity"
+        android:id="@+id/webViewActivity"
+        android:name="io.iohk.atala.prism.app.ui.WebViewActivity"
+        android:label="WebViewActivity" />
+    <fragment
+        tools:layout="@layout/fragment_about"
+        android:id="@+id/aboutFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.AboutFragment"
+        android:label="AboutFragment" />
+    <fragment
+        tools:layout="@layout/fragment_settings_date_format"
+        android:id="@+id/settingsDateFormatFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.SettingsDateFormatFragment"
+        android:label="@string/settings_custom_date_format_title" />
+    <fragment
+        tools:layout="@layout/fragment_backend_ip_config"
+        android:id="@+id/backendIpFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.BackendIpFragment"
+        android:label="@string/settings" />
+    <fragment
+        tools:layout="@layout/fragment_change_pin"
+        android:id="@+id/securityChangePinFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.SecurityChangePinFragment"
+        android:label="SecurityChangePinFragment" />
+    <fragment
+        tools:layout="@layout/fragment_security_step2"
+        android:id="@+id/securitySettingsStep2Fragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.SecuritySettingsStep2Fragment"
+        android:label="SecuritySettingsStep2Fragment" >
+        <action
+            android:id="@+id/action_securitySettingsStep2Fragment_to_securityFragment"
+            app:destination="@id/securityFragment"
+            app:popUpTo="@id/settingsFragment" />
+    </fragment>
+</navigation>

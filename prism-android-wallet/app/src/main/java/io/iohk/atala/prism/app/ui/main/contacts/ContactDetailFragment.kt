@@ -1,45 +1,43 @@
 package io.iohk.atala.prism.app.ui.main.contacts
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.*
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.observe
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.iohk.atala.prism.app.neo.common.OnSuccess
+import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
-import io.iohk.atala.prism.app.ui.CvpFragment
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator
-import io.iohk.atala.prism.app.ui.utils.StackedAppBar
+import io.iohk.atala.prism.app.neo.common.extensions.KEY_RESULT
 import io.iohk.atala.prism.app.ui.utils.adapters.ContactDetailActivityHistoryAdapter
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoFragmentContactDetailBinding
 import javax.inject.Inject
 
-class ContactDetailFragment : CvpFragment<ContactDetailViewModel>() {
+class ContactDetailFragment : DaggerFragment() {
 
-    companion object {
-        fun build(contactId: Long): ContactDetailFragment {
-            val fragment = ContactDetailFragment()
-            fragment.contactId = contactId
-            return fragment
-        }
-    }
-
+    private val args:ContactDetailFragmentArgs by navArgs()
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private lateinit var binding: NeoFragmentContactDetailBinding
+    private val viewModel:ContactDetailViewModel by lazy {
+        ViewModelProviders.of(this,viewModelFactory).get(ContactDetailViewModel::class.java)
+    }
 
-    private var contactId: Long = -1
+    private lateinit var binding: NeoFragmentContactDetailBinding
 
     private val adapter by lazy {
         ContactDetailActivityHistoryAdapter(requireContext(), dateFormatDDMMYYYY)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, viewId, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.neo_fragment_contact_detail, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         configureRecyclerView()
@@ -49,45 +47,27 @@ class ContactDetailFragment : CvpFragment<ContactDetailViewModel>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.fetchContact(contactId)
-    }
-
-    override fun getViewModel(): ContactDetailViewModel {
-        return ViewModelProvider(this, viewModelFactory).get(ContactDetailViewModel::class.java)
-    }
-
-    override fun getAppBarConfigurator(): AppBarConfigurator {
         setHasOptionsMenu(true)
-        return StackedAppBar(R.string.contact_detail)
-    }
-
-    override fun getViewId(): Int {
-        return R.layout.neo_fragment_contact_detail
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        val deleteContactMenuItem = menu.findItem(R.id.action_delete_contact)
-        deleteContactMenuItem.isVisible = true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                requireActivity().onBackPressed()
-                return true
-            }
-            R.id.action_delete_contact -> {
-                DeleteContactAlertDialogFragment.build(contactId.toInt(), object : OnSuccess<Boolean> {
-                    override fun onSuccess(data: Boolean) {
-                        requireActivity().onBackPressed()
-                    }
-                })
-                        .show(requireActivity().supportFragmentManager, null)
-                return true
+        viewModel.fetchContact(args.contactId)
+        // Handle DeleteContactAlertDialogFragment result
+        setFragmentResultListener(DeleteContactAlertDialogFragment.REQUEST_DELETE_CONTACT){ requestKey, bundle ->
+            if(bundle.getInt(KEY_RESULT) == Activity.RESULT_OK){
+                findNavController().popBackStack()
             }
         }
+    }
 
-        return super.onOptionsItemSelected(item)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) = inflater.inflate(R.menu.contact_detail_menu,menu)
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_delete_contact -> {
+                val direction = ContactDetailFragmentDirections.actionContactDetailFragmentToDeleteContactAlertDialogFragment(args.contactId)
+                Navigation.findNavController(requireView()).navigate(direction)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun setObservers() {

@@ -9,12 +9,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
-import androidx.lifecycle.ViewModel;
-
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
 import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,12 +18,10 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import dagger.android.support.DaggerAppCompatActivity;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.exception.WrongPinLengthException;
 import io.iohk.atala.prism.app.data.local.preferences.SecurityPin;
@@ -36,15 +30,12 @@ import lombok.NonNull;
 import lombok.Setter;
 
 @Setter
-public class UnlockActivity extends CvpActivity {
+public class UnlockActivity extends DaggerAppCompatActivity {
 
     private Preferences prefs;
 
     private BiometricPrompt myBiometricPrompt;
     private String pin = "";
-
-    @Inject
-    Navigator navigator;
 
     private List<TextView> pinEditTexts = new ArrayList<>();
 
@@ -64,35 +55,15 @@ public class UnlockActivity extends CvpActivity {
     ImageButton biometrics;
 
     @Override
-    protected Navigator getNavigator() {
-        return navigator;
-    }
-
-    @Override
-    protected int getTitleValue() {
-        return R.string.empty_title;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
-    }
-
-    protected int getView() {
-        return R.layout.fragment_unlock;
-    }
-
-    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(getView());
+        setContentView(R.layout.fragment_unlock);
         ButterKnife.bind(this);
         Objects.requireNonNull(getSupportActionBar()).hide();
         prefs = new Preferences(this);
         initBiometrics();
         pinEditTexts.addAll(Arrays.asList(pinCharacter1, pinCharacter2, pinCharacter3, pinCharacter4));
     }
-
 
     @Override
     protected void onResume() {

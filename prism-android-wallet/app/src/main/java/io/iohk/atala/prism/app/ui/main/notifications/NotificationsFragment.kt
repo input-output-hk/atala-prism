@@ -1,71 +1,63 @@
 package io.iohk.atala.prism.app.ui.main.notifications
 
+import android.Manifest
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.observe
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
+import io.iohk.atala.prism.app.neo.common.IntentUtils
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
 import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
-import io.iohk.atala.prism.app.ui.CvpFragment
-import io.iohk.atala.prism.app.ui.main.credentials.CredentialDetailFragment
-import io.iohk.atala.prism.app.utils.ActivitiesRequestCodes
+import io.iohk.atala.prism.app.neo.common.extensions.buildActivityResultLauncher
+import io.iohk.atala.prism.app.neo.common.extensions.buildRequestPermissionLauncher
 import io.iohk.atala.prism.app.utils.IntentDataConstants
-import io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogFragment.Companion.build
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator
-import io.iohk.atala.prism.app.ui.utils.RootAppBar
 import io.iohk.atala.prism.app.ui.utils.adapters.NotificationsAdapter
+import io.iohk.atala.prism.app.utils.PermissionUtils
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentNotificationsBinding
 import javax.inject.Inject
 
-class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectItem<ActivityHistoryWithCredential> {
+class NotificationsFragment : DaggerFragment(), OnSelectItem<ActivityHistoryWithCredential> {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel:NotificationsViewModel by lazy {
+        ViewModelProviders.of(this,viewModelFactory).get(NotificationsViewModel::class.java)
+    }
+
+    // Launcher for QrCodeScannerActivity
+    private val qrActivityResultLauncher = buildActivityResultLauncher{ activityResult ->
+        if(activityResult.resultCode == Activity.RESULT_OK && activityResult.data?.hasExtra(IntentDataConstants.QR_RESULT) == true){
+            val token = activityResult.data!!.getStringExtra(IntentDataConstants.QR_RESULT)!!
+            val direction = NotificationsFragmentDirections.actionNotificationsFragmentToAcceptConnectionDialogFragment(token)
+            findNavController().navigate(direction)
+        }
+    }
+
+    private val cameraPermissionLauncher = buildRequestPermissionLauncher { permissionGranted ->
+        if(permissionGranted) showQRScanner()
+    }
 
     lateinit var binding: FragmentNotificationsBinding
 
     private val adapter: NotificationsAdapter by lazy { NotificationsAdapter(dateFormatDDMMYYYY, this) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, viewId, container, false)
+        setHasOptionsMenu(true)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_notifications, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
-        binding.setScanQrBtnOnClick {
-            scanQr()
-        }
+        binding.setScanQrBtnOnClick { showQRScanner() }
         setObservers()
         configureRecyclerView()
         return binding.root
-    }
-
-    override fun getViewModel(): NotificationsViewModel {
-        return ViewModelProvider(this, viewModelFactory).get(NotificationsViewModel::class.java)
-    }
-
-    override fun getAppBarConfigurator(): AppBarConfigurator {
-        setHasOptionsMenu(true)
-        return RootAppBar(R.string.notifications)
-    }
-
-    override fun getViewId(): Int {
-        return R.layout.fragment_notifications
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY && resultCode == Activity.RESULT_OK) {
-            data?.getStringExtra(IntentDataConstants.QR_RESULT)?.let {
-                // TODO momentary solution, the use of "safeArgs" will be implemented
-                val dialog = build(it)
-                dialog.show(requireActivity().supportFragmentManager, null)
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun setObservers() {
@@ -80,11 +72,9 @@ class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectIte
     }
 
     override fun onSelect(item: ActivityHistoryWithCredential) {
-        // TODO This is logic inherited from old code we need to use the navigation components
-        item.credential?.let {
-            val credentialFragment = CredentialDetailFragment.build(it.credentialId)
-            navigator.showFragmentOnTop(
-                    requireActivity().supportFragmentManager, credentialFragment)
+        item.credential?.credentialId?.let { credentialId->
+            val direction = NotificationsFragmentDirections.actionNotificationsFragmentToCredentialDetailNavigation(credentialId)
+            findNavController().navigate(direction)
         }
     }
 
@@ -93,16 +83,22 @@ class NotificationsFragment : CvpFragment<NotificationsViewModel>(), OnSelectIte
         binding.notificationsRecyclerView.adapter = adapter
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.findItem(R.id.action_activity_log).isVisible = true
-    }
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) = inflater.inflate(R.menu.notifications_menu,menu)
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_activity_log) {
-            val fragment = ActivityLogFragment()
-            navigator.showFragmentOnTop(requireActivity().supportFragmentManager, fragment);
+            findNavController().navigate(R.id.action_notificationsFragment_to_activityLogFragment);
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun showQRScanner(){
+        if (PermissionUtils.checkIfAlreadyHavePermission(requireContext(), Manifest.permission.CAMERA)) {
+            val intent = IntentUtils.intentQRCodeScanner(requireContext())
+            qrActivityResultLauncher.launch(intent)
+        }else{
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
     }
 }

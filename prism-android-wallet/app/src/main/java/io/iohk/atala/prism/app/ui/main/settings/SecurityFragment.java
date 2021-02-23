@@ -7,29 +7,17 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
-
-import androidx.lifecycle.ViewModel;
-
-import javax.inject.Inject;
-
+import androidx.navigation.Navigation;
 import butterknife.BindView;
-import io.iohk.atala.prism.app.ui.CvpFragment;
+import butterknife.ButterKnife;
+import dagger.android.support.DaggerFragment;
+import io.iohk.atala.prism.app.neo.common.extensions.FragmentExtensionsKt;
 import io.iohk.cvp.R;
-import io.iohk.atala.prism.app.ui.Navigator;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator;
-import io.iohk.atala.prism.app.ui.utils.NoAppBar;
 import lombok.Setter;
 
 @Setter
-public class SecurityFragment extends CvpFragment {
-
-    @Inject
-    public SecurityFragment() {
-    }
-
-    @Inject
-    Navigator navigator;
+public class SecurityFragment extends DaggerFragment {
 
     @BindView(R.id.switchTouch)
     Switch switchTouch;
@@ -38,43 +26,23 @@ public class SecurityFragment extends CvpFragment {
     TextView changePin;
 
     @Override
-    protected int getViewId() {
-        return R.layout.fragment_security;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
-    }
-
-    @Override
-    protected AppBarConfigurator getAppBarConfigurator() {
-        return new NoAppBar();
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-
-        if (new Preferences(getContext()).getSecurityTouch()) {
+        View view = inflater.inflate(R.layout.fragment_security, container, false);
+        ButterKnife.bind(this, view);
+        if (new Preferences(requireContext()).getSecurityTouch()) {
             switchTouch.setChecked(true);
         }
         switchTouch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                new Preferences(getContext()).saveSecurityTouch(isChecked);
+                new Preferences(requireContext()).saveSecurityTouch(isChecked);
             }
         });
-
-        changePin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                navigator.showFragmentOnTopOfMenu(getFragmentManager(), new SecurityChangePinFragment());
-            }
+        changePin.setOnClickListener(v -> {
+            Navigation.findNavController(requireView()).navigate(R.id.action_securityFragment_to_securityChangePinFragment);
         });
-
+        FragmentExtensionsKt.getSupportActionBar(this).hide();
         return view;
     }
 }

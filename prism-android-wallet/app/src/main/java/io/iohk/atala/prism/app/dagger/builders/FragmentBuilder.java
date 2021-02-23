@@ -20,8 +20,6 @@ import io.iohk.atala.prism.app.ui.main.contacts.DeleteContactAlertDialogFragment
 import io.iohk.atala.prism.app.ui.main.credentials.DeleteCredentialDialogFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsFragment;
 import io.iohk.atala.prism.app.ui.main.notifications.NotificationsFragment;
-import io.iohk.atala.prism.app.ui.main.payments.PaymentCongratsFragment;
-import io.iohk.atala.prism.app.ui.main.payments.PaymentFragment;
 import io.iohk.atala.prism.app.ui.main.profile.ProfileFragment;
 import io.iohk.atala.prism.app.ui.commondialogs.ProofRequestDialogFragment;
 import io.iohk.atala.prism.app.ui.main.settings.SecurityChangePinFragment;
@@ -56,12 +54,6 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector
     abstract SettingsFragment contributeSettingsFragment();
-
-    @ContributesAndroidInjector
-    abstract PaymentFragment contributePaymenFragment();
-
-    @ContributesAndroidInjector
-    abstract PaymentCongratsFragment contributePaymenCongratsFragment();
 
     @ContributesAndroidInjector
     abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragmentRefactored();

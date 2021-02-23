@@ -27,7 +27,6 @@ import io.iohk.atala.prism.app.neo.data.local.ProofRequestsLocalDataSourceInterf
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource;
-import io.iohk.atala.prism.app.ui.Navigator;
 import dagger.Module;
 import dagger.Provides;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
@@ -36,15 +35,6 @@ import javax.inject.Singleton;
 
 @Module
 public class ApplicationModule {
-
-    /*
-     * TODO this has to be removed and replaced by the implementation of the Android navigation components
-     * */
-    @Provides
-    @Singleton
-    public Navigator provideNavigator() {
-        return new Navigator();
-    }
 
     @Provides
     @Singleton

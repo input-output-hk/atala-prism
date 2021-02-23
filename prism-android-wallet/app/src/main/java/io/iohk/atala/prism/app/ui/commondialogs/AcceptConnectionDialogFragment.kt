@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.android.support.DaggerDialogFragment
 import io.iohk.cvp.R
@@ -19,18 +20,7 @@ import javax.inject.Inject
 
 class AcceptConnectionDialogFragment : DaggerDialogFragment() {
 
-    companion object {
-        const val KEY_TOKEN = "token"
-
-        // @TODO momentary solution, the use of "safeArgs" will be implemented
-        fun build(token: String): AcceptConnectionDialogFragment {
-            val dialog = AcceptConnectionDialogFragment()
-            val args = Bundle()
-            args.putString(KEY_TOKEN, token)
-            dialog.arguments = args
-            return dialog
-        }
-    }
+    private val args:AcceptConnectionDialogFragmentArgs by navArgs()
 
     @Inject
     lateinit var factory: ViewModelProvider.Factory
@@ -56,13 +46,7 @@ class AcceptConnectionDialogFragment : DaggerDialogFragment() {
         super.onCreate(savedInstanceState)
         // TODO find how to set this style within the app theme (R.style.AppTheme)
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.AlertDialogTheme)
-        // TODO this will be replaced with the use of "SafeArgs"
-        val token = arguments?.getString(KEY_TOKEN, "") ?: ""
-        if (token.isNotBlank()) {
-            viewModel.fetchConnectionTokenInfo(token)
-        } else {
-            dismiss()
-        }
+        viewModel.fetchConnectionTokenInfo(args.token)
     }
 
     private fun setObservers() {

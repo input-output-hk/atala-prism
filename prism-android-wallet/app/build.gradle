@@ -246,6 +246,8 @@ dependencies {
 
     implementation project(':CustomUI')
 
+    // Support for FragmentResultListener
+    implementation "androidx.fragment:fragment-ktx:1.3.0-rc01"
 }
 
 

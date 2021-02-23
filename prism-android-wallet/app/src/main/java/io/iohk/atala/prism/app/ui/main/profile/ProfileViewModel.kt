@@ -22,15 +22,15 @@ class ProfileViewModel @Inject constructor(private val repository:PreferencesRep
 
     val editMode: LiveData<Boolean> = _editMode
 
-    val fullName = MutableLiveData<String>()
+    val fullName = MutableLiveData<String?>()
 
-    val country = MutableLiveData<String>()
+    val country = MutableLiveData<String?>()
 
-    val email = MutableLiveData<String>()
+    val email = MutableLiveData<String?>()
 
-    private val _profileImage = MutableLiveData<Bitmap>()
+    private val _profileImage = MutableLiveData<Bitmap?>()
 
-    val profileImage: LiveData<Bitmap> = _profileImage
+    val profileImage: LiveData<Bitmap?> = _profileImage
 
     private val _showLoading = MutableLiveData<EventWrapper<Boolean>>()
 

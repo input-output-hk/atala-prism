@@ -6,15 +6,13 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
-import io.iohk.atala.prism.app.ui.Navigator;
+import io.iohk.atala.prism.app.neo.common.IntentUtils;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 
 public class ForegroundBackgroundListener implements LifecycleObserver {
 
     private final Context ctx;
     private final Preferences prefs;
-
-    Navigator navigator;
 
     /*
      * TODO: Refactor "isFirstLaunch" for now this property is used to handle the
@@ -26,14 +24,13 @@ public class ForegroundBackgroundListener implements LifecycleObserver {
     public ForegroundBackgroundListener(Context ctx) {
         this.ctx = ctx;
         prefs = new Preferences(ctx);
-        navigator = new Navigator();
     }
 
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     void onStart() {
         if (!ForegroundBackgroundListener.isFirstLaunch && prefs.isPinConfigured()) {
-            navigator.showUnlockScreen(ctx);
+            ctx.startActivity(IntentUtils.Companion.intentUnlockScreen(ctx));
         } else {
             ForegroundBackgroundListener.isFirstLaunch = false;
         }

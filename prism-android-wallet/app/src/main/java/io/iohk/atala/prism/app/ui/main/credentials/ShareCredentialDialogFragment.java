@@ -30,8 +30,6 @@ import io.iohk.atala.prism.app.ui.utils.adapters.CheckableContactRecyclerViewAda
 import io.iohk.atala.prism.app.ui.commondialogs.SuccessDialog;
 import lombok.NoArgsConstructor;
 
-import static io.iohk.atala.prism.app.utils.IntentDataConstants.CREDENTIAL_ID_KEY;
-
 @NoArgsConstructor
 public class ShareCredentialDialogFragment extends DaggerDialogFragment implements OnSelectItem<CheckableData<Contact>> {
 
@@ -64,7 +62,7 @@ public class ShareCredentialDialogFragment extends DaggerDialogFragment implemen
         binding.setViewModel(viewModel);
         configureRecyclerView();
         try {
-            String credentialId = getArguments().getString(CREDENTIAL_ID_KEY);
+            String credentialId = ShareCredentialDialogFragmentArgs.fromBundle(getArguments()).getCredentialId();
             viewModel.fetchData(credentialId);
         } catch (Exception e) {
             FirebaseCrashlytics.getInstance().recordException(e);

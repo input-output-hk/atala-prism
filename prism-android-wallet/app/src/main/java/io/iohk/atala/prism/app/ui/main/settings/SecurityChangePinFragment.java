@@ -7,9 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-import androidx.lifecycle.ViewModel;
-
+import androidx.navigation.Navigation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,26 +15,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.iohk.atala.prism.app.ui.CvpFragment;
+import dagger.android.support.DaggerFragment;
+import io.iohk.atala.prism.app.neo.common.extensions.FragmentExtensionsKt;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.core.exception.WrongPinLengthException;
 import io.iohk.atala.prism.app.data.local.preferences.SecurityPin;
-import io.iohk.atala.prism.app.ui.Navigator;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator;
-import io.iohk.atala.prism.app.ui.utils.NoAppBar;
 import io.iohk.atala.prism.app.ui.utils.SecurityPinHelper;
 import io.iohk.atala.prism.app.ui.utils.components.PinEditText;
 import io.iohk.atala.prism.app.ui.utils.interfaces.PinEditTextListener;
 import lombok.Setter;
 
 @Setter
-public class SecurityChangePinFragment extends CvpFragment implements PinEditTextListener {
+public class SecurityChangePinFragment extends DaggerFragment implements PinEditTextListener {
 
     private boolean currentPinShowChar = false;
     private boolean newPinShowChar = false;
@@ -45,14 +39,6 @@ public class SecurityChangePinFragment extends CvpFragment implements PinEditTex
     private List<PinEditText> currentPinEditTextList = new ArrayList<>();
     private List<PinEditText> newPinEditTextList = new ArrayList<>();
     private List<PinEditText> repeatPinEditTextList = new ArrayList<>();
-
-
-    @Inject
-    public SecurityChangePinFragment() {
-    }
-
-    @Inject
-    Navigator navigator;
 
     @BindView(R.id.savePin)
     Button savePin;
@@ -100,30 +86,16 @@ public class SecurityChangePinFragment extends CvpFragment implements PinEditTex
     RelativeLayout errorMessage;
 
     @Override
-    protected int getViewId() {
-        return R.layout.fragment_change_pin;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
-    }
-
-    @Override
-    protected AppBarConfigurator getAppBarConfigurator() {
-        return new NoAppBar();
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_change_pin, container, false);
+        ButterKnife.bind(this, view);
 
         currentPinEditTextList.addAll(Arrays.asList(pinCharacter1, pinCharacter2, pinCharacter3, pinCharacter4));
         newPinEditTextList.addAll(Arrays.asList(newPinCharacter1, newPinCharacter2, newPinCharacter3, newPinCharacter4));
         repeatPinEditTextList.addAll(Arrays.asList(pinRepeatCharacter1, pinRepeatCharacter2, pinRepeatCharacter3, pinRepeatCharacter4));
         initPinEditTexts();
-
+        FragmentExtensionsKt.getSupportActionBar(this).hide();
         return view;
     }
 
@@ -154,7 +126,7 @@ public class SecurityChangePinFragment extends CvpFragment implements PinEditTex
             if (securityPinNew.equals(securityPinConfirm)) {
                 if (prefs.getSecurityPin().equals(securityCurrentPin)) {
                     prefs.saveSecurityPin(securityPinNew);
-                    getFragmentManager().popBackStack();
+                    Navigation.findNavController(requireView()).popBackStack();
                 } else {
                     Toast.makeText(getActivity(), R.string.incorrect_current_pin, Toast.LENGTH_SHORT).show();
                 }

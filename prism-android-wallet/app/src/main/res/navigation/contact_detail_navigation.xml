@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    app:startDestination="@+id/contactDetailFragment"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/contact_detail_navigation">
+
+    <fragment
+        android:id="@+id/contactDetailFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.contacts.ContactDetailFragment"
+        tools:layout="@layout/neo_fragment_contact_detail"
+        android:label="@string/contact_detail">
+        <argument
+            android:name="contactId"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_contactDetailFragment_to_deleteContactAlertDialogFragment"
+            app:destination="@id/deleteContactAlertDialogFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/deleteContactAlertDialogFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.contacts.DeleteContactAlertDialogFragment"
+        tools:layout="@layout/delete_contact_dialog"
+        android:label="DeleteContactAlertDialogFragment">
+        <argument
+            android:name="contactId"
+            app:argType="long" />
+    </dialog>
+</navigation>

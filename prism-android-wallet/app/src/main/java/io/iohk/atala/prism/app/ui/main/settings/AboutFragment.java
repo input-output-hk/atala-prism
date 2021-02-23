@@ -9,37 +9,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import androidx.lifecycle.ViewModel;
-
-import javax.inject.Inject;
-
 import butterknife.BindString;
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.iohk.atala.prism.app.ui.CvpFragment;
+import dagger.android.support.DaggerFragment;
+import io.iohk.atala.prism.app.neo.common.extensions.FragmentExtensionsKt;
 import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.R;
-import io.iohk.atala.prism.app.ui.Navigator;
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator;
-import io.iohk.atala.prism.app.ui.utils.NoAppBar;
 import lombok.Setter;
 
 @Setter
-public class AboutFragment extends CvpFragment {
+public class AboutFragment extends DaggerFragment {
 
     @BindString(R.string.terms_and_conditions_activity_title)
     public String termsAndConditionsTitle;
 
     @BindString(R.string.privacy_policies_agreement)
     public String policiesTitle;
-
-    @Inject
-    public AboutFragment() {
-    }
-
-    @Inject
-    Navigator navigator;
 
     @BindView(R.id.labelBuilt)
     TextView labelBuilt;
@@ -48,24 +35,10 @@ public class AboutFragment extends CvpFragment {
     TextView versionLabel;
 
     @Override
-    protected int getViewId() {
-        return R.layout.fragment_about;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
-    }
-
-    @Override
-    protected AppBarConfigurator getAppBarConfigurator() {
-        return new NoAppBar();
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_about, container, false);
+        ButterKnife.bind(this, view);
 
         String text = getResources().getString(R.string.about_built);
         SpannableString ss = new SpannableString(text);
@@ -79,7 +52,7 @@ public class AboutFragment extends CvpFragment {
         } else {
             versionLabel.setText(BuildConfig.VERSION_NAME);
         }
-
+        FragmentExtensionsKt.getSupportActionBar(this).hide();
         return view;
     }
 
@@ -92,6 +65,4 @@ public class AboutFragment extends CvpFragment {
     void onPolicyClick() {
         TermsAndConditionHelper.showPrivacyPolicy(getContext());
     }
-
-
 }

@@ -15,7 +15,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.utils.IntentDataConstants;
-import io.iohk.atala.prism.app.ui.Navigator;
 
 public class PopUpFragment extends DialogFragment {
 
@@ -46,12 +45,6 @@ public class PopUpFragment extends DialogFragment {
         }
 
         return builder.create();
-    }
-
-    @OnClick(R.id.error_description_text_view)
-    public void onSettingsLinkClick() {
-        Navigator navigator = new Navigator();
-        navigator.showAppPermissionSettings(getActivity());
     }
 
     @OnClick(R.id.btn_ok)

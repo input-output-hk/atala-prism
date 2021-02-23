@@ -7,20 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import androidx.lifecycle.ViewModel;
-
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.iohk.atala.prism.app.ui.CvpFragment;
+import dagger.android.support.DaggerFragment;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
-import io.iohk.atala.prism.app.ui.utils.AppBarConfigurator;
-import io.iohk.atala.prism.app.ui.utils.RootAppBar;
 
-import javax.inject.Inject;
-
-public class BackendIpFragment extends CvpFragment {
+public class BackendIpFragment extends DaggerFragment {
 
     @BindView(R.id.backend_ip)
     EditText editTextBackendIp;
@@ -28,38 +22,19 @@ public class BackendIpFragment extends CvpFragment {
     @BindView(R.id.backend_port)
     EditText editTextBackendPort;
 
-    @Inject
-    public BackendIpFragment() {
-    }
-
     @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_backend_ip_config, container, false);
+        ButterKnife.bind(this, view);
 
         editTextBackendIp.setText(new Preferences(getContext()).getString(Preferences.BACKEND_IP));
         Preferences pref = new Preferences(getContext());
         Integer port = pref.getInt(Preferences.BACKEND_PORT);
 
         editTextBackendPort.setText(port.equals(0) ? "" : port.toString());
-
         return view;
-    }
-
-    @Override
-    protected int getViewId() {
-        return R.layout.fragment_backend_ip_config;
-    }
-
-    @Override
-    public ViewModel getViewModel() {
-        return null;
-    }
-
-    @Override
-    protected AppBarConfigurator getAppBarConfigurator() {
-        return new RootAppBar(R.string.settings);
     }
 
     @OnClick(R.id.save_ip)

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contacts_navigation"
+    app:startDestination="@id/contactsFragment">
+
+    <fragment
+        tools:layout="@layout/fragment_contacts"
+        android:id="@+id/contactsFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.contacts.ContactsFragment"
+        android:label="@string/contacts" >
+        <action
+            android:id="@+id/action_contactsFragment_to_contact_detail_navigation"
+            app:destination="@id/contact_detail_navigation" >
+            <argument
+                android:name="contactId"
+                app:argType="long" />
+        </action>
+        <action
+            android:id="@+id/action_contactsFragment_to_acceptConnectionDialogFragment"
+            app:destination="@id/acceptConnectionDialogFragment" />
+        <action
+            android:id="@+id/action_contactsFragment_to_addQrCodeDialogFragment"
+            app:destination="@id/addQrCodeDialogFragment" />
+    </fragment>
+    <include app:graph="@navigation/contact_detail_navigation" />
+    <dialog
+        tools:layout="@layout/neo_dialog_accept_connection"
+        android:id="@+id/acceptConnectionDialogFragment"
+        android:name="io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogFragment"
+        android:label="AcceptConnectionDialogFragment" >
+        <argument
+            android:name="token"
+            app:argType="string" />
+    </dialog>
+    <dialog
+        tools:layout="@layout/fragment_add_qr_code_dialog"
+        android:id="@+id/addQrCodeDialogFragment"
+        android:name="io.iohk.atala.prism.app.ui.commondialogs.AddQrCodeDialogFragment"
+        android:label="AddQrCodeDialogFragment" />
+</navigation>

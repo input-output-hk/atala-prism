@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/notifications_navigation"
+    app:startDestination="@id/notificationsFragment">
+
+    <fragment
+        tools:layout="@layout/fragment_notifications"
+        android:id="@+id/notificationsFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.notifications.NotificationsFragment"
+        android:label="@string/notifications" >
+        <action
+            android:id="@+id/action_notificationsFragment_to_activityLogFragment"
+            app:destination="@id/activityLogFragment" />
+        <action
+            android:id="@+id/action_notificationsFragment_to_credential_detail_navigation"
+            app:destination="@id/credential_detail_navigation" >
+            <argument
+                android:name="credentialId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_notificationsFragment_to_acceptConnectionDialogFragment"
+            app:destination="@id/acceptConnectionDialogFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_activity_log"
+        android:id="@+id/activityLogFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.notifications.ActivityLogFragment"
+        android:label="@string/activity_log_title" />
+    <include app:graph="@navigation/credential_detail_navigation" />
+    <dialog
+        tools:layout="@layout/neo_dialog_accept_connection"
+        android:id="@+id/acceptConnectionDialogFragment"
+        android:name="io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogFragment"
+        android:label="AcceptConnectionDialogFragment" >
+        <argument
+            android:name="token"
+            app:argType="string" />
+    </dialog>
+</navigation>
