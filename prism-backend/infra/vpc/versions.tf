@@ -4,6 +4,6 @@ terraform {
       source = "hashicorp/aws"
     }
   }
-  required_version = "= 0.13.6"
+  required_version = "= 0.14.5"
   backend "local" {}
 }

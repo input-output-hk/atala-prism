@@ -13,7 +13,7 @@ terraform {
       source = "hashicorp/random"
     }
   }
-  required_version = "= 0.13.6"
+  required_version = "= 0.14.5"
   backend "s3" {
     bucket = "atala-cvp"
     region = "us-east-2"
