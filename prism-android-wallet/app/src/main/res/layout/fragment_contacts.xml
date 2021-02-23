@@ -15,14 +15,14 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:background="@color/grey_1"
+        android:background="@color/white"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <com.google.android.material.textfield.TextInputLayout
             iohk:visible="@{viewModel.showNoConnectionsView == false}"
             android:id="@+id/search_text_input_layout"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="@dimen/activity_default_side_margin"
             android:layout_marginStart="@dimen/activity_default_side_margin"
             android:hint="@string/search_contacts"

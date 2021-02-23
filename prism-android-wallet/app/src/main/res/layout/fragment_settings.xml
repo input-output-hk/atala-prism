@@ -35,7 +35,7 @@
             app:actionImage="@drawable/arrow_right_grey"
             app:isAvailable="true"
             app:logoImage="@drawable/ic_reset"
-            app:primaryText="@string/reset"
+            app:primaryText="@string/reset_data"
             app:secondaryText="@string/delete_contacts_credentials" />
 
         <io.iohk.atala.prism.app.ui.utils.components.OptionItem

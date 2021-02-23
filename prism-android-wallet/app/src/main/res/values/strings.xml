@@ -6,9 +6,9 @@
 
     <!-- Activities titles -->
     <string name="connections_activity_title">Connections</string>
-    <string name="terms_and_conditions_activity_title">Terms and Conditions</string>
-    <string name="wallet_setup_activity_title">Your Seed Phrase</string>
-    <string name="seed_phrase_verification_activity_title">Verify Seed Phrase</string>
+    <string name="terms_and_conditions_activity_title">Terms &amp; Conditions</string>
+    <string name="wallet_setup_activity_title">Your Recovery Phrase</string>
+    <string name="seed_phrase_verification_activity_title">Verify Recovery Phrase</string>
     <string name="qr_scanner_activity_title">Scan QR</string>
 
     <string name="credential_government_type_title">\n• ID Credential </string>
@@ -21,7 +21,7 @@
 
     <!-- Terms and Conditions -->
     <string name="account_creation">Account Creation</string>
-    <string name="terms_and_conditions_description">Please indicate that you have read and agree to the Terms and Conditions and the Privacy Policy Agreement</string>
+    <string name="terms_and_conditions_description">Please indicate that you have read and agreed to the Terms and Conditions and the Privacy Policy Agreement</string>
     <string name="privacy_policies_agreement">Privacy Policy Agreement</string>
 
     <!-- About -->
@@ -38,9 +38,9 @@
 
 
     <!-- Wallet setup -->
-    <string name="seed_phrase_description">Your Seed Phrase is used to generate and recover your account.</string>
-    <string name="seed_phrase_explanation">Please save these 12 words on a piece of paper. The order is important. This seed will allow you to recover your account.</string>
-    <string name="seed_phrase_acceptance">I understand that if I lose my seed phrase,\nI will not be able to recover my account.</string>
+    <string name="seed_phrase_description">Your Recovery Phrase is used to generate and recover your account</string>
+    <string name="seed_phrase_explanation">Please save these 12 words on a piece of paper. The order is important. This phrase will allow you to recover your account</string>
+    <string name="seed_phrase_acceptance">I understand that if I lose my recovery phrase, I will not be able to recover my account</string>
 
     <!-- Seed Phrase Verification -->
     <string name="seed_phrase_verification_description">Enter the following words to verify your Seed Phrase</string>
@@ -81,7 +81,7 @@
     <string name="provider_name">Provider Name</string>
     <string name="decline">Decline</string>
     <string name="confirm">Confirm</string>
-    <string name="share_information_credential">Share the following information to process your credential:</string>
+    <string name="share_information_credential">Share the following information to process your credential</string>
 
     <!-- Credential Acceptance Payment -->
     <string name="payment_activity_title">Payment</string>
@@ -89,7 +89,7 @@
     <string name="image_description">Image description</string>
     <string name="permission_denied_message">You have to grant camera permission to continue</string>
     <string name="welcome">Welcome</string>
-    <string name="get_started">Get started</string>
+    <string name="get_started">Get Started</string>
     <string name="empty_title" />
     <string name="tutorial_step_1_slogan_1">Own and share your data</string>
     <string name="tutorial_step_1_slogan_2">Store all your important documents in one place and share in easy, secure and private way</string>
@@ -119,7 +119,7 @@
 
 
     <!-- Settings option labels -->
-    <string name="backup_button_name">Backup Data</string>
+    <string name="backup_button_name">Backup Account</string>
     <string name="backup_button_description">Create a backup now</string>
     <string name="security_button_name">Security</string>
     <string name="security_button_description">Secure app with a Pin or Biometrics</string>
@@ -169,10 +169,10 @@
     <string name="birth_date">Birth Date</string>
 
     <!-- Congrats screen labels -->
-    <string name="congrats">Congrats!</string>
+    <string name="congrats">Congratulations!</string>
     <string name="credential_payment_successful">Your Credential payment has been made successfully</string>
-    <string name="your_account_has_been_created">Your account has been created</string>
-    <string name="continue_connection">Continue to start the connection process </string>
+    <string name="your_account_has_been_created">Your account has \n been created</string>
+    <string name="continue_connection">Continue to start the \n connection process </string>
     <string name="new_connection">New Connection</string>
 
     <!-- Share credential screen labels -->
@@ -194,10 +194,10 @@
     <string name="server_share_successfully">Successfully shared!</string>
     <string name="select_all_credential_alert">You have to select all the credentials.</string>
 
-    <string name="connection_acept_title">Would you like to connect with</string>
-    <string name="connection_re_acept_title">You have already connected to</string>
-    <string name="connection_acept_button">Confirm</string>
-    <string name="connection_re_acept_button">Connect again</string>
+    <string name="connection_accept_title">Connect with:</string>
+    <string name="connection_re_accept_title">You have already connected to</string>
+    <string name="connection_accept_button">Confirm</string>
+    <string name="connection_re_accept_button">Connect again</string>
     <string name="employee_name">Employee Name</string>
     <string name="already_connected_reset_data">You have already connected with %1$s. Please reset the data in the settings and reset the interactive city map.</string>
 
@@ -263,8 +263,7 @@
     <string name="shared_credentials">SHARED CREDENTIALS</string>
     <string name="shared_with">SHARED WITH</string>
     <string name="requested_by">REQUESTED BY</string>
-    <string name="you_dont_have_notifications_yet">You don’t have Notifications yet</string>
-    <string name="you_can_edit_your_notifications_on_settings_section">You can edit your notifications on settings section.</string>
+    <string name="you_dont_have_notifications_yet">You don\'t have any notifications</string>
     <string name="profile_pic_menu_camera">Take from camera</string>
     <string name="profile_pic_menu_library">Choose from library</string>
     <string name="profile_pic_menu_remove">Remove image</string>
@@ -274,7 +273,7 @@
     <string name="activity_description_requested_by">Requested by %1$s</string>
     <string name="activity_description_connected">Connected</string>
     <string name="activity_description_deleted">Deleted</string>
-    <string name="you_dont_have_activities_yet">You don’t have Activities yet</string>
+    <string name="you_dont_have_activities_yet">You don’t have any activities</string>
     <string name="settings_custom_date_format_title">Date Format</string>
     <string name="custom_date_format">Custom date format</string>
     <string name="settings_custom_date_format_accept_button_text">Ok</string>
@@ -284,4 +283,5 @@
     <string name="date_format_yyyy_mm_dd">YYYY / MM / DD</string>
     <string name="proof_request_dialog_requested_credentials">Requested Credential(s):</string>
     <string name="proof_request_dialog_share">Share</string>
+    <string name="credential_history_title">%1$s History</string>
 </resources>

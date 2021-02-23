@@ -12,6 +12,10 @@ class MyCredentialsViewModel @Inject constructor(private val credentialsReposito
 
     private val _credentials: LiveData<List<Credential>> = credentialsRepository.allCredentials()
 
+    val showSearchBar:LiveData<Boolean> = Transformations.map(_credentials){
+       it.isNotEmpty()
+    }
+
     val filteredCredentials: LiveData<List<Credential>> = MediatorLiveData<List<Credential>>().apply {
         addSource(searchText) { value = computeCredentials() }
         addSource(_credentials) { value = computeCredentials() }

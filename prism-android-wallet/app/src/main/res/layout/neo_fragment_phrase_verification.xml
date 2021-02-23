@@ -48,7 +48,7 @@
             android:id="@+id/text_input_layout_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="88dp"
+            android:layout_marginTop="30dp"
             android:hint="@{@string/word_numeric((viewModel.verificationIndex1 + 1))}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -60,7 +60,6 @@
                 android:layout_height="wrap_content"
                 android:singleLine="true"
                 android:text="@={viewModel.firstWord}">
-
                 <requestFocus />
             </com.google.android.material.textfield.TextInputEditText>
 

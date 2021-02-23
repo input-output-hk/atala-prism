@@ -17,7 +17,7 @@ class WalletSetupViewModel @Inject constructor(sessionRepository: SessionReposit
         viewModelScope.launch {
             val mnemonicList = sessionRepository.getNewMnemonicList()
             // select random indexes for two words for user verification
-            userVerificationWordsIndexes = mnemonicList.randomIndexes().take(2)
+            userVerificationWordsIndexes = mnemonicList.randomIndexes().take(2).sorted()
             value = mnemonicList
         }
     }

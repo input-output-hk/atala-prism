@@ -41,7 +41,7 @@
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{viewModel.participantInfoResponse.alreadyAdded ? @string/you_have_already_connected : @string/connection_acept_title}"
+                android:text="@{viewModel.participantInfoResponse.alreadyAdded ? @string/you_have_already_connected : @string/connection_accept_title}"
                 android:layout_marginBottom="@dimen/bt_form_padding"
                 android:textSize="12sp" />
 
@@ -120,7 +120,7 @@
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="@string/connection_acept_button"
+                    android:text="@string/connection_accept_button"
                     android:textAllCaps="false"
                     app:cornerRadius="32dp" />
 

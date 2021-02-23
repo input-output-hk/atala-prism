@@ -14,15 +14,13 @@
     </data>
 
     <LinearLayout
-        android:layout_marginTop="16dp"
         android:id="@+id/no_credentials_container"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
         <ImageView
-            android:layout_marginTop="40dp"
             android:id="@+id/imageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -30,10 +28,10 @@
             android:src="@mipmap/no_credential" />
 
         <androidx.appcompat.widget.AppCompatTextView
+            android:layout_marginTop="16dp"
             android:id="@+id/textView2"
             android:layout_width="293dp"
-            android:layout_height="57dp"
-            android:layout_marginTop="60dp"
+            android:layout_height="wrap_content"
             android:text="@{title}"
             android:textAlignment="center"
             android:textColor="@color/black"

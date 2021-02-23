@@ -51,7 +51,8 @@ class CredentialHistoryFragment : DaggerFragment(), OnSelectItem<ActivityHistory
 
     private fun setObservers() {
         viewModel.credential.observe(viewLifecycleOwner) {
-            val title = getString(CredentialUtil.getNameResource(it))
+            val credentialName = getString(CredentialUtil.getNameResource(it))
+            val title = getString(R.string.credential_history_title, credentialName)
             findNavController().currentDestination?.label = title
             supportActionBar?.title = title
             binding.credentialLogo.setImageDrawable(CredentialUtil.getLogo(it.credentialType, requireContext()))
