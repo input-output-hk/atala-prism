@@ -35,6 +35,10 @@ package object errors {
     }
   }
 
+  final case class InvalidRequest(reason: String) extends ConnectorError {
+    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
+  }
+
   case class InternalServerError(cause: Throwable) extends ConnectorError with PrismServerError {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")

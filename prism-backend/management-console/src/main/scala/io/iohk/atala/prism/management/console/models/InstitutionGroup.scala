@@ -10,6 +10,10 @@ final case class CreateInstitutionGroup(
     contactIds: Set[Contact.Id]
 )
 
+final case class GetInstitutionGroups(
+    contactId: Option[Contact.Id]
+)
+
 final case class UpdateInstitutionGroup(
     groupId: InstitutionGroup.Id,
     contactIdsToAdd: Set[Contact.Id],

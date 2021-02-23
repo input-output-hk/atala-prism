@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.grpc
 
-import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
@@ -260,29 +259,7 @@ object ProtoCodecs {
     } yield UpdateContact(contactId, newExternalId, newJsonData, newName)
   }
 
-  def toCreateGroup(request: console_api.CreateGroupRequest): Try[CreateInstitutionGroup] = {
-    for {
-      contactIds <- request.contactIds.toList.map(Contact.Id.from).sequence
-      contactIdsSet <- checkListUniqueness(contactIds)
-      name = InstitutionGroup.Name(request.name)
-    } yield CreateInstitutionGroup(name, contactIdsSet)
-  }
-
-  def toUpdateGroup(request: console_api.UpdateGroupRequest): Try[UpdateInstitutionGroup] = {
-    for {
-      groupId <- InstitutionGroup.Id.from(request.groupId)
-      contactIdsToAdd <- request.contactIdsToAdd.toList.map(Contact.Id.from).sequence
-      contactIdsToRemove <- request.contactIdsToRemove.toList.map(Contact.Id.from).sequence
-      contactIdsToAddSet <- checkListUniqueness(contactIdsToAdd)
-      contactIdsToRemoveSet <- checkListUniqueness(contactIdsToRemove)
-      name = if (request.name.isEmpty) None else Some(InstitutionGroup.Name(request.name))
-    } yield UpdateInstitutionGroup(groupId, contactIdsToAddSet, contactIdsToRemoveSet, name)
-  }
-
-  def toDeleteGroup(request: console_api.DeleteGroupRequest): Try[DeleteInstitutionGroup] =
-    InstitutionGroup.Id.from(request.groupId).map(DeleteInstitutionGroup)
-
-  private def checkListUniqueness[T](list: List[T]): Try[Set[T]] = {
+  def checkListUniqueness[T](list: List[T]): Try[Set[T]] = {
     val set = list.toSet
     if (set.size == list.size) {
       Success(set)
@@ -317,14 +294,5 @@ object ProtoCodecs {
         else
           Success(())
     } yield TimeInterval(startTimestamp, endTimestamp)
-  }
-
-  def toGetStatistics(request: console_api.GetStatisticsRequest): Try[GetStatistics] = {
-    request.interval match {
-      case Some(protoInterval) =>
-        toTimestamp(protoInterval).map(timeInterval => GetStatistics(Some(timeInterval)))
-      case None =>
-        Success(GetStatistics(None))
-    }
   }
 }

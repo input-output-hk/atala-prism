@@ -6,10 +6,12 @@ import org.slf4j.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ErrorSupport[E <: PrismError, ES <: E with PrismServerError] {
+trait ErrorSupport[E <: PrismError] {
   def logger: Logger
 
-  def wrapAsServerError(cause: Throwable): ES
+  def wrapAsServerError(cause: Throwable): E
+
+  def invalidRequest(message: String): E
 
   protected def respondWith[T](request: scalapb.GeneratedMessage, error: E)(implicit
       ec: ExecutionContext

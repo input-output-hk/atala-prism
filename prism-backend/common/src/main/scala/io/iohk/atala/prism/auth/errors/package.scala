@@ -46,6 +46,10 @@ package object errors {
     override def toStatus: Status = status
   }
 
+  final case class InvalidRequest(reason: String) extends AuthError {
+    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
+  }
+
   final case class InternalServerError(cause: Throwable) extends AuthError with PrismServerError {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
