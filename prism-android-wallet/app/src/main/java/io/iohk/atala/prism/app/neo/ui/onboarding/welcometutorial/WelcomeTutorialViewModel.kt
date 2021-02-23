@@ -43,7 +43,7 @@ class WelcomeTutorialViewModel : ViewModel() {
      * Go to the next step, if it is the last one, it
      * should not do anything
      * */
-    private fun next() {
+    fun next() {
         if (step.value!! < (TOTAL_STEPS - 1)) {
             _step.value = (_step.value ?: 0) + 1
         }
