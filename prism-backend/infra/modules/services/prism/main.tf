@@ -246,6 +246,12 @@ locals {
       backend_protocol = "TCP"
       backend_port     = var.node_port
       target_type      = "ip"
+    },
+    {
+      name_prefix      = "grpc"
+      backend_protocol = "TCP"
+      backend_port     = var.grpc_port
+      target_type      = "ip"
     }
   ]
 }
@@ -282,6 +288,11 @@ module "prism_lb" {
       port               = 80
       protocol           = "TCP"
       target_group_index = 2
+    },
+    {
+      port               = var.grpc_port
+      protocol           = "TCP"
+      target_group_index = 4
     }
   ]
 

@@ -91,6 +91,11 @@ variable "execution_role_arn" {
   type = string
 }
 
+variable "grpc_port" {
+  description = "Port for the envoy gprc endpoint."
+  type        = number
+}
+
 variable "grpc_web_proxy_port" {
   description = "Port for the envoy gprc-web proxy."
   type        = number

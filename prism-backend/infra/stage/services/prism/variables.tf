@@ -121,6 +121,12 @@ variable "prism_lb_envoy_docker_image" {
   default     = "895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-lb-envoy:latest"
 }
 
+variable "grpc_port" {
+  description = "Port for the envoy gprc-web proxy."
+  type        = number
+  default     = 8081
+}
+
 variable "grpc_web_proxy_port" {
   description = "Port for the envoy gprc-web proxy."
   type        = number

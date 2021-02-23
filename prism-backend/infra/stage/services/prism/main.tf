@@ -233,6 +233,14 @@ module "security_group" {
       protocol    = "tcp"
       cidr_blocks = "0.0.0.0/0"
     },
+
+    // grpc inbound
+    {
+      from_port   = var.grpc_port
+      to_port     = var.grpc_port
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
   ]
   egress_rules = ["all-all"]
 }
@@ -272,6 +280,7 @@ module "prism_service" {
   prism_console_docker_image          = var.prism_console_docker_image
   prism_console_port                  = var.prism_console_port
   envoy_docker_image                  = var.prism_lb_envoy_docker_image
+  grpc_port                           = var.grpc_port
   grpc_web_proxy_port                 = var.grpc_web_proxy_port
 
   vpc_id                     = local.vpc_id
