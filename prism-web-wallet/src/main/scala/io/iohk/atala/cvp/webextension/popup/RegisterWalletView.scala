@@ -94,6 +94,11 @@ import slinky.web.html.{p, _}
       ),
       h4(className := "h4_register", id := "h4_register", "Wallet information"),
       div(className := "")(
+        p(
+          className := "description",
+          id := "description1",
+          "Your password should be a memorable passphrase of at least 30 characters"
+        ),
         PasswordInput(
           "Password",
           "Enter Password",

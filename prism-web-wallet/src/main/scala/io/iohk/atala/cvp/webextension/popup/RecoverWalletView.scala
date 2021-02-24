@@ -64,6 +64,11 @@ import scala.util.{Failure, Success}
         h3(className := "h3_recover")("Recover your wallet"),
         ChipInput(chips => setChips(chips), Some(_ => isValidSeedPhrase())),
         h4(className := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it"),
+        p(
+          className := "description",
+          id := "description1",
+          "Your password should be a memorable passphrase of at least 30 characters"
+        ),
         PasswordInput(
           "Password",
           "Enter Password",
