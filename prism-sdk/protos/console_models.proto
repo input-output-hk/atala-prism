@@ -6,7 +6,6 @@ option java_package = "io.iohk.atala.prism.protos";
 package io.iohk.atala.prism.protos;
 
 import "common_models.proto";
-import "node_models.proto";
 
 // Indicates the status on the contact's connection
 enum ContactConnectionStatus {

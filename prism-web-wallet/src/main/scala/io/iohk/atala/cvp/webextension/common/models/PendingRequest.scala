@@ -7,7 +7,7 @@ sealed trait PendingRequest
 
 object PendingRequest {
 
-  final case class IssueCredential(id: Int, origin: String, sessionId: String, subject: CredentialSubject)
+  final case class IssueCredential(id: Int, origin: String, sessionId: String, credentialData: CredentialSubject)
       extends PendingRequest
 
   final case class RevokeCredential() extends PendingRequest

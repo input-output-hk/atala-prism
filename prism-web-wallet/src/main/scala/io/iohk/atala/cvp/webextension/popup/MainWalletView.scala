@@ -43,7 +43,7 @@ import scala.util.{Failure, Success}
   override def initialState: State = State(requests = Nil, 0, "", None, false)
 
   private def renderTemplate(request: PendingRequest.IssueCredential) = {
-    val sanitisedHtml = dompurify.sanitize(request.subject.properties.getOrElse("html", emptyDiv))
+    val sanitisedHtml = dompurify.sanitize(request.credentialData.properties.getOrElse("html", emptyDiv))
     domParser
       .parseFromString(sanitisedHtml, "text/html")
       .documentElement

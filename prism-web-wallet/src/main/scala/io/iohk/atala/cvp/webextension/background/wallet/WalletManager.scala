@@ -98,17 +98,17 @@ private[background] class WalletManager(
       (request, _) <- issueCredentialRequestF(requestId)
       walletData <- walletDataF()
       ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
-      claims = request.subject.properties.asJson.noSpaces
+      claims = request.credentialData.properties.asJson.noSpaces
       signingKeyId = ECKeyOperation.firstMasterKeyId // TODO: this key id should eventually be selected by the user
       //       this should be done when we complete the key derivation flow
       _ <- connectorClientService.signAndPublishBatch(
         ecKeyPair,
         walletData.did,
         signingKeyId,
-        List(CredentialData(ConsoleCredentialId(request.subject.id), claims))
+        List(CredentialData(ConsoleCredentialId(request.credentialData.id), claims))
       )
     } yield {
-      println(s"Signed and Published = ${request.subject.id}")
+      println(s"Signed and Published = ${request.credentialData.id}")
       removeRequest(requestId)
     }
   }
@@ -124,7 +124,7 @@ private[background] class WalletManager(
       .map {
         case (request, _) =>
           removeRequest(requestId)
-          println(s"Rejected = ${request.subject.id}")
+          println(s"Rejected = ${request.credentialData.id}")
       }
   }
 

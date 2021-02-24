@@ -36,20 +36,19 @@ class CredentialsServiceImpl(
       // TODO: Avoid doing this when we stop accepting the subjectId
       val subjectIdF = Option(request.externalId)
         .filter(_.nonEmpty)
-        .map(Contact.ExternalId.apply) match {
-        case Some(externalId) =>
-          contactsRepository
-            .find(ParticipantId(issuerId), externalId)
-            .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exist")))
-            .map(_.contactId)
-
-        case None =>
+        .map(Contact.ExternalId.apply)
+        .fold {
           Future
             .successful(Contact.Id.from(request.contactId).toEither)
             .toFutureEither(
               new RuntimeException("The contactId is required, if it was provided, it's an invalid value")
             )
-      }
+        } { externalId =>
+          contactsRepository
+            .find(ParticipantId(issuerId), externalId)
+            .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exist")))
+            .map(_.contactId)
+        }
 
       lazy val json =
         io.circe.parser.parse(request.credentialData).getOrElse(throw new RuntimeException("Invalid json"))

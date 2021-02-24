@@ -48,6 +48,9 @@ service CredentialIssuanceService {
   // Creates a new credential issuance
   rpc CreateCredentialIssuance (CreateCredentialIssuanceRequest) returns (CreateCredentialIssuanceResponse) {}
 
+  // Bulk version of CreateGenericCredential, creates credentials on the authenticated institution.
+  rpc CreateGenericCredentialBulk (CreateGenericCredentialBulkRequest) returns (CreateGenericCredentialBulkResponse) {}
+
   // Gets a credential issuance
   rpc GetCredentialIssuance (GetCredentialIssuanceRequest) returns (GetCredentialIssuanceResponse) {}
 }
@@ -322,6 +325,29 @@ message CreateCredentialIssuanceRequest {
 // Response to creating a credential issuance
 message CreateCredentialIssuanceResponse {
   string credentialIssuanceId = 1; // ID of the credential issuance just created
+}
+
+// Request to create a credential issuance for the authenticated institution.
+// The difference with CreateCredentialIssuanceRequest is that this request takes a JSON parameter
+message CreateGenericCredentialBulkRequest {
+  // The JSON that contains the credentials data in this issuance
+  // The expected structure is:
+  // {
+  //    "issuance_name": String,
+  //    "credential_type_id": String,
+  //    "drafts" : [
+  //      {
+  //        "external_id": String,
+  //        "credential_data": JSON,
+  //        "group_ids": [String],
+  //      }
+  //    ]
+  // }
+  string credentialsJSON = 1;
+}
+// Response when a bulk of credentials are created
+message CreateGenericCredentialBulkResponse {
+  string credentialIssuanceId = 1; // The id of the credential issuance
 }
 
 // Request to get a credential issuance

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
+import io.circe.Json
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{
@@ -19,14 +20,17 @@ import io.iohk.atala.prism.management.console.repositories.{
   CredentialIssuancesRepository,
   InstitutionGroupsRepository
 }
+import io.iohk.atala.prism.management.console.validations.JsonValidator
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.console_models.CredentialIssuanceContact
 import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherFOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters.SetHasAsJava
+import scala.util.Try
 
 class CredentialIssuanceServiceImpl(
     contactsRepository: ContactsRepository,
@@ -153,4 +157,62 @@ class CredentialIssuanceServiceImpl(
       f(institutionId, request)
     }
   }
+
+  /** Bulk version of CreateGenericCredential, creates credentials on the authenticated institution.
+    */
+  override def createGenericCredentialBulk(
+      request: CreateGenericCredentialBulkRequest
+  ): Future[CreateGenericCredentialBulkResponse] =
+    authenticator.authenticated[CreateGenericCredentialBulkRequest, CreateGenericCredentialBulkResponse](
+      "createGenericCredentialBulk",
+      request
+    ) { institutionId =>
+      implicit val loggingContext: LoggingContext =
+        LoggingContext("request" -> request, "institutionId" -> institutionId)
+
+      lazy val credentialsJSONF = Future.fromTry {
+        JsonValidator.parse(request.credentialsJSON)
+      }
+
+      val contactsEntriesF: Future[List[CredentialIssuancesRepository.CreateCredentialIssuanceContact]] =
+        for {
+          credentialsJSON <- credentialsJSONF
+          drafts <- JsonValidator.extractField[List[Json]](credentialsJSON)("drafts")
+          createCredentialIssuanceContacts <- JsonValidator.validateIssuanceContacts(
+            institutionId,
+            drafts,
+            contactsRepository,
+            institutionGroupsRepository
+          )
+        } yield createCredentialIssuanceContacts
+
+      val response = for {
+        credentialsJSON <- credentialsJSONF.lift
+        credentialsType <-
+          JsonValidator
+            .extractFieldWith[String, CredentialTypeId](credentialsJSON)("credential_type_id")(
+              CredentialTypeId.unsafeFrom
+            )
+            .lift
+        issuanceName <- (JsonValidator.extractField[String](credentialsJSON)("issuance_name"): Future[String]).lift
+        _ = Try { if (issuanceName.isEmpty) throw new RuntimeException("Empty issuance name") else () }
+
+        contactsEntries <- contactsEntriesF.lift
+        response <-
+          credentialIssuancesRepository
+            .create(
+              CredentialIssuancesRepository.CreateCredentialIssuance(
+                name = issuanceName,
+                createdBy = institutionId,
+                credentialTypeId = credentialsType,
+                contacts = contactsEntries
+              )
+            )
+            .map { credentialIssuanceId =>
+              CreateGenericCredentialBulkResponse(credentialIssuanceId.uuid.toString)
+            }
+      } yield response
+
+      response.wrapExceptions.flatten
+    }
 }

@@ -102,6 +102,12 @@ object FutureEither {
   def left[E, A](leftValue: E): FutureEither[E, A] =
     Future.successful(Left(leftValue)).toFutureEither
 
+  implicit class FutureEitherFOps[A](val value: Future[A]) extends AnyVal {
+    /* Lifts a Future[A] to a successful FutureEither
+     */
+    def lift[E](implicit executionContext: ExecutionContext): FutureEither[E, A] = value.map(Right(_)).toFutureEither
+  }
+
   implicit class FutureEitherOps[E, A](val value: Future[Either[E, A]]) extends AnyVal {
     def toFutureEither: FutureEither[E, A] = new FutureEither[E, A](value)
     def toFutureEither[E2](mapper: E => E2)(implicit ec: ExecutionContext): FutureEither[E2, A] = {
