@@ -119,6 +119,9 @@ service GroupsService {
   // Updates an existing group by adding new contacts and removing some of the old ones
   rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse) {}
 
+  // Copies group using existing group id and passed name
+  rpc CopyGroup (CopyGroupRequest) returns (CopyGroupResponse) {}
+
   // Deletes an existing group by its id
   rpc DeleteGroup (DeleteGroupRequest) returns (DeleteGroupResponse) {}
 }
@@ -438,6 +441,16 @@ message UpdateGroupRequest {
 }
 // Response after updating a group
 message UpdateGroupResponse {}
+
+// Request to copy a group
+message CopyGroupRequest {
+  string groupId = 1; // the id of the existing group
+  string name = 2; // the new name of the copied group
+}
+// Response after copying a group
+message CopyGroupResponse {
+  string groupId = 1; // the id of the new group
+}
 
 // Request to delete a group
 message DeleteGroupRequest {

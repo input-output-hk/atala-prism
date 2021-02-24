@@ -4,7 +4,7 @@ import cats.syntax.option._
 import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.errors.GroupsInstitutionDoNotMatch
+import io.iohk.atala.prism.management.console.errors.{GroupNameIsNotFree, GroupsInstitutionDoNotMatch}
 import io.iohk.atala.prism.management.console.models.InstitutionGroup
 import org.scalatest.OptionValues._
 import java.util.UUID
@@ -130,6 +130,115 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val resultGroup = result.head
       resultGroup.value.name must be(groups(0))
       resultGroup.numberOfContacts must be(2)
+    }
+  }
+
+  "copyGroup" should {
+    "allow to copy group" in {
+      val originalGroupName = InstitutionGroup.Name("IOHK 2019")
+      val newGroupName = InstitutionGroup.Name("IOHK 2021")
+      val institutionId = createParticipant("Institution-1")
+
+      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).value.futureValue
+      maybeGroup.isRight mustBe true
+
+      val originalGroupId = maybeGroup.toOption.get.id
+
+      createContact(institutionId, "test-contact-1", originalGroupName.some)
+      createContact(institutionId, "test-contact-2", originalGroupName.some)
+
+      //To ensure that contacts are added
+      repository.listContacts(institutionId, originalGroupName).value.futureValue.map(_.size) mustBe Right(2)
+
+      val maybeNewGroup = repository
+        .copyGroup(institutionId, originalGroupId, newGroupName)
+        .value
+        .futureValue
+
+      maybeNewGroup.isRight mustBe true
+
+      val newGroup = maybeNewGroup.toOption.get
+      newGroup.name mustBe newGroupName
+      newGroup.institutionId mustBe institutionId
+
+      val maybeOriginalContacts = repository.listContacts(institutionId, originalGroupName).value.futureValue
+      val maybeNewGroupContacts = repository.listContacts(institutionId, newGroupName).value.futureValue
+
+      maybeOriginalContacts.isRight mustBe true
+      maybeOriginalContacts mustBe maybeNewGroupContacts
+    }
+
+    "return error if group doesn't exists" in {
+      val institutionId = createParticipant("Institution-1")
+      val fakeGroupId = InstitutionGroup.Id(UUID.randomUUID())
+      val newGroupName = InstitutionGroup.Name("IOHK 2021")
+
+      repository
+        .copyGroup(institutionId, fakeGroupId, newGroupName)
+        .value
+        .futureValue mustBe Left(GroupsInstitutionDoNotMatch(List(fakeGroupId), institutionId))
+    }
+
+    "reject group copying if there is the wrong institutionId" in {
+      val groupName = InstitutionGroup.Name("IOHK 2019")
+      val newGroupName = InstitutionGroup.Name("IOHK 2021")
+      val institutionId = createParticipant("Institution-1")
+      val imposterInstitutionId = createParticipant("Institution-2")
+
+      val maybeGroup = repository.create(institutionId, groupName, Set()).value.futureValue
+      maybeGroup.isRight mustBe true
+
+      val group = maybeGroup.toOption.get
+
+      repository
+        .copyGroup(imposterInstitutionId, group.id, newGroupName)
+        .value
+        .futureValue mustBe Left(GroupsInstitutionDoNotMatch(List(group.id), imposterInstitutionId))
+    }
+
+    "copy group even without contacts" in {
+      val originalGroupName = InstitutionGroup.Name("IOHK 2019")
+      val newGroupName = InstitutionGroup.Name("IOHK 2021")
+      val institutionId = createParticipant("Institution-1")
+
+      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).value.futureValue
+      maybeGroup.isRight mustBe true
+
+      val originalGroupId = maybeGroup.toOption.get.id
+
+      val maybeNewGroup = repository
+        .copyGroup(institutionId, originalGroupId, newGroupName)
+        .value
+        .futureValue
+
+      maybeNewGroup.isRight mustBe true
+
+      val newGroup = maybeNewGroup.toOption.get
+      newGroup.name mustBe newGroupName
+      newGroup.institutionId mustBe institutionId
+
+      val maybeOriginalContacts = repository.listContacts(institutionId, originalGroupName).value.futureValue
+      val maybeNewGroupContacts = repository.listContacts(institutionId, newGroupName).value.futureValue
+
+      maybeOriginalContacts mustBe Right(Nil)
+      maybeOriginalContacts mustBe maybeNewGroupContacts
+    }
+
+    "reject copying if the new name already taken by another group" in {
+      val originalGroupName = InstitutionGroup.Name("IOHK 2019")
+      val group2Name = InstitutionGroup.Name("IOHK 2021")
+      val institutionId = createParticipant("Institution-1")
+
+      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).value.futureValue
+      maybeGroup.isRight mustBe true
+      repository.create(institutionId, group2Name, Set()).value.futureValue.isRight mustBe true
+
+      val originalGroupId = maybeGroup.toOption.get.id
+
+      repository
+        .copyGroup(institutionId, originalGroupId, group2Name)
+        .value
+        .futureValue mustBe Left(GroupNameIsNotFree(group2Name))
     }
   }
 

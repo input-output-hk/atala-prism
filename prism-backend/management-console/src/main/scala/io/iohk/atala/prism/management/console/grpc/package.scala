@@ -5,6 +5,7 @@ import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.{
   Contact,
+  CopyInstitutionGroup,
   CreateInstitutionGroup,
   DeleteInstitutionGroup,
   GetInstitutionGroups,
@@ -13,6 +14,7 @@ import io.iohk.atala.prism.management.console.models.{
   UpdateInstitutionGroup
 }
 import io.iohk.atala.prism.protos.console_api.{
+  CopyGroupRequest,
   CreateGroupRequest,
   DeleteGroupRequest,
   GetGroupsRequest,
@@ -20,7 +22,7 @@ import io.iohk.atala.prism.protos.console_api.{
   UpdateGroupRequest
 }
 
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 package object grpc {
   implicit val getStatisticsConverter: ProtoConverter[GetStatisticsRequest, GetStatistics] =
@@ -62,6 +64,17 @@ package object grpc {
         name = if (request.name.isEmpty) None else Some(InstitutionGroup.Name(request.name))
       } yield UpdateInstitutionGroup(groupId, contactIdsToAddSet, contactIdsToRemoveSet, name)
     }
+
+  implicit val copyGroupConverter: ProtoConverter[CopyGroupRequest, CopyInstitutionGroup] =
+    (request: CopyGroupRequest) =>
+      for {
+        groupToCopyId <- InstitutionGroup.Id.from(request.groupId)
+        newName <-
+          if (request.name.isEmpty)
+            Failure(new IllegalArgumentException("New name is empty"))
+          else
+            Success(InstitutionGroup.Name(request.name))
+      } yield CopyInstitutionGroup(groupToCopyId, newName)
 
   implicit val deleteGroupConverter: ProtoConverter[DeleteGroupRequest, DeleteInstitutionGroup] =
     (request: DeleteGroupRequest) => {

@@ -5,6 +5,7 @@ import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.models.{
+  CopyInstitutionGroup,
   CreateInstitutionGroup,
   DeleteInstitutionGroup,
   GetInstitutionGroups,
@@ -12,7 +13,6 @@ import io.iohk.atala.prism.management.console.models.{
   UpdateInstitutionGroup
 }
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
-import io.iohk.atala.prism.protos.console_api.{DeleteGroupRequest, DeleteGroupResponse}
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -76,7 +76,16 @@ class GroupsServiceImpl(
         }
     }
 
-  override def deleteGroup(request: DeleteGroupRequest): Future[DeleteGroupResponse] =
+  override def copyGroup(request: console_api.CopyGroupRequest): Future[console_api.CopyGroupResponse] =
+    auth[CopyInstitutionGroup]("copyGroup", request) { (institutionId, copyInstitutionGroup) =>
+      institutionGroupsRepository
+        .copyGroup(institutionId, copyInstitutionGroup.groupId, copyInstitutionGroup.newName)
+        .map { createdGroup =>
+          console_api.CopyGroupResponse(groupId = createdGroup.id.toString)
+        }
+    }
+
+  override def deleteGroup(request: console_api.DeleteGroupRequest): Future[console_api.DeleteGroupResponse] = {
     auth[DeleteInstitutionGroup]("deleteGroup", request) { (institutionId, deleteInstitutionGroup) =>
       institutionGroupsRepository
         .deleteGroup(institutionId, deleteInstitutionGroup.groupId)
@@ -84,4 +93,5 @@ class GroupsServiceImpl(
           console_api.DeleteGroupResponse()
         }
     }
+  }
 }

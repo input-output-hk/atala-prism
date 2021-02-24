@@ -21,6 +21,11 @@ final case class UpdateInstitutionGroup(
     name: Option[InstitutionGroup.Name]
 )
 
+final case class CopyInstitutionGroup(
+    groupId: InstitutionGroup.Id,
+    newName: InstitutionGroup.Name
+)
+
 final case class DeleteInstitutionGroup(
     groupId: InstitutionGroup.Id
 )

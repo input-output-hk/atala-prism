@@ -499,6 +499,122 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
     }
   }
 
+  "copyGroup" should {
+    val originalGroup = "Group1"
+    val originalGroupName = InstitutionGroup.Name(originalGroup)
+    val newGroup = "newGroup"
+    val newGroupName = InstitutionGroup.Name(newGroup)
+    "be able to copy group with contacts in it" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val originalGroupId = createGroup(institutionId, originalGroupName)
+      val contact1 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
+      val contact2 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
+      val contact3 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
+      val contact4 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
+
+      // To ensure there is only one group at this point
+      getInstitutionGroups(institutionId).size mustBe 1
+
+      // To guarantee that these contacts are added
+      listContacts(institutionId, originalGroupName).size mustBe 4
+
+      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
+      val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
+
+      usingApiAs(rpcRequestCopy) { serviceStub =>
+        val newGroupStringId = serviceStub.copyGroup(requestCopy).groupId
+        val newGroupId = UUID.fromString(newGroupStringId)
+        // To ensure that all contacts are copied
+        listContacts(institutionId, newGroupName) mustBe List(contact1, contact2, contact3, contact4)
+        // And the group itself
+        getInstitutionGroups(institutionId)
+          .map(_.value.id) mustBe List(originalGroupId, InstitutionGroup.Id(newGroupId))
+      }
+    }
+
+    "be able to copy group without any contacts" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val originalGroupId = createGroup(institutionId, originalGroupName)
+
+      // To ensure the group is empty
+      listContacts(institutionId, originalGroupName).isEmpty mustBe true
+
+      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
+      val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
+
+      usingApiAs(rpcRequestCopy) { serviceStub =>
+        val newGroupStringId = serviceStub.copyGroup(requestCopy).groupId
+        val newGroupId = UUID.fromString(newGroupStringId)
+        // To check that new group is empty too
+        listContacts(institutionId, newGroupName).isEmpty mustBe true
+        // And the group was copied with the same institutionId
+        getInstitutionGroups(institutionId)
+          .map(_.value.id) mustBe List(originalGroupId, InstitutionGroup.Id(newGroupId))
+      }
+    }
+
+    "reject group copying if there is wrong institution id" in {
+      val keyPair = EC.generateKeyPair()
+      val imposterKeyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val imposterPublicKey = imposterKeyPair.publicKey
+      val did = generateDid(publicKey)
+      val imposterDid = generateDid(imposterPublicKey)
+      val institutionId = createParticipant(did)
+      createParticipant(imposterDid)
+
+      val originalGroupId = createGroup(institutionId, originalGroupName)
+
+      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
+      val rpcRequestCopy = SignedRpcRequest.generate(imposterKeyPair, imposterDid, requestCopy)
+
+      usingApiAs(rpcRequestCopy) { serviceStub =>
+        intercept[RuntimeException](serviceStub.copyGroup(requestCopy))
+      }
+    }
+
+    "reject group copying if there is empty name" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val originalGroupId = createGroup(institutionId, originalGroupName)
+
+      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, "")
+      val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
+
+      usingApiAs(rpcRequestCopy) { serviceStub =>
+        intercept[RuntimeException](serviceStub.copyGroup(requestCopy))
+      }
+    }
+
+    "reject group copying if the chosen name is already occupied" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val originalGroupId = createGroup(institutionId, originalGroupName)
+      createGroup(institutionId, newGroupName)
+
+      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroupName.value)
+      val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
+
+      usingApiAs(rpcRequestCopy) { serviceStub =>
+        intercept[RuntimeException](serviceStub.copyGroup(requestCopy))
+      }
+    }
+  }
+
   "deleteGroup" should {
     val group1 = "Group1"
     val group1Name = InstitutionGroup.Name(group1)

@@ -123,27 +123,11 @@ package object errors {
       )
   }
 
-  case class CreateGroupInvalidRequest(reason: String) extends ManagementConsoleError {
-    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
-  }
-
   case class GroupNameIsNotFree(name: InstitutionGroup.Name) extends ManagementConsoleError {
     def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(
         s"Group with name '${name.value}' already exists"
       )
-  }
-
-  case class UpdateGroupInvalidRequest(reason: String) extends ManagementConsoleError {
-    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
-  }
-
-  case class GetStatisticsInvalidRequest(reason: String) extends ManagementConsoleError {
-    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
-  }
-
-  case class DeleteGroupInvalidRequest(reason: String) extends ManagementConsoleError {
-    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
   def groupDoesNotExist[A](groupId: InstitutionGroup.Id): Either[ManagementConsoleError, A] =

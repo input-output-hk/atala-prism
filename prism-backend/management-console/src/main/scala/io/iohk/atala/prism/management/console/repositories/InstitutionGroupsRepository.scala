@@ -106,6 +106,23 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
     transaction.transact(xa).value.unsafeToFuture().toFutureEither
   }
 
+  def copyGroup(
+      institutionId: ParticipantId,
+      originalGroupId: InstitutionGroup.Id,
+      newGroupName: InstitutionGroup.Name
+  ): FutureEither[ManagementConsoleError, InstitutionGroup] = {
+    import institutionHelper._
+
+    val connectionIo = for {
+      _ <- EitherT.fromOptionF(checkGroups(institutionId, Set(originalGroupId)), ()).swap
+      _ <- EitherT.fromOptionF(checkGroupNameIsFree(institutionId, newGroupName), ()).swap
+      createdGroup <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.create(institutionId, newGroupName))
+      _ <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.copyContacts(originalGroupId, createdGroup.id))
+    } yield createdGroup
+
+    connectionIo.transact(xa).value.unsafeToFuture().toFutureEither
+  }
+
   def deleteGroup(
       institutionId: ParticipantId,
       groupId: InstitutionGroup.Id

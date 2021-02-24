@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.repositories.daos
 
 import cats.data.NonEmptyList
 import cats.implicits.catsStdInstancesForList
+import cats.syntax.functor._
 import doobie.Fragments.{in, whereAnd}
 import doobie._
 import doobie.free.connection
@@ -112,6 +113,14 @@ object InstitutionGroupsDAO {
     Update[(InstitutionGroup.Id, Contact.Id)](sql)
       .updateMany(data.toList)
       .map(_ => ())
+  }
+
+  def copyContacts(originalGroupId: InstitutionGroup.Id, newGroupId: InstitutionGroup.Id): ConnectionIO[Unit] = {
+    sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
+         |SELECT $newGroupId, contact_id, now()
+         |FROM contacts_per_group
+         |WHERE group_id = $originalGroupId
+       """.stripMargin.update.run.void
   }
 
   def removeContacts(groupId: InstitutionGroup.Id, contactIds: List[Contact.Id]): ConnectionIO[Unit] = {
