@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.app.ui.main
 
-import android.accounts.Account
-import android.content.ContentResolver
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
@@ -13,7 +11,6 @@ import dagger.android.support.DaggerAppCompatActivity
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.IntentUtils
 import io.iohk.atala.prism.app.neo.common.extensions.setupWithNavController
-import io.iohk.atala.prism.app.neo.sync.AuthenticatorService
 import io.iohk.atala.prism.app.ui.commondialogs.ProofRequestDialogFragment
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.ActivityMainBinding
@@ -26,11 +23,6 @@ class MainActivity : DaggerAppCompatActivity() {
 
     val viewModel: MainViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
-    }
-
-    // TODO this will be removed when the GRPC data stream is implemented
-    private val genericSyncAccount: Account by lazy {
-        AuthenticatorService.buildGenericAccountForSync(this)
     }
 
     lateinit var binding: ActivityMainBinding
@@ -47,6 +39,12 @@ class MainActivity : DaggerAppCompatActivity() {
         }
         setObservers()
         viewModel.checkSecuritySettings()
+        viewModel.startConnectionsStreams()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.stopConnectionsStreams()
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -96,14 +94,6 @@ class MainActivity : DaggerAppCompatActivity() {
     }
 
     private fun setObservers() {
-        // TODO this will be removed when the GRPC data stream is implemented
-        // Handle a sync request
-        viewModel.requestSync.observe(
-            this,
-            EventWrapperObserver {
-                if (it) requestForSync()
-            }
-        )
         // Handle  when exist a message with a proof requests
         viewModel.proofRequest.observe(
             this,
@@ -120,22 +110,5 @@ class MainActivity : DaggerAppCompatActivity() {
                 }
             }
         )
-    }
-
-    // TODO this will be removed when the GRPC data stream is implemented
-    private fun requestForSync() {
-        val settingsBundle = Bundle()
-        settingsBundle.putBoolean(
-            ContentResolver.SYNC_EXTRAS_MANUAL,
-            true
-        )
-        settingsBundle.putBoolean(
-            ContentResolver.SYNC_EXTRAS_EXPEDITED,
-            true
-        )
-        /*
-         * Request the sync for the generic account, authority, and manual sync settings
-         */
-        ContentResolver.requestSync(genericSyncAccount, AuthenticatorService.ACCOUNT_AUTHORITY, settingsBundle)
     }
 }

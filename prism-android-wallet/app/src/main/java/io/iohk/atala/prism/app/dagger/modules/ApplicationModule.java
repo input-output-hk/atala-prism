@@ -12,7 +12,7 @@ import io.iohk.atala.prism.app.neo.data.ActivityHistoriesRepository;
 import io.iohk.atala.prism.app.neo.data.ContactsRepository;
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository;
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository;
-import io.iohk.atala.prism.app.neo.data.ProofRequestRepository;
+import io.iohk.atala.prism.app.neo.data.SyncRepository;
 import io.iohk.atala.prism.app.neo.data.SessionRepository;
 import io.iohk.atala.prism.app.neo.data.local.ActivityHistoriesLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.ActivityHistoriesLocalDataSourceInterface;
@@ -22,8 +22,8 @@ import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface;
-import io.iohk.atala.prism.app.neo.data.local.ProofRequestsLocalDataSource;
-import io.iohk.atala.prism.app.neo.data.local.ProofRequestsLocalDataSourceInterface;
+import io.iohk.atala.prism.app.neo.data.local.SyncLocalDataSource;
+import io.iohk.atala.prism.app.neo.data.local.SyncLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource;
@@ -131,16 +131,16 @@ public class ApplicationModule {
      * */
 
     @Provides
-    public ProofRequestsLocalDataSourceInterface provideProofRequestsLocalDataSource(ProofRequestDao proofRequestDao) {
-        return new ProofRequestsLocalDataSource(proofRequestDao);
+    public SyncLocalDataSourceInterface provideProofRequestsLocalDataSource(ProofRequestDao proofRequestDao, ContactDao contactDao, CredentialDao credentialDao) {
+        return new SyncLocalDataSource(proofRequestDao, contactDao,credentialDao);
     }
 
     @Provides
-    public ProofRequestRepository provideProofRequestRepository(ProofRequestsLocalDataSourceInterface localDataSource,
-                                                                ConnectorRemoteDataSource connectorRemoteDataSource,
-                                                                SessionLocalDataSourceInterface sessionLocalDataSource,
-                                                                PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
-        return new ProofRequestRepository(localDataSource, connectorRemoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+    public SyncRepository provideProofRequestRepository(SyncLocalDataSourceInterface localDataSource,
+                                                        ConnectorRemoteDataSource connectorRemoteDataSource,
+                                                        SessionLocalDataSourceInterface sessionLocalDataSource,
+                                                        PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
+        return new SyncRepository(localDataSource, connectorRemoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
     }
 
     /*

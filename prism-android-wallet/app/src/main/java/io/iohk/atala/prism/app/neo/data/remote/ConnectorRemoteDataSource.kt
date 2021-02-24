@@ -2,6 +2,7 @@ package io.iohk.atala.prism.app.neo.data.remote
 
 import com.google.protobuf.ByteString
 import io.grpc.stub.MetadataUtils
+import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
@@ -16,6 +17,8 @@ import io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse
 import io.iohk.atala.prism.protos.GetConnectionsPaginatedRequest
 import io.iohk.atala.prism.protos.GetConnectionsPaginatedResponse
+import io.iohk.atala.prism.protos.GetMessageStreamRequest
+import io.iohk.atala.prism.protos.GetMessageStreamResponse
 import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest
 import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse
 import io.iohk.atala.prism.protos.SendMessageRequest
@@ -45,6 +48,17 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
             request.lastSeenMessageId = lastMessageId
         val requestBuild = request.build()
         return getChannel(ecKeyPair, requestBuild.toByteArray()).getMessagesPaginated(requestBuild).get()
+    }
+
+    fun startMessagesStream(ecKeyPair: ECKeyPair, lastMessageId: String?, observer: StreamObserver<GetMessageStreamResponse>) {
+        var stub = ConnectorServiceGrpc.newStub(getMainChannel())
+        val requestBuilder = GetMessageStreamRequest.newBuilder()
+        lastMessageId?.let {
+            requestBuilder.setLastSeenMessageId(it)
+        }
+        val request = requestBuilder.build()
+        stub = MetadataUtils.attachHeaders(stub, CryptoUtils.getMetadata(ecKeyPair, request.toByteArray()))
+        stub.getMessageStream(request, observer)
     }
 
     /**

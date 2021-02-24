@@ -41,10 +41,7 @@ abstract class CredentialDao : ActivityHistoryDao() {
     }
 
     @Transaction
-    open suspend fun insertShareCredentialActivityHistories(
-        credential: Credential,
-        contacts: List<Contact>
-    ) {
+    open suspend fun insertShareCredentialActivityHistories(credential: Credential, contacts: List<Contact>) {
         val activitiesHistories = contacts.map {
             ActivityHistory(it.connectionId, credential.credentialId, Date().time, ActivityHistory.Type.CredentialShared)
         }
@@ -71,4 +68,7 @@ abstract class CredentialDao : ActivityHistoryDao() {
      */
     @Query("SELECT * FROM contacts WHERE connection_id != :credentialConnectionId AND deleted = 0 order by id asc")
     abstract suspend fun contactsToShareCredential(credentialConnectionId: String): List<Contact>
+
+    @Query("SELECT * FROM credentials WHERE credential_type IN (:credentialTypes) order by id asc")
+    abstract suspend fun getCredentialsByTypes(credentialTypes: List<String>): List<Credential>
 }
