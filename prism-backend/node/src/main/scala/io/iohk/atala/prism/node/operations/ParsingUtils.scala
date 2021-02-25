@@ -70,7 +70,7 @@ object ParsingUtils {
       Either.cond(
         hash.size() == SHA256Digest.BYTE_LENGTH,
         SHA256Digest(hash.toByteArray.toVector),
-        s"mush have ${SHA256Digest.BYTE_LENGTH} bytes"
+        s"must have ${SHA256Digest.BYTE_LENGTH} bytes"
       )
     }
   }
