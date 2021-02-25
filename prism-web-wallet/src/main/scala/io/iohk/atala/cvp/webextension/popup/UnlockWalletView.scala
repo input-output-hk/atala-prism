@@ -62,7 +62,7 @@ import scala.util.{Failure, Success}
           p(
             className := "description",
             id := "description",
-            "For safety reasons, your wallet is automatically locked after a period of inactivity.Please enter your password to unlock your wallet"
+            "For safety reasons, your wallet is automatically locked after a period of inactivity. Please enter your password to unlock your wallet."
           ),
           div(
             className := "img_cover",

@@ -67,7 +67,7 @@ import scala.util.{Failure, Success}
         p(
           className := "description",
           id := "description1",
-          "Your password should be a memorable passphrase of at least 30 characters"
+          "Your password should be a memorable passphrase of at least 30 characters."
         ),
         PasswordInput(
           "Password",
@@ -158,7 +158,7 @@ import scala.util.{Failure, Success}
       false
     } else if (!passwordRegex(state.password)) {
       setState(
-        _.copy(message = Some("The password should be a memorable passphrase with minimum total characters of 30"))
+        _.copy(message = Some("The password should be a memorable passphrase with minimum total characters of 30."))
       )
       false
     } else {
@@ -169,7 +169,7 @@ import scala.util.{Failure, Success}
 
   def isPassphraseMatched(): Boolean = {
     if (state.password != state.password2) {
-      setState(_.copy(message = Some("The passwords do not match. Please try again")))
+      setState(_.copy(message = Some("The passwords do not match. Please try again.")))
       false
     } else {
       setState(_.copy(message = None))
@@ -179,7 +179,7 @@ import scala.util.{Failure, Success}
 
   def isValidSeedPhrase(): Boolean = {
     if (!Mnemonic.isValid(state.seed)) {
-      setState(_.copy(message = Some("Invalid Seed Phrase")))
+      setState(_.copy(message = Some("Invalid Seed Phrase.")))
       false
     } else {
       setState(_.copy(message = None))

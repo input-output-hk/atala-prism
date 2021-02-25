@@ -235,7 +235,7 @@ import scala.util.{Failure, Success}
       case Success(_) =>
         setState(_.copy(status = Some(true), isLoading = false, message = "Credential successfully signed!"))
       case Failure(ex) =>
-        setState(_.copy(status = Some(false), isLoading = false, message = "Credential signing failed"))
+        setState(_.copy(status = Some(false), isLoading = false, message = "Credential signing failed."))
         println(s"Failed Credential signing : ${ex.getMessage}")
     }
   }
@@ -244,9 +244,9 @@ import scala.util.{Failure, Success}
     setState(_.copy(isLoading = true))
     props.backgroundAPI.rejectRequest(requestId).onComplete {
       case Success(_) =>
-        setState(_.copy(status = Some(true), isLoading = false, message = "Credential successfully rejected"))
+        setState(_.copy(status = Some(true), isLoading = false, message = "Credential successfully rejected."))
       case Failure(ex) =>
-        setState(_.copy(status = Some(false), isLoading = false, message = "Credential failed to reject"))
+        setState(_.copy(status = Some(false), isLoading = false, message = "Credential failed to reject."))
         println(s"Failed Publishing Credential : ${ex.getMessage}")
     }
   }
@@ -255,7 +255,7 @@ import scala.util.{Failure, Success}
     props.backgroundAPI.lockWallet().onComplete {
       case Success(_) => props.switchToView(Unlock)
       case Failure(ex) =>
-        setState(_.copy(message = "Failed Locking wallet"))
+        setState(_.copy(message = "Failed Locking wallet."))
         println(s"Failed Locking wallet : ${ex.getMessage}")
     }
   }

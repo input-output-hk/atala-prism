@@ -30,7 +30,7 @@ import slinky.web.html._
           p(
             className := "description",
             id := "description",
-            "Register a new wallet or recover an existing wallet"
+            "Register a new wallet or recover an existing wallet."
           )
         )
       ),

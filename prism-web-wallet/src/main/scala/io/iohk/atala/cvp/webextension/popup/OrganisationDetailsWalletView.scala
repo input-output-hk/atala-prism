@@ -21,47 +21,8 @@ import scala.util.{Failure, Success}
 
 @react class OrganisationDetailsWalletView extends Component {
 
-  case class Props(
-      backgroundAPI: BackgroundAPI,
-      termsUrl: String,
-      privacyPolicyUrl: String,
-      data: Data,
-      switchToView: (View) => Unit
-  )
-
-  case class State(
-      orgName: String,
-      fileOpt: Option[File] = None,
-      imageWidth: Int,
-      imageHeight: Int,
-      message: Option[String],
-      isLoading: Boolean,
-      terms: Boolean,
-      privacyPolicy: Boolean
-  )
-
-  private def setOrgName(newValue: String): Unit = {
-    setState(_.copy(orgName = newValue))
-  }
-
-  private def setFile(newValue: File): Unit = {
-    val img: HTMLImageElement = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
-    img.src = URL.createObjectURL(newValue)
-    img.onload = _ => {
-      setState(_.copy(fileOpt = Some(newValue), imageHeight = img.height, imageWidth = img.width))
-    }
-  }
-
   override def initialState: State = {
     State("", None, 0, 0, None, isLoading = false, terms = false, privacyPolicy = false)
-  }
-
-  private def setTandC(newValue: Boolean): Unit = {
-    setState(_.copy(terms = newValue))
-  }
-
-  private def setPrivacyPolicy(newValue: Boolean): Unit = {
-    setState(_.copy(privacyPolicy = newValue))
   }
 
   override def render(): ReactElement = {
@@ -152,7 +113,7 @@ import scala.util.{Failure, Success}
                     s"The logo you are trying to upload has invalid dimensions. " +
                       s"Please change your image to match the required upload dimensions and " +
                       s"try again. Invalid logo dimensions ${state.imageWidth}px per ${state.imageHeight}px " +
-                      s"supported logo dimensions must be maximum 50px per 50px"
+                      s"supported logo dimensions must be maximum 50px per 50px."
                   )
                 )
               } else {
@@ -224,6 +185,26 @@ import scala.util.{Failure, Success}
     )
   }
 
+  private def setOrgName(newValue: String): Unit = {
+    setState(_.copy(orgName = newValue))
+  }
+
+  private def setFile(newValue: File): Unit = {
+    val img: HTMLImageElement = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
+    img.src = URL.createObjectURL(newValue)
+    img.onload = _ => {
+      setState(_.copy(fileOpt = Some(newValue), imageHeight = img.height, imageWidth = img.width))
+    }
+  }
+
+  private def setTandC(newValue: Boolean): Unit = {
+    setState(_.copy(terms = newValue))
+  }
+
+  private def setPrivacyPolicy(newValue: Boolean): Unit = {
+    setState(_.copy(privacyPolicy = newValue))
+  }
+
   private def registerOrganization(): Unit = {
     if (isValidInput(state)) {
       if (state.fileOpt.isDefined) {
@@ -272,4 +253,23 @@ import scala.util.{Failure, Success}
       true
     }
   }
+
+  case class Props(
+      backgroundAPI: BackgroundAPI,
+      termsUrl: String,
+      privacyPolicyUrl: String,
+      data: Data,
+      switchToView: (View) => Unit
+  )
+
+  case class State(
+      orgName: String,
+      fileOpt: Option[File] = None,
+      imageWidth: Int,
+      imageHeight: Int,
+      message: Option[String],
+      isLoading: Boolean,
+      terms: Boolean,
+      privacyPolicy: Boolean
+  )
 }

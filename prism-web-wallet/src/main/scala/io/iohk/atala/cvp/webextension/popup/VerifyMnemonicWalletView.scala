@@ -60,7 +60,7 @@ import slinky.web.html._
           .size(materialUiCoreStrings.small),
         h3(className := "h3_register", id := "h3_register", "Account Registration"),
         div(className := "div__field_group")(
-          h4(className := "h4_register")("Verify your recovery phrase")
+          h4(className := "h4_register")("Verify your recovery phrase.")
         ),
         div(className := "")(
           p(
@@ -155,13 +155,13 @@ import slinky.web.html._
 
   private def matchWords1(newValue: String): Unit = {
     if (newValue != state.wordList(state.index1) || state.word2 != state.wordList(state.index2)) {
-      setState(_.copy(message = Some("Please enter correct words for the recovery phrase"), isEnabled = false))
+      setState(_.copy(message = Some("Please enter correct words for the recovery phrase."), isEnabled = false))
     } else setState(_.copy(message = None, isEnabled = true))
   }
 
   private def matchWords2(newValue: String): Unit = {
     if (state.word1 != state.wordList(state.index1) || newValue != state.wordList(state.index2)) {
-      setState(_.copy(message = Some("Please enter correct words for the recovery phrase"), isEnabled = false))
+      setState(_.copy(message = Some("Please enter correct words for the recovery phrase."), isEnabled = false))
     } else setState(_.copy(message = None, isEnabled = true))
   }
 

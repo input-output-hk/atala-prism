@@ -97,7 +97,7 @@ import slinky.web.html.{p, _}
         p(
           className := "description",
           id := "description1",
-          "Your password should be a memorable passphrase of at least 30 characters"
+          "Your password should be a memorable passphrase of at least 30 characters."
         ),
         PasswordInput(
           "Password",
@@ -140,7 +140,7 @@ import slinky.web.html.{p, _}
       false
     } else if (!passwordRegex(state.password)) {
       setState(
-        _.copy(message = Some("The password should be a memorable passphrase with minimum total characters of 30"))
+        _.copy(message = Some("The password should be a memorable passphrase with minimum total characters of 30."))
       )
       false
     } else {
@@ -151,7 +151,7 @@ import slinky.web.html.{p, _}
 
   def isPassphraseMatched(): Boolean = {
     if (state.password != state.password2) {
-      setState(_.copy(message = Some("The passwords do not match. Please try again")))
+      setState(_.copy(message = Some("The passwords do not match. Please try again.")))
       false
     } else {
       setState(_.copy(message = None))
