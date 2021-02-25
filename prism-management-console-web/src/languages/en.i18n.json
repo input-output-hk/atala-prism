@@ -75,8 +75,8 @@
         "contactName": "Contact Name",
         "externalid": "External ID",
         "creationDate": "Date Created",
-        "issuedCredentials": "Credentials Issued",
-        "receivedCredentials": "Credentials Received",
+        "issuedCredentials": "Credential(s) Issued",
+        "receivedCredentials": "Credential(s) Received",
         "credentials": "Credentials",
         "contactStatus": "Contact Status",
         "idNumber": "ID Number",
@@ -117,8 +117,8 @@
       "title": "Credentials List",
       "dataTitle": "Group Name",
       "contacts": "Contacts",
-      "credIssued": "Credentials Issued",
-      "credReceived": "Credentials Received",
+      "credIssued": "Credential(s) Issued",
+      "credReceived": "Credential(s) Received",
       "detailSection": {
         "title": "Contact Details",
         "subtitle": "General Information",
@@ -229,8 +229,8 @@
       }
     },
     "tabs": {
-      "credentialsIssued": "Credentials Issued",
-      "credentialsReceived": "Credentials Received"
+      "credentialsIssued": "Credential(s) Issued",
+      "credentialsReceived": "Credential(s) Received"
     },
     "actions": {
       "createCredential": "Create Credential",
