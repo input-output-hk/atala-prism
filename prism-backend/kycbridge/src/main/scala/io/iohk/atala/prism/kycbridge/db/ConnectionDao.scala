@@ -7,6 +7,7 @@ import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.kycbridge.models.Connection
+import java.time.Instant
 
 object ConnectionDao {
 
@@ -64,7 +65,7 @@ object ConnectionDao {
          | UPDATE connections SET
          | id = ${connection.id},
          | state = ${connection.state}::CONNECTION_STATE,
-         | updated_at = now(),
+         | updated_at = ${Instant.now()},
          | acuant_document_instance_id = ${connection.acuantDocumentInstanceId},
          | acuant_document_status = ${connection.acuantDocumentStatus}::ACUANT_DOCUMENT_STATUS
          | WHERE token = ${connection.token}

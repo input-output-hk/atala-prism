@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.console.repositories.daos
 
 import java.util.UUID
+import java.time.Instant
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -19,8 +20,9 @@ object ReceivedCredentialsDAO {
 
   def storeReceivedSignedCredential(data: StoredReceivedSignedCredentialData): ConnectionIO[Unit] = {
     val storageId = UUID.randomUUID()
+    val storedAt = Instant.now()
     sql"""INSERT INTO stored_credentials (storage_id, connection_id, encoded_signed_credential, inclusion_proof, credential_external_id, stored_at)
-         |VALUES ($storageId, ${data.connectionId}, ${data.encodedSignedCredential}, ${data.merkleInclusionProof}, ${data.credentialExternalId}, now())
+         |VALUES ($storageId, ${data.connectionId}, ${data.encodedSignedCredential}, ${data.merkleInclusionProof}, ${data.credentialExternalId}, $storedAt)
          |ON CONFLICT (credential_external_id) DO NOTHING
        """.stripMargin.update.run.map(_ => ())
   }

@@ -190,7 +190,7 @@ object CredentialsDAO extends BaseDAO {
          |        ${batchData.issuanceTransactionInfo.transactionId},
          |        ${batchData.issuanceTransactionInfo.ledger},
          |        ${batchData.issuanceOperationHash},
-         |        now()
+         |        ${Instant.now()}
          |)
          |""".stripMargin.update.run
   }

@@ -5,6 +5,7 @@ import doobie.implicits.legacy.instant._
 import fs2.Stream
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
 import io.iohk.atala.prism.models.ParticipantId
+import java.time.Instant
 
 object MessagesDAO {
   def insert(
@@ -16,7 +17,9 @@ object MessagesDAO {
   ): doobie.ConnectionIO[Unit] = {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
-         |VALUES ($id, $connection, $sender, $recipient, now(), $content)""".stripMargin.update.run.map(_ => ())
+         |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.map(_ =>
+      ()
+    )
   }
 
   def getMessage(id: MessageId): doobie.ConnectionIO[Option[Message]] = {

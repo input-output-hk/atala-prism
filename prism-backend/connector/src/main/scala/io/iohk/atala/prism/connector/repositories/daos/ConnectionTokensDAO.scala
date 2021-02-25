@@ -1,8 +1,10 @@
 package io.iohk.atala.prism.connector.repositories.daos
 
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.connector.model._
+import java.time.Instant
 
 object ConnectionTokensDAO {
   def exists(tokenString: TokenString): doobie.ConnectionIO[Boolean] = {
@@ -23,7 +25,7 @@ object ConnectionTokensDAO {
   def markAsUsed(token: TokenString): doobie.ConnectionIO[Int] = {
     sql"""
          |UPDATE connection_tokens
-         |SET used_at = now()
+         |SET used_at = ${Instant.now()}
          |WHERE token=$token""".stripMargin.update.run
   }
 }

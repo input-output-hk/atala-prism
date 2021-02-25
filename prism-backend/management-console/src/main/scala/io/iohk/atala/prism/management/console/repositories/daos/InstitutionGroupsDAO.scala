@@ -96,21 +96,22 @@ object InstitutionGroupsDAO {
 
   def addContact(groupId: InstitutionGroup.Id, contactId: Contact.Id): ConnectionIO[Unit] = {
     sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
-         |VALUES ($groupId, $contactId, now())
+         |VALUES ($groupId, $contactId, ${Instant.now()})
          |""".stripMargin.update.run.map(_ => ())
   }
 
   def addContacts(groupIds: Set[InstitutionGroup.Id], contactIds: Set[Contact.Id]): ConnectionIO[Unit] = {
+    val addedAt = Instant.now()
     val data = for {
       groupId <- groupIds
       contactId <- contactIds
-    } yield (groupId, contactId)
+    } yield (groupId, contactId, addedAt)
 
     val sql = """INSERT INTO contacts_per_group (group_id, contact_id, added_at)
-                |VALUES (?, ?, now())
+                |VALUES (?, ?, ?)
                 |ON CONFLICT (group_id, contact_id) DO NOTHING
                 |""".stripMargin
-    Update[(InstitutionGroup.Id, Contact.Id)](sql)
+    Update[(InstitutionGroup.Id, Contact.Id, Instant)](sql)
       .updateMany(data.toList)
       .map(_ => ())
   }

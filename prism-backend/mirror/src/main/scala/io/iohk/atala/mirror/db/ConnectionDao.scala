@@ -12,6 +12,7 @@ import doobie.implicits._
 import doobie.postgres.implicits._
 import io.iohk.atala.prism.identity.DID
 import doobie.implicits.legacy.instant._
+import java.time.Instant
 
 object ConnectionDao {
 
@@ -84,7 +85,7 @@ object ConnectionDao {
     | UPDATE connections SET
     | id = ${connection.id},
     | state = ${connection.state}::CONNECTION_STATE,
-    | updated_at = now(),
+    | updated_at = ${Instant.now()},
     | holder_did = ${connection.holderDID},
     | pay_id_name = ${connection.payIdName}
     | WHERE token = ${connection.token}

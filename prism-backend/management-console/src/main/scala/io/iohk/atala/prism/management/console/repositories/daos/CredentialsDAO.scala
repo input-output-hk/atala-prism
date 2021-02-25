@@ -142,7 +142,7 @@ object CredentialsDAO {
          |       ${credentialData.encodedSignedCredential},
          |       ${credentialData.transactionInfo.transactionId},
          |       ${credentialData.transactionInfo.ledger},
-         |       now()
+         |       ${Instant.now()}
          |FROM draft_credentials
          |WHERE credential_id = ${credentialData.credentialId} AND
          |      issuer_id = $issuerId

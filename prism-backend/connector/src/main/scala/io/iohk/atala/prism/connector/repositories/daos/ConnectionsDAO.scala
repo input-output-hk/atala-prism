@@ -25,10 +25,11 @@ object ConnectionsDAO {
       connectionStatus: ConnectionStatus
   ): doobie.ConnectionIO[(ConnectionId, Instant)] = {
     val connectionId = ConnectionId.random()
+    val instantiatedAt = Instant.now()
 
     sql"""
          |INSERT INTO connections (id, initiator, acceptor, token, instantiated_at, status)
-         |VALUES ($connectionId, $initiator, $acceptor, $token, now(), $connectionStatus::CONTACT_CONNECTION_STATUS_TYPE)
+         |VALUES ($connectionId, $initiator, $acceptor, $token, $instantiatedAt, $connectionStatus::CONTACT_CONNECTION_STATUS_TYPE)
          |RETURNING id, instantiated_at""".stripMargin
       .query[(ConnectionId, Instant)]
       .unique
