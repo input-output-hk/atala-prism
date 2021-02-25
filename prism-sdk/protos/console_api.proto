@@ -21,6 +21,8 @@ service ConsoleService {
 // The Contacts API
 service ContactsService {
   // Creates a contact for the authenticated institution
+  // Errors:
+  // A group with a passed name doesn't exist (NOT_FOUND).
   rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
 
   // Create the contacts atomically for the authenticated institution

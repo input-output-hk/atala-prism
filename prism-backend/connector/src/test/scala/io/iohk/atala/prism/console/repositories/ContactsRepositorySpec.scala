@@ -2,6 +2,7 @@ package io.iohk.atala.prism.console.repositories
 
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.connector.errors.NotFoundByFieldError
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
@@ -71,9 +72,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
       val request = CreateContact(issuerId, externalId, json)
+      val nonExistingGroupName = IssuerGroup.Name("Grp 1")
 
-      intercept[Exception](
-        repository.create(request, Some(IssuerGroup.Name("Grp 1"))).value.futureValue
+      repository.create(request, Some(nonExistingGroupName)).value.futureValue mustBe Left(
+        NotFoundByFieldError("group", "name", nonExistingGroupName.value)
       )
 
       // we check that the subject was not created

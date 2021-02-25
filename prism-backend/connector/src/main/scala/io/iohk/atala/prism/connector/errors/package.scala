@@ -19,6 +19,12 @@ package object errors {
     }
   }
 
+  case class NotFoundByFieldError(entityType: String, fieldName: String, fieldValue: String) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.NOT_FOUND.withDescription(s"""$entityType with $fieldName - "$fieldValue" not found""")
+    }
+  }
+
   case class PublicKeyMissingError() extends ConnectorError {
     override def toStatus: Status = {
       Status.UNAUTHENTICATED.withDescription("Authentication required, missing public key")

@@ -19,6 +19,7 @@ import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
 import java.time.LocalDate
+import scala.util.{Failure, Try}
 
 class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private val usingApiAs = usingApiAsConstructor(new ContactsServiceGrpc.ContactsServiceBlockingStub(_, _))
@@ -163,9 +164,13 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
-        intercept[Exception](
-          serviceStub.createContact(request).contact.value
-        )
+        val shouldBeError = Try(serviceStub.createContact(request).contact.value)
+
+        shouldBeError.isFailure mustBe true
+
+        val Failure(error) = shouldBeError
+
+        error.getMessage mustBe """NOT_FOUND: group with name - "missing group" not found"""
 
         // the contact must not be added
         val result = contactsRepository.getBy(issuerId, None, None, 10).value.futureValue.toOption.value

@@ -1,9 +1,13 @@
 package io.iohk.atala.prism.console.repositories
 
 import cats.effect.IO
+import cats.syntax.either._
+import cats.syntax.functor._
+import cats.syntax.traverse._
+import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.connector.errors.ConnectorError
+import io.iohk.atala.prism.connector.errors.{ConnectorError, NotFoundByFieldError}
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
@@ -19,22 +23,29 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       contactData: CreateContact,
       maybeGroupName: Option[IssuerGroup.Name]
   ): FutureEither[ConnectorError, Contact] = {
-    val query = maybeGroupName match {
+    val query: ConnectionIO[Either[ConnectorError, Contact]] = maybeGroupName match {
       case None => // if we do not request the subject to be added to a group
-        ContactsDAO.createContact(contactData)
+        ContactsDAO.createContact(contactData).asRight[ConnectorError].sequence
       case Some(groupName) => // if we are requesting to add a subject to a group
         for {
-          contact <- ContactsDAO.createContact(contactData)
           groupMaybe <- IssuerGroupsDAO.find(contactData.createdBy, groupName)
-          group = groupMaybe.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
-          _ <- IssuerGroupsDAO.addContact(group.id, contact.contactId)
-        } yield contact
+          result <-
+            groupMaybe
+              .fold( //If a group with a passed name is not found
+                NotFoundByFieldError("group", "name", groupName.value).asLeft[ConnectionIO[Contact]]
+              ) { group =>
+                ContactsDAO
+                  .createContact(contactData)
+                  .flatMap(contact => IssuerGroupsDAO.addContact(group.id, contact.contactId).as(contact))
+                  .asRight
+              }
+              .sequence
+        } yield result
     }
 
     query
       .transact(xa)
       .unsafeToFuture()
-      .map(Right(_))
       .toFutureEither
   }
 
