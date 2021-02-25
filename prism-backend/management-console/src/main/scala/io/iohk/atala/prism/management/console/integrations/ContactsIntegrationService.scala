@@ -21,11 +21,12 @@ class ContactsIntegrationService(
   import ContactsIntegrationService._
 
   def createContact(
+      participantId: ParticipantId,
       request: CreateContact,
       group: Option[InstitutionGroup.Name]
   ): Future[Either[errors.ManagementConsoleError, ContactWithConnection]] = {
     contactsRepository
-      .create(request, group)
+      .create(participantId, request, group)
       .map { contact =>
         val connection = connector_models.ContactConnection(
           connectionStatus = ContactConnectionStatus.INVITATION_MISSING

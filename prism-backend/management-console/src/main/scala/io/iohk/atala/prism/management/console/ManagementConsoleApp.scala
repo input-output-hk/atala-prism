@@ -84,7 +84,6 @@ object ManagementConsoleApp extends IOApp {
 
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
-        contactsRepository,
         authenticator,
         node
       )
@@ -94,8 +93,6 @@ object ManagementConsoleApp extends IOApp {
       contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)
       contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
       credentialIssuanceService = new CredentialIssuanceServiceImpl(
-        contactsRepository,
-        institutionGroupsRepository,
         credentialIssuancesRepository,
         authenticator
       )

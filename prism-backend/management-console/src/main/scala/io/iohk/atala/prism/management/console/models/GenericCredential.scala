@@ -7,13 +7,38 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
 
 final case class CreateGenericCredential(
-    issuedBy: ParticipantId,
-    subjectId: Contact.Id,
+    contactId: Option[Contact.Id],
     credentialData: Json,
+    externalId: Option[Contact.ExternalId],
     // TODO: Make it mandatory once credentials cannot be created individually (RPCs transitioned to credential
     //       issuances only)
     credentialIssuanceContactId: Option[CredentialIssuance.ContactId],
     credentialTypeId: Option[CredentialTypeId]
+)
+
+final case class GetGenericCredential(
+    limit: Int,
+    lastSeenCredentialId: Option[GenericCredential.Id]
+)
+
+final case class GetContactCredentials(
+    contactId: Contact.Id
+)
+
+final case class ShareCredential(
+    credentialId: GenericCredential.Id
+)
+
+final case class StoreCredential(
+    connectionId: Contact.Id,
+    encodedSignedCredential: String,
+    credentialExternalId: CredentialExternalId
+)
+
+final case class GetLatestCredential()
+
+final case class GetStoredCredentials(
+    individualId: Contact.Id
 )
 
 case class PublicationData(

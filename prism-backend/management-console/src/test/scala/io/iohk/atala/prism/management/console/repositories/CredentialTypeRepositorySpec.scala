@@ -18,32 +18,32 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
 
   "create" should {
     "create a new credential type with required fields" in {
-      val institutionId = createParticipant("Institution-1")
+      val participantId = createParticipant("Institution-1")
 
-      val createCredentialType = sampleCreateCredentialType(institutionId, "name")
+      val createCredentialType = sampleCreateCredentialType("name")
 
-      val result = repository.create(createCredentialType).value.futureValue.toOption.value
+      val result = repository.create(participantId, createCredentialType).value.futureValue.toOption.value
 
       val credentialType = repository.find(result.credentialType.id).value.futureValue.toOption.value
       credentialType mustBe a[Some[_]]
     }
 
     "do not create another credential type with the same name within organization" in {
-      val institutionId = createParticipant("Institution-1")
+      val participantId = createParticipant("Institution-1")
       val templateName = "name"
-      createCredentialType(institutionId, templateName)
+      createCredentialType(participantId, templateName)
 
       intercept[Exception](
-        repository.create(sampleCreateCredentialType(institutionId, templateName)).value.futureValue
+        repository.create(participantId, sampleCreateCredentialType(templateName)).value.futureValue
       )
     }
 
     "return error when mustache template is incorrect" in {
-      val institutionId = createParticipant("Institution-1")
-      val createCredentialType = sampleCreateCredentialType(institutionId, "name")
+      val participantId = createParticipant("Institution-1")
+      val createCredentialType = sampleCreateCredentialType("name")
         .copy(template = "incorrect {{name1}")
 
-      val result = repository.create(createCredentialType).value.futureValue
+      val result = repository.create(participantId, createCredentialType).value.futureValue
       result mustBe a[Left[_, _]]
     }
   }

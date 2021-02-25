@@ -24,14 +24,18 @@ object CredentialsDAO {
         |       pc.transaction_id, pc.ledger, pc.shared_at
       """.stripMargin
 
-  def create(data: CreateGenericCredential): doobie.ConnectionIO[GenericCredential] = {
+  def create(
+      participantId: ParticipantId,
+      contactId: Contact.Id,
+      data: CreateGenericCredential
+  ): doobie.ConnectionIO[GenericCredential] = {
     val id = GenericCredential.Id.random()
     val createdOn = Instant.now()
     (fr"""
          |WITH inserted AS (
          |  INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data,
          |    created_on, credential_issuance_contact_id, credential_type_id)
-         |  VALUES ($id, ${data.issuedBy}, ${data.subjectId}, ${data.credentialData},
+         |  VALUES ($id, $participantId, $contactId, ${data.credentialData},
          |    $createdOn, ${data.credentialIssuanceContactId}, ${data.credentialTypeId})
          |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id,
          |    credential_issuance_contact_id

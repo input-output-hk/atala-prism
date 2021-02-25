@@ -15,13 +15,17 @@ import java.time.Instant
 
 object ContactsDAO {
 
-  def createContact(data: CreateContact, createdAt: Instant): ConnectionIO[Contact] = {
+  def createContact(
+      participantId: ParticipantId,
+      data: CreateContact,
+      createdAt: Instant
+  ): ConnectionIO[Contact] = {
     val contactId = Contact.Id.random()
     sql"""
          |INSERT INTO contacts
          |  (contact_id, contact_data, created_at, created_by, external_id, name)
          |VALUES
-         |  ($contactId, ${data.data}, $createdAt, ${data.createdBy}, ${data.externalId}, ${data.name})
+         |  ($contactId, ${data.data}, $createdAt, $participantId, ${data.externalId}, ${data.name})
          |RETURNING contact_id, external_id, contact_data, created_at, name
          |""".stripMargin.query[Contact].unique
   }

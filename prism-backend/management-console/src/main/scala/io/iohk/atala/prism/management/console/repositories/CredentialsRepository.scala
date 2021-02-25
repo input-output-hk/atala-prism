@@ -1,8 +1,16 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.data.EitherT
 import cats.effect.IO
+import doobie.ConnectionIO
 import doobie.util.transactor.Transactor
 import doobie.implicits._
+import io.iohk.atala.prism.management.console.errors.{
+  ContactIdsWereNotFound,
+  ExternalIdsWereNotFound,
+  ManagementConsoleError,
+  MissingContactIdAndExternalId
+}
 import io.iohk.atala.prism.management.console.models.{
   Contact,
   CreateGenericCredential,
@@ -10,7 +18,7 @@ import io.iohk.atala.prism.management.console.models.{
   ParticipantId,
   PublishCredential
 }
-import io.iohk.atala.prism.management.console.repositories.daos.CredentialsDAO
+import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -18,12 +26,45 @@ import scala.concurrent.ExecutionContext
 
 class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
-  def create(data: CreateGenericCredential): FutureEither[Nothing, GenericCredential] = {
-    CredentialsDAO
-      .create(data)
+  def create(
+      participantId: ParticipantId,
+      data: CreateGenericCredential
+  ): FutureEither[ManagementConsoleError, GenericCredential] = {
+
+    // get contactId from the externalId
+    // TODO: Avoid doing this when we stop accepting the contactId
+    val contactF = data.externalId match {
+      case Some(externalId) =>
+        EitherT.fromOptionF(
+          ContactsDAO.findContact(participantId, externalId),
+          ExternalIdsWereNotFound(Set(externalId)): ManagementConsoleError
+        )
+      case None =>
+        data.contactId match {
+          case Some(contactId) =>
+            EitherT.fromOptionF(
+              ContactsDAO.findContact(participantId, contactId),
+              ContactIdsWereNotFound(Set(contactId)): ManagementConsoleError
+            )
+          case None =>
+            EitherT.leftT[ConnectionIO, Contact](
+              MissingContactIdAndExternalId: ManagementConsoleError
+            )
+        }
+    }
+
+    val transaction =
+      for {
+        contact <- contactF
+        credential <- EitherT.right[ManagementConsoleError](
+          CredentialsDAO.create(participantId, contact.contactId, data)
+        )
+      } yield credential
+
+    transaction
       .transact(xa)
+      .value
       .unsafeToFuture()
-      .map(Right(_))
       .toFutureEither
   }
 

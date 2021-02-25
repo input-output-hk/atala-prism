@@ -29,9 +29,9 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
+      val request = CreateContact(externalId, json, "Dusty Here")
 
-      val result = repository.create(request, Some(group.name)).value.futureValue
+      val result = repository.create(institutionId, request, Some(group.name)).value.futureValue
       val subject = result.toOption.value
       subject.data must be(json)
       subject.externalId must be(externalId)
@@ -57,9 +57,9 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institution, externalId, json, "Dusty Here")
+      val request = CreateContact(externalId, json, "Dusty Here")
 
-      val result = repository.create(request, None).value.futureValue
+      val result = repository.create(institution, request, None).value.futureValue
       val subject = result.toOption.value
       subject.data must be(json)
       subject.externalId must be(externalId)
@@ -77,10 +77,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
+      val request = CreateContact(externalId, json, "Dusty Here")
 
       intercept[Exception](
-        repository.create(request, Some(InstitutionGroup.Name("Grp 1"))).value.futureValue
+        repository.create(institutionId, request, Some(InstitutionGroup.Name("Grp 1"))).value.futureValue
       )
 
       // we check that the subject was not created
@@ -103,10 +103,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
+      val request = CreateContact(externalId, json, "Dusty Here")
 
       intercept[Exception](
-        repository.create(request, Some(group.name)).value.futureValue
+        repository.create(institutionId, request, Some(group.name)).value.futureValue
       )
       // no subject should be created
       val createdSubjects = repository
@@ -128,9 +128,9 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(institutionId, externalId, json, "Dusty Here")
+      val request = CreateContact(externalId, json, "Dusty Here")
 
-      val initialResponse = repository.create(request, Some(group.name)).value.futureValue.toOption.value
+      val initialResponse = repository.create(institutionId, request, Some(group.name)).value.futureValue.toOption.value
 
       val secondJson = Json.obj(
         "universityId" -> Json.fromString("uid"),
@@ -138,10 +138,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
 
-      val secondRequest = CreateContact(institutionId, externalId, secondJson, "Dusty Here")
+      val secondRequest = CreateContact(externalId, secondJson, "Dusty Here")
 
       intercept[Exception](
-        repository.create(secondRequest, Some(group.name)).value.futureValue
+        repository.create(institutionId, secondRequest, Some(group.name)).value.futureValue
       )
 
       val subjectsStored = repository
@@ -364,7 +364,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
 
       val contactId = repository
-        .create(CreateContact(institution, Contact.ExternalId.random(), json, "Dusty Here"), None)
+        .create(institution, CreateContact(Contact.ExternalId.random(), json, "Dusty Here"), None)
         .value
         .futureValue
         .toOption
@@ -420,7 +420,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
 
       val contactId = repository
-        .create(CreateContact(institution, Contact.ExternalId.random(), json, "Dusty Here"), None)
+        .create(institution, CreateContact(Contact.ExternalId.random(), json, "Dusty Here"), None)
         .value
         .futureValue
         .toOption
@@ -475,7 +475,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val credentialType = createCredentialType(institutionId, "sample")
       val issuedCredential = createGenericCredential(
         issuedBy = institutionId,
-        subjectId = contact.contactId,
+        contactId = contact.contactId,
         tag = "tag1",
         credentialIssuanceContactId = None,
         credentialTypeId = Some(credentialType.credentialType.id)

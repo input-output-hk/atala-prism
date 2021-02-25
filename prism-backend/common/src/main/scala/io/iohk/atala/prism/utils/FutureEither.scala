@@ -102,6 +102,9 @@ object FutureEither {
   def left[E, A](leftValue: E): FutureEither[E, A] =
     Future.successful(Left(leftValue)).toFutureEither
 
+  def right[E, A](rightValue: A): FutureEither[E, A] =
+    Future.successful(Right(rightValue)).toFutureEither
+
   implicit class FutureEitherFOps[A](val value: Future[A]) extends AnyVal {
     /* Lifts a Future[A] to a successful FutureEither
      */

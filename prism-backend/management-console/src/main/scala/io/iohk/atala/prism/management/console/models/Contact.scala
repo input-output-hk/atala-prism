@@ -8,8 +8,11 @@ import java.util.UUID
 import scala.concurrent.Future
 import scala.util.Try
 
+final case class GetContact(
+    contactId: Contact.Id
+)
+
 final case class CreateContact(
-    createdBy: ParticipantId,
     externalId: Contact.ExternalId,
     data: Json,
     name: String
@@ -30,6 +33,10 @@ final case class UpdateContact(
     newExternalId: Contact.ExternalId,
     newData: Json,
     newName: String
+)
+
+final case class DeleteContact(
+    contactId: Contact.Id
 )
 
 final case class Contact(

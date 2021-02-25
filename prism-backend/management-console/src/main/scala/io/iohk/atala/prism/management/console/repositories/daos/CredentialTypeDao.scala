@@ -25,22 +25,23 @@ import io.scalaland.chimney.dsl._
 object CredentialTypeDao {
 
   def insertDefaultCredentialTypes(
-      institutionId: ParticipantId,
+      participantId: ParticipantId,
       defaultCredentialTypeConfig: DefaultCredentialTypeConfig
   ): ConnectionIO[List[CredentialTypeWithRequiredFields]] = {
     defaultCredentialTypeConfig.defaultCredentialTypes
       .map { defaultCredentialType =>
-        defaultCredentialType.into[CreateCredentialType].withFieldConst(_.institution, institutionId).transform
+        defaultCredentialType.into[CreateCredentialType].transform
       }
-      .map(create)
+      .map(create(participantId, _))
       .sequence
   }
 
   def create(
+      participantId: ParticipantId,
       createCredentialType: CreateCredentialType
   ): ConnectionIO[CredentialTypeWithRequiredFields] = {
     (for {
-      credentialType <- CredentialTypeDao.insertCredentialType(createCredentialType)
+      credentialType <- CredentialTypeDao.insertCredentialType(participantId, createCredentialType)
       credentialTypeRequiredFields = createCredentialType.fields.map { typeField =>
         CredentialTypeField(
           id = CredentialTypeFieldId(UUID.randomUUID()),
@@ -81,7 +82,10 @@ object CredentialTypeDao {
     } yield ()
   }
 
-  def insertCredentialType(createCredentialType: CreateCredentialType): ConnectionIO[CredentialType] = {
+  def insertCredentialType(
+      participantId: ParticipantId,
+      createCredentialType: CreateCredentialType
+  ): ConnectionIO[CredentialType] = {
     sql"""
          |INSERT INTO credential_types
          |  (credential_type_id, name, institution_id, state, template, created_at)
@@ -89,7 +93,7 @@ object CredentialTypeDao {
          |  (
          |    ${CredentialTypeId(UUID.randomUUID())},
          |    ${createCredentialType.name},
-         |    ${createCredentialType.institution},
+         |    $participantId,
          |    ${CredentialTypeState.Draft.entryName}::CREDENTIAL_TYPE_STATE,
          |    ${createCredentialType.template},
          |    ${Instant.now()}

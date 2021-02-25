@@ -13,7 +13,6 @@ final case class CreateCredentialTypeField(
 
 final case class CreateCredentialType(
     name: String,
-    institution: ParticipantId,
     template: String,
     fields: List[CreateCredentialTypeField]
 )
@@ -59,3 +58,11 @@ object CredentialTypeState extends Enum[CredentialTypeState] with DoobieEnum[Cre
   final case object Ready extends CredentialTypeState("READY")
   final case object Archived extends CredentialTypeState("ARCHIVED")
 }
+
+final case class GetCredentialTypes()
+
+final case class GetCredentialType(credentialTypeId: CredentialTypeId)
+
+final case class MarkAsReadyCredentialType(credentialTypeId: CredentialTypeId)
+
+final case class MarkAsArchivedCredentialType(credentialTypeId: CredentialTypeId)

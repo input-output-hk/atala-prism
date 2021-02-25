@@ -31,6 +31,7 @@ import io.iohk.atala.prism.credentials.utils.Mustache
 
 class CredentialTypeRepository(xa: Transactor[IO]) {
   def create(
+      participantId: ParticipantId,
       createCredentialType: CreateCredentialType
   ): FutureEither[ManagementConsoleError, CredentialTypeWithRequiredFields] = {
     validateMustacheTemplate(createCredentialType.template, createCredentialType.fields)
@@ -39,7 +40,7 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
           connection.pure[Either[ManagementConsoleError, CredentialTypeWithRequiredFields]](
             Left(CredentialTypeIncorrectMustacheTemplate(createCredentialType.name, mustacheError.getMessage))
           ),
-        _ => CredentialTypeDao.create(createCredentialType).map(Right(_))
+        _ => CredentialTypeDao.create(participantId, createCredentialType).map(Right(_))
       )
       .transact(xa)
       .unsafeToFuture()

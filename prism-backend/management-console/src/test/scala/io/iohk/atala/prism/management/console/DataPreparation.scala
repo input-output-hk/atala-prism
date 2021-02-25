@@ -56,7 +56,6 @@ object DataPreparation {
       database: Transactor[IO]
   ): Contact = {
     val request = CreateContact(
-      createdBy = institutionId,
       data = Json.obj(
         "email" -> "donthaveone@here.com".asJson,
         "admissionDate" -> LocalDate.now().asJson
@@ -67,7 +66,10 @@ object DataPreparation {
 
     groupName match {
       case None =>
-        ContactsDAO.createContact(request, createdAt.getOrElse(Instant.now())).transact(database).unsafeRunSync()
+        ContactsDAO
+          .createContact(institutionId, request, createdAt.getOrElse(Instant.now()))
+          .transact(database)
+          .unsafeRunSync()
       case Some(name) =>
         val group = InstitutionGroupsDAO
           .find(institutionId, name)
@@ -76,7 +78,7 @@ object DataPreparation {
           .getOrElse(throw new RuntimeException(s"Group $name does not exist"))
 
         val query = for {
-          contact <- ContactsDAO.createContact(request, createdAt.getOrElse(Instant.now()))
+          contact <- ContactsDAO.createContact(institutionId, request, createdAt.getOrElse(Instant.now()))
           _ <- InstitutionGroupsDAO.addContact(group.id, contact.contactId)
         } yield contact
 
@@ -86,7 +88,7 @@ object DataPreparation {
 
   def createGenericCredential(
       issuedBy: ParticipantId,
-      subjectId: Contact.Id,
+      contactId: Contact.Id,
       tag: String = "",
       credentialIssuanceContactId: Option[CredentialIssuance.ContactId] = None,
       credentialTypeId: Option[CredentialTypeId] = None
@@ -94,34 +96,33 @@ object DataPreparation {
       database: Transactor[IO]
   ): GenericCredential = {
     val request = CreateGenericCredential(
-      issuedBy = issuedBy,
-      subjectId = subjectId,
       credentialData = Json.obj(
         "title" -> s"Major In Applied Blockchain $tag".trim.asJson,
         "enrollmentDate" -> LocalDate.now().asJson,
         "graduationDate" -> LocalDate.now().plusYears(5).asJson
       ),
       credentialIssuanceContactId = credentialIssuanceContactId,
-      credentialTypeId = credentialTypeId
+      credentialTypeId = credentialTypeId,
+      contactId = Some(contactId),
+      externalId = None
     )
 
-    val credential = CredentialsDAO.create(request).transact(database).unsafeRunSync()
+    val credential = CredentialsDAO.create(issuedBy, contactId, request).transact(database).unsafeRunSync()
     // Sleep 1 ms to ensure DB queries sorting by creation time are deterministic (this only happens during testing as
     // creating more than one credential by/to the same participant at the exact time is rather hard)
     Thread.sleep(1)
     credential
   }
 
-  def createCredentialType(institutionId: ParticipantId, name: String)(implicit
+  def createCredentialType(participantId: ParticipantId, name: String)(implicit
       database: Transactor[IO]
   ): CredentialTypeWithRequiredFields = {
-    CredentialTypeDao.create(sampleCreateCredentialType(institutionId, name)).transact(database).unsafeRunSync()
+    CredentialTypeDao.create(participantId, sampleCreateCredentialType(name)).transact(database).unsafeRunSync()
   }
 
-  def sampleCreateCredentialType(institutionId: ParticipantId, name: String): CreateCredentialType = {
+  def sampleCreateCredentialType(name: String): CreateCredentialType = {
     CreateCredentialType(
       name = name,
-      institution = institutionId,
       template = "",
       fields = List(
         CreateCredentialTypeField(

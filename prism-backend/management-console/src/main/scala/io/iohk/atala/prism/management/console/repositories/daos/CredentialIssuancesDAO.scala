@@ -15,13 +15,16 @@ import io.iohk.atala.prism.management.console.models.{
 import java.time.Instant
 
 object CredentialIssuancesDAO {
-  def createCredentialIssuance(issuance: CreateCredentialIssuance): ConnectionIO[CredentialIssuance.Id] = {
+  def createCredentialIssuance(
+      issuance: CreateCredentialIssuance,
+      institutionId: ParticipantId
+  ): ConnectionIO[CredentialIssuance.Id] = {
     val id = CredentialIssuance.Id.random()
     val createdOn = Instant.now()
     sql"""
          |INSERT INTO credential_issuances
          |  (credential_issuance_id, name, credential_type_id, created_by, created_at)
-         |VALUES ($id, ${issuance.name}, ${issuance.credentialTypeId}, ${issuance.createdBy}, $createdOn)
+         |VALUES ($id, ${issuance.name}, ${issuance.credentialTypeId}, $institutionId, $createdOn)
          |RETURNING credential_issuance_id
          |""".stripMargin.query[CredentialIssuance.Id].unique
   }
@@ -104,7 +107,6 @@ object CredentialIssuancesDAO {
 
   case class CreateCredentialIssuance(
       name: String,
-      createdBy: ParticipantId,
       credentialTypeId: CredentialTypeId
   )
 

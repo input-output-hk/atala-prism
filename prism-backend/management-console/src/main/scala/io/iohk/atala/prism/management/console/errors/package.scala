@@ -130,6 +130,42 @@ package object errors {
       )
   }
 
+  case class UpdateGroupInvalidRequest(reason: String) extends ManagementConsoleError {
+    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
+  }
+
+  case class GetStatisticsInvalidRequest(reason: String) extends ManagementConsoleError {
+    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
+  }
+
+  case class DeleteGroupInvalidRequest(reason: String) extends ManagementConsoleError {
+    def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
+  }
+
+  case class ContactIdsWereNotFound(contactIds: Set[Contact.Id]) extends ManagementConsoleError {
+    override def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Contacts with id [${contactIds.map(_.uuid).mkString(", ")}] do not exist"
+      )
+  }
+
+  case class ExternalIdsWereNotFound(externalIds: Set[Contact.ExternalId]) extends ManagementConsoleError {
+    override def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Contacts with external id [${externalIds.map(_.value).mkString(", ")}] do not exist"
+      )
+  }
+
+  case class InvalidGroups(groupIds: Set[InstitutionGroup.Id]) extends ManagementConsoleError {
+    override def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(s"Groups [${groupIds.map(_.uuid).mkString(", ")}] are invalid")
+  }
+
+  case object MissingContactIdAndExternalId extends ManagementConsoleError {
+    override def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription("Both contact id and external id are missing, one is required")
+  }
+
   def groupDoesNotExist[A](groupId: InstitutionGroup.Id): Either[ManagementConsoleError, A] =
     Left(GroupDoesNotExist(groupId))
 

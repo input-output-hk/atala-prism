@@ -29,17 +29,18 @@ import scala.concurrent.ExecutionContext
 
 class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def create(
+      participantId: ParticipantId,
       contactData: CreateContact,
       maybeGroupName: Option[InstitutionGroup.Name],
       createdAt: Instant = Instant.now()
   ): FutureEither[ManagementConsoleError, Contact] = {
     val query = maybeGroupName match {
       case None => // if we do not request the contact to be added to a group
-        ContactsDAO.createContact(contactData, createdAt)
+        ContactsDAO.createContact(participantId, contactData, createdAt)
       case Some(groupName) => // if we are requesting to add a contact to a group
         for {
-          contact <- ContactsDAO.createContact(contactData, createdAt)
-          groupMaybe <- InstitutionGroupsDAO.find(contactData.createdBy, groupName)
+          contact <- ContactsDAO.createContact(participantId, contactData, createdAt)
+          groupMaybe <- InstitutionGroupsDAO.find(participantId, groupName)
           group = groupMaybe.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
           _ <- InstitutionGroupsDAO.addContact(group.id, contact.contactId)
         } yield contact

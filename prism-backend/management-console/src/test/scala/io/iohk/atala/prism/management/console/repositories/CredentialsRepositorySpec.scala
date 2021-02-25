@@ -21,27 +21,27 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val subjectName = "Student 1"
       val issuerId = createParticipant(issuerName)
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
-      val subject = createContact(issuerId, subjectName, Some(group.name))
+      val contact = createContact(issuerId, subjectName, Some(group.name))
       val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(issuerId, "name")
       val request = CreateGenericCredential(
-        issuedBy = issuerId,
-        subjectId = subject.contactId,
         credentialData = Json.obj(
           "title" -> "Major IN Applied Blockchain".asJson,
           "enrollmentDate" -> LocalDate.now().asJson,
           "graduationDate" -> LocalDate.now().plusYears(5).asJson
         ),
         credentialIssuanceContactId = None,
-        credentialTypeId = Some(credentialTypeWithRequiredFields.credentialType.id)
+        credentialTypeId = Some(credentialTypeWithRequiredFields.credentialType.id),
+        contactId = Some(contact.contactId),
+        externalId = None
       )
 
-      val result = credentialsRepository.create(request).value.futureValue
+      val result = credentialsRepository.create(issuerId, request).value.futureValue
       val credential = result.toOption.value
       credential.credentialData must be(request.credentialData)
-      credential.issuedBy must be(request.issuedBy)
-      credential.subjectId must be(request.subjectId)
+      credential.issuedBy must be(issuerId)
+      credential.subjectId must be(request.contactId.value)
       credential.issuerName must be(issuerName)
-      credential.subjectData must be(subject.data)
+      credential.subjectData must be(contact.data)
       credential.publicationData must be(empty)
     }
   }

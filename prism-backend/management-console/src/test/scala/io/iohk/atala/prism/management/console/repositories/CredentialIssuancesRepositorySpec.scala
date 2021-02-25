@@ -27,9 +27,9 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
 
       val credentialIssuanceId = credentialIssuancesRepository
         .create(
+          institutionId,
           CreateCredentialIssuance(
             name = "Credentials for everyone",
-            createdBy = institutionId,
             credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
             contacts = contactsWithGroup.map { contactWithGroup =>
               val (contact: Contact, group: Option[InstitutionGroup]) = contactWithGroup
