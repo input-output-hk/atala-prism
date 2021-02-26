@@ -60,12 +60,12 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
       val contactConnection1 = connector_models.ContactConnection(
         connectionId1.toString,
         token1.token,
-        console_models.ContactConnectionStatus.INVITATION_MISSING
+        console_models.ContactConnectionStatus.STATUS_INVITATION_MISSING
       )
       val contactConnection2 = connector_models.ContactConnection(
         connectionId2.toString,
         token2.token,
-        console_models.ContactConnectionStatus.CONNECTION_ACCEPTED
+        console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED
       )
 
       val request = connector_api.ConnectionsStatusRequest(List(acceptor1.uuid.toString, acceptor2.uuid.toString))
@@ -83,9 +83,13 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
       val acceptor2 = createHolder("acceptor2", None)
 
       val contactConnection1 =
-        connector_models.ContactConnection(connectionStatus = console_models.ContactConnectionStatus.INVITATION_MISSING)
+        connector_models.ContactConnection(connectionStatus =
+          console_models.ContactConnectionStatus.STATUS_INVITATION_MISSING
+        )
       val contactConnection2 =
-        connector_models.ContactConnection(connectionStatus = console_models.ContactConnectionStatus.INVITATION_MISSING)
+        connector_models.ContactConnection(connectionStatus =
+          console_models.ContactConnectionStatus.STATUS_INVITATION_MISSING
+        )
 
       val request = connector_api.ConnectionsStatusRequest(List(acceptor1.uuid.toString, acceptor2.uuid.toString))
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)

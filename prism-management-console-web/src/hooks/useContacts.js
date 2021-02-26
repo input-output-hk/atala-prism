@@ -135,10 +135,10 @@ export const useContactsWithFilteredList = (contactsManager, setLoading, setSear
 
   const allowedStatuses = {
     [PENDING_CONNECTION]: [
-      CONNECTION_STATUSES.invitationMissing,
-      CONNECTION_STATUSES.connectionMissing
+      CONNECTION_STATUSES.statusInvitationMissing,
+      CONNECTION_STATUSES.statusConnectionMissing
     ],
-    [CONNECTED]: [CONNECTION_STATUSES.connectionAccepted]
+    [CONNECTED]: [CONNECTION_STATUSES.statusConnectionAccepted]
   };
 
   useEffect(() => {

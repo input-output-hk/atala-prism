@@ -29,7 +29,7 @@ class ContactsIntegrationService(
       .create(participantId, request, group)
       .map { contact =>
         val connection = connector_models.ContactConnection(
-          connectionStatus = ContactConnectionStatus.INVITATION_MISSING
+          connectionStatus = ContactConnectionStatus.STATUS_INVITATION_MISSING
         )
         ContactWithConnection(contact, connection)
       }

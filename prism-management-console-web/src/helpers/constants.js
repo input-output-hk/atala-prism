@@ -25,10 +25,10 @@ export const CONNECTED = 'CONNECTED';
 export const PENDING_CONNECTION = 'PENDING_CONNECTION';
 
 export const CONNECTION_STATUSES = {
-  invitationMissing: 1,
-  connectionMissing: 2,
-  connectionAccepted: 3,
-  connectionRevoked: 4
+  statusInvitationMissing: 1,
+  statusConnectionMissing: 2,
+  statusConnectionAccepted: 3,
+  statusConnectionRevoked: 4
 };
 
 export const NORMALIZED_CONNECTION_STATUSES = [CONNECTED, PENDING_CONNECTION];
@@ -100,7 +100,7 @@ export const MISSING_WALLET_ERROR = Error('errors.walletNotRunning');
 export const WALLET_NOT_REGISTERED_ERROR = Error('errors.walletNotRegistered');
 
 // Connection status
-export const CONNECTION_ACCEPTED = 3;
+export const STATUS_CONNECTION_ACCEPTED = 3;
 
 // Import contacts methods
 export const BULK_IMPORT = 'bulkImport';

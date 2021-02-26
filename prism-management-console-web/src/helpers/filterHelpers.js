@@ -20,9 +20,9 @@ export const exactValueExists = (list, filter, key) => list.some(item => item[ke
 export const filterContactByStatus = (statusFilter, contactStatus) => {
   switch (statusFilter) {
     case PENDING_CONNECTION:
-      return contactStatus < CONNECTION_STATUSES.connectionAccepted;
+      return contactStatus < CONNECTION_STATUSES.statusConnectionAccepted;
     case CONNECTED:
-      return contactStatus === CONNECTION_STATUSES.connectionAccepted;
+      return contactStatus === CONNECTION_STATUSES.statusConnectionAccepted;
     default:
       return true;
   }

@@ -7,7 +7,10 @@ import { studentShape } from '../../../../helpers/propShapes';
 import { CONNECTION_STATUSES } from '../../../../helpers/constants';
 
 const showQR = ({ status }) =>
-  [CONNECTION_STATUSES.invitationMissing, CONNECTION_STATUSES.connectionMissing].includes(status);
+  [
+    CONNECTION_STATUSES.statusInvitationMissing,
+    CONNECTION_STATUSES.statusConnectionMissing
+  ].includes(status);
 
 const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
   const { t } = useTranslation();

@@ -43,10 +43,10 @@
   "contacts": {
     "title": "Contacts",
     "status": {
-      "invitationMissing": "Pending Connection",
-      "connectionMissing": "Pending Connection",
-      "connectionAccepted": "Connected",
-      "connectionRevoked": "Connection Revoked"
+      "statusInvitationMissing": "Pending Connection",
+      "statusConnectionMissing": "Pending Connection",
+      "statusConnectionAccepted": "Connected",
+      "statusConnectionRevoked": "Connection Revoked"
     },
     "filters": {
       "identityNumber": "Identity Number",
@@ -726,7 +726,7 @@
       "title": "Add Contacts Manually",
       "newContact": "Add new contact"
     }
-  }, 
+  },
   "manualImport": {
     "assignToGroups": {
       "placeholder": "Type in or Select Group Name"

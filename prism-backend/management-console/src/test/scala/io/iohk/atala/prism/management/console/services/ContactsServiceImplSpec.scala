@@ -23,7 +23,7 @@ import scala.util.Try
 
 class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator with ManagementConsoleTestUtil {
   private val invitationMissing = connector_models.ContactConnection(
-    connectionStatus = console_models.ContactConnectionStatus.INVITATION_MISSING
+    connectionStatus = console_models.ContactConnectionStatus.STATUS_INVITATION_MISSING
   )
 
   "authentication" should {

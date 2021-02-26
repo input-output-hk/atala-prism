@@ -189,7 +189,7 @@ const CredentialContainer = ({ api }) => {
 
   const sendCredentialsRequiredStatus = {
     credential: CREDENTIAL_STATUSES.credentialSigned,
-    contact: CONNECTION_STATUSES.connectionAccepted
+    contact: CONNECTION_STATUSES.statusConnectionAccepted
   };
 
   const actions = {

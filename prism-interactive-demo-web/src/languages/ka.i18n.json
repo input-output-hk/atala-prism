@@ -24,10 +24,10 @@
     "title": "Connections",
     "status": {
       "issuer": {
-        "invitationMissing":  "Pending",
-        "connectionMissing": "Connection Missing",
-        "connectionAccepted":  "Connection Accepted",
-        "connectionRevoked": "Connection Revoked"
+        "statusInvitationMissing":  "Pending",
+        "statusConnectionMissing": "Connection Missing",
+        "statusConnectionAccepted":  "Connection Accepted",
+        "statusConnectionRevoked": "Connection Revoked"
       },
       "verifier": {
         "created": "Created",

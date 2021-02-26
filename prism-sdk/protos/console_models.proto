@@ -10,10 +10,10 @@ import "common_models.proto";
 // Indicates the status on the contact's connection
 enum ContactConnectionStatus {
   STATUS_MISSING = 0; // default value, represents the lack of status
-  INVITATION_MISSING = 1; // the is no connection token generated and no invitation has been sent
-  CONNECTION_MISSING = 2; // the contact has been invited and the connection token has been generated
-  CONNECTION_ACCEPTED = 3; // the contact accepted the connection
-  CONNECTION_REVOKED = 4; // the contact rejected the connection
+  STATUS_INVITATION_MISSING = 1; // the is no connection token generated and no invitation has been sent
+  STATUS_CONNECTION_MISSING = 2; // the contact has been invited and the connection token has been generated
+  STATUS_CONNECTION_ACCEPTED = 3; // the contact accepted the connection
+  STATUS_CONNECTION_REVOKED = 4; // the contact rejected the connection
 }
 
 // Represents a contact

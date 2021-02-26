@@ -21,10 +21,10 @@ object ProtoCodecs {
   }
 
   implicit val contactConnectionStatus2Proto: Transformer[ConnectionStatus, console_models.ContactConnectionStatus] = {
-    case ConnectionStatus.InvitationMissing => console_models.ContactConnectionStatus.INVITATION_MISSING
-    case ConnectionStatus.ConnectionMissing => console_models.ContactConnectionStatus.CONNECTION_MISSING
-    case ConnectionStatus.ConnectionAccepted => console_models.ContactConnectionStatus.CONNECTION_ACCEPTED
-    case ConnectionStatus.ConnectionRevoked => console_models.ContactConnectionStatus.CONNECTION_REVOKED
+    case ConnectionStatus.InvitationMissing => console_models.ContactConnectionStatus.STATUS_INVITATION_MISSING
+    case ConnectionStatus.ConnectionMissing => console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING
+    case ConnectionStatus.ConnectionAccepted => console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED
+    case ConnectionStatus.ConnectionRevoked => console_models.ContactConnectionStatus.STATUS_CONNECTION_REVOKED
   }
 
   def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {

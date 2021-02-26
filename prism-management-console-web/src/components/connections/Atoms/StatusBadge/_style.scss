@@ -16,13 +16,13 @@
     @include secondary-text($label, $white);
   }
 
-  &.invitationMissing,
-  &.connectionMissing,
-  &.connectionRevoked {
+  &.statusInvitationMissing,
+  &.statusConnectionMissing,
+  &.statusConnectionRevoked {
     background: #feaa91;
   }
 
-  &.connectionAccepted {
+  &.statusConnectionAccepted {
     background: #00d793;
   }
   &.credentialDraft {
