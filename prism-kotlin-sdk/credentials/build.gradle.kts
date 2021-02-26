@@ -18,6 +18,19 @@ kotlin {
             }
         }
     }
+    js(IR) {
+        nodejs()
+        binaries.executable()
+        useCommonJs()
+
+        compilations["main"].packageJson {
+            version = "0.1.0"
+        }
+
+        compilations["test"].packageJson {
+            version = "0.1.0"
+        }
+    }
     ios("ios") {
         compilations.all {
             kotlinOptions {
@@ -57,6 +70,12 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-junit5"))
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+            }
+        }
+        val jsMain by getting
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
             }
         }
         val iosMain by getting

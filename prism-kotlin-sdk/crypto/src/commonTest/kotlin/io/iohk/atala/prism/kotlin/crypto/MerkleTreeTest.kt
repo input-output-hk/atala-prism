@@ -17,14 +17,14 @@ class MerkleTreeTest {
 
     @Test
     fun buildProofsForAllSuppliedHashes() {
-        val (_, proofs) = MerkleTree.generateProofs(hashes)
+        val (_, proofs) = generateProofs(hashes)
 
         hashes.forEach { h -> assertNotNull(proofs.find { it.hash == h }) }
     }
 
     @Test
     fun buildProofsOfLimitedLength() {
-        val (_, proofs) = MerkleTree.generateProofs(hashes)
+        val (_, proofs) = generateProofs(hashes)
 
         val maxLength = ceil(log2(hashes.size.toDouble()) / log2(2.0)).toInt()
         proofs.forEach { assertTrue(it.siblings.size <= maxLength) }
@@ -32,16 +32,16 @@ class MerkleTreeTest {
 
     @Test
     fun buildVerifiableProofs() {
-        val (root, proofs) = MerkleTree.generateProofs(hashes)
+        val (root, proofs) = generateProofs(hashes)
 
         for (proof in proofs) {
-            assertTrue(MerkleTree.verifyProof(root, proof))
+            assertTrue(verifyProof(root, proof))
         }
     }
 
     @Test
     fun rejectInvalidProofs() {
-        val (root, proofs) = MerkleTree.generateProofs(hashes)
+        val (root, proofs) = generateProofs(hashes)
         val proofNumber = Random.nextInt(proofs.size)
         val proof = proofs[proofNumber]
         val relevantMask = (1 shl proof.siblings.size) - 1 // The first N bits of index that matter
@@ -54,32 +54,32 @@ class MerkleTreeTest {
 
         val invalidProof3 = proof.copy(siblings = (1..30).map { randomHash(8) })
 
-        assertFalse(MerkleTree.verifyProof(root, invalidProof1))
-        assertFalse(MerkleTree.verifyProof(root, invalidProof2))
-        assertFalse(MerkleTree.verifyProof(root, invalidProof3))
+        assertFalse(verifyProof(root, invalidProof1))
+        assertFalse(verifyProof(root, invalidProof2))
+        assertFalse(verifyProof(root, invalidProof3))
     }
 
     @Test
     fun beResistantToSecondPreimageAttacks() {
-        val (root, proofs) = MerkleTree.generateProofs(hashes)
+        val (root, proofs) = generateProofs(hashes)
         val proofNumber = Random.nextInt(proofs.size)
         val proof = proofs[proofNumber]
 
         val firstSibling = proof.siblings.first()
         val newHash =
             SHA256Digest.compute(
-                listOf(MerkleTree.NodePrefix) + (firstSibling.value + proof.hash.value).map { it.toByte() }
+                listOf(NodePrefix) + (firstSibling.value + proof.hash.value).map { it.toByte() }
             )
         val newSiblings = proof.siblings.drop(1)
         val newIndex = proof.index shl 1
         val newProof = proof.copy(hash = newHash, index = newIndex, siblings = newSiblings)
 
-        assertFalse(MerkleTree.verifyProof(root, newProof))
+        assertFalse(verifyProof(root, newProof))
     }
 
     @Test
     fun deriveConsistentRoot() {
-        val (root, proofs) = MerkleTree.generateProofs(hashes)
+        val (root, proofs) = generateProofs(hashes)
 
         proofs.forEach { assertEquals(it.derivedRoot(), root) }
     }

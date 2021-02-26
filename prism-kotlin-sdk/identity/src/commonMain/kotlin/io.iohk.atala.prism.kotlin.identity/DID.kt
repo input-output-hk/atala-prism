@@ -69,13 +69,13 @@ class DID private constructor(val value: String) {
     fun getFormat(): DIDFormat =
         when {
             isLongForm() -> {
-                DIDFormat.LongForm(
+                LongForm(
                     stripPrismPrefix().takeWhile { it != ':' },
                     stripPrismPrefix().dropWhile { it != ':' }.removePrefix(":")
                 )
             }
-            isCanonicalForm() -> DIDFormat.Canonical(stripPrismPrefix().takeWhile { it != ':' })
-            else -> DIDFormat.Unknown
+            isCanonicalForm() -> Canonical(stripPrismPrefix().takeWhile { it != ':' })
+            else -> Unknown
         }
 
     fun stripPrismPrefix(): String = value.removePrefix(prismPrefix)
@@ -86,14 +86,14 @@ class DID private constructor(val value: String) {
 
     fun getCanonicalSuffix(): DIDSuffix? =
         when (val format = getFormat()) {
-            is DIDFormat.Canonical -> DIDSuffix.fromString(format.suffix)
-            is DIDFormat.LongForm -> DIDSuffix.fromString(format.stateHash)
-            is DIDFormat.Unknown -> null
+            is Canonical -> DIDSuffix.fromString(format.suffix)
+            is LongForm -> DIDSuffix.fromString(format.stateHash)
+            is Unknown -> null
         }
 
-    fun asLongForm(): DIDFormat.LongForm? =
+    fun asLongForm(): LongForm? =
         when (val format = getFormat()) {
-            is DIDFormat.LongForm -> format
+            is LongForm -> format
             else -> null
         }
 

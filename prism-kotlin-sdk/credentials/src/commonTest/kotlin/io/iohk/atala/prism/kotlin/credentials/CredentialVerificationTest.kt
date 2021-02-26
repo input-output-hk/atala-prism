@@ -3,7 +3,8 @@ package io.iohk.atala.prism.kotlin.credentials
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.MerkleTree
+import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DID
 import kotlinx.datetime.*
@@ -28,13 +29,13 @@ class CredentialVerificationTest {
     private val now = TimestampInfo(Clock.System.now().epochSeconds, 2, 2)
     private val after = TimestampInfo(Clock.System.now().plus(1, DateTimeUnit.SECOND).epochSeconds, 3, 3)
 
-    fun rootAndProofFor(cred: Credential): Pair<MerkleTree.MerkleRoot, MerkleTree.MerkleInclusionProof> {
+    fun rootAndProofFor(cred: Credential): Pair<MerkleRoot, MerkleInclusionProof> {
         val (root, profs) = CredentialBatches.batch(listOf(cred))
         return Pair(root, profs.first())
     }
 
     @Test
-    fun `succeed when valid`() {
+    fun succeedWhenValid() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val credentialData = CredentialData(issuedOn = now, revokedOn = null)
@@ -44,7 +45,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when credential is revoked`() {
+    fun failWhenCredentialIsRevoked() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val credentialData = CredentialData(issuedOn = now, revokedOn = after)
@@ -56,7 +57,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when credential was added before key`() {
+    fun failWhenCredentialWasAddedBeforeKey() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = now, revokedOn = null)
         val credentialData = CredentialData(issuedOn = before, revokedOn = null)
@@ -68,7 +69,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when key is revoked before credential is added`() {
+    fun failWhenKeyIsRevokedBeforeCredentialIsAdded() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = now)
         val credentialData = CredentialData(issuedOn = after, revokedOn = null)
@@ -80,7 +81,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when signature is invalid`() {
+    fun failWhenSignatureIsInvalid() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val credentialData = CredentialData(issuedOn = now, revokedOn = null)
@@ -94,7 +95,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `succeed when valid (including merkle tree verification)`() {
+    fun succeedWhenValidIncludingMerkleTreeVerification() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val batchData = BatchData(issuedOn = now, revokedOn = null)
@@ -114,7 +115,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when the credential was revoked`() {
+    fun failWhenTheCredentialWasRevoked() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val batchData = BatchData(issuedOn = now, revokedOn = null)
@@ -136,7 +137,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when credential batch is revoked`() {
+    fun failWhenCredentialBatchIsRevoked() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val batchData = BatchData(issuedOn = now, revokedOn = after)
@@ -158,7 +159,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when credential batch is issued before key is added`() {
+    fun failWhenCredentialBatchIsIssuedBeforeKeyIsAdded() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = now, revokedOn = null)
         val batchData = BatchData(issuedOn = before, revokedOn = null)
@@ -180,7 +181,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when key is revoked before credential batch is issued`() {
+    fun failWhenKeyIsRevokedBeforeCredentialBatchIsIssued() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = now)
         val batchData = BatchData(issuedOn = after, revokedOn = null)
@@ -202,7 +203,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when signature is invalid (merkle proof)`() {
+    fun failWhenSignatureIsInvalidMerkleProof() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val batchData = BatchData(issuedOn = now, revokedOn = null)
@@ -225,7 +226,7 @@ class CredentialVerificationTest {
     }
 
     @Test
-    fun `fail when merkle proof is invalid`() {
+    fun failWhenMerkleProofIsInvalid() {
         val keys = EC.generateKeyPair()
         val keyData = KeyData(publicKey = keys.publicKey, addedOn = before, revokedOn = null)
         val batchData = BatchData(issuedOn = now, revokedOn = null)

@@ -29,7 +29,7 @@ class DIDTest {
         assertEquals(expectedDID, did)
 
         when (val format = expectedDID.getFormat()) {
-            is DIDFormat.LongForm -> assertEquals(expectedDID.suffix, format.validate().suffix())
+            is LongForm -> assertEquals(expectedDID.suffix, format.validate().suffix())
             else -> fail("unexpected format for long DID")
         }
     }
@@ -66,18 +66,18 @@ class DIDTest {
     @Test
     fun testGetTheCorrectFormat() {
         when (val format = short.getFormat()) {
-            is DIDFormat.Canonical -> assertEquals(canonicalSuffix, format.suffix)
+            is Canonical -> assertEquals(canonicalSuffix, format.suffix)
             else -> fail("unexpected format for canonical DID")
         }
         when (val format = long.getFormat()) {
-            is DIDFormat.LongForm -> {
+            is LongForm -> {
                 assertEquals(canonicalSuffix, format.stateHash)
                 assertEquals(encodedStateUsed, format.encodedState)
             }
             else -> fail("unexpected format for long DID")
         }
         when (wrong.getFormat()) {
-            is DIDFormat.Unknown -> {
+            is Unknown -> {
                 // do nothing, the test would fail on the other cases
             }
             else -> fail("unexpected format for unknown DID")
@@ -126,7 +126,7 @@ class DIDTest {
             )
 
         when (val format = long.getFormat()) {
-            is DIDFormat.LongForm -> assertEquals(expectedInitialState, format.validate().initialState)
+            is LongForm -> assertEquals(expectedInitialState, format.validate().initialState)
             else -> fail("Long form DID with unexpected format")
         }
     }

@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kotlin.credentials
 
-import io.iohk.atala.prism.kotlin.crypto.MerkleTree
+import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 
 sealed class VerificationException(message: String) : Exception(message)
 
@@ -80,8 +81,8 @@ object CredentialVerification {
         keyData: KeyData,
         batchData: BatchData,
         credentialRevocationTime: TimestampInfo?,
-        merkleRoot: MerkleTree.MerkleRoot,
-        inclusionProof: MerkleTree.MerkleInclusionProof,
+        merkleRoot: MerkleRoot,
+        inclusionProof: MerkleInclusionProof,
         signedCredential: Credential
     ) {
 
