@@ -287,7 +287,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         .withIssueCredentialBatchOperation(issuanceOp)
 
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
       val mockTransactionInfo =
         common_models
           .TransactionInfo()
@@ -334,7 +334,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
       val mockTransactionInfo = TransactionInfo(
         transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
@@ -391,7 +391,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
       val mockTransactionInfo = TransactionInfo(
         transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
@@ -444,7 +444,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
       val mockTransactionInfo = TransactionInfo(
         transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
@@ -499,7 +499,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
       val mockTransactionInfo = TransactionInfo(
         transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
@@ -561,7 +561,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes())).value
+        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
@@ -800,7 +800,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       1, // a random index
       List(mockHash)
     )
-    val mockBatchId = CredentialBatchId.fromDigest(mockHash).value
+    val mockBatchId = CredentialBatchId.fromDigest(mockHash)
     DataPreparation.publishBatch(mockBatchId, mockHash, mockTransactionInfo)
     DataPreparation.publishCredential(issuerId, mockBatchId, consoleId, encodedSignedCredential, mockMerkleProof)
   }

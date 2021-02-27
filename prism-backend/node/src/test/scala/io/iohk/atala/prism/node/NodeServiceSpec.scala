@@ -488,7 +488,7 @@ class NodeServiceSpec
     }
 
     "return an error when the CredentialBatchesRepository fails" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val errorMsg = "an unexpected error"
@@ -505,7 +505,7 @@ class NodeServiceSpec
     }
 
     "return empty response when the CredentialBatchesRepository reports no results" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val repositoryError = new FutureEither[NodeError, Option[CredentialBatchState]](
@@ -521,7 +521,7 @@ class NodeServiceSpec
     }
 
     "return batch state when CredentialBatchesRepository succeeds" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()))
@@ -583,7 +583,7 @@ class NodeServiceSpec
     }
 
     "fail when credentialHash is not valid" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes())).value
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes()))
       val requestWithInvalidCredentialHash =
         GetCredentialRevocationTimeRequest(
           batchId = validBatchId.id,
@@ -599,7 +599,7 @@ class NodeServiceSpec
     }
 
     "return empty timestamp when CredentialBatchesRepository succeeds returning None" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val validCredentialHash = SHA256Digest.compute("random".getBytes())
       val validRequest = GetCredentialRevocationTimeRequest(
         batchId = validBatchId.id,
@@ -621,7 +621,7 @@ class NodeServiceSpec
     }
 
     "return correct timestamp when CredentialBatchesRepository succeeds returning a time" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes())).value
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val validCredentialHash = SHA256Digest.compute("random".getBytes())
       val validRequest = GetCredentialRevocationTimeRequest(
         batchId = validBatchId.id,

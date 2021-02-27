@@ -27,7 +27,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   lazy implicit val credentialsRepository: CredentialsRepository = new CredentialsRepository(database)
 
   private val aHash = SHA256Digest.compute("random string".getBytes())
-  private val aBatchId = CredentialBatchId.fromDigest(aHash).value
+  private val aBatchId = CredentialBatchId.fromDigest(aHash)
   private val aTxInfo = TransactionInfo(
     TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
     Ledger.InMemory,
@@ -239,7 +239,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash).value
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
       val mockTransactionId =
         TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
       val mockLedger = Ledger.InMemory
@@ -287,7 +287,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createIssuer("Issuer X")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash).value
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
       val mockTransactionId =
         TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
       val mockLedger = Ledger.InMemory
@@ -327,7 +327,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash).value
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
       val mockTransactionId =
         TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
       val mockLedger = Ledger.InMemory
@@ -372,7 +372,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockHash).value
+      val mockBatchId = CredentialBatchId.fromDigest(mockHash)
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
 
@@ -406,7 +406,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   "storeBatchData" should {
     "insert the expected data" in {
       val mockHash = SHA256Digest.compute("random".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockHash).value
+      val mockBatchId = CredentialBatchId.fromDigest(mockHash)
       val mockLedger = Ledger.InMemory
       val mockTransactionId =
         TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value

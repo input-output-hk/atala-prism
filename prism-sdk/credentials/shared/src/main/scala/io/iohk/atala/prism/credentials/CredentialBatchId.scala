@@ -18,20 +18,25 @@ object CredentialBatchId {
     else None
   }
 
-  def fromDigest(digest: SHA256Digest): Option[CredentialBatchId] = fromString(digest.hexValue)
+  def unsafeFromString(string: String): CredentialBatchId = {
+    fromString(string).getOrElse(throw new IllegalArgumentException(s"Invalid CredentialBatchId $string"))
+  }
+
+  def fromDigest(digest: SHA256Digest): CredentialBatchId = {
+    new CredentialBatchId(digest.hexValue)
+  }
 
   def fromBatchData(issuerDIDSuffix: DIDSuffix, merkleRoot: MerkleRoot): CredentialBatchId = {
-    new CredentialBatchId(
-      SHA256Digest
-        .compute(
-          node_models
-            .CredentialBatchData()
-            .withIssuerDID(issuerDIDSuffix.value)
-            .withMerkleRoot(ByteString.copyFrom(merkleRoot.hash.value.toArray))
-            .toByteArray
-        )
-        .hexValue
-    )
+    val digest = SHA256Digest
+      .compute(
+        node_models
+          .CredentialBatchData()
+          .withIssuerDID(issuerDIDSuffix.value)
+          .withMerkleRoot(ByteString.copyFrom(merkleRoot.hash.value.toArray))
+          .toByteArray
+      )
+
+    fromDigest(digest)
   }
 
   def random(): CredentialBatchId =

@@ -29,7 +29,7 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
       // credentials
       val credential1 = createGenericCredential(issuerId, contact3.contactId)
       createGenericCredential(issuerId, contact3.contactId)
-      val batchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes())).value
+      val batchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes()))
       credentialsRepository
         .storeBatchData(
           StoreBatchData(
