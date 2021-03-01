@@ -12,7 +12,7 @@ import GeorgiaNationalIDLogo from '../../images/GeorgiaNationalIDLogo.png';
 import GeorgiaEducationalDegreeSample from '../../images/GeorgiaEducationalDegreeSample.svg';
 import GeorgiaEducationalDegreeTranscriptSample from '../../images/GeorgiaEducationalDegreeTranscriptSample.svg';
 import GeorgiaNationalIDSample from '../../images/GeorgiaNationalIDSample.svg';
-import { coursesView } from './credentialExtraViews';
+import { georgiaCoursesView, ethiopiaCoursesView } from './credentialExtraViews';
 
 const governmentId = {
   id: 1,
@@ -165,7 +165,7 @@ const healthIsurance = {
 
 const GeorgiaNationalID = {
   id: 5,
-  enabled: true,
+  enabled: false,
   isMultiRow: false,
   name: 'credentials.type.governmentId',
   logo: GeorgiaNationalIDLogo,
@@ -226,7 +226,7 @@ const GeorgiaNationalID = {
 
 const GeorgiaEducationalDegree = {
   id: 6,
-  enabled: true,
+  enabled: false,
   isMultiRow: false,
   name: 'credentials.type.educational',
   logo: GeorgiaEducationalDegreeLogo,
@@ -263,10 +263,171 @@ const GeorgiaEducationalDegree = {
 
 const GeorgiaEducationalDegreeTranscript = {
   id: 7,
+  enabled: false,
+  isMultiRow: true,
+  multiRowKey: 'courses',
+  multiRowView: georgiaCoursesView,
+  name: 'credentials.type.transcript',
+  logo: GeorgiaEducationalDegreeTranscriptLogo,
+  sampleImage: GeorgiaEducationalDegreeTranscriptSample,
+  fields: [
+    {
+      key: 'fullname',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'degreeName',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'cumulativeScore',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'courseName',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'courseCode',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'credits',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'score',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    },
+    {
+      key: 'grade',
+      type: 'string',
+      validations: ['required'],
+      isRowField: true
+    }
+  ],
+  placeholders: {
+    fullname: '{{credentialSubject.name}}',
+    degreeName: '{{degreeName}}',
+    cumulativeScore: '{{cumulativeScore}}'
+  }
+};
+
+const EthiopiaNationalID = {
+  id: 8,
+  enabled: true,
+  isMultiRow: false,
+  name: 'credentials.type.governmentId',
+  logo: GeorgiaNationalIDLogo,
+  sampleImage: GeorgiaNationalIDSample,
+  fields: [
+    {
+      key: 'fullname',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'gender',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'countryOfCitizenship',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'placeOfBirth',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'dateOfBirth',
+      type: 'date',
+      validations: ['required', 'pastDate']
+    },
+    {
+      key: 'cardNumber',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'expirationDate',
+      type: 'date',
+      validations: ['required', 'futureDate']
+    },
+    {
+      key: 'personalNumber',
+      type: 'string',
+      validations: ['required']
+    }
+  ],
+  placeholders: {
+    fullname: '{{credentialSubject.name}}',
+    gender: '{{credentialSubject.gender}}',
+    countryOfCitizenship: '{{credentialSubject.country}}',
+    placeOfBirth: '{{credentialSubject.placeOfBirth}}',
+    dateOfBirth: '{{credentialSubject.dateOfBirth}}',
+    cardNumber: '{{cardNumber}}',
+    expirationDate: '{{expiryDate}}',
+    personalNumber: '{{personalNumber}}'
+  }
+};
+
+const EthiopiaEducationalDegree = {
+  id: 9,
+  enabled: true,
+  isMultiRow: false,
+  name: 'credentials.type.educational',
+  logo: GeorgiaEducationalDegreeLogo,
+  sampleImage: GeorgiaEducationalDegreeSample,
+  fields: [
+    {
+      key: 'degreeName',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'degreeResult',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'firstName',
+      type: 'string',
+      validations: ['required']
+    },
+    {
+      key: 'lastName',
+      type: 'string',
+      validations: ['required']
+    }
+  ],
+  placeholders: {
+    degreeName: '{{degreeName}}',
+    degreeResult: '{{degreeResult}}',
+    firstName: '{{credentialSubject.firstName}}',
+    lastName: '{{credentialSubject.lastName}}'
+  }
+};
+
+const EthiopiaEducationalDegreeTranscript = {
+  id: 10,
   enabled: true,
   isMultiRow: true,
   multiRowKey: 'courses',
-  multiRowView: coursesView,
+  multiRowView: ethiopiaCoursesView,
   name: 'credentials.type.transcript',
   logo: GeorgiaEducationalDegreeTranscriptLogo,
   sampleImage: GeorgiaEducationalDegreeTranscriptSample,
@@ -331,5 +492,8 @@ export default {
   healthIsurance,
   GeorgiaNationalID,
   GeorgiaEducationalDegree,
-  GeorgiaEducationalDegreeTranscript
+  GeorgiaEducationalDegreeTranscript,
+  EthiopiaNationalID,
+  EthiopiaEducationalDegree,
+  EthiopiaEducationalDegreeTranscript
 };
