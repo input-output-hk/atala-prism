@@ -12,22 +12,19 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, CredentialState, LedgerData}
-import io.iohk.atala.prism.node.models.{CredentialId, DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
   IssueCredentialBatchOperationSpec,
-  IssueCredentialOperationSpec,
   ParsingUtils,
-  RevokeCredentialOperationSpec,
   RevokeCredentialsOperationSpec,
   UpdateDIDOperationSpec
 }
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
   AtalaObjectTransactionStatus
@@ -36,7 +33,6 @@ import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectMana
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
   GetCredentialRevocationTimeRequest,
-  GetCredentialStateRequest,
   GetNodeBuildInfoRequest,
   GetTransactionStatusRequest,
   GetTransactionStatusResponse
@@ -50,7 +46,6 @@ import org.scalatest.OptionValues._
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import io.iohk.atala.prism.protos.node_models.OperationOutput
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.Future
 
@@ -65,7 +60,6 @@ class NodeServiceSpec
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   private val objectManagementService = mock[ObjectManagementService]
-  private val credentialsRepository = mock[CredentialsRepository]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository]
 
   private val testTransactionInfo =
@@ -92,7 +86,6 @@ class NodeServiceSpec
             new NodeServiceImpl(
               didDataRepository,
               objectManagementService,
-              credentialsRepository,
               credentialBatchesRepository
             ),
             executionContext
@@ -262,38 +255,6 @@ class NodeServiceSpec
     }
   }
 
-  "NodeService.issueCredential" should {
-    "publish IssueCredential operation" in {
-      val operation = BlockProcessingServiceSpec.signOperation(
-        IssueCredentialOperationSpec.exampleOperation,
-        "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
-      )
-
-      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
-
-      val response = service.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(operation))
-
-      response.id must not be empty
-      response.transactionInfo.value mustEqual testTransactionInfoProto
-      verify(objectManagementService).publishAtalaOperation(operation)
-      verifyNoMoreInteractions(objectManagementService)
-    }
-
-    "return error when provided operation is invalid" in {
-      val operation = BlockProcessingServiceSpec.signOperation(
-        IssueCredentialOperationSpec.exampleOperation.update(_.issueCredential.credentialData.id := "abc"),
-        "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
-      )
-
-      val error = intercept[StatusRuntimeException] {
-        service.issueCredential(node_api.IssueCredentialRequest().withSignedOperation(operation))
-      }
-      error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
-    }
-  }
-
   "NodeService.issueCredentialBatch" should {
     "publish IssueCredentialBatch operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
@@ -329,37 +290,6 @@ class NodeServiceSpec
 
       val error = intercept[StatusRuntimeException] {
         service.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(operation))
-      }
-      error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
-    }
-  }
-
-  "NodeService.revokeCredential" should {
-    "publish RevokeCredential operation" in {
-      val operation = BlockProcessingServiceSpec.signOperation(
-        RevokeCredentialOperationSpec.exampleOperation,
-        "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
-      )
-
-      doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
-
-      val response = service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
-
-      response.transactionInfo.value mustEqual testTransactionInfoProto
-      verify(objectManagementService).publishAtalaOperation(operation)
-      verifyNoMoreInteractions(objectManagementService)
-    }
-
-    "return error when provided operation is invalid" in {
-      val operation = BlockProcessingServiceSpec.signOperation(
-        RevokeCredentialOperationSpec.exampleOperation.update(_.revokeCredential.credentialId := ""),
-        "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
-      )
-
-      val error = intercept[StatusRuntimeException] {
-        service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
     }
@@ -404,74 +334,6 @@ class NodeServiceSpec
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.13.3"
       buildInfo.sbtVersion mustBe "1.4.2"
-    }
-  }
-
-  "NodeService.getCredentialState" should {
-    "fail when credentialId is not valid" in {
-      val invalidCredentialId = "invalid@_?"
-      val requestWithInvalidId = GetCredentialStateRequest(credentialId = invalidCredentialId)
-      val expectedMessage = s"INTERNAL: requirement failed: invalid credential id: $invalidCredentialId"
-
-      val error = intercept[RuntimeException] {
-        service.getCredentialState(requestWithInvalidId)
-      }
-      error.getMessage must be(expectedMessage)
-    }
-
-    "fail when the CredentialService reports an error" in {
-      val validCredentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
-      val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
-      val expectedMessage = s"UNKNOWN: Unknown credential_id: ${validCredentialId.id}"
-
-      val repositoryError = new FutureEither[NodeError, CredentialState](
-        Future(
-          Left(UnknownValueError("credential_id", validCredentialId.id))
-        )
-      )
-
-      doReturn(repositoryError).when(credentialsRepository).getCredentialState(validCredentialId)
-
-      val serviceError = intercept[RuntimeException] {
-        service.getCredentialState(requestWithValidId)
-      }
-      serviceError.getMessage must be(expectedMessage)
-    }
-
-    "return credential state when CredentialService succeeds" in {
-      val validCredentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
-      val requestWithValidId = GetCredentialStateRequest(credentialId = validCredentialId.id)
-
-      val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()))
-      val issuedOn = dummyLedgerData.timestampInfo
-      val credState =
-        CredentialState(
-          contentHash = SHA256Digest.compute("content".getBytes()),
-          credentialId = validCredentialId,
-          issuerDIDSuffix = issuerDIDSuffix,
-          issuedOn = issuedOn,
-          revokedOn = None,
-          lastOperation = SHA256Digest.compute("lastOp".getBytes())
-        )
-
-      val repositoryResponse = new FutureEither[NodeError, CredentialState](
-        Future(
-          Right(credState)
-        )
-      )
-
-      val timestampInfoProto = node_models
-        .TimestampInfo()
-        .withBlockTimestamp(issuedOn.atalaBlockTimestamp.toEpochMilli)
-        .withBlockSequenceNumber(issuedOn.atalaBlockSequenceNumber)
-        .withOperationSequenceNumber(issuedOn.operationSequenceNumber)
-
-      doReturn(repositoryResponse).when(credentialsRepository).getCredentialState(validCredentialId)
-
-      val response = service.getCredentialState(requestWithValidId)
-      response.issuerDID must be(issuerDIDSuffix.value)
-      response.publicationDate must be(Some(timestampInfoProto))
-      response.revocationDate must be(empty)
     }
   }
 
@@ -836,65 +698,6 @@ class NodeServiceSpec
 
       verify(objectManagementService).publishAtalaOperation(revokeOperation)
       verifyNoMoreInteractions(objectManagementService)
-    }
-  }
-
-  "NodeService.getCredentialTransactionInfo" should {
-    "fail when the credential id has the wrong format" in {
-      val invalidCredentialId = "bad format"
-      val error = intercept[StatusRuntimeException] {
-        service.getCredentialTransactionInfo(
-          node_api
-            .GetCredentialTransactionInfoRequest()
-            .withCredentialId(invalidCredentialId)
-        )
-      }
-
-      val expectedMessage = s"INTERNAL: requirement failed: invalid credential id: $invalidCredentialId"
-      error.getMessage must be(expectedMessage)
-    }
-
-    "return empty transaction info when the repository reports no info" in {
-      val credentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
-
-      val repositoryResponse = Future(Right(None)).toFutureEither
-      doReturn(repositoryResponse).when(credentialsRepository).getCredentialTransactionInfo(credentialId)
-
-      val response = service.getCredentialTransactionInfo(
-        node_api
-          .GetCredentialTransactionInfoRequest()
-          .withCredentialId(credentialId.id)
-      )
-
-      response.issuance must be(empty)
-    }
-
-    "return the proper transaction info when the repository reports it" in {
-      val credentialId = CredentialId(SHA256Digest.compute("valid".getBytes()))
-
-      val transactionInfo = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-        ledger = Ledger.InMemory,
-        block = None
-      )
-
-      val repositoryResponse = Future(Right(Some(transactionInfo))).toFutureEither
-
-      doReturn(repositoryResponse).when(credentialsRepository).getCredentialTransactionInfo(credentialId)
-
-      val expectedResponse = common_models.TransactionInfo(
-        transactionId = transactionInfo.transactionId.toString,
-        ledger = common_models.Ledger.IN_MEMORY,
-        block = None
-      )
-
-      val response = service.getCredentialTransactionInfo(
-        node_api
-          .GetCredentialTransactionInfoRequest()
-          .withCredentialId(credentialId.id)
-      )
-
-      response.issuance.value must be(expectedResponse)
     }
   }
 }

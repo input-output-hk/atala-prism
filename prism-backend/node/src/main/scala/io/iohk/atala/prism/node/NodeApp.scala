@@ -5,12 +5,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
-import io.iohk.atala.prism.node.repositories.{
-  CredentialBatchesRepository,
-  CredentialsRepository,
-  DIDDataRepository,
-  KeyValuesRepository
-}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.atala.prism.node.services.BitcoinLedgerService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
@@ -97,7 +92,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = new DIDDataRepository(transactor)
-    val credentialsRepository = new CredentialsRepository(transactor)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val objectManagementService = ObjectManagementService(
@@ -114,7 +108,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       new NodeServiceImpl(
         didDataRepository,
         objectManagementService,
-        credentialsRepository,
         credentialBatchesRepository
       )
 

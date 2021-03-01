@@ -8,11 +8,10 @@ import io.iohk.atala.prism.crypto.{EC, ECPrivateKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
-import io.iohk.atala.prism.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
-import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
+import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
-
 import java.time.Instant
 
 object BlockProcessingServiceSpec {
@@ -45,7 +44,6 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
 
   lazy val didDataRepository = new DIDDataRepository(database)
-  lazy val credentialsRepository = new CredentialsRepository(database)
 
   private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
@@ -85,9 +83,6 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         .futureValue
 
       result mustBe true
-
-      val credentials = CredentialsDAO.all().transact(database).unsafeRunSync()
-      credentials must be(empty)
 
     }
 

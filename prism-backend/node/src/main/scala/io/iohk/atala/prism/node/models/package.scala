@@ -56,15 +56,6 @@ package object models {
 
   object nodeState {
 
-    case class CredentialState(
-        credentialId: CredentialId,
-        issuerDIDSuffix: DIDSuffix,
-        contentHash: SHA256Digest,
-        issuedOn: TimestampInfo,
-        revokedOn: Option[TimestampInfo] = None,
-        lastOperation: SHA256Digest
-    )
-
     case class CredentialBatchState(
         batchId: CredentialBatchId,
         issuerDIDSuffix: DIDSuffix,

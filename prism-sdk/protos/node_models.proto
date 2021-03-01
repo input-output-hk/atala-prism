@@ -66,17 +66,6 @@ message DIDData {
     repeated PublicKey publicKeys = 2; // the keys that belong to this DID Document
 }
 
-// The necessary data to create a credential on the blockchain.
-//
-// Check the protocol to find how to compute the data.
-//
-// TODO: Remove as it is deprecated, use credential batches instead.
-message CredentialData {
-    string id = 1; // the credential id
-    string issuer = 2; // the DID suffix from the institution
-    bytes contentHash = 3; // the credential's hash
-}
-
 // The operation to create a public DID
 message CreateDIDOperation {
     DIDData didData = 1; // DIDData with did empty id field
@@ -109,19 +98,6 @@ message UpdateDIDOperation {
     repeated UpdateDIDAction actions = 3; // the actual updates to perform on the DID
 }
 
-// Specifies the necessary data to issue a single credential.
-//
-// TODO: Remove legacy code.
-message IssueCredentialOperation {
-    CredentialData credentialData = 1; // credential data with id empty
-}
-
-// Specifies the data necessary to revoke a credential's batch
-message RevokeCredentialOperation {
-    bytes previousOperationHash = 1; // the hash for the operation that issued this batch
-    string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
-}
-
 // Represents a credential's batch.
 //
 // Check the protocol docs to understand it.
@@ -152,19 +128,11 @@ message AtalaOperation {
         // Used to update an existing public DID
         UpdateDIDOperation updateDid = 2;
 
-        // Used to issue a single credential
-        // TODO: Remove it as IssueCredentialBatchOperation should be used instead
-        IssueCredentialOperation issueCredential = 3;
-
-        // Used to revoke a single credential
-        // TODO: Remove it as RevokeCredentialsOperation should be used instead
-        RevokeCredentialOperation revokeCredential = 4;
-
         // Used to issue a batch of credentials
-        IssueCredentialBatchOperation issueCredentialBatch = 5;
+        IssueCredentialBatchOperation issueCredentialBatch = 3;
 
         // Used to revoke a credential batch
-        RevokeCredentialsOperation revokeCredentials = 6;
+        RevokeCredentialsOperation revokeCredentials = 4;
     };
 }
 

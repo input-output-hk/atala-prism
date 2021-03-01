@@ -9,7 +9,7 @@ import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, Credentia
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, CredentialsRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService}
 import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
@@ -31,7 +31,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataRepository: DIDDataRepository = _
   protected var credentialBatchesRepository: CredentialBatchesRepository = _
-  protected var credentialsRepository: CredentialsRepository = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
@@ -42,7 +41,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     super.beforeEach()
 
     didDataRepository = new DIDDataRepository(database)
-    credentialsRepository = new CredentialsRepository(database)
     credentialBatchesRepository = new CredentialBatchesRepository(database)
 
     storage = new objects.ObjectStorageService.InMemory()
@@ -75,7 +73,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
             new NodeServiceImpl(
               didDataRepository,
               objectManagementService,
-              credentialsRepository,
               credentialBatchesRepository
             ),
             executionContext

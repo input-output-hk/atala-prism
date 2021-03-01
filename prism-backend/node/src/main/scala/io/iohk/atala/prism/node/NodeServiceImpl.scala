@@ -9,9 +9,8 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.CredentialId
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.repositories.{CredentialsRepository, CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
 import io.iohk.atala.prism.node.services.ObjectManagementService
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -20,10 +19,6 @@ import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateResponse,
   GetCredentialRevocationTimeRequest,
   GetCredentialRevocationTimeResponse,
-  GetCredentialStateRequest,
-  GetCredentialStateResponse,
-  GetCredentialTransactionInfoRequest,
-  GetCredentialTransactionInfoResponse,
   GetTransactionStatusRequest,
   GetTransactionStatusResponse,
   IssueCredentialBatchRequest,
@@ -36,7 +31,6 @@ import io.iohk.atala.prism.protos.node_api.{
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
-import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 
@@ -46,7 +40,6 @@ import scala.util.Try
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository,
     objectManagement: ObjectManagementService,
-    credentialsRepository: CredentialsRepository,
     credentialBatchesRepository: CredentialBatchesRepository
 )(implicit
     ec: ExecutionContext
@@ -121,130 +114,6 @@ class NodeServiceImpl(
       _ <- errorEitherToFuture(UpdateDIDOperation.validate(operation))
       transactionInfo <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.UpdateDIDResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
-  }
-
-  override def issueCredential(request: node_api.IssueCredentialRequest): Future[node_api.IssueCredentialResponse] = {
-    logRequest(s"issueCredential", request)
-    val operationF = Future {
-      request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
-    }
-    for {
-      operation <- operationF
-      parsedOp <- errorEitherToFuture(IssueCredentialOperation.parseWithMockedLedgerData(operation))
-      operation = request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
-      transactionInfo <- objectManagement.publishAtalaOperation(operation)
-    } yield {
-      logAndReturnResponse(
-        "issueCredential",
-        node_api
-          .IssueCredentialResponse(id = parsedOp.credentialId.id)
-          .withTransactionInfo(toTransactionInfo(transactionInfo))
-      )
-    }
-  }
-
-  override def revokeCredential(
-      request: node_api.RevokeCredentialRequest
-  ): Future[node_api.RevokeCredentialResponse] = {
-    logRequest("revokeCredential", request)
-    val operationF = Future {
-      request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
-    }
-    for {
-      operation <- operationF
-      _ <- errorEitherToFuture(RevokeCredentialOperation.validate(operation))
-      transactionInfo <- objectManagement.publishAtalaOperation(operation)
-    } yield {
-      logAndReturnResponse(
-        "revokeCredential",
-        node_api.RevokeCredentialResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
-      )
-    }
-  }
-
-  override def getCredentialState(request: GetCredentialStateRequest): Future[GetCredentialStateResponse] = {
-    logRequest("getCredentialState", request)
-    val credentialIdF =
-      CredentialId(request.credentialId).tryF recover {
-        case ex: IllegalArgumentException =>
-          throw new RuntimeException(ex.getMessage)
-      }
-    for {
-      credentialId <- credentialIdF
-      credentialStateEither <- credentialsRepository.getCredentialState(credentialId).value
-    } yield {
-      credentialStateEither match {
-        case Left(err: NodeError) =>
-          logger.info(s"Failed to retrieve state: $err")
-          throw err.toStatus.asRuntimeException()
-        case Right(credentialState) =>
-          logAndReturnResponse(
-            "getCredentialState",
-            ProtoCodecs.toCredentialStateResponseProto(credentialState)
-          )
-      }
-    }
-  }
-
-  override def getTransactionStatus(request: GetTransactionStatusRequest): Future[GetTransactionStatusResponse] = {
-    logRequest("getTransactionStatus", request)
-    val transactionF = Future {
-      request.transactionInfo
-        .map(fromTransactionInfo)
-        .getOrElse(throw new RuntimeException("transaction_info is missing"))
-    }
-
-    for {
-      transaction <- transactionF
-      latestTransactionAndStatus <- objectManagement.getLatestTransactionAndStatus(transaction)
-      latestTransaction = latestTransactionAndStatus.map(_.transaction).getOrElse(transaction)
-      status =
-        latestTransactionAndStatus
-          .map(_.status)
-          .map(toTransactionStatus)
-          .getOrElse(common_models.TransactionStatus.UNKNOWN)
-    } yield {
-      logAndReturnResponse(
-        "getTransactionStatus",
-        node_api
-          .GetTransactionStatusResponse()
-          .withTransactionInfo(toTransactionInfo(latestTransaction))
-          .withStatus(status)
-      )
-    }
-  }
-
-  private def toTransactionStatus(status: AtalaObjectTransactionStatus): common_models.TransactionStatus = {
-    status match {
-      case AtalaObjectTransactionStatus.InLedger => common_models.TransactionStatus.IN_LEDGER
-      case AtalaObjectTransactionStatus.Pending => common_models.TransactionStatus.PENDING
-      case AtalaObjectTransactionStatus.Confirmed => common_models.TransactionStatus.CONFIRMED
-    }
-  }
-
-  override def getNodeBuildInfo(
-      request: node_api.GetNodeBuildInfoRequest
-  ): Future[node_api.GetNodeBuildInfoResponse] = {
-    logRequest("getNodeBuildInfo", request)
-    Future
-      .successful(
-        logAndReturnResponse(
-          "getNodeBuildInfo",
-          node_api
-            .GetNodeBuildInfoResponse()
-            .withVersion(BuildInfo.version)
-            .withScalaVersion(BuildInfo.scalaVersion)
-            .withSbtVersion(BuildInfo.sbtVersion)
-        )
-      )
-  }
-
-  private def errorEitherToFuture[T](either: Either[ValidationError, T]): Future[T] = {
-    Future.fromTry {
-      either.left.map { error =>
-        Status.INVALID_ARGUMENT.withDescription(error.render).asRuntimeException()
-      }.toTry
-    }
   }
 
   override def issueCredentialBatch(request: IssueCredentialBatchRequest): Future[IssueCredentialBatchResponse] = {
@@ -386,34 +255,70 @@ class NodeServiceImpl(
     }
   }
 
-  /** NOTE: This will be removed after migrating to slayer 0.3
-    * Returns the transaction information associated to the credential (both issuance and possible revocation)
-    */
-  override def getCredentialTransactionInfo(
-      request: GetCredentialTransactionInfoRequest
-  ): Future[GetCredentialTransactionInfoResponse] = {
-    logRequest("getCredentialTransactionInfo", request)
-    val credentialIdF = Future.fromTry(
-      Try { CredentialId(request.credentialId) }
-    )
+  override def getTransactionStatus(request: GetTransactionStatusRequest): Future[GetTransactionStatusResponse] = {
+    def toTransactionStatus(status: AtalaObjectTransactionStatus): common_models.TransactionStatus = {
+      status match {
+        case AtalaObjectTransactionStatus.InLedger => common_models.TransactionStatus.IN_LEDGER
+        case AtalaObjectTransactionStatus.Pending => common_models.TransactionStatus.PENDING
+        case AtalaObjectTransactionStatus.Confirmed => common_models.TransactionStatus.CONFIRMED
+      }
+    }
+
+    logRequest("getTransactionStatus", request)
+    val transactionF = Future {
+      request.transactionInfo
+        .map(fromTransactionInfo)
+        .getOrElse(throw new RuntimeException("transaction_info is missing"))
+    }
+
     for {
-      credentialId <- credentialIdF
-      transactionInfoEither <- credentialsRepository.getCredentialTransactionInfo(credentialId).value
-    } yield transactionInfoEither match {
-      case Left(error) =>
-        throw error.toStatus.asRuntimeException()
-      case Right(transactionInfo) =>
-        logAndReturnResponse(
-          "getCredentialTransactionInfo",
-          node_api.GetCredentialTransactionInfoResponse(
-            issuance = transactionInfo.map(toTransactionInfo)
-          )
-        )
+      transaction <- transactionF
+      latestTransactionAndStatus <- objectManagement.getLatestTransactionAndStatus(transaction)
+      latestTransaction = latestTransactionAndStatus.map(_.transaction).getOrElse(transaction)
+      status =
+        latestTransactionAndStatus
+          .map(_.status)
+          .map(toTransactionStatus)
+          .getOrElse(common_models.TransactionStatus.UNKNOWN)
+    } yield {
+      logAndReturnResponse(
+        "getTransactionStatus",
+        node_api
+          .GetTransactionStatusResponse()
+          .withTransactionInfo(toTransactionInfo(latestTransaction))
+          .withStatus(status)
+      )
     }
   }
+
+  override def getNodeBuildInfo(
+      request: node_api.GetNodeBuildInfoRequest
+  ): Future[node_api.GetNodeBuildInfoResponse] = {
+    logRequest("getNodeBuildInfo", request)
+    Future
+      .successful(
+        logAndReturnResponse(
+          "getNodeBuildInfo",
+          node_api
+            .GetNodeBuildInfoResponse()
+            .withVersion(BuildInfo.version)
+            .withScalaVersion(BuildInfo.scalaVersion)
+            .withSbtVersion(BuildInfo.sbtVersion)
+        )
+      )
+  }
+
 }
 
 object NodeServiceImpl {
+  def errorEitherToFuture[T](either: Either[ValidationError, T]): Future[T] = {
+    Future.fromTry {
+      either.left.map { error =>
+        Status.INVALID_ARGUMENT.withDescription(error.render).asRuntimeException()
+      }.toTry
+    }
+  }
+
   private def succeedWith(
       didData: node_models.DIDData
   )(implicit logger: Logger): Future[node_api.GetDidDocumentResponse] = {
@@ -449,6 +354,7 @@ object NodeServiceImpl {
   def logRequest[Req <: GeneratedMessage](method: String, request: Req)(implicit logger: Logger): Unit = {
     logger.info(s"$method request = ${request.toProtoString}")
   }
+
   def logAndReturnResponse[Response <: GeneratedMessage](method: String, response: Response)(implicit
       logger: Logger
   ): Response = {
@@ -496,12 +402,6 @@ object NodeServiceImpl {
               )
             )
           }
-      case Operation.IssueCredential(_) =>
-        // we are deprecating this one soon, so we leave a not implemented error
-        throw new NotImplementedError("IssueCredential is deprecated and cannot be used in a block")
-      case Operation.RevokeCredential(_) =>
-        // we are deprecating this one soon, so we leave a not implemented error
-        throw new NotImplementedError("RevokeCredential is deprecated and cannot be used in a block")
     }
   }
 }

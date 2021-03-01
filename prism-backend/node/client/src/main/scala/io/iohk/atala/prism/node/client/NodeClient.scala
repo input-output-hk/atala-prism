@@ -67,12 +67,6 @@ object NodeClient {
       cmd("update-did")
         .action((_, c) => c.copy(command = Some(UpdateDid())))
         .children(UpdateDid.parser),
-      cmd("issue-credential")
-        .action((_, c) => c.copy(command = Some(IssueCredential())))
-        .children(IssueCredential.parser),
-      cmd("revoke-credential")
-        .action((_, c) => c.copy(command = Some(RevokeCredential())))
-        .children(RevokeCredential.parser),
       cmd("send-operation")
         .text("Sends base64-encoded SignedAtalaOperation to the node")
         .action((_, c) => c.copy(command = Some(SendOperation()))),

@@ -10,7 +10,7 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
-import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
@@ -60,7 +60,6 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
   import IssueCredentialBatchOperationSpec._
 
   lazy val didDataRepository = new DIDDataRepository(database)
-  lazy val credentialsRepository = new CredentialsRepository(database)
 
   "IssueCredentialBatchOperation.parse" should {
     "parse valid IssueCredentialBatchOperation AtalaOperation" in {

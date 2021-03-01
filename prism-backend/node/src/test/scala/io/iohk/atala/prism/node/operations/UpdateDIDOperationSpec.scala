@@ -9,7 +9,7 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.randomProtoECKey
-import io.iohk.atala.prism.node.repositories.{CredentialsRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -69,7 +69,6 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
   import UpdateDIDOperationSpec._
 
   lazy val didDataRepository = new DIDDataRepository(database)
-  lazy val credentialsRepository = new CredentialsRepository(database)
 
   override type Repr = UpdateDIDOperation
   override val exampleOperation = UpdateDIDOperationSpec.exampleOperation

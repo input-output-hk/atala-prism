@@ -10,19 +10,10 @@ import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
-import io.iohk.atala.prism.node.models.nodeState.{CredentialState, LedgerData}
-import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.node.models.nodeState.LedgerData
+import io.iohk.atala.prism.protos.node_models
 
 object ProtoCodecs {
-  def toCredentialStateResponseProto(credentialState: CredentialState): node_api.GetCredentialStateResponse = {
-    val c = node_api
-      .GetCredentialStateResponse()
-      .withIssuerDID(credentialState.issuerDIDSuffix.value)
-      .withPublicationDate(toTimeStampInfoProto(credentialState.issuedOn))
-
-    credentialState.revokedOn.fold(c)(toTimeStampInfoProto _ andThen c.withRevocationDate)
-  }
-
   def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_models.TimestampInfo = {
     node_models
       .TimestampInfo()

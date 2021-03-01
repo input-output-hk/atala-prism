@@ -22,23 +22,11 @@ service NodeService {
     // Updates an existing public DID
     rpc UpdateDID(UpdateDIDRequest) returns (UpdateDIDResponse) {}
 
-    // Issues a single credential.
-    // TODO: Remove it to use IssueCredentialBatch instead.
-    rpc IssueCredential(IssueCredentialRequest) returns (IssueCredentialResponse) {}
-
     // Issues a batch of credentials
     rpc IssueCredentialBatch(IssueCredentialBatchRequest) returns (IssueCredentialBatchResponse) {}
 
-    // Revokes a single credential.
-    // TODO: Remove it to use RevokeCredentials instead.
-    rpc RevokeCredential(RevokeCredentialRequest) returns (RevokeCredentialResponse) {}
-
     // Revokes credentials from a batch, either all or a subset
     rpc RevokeCredentials(RevokeCredentialsRequest) returns (RevokeCredentialsResponse) {}
-
-    // Finds the state from a credential.
-    // TODO: Remove it to use GetBatchState instead.
-    rpc GetCredentialState(GetCredentialStateRequest) returns (GetCredentialStateResponse) {}
 
     // Finds the details about a transaction
     rpc GetTransactionStatus(GetTransactionStatusRequest) returns (GetTransactionStatusResponse) {}
@@ -55,10 +43,6 @@ service NodeService {
     // Publishes a sequence of signed operations in a single underlying transaction
     // The sequence of operations has a size limit to fit in the metadata of the transaction(approx 15KB)
     rpc PublishAsABlock(PublishAsABlockRequest) returns (PublishAsABlockResponse) {}
-
-    // NOTE: This will be removed after migrating to slayer 0.3
-    // Returns the transaction information associated to the credential issuance
-    rpc GetCredentialTransactionInfo(GetCredentialTransactionInfoRequest) returns (GetCredentialTransactionInfoResponse) {}
 }
 
 
@@ -90,16 +74,6 @@ message UpdateDIDResponse {
     TransactionInfo transactionInfo = 1; // the on-chain transaction info where the operation is going to be applied
 }
 
-// Request to issue a single credential
-message IssueCredentialRequest {
-    SignedAtalaOperation signed_operation = 1; // the signed operation
-}
-// Response after issuing a credential
-message IssueCredentialResponse {
-    string id = 1; // credential id
-    TransactionInfo transactionInfo = 2; // the on-chain transaction info where the operation is going to be applied
-}
-
 // Request to issue a batch of credentials
 message IssueCredentialBatchRequest {
     SignedAtalaOperation signed_operation = 1; // the signed operation
@@ -108,15 +82,6 @@ message IssueCredentialBatchRequest {
 message IssueCredentialBatchResponse {
     string batchId = 1; // id of the batch posted
     TransactionInfo transactionInfo = 2; // the on-chain transaction info where the operation is going to be applied
-}
-
-// Request to issue a single credential
-message RevokeCredentialRequest {
-    SignedAtalaOperation signed_operation = 1; // the signed operation
-}
-// Response after revoking a credential
-message RevokeCredentialResponse {
-    TransactionInfo transactionInfo = 1; // the on-chain transaction info where the operation is going to be applied
 }
 
 // Request to revoke credentials from a batch
@@ -138,18 +103,6 @@ message GetNodeBuildInfoResponse {
     string version = 1; // the actual version
     string scalaVersion = 2; // the scala version used to compile the app
     string sbtVersion = 3; // the sbt version used to compile the app
-}
-
-// Request to get the credential's state
-message GetCredentialStateRequest {
-    // the id of the published credential (a.k.a. it is the output of the corresponding IssueCredential)
-    string credentialId = 1;
-}
-// Response with the credential's state
-message GetCredentialStateResponse {
-    string issuerDID = 1; // DID suffix used to sign the IssueCredential operation
-    TimestampInfo publicationDate = 2; // If present: underlying blockchain timestamp that refers to the transaction that contains the IssueCredential operation associated to the credential
-    TimestampInfo revocationDate = 3; // If present: underlying blockchain timestamp that refers to the transaction that RevokeCredential operation associated to the credential
 }
 
 // Request to get the credential's batch state
@@ -199,15 +152,4 @@ message PublishAsABlockResponse {
     TransactionInfo transactionInfo = 1;
     // the responses of every operation in the block, they are ordered in the same order of the operations sent in PublishAsABlockRequest
     repeated OperationOutput outputs = 2;
-}
-
-// TODO: Deprecate these messages after migration to 0.3
-// Requests the transaction information associated to the credential
-message GetCredentialTransactionInfoRequest {
-    string credentialId = 1; // the slayer id of the desired credential
-}
-
-// Returns the data associated to the credential requested
-message GetCredentialTransactionInfoResponse {
-    TransactionInfo issuance = 1; // if present, the information associated to the issuance of this credential
 }

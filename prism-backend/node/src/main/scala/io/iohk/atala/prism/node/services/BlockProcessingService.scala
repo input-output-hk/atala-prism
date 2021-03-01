@@ -102,10 +102,6 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
         CreateDIDOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.UpdateDid =>
         UpdateDIDOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.IssueCredential =>
-        IssueCredentialOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.RevokeCredential =>
-        RevokeCredentialOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
         IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
@@ -155,7 +151,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     * @tparam L left alternative of Either returned by f
     * @tparam R right alternative of Either returned by f
     * @tparam M the input sequence type
-    * @return Left with underlying L type containing first error occured, Right with M[R] underlying type if there are no errors
+    * @return Left with underlying L type containing first error occurred, Right with M[R] underlying type if there are no errors
     */
   private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
       in: M[A]

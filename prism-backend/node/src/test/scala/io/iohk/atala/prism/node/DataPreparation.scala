@@ -8,11 +8,10 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.node.models.{CredentialId, DIDData, DIDPublicKey}
+import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, CredentialsDAO, DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.node.repositories.daos.CredentialsDAO.CreateCredentialData
+import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO, PublicKeysDAO}
 import org.scalatest.OptionValues._
 
 // This class collects useful methods to populate and query the node db that are
@@ -53,28 +52,6 @@ object DataPreparation {
   def findKey(didSuffix: DIDSuffix, keyId: String)(implicit xa: Transactor[IO]): Option[DIDPublicKeyState] = {
     PublicKeysDAO
       .find(didSuffix, keyId)
-      .transact(xa)
-      .unsafeRunSync()
-  }
-
-  // ***************************************
-  // Credentials (slayer 0.2) [to be deprecated]
-  // ***************************************
-
-  def createCredential(
-      data: CreateCredentialData
-  )(implicit xa: Transactor[IO]): Unit = {
-    CredentialsDAO
-      .insert(data)
-      .transact(xa)
-      .unsafeRunSync()
-  }
-
-  def revokeCredential(credentialId: CredentialId, revocationLedgerData: LedgerData)(implicit
-      xa: Transactor[IO]
-  ): Boolean = {
-    CredentialsDAO
-      .revoke(credentialId, revocationLedgerData)
       .transact(xa)
       .unsafeRunSync()
   }

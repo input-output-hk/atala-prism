@@ -92,65 +92,6 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     Credential.fromCredentialContent(credentialContent).sign(privateKey)
   }
 
-  def verifyCredential(credential: Credential): Boolean = {
-    // extract user DIDSuffix and keyId from credential
-    val issuerDID = GenericCredentialsSDK.getIssuerDID(credential.canonicalForm)
-    val issuerDIDSuffix = GenericCredentialsSDK.getIssuerDIDSufix(credential.canonicalForm)
-    val issuanceKeyId = GenericCredentialsSDK.getKeyId(credential.canonicalForm)
-
-    // request credential state to the node
-    val issuanceOperation = NodeSDK.buildIssueCredentialOp(credential.hash, issuerDIDSuffix)
-    val credentialId = NodeSDK.computeCredId(issuanceOperation)
-
-    val credentialState = node.getCredentialState(
-      node_api.GetCredentialStateRequest(
-        credentialId.id
-      )
-    )
-    val credentialIssuanceDate = ProtoCodecs.fromTimestampInfoProto(credentialState.publicationDate.value)
-    val credentialRevocationDate = credentialState.revocationDate map ProtoCodecs.fromTimestampInfoProto
-
-    println(credentialState)
-
-    // resolve DID through the node
-    val didDocumentOption = node
-      .getDidDocument(
-        node_api.GetDidDocumentRequest(
-          did = issuerDID
-        )
-      )
-      .document
-    val didDocument = didDocumentOption.value
-
-    // get verification key
-    val issuancekeyProtoOption = didDocument.publicKeys.find(_.id == issuanceKeyId)
-    val issuancekeyData = issuancekeyProtoOption.value
-    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value)
-    val issuanceKeyRevokedOn = issuancekeyData.revokedOn map ProtoCodecs.fromTimestampInfoProto
-    val issuancekey = issuancekeyProtoOption flatMap ProtoCodecs.fromProtoKey
-
-    // run all verifications, including signature
-
-    // the credential was posted in the chain, and
-    credentialState.publicationDate.nonEmpty &&
-    credentialRevocationDate.isEmpty &&
-    // the issuer DID that signed the credential is registered, and
-    didDocumentOption.nonEmpty &&
-    // the key used to signed the credential is in the DID, and
-    issuancekeyProtoOption.nonEmpty &&
-    // the key was in the DID before the credential publication event, and
-    issuanceKeyAddedOn.occurredBefore(credentialIssuanceDate) &&
-    // the key was not revoked before credential publication event, and
-    (
-      // either the key was never revoked
-      issuanceKeyRevokedOn.isEmpty ||
-      // or was revoked after signing the credential
-      credentialIssuanceDate.occurredBefore(issuanceKeyRevokedOn.value)
-    ) &&
-    // the signature is valid
-    credential.isValidSignature(issuancekey.value)
-  }
-
   def verifyCredential(
       credential: Credential,
       merkleProof: MerkleInclusionProof
