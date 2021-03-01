@@ -90,24 +90,30 @@ object DataPreparation {
       issuedBy: ParticipantId,
       contactId: Contact.Id,
       tag: String = "",
-      credentialIssuanceContactId: Option[CredentialIssuance.ContactId] = None,
-      credentialTypeId: Option[CredentialTypeId] = None
+      credentialIssuanceContactId: Option[CredentialIssuance.ContactId] = None
   )(implicit
       database: Transactor[IO]
   ): GenericCredential = {
-    val request = CreateGenericCredential(
-      credentialData = Json.obj(
-        "title" -> s"Major In Applied Blockchain $tag".trim.asJson,
-        "enrollmentDate" -> LocalDate.now().asJson,
-        "graduationDate" -> LocalDate.now().plusYears(5).asJson
-      ),
-      credentialIssuanceContactId = credentialIssuanceContactId,
-      credentialTypeId = credentialTypeId,
-      contactId = Some(contactId),
-      externalId = None
-    )
 
-    val credential = CredentialsDAO.create(issuedBy, contactId, request).transact(database).unsafeRunSync()
+    def createRequest(credentialTypeId: CredentialTypeId) =
+      CreateGenericCredential(
+        credentialData = Json.obj(
+          "title" -> s"Major In Applied Blockchain $tag".trim.asJson,
+          "enrollmentDate" -> LocalDate.now().asJson,
+          "graduationDate" -> LocalDate.now().plusYears(5).asJson
+        ),
+        credentialIssuanceContactId = credentialIssuanceContactId,
+        credentialTypeId = credentialTypeId,
+        contactId = Some(contactId),
+        externalId = None
+      )
+
+    val credential = (for {
+      credentialTypeWithRequiredFields <-
+        CredentialTypeDao.create(issuedBy, sampleCreateCredentialType(s"Credential type $tag"))
+      credential <-
+        CredentialsDAO.create(issuedBy, contactId, createRequest(credentialTypeWithRequiredFields.credentialType.id))
+    } yield credential).transact(database).unsafeRunSync()
     // Sleep 1 ms to ensure DB queries sorting by creation time are deterministic (this only happens during testing as
     // creating more than one credential by/to the same participant at the exact time is rather hard)
     Thread.sleep(1)
@@ -124,14 +130,22 @@ object DataPreparation {
     CreateCredentialType(
       name = name,
       template = "",
+      icon = None,
       fields = List(
         CreateCredentialTypeField(
-          name = "name1",
-          description = "description1"
+          name = "title",
+          description = "Title",
+          `type` = CredentialTypeFieldType.String
         ),
         CreateCredentialTypeField(
-          name = "name2",
-          description = "description2"
+          name = "enrollmentDate",
+          description = "Date of the enrollment",
+          `type` = CredentialTypeFieldType.Date
+        ),
+        CreateCredentialTypeField(
+          name = "graduationDate",
+          description = "Date of the graduation",
+          `type` = CredentialTypeFieldType.Date
         )
       )
     )

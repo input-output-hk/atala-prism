@@ -6,11 +6,10 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
+import io.iohk.atala.prism.management.console.errors.CredentialDataValidationFailed
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
-
-import java.time.LocalDate
 
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   lazy val credentialsRepository = new CredentialsRepository(database)
@@ -26,11 +25,11 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateGenericCredential(
         credentialData = Json.obj(
           "title" -> "Major IN Applied Blockchain".asJson,
-          "enrollmentDate" -> LocalDate.now().asJson,
-          "graduationDate" -> LocalDate.now().plusYears(5).asJson
+          "enrollmentDate" -> "01/10/2010".asJson,
+          "graduationDate" -> "01/07/2015".asJson
         ),
         credentialIssuanceContactId = None,
-        credentialTypeId = Some(credentialTypeWithRequiredFields.credentialType.id),
+        credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
         contactId = Some(contact.contactId),
         externalId = None
       )
@@ -44,6 +43,27 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       credential.subjectData must be(contact.data)
       credential.publicationData must be(empty)
     }
+
+    "fail to create a new credential when referenced credential type can't be rendered with specified credential data" in {
+      val issuerName = "Issuer-1"
+      val subjectName = "Student 1"
+      val issuerId = createParticipant(issuerName)
+      val contact = createContact(issuerId, subjectName, None)
+      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(issuerId, "name")
+      val request = CreateGenericCredential(
+        credentialData = Json.obj(
+          "title" -> "Major IN Applied Blockchain".asJson,
+          "enrollmentDate" -> "01/10/2010".asJson
+        ),
+        credentialIssuanceContactId = None,
+        credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
+        contactId = Some(contact.contactId),
+        externalId = None
+      )
+
+      val result = credentialsRepository.create(issuerId, request).value.futureValue
+      result mustBe a[Left[CredentialDataValidationFailed, _]]
+    }
   }
 
   "getBy" should {
@@ -51,12 +71,10 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(issuerId, "name")
       val credential = createGenericCredential(
         issuerId,
         subjectId,
-        "A",
-        credentialTypeId = Some(credentialTypeWithRequiredFields.credentialType.id)
+        "A"
       )
 
       val returnedCredential =

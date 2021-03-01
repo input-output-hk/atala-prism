@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.data.OptionT
 import cats.effect.IO
 import doobie.ConnectionIO
 import doobie.implicits._
@@ -158,10 +157,8 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
   private def withRequiredFields(
       credentialTypeQuery: doobie.ConnectionIO[Option[CredentialType]]
   ): FutureEither[Nothing, Option[CredentialTypeWithRequiredFields]] = {
-    (for {
-      credentialType <- OptionT(credentialTypeQuery)
-      requiredFields <- OptionT.liftF(CredentialTypeDao.findRequiredFields(credentialType.id))
-    } yield CredentialTypeWithRequiredFields(credentialType, requiredFields)).value
+    CredentialTypeDao
+      .withRequiredFields(credentialTypeQuery)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()

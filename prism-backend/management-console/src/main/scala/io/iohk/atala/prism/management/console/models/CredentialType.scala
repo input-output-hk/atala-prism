@@ -8,20 +8,23 @@ import java.time.Instant
 
 final case class CreateCredentialTypeField(
     name: String,
-    description: String
+    description: String,
+    `type`: CredentialTypeFieldType
 )
 
 final case class CreateCredentialType(
     name: String,
     template: String,
-    fields: List[CreateCredentialTypeField]
+    fields: List[CreateCredentialTypeField],
+    icon: Option[Vector[Byte]]
 )
 
 final case class UpdateCredentialType(
     id: CredentialTypeId,
     name: String,
     template: String,
-    fields: List[CreateCredentialTypeField]
+    fields: List[CreateCredentialTypeField],
+    icon: Option[Vector[Byte]]
 )
 
 final case class CredentialType(
@@ -30,14 +33,16 @@ final case class CredentialType(
     institution: ParticipantId,
     state: CredentialTypeState,
     template: String,
-    createdAt: Instant
+    createdAt: Instant,
+    icon: Option[Vector[Byte]]
 )
 
 final case class CredentialTypeField(
     id: CredentialTypeFieldId,
     credentialTypeId: CredentialTypeId,
     name: String,
-    description: String
+    description: String,
+    `type`: CredentialTypeFieldType
 )
 
 case class CredentialTypeWithRequiredFields(credentialType: CredentialType, requiredFields: List[CredentialTypeField])
@@ -66,3 +71,15 @@ final case class GetCredentialType(credentialTypeId: CredentialTypeId)
 final case class MarkAsReadyCredentialType(credentialTypeId: CredentialTypeId)
 
 final case class MarkAsArchivedCredentialType(credentialTypeId: CredentialTypeId)
+
+sealed abstract class CredentialTypeFieldType(value: String) extends EnumEntry {
+  override val entryName: String = value
+}
+object CredentialTypeFieldType extends Enum[CredentialTypeFieldType] with DoobieEnum[CredentialTypeFieldType] {
+  lazy val values = findValues
+
+  final case object String extends CredentialTypeFieldType("STRING")
+  final case object Int extends CredentialTypeFieldType("INT")
+  final case object Boolean extends CredentialTypeFieldType("BOOLEAN")
+  final case object Date extends CredentialTypeFieldType("DATE")
+}

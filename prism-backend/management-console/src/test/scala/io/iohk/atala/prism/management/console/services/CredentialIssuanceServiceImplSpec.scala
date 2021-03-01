@@ -250,7 +250,13 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val contactId = contact.contactId.toString
     console_models.CredentialIssuanceContact(
       contactId = contactId,
-      credentialData = s"""{"contactId": "$contactId"}""",
+      credentialData = Json
+        .obj(
+          "title" -> Json.fromString("Major IN Applied Blockchain"),
+          "enrollmentDate" -> Json.fromString("01/10/2010"),
+          "graduationDate" -> Json.fromString("01/07/2015")
+        )
+        .toString(),
       groupIds = group.map(_.id.toString).toList
     )
   }
@@ -288,7 +294,14 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       contact.externalId,
       console_models.CredentialIssuanceContact(
         contactId = contactId,
-        credentialData = s"""{"contactId": "$contactId"}""",
+        credentialData = Json
+          .obj(
+            "contactId" -> Json.fromString(contactId),
+            "title" -> Json.fromString("Major IN Applied Blockchain"),
+            "enrollmentDate" -> Json.fromString("01/10/2010"),
+            "graduationDate" -> Json.fromString("01/07/2015")
+          )
+          .toString(),
         groupIds = group.map(_.id.toString).toList
       )
     )

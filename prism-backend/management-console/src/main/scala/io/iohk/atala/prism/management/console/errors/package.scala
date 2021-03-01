@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console
 
+import io.circe.Json
 import io.grpc.Status
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 import io.iohk.atala.prism.management.console.models.{
@@ -9,6 +10,7 @@ import io.iohk.atala.prism.management.console.models.{
   InstitutionGroup,
   ParticipantId
 }
+import io.iohk.atala.prism.management.console.validations.CredentialDataValidationError
 
 package object errors {
   sealed trait ManagementConsoleError extends PrismError
@@ -101,6 +103,34 @@ package object errors {
       Status.INVALID_ARGUMENT.withDescription(
         s"Credential type with name: $name " +
           s"has incorrect mustache template: $templateError"
+      )
+  }
+
+  case class CredentialDataValidationFailedForContacts(
+      credentialTypeName: String,
+      contacts: List[(Contact.Id, Json, List[CredentialDataValidationError])]
+  ) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credential type: $credentialTypeName can not be rendered " +
+          s"with contacts credential data \n" + contacts
+          .map {
+            case (contactId, credentialData, errors) =>
+              s"Contact: $contactId credential data: $credentialData errors:\n ${errors.map(_.message).mkString(",\n")} \n"
+          }
+          .mkString("\n")
+      )
+  }
+
+  case class CredentialDataValidationFailed(
+      credentialTypeName: String,
+      credentialData: Json,
+      errors: List[CredentialDataValidationError]
+  ) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credential type: $credentialTypeName can not be rendered with credential data $credentialData " +
+          s"errors: ${errors.map(_.message).mkString("\n")}"
       )
   }
 

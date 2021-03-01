@@ -54,21 +54,21 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
 
       createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 1"))
       val contact1 = createContact(institutionId, "Contact 1")
-      createGenericCredential(institutionId, contact1.contactId)
+      createGenericCredential(institutionId, contact1.contactId, "A")
 
       Thread.sleep(10) // sleep to add some time padding for the inspected interval
 
       val start = Instant.now()
       createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 2"))
       val contact2 = createContact(institutionId, "Contact 2", None)
-      createGenericCredential(institutionId, contact2.contactId)
+      createGenericCredential(institutionId, contact2.contactId, "B")
       val end = Instant.now()
 
       Thread.sleep(10) // sleep to add some time padding for the inspected interval
 
       createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 3"))
       val contact3 = createContact(institutionId, "Contact 3", None)
-      createGenericCredential(institutionId, contact3.contactId)
+      createGenericCredential(institutionId, contact3.contactId, "C")
 
       val request = console_api.GetStatisticsRequest(
         Some(

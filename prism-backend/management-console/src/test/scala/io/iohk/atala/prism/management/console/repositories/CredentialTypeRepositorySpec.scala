@@ -4,6 +4,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{
   CreateCredentialTypeField,
+  CredentialTypeFieldType,
   CredentialTypeId,
   CredentialTypeState,
   UpdateCredentialType
@@ -204,12 +205,14 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
       id = credentialTypeId,
       name = "new name",
       template = "new template",
+      icon = None,
       fields = 1
         .to(3)
         .map(id =>
           CreateCredentialTypeField(
             name = s"new name $id",
-            description = s"new description $id"
+            description = s"new description $id",
+            `type` = CredentialTypeFieldType.String
           )
         )
         .toList

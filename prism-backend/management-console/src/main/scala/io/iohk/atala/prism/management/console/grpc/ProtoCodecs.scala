@@ -18,6 +18,21 @@ object ProtoCodecs {
     common_models.Date(year = date.getYear, month = date.getMonthValue, day = date.getDayOfMonth)
   }
 
+  implicit val credentialTypeStateProtoTransformer
+      : Transformer[CredentialTypeState, console_models.CredentialTypeState] = {
+    case CredentialTypeState.Archived => console_models.CredentialTypeState.CREDENTIAL_TYPE_ARCHIVED
+    case CredentialTypeState.Draft => console_models.CredentialTypeState.CREDENTIAL_TYPE_DRAFT
+    case CredentialTypeState.Ready => console_models.CredentialTypeState.CREDENTIAL_TYPE_READY
+  }
+
+  implicit val credentialTypeFieldTypeProtoTransformer
+      : Transformer[CredentialTypeFieldType, console_models.CredentialTypeFieldType] = {
+    case CredentialTypeFieldType.String => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING
+    case CredentialTypeFieldType.Int => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_INT
+    case CredentialTypeFieldType.Boolean => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_BOOLEAN
+    case CredentialTypeFieldType.Date => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_DATE
+  }
+
   def toGetContactResponse(detailedContactWithConnection: Option[DetailedContactWithConnection]): GetContactResponse = {
     val contactWithDetails = detailedContactWithConnection.map(_.contactWithDetails)
     console_api.GetContactResponse(
@@ -92,14 +107,6 @@ object ProtoCodecs {
       .transform
   }
 
-  def toCredentialTypeStateProto(state: CredentialTypeState): console_models.CredentialTypeState = {
-    state match {
-      case CredentialTypeState.Archived => console_models.CredentialTypeState.CREDENTIAL_TYPE_ARCHIVED
-      case CredentialTypeState.Draft => console_models.CredentialTypeState.CREDENTIAL_TYPE_DRAFT
-      case CredentialTypeState.Ready => console_models.CredentialTypeState.CREDENTIAL_TYPE_READY
-    }
-  }
-
   def toCredentialTypeFieldProto(credentialTypeField: CredentialTypeField): console_models.CredentialTypeField = {
     credentialTypeField
       .into[console_models.CredentialTypeField]
@@ -111,9 +118,12 @@ object ProtoCodecs {
   def toCredentialTypeProto(credentialType: CredentialType): console_models.CredentialType = {
     credentialType
       .into[console_models.CredentialType]
-      .withFieldConst(_.state, toCredentialTypeStateProto(credentialType.state))
       .withFieldConst(_.createdAt, credentialType.createdAt.toEpochMilli)
       .withFieldConst(_.id, credentialType.id.uuid.toString)
+      .withFieldConst(
+        _.icon,
+        credentialType.icon.map(icon => ByteString.copyFrom(icon.toArray)).getOrElse(ByteString.EMPTY)
+      )
       .transform
   }
 

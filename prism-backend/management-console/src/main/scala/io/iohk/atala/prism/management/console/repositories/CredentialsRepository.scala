@@ -1,12 +1,14 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.data.EitherT
+import cats.data.Validated.{Invalid, Valid}
 import cats.effect.IO
 import doobie.ConnectionIO
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.management.console.errors.{
   ContactIdsWereNotFound,
+  CredentialDataValidationFailed,
   ExternalIdsWereNotFound,
   ManagementConsoleError,
   MissingContactIdAndExternalId
@@ -14,11 +16,13 @@ import io.iohk.atala.prism.management.console.errors.{
 import io.iohk.atala.prism.management.console.models.{
   Contact,
   CreateGenericCredential,
+  CredentialTypeWithRequiredFields,
   GenericCredential,
   ParticipantId,
   PublishCredential
 }
-import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialsDAO}
+import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialTypeDao, CredentialsDAO}
+import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -30,6 +34,24 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       participantId: ParticipantId,
       data: CreateGenericCredential
   ): FutureEither[ManagementConsoleError, GenericCredential] = {
+
+    def validateCredentialData(
+        credentialTypeWithRequiredFields: CredentialTypeWithRequiredFields
+    ): EitherT[ConnectionIO, ManagementConsoleError, Unit] = {
+      CredentialDataValidator.validate(credentialTypeWithRequiredFields, data.credentialData) match {
+        case Valid(_) => EitherT.fromEither[ConnectionIO](Right(()))
+        case Invalid(errors) =>
+          EitherT.fromEither[ConnectionIO](
+            Left(
+              CredentialDataValidationFailed(
+                credentialTypeWithRequiredFields.credentialType.name,
+                data.credentialData,
+                errors.toList
+              )
+            )
+          )
+      }
+    }
 
     // get contactId from the externalId
     // TODO: Avoid doing this when we stop accepting the contactId
@@ -55,6 +77,12 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
     val transaction =
       for {
+        //validate credential data
+        credentialTypeWithRequiredFields <-
+          EitherT[ConnectionIO, ManagementConsoleError, CredentialTypeWithRequiredFields](
+            CredentialTypeDao.findValidated(data.credentialTypeId, participantId)
+          )
+        _ <- validateCredentialData(credentialTypeWithRequiredFields)
         contact <- contactF
         credential <- EitherT.right[ManagementConsoleError](
           CredentialsDAO.create(participantId, contact.contactId, data)

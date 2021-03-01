@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.data.EitherT
+import cats.data.Validated.{Invalid, Valid}
 import cats.effect.IO
 import cats.implicits._
 import doobie.free.connection.ConnectionIO
@@ -9,6 +10,7 @@ import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.iohk.atala.prism.management.console.errors.{
   ContactIdsWereNotFound,
+  CredentialDataValidationFailedForContacts,
   ExternalIdsWereNotFound,
   InvalidGroups,
   ManagementConsoleError
@@ -27,12 +29,15 @@ import io.iohk.atala.prism.management.console.repositories.daos.CredentialIssuan
 import io.iohk.atala.prism.management.console.repositories.daos.{
   ContactsDAO,
   CredentialIssuancesDAO,
+  CredentialTypeDao,
   CredentialsDAO,
   InstitutionGroupsDAO
 }
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.scalaland.chimney.dsl._
+import io.iohk.atala.prism.management.console.models.CredentialTypeWithRequiredFields
+import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 
 import scala.concurrent.ExecutionContext
 
@@ -109,12 +114,37 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
             CreateGenericCredential(
               credentialData = contact.credentialData,
               credentialIssuanceContactId = Some(issuanceContactId),
-              credentialTypeId = Some(createCredentialIssuance.credentialTypeId),
+              credentialTypeId = createCredentialIssuance.credentialTypeId,
               contactId = None,
               externalId = None
             )
           )
     }.sequence
+  }
+
+  private def validateCredentialData(
+      credentialTypeWithRequiredFields: CredentialTypeWithRequiredFields,
+      createCredentialIssuance: CreateCredentialIssuance
+  ): EitherT[ConnectionIO, ManagementConsoleError, Unit] = {
+    val contactsWithInvalidCredentialData = createCredentialIssuance.contacts.flatMap { contact =>
+      CredentialDataValidator.validate(credentialTypeWithRequiredFields, contact.credentialData) match {
+        case Valid(_) => None
+        case Invalid(errors) => Some((contact.contactId, contact.credentialData, errors.toList))
+      }
+    }
+
+    if (contactsWithInvalidCredentialData.nonEmpty) {
+      EitherT.fromEither[ConnectionIO](
+        Left(
+          CredentialDataValidationFailedForContacts(
+            credentialTypeWithRequiredFields.credentialType.name,
+            contactsWithInvalidCredentialData
+          )
+        )
+      )
+    } else {
+      EitherT.fromEither[ConnectionIO](Right(()))
+    }
   }
 
   private def validate(
@@ -123,6 +153,11 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
   ): EitherT[ConnectionIO, ManagementConsoleError, Unit] = {
     val contactIds = createCredentialIssuance.contacts.map(_.contactId)
     for {
+      // validate credential data
+      credentialTypeWithRequiredFields <- EitherT(
+        CredentialTypeDao.findValidated(createCredentialIssuance.credentialTypeId, participantId)
+      )
+      _ <- validateCredentialData(credentialTypeWithRequiredFields, createCredentialIssuance)
       // Validate contacts
       contacts <- EitherT.right[ManagementConsoleError](ContactsDAO.findContacts(participantId, contactIds))
       _ <-

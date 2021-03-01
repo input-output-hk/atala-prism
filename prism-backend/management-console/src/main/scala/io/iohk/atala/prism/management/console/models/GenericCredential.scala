@@ -13,7 +13,7 @@ final case class CreateGenericCredential(
     // TODO: Make it mandatory once credentials cannot be created individually (RPCs transitioned to credential
     //       issuances only)
     credentialIssuanceContactId: Option[CredentialIssuance.ContactId],
-    credentialTypeId: Option[CredentialTypeId]
+    credentialTypeId: CredentialTypeId
 )
 
 final case class GetGenericCredential(

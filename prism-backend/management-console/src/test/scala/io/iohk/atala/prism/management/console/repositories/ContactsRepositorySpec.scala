@@ -472,13 +472,11 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution X")
       val contact = createContact(institutionId, "Alice", None)
 
-      val credentialType = createCredentialType(institutionId, "sample")
       val issuedCredential = createGenericCredential(
         issuedBy = institutionId,
         contactId = contact.contactId,
         tag = "tag1",
-        credentialIssuanceContactId = None,
-        credentialTypeId = Some(credentialType.credentialType.id)
+        credentialIssuanceContactId = None
       )
       publishCredential(institutionId, issuedCredential.credentialId)
 
@@ -907,12 +905,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionId, "iohk1")
       val contactB = createContact(institutionId, "iohk2")
 
-      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
-      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
-      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId, "A")
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId, "B")
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId, "C")
       DataPreparation.createReceivedCredential(contactA.contactId)
       DataPreparation.createReceivedCredential(contactA.contactId)
-      DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactB.contactId, "F")
 
       val expected = Map((contactA.contactId, (3, 2)), (contactB.contactId, (1, 0)))
       val result = repository
@@ -934,10 +932,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionId, "iohk1")
       val contactB = createContact(institutionId, "iohk2")
 
-      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
-      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
-      val contactBCredential1 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
-      val contactBCredential2 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId, "A")
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId, "B")
+      val contactBCredential1 = DataPreparation.createGenericCredential(institutionId, contactB.contactId, "C")
+      val contactBCredential2 = DataPreparation.createGenericCredential(institutionId, contactB.contactId, "D")
 
       repository
         .delete(institutionId, contactA.contactId, deleteCredentials = true)
@@ -985,8 +983,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionId, "iohk1")
       val contactB = createContact(institutionId, "iohk2")
 
-      val contactBCredential1 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
-      val contactBCredential2 = DataPreparation.createGenericCredential(institutionId, contactB.contactId)
+      val contactBCredential1 = DataPreparation.createGenericCredential(institutionId, contactB.contactId, "A")
+      val contactBCredential2 = DataPreparation.createGenericCredential(institutionId, contactB.contactId, "B")
 
       repository
         .delete(institutionId, contactA.contactId, deleteCredentials = false)
@@ -1025,8 +1023,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution X")
       val contact = createContact(institutionId, "iohk")
 
-      DataPreparation.createGenericCredential(institutionId, contact.contactId)
-      DataPreparation.createGenericCredential(institutionId, contact.contactId)
+      DataPreparation.createGenericCredential(institutionId, contact.contactId, "A")
+      DataPreparation.createGenericCredential(institutionId, contact.contactId, "B")
 
       val result = repository
         .delete(institutionId, contact.contactId, deleteCredentials = false)
@@ -1041,8 +1039,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId2 = createParticipant("Institution Y")
       val contact = createContact(institutionId1, "iohk")
 
-      DataPreparation.createGenericCredential(institutionId1, contact.contactId)
-      DataPreparation.createGenericCredential(institutionId1, contact.contactId)
+      DataPreparation.createGenericCredential(institutionId1, contact.contactId, "A")
+      DataPreparation.createGenericCredential(institutionId1, contact.contactId, "B")
 
       val result = repository
         .delete(institutionId2, contact.contactId, deleteCredentials = false)

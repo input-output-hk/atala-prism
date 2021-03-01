@@ -1,17 +1,19 @@
 package io.iohk.atala.prism.management.console.services
 
 import java.util.UUID
-
 import io.grpc.StatusRuntimeException
 import org.scalatest.OptionValues
-
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{CredentialTypeState, CreateCredentialTypeField}
+import io.iohk.atala.prism.management.console.models.{
+  CreateCredentialTypeField,
+  CredentialTypeFieldType,
+  CredentialTypeState
+}
 
 class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator with OptionValues {
 
@@ -92,7 +94,13 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       val model = console_models.UpdateCredentialType(
         id = credentialType.credentialType.id.uuid.toString,
         name = "credenital-type-changed",
-        fields = Seq(console_models.CreateCredentialTypeField(name = "new field"))
+        fields = Seq(
+          console_models.CreateCredentialTypeField(
+            name = "new field",
+            description = "description",
+            `type` = console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING
+          )
+        )
       )
       val request = console_api.UpdateCredentialTypeRequest(credentialType = Some(model))
 
@@ -175,6 +183,14 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
 
     val createCredentialType = sampleCreateCredentialType(
       name = "credenital-type"
-    ).copy(fields = List(CreateCredentialTypeField(name = "field", description = "field description")))
+    ).copy(fields =
+      List(
+        CreateCredentialTypeField(
+          name = "field",
+          description = "field description",
+          `type` = CredentialTypeFieldType.String
+        )
+      )
+    )
   }
 }

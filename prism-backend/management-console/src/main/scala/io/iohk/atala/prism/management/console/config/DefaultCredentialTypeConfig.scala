@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.config
 
 import com.typesafe.config.Config
-import io.iohk.atala.prism.management.console.models.CreateCredentialTypeField
+import io.iohk.atala.prism.management.console.models.{CreateCredentialTypeField, CredentialTypeFieldType}
 
 import scala.io.Source
 import scala.jdk.CollectionConverters._
@@ -16,7 +16,15 @@ object DefaultCredentialType {
       fields = config.getConfigList("fields").asScala.toList.map { config =>
         CreateCredentialTypeField(
           name = config.getString("name"),
-          description = config.getString("description")
+          description = config.getString("description"),
+          `type` = CredentialTypeFieldType
+            .withNameInsensitiveOption(config.getString("type"))
+            .getOrElse(
+              throw new RuntimeException(
+                s"Incorrect type: ${config.getString("type")}, for field ${config.getString("name")}" +
+                  s"allowed values: ${CredentialTypeFieldType.values.map(_.entryName).mkString(", ")}"
+              )
+            )
         )
       }
     )

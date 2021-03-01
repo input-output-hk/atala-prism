@@ -795,8 +795,8 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val did = generateDid(publicKey)
       val institutionId = createParticipant("institutionx", did)
       val contactA = createContact(institutionId, "Alice")
-      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
-      DataPreparation.createGenericCredential(institutionId, contactA.contactId)
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId, "A")
+      DataPreparation.createGenericCredential(institutionId, contactA.contactId, "B")
       DataPreparation.createReceivedCredential(contactA.contactId)
       val request = console_api.GetContactsRequest(
         limit = 2

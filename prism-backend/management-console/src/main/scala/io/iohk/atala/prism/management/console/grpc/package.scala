@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console
 
 import cats.syntax.traverse._
+import com.google.protobuf.ByteString
 import io.circe.Json
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
@@ -13,7 +14,7 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   GetCredentialIssuance
 }
 import io.iohk.atala.prism.management.console.validations.JsonValidator
-import io.iohk.atala.prism.protos.common_models
+import io.iohk.atala.prism.protos.{common_models, console_models}
 import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
@@ -34,6 +35,31 @@ package object grpc {
   implicit val proto2DateTransformer: Transformer[common_models.Date, LocalDate] = proto => {
     LocalDate.of(proto.year, proto.month, proto.day)
   }
+
+  implicit val credentialTypeFieldTypeTransformer
+      : Transformer[console_models.CredentialTypeFieldType, CredentialTypeFieldType] = {
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING => CredentialTypeFieldType.String
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_INT => CredentialTypeFieldType.Int
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_BOOLEAN => CredentialTypeFieldType.Boolean
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_DATE => CredentialTypeFieldType.Date
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_UNKNOWN =>
+      throw new IllegalArgumentException(
+        s"Unknown credential type, allowed values: " +
+          s"${console_models.CredentialTypeFieldType.values.map(_.name).mkString(", ")}"
+      )
+    case console_models.CredentialTypeFieldType.Unrecognized(unrecognizedValue) =>
+      throw new IllegalArgumentException(
+        s"Unrecognized credential type field type: $unrecognizedValue, allowed values: " +
+          s"${console_models.CredentialTypeFieldType.values.map(_.name).mkString(", ")}"
+      )
+  }
+
+  implicit val byteStringToOptionVectorByteTransformer: Transformer[ByteString, Option[Vector[Byte]]] =
+    (byteString: ByteString) => {
+      val iconByteArray = byteString.toByteArray
+      if (iconByteArray.nonEmpty) Some(iconByteArray.toVector)
+      else None
+    }
 
   implicit val getStatisticsConverter: ProtoConverter[GetStatisticsRequest, GetStatistics] =
     (request: GetStatisticsRequest) => {
@@ -280,7 +306,9 @@ package object grpc {
         contactId <- maybeEmpty(request.contactId, Contact.Id.from)
         credentialData <- io.circe.parser.parse(request.credentialData).toTry
         externalId <- maybeEmpty(request.externalId, Contact.ExternalId.validated)
-        credentialTypeId <- maybeEmpty(request.credentialTypeId, CredentialTypeId.from)
+        credentialTypeId <-
+          if (request.credentialTypeId.nonEmpty) CredentialTypeId.from(request.credentialTypeId)
+          else Failure(new IllegalArgumentException("Empty credential type id"))
       } yield CreateGenericCredential(
         contactId,
         credentialData,
@@ -374,8 +402,9 @@ package object grpc {
 
   implicit val createCredentialTypeConverter: ProtoConverter[CreateCredentialTypeRequest, CreateCredentialType] =
     (request: CreateCredentialTypeRequest) => {
-      request.credentialType.toRight(new IllegalArgumentException("Empty credentialType field")).toTry.map {
-        _.into[CreateCredentialType].transform
+      request.credentialType.toRight(new IllegalArgumentException("Empty credentialType field")).toTry.flatMap {
+        credentialType =>
+          Try(credentialType.into[CreateCredentialType].transform)
       }
     }
 
@@ -385,10 +414,13 @@ package object grpc {
         updateCredentialType <-
           request.credentialType.toRight(new IllegalArgumentException("Empty credentialType field")).toTry
         credentialTypeId <- CredentialTypeId.from(updateCredentialType.id)
-      } yield updateCredentialType
-        .into[UpdateCredentialType]
-        .withFieldConst(_.id, credentialTypeId)
-        .transform
+        updateCredentialTypeTransformed <- Try {
+          updateCredentialType
+            .into[UpdateCredentialType]
+            .withFieldConst(_.id, credentialTypeId)
+            .transform
+        }
+      } yield updateCredentialTypeTransformed
     }
 
   implicit val markAsReadyConverter: ProtoConverter[MarkAsReadyCredentialTypeRequest, MarkAsReadyCredentialType] =

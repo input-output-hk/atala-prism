@@ -49,18 +49,29 @@ enum CredentialTypeState {
   CREDENTIAL_TYPE_ARCHIVED = 3; // The credential type is archived, it cannot be used to create a new credential
 }
 
+// Indicates the type of data which credential type field can have
+enum CredentialTypeFieldType {
+  CREDENTIAL_TYPE_FIELD_UNKNOWN = 0; // invalid value, should not happen
+  CREDENTIAL_TYPE_FIELD_STRING = 1; // any string
+  CREDENTIAL_TYPE_FIELD_INT = 2; // positive and negative integer numbers
+  CREDENTIAL_TYPE_FIELD_BOOLEAN = 3; // only true or false
+  CREDENTIAL_TYPE_FIELD_DATE = 4; // date as string in DD/MM/YY or DD/MM/YYYY format
+}
+
 // Part of the credential type
 message CredentialTypeField {
   string id = 1; // UUID
   string credentialTypeId = 2; // Parent credenital type
   string name = 3; // The credential type field name
   string description = 4; // The credential type field description
+  CredentialTypeFieldType type = 5; // Type of the data for this field
 }
 
 // Create new credential type field
 message CreateCredentialTypeField {
   string name = 1; // The credential type field name
   string description = 2; // The credential type field description
+  CredentialTypeFieldType type = 3; // Type of the data for this field
 }
 
 // Credential type entity
@@ -70,13 +81,15 @@ message CredentialType {
   CredentialTypeState state = 3; // The credential type state, can be: draft, ready and archived
   string template = 4; // The credential type template
   int64 createdAt = 5; // the timestamp (in milliseconds) when the credential type was created
+  bytes icon = 6; // icon of the credential type (optional)
 }
 
 // Credential type entity needed to create a new record, all fields are required
 message CreateCredentialType {
   string name = 1; // The credential type name, required field
   string template = 2; // The credential type template, HTML with optional mustache syntax variables
-  repeated CreateCredentialTypeField fields = 3; // List of the credential type fields
+  bytes icon = 3; // icon of the credential type (optional)
+  repeated CreateCredentialTypeField fields = 4; // List of the credential type fields
 }
 
 // Credential type entity needed for the update
@@ -84,7 +97,8 @@ message UpdateCredentialType {
   string id = 1; // UUID, required field
   string name = 2; // The credential type name, optional field
   string template = 3; // The credential type template, optional field
-  repeated CreateCredentialTypeField fields = 4; // List of the credential type fields, optional field, if present then the fields will be overwritten
+  bytes icon = 4; // icon of the credential type (optional)
+  repeated CreateCredentialTypeField fields = 5; // List of the credential type fields, optional field, if present then the fields will be overwritten
 }
 
 // Credential type with required fields
