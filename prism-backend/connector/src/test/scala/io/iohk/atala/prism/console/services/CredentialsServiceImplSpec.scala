@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.circe
 import io.circe.Json
 import io.circe.syntax._
-import io.grpc.ServerServiceDefinition
+import io.grpc.{ServerServiceDefinition, StatusRuntimeException}
 import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -13,12 +13,13 @@ import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
+import io.iohk.atala.prism.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.console.models.{GenericCredential, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.models.Ledger.InMemory
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
@@ -40,6 +41,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
   private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private val credentialsIntegration = new CredentialsIntegrationService(credentialsRepository, nodeMock)
   private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
     requestNoncesRepository,
@@ -51,7 +53,13 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     Seq(
       console_api.CredentialsServiceGrpc
         .bindService(
-          new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, nodeMock),
+          new CredentialsServiceImpl(
+            credentialsRepository,
+            contactsRepository,
+            credentialsIntegration,
+            authenticator,
+            nodeMock
+          ),
           executionContext
         )
     )
@@ -784,6 +792,312 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       usingApiAs(rpcRequest) { serviceStub =>
         val response = serviceStub.getBlockchainData(request)
         response.issuanceProof mustBe empty
+      }
+    }
+  }
+
+  "revokePublishedCredential" should {
+    def withPublishedCredential[T](f: (GenericCredential, ECKeyPair, DID) => T) = {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val contact = DataPreparation.createContact(issuerId, "Subject 1", None, "")
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
+      )
+
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential.credentialId,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+      f(originalCredential, keyPair, did)
+    }
+
+    "return the generated transaction id" in {
+      withPublishedCredential { (credential, keyPair, did) =>
+        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+        val revokeCredentialOp = node_models.SignedAtalaOperation(
+          signedWith = "mockKey",
+          signature = ByteString.copyFrom("".getBytes()),
+          operation = Some(
+            node_models.AtalaOperation(
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.id)
+                  .withPreviousOperationHash(ByteString.copyFrom(mockHash.value.toArray))
+                  .withCredentialsToRevoke(List(ByteString.copyFrom(mockHash.value.toArray)))
+              )
+            )
+          )
+        )
+
+        val mockRevocationTransactionInfo = common_models
+          .TransactionInfo()
+          .withTransactionId(CredentialBatchId.fromDigest(SHA256Digest.compute("revocationRandomHash".getBytes())).id)
+          .withLedger(common_models.Ledger.IN_MEMORY)
+
+        val nodeRequest = node_api
+          .RevokeCredentialsRequest()
+          .withSignedOperation(revokeCredentialOp)
+
+        doReturn(
+          Future
+            .successful(
+              node_api
+                .RevokeCredentialsResponse()
+                .withTransactionInfo(mockRevocationTransactionInfo)
+            )
+        ).when(nodeMock).revokeCredentials(nodeRequest)
+
+        val request = console_api
+          .RevokePublishedCredentialRequest()
+          .withCredentialId(credential.credentialId.uuid.toString)
+          .withRevokeCredentialsOperation(revokeCredentialOp)
+
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAs(rpcRequest) { serviceStub =>
+          serviceStub.revokePublishedCredential(request)
+
+          val revokedOnTransactionId = credentialsRepository
+            .getBy(credential.credentialId)
+            .value
+            .futureValue
+            .toOption
+            .value
+            .value
+            .revokedOnTransactionId
+
+          revokedOnTransactionId.value.toString must be(mockRevocationTransactionInfo.transactionId)
+        }
+      }
+    }
+
+    "fail when the credentialId is missing" in {
+      withPublishedCredential { (_, keyPair, did) =>
+        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+        val revokeCredentialOp = node_models.SignedAtalaOperation(
+          signedWith = "mockKey",
+          signature = ByteString.copyFrom("".getBytes()),
+          operation = Some(
+            node_models.AtalaOperation(
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.id)
+                  .withPreviousOperationHash(ByteString.copyFrom(mockHash.value.toArray))
+                  .withCredentialsToRevoke(List(ByteString.copyFrom(mockHash.value.toArray)))
+              )
+            )
+          )
+        )
+
+        val request = console_api
+          .RevokePublishedCredentialRequest()
+          .withRevokeCredentialsOperation(revokeCredentialOp)
+
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAs(rpcRequest) { serviceStub =>
+          intercept[StatusRuntimeException] {
+            serviceStub.revokePublishedCredential(request)
+          }
+        }
+      }
+    }
+
+    "fail when the revokeCredentialsOperation is missing" in {
+      withPublishedCredential { (credential, keyPair, did) =>
+        val request = console_api
+          .RevokePublishedCredentialRequest()
+          .withCredentialId(credential.credentialId.uuid.toString)
+
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAs(rpcRequest) { serviceStub =>
+          intercept[StatusRuntimeException] {
+            serviceStub.revokePublishedCredential(request)
+          }
+        }
+      }
+    }
+
+    "fail when the operation is not a revokeCredentials operation" in {
+      withPublishedCredential { (credential, keyPair, did) =>
+        val revokeCredentialOp = node_models.SignedAtalaOperation(
+          signedWith = "mockKey",
+          signature = ByteString.copyFrom("".getBytes()),
+          operation = Some(node_models.AtalaOperation())
+        )
+
+        val request = console_api
+          .RevokePublishedCredentialRequest()
+          .withCredentialId(credential.credentialId.uuid.toString)
+          .withRevokeCredentialsOperation(revokeCredentialOp)
+
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAs(rpcRequest) { serviceStub =>
+          intercept[StatusRuntimeException] {
+            serviceStub.revokePublishedCredential(request)
+          }
+        }
+      }
+    }
+
+    "fail when the whole batch is being revoked" in {
+      withPublishedCredential { (credential, keyPair, did) =>
+        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+        val revokeCredentialOp = node_models.SignedAtalaOperation(
+          signedWith = "mockKey",
+          signature = ByteString.copyFrom("".getBytes()),
+          operation = Some(
+            node_models.AtalaOperation(
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.id)
+                  .withPreviousOperationHash(ByteString.copyFrom(mockHash.value.toArray))
+              )
+            )
+          )
+        )
+
+        val request = console_api
+          .RevokePublishedCredentialRequest()
+          .withCredentialId(credential.credentialId.uuid.toString)
+          .withRevokeCredentialsOperation(revokeCredentialOp)
+
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAs(rpcRequest) { serviceStub =>
+          intercept[StatusRuntimeException] {
+            serviceStub.revokePublishedCredential(request)
+          }
+        }
+      }
+    }
+
+    "fail when the more than 1 credentials are being revoked" in {
+      withPublishedCredential { (credential, keyPair, did) =>
+        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+        val revokeCredentialOp = node_models.SignedAtalaOperation(
+          signedWith = "mockKey",
+          signature = ByteString.copyFrom("".getBytes()),
+          operation = Some(
+            node_models.AtalaOperation(
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.id)
+                  .withPreviousOperationHash(ByteString.copyFrom(mockHash.value.toArray))
+                  .withCredentialsToRevoke(
+                    List(
+                      ByteString.copyFrom(mockHash.value.toArray),
+                      ByteString.copyFrom(mockHash.value.toArray)
+                    )
+                  )
+              )
+            )
+          )
+        )
+
+        val request = console_api
+          .RevokePublishedCredentialRequest()
+          .withCredentialId(credential.credentialId.uuid.toString)
+          .withRevokeCredentialsOperation(revokeCredentialOp)
+
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAs(rpcRequest) { serviceStub =>
+          intercept[StatusRuntimeException] {
+            serviceStub.revokePublishedCredential(request)
+          }
+        }
+      }
+    }
+
+    "fail when the credentialId doesn't belong to the authenticated institution" in {
+      withPublishedCredential { (credential, _, _) =>
+        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+        val revokeCredentialOp = node_models.SignedAtalaOperation(
+          signedWith = "mockKey",
+          signature = ByteString.copyFrom("".getBytes()),
+          operation = Some(
+            node_models.AtalaOperation(
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.id)
+                  .withPreviousOperationHash(ByteString.copyFrom(mockHash.value.toArray))
+                  .withCredentialsToRevoke(List(ByteString.copyFrom(mockHash.value.toArray)))
+              )
+            )
+          )
+        )
+
+        val mockRevocationTransactionInfo = common_models
+          .TransactionInfo()
+          .withTransactionId(CredentialBatchId.fromDigest(SHA256Digest.compute("revocationRandomHash".getBytes())).id)
+          .withLedger(common_models.Ledger.IN_MEMORY)
+
+        val nodeRequest = node_api
+          .RevokeCredentialsRequest()
+          .withSignedOperation(revokeCredentialOp)
+
+        doReturn(
+          Future
+            .successful(
+              node_api
+                .RevokeCredentialsResponse()
+                .withTransactionInfo(mockRevocationTransactionInfo)
+            )
+        ).when(nodeMock).revokeCredentials(nodeRequest)
+
+        val request = console_api
+          .RevokePublishedCredentialRequest()
+          .withCredentialId(credential.credentialId.uuid.toString)
+          .withRevokeCredentialsOperation(revokeCredentialOp)
+
+        val keyPair = EC.generateKeyPair()
+        val publicKey = keyPair.publicKey
+        val did = generateDid(publicKey)
+        DataPreparation.createIssuer("malicious issuer", publicKey = Some(publicKey), did = Some(did))
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAs(rpcRequest) { serviceStub =>
+          intercept[StatusRuntimeException] {
+            serviceStub.revokePublishedCredential(request)
+          }
+        }
       }
     }
   }

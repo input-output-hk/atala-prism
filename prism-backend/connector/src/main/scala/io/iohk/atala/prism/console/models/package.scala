@@ -77,7 +77,8 @@ package object models {
       subjectData: Json,
       connectionStatus: ConnectionStatus,
       publicationData: Option[PublicationData],
-      sharedAt: Option[Instant]
+      sharedAt: Option[Instant],
+      revokedOnTransactionId: Option[TransactionId]
   )
 
   case class CreateGenericCredential(
@@ -108,6 +109,13 @@ package object models {
       batchId: CredentialBatchId,
       issuanceOperationHash: SHA256Digest,
       issuanceTransactionInfo: TransactionInfo
+  )
+
+  import io.iohk.atala.prism.protos.node_models
+
+  case class RevokePublishedCredential(
+      credentialId: GenericCredential.Id,
+      signedOperation: node_models.SignedAtalaOperation
   )
 
   object GenericCredential {

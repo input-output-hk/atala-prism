@@ -155,6 +155,7 @@ message CManagerGenericCredential {
   TransactionInfo issuanceProof = 15; // underlying transaction information related to the credential issuance
   string batchInclusionProof = 16; // inclusion proof that shows that encodedSignedCredential is a member of a batch
   string batchId = 17; // the batch id defined by protocol, representing the batch that contains the encodedSignedCredential
+  TransactionInfo revocationProof = 18; // underlying transaction information related to the credential revocation
 }
 
 // Represents a received credential

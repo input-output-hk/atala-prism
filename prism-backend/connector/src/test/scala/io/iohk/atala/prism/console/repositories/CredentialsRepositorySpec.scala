@@ -426,6 +426,124 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     }
   }
 
+  "storeRevocationData" should {
+    "store the related transaction id" in {
+      val institutionId = createIssuer("Issuer X")
+      val contactId = createContact(institutionId, "IOHK Student 2", None, "").contactId
+      val credential = createGenericCredential(institutionId, contactId, "A")
+
+      val mockOperationHash = SHA256Digest.compute("000".getBytes())
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockTransactionId = TransactionId
+        .from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
+        .value
+      val mockLedger = Ledger.InMemory
+      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
+
+      // we first publish the batch
+      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
+
+      credentialsRepository
+        .storeCredentialPublicationData(
+          institutionId,
+          CredentialPublicationData(
+            credential.credentialId,
+            mockBatchId,
+            mockEncodedSignedCredential,
+            mockMerkleProof
+          )
+        )
+        .value
+        .futureValue
+        .toOption
+        .value must be(1)
+
+      val revocationTransactionId = TransactionId
+        .from("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
+        .value
+      credentialsRepository
+        .storeRevocationData(institutionId, credential.credentialId, revocationTransactionId)
+        .value
+        .futureValue
+
+      val result = credentialsRepository
+        .getBy(institutionId, contactId)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .headOption
+        .value
+
+      result.revokedOnTransactionId.value must be(revocationTransactionId)
+    }
+
+    "fail when the credential doesn't exist" in {
+      val institutionId = createIssuer("Issuer X")
+      val contactId = createContact(institutionId, "IOHK Student 2", None, "").contactId
+      createGenericCredential(institutionId, contactId, "A")
+
+      val revocationTransactionId = TransactionId
+        .from("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
+        .value
+
+      intercept[RuntimeException] {
+        credentialsRepository
+          .storeRevocationData(institutionId, GenericCredential.Id.random(), revocationTransactionId)
+          .value
+          .futureValue
+      }
+    }
+
+    "fail when the credential doesn't does not belong to the institution" in {
+      val institutionId = createIssuer("Issuer X")
+      val contactId = createContact(institutionId, "IOHK Student 2", None, "").contactId
+      val credential = createGenericCredential(institutionId, contactId, "A")
+
+      val mockOperationHash = SHA256Digest.compute("000".getBytes())
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockTransactionId = TransactionId
+        .from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
+        .value
+      val mockLedger = Ledger.InMemory
+      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
+
+      // we first publish the batch
+      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
+
+      credentialsRepository
+        .storeCredentialPublicationData(
+          institutionId,
+          CredentialPublicationData(
+            credential.credentialId,
+            mockBatchId,
+            mockEncodedSignedCredential,
+            mockMerkleProof
+          )
+        )
+        .value
+        .futureValue
+        .toOption
+        .value must be(1)
+
+      intercept[RuntimeException] {
+        val revocationTransactionId = TransactionId
+          .from("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
+          .value
+        credentialsRepository
+          .storeRevocationData(createIssuer("Issuer Y"), credential.credentialId, revocationTransactionId)
+          .value
+          .futureValue
+      }
+    }
+  }
+
   "markAsShared" should {
     "work" in {
       val issuerId = createIssuer("Issuer X")

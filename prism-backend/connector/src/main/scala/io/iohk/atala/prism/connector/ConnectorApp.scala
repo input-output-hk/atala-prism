@@ -7,6 +7,7 @@ import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
+import io.iohk.atala.prism.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.console.repositories._
 import io.iohk.atala.prism.console.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
@@ -113,8 +114,14 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val contactsRepository = new ContactsRepository(xa)(executionContext)
     val issuerGroupsRepository = new GroupsRepository(xa)(executionContext)
-    val credentialsService =
-      new CredentialsServiceImpl(credentialsRepository, contactsRepository, authenticator, node)(executionContext)
+    val credentialsIntegration = new CredentialsIntegrationService(credentialsRepository, node)(executionContext)
+    val credentialsService = new CredentialsServiceImpl(
+      credentialsRepository,
+      contactsRepository,
+      credentialsIntegration,
+      authenticator,
+      node
+    )(executionContext)
     val groupsService = new GroupsServiceImpl(issuerGroupsRepository, authenticator)(executionContext)
 
     val storedCredentialsService = new StoredCredentialsRepository(xa)(executionContext)

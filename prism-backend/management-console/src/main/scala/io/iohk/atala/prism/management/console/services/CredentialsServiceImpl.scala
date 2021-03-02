@@ -74,6 +74,12 @@ class CredentialsServiceImpl(
     ???
   }
 
+  override def revokePublishedCredential(
+      request: RevokePublishedCredentialRequest
+  ): Future[RevokePublishedCredentialResponse] = {
+    ???
+  }
+
   override def storePublishedCredential(
       request: StorePublishedCredentialRequest
   ): Future[StorePublishedCredentialResponse] = ???

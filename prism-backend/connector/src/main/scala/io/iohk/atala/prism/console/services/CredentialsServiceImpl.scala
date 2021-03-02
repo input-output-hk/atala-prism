@@ -1,22 +1,19 @@
 package io.iohk.atala.prism.console.services
 
+import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs._
-import io.iohk.atala.prism.console.models.{
-  Contact,
-  CreateGenericCredential,
-  CredentialPublicationData,
-  GenericCredential,
-  Institution,
-  StoreBatchData
-}
+import io.iohk.atala.prism.console.grpc._
+import io.iohk.atala.prism.console.integrations.CredentialsIntegrationService
+import io.iohk.atala.prism.console.models._
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo, ProtoCodecs => CommonProtoCodecs}
+import io.iohk.atala.prism.models.{ParticipantId, TransactionId, TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -25,18 +22,24 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.dsl._
-import java.util.UUID
+import org.slf4j.{Logger, LoggerFactory}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
     contactsRepository: ContactsRepository,
-    authenticator: ConnectorAuthenticator,
+    credentialsIntegration: CredentialsIntegrationService,
+    protected val authenticator: ConnectorAuthenticator,
     nodeService: NodeServiceGrpc.NodeService
 )(implicit
     ec: ExecutionContext
-) extends console_api.CredentialsServiceGrpc.CredentialsService {
+) extends console_api.CredentialsServiceGrpc.CredentialsService
+    with ConnectorErrorSupport
+    with AuthSupport[ConnectorError, ParticipantId] {
+
+  override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createGenericCredential(
       request: CreateGenericCredentialRequest
@@ -319,6 +322,20 @@ class CredentialsServiceImpl(
               case Left(e) => throw new RuntimeException(s"FAILED: $e")
             }
       } yield StorePublishedCredentialResponse()
+    }
+  }
+
+  override def revokePublishedCredential(
+      request: RevokePublishedCredentialRequest
+  ): Future[RevokePublishedCredentialResponse] = {
+    auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query) =>
+      credentialsIntegration
+        .revokePublishedCredential(Institution.Id(participantId.uuid), query)
+        .map { info =>
+          console_api
+            .RevokePublishedCredentialResponse()
+            .withTransactionInfo(info)
+        }
     }
   }
 }
