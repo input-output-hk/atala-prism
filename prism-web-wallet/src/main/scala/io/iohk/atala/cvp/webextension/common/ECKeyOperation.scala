@@ -60,6 +60,10 @@ object ECKeyOperation {
     val credentialsAndProofs =
       signedCredentials.map(_.canonicalForm).zip(proofs)
 
+    println(s"${signedCredentials.size} credentials signed")
+    println(s"proof = '${proofs.headOption.map(_.encode).getOrElse("")}'")
+    println(s"credential = '${signedCredentials.map(_.canonicalForm).headOption.getOrElse("")}'")
+
     (
       AtalaOperation(AtalaOperation.Operation.IssueCredentialBatch(issueCredentialOperation)),
       credentialsAndProofs

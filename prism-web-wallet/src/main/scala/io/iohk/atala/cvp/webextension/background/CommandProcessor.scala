@@ -2,8 +2,8 @@ package io.iohk.atala.cvp.webextension.background
 
 import io.circe.generic.auto._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
+  GotRequestsRequiringManualApproval,
   SignedConnectorResponse,
-  SigningRequests,
   TransactionInfo,
   WalletStatusResult
 }
@@ -27,12 +27,13 @@ private[background] class CommandProcessor(
       case Command.SendBrowserNotification(title, message) =>
         browserNotificationService.notify(title, message)
         Future.successful(CommandResponse(Event.BrowserNotificationSent(): Event))
-      case Command.RequestSignature(sessionId, subject) =>
-        walletManager.requestSignature(origin, sessionId, subject).map(CommandResponse.apply)
-      case Command.GetSigningRequests =>
-        Future.successful(CommandResponse {
-          SigningRequests(walletManager.getSigningRequests().toList)
-        })
+      case Command.EnqueueRequestApproval(sessionId, request) =>
+        walletManager.enqueueRequestApproval(origin, sessionId, request).map(CommandResponse.apply)
+      case Command.GetRequestsRequiringManualApproval =>
+        Future.successful {
+          val requests = walletManager.getRequestsRequiringManualApproval().toList
+          CommandResponse(GotRequestsRequiringManualApproval(requests))
+        }
       case Command.SignConnectorRequest(sessionId, request) =>
         walletManager
           .signConnectorRequest(origin, sessionId, request)
@@ -47,9 +48,9 @@ private[background] class CommandProcessor(
         walletManager.getStatus().map(WalletStatusResult.apply).map(CommandResponse.apply)
       case Command.GetUserSession =>
         walletManager.getLoggedInUserSession(origin).map(CommandResponse.apply)
-      case Command.SignRequest(requestId) =>
-        walletManager.signRequestAndPublish(requestId).map(_ => CommandResponse(()))
-      case Command.RejectRequest(requestId) =>
+      case Command.ApprovePendingRequest(requestId) =>
+        walletManager.approvePendingRequest(requestId).map(_ => CommandResponse(()))
+      case Command.RejectPendingRequest(requestId) =>
         walletManager.rejectRequest(requestId).map(_ => CommandResponse(()))
       case Command.CreateWallet(password, mnemonic, role, organisationName, logo) =>
         walletManager.createWallet(password, mnemonic, role, organisationName, logo).map(CommandResponse.apply)

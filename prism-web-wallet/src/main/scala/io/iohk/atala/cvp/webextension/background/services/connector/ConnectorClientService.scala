@@ -1,27 +1,22 @@
 package io.iohk.atala.cvp.webextension.background.services.connector
 
+import com.google.protobuf.ByteString
 import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
 import io.iohk.atala.cvp.webextension.background.models.console.ConsoleCredentialId
-import io.iohk.atala.prism.crypto.ECKeyPair
 import io.iohk.atala.cvp.webextension.background.services._
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.console_api.{
   PublishBatchRequest,
   PublishBatchResponse,
   StorePublishedCredentialRequest
 }
-import io.iohk.atala.prism.protos.connector_api.{
-  GetCurrentUserRequest,
-  GetCurrentUserResponse,
-  GetMessageStreamRequest,
-  GetMessageStreamResponse,
-  RegisterDIDRequest,
-  RegisterDIDResponse
-}
-import io.iohk.atala.prism.protos.{connector_api, console_api}
+import io.iohk.atala.prism.protos.{connector_api, console_api, node_models}
 import scalapb.grpc.Channels
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,6 +34,43 @@ class ConnectorClientService(url: String) {
     val request = GetCurrentUserRequest()
     val metadata: Map[String, String] = metadataForRequest(ecKeyPair, did, request)
     connectorApi.getCurrentUser(request, metadata.toJSDictionary)
+  }
+
+  def revokeCredential(
+      ecKeyPair: ECKeyPair,
+      signedCredentialStringRepresentation: String,
+      batchId: CredentialBatchId,
+      batchOperationHash: SHA256Digest
+  )(implicit ec: ExecutionContext): Future[io.iohk.atala.prism.protos.common_models.TransactionInfo] = {
+    val credentialHashT = io.iohk.atala.prism.credentials.Credential
+      .fromString(signedCredentialStringRepresentation)
+      .map(_.hash)
+      .toTry
+
+    for {
+      credentialHash <- Future.fromTry(credentialHashT)
+      operation = {
+        node_models
+          .AtalaOperation(
+            operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+              value = node_models
+                .RevokeCredentialsOperation(
+                  previousOperationHash = ByteString.copyFrom(batchOperationHash.value.toArray),
+                  credentialBatchId = batchId.id,
+                  credentialsToRevoke = List(ByteString.copyFrom(credentialHash.value.toArray))
+                )
+            )
+          )
+      }
+      signedOperation = signedAtalaOperation(ecKeyPair, operation)
+      request =
+        console_api
+          .RevokePublishedCredentialRequest()
+          .withRevokeCredentialsOperation(signedOperation)
+      response <- credentialsServiceApi.revokePublishedCredential(request)
+    } yield response.transactionInfo.getOrElse(
+      throw new RuntimeException("The server didn't returned the expected transaction info")
+    )
   }
 
   def signAndPublishBatch(
@@ -60,6 +92,9 @@ class ConnectorClientService(url: String) {
       // we first publish the batch
       batchResponse <- credentialsServiceApi.publishBatch(publishBatchRequest, batchMetadata.toJSDictionary)
       // now we store all the credentials data
+      issuanceOperationHash = SHA256Digest.compute(issuanceOperation.toByteArray)
+      _ = println(s"issuanceOperationHash = '${issuanceOperationHash.hexValue}'")
+      _ = println(s"batchId = '${batchResponse.batchId}'")
       _ <- publishCredentials(
         ecKeyPair,
         did,
@@ -115,7 +150,7 @@ object ConnectorClientService {
   def apply(url: String): ConnectorClientService = new ConnectorClientService(url)
 
   case class CredentialData(
-      credentialId: ConsoleCredentialId, //Credential Manager Id
+      credentialId: ConsoleCredentialId, // Credential Manager Id
       credentialClaims: String // JSON
   )
 }

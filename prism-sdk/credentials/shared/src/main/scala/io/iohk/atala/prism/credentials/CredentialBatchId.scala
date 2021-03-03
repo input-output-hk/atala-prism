@@ -8,7 +8,9 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.protos.node_models
 
-class CredentialBatchId private (val id: String) extends AnyVal
+class CredentialBatchId private (val id: String) extends AnyVal {
+  override def toString: String = id
+}
 
 object CredentialBatchId {
   private val CREDENTIAL_BATCH_ID_RE = "^[0-9a-f]{64}$".r

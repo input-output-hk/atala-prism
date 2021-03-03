@@ -5,15 +5,15 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
+  GotRequestsRequiringManualApproval,
   SignedConnectorResponse,
-  SigningRequests,
   TransactionInfo,
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
 import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, Role, UserDetails}
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, PendingRequest, Role, UserDetails}
 
 import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -43,8 +43,8 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     }
   }
 
-  def getSignatureRequests(): Future[SigningRequests] = {
-    process(Command.GetSigningRequests)
+  def getSignatureRequests(): Future[GotRequestsRequiringManualApproval] = {
+    process(Command.GetRequestsRequiringManualApproval)
   }
 
   def getWalletStatus(): Future[WalletStatusResult] = {
@@ -59,8 +59,8 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.GetUserSession)
   }
 
-  def requestSignature(sessionId: String, subject: CredentialSubject): Future[Unit] = {
-    process(Command.RequestSignature(sessionId, subject))
+  def enqueueRequestApproval(sessionId: String, request: PendingRequest): Future[Unit] = {
+    process(Command.EnqueueRequestApproval(sessionId, request))
   }
 
   def signConnectorRequest(sessionId: String, request: ConnectorRequest): Future[SignedConnectorResponse] = {
@@ -75,12 +75,16 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof))
   }
 
-  def signRequestAndPublish(requestId: Int): Future[Unit] = {
-    process(Command.SignRequest(requestId))
+  def approvePendingRequest(requestId: Int): Future[Unit] = {
+    process(Command.ApprovePendingRequest(requestId))
+  }
+
+  def credentialRejectionApproved(requestId: Int): Future[Unit] = {
+    process(Command.ApprovePendingRequest(requestId))
   }
 
   def rejectRequest(requestId: Int): Future[Unit] = {
-    process(Command.RejectRequest(requestId))
+    process(Command.RejectPendingRequest(requestId))
   }
 
   def recoverWallet(

@@ -3,6 +3,7 @@ package io.iohk.atala.cvp.webextension.background.models
 import cats.data.ValidatedNel
 import io.circe.generic.auto._
 import io.circe.parser.parse
+import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.{PendingRequest, _}
 import io.iohk.atala.prism.credentials.VerificationError
@@ -19,7 +20,8 @@ private[background] object Command {
 
   final case class SendBrowserNotification(title: String, message: String) extends CommandWithResponse[Event]
 
-  final case class RequestSignature(sessionId: String, subject: CredentialSubject) extends CommandWithResponse[Unit]
+  // Enqueue an operation to be reviewed manually
+  final case class EnqueueRequestApproval(sessionId: String, request: PendingRequest) extends CommandWithResponse[Unit]
 
   final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest)
       extends CommandWithResponse[SignedConnectorResponse]
@@ -34,11 +36,11 @@ private[background] object Command {
 
   final case class SignatureResult(signature: String)
 
-  final case object GetSigningRequests extends CommandWithResponse[SigningRequests]
-  final case class SigningRequests(requests: List[PendingRequest])
+  final case object GetRequestsRequiringManualApproval extends CommandWithResponse[GotRequestsRequiringManualApproval]
+  final case class GotRequestsRequiringManualApproval(requests: List[PendingRequest.WithId])
 
-  final case class SignRequest(requestId: Int) extends CommandWithResponse[Unit]
-  final case class RejectRequest(requestId: Int) extends CommandWithResponse[Unit]
+  final case class ApprovePendingRequest(requestId: Int) extends CommandWithResponse[Unit]
+  final case class RejectPendingRequest(requestId: Int) extends CommandWithResponse[Unit]
 
   final case object GetWalletStatus extends CommandWithResponse[WalletStatusResult];
   final case class WalletStatusResult(status: WalletStatus)

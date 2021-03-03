@@ -4,18 +4,12 @@ import cats.data.ValidatedNel
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.prism.credentials.VerificationError
-import io.iohk.atala.prism.credentials.VerificationError.{
-  BatchWasRevoked,
-  CredentialWasRevoked,
-  InvalidMerkleProof,
-  InvalidSignature,
-  KeyWasNotValid,
-  KeyWasRevoked
-}
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
 import io.iohk.atala.cvp.webextension.activetab.models.{JsSdkDetails, JsSignedMessage, JsUserDetails}
-import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, PendingRequest}
+import io.iohk.atala.prism.credentials.VerificationError._
+import io.iohk.atala.prism.credentials.{CredentialBatchId, VerificationError}
+import io.iohk.atala.prism.crypto.SHA256Digest
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
@@ -48,9 +42,10 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
           "getSdkDetails" -> js.Any.fromFunction0(() => getSdkDetails()),
           "getWalletStatus" -> js.Any.fromFunction0(() => getWalletStatus()),
           "login" -> js.Any.fromFunction0(() => login()),
-          "requestSignature" -> js.Any.fromFunction2(requestSignature),
+          "requestSignature" -> js.Any.fromFunction2(requestCredentialIssuanceApproval),
           "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest),
-          "verifySignedCredential" -> js.Any.fromFunction3(verifySignedCredential)
+          "verifySignedCredential" -> js.Any.fromFunction3(verifySignedCredential),
+          "revokeCredential" -> js.Any.fromFunction4(requestCredentialRevocationApproval)
         ): js.UndefOr[js.Any]
       }
     )
@@ -75,9 +70,52 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
       .toJSPromise
   }
 
-  def requestSignature(sessionId: String, payloadAsJson: String): Unit = {
+  // TODO: Return the transaction id after publishing the operation
+  // used to request signing a credential, which needs to be approved manually in the UI
+  def requestCredentialIssuanceApproval(sessionId: String, payloadAsJson: String): Unit = {
     val subject = readJsonAs[CredentialSubject](payloadAsJson)
-    extensionAPI.requestSignature(sessionId, subject)
+    val request = PendingRequest.IssueCredential(subject)
+    // TODO: Avoid discarding the future, return it instead
+    extensionAPI.enqueueRequestRequiringManualApproval(sessionId, request)
+  }
+
+  // TODO: Return the transaction id after publishing the operation
+  /**
+    * Enqueues a request to revoke the given credential
+    *
+    * @param sessionId the session that's being used to enqueue the operation
+    * @param signedCredentialStringRepresentation the signed credential in its canonical's form
+    * @param batchIdStr the batch id returned when issuing the credential
+    * @param batchOperationHashStr the hash of the operation batch that issued the credential
+    * @return a promise that's resolved once the operation is approved/rejected
+    */
+  def requestCredentialRevocationApproval(
+      sessionId: String,
+      signedCredentialStringRepresentation: String,
+      batchIdStr: String,
+      batchOperationHashStr: String
+  ): js.Promise[Unit] = {
+    val requestT = for {
+      batchId <- Try {
+        CredentialBatchId
+          .fromString(batchIdStr)
+          .getOrElse(throw new RuntimeException("Invalid batch id"))
+      }
+      batchOperationHash <- Try {
+        SHA256Digest.fromHex(batchOperationHashStr)
+      }
+    } yield PendingRequest.RevokeCredential(
+      signedCredentialStringRepresentation = signedCredentialStringRepresentation,
+      batchId = batchId,
+      batchOperationHash = batchOperationHash
+    )
+
+    val result = for {
+      request <- Future.fromTry(requestT)
+      _ <- extensionAPI.enqueueRequestRequiringManualApproval(sessionId, request)
+    } yield ()
+
+    result.toJSPromise
   }
 
   def signConnectorRequest(sessionId: String, request: js.Array[Double]): js.Promise[JsSignedMessage] = {

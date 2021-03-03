@@ -1,8 +1,8 @@
 package io.iohk.atala.cvp.webextension.background
 
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, PendingRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.models.Role.Verifier
+import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, PendingRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.testing.WalletDomSpec
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
@@ -37,14 +37,14 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
     }
   }
 
-  "requestSignature" should {
-    "create a successful signature request" in {
+  "enqueueRequestApproval" should {
+    "create a successful IssueCredential request" in {
       val api = new BackgroundAPI()
       val subject = CredentialSubject("id", Map("key" -> "value"))
       for {
         _ <- setUpWallet(api, List(TEST_KEY))
         u <- api.login()
-        res <- api.requestSignature(u.sessionId, subject)
+        res <- api.enqueueRequestApproval(u.sessionId, PendingRequest.IssueCredential(subject))
       } yield {
         res mustBe ()
       }
@@ -55,17 +55,15 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
     "return the pending signature requests" in {
       val api = new BackgroundAPI()
       val subject = CredentialSubject("id", Map("key" -> "value"))
-      val origin = "http://test.atalaprism.io/"
       for {
         _ <- setUpWallet(api)
         u <- api.login()
-        _ <- api.requestSignature(u.sessionId, subject)
+        _ <- api.enqueueRequestApproval(u.sessionId, PendingRequest.IssueCredential(subject))
         signingRequests <- api.getSignatureRequests()
       } yield {
-        signingRequests.requests mustBe List(PendingRequest.IssueCredential(0, origin, u.sessionId, subject))
+        signingRequests.requests mustBe List(PendingRequest.WithId(0, PendingRequest.IssueCredential(subject)))
       }
     }
-
   }
 
   "getWalletStatus" should {

@@ -1,14 +1,13 @@
 package io.iohk.atala.cvp.webextension.activetab.isolated
 
-import java.util.UUID
-
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.activetab.models.{Command, Event, TaggedModel}
-import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject}
 import io.iohk.atala.cvp.webextension.circe._
+import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, PendingRequest}
 import org.scalajs.dom
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 /**
@@ -56,10 +55,10 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     }
   }
 
-  def requestSignature(sessionId: String, subject: CredentialSubject): Future[Unit] = {
-    val cmd = Command.RequestSignature(sessionId, subject)
+  def enqueueRequestRequiringManualApproval(sessionId: String, request: PendingRequest): Future[Unit] = {
+    val cmd = Command.EnqueueRequestApproval(sessionId, request)
     processCommand(cmd).collect {
-      case Event.RequestSignatureAck => ()
+      case Event.EnqueueRequestApprovalAck => ()
       case x => throw new RuntimeException(s"Unknown response: $x")
     }
   }

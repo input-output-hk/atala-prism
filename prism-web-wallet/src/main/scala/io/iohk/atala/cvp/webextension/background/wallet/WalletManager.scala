@@ -88,44 +88,52 @@ private[background] class WalletManager(
     updateState(_.copy(wallet = Some(walletData)))
   }
 
-  def getSigningRequests(): Seq[PendingRequest] = {
+  def getRequestsRequiringManualApproval(): Seq[PendingRequest.WithId] = {
     state.pendingRequestsQueue.list
   }
 
   // TODO: Support credential revocation requests
-  def signRequestAndPublish(requestId: Int): Future[Unit] = {
+  def approvePendingRequest(requestId: Int): Future[Unit] = {
     for {
-      (request, _) <- issueCredentialRequestF(requestId)
+      (request, _) <- requestF(requestId)
       walletData <- walletDataF()
       ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
-      claims = request.credentialData.properties.asJson.noSpaces
-      signingKeyId = ECKeyOperation.firstMasterKeyId // TODO: this key id should eventually be selected by the user
-      //       this should be done when we complete the key derivation flow
-      _ <- connectorClientService.signAndPublishBatch(
-        ecKeyPair,
-        walletData.did,
-        signingKeyId,
-        List(CredentialData(ConsoleCredentialId(request.credentialData.id), claims))
-      )
+      _ <- request match {
+        case r: PendingRequest.IssueCredential =>
+          // TODO: Issue a batch instead
+          val claims = r.credentialData.properties.asJson.noSpaces
+          connectorClientService.signAndPublishBatch(
+            ecKeyPair,
+            walletData.did,
+            signingKeyId,
+            List(CredentialData(ConsoleCredentialId(r.credentialData.id), claims))
+          )
+
+        case r: PendingRequest.RevokeCredential =>
+          // TODO: Decode the credential before accepting the request to make sure it has the proper data (and html view)
+          connectorClientService.revokeCredential(
+            ecKeyPair,
+            signedCredentialStringRepresentation = r.signedCredentialStringRepresentation,
+            batchId = r.batchId,
+            batchOperationHash = r.batchOperationHash
+          )
+      }
     } yield {
-      println(s"Signed and Published = ${request.credentialData.id}")
+      println(s"Request approved: $requestId")
       removeRequest(requestId)
     }
+  }
+
+  def rejectRequest(requestId: Int): Future[Unit] = {
+    removeRequest(requestId)
+    println(s"Request rejected = $requestId")
+    Future.unit
   }
 
   private def removeRequest(requestId: Int): Unit = {
     updateState { cur =>
       cur.copy(pendingRequestsQueue = cur.pendingRequestsQueue - requestId)
     }
-  }
-
-  def rejectRequest(requestId: Int): Future[Unit] = {
-    issueCredentialRequestF(requestId)
-      .map {
-        case (request, _) =>
-          removeRequest(requestId)
-          println(s"Rejected = ${request.credentialData.id}")
-      }
   }
 
   def getStatus(): Future[WalletStatus] = {
@@ -194,6 +202,7 @@ private[background] class WalletManager(
     }
   }
 
+  // TODO: Report reasonable errors instead of missing fields from the node response
   def verifySignedCredential(
       origin: Origin,
       sessionID: String,
@@ -210,11 +219,12 @@ private[background] class WalletManager(
     } yield x
   }
 
-  def requestSignature(origin: Origin, sessionID: SessionID, subject: CredentialSubject): Future[Unit] = {
+  // enqueues a request which should be reviewed manually
+  def enqueueRequestApproval(origin: Origin, sessionID: SessionID, request: PendingRequest): Future[Unit] = {
     for {
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
     } yield {
-      val (newRequestQueue, promise) = state.pendingRequestsQueue.issueCredential(origin, sessionID, subject)
+      val (newRequestQueue, promise) = state.pendingRequestsQueue.enqueue(request)
       updateState(_.copy(pendingRequestsQueue = newRequestQueue))
       reloadPopup()
       // TODO: Avoid ignoring the future result
@@ -384,20 +394,15 @@ private[background] class WalletManager(
     result
   }
 
-  private def issueCredentialRequestF(requestId: Int): Future[(PendingRequest.IssueCredential, Promise[String])] = {
+  private def requestF(requestId: Int): Future[(PendingRequest, Promise[String])] = {
     Future.fromTry {
       Try {
         state.pendingRequestsQueue
           .get(requestId)
           .map {
-            case (request, promise) =>
-              request match {
-                case r: PendingRequest.IssueCredential => r -> promise
-                case _ =>
-                  throw new RuntimeException("Request to issue credential expected but a different one was found")
-              }
+            case (taggedRequest, promise) => (taggedRequest.request, promise)
           }
-          .getOrElse(throw new RuntimeException("Request to issue credential not found"))
+          .getOrElse(throw new RuntimeException(s"Request $requestId not found"))
       }
     }
   }
@@ -419,4 +424,11 @@ private[background] class WalletManager(
     }
     Future.fromTry(t)
   }
+
+  // TODO: this key id should eventually be selected by the user
+  // which should be done when we complete the key derivation flow.
+  private def signingKeyId = {
+    ECKeyOperation.firstMasterKeyId
+  }
+
 }

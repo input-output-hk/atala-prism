@@ -23,10 +23,10 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
           .login()
           .map(response => Event.GotUserSession(response))
 
-      case Command.RequestSignature(sessionId, subject) =>
+      case Command.EnqueueRequestApproval(sessionId, request) =>
         backgroundAPI
-          .requestSignature(sessionId, subject)
-          .map(_ => Event.RequestSignatureAck)
+          .enqueueRequestApproval(sessionId, request)
+          .map(_ => Event.EnqueueRequestApprovalAck)
 
       case Command.SignConnectorRequest(sessionId, request) =>
         backgroundAPI
@@ -40,7 +40,7 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
 
     }
   }.recover {
-    case e => Event.CommandRejected(e.getMessage) //Any exceptions will be resolved to CommandRejected
+    case e => Event.CommandRejected(e.getMessage) // Any exceptions will be resolved to CommandRejected
   }
 
 }

@@ -85,6 +85,8 @@ class NodeClientService(url: String) {
     } yield KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
   }
 
+  // TODO: Detect when the batch isn't found in the node, and report a reasonable error instead of
+  // reporting missing fields because the caller doesn't know about those
   private def getBatchData(
       batchId: CredentialBatchId
   )(implicit ec: ExecutionContext): Future[BatchData] = {

@@ -11,9 +11,9 @@ import io.iohk.atala.cvp.webextension.common.models.PendingRequest
 import io.iohk.atala.cvp.webextension.popup.models.View
 import io.iohk.atala.cvp.webextension.popup.models.View.Unlock
 import org.scalajs.dom.raw.DOMParser
-import slinky.core.Component
+import slinky.core.FunctionalComponent
 import slinky.core.annotations.react
-import slinky.core.facade.ReactElement
+import slinky.core.facade.{Hooks, ReactElement, SetStateHookCallback}
 import slinky.web.html._
 import typings.dompurify.mod.{^ => dompurify}
 
@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 
-@react class MainWalletView extends Component {
+@react object MainWalletView {
 
   private val domParser = new DOMParser()
   private val emptyDiv = "<div/>"
@@ -29,28 +29,26 @@ import scala.util.{Failure, Success}
   case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   case class State(
-      requests: List[PendingRequest.IssueCredential],
+      requests: List[PendingRequest.WithId],
       id: Int,
       message: String,
       status: Option[Boolean],
       isLoading: Boolean
   )
 
-  override def componentDidMount(): Unit = {
-    loadRequests()
-  }
+  private def initialState: State = State(requests = Nil, 0, "", None, false)
 
-  override def initialState: State = State(requests = Nil, 0, "", None, false)
-
-  private def renderTemplate(request: PendingRequest.IssueCredential) = {
-    val sanitisedHtml = dompurify.sanitize(request.credentialData.properties.getOrElse("html", emptyDiv))
+  private def renderTemplate(html: String) = {
+    val sanitisedHtml = dompurify.sanitize(html)
     domParser
       .parseFromString(sanitisedHtml, "text/html")
       .documentElement
       .textContent
   }
 
-  override def render(): ReactElement = {
+  val component = FunctionalComponent[Props] { props =>
+    val (state, setState) = Hooks.useState[State](initialState)
+    Hooks.useEffect(() => loadRequests(props, setState), "")
 
     if (state.requests.nonEmpty) {
       val signingRequest = state.requests(state.id)
@@ -62,11 +60,11 @@ import scala.util.{Failure, Success}
         p(
           className := "description_signature",
           id := "description_signature",
-          "You have been requested to sign the following credential:"
+          "You have been requested to sign the following operations:"
         ),
-        templateElement(signingRequest),
-        pagingElement(),
-        lockButton()
+        templateElement(props, setState, state, signingRequest),
+        pagingElement(state, setState),
+        lockButton(props, setState)
       )
     } else {
       div(className := "spaceBetween", id := "mainView")(
@@ -80,36 +78,70 @@ import scala.util.{Failure, Success}
             "There are no requests pending"
           )
         ),
-        lockButton()
+        lockButton(props, setState)
       )
     }
   }
 
-  private def templateElement(signingRequest: PendingRequest.IssueCredential) = {
+  private def templateElement(
+      props: Props,
+      setState: SetStateHookCallback[State],
+      state: State,
+      signingRequest: PendingRequest.WithId
+  ) = {
+    val html = signingRequest.request match {
+      case r: PendingRequest.IssueCredential =>
+        // TODO: This needs to be validated before accepting the request, so that r.html is available
+        r.credentialData.properties.getOrElse("html", emptyDiv)
+
+      case r: PendingRequest.RevokeCredential =>
+        // TODO: This needs to be validated before accepting the request, so that r.html is available
+        io.iohk.atala.prism.credentials.Credential
+          .fromString(r.signedCredentialStringRepresentation)
+          .map(_.content)
+          .flatMap { content =>
+            content.credentialSubject
+          }
+          .toTry
+          .flatMap { subject =>
+            io.circe.parser.parse(subject).toTry
+          }
+          .flatMap { json =>
+            json.hcursor.get[String]("html").toTry
+          }
+          .getOrElse("Unable to parse request, you likely want to reject it")
+    }
+
     div(
       div(
         className := "credentialContainer",
-        dangerouslySetInnerHTML := js.Dynamic.literal(__html = renderTemplate(signingRequest))
+        dangerouslySetInnerHTML := js.Dynamic.literal(__html = renderTemplate(html))
       ),
       br(),
-      alertMessage(),
+      alertMessage(state),
       if (state.isLoading) {
-        signatureElement(signingRequest, "disabled")
+        signatureElement(props, state, setState, signingRequest, "disabled")
       } else {
-        signatureElement(signingRequest, "")
+        signatureElement(props, state, setState, signingRequest, "")
       }
     )
   }
 
-  private def signatureElement(signingRequest: PendingRequest.IssueCredential, appendClass: String) = {
+  private def signatureElement(
+      props: Props,
+      state: State,
+      setState: SetStateHookCallback[State],
+      signingRequest: PendingRequest.WithId,
+      appendClass: String
+  ) = {
     div(className := "buttons_container")(
-      rejectButton(signingRequest, appendClass),
-      nextElement(signingRequest, appendClass),
-      circularProgress()
+      rejectButton(props, setState, signingRequest, appendClass),
+      nextElement(props, setState, state, signingRequest, appendClass),
+      circularProgress(state)
     )
   }
 
-  private def pagingElement(): ReactElement = {
+  private def pagingElement(state: State, setState: SetStateHookCallback[State]): ReactElement = {
     val count = state.requests.size
     val previous = math.max(state.id - 1, 0)
     val next = math.min(state.id + 1, count - 1)
@@ -121,17 +153,22 @@ import scala.util.{Failure, Success}
     )
   }
 
-  private def rejectButton(signingRequest: PendingRequest.IssueCredential, appendClass: String) =
+  private def rejectButton(
+      props: Props,
+      setState: SetStateHookCallback[State],
+      signingRequest: PendingRequest.WithId,
+      appendClass: String
+  ) =
     div(
       className := s"btn_cancel btn_cancel_width $appendClass",
       id := "btn_cancel",
-      "Reject",
-      onClick := { () => rejectRequest(signingRequest.id) }
+      "Reject operation",
+      onClick := { () => rejectRequest(props, setState, signingRequest.id) }
     )
 
-  private def lockButton() =
+  private def lockButton(props: Props, setState: SetStateHookCallback[State]) =
     div(className := "div__field_group")(
-      div(className := "lock_button", onClick := { () => lockWallet() })(
+      div(className := "lock_button", onClick := { () => lockWallet(props, setState) })(
         div(className := "img_lock")(
           img(src := "/assets/images/padlock.png")
         ),
@@ -141,36 +178,50 @@ import scala.util.{Failure, Success}
       )
     )
 
-  private def signButton(signingRequest: PendingRequest.IssueCredential, appendClass: String) = {
+  private def signButton(
+      props: Props,
+      setState: SetStateHookCallback[State],
+      signingRequest: PendingRequest.WithId,
+      appendClass: String
+  ) = {
+    val label = signingRequest.request match {
+      case _: PendingRequest.IssueCredential => "Issue credential"
+      case _: PendingRequest.RevokeCredential => "Revoke credential"
+    }
     div(
       className := s"btn_sign btn_sign_width $appendClass",
       id := signingRequest.id.toString,
-      "Sign",
+      label,
       onClick := { () =>
-        signRequest(signingRequest.id)
+        signRequest(props, setState, signingRequest)
       }
     )
   }
 
-  def nextButton() =
+  private def nextButton(props: Props, setState: SetStateHookCallback[State]) =
     div(
       className := s"btn_sign btn_sign_width",
       id := "next",
       "Next",
       onClick := { () =>
-        nextCredential()
+        nextCredential(props, setState)
       }
     )
 
-  private def nextElement(signingRequest: PendingRequest.IssueCredential, appendClass: String) = {
+  private def nextElement(
+      props: Props,
+      setState: SetStateHookCallback[State],
+      state: State,
+      signingRequest: PendingRequest.WithId,
+      appendClass: String
+  ) = {
     state.status match {
-      case Some(true) => nextButton()
-      case Some(false) => signButton(signingRequest, appendClass)
-      case None => signButton(signingRequest, appendClass)
+      case Some(true) => nextButton(props, setState)
+      case Some(false) | None => signButton(props, setState, signingRequest, appendClass)
     }
   }
 
-  private def circularProgress() = {
+  private def circularProgress(state: State) = {
     if (state.isLoading) {
       div(
         mui.CircularProgress
@@ -181,10 +232,9 @@ import scala.util.{Failure, Success}
     } else {
       div()
     }
-
   }
 
-  private def alertMessage() = {
+  private def alertMessage(state: State) = {
     val emptyElement = div()()
     val successMessage = (message: String) =>
       div(className := "div__field_group_mui")(
@@ -215,32 +265,40 @@ import scala.util.{Failure, Success}
 
   }
 
-  private def loadRequests(): Unit = {
+  private def loadRequests(props: Props, setState: SetStateHookCallback[State]): Unit = {
     props.backgroundAPI.getSignatureRequests().map { req =>
-      // TODO: Fow now, this is the only supported request, add support for the other ones
-      val issueCredentialRequests = req.requests.collect {
-        case r: PendingRequest.IssueCredential => r
-      }
-      setState(_.copy(requests = issueCredentialRequests, status = None))
+      setState(_.copy(requests = req.requests, status = None))
     }
   }
 
-  private def nextCredential(): Unit = {
-    loadRequests()
+  private def nextCredential(props: Props, setState: SetStateHookCallback[State]): Unit = {
+    loadRequests(props, setState)
   }
 
-  private def signRequest(requestId: Int): Unit = {
+  private def signRequest(
+      props: Props,
+      setState: SetStateHookCallback[State],
+      taggedRequest: PendingRequest.WithId
+  ): Unit = {
     setState(_.copy(isLoading = true))
-    props.backgroundAPI.signRequestAndPublish(requestId).onComplete {
+    val result = props.backgroundAPI.approvePendingRequest(taggedRequest.id)
+
+    val (successMessage, failureMessage) = taggedRequest.request match {
+      case _: PendingRequest.IssueCredential => ("Credential successfully signed!", "Credential signing failed.")
+      case _: PendingRequest.RevokeCredential => ("Credential successfully revoked!", "Failed revoking credential.")
+    }
+
+    result.onComplete {
       case Success(_) =>
-        setState(_.copy(status = Some(true), isLoading = false, message = "Credential successfully signed!"))
+        setState(_.copy(status = Some(true), isLoading = false, message = successMessage))
+
       case Failure(ex) =>
-        setState(_.copy(status = Some(false), isLoading = false, message = "Credential signing failed."))
-        println(s"Failed Credential signing : ${ex.getMessage}")
+        setState(_.copy(status = Some(false), isLoading = false, message = failureMessage))
+        println(s"$failureMessage: ${ex.getMessage}")
     }
   }
 
-  private def rejectRequest(requestId: Int): Unit = {
+  private def rejectRequest(props: Props, setState: SetStateHookCallback[State], requestId: Int): Unit = {
     setState(_.copy(isLoading = true))
     props.backgroundAPI.rejectRequest(requestId).onComplete {
       case Success(_) =>
@@ -251,7 +309,7 @@ import scala.util.{Failure, Success}
     }
   }
 
-  private def lockWallet(): Unit = {
+  private def lockWallet(props: Props, setState: SetStateHookCallback[State]): Unit = {
     props.backgroundAPI.lockWallet().onComplete {
       case Success(_) => props.switchToView(Unlock)
       case Failure(ex) =>

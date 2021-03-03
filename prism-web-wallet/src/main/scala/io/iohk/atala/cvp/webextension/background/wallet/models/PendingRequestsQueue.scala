@@ -1,6 +1,6 @@
 package io.iohk.atala.cvp.webextension.background.wallet.models
 
-import io.iohk.atala.cvp.webextension.common.models.{CredentialSubject, PendingRequest}
+import io.iohk.atala.cvp.webextension.common.models.PendingRequest
 
 import scala.concurrent.Promise
 
@@ -19,7 +19,7 @@ case class PendingRequestsQueue(
 
   def size: Int = map.size
 
-  def list: List[PendingRequest] = map.values.map(_._1).toList
+  def list: List[PendingRequest.WithId] = map.values.map(_._1).toList
 
   def get(requestId: RequestId): Option[Value] = map.get(requestId)
 
@@ -28,14 +28,9 @@ case class PendingRequestsQueue(
     copy(map = newMap)
   }
 
-  def issueCredential(
-      origin: String,
-      sessionID: String,
-      subject: CredentialSubject
-  ): (PendingRequestsQueue, Promise[String]) = {
+  def enqueue(request: PendingRequest): (PendingRequestsQueue, Promise[String]) = {
     val promise = Promise[String]()
-    val request: PendingRequest = PendingRequest.IssueCredential(totalRequests, origin, sessionID, subject)
-    val item = (totalRequests, (request, promise))
+    val item = (totalRequests, (PendingRequest.WithId(totalRequests, request), promise))
     val newState = copy(
       totalRequests = totalRequests + 1,
       map = map + item
@@ -47,7 +42,7 @@ case class PendingRequestsQueue(
 
 object PendingRequestsQueue {
   type RequestId = Int
-  type Value = (PendingRequest, Promise[String])
+  type Value = (PendingRequest.WithId, Promise[String])
 
   def empty: PendingRequestsQueue = PendingRequestsQueue(0, Map.empty)
 }
