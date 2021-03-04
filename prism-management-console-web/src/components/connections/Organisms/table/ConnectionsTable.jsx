@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { contactShape } from '../../../../helpers/propShapes';
-
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 import { getContactColumns } from '../../../../helpers/tableDefinitions/contacts';
+import { useScrolledToBottom } from '../../../../hooks/useScrolledToBottom';
 
 import './_style.scss';
 
@@ -17,14 +17,23 @@ const ConnectionsTable = ({
   viewContactDetail,
   columns,
   searching,
-  shouldSelectRecipients
+  shouldSelectRecipients,
+  searchDueGeneralScroll
 }) => {
   const [loading, setLoading] = useState(false);
+  const { timesScrolledToBottom } = useScrolledToBottom([hasMore, loading]);
+
+  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
+  const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
 
   const getMoreData = () => {
     setLoading(true);
     return handleContactsRequest().finally(() => setLoading(false));
   };
+
+  useEffect(() => {
+    if (searchDueGeneralScroll) getMoreData();
+  }, [timesScrolledToBottom]);
 
   return (
     <div className="ConnectionsTable">
@@ -32,7 +41,7 @@ const ConnectionsTable = ({
         columns={columns || getContactColumns({ inviteContact, viewContactDetail })}
         data={contacts}
         loading={loading}
-        getMoreData={getMoreData}
+        getMoreData={handleGetMoreData}
         hasMore={hasMore}
         rowKey="contactid"
         searching={searching}
@@ -60,7 +69,8 @@ ConnectionsTable.defaultProps = {
   searching: false,
   columns: undefined,
   handleContactsRequest: null,
-  shouldSelectRecipients: true
+  shouldSelectRecipients: true,
+  searchDueGeneralScroll: false
 };
 
 ConnectionsTable.propTypes = {
@@ -73,7 +83,8 @@ ConnectionsTable.propTypes = {
   hasMore: PropTypes.bool.isRequired,
   searching: PropTypes.bool,
   columns: PropTypes.arrayOf(PropTypes.any),
-  shouldSelectRecipients: PropTypes.bool
+  shouldSelectRecipients: PropTypes.bool,
+  searchDueGeneralScroll: PropTypes.bool
 };
 
 export default ConnectionsTable;

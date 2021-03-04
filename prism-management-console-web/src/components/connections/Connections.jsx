@@ -9,12 +9,12 @@ import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
 import { contactShape } from '../../helpers/propShapes';
 import { withRedirector } from '../providers/withRedirector';
-
-import './_style.scss';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
+
+import './_style.scss';
 
 const Connections = ({
   tableProps,
@@ -30,7 +30,6 @@ const Connections = ({
 
   const [connectionToken, setConnectionToken] = useState('');
   const [QRModalIsOpen, showQRModal] = useState(false);
-
   const { accountStatus } = useSession();
 
   const inviteContactAndShowQR = async contactId => {
@@ -60,13 +59,14 @@ const Connections = ({
         viewContactDetail={redirectToContactDetails}
         handleContactsRequest={handleContactsRequest}
         searching={searching}
+        searchDueGeneralScroll
         {...tableProps}
       />
     );
   };
 
   return (
-    <div className="Wrapper">
+    <div className="ConnectionsContainer Wrapper">
       {accountStatus === UNCONFIRMED && <WaitBanner />}
       <div className="ContentHeader">
         <h1>{t('contacts.title')}</h1>

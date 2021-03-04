@@ -1,5 +1,13 @@
 @import '../../css/general_styling';
 
+.ConnectionsContainer {
+  .ConnectionsTable {
+    .InfiniteScrollTableContainer {
+      height: auto;
+    }
+  }
+}
+
 .RecipientsHeader {
   display: flex;
   justify-content: space-between;

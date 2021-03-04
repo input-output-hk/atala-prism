@@ -170,3 +170,6 @@ export const GROUP_NAME_STATES = {
 
 // error codes
 export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;
+
+// Usefull css classes
+export const MAIN_CONTAINER_CLASS = 'MainContainer';

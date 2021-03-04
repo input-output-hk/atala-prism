@@ -15,6 +15,7 @@
     .MainContainer {
       width: calc(100vw - #{$sidebar-width});
       background: $white;
+      overflow-y: scroll;
       @include breakpoint(sm) {
         width: 100vw;
         overflow-y: auto;

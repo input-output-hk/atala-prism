@@ -58,6 +58,7 @@ const Credentials = ({ tabProps, setActiveTab, loading }) => {
             {...tabProps[CREDENTIALS_ISSUED]}
             showCredentialData={showCredentialData}
             initialLoading={loading.issued}
+            searchDueGeneralScroll
           />
         </TabPane>
         <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>

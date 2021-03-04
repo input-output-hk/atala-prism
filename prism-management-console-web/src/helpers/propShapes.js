@@ -118,7 +118,8 @@ export const credentialTabShape = {
     indeterminateSelectAll: bool
   }).isRequired,
   showEmpty: bool,
-  initialLoading: bool
+  initialLoading: bool,
+  searchDueGeneralScroll: bool
 };
 
 export const credentialTypeShape = {

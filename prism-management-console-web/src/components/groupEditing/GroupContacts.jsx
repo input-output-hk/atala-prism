@@ -31,6 +31,7 @@ const GroupContacts = ({
           columns={getGroupContactColumns(handleDelete)}
           hasMore={hasMore}
           size="md"
+          searchDueGeneralScroll
         />
       )}
     </div>

@@ -9,6 +9,7 @@ import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
 import { useSession } from '../../../providers/SessionContext';
+import { useScrolledToBottom } from '../../../../hooks/useScrolledToBottom';
 
 const CredentialsIssued = ({
   showEmpty,
@@ -17,11 +18,13 @@ const CredentialsIssued = ({
   showCredentialData,
   fetchCredentials,
   loadingSelection,
-  initialLoading
+  initialLoading,
+  searchDueGeneralScroll
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [selectedLength, setSelectedLength] = useState();
+  const { timesScrolledToBottom } = useScrolledToBottom([tableProps.hasMore, loading]);
 
   const { accountStatus } = useSession();
 
@@ -34,6 +37,13 @@ const CredentialsIssued = ({
     setLoading(true);
     return fetchCredentials().finally(() => setLoading(false));
   };
+
+  useEffect(() => {
+    if (searchDueGeneralScroll) getMoreData();
+  }, [timesScrolledToBottom]);
+
+  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
+  const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
 
   const { credentials, selectionType, searching } = tableProps;
   const { selectedRowKeys } = selectionType || {};
@@ -56,7 +66,9 @@ const CredentialsIssued = ({
   const renderContent = () => {
     if (!credentials.length && (initialLoading || searching)) return <SimpleLoading size="md" />;
     if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-    return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
+    return (
+      <CredentialsTable getMoreData={handleGetMoreData} loading={loading} {...expandedTableProps} />
+    );
   };
 
   return (
@@ -75,7 +87,8 @@ const CredentialsIssued = ({
 };
 
 CredentialsIssued.defaultProps = {
-  initialLoading: false
+  initialLoading: false,
+  searchDueGeneralScroll: false
 };
 
 CredentialsIssued.propTypes = credentialTabShape;

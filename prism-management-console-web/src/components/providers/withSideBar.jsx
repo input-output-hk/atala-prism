@@ -2,14 +2,16 @@ import React, { Fragment } from 'react';
 import Header from '../common/Molecules/Header/Header';
 import SideMenu from '../common/Molecules/SideBar/SideBar';
 
-export const withSideBar = Component => props => (
-  <Fragment>
-    <Header {...props} />
-    <div className="MainContent">
-      <SideMenu />
-      <div className="MainContainer">
-        <Component {...props} />
+export const withSideBar = Component => props => {
+  return (
+    <Fragment>
+      <Header {...props} />
+      <div className="MainContent">
+        <SideMenu />
+        <div className="MainContainer">
+          <Component {...props} />
+        </div>
       </div>
-    </div>
-  </Fragment>
-);
+    </Fragment>
+  );
+};

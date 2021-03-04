@@ -140,8 +140,11 @@ export const useCredentialsIssuedListWithFilters = (
     }
   };
 
+  // leave as async function for backward compatibility, so promise callbacks can be used when this function is called
+  const handleGetCredentials = async () => hasMore && getCredentials();
+
   return {
-    fetchCredentialsIssued: getCredentials,
+    fetchCredentialsIssued: handleGetCredentials,
     credentialsIssued: credentials,
     setCredentialsIssued: setCredentials,
     filtersIssued: {
