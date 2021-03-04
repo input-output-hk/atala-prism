@@ -69,21 +69,27 @@ import scala.util.{Failure, Success}
           id := "description1",
           "Your password should be a memorable passphrase of at least 30 characters."
         ),
-        PasswordInput(
-          "Password",
-          "Enter Password",
-          state.password,
-          password => setPassword(password),
-          Some(_ => isValidPassphrase())
+        div(
+          className := "recoverPasswordContainer",
+          PasswordInput(
+            "Password",
+            "Enter Password",
+            state.password,
+            password => setPassword(password),
+            Some(_ => isValidPassphrase())
+          )
         ),
-        PasswordInput(
-          "Confirm password",
-          "Re-enter Password",
-          state.password2,
-          password => setPassword2(password),
-          Some(_ => isPassphraseMatched())
+        div(
+          className := "recoverPasswordContainer",
+          PasswordInput(
+            "Confirm password",
+            "Re-enter Password",
+            state.password2,
+            password => setPassword2(password),
+            Some(_ => isPassphraseMatched())
+          )
         ),
-        div(className := "bottomPadding")(
+        div(className := "checkboxContainer")(
           div(className := "input__container")(
             div()(
               input(
