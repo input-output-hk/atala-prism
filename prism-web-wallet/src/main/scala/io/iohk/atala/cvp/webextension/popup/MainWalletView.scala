@@ -1,15 +1,15 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import com.alexitc.materialui.facade.materialUiCore.anon.PartialClassNameMapCircul
-import com.alexitc.materialui.facade.materialUiCore.buttonButtonMod.ButtonProps
 import com.alexitc.materialui.facade.materialUiCore.materialUiCoreStrings.indeterminate
-import com.alexitc.materialui.facade.materialUiCore.mod.PropTypes.Color
-import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
+import com.alexitc.materialui.facade.materialUiCore.{components => mui}
 import com.alexitc.materialui.facade.materialUiIcons.{components => muiIcons}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.models.PendingRequest
-import io.iohk.atala.cvp.webextension.popup.models.View
+import io.iohk.atala.cvp.webextension.popup.components.AlertMessage
+import io.iohk.atala.cvp.webextension.popup.models.Message.{FailMessage, SuccessMessage}
 import io.iohk.atala.cvp.webextension.popup.models.View.Unlock
+import io.iohk.atala.cvp.webextension.popup.models.{Message, View}
 import org.scalajs.dom.raw.DOMParser
 import slinky.core.FunctionalComponent
 import slinky.core.annotations.react
@@ -31,12 +31,12 @@ import scala.util.{Failure, Success}
   case class State(
       requests: List[PendingRequest.WithId],
       id: Int,
-      message: String,
+      message: Option[Message],
       status: Option[Boolean],
       isLoading: Boolean
   )
 
-  private def initialState: State = State(requests = Nil, 0, "", None, false)
+  private def initialState: State = State(requests = Nil, 0, None, None, false)
 
   private def renderTemplate(html: String) = {
     val sanitisedHtml = dompurify.sanitize(html)
@@ -118,7 +118,7 @@ import scala.util.{Failure, Success}
         dangerouslySetInnerHTML := js.Dynamic.literal(__html = renderTemplate(html))
       ),
       br(),
-      alertMessage(state),
+      state.message.map(msg => AlertMessage(msg)),
       if (state.isLoading) {
         signatureElement(props, state, setState, signingRequest, "disabled")
       } else {
@@ -234,37 +234,6 @@ import scala.util.{Failure, Success}
     }
   }
 
-  private def alertMessage(state: State) = {
-    val emptyElement = div()()
-    val successMessage = (message: String) =>
-      div(className := "div__field_group_mui")(
-        mui.Button.withProps(
-          ButtonProps()
-            .setColor(Color.default)
-            .setVariant(materialUiCoreStrings.outlined)
-            .setClassName("button_success_mui")
-        )(muiIcons.CheckCircle().className("buttonIcon_success"))(message)
-      )
-
-    val failMessage = (message: String) =>
-      div(className := "div__field_group_mui")(
-        mui.Button.withProps(
-          ButtonProps()
-            .setColor(Color.default)
-            .setVariant(materialUiCoreStrings.outlined)
-            .setClassName("button_fail_mui")
-        )(muiIcons.Cancel().className("buttonIcon_fail"))(message)
-      )
-
-    state.status
-      .map {
-        case true => successMessage(state.message)
-        case false => failMessage(state.message)
-      }
-      .getOrElse(emptyElement)
-
-  }
-
   private def loadRequests(props: Props, setState: SetStateHookCallback[State]): Unit = {
     props.backgroundAPI.getSignatureRequests().map { req =>
       setState(_.copy(requests = req.requests, status = None))
@@ -290,10 +259,10 @@ import scala.util.{Failure, Success}
 
     result.onComplete {
       case Success(_) =>
-        setState(_.copy(status = Some(true), isLoading = false, message = successMessage))
+        setState(_.copy(status = Some(true), isLoading = false, message = Some(SuccessMessage(successMessage))))
 
       case Failure(ex) =>
-        setState(_.copy(status = Some(false), isLoading = false, message = failureMessage))
+        setState(_.copy(status = Some(false), isLoading = false, message = Some(FailMessage(failureMessage))))
         println(s"$failureMessage: ${ex.getMessage}")
     }
   }
@@ -302,9 +271,17 @@ import scala.util.{Failure, Success}
     setState(_.copy(isLoading = true))
     props.backgroundAPI.rejectRequest(requestId).onComplete {
       case Success(_) =>
-        setState(_.copy(status = Some(true), isLoading = false, message = "Credential successfully rejected."))
+        setState(
+          _.copy(
+            status = Some(true),
+            isLoading = false,
+            message = Some(SuccessMessage("Credential successfully rejected."))
+          )
+        )
       case Failure(ex) =>
-        setState(_.copy(status = Some(false), isLoading = false, message = "Credential failed to reject."))
+        setState(
+          _.copy(status = Some(false), isLoading = false, message = Some(FailMessage("Credential failed to reject.")))
+        )
         println(s"Failed Publishing Credential : ${ex.getMessage}")
     }
   }
@@ -313,7 +290,7 @@ import scala.util.{Failure, Success}
     props.backgroundAPI.lockWallet().onComplete {
       case Success(_) => props.switchToView(Unlock)
       case Failure(ex) =>
-        setState(_.copy(message = "Failed Locking wallet."))
+        setState(_.copy(message = Some(FailMessage("Failed Locking wallet."))))
         println(s"Failed Locking wallet : ${ex.getMessage}")
     }
   }
