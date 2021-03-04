@@ -91,7 +91,7 @@ class CredentialDAO: BaseDAO {
                           issuerName: String) -> (Credential, Bool)? {
         let plainCredential = message.plainCredential
         let base64 =  String(plainCredential.encodedCredential.split(separator: ".")[0])
-        if let jsonData = Data(base64Encoded: base64),
+        if let jsonData = Data(base64urlEncoded: base64),
            var jsonObject = try? JSONSerialization.jsonObject(with: jsonData,
                                                               options: .allowFragments) as? [String: Any],
            let credentialSubjectStr = jsonObject["credentialSubject"] as? String,

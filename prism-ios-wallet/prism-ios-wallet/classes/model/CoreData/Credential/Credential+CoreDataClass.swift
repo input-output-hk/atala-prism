@@ -27,11 +27,11 @@ public class Credential: NSManagedObject {
             return "credentials_proof_employment".localize()
         case .demoCertificateOfInsurance, .certificatOfInsurance:
             return "credentials_certificate_insurance".localize()
-        case .georgiaNationalID:
+        case .georgiaNationalID, .ethiopiaNationalID:
             return "credentials_georgia_national_id".localize()
-        case .georgiaEducationalDegree:
+        case .georgiaEducationalDegree, .ethiopiaEducationalDegree:
             return "credentials_georgia_educational_degree".localize()
-        case .georgiaEducationalDegreeTranscript:
+        case .georgiaEducationalDegreeTranscript, .ethiopiaEducationalDegreeTranscript:
             return "credentials_georgia_educational_degree_transcript".localize()
         default:
             return ""
@@ -48,11 +48,11 @@ public class Credential: NSManagedObject {
             return "icon_proof_employment"
         case .demoCertificateOfInsurance, .certificatOfInsurance:
             return "icon_insurance"
-        case .georgiaNationalID:
+        case .georgiaNationalID, .ethiopiaNationalID:
             return "icon_national_id"
-        case .georgiaEducationalDegree:
+        case .georgiaEducationalDegree, .ethiopiaEducationalDegree:
             return "icon_educational_degree"
-        case .georgiaEducationalDegreeTranscript:
+        case .georgiaEducationalDegreeTranscript, .ethiopiaEducationalDegreeTranscript:
             return "icon_educational_degree_transcript"
         default:
             return "icon_id"

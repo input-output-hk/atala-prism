@@ -13,6 +13,9 @@ enum CredentialType: String {
     case georgiaEducationalDegree = "GeorgiaEducationalDegree"
     case georgiaEducationalDegreeTranscript = "GeorgiaEducationalDegreeTranscript"
     case georgiaNationalID = "GeorgiaNationalID"
+    case ethiopiaEducationalDegree = "EthiopiaEducationalDegree"
+    case ethiopiaEducationalDegreeTranscript = "EthiopiaEducationalDegreeTranscript"
+    case ethiopiaNationalID = "EthiopiaNationalID"
 }
 
 class CredentialView: Mappable {
