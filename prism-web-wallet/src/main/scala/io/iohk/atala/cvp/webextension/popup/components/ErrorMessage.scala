@@ -5,14 +5,14 @@ import slinky.core.annotations.react
 import slinky.web.html._
 
 @react object ErrorMessage {
-  case class Props(mayBeError: Option[String] = None)
+  case class Props(error: String)
 
   val component: FunctionalComponent[Props] = FunctionalComponent[Props] { props =>
-    div(className := "errorContainer")(props.mayBeError.map { error =>
+    div(className := "errorContainer")(
       label(className := "_label_update")(
-        error,
+        props.error,
         img(className := "errorImg", src := "/assets/images/error.svg")
       )
-    })
+    )
   }
 }

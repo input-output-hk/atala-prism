@@ -121,7 +121,7 @@ import scala.util.{Failure, Success}
             )
           )
         ),
-        ErrorMessage(state.message)
+        state.message.map(ErrorMessage(_))
       ),
       ProgressButton(
         "Recover wallet",

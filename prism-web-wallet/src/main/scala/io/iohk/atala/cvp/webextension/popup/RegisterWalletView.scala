@@ -119,7 +119,7 @@ import slinky.web.html.{p, _}
             Some(_ => isPassphraseMatched())
           )
         ),
-        ErrorMessage(state.message),
+        state.message.map(ErrorMessage(_)),
         div(className := "div__field_group")(
           div(
             id := "registerButton",

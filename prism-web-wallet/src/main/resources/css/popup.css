@@ -862,3 +862,24 @@ inputChip::placeholder {
     line-height: 0 !important;
     width: 50px;
 }
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+.imgTextError {
+  font-weight: bold;
+  align-items: center;
+  display: flex;
+}
+
+.red {
+  margin-right:1em;
+  height: 15px;
+  filter: invert(21%) sepia(96%) saturate(3226%) hue-rotate(345deg) brightness(123%) contrast(100%);
+}
+
+.logo-img:hover {
+  cursor: pointer;
+}

@@ -1,12 +1,11 @@
 package io.iohk.atala.cvp.webextension.popup
 
-import com.alexitc.materialui.facade.materialUiCore.anon.PartialClassNameMapCircul
-import com.alexitc.materialui.facade.materialUiCore.materialUiCoreStrings.indeterminate
 import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.models.Role
+import io.iohk.atala.cvp.webextension.popup.components.{ErrorMessage, ProgressButton}
 import io.iohk.atala.cvp.webextension.popup.models.View.{DisplayMnemonic, Welcome}
-import io.iohk.atala.cvp.webextension.popup.models.{Data, View}
+import io.iohk.atala.cvp.webextension.popup.models.{Data, ImageLogo, View}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import slinky.core._
@@ -21,36 +20,45 @@ import scala.util.{Failure, Success}
 
 @react class OrganisationDetailsWalletView extends Component {
 
+  case class Props(
+      backgroundAPI: BackgroundAPI,
+      termsUrl: String,
+      privacyPolicyUrl: String,
+      data: Data,
+      switchToView: (View) => Unit
+  )
+
+  case class State(
+      orgName: String,
+      logo: Option[ImageLogo] = None,
+      message: Option[String],
+      isLoading: Boolean,
+      termsAccepted: Boolean,
+      privacyPolicyAccepted: Boolean
+  )
+
   override def initialState: State = {
-    State("", None, 0, 0, None, isLoading = false, terms = false, privacyPolicy = false)
+    State("", None, None, isLoading = false, termsAccepted = false, privacyPolicyAccepted = false)
   }
 
   override def render(): ReactElement = {
 
-    def enableButton = {
-      if (
-        state.terms && state.privacyPolicy &&
-        state.imageWidth <= 50 && state.imageHeight <= 50 &&
-        !state.isLoading
-      ) {
-        className := "btn_register"
-      } else {
-        className := "btn_register disabled"
-      }
+    val logoWarningMessage: ImageLogo => String = logo =>
+      s"The logo you are trying to upload has invalid dimensions. " +
+        s"Please change your image to match the required upload dimensions and " +
+        s"try again. Invalid logo dimensions ${logo.width}px per ${logo.height}px " +
+        s"supported logo dimensions must be maximum 50px per 50px."
+
+    def removeImage(): Unit = {
+      setState(_.copy(logo = None))
     }
 
-    def error() = {
-      if (state.message.nonEmpty) {
-        div(className := "errorContainer")(
-          label(className := "_label_update")(
-            state.message,
-            img(className := "errorImg", src := "/assets/images/error.svg")
-          )
-        )
-      } else {
-        div(className := "errorContainer")()
-      }
+    def enableButton = {
+      state.termsAccepted && state.privacyPolicyAccepted &&
+      state.logo.fold(true)(_.hasValidDimensions) &&
+      !state.isLoading
     }
+
     div(
       id := "organizationDetails",
       className := "spaceBetween",
@@ -79,7 +87,7 @@ import scala.util.{Failure, Success}
           p(
             className := "description",
             id := "description2",
-            "Complete the following information. When uploading the logo please it should be 50px per 50px."
+            "Complete the following information. When uploading the logo please it should be maximum 50px per 50px."
           )
         ),
         div(className := "div__field_group")(
@@ -105,19 +113,28 @@ import scala.util.{Failure, Success}
               ),
               label(htmlFor := "logo")("Upload your logo")
             ),
-            state.fileOpt.map(f =>
-              if (state.imageWidth > 50 || state.imageHeight > 50) {
+            state.logo.map(logo =>
+              if (!logo.hasValidDimensions) {
                 div(className := "upload_status_container")(
-                  p(f.name),
+                  div(
+                    className := "flex",
+                    p(
+                      className := "imgTextError",
+                      img(className := "red", src := "/assets/images/paper-clip.svg"),
+                      logo.file.name,
+                      div(
+                        img(src := "/assets/images/x.svg"),
+                        className := "logo-img",
+                        onClick := { () => removeImage() }
+                      )
+                    )
+                  ),
                   p(
-                    s"The logo you are trying to upload has invalid dimensions. " +
-                      s"Please change your image to match the required upload dimensions and " +
-                      s"try again. Invalid logo dimensions ${state.imageWidth}px per ${state.imageHeight}px " +
-                      s"supported logo dimensions must be maximum 50px per 50px."
+                    logoWarningMessage(logo)
                   )
                 )
               } else {
-                div(className := "upload_status_container")(f.name)
+                div(className := "upload_status_container")(logo.file.name)
               }
             )
           ),
@@ -161,26 +178,14 @@ import scala.util.{Failure, Success}
               )
             )
           ),
-          error()
+          state.message.map(ErrorMessage(_))
         )
       ),
-      div(className := "div__field_group")(
-        div(
-          className := "div__field_group",
-          id := "registerButton",
-          enableButton,
-          onClick := { () =>
-            registerOrganization()
-          }
-        )("Register"),
-        if (state.isLoading) {
-          mui.CircularProgress
-            .variant(indeterminate)
-            .size(26)
-            .classes(PartialClassNameMapCircul().setRoot("progress_bar"))
-        } else {
-          div()
-        }
+      ProgressButton(
+        "Register",
+        enableButton,
+        state.isLoading,
+        _ => registerOrganization()
       )
     )
   }
@@ -193,22 +198,22 @@ import scala.util.{Failure, Success}
     val img: HTMLImageElement = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
     img.src = URL.createObjectURL(newValue)
     img.onload = _ => {
-      setState(_.copy(fileOpt = Some(newValue), imageHeight = img.height, imageWidth = img.width))
+      setState(_.copy(logo = Some(ImageLogo(newValue, img.width, img.height))))
     }
   }
 
   private def setTandC(newValue: Boolean): Unit = {
-    setState(_.copy(terms = newValue))
+    setState(_.copy(termsAccepted = newValue))
   }
 
   private def setPrivacyPolicy(newValue: Boolean): Unit = {
-    setState(_.copy(privacyPolicy = newValue))
+    setState(_.copy(privacyPolicyAccepted = newValue))
   }
 
   private def registerOrganization(): Unit = {
     if (isValidInput(state)) {
-      if (state.fileOpt.isDefined) {
-        state.fileOpt.foreach { file =>
+      if (state.logo.isDefined) {
+        state.logo.foreach { logo =>
           console.log("file selected");
           val reader = new FileReader()
           reader.onloadend = _ => {
@@ -218,7 +223,7 @@ import scala.util.{Failure, Success}
             bb.get(arrayBytes)
             createWallet(arrayBytes)
           }
-          reader.readAsArrayBuffer(file)
+          reader.readAsArrayBuffer(logo.file)
         }
       } else {
         createWallet(Array.empty[Byte])
@@ -254,22 +259,4 @@ import scala.util.{Failure, Success}
     }
   }
 
-  case class Props(
-      backgroundAPI: BackgroundAPI,
-      termsUrl: String,
-      privacyPolicyUrl: String,
-      data: Data,
-      switchToView: (View) => Unit
-  )
-
-  case class State(
-      orgName: String,
-      fileOpt: Option[File] = None,
-      imageWidth: Int,
-      imageHeight: Int,
-      message: Option[String],
-      isLoading: Boolean,
-      terms: Boolean,
-      privacyPolicy: Boolean
-  )
 }
