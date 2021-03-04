@@ -6,6 +6,18 @@
   padding-bottom: 1em;
 }
 
+.DeleteGroupModal .ant-modal-body {
+  .ant-row {
+    margin-bottom: 0;
+  }
+  .FooterContainer {
+    justify-content: center;
+    button {
+      margin: 0 1em;
+    }
+  }
+}
+
 .ant-modal-footer {
   border: 1px solid transparent;
 }
@@ -24,6 +36,8 @@
   flex-direction: column-reverse;
   justify-content: center;
   align-items: center;
+  font-feature-settings: normal !important;
+  font-variant: normal;
   img {
     margin-bottom: 1em;
   }

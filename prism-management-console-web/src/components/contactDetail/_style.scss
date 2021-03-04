@@ -56,13 +56,13 @@
     }
     .CredentialInfo {
       .ant-tabs-nav .ant-tabs-tab {
-        @include primary-text($h3, #a0aabb);
+        @include primary-text($body, #a0aabb);
         font-weight: 800;
-        margin: 0 1em;
+        margin: 0 1em 0 0;
       }
       .ant-tabs-tab-active {
         .ant-tabs-tab-btn {
-          @include primary-text($h3, $black);
+          @include primary-text($body, $black);
           font-weight: 800;
         }
       }
@@ -122,6 +122,41 @@
     padding: 2em 3em;
     background: $light-grey;
   }
+}
+
+.ant-drawer-header {
+  .ant-drawer-title {
+    @include primary-text($body, $black);
+    font-weight: bold;
+  }
+}
+
+.ant-drawer-body {
+  .ant-tabs-nav-wrap {
+    justify-content: flex-start !important;
+    .ant-tabs-nav-list {
+      width: 100%;
+      justify-content: space-between;
+      .ant-tabs-tab {
+        width: 45%;
+        .ant-tabs-tab-btn {
+          font-size: $body !important;
+        }
+      }
+    }
+  }
+}
+
+.CredentialStatusCard {
+  .ant-card-head-title {
+    font-size: $body;
+    font-feature-settings: normal !important;
+    font-variant: normal;
+  }
+}
+
+.credentialDetailDrawer .ant-tabs-nav .ant-tabs-tab {
+  margin: 0 1em 0 0 !important;
 }
 
 .credentialDetailsContainer {

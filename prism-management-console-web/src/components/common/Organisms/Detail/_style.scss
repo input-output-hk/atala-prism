@@ -250,8 +250,11 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  min-height: 3.5em;
+  min-height: 35px;
   align-items: center;
+  border-radius: 6px;
+  font-feature-settings: normal !important;
+  font-variant: normal;
 }
 
 .moreButton {

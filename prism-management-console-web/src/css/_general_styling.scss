@@ -47,11 +47,15 @@ $height-sizes: (
   src: url(../fonts/CircularStd-Bold.woff) format('woff');
   font-weight: bold;
   font-display: swap;
+  font-feature-settings: normal !important;
+  font-variant: normal;
 }
 @font-face {
   font-family: 'Circular-book';
   src: url(../fonts/CircularStd-Book.woff) format('woff');
   font-display: swap;
+  font-feature-settings: normal !important;
+  font-variant: normal;
 }
 
 // Fonts
