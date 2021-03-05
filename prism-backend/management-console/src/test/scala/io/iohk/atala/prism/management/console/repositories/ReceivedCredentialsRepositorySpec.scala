@@ -81,6 +81,9 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       create(contactId, encodedSignedCredential1, mockCredentialExternalId1)
 
+      // Add time padding to make sure that the second credential is created strictly after the first one
+      Thread.sleep(10)
+
       val encodedSignedCredential2 = "b4cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId2 = CredentialExternalId.random()
 

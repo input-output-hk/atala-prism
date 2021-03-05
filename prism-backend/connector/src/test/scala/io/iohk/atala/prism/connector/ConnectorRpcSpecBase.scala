@@ -217,6 +217,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
 
     for (i <- 1 to 30) yield {
       val (connection, sender) = connections((i - 1) % connections.size)
+      // Add time padding to make sure that two messages are not created at the exact same timestamp
+      Thread.sleep(10)
       (createMessage(sender, connection, s"message-${randomId()}".getBytes), connection)
     }
   }
