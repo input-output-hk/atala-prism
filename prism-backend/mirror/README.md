@@ -87,9 +87,10 @@ Mirror uses vasp3 certificates and official client uses vasp2 certificates.
    (Vasp2 uses localhost port: `8092`)
 4. Copy `server.crt` `server.key` `trust.chain` from `trisa/artifacts/domo/vasp3/` (trisa demo environment) to
    `trisa/artifacts/testnet/myOwnVasp/` (trisa demo environment)
-5. Edit `/etc/hosts` file, add: `127.0.0.1	vasp3`   
-6. Run mirror with all the required dependencies (node, connector, database). Mirror should send message to Vasp1
-7. Run official client (from trisa directory): 
+5. Edit `/etc/hosts` file, add: `127.0.0.1	vasp3`
+6. Enable trisa in mirror: `export ATALA_MIRROR_TRISA_ENABLED=true`
+7. Run mirror with all the required dependencies (node, connector, database). Mirror should send message to Vasp1
+8. Run official client (from trisa directory): 
    `bazel run --run_under="cd $PWD/artifacts/testnet/myOwnVasp && " //cmd/trisa -- server --config config.yaml`
-8. Send transaction to official client (vasp2) to mirror: `curl -ks "https://127.0.0.1:9999/send?target=vasp3:7777"`
+9. Send transaction to official client (vasp2) to mirror: `curl -ks "https://127.0.0.1:9999/send?target=vasp3:7777"`
 

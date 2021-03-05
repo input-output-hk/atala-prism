@@ -34,6 +34,7 @@ trait MirrorFixtures extends ServicesFixtures {
     GrpcConfig(50057),
     HttpConfig(8080, "localhost"),
     TrisaConfig(
+      enabled = false,
       GrpcConfig(7777),
       SslConfig("mirror/etc/trisa/server.crt", "mirror/etc/trisa/server.key", "mirror/etc/trisa/trust.chain")
     )

@@ -5,7 +5,7 @@ import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
 
 case class HttpConfig(payIdPort: Int, payIdHostAddress: String)
 
-case class TrisaConfig(grpcConfig: GrpcConfig, sslConfig: SslConfig)
+case class TrisaConfig(enabled: Boolean, grpcConfig: GrpcConfig, sslConfig: SslConfig)
 
 case class MirrorConfig(grpcConfig: GrpcConfig, httpConfig: HttpConfig, trisaConfig: TrisaConfig)
 
@@ -22,7 +22,7 @@ object MirrorConfig {
 
     val trisa = globalConfig.getConfig("trisa")
 
-    MirrorConfig(grpcConfig, httpConfig, TrisaConfig(GrpcConfig(trisa), SslConfig(trisa)))
+    MirrorConfig(grpcConfig, httpConfig, TrisaConfig(trisa.getBoolean("enabled"), GrpcConfig(trisa), SslConfig(trisa)))
   }
 
 }

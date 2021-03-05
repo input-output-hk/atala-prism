@@ -33,7 +33,7 @@ object MirrorApp extends TaskApp {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  case class GrpcServers(mirrorGrpcServer: Server, trisaGrpcServer: Server)
+  case class GrpcServers(mirrorGrpcServer: Server, trisaGrpcServer: Option[Server])
 
   /**
     * Run the Mirror application.
@@ -46,7 +46,7 @@ object MirrorApp extends TaskApp {
       case GrpcServers(grpcServer, trisaGrpcServer) =>
         logger.info("Starting GRPC server")
         grpcServer.start
-        trisaGrpcServer.start()
+        trisaGrpcServer.foreach(_.start())
         Task.never // run server forever
     }
   }
@@ -122,7 +122,8 @@ object MirrorApp extends TaskApp {
       _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       //trisa
-      _ = new TrisaService(mirrorConfig.trisaConfig).sendTestRequest("vasp1", 8091)
+      _ =
+        if (mirrorConfig.trisaConfig.enabled) new TrisaService(mirrorConfig.trisaConfig).sendTestRequest("vasp1", 8091)
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[Task](
@@ -132,11 +133,16 @@ object MirrorApp extends TaskApp {
       )
 
       // gRPC server
-      trisaGrpcServer <- GrpcUtils.createGrpcServer[Task](
-        mirrorConfig.trisaConfig.grpcConfig,
-        sslConfigOption = Some(mirrorConfig.trisaConfig.sslConfig),
-        TrisaPeer2PeerGrpc.bindService(trisaPeer2PeerService, scheduler)
-      )
+      trisaGrpcServer <-
+        if (mirrorConfig.trisaConfig.enabled)
+          GrpcUtils
+            .createGrpcServer[Task](
+              mirrorConfig.trisaConfig.grpcConfig,
+              sslConfigOption = Some(mirrorConfig.trisaConfig.sslConfig),
+              TrisaPeer2PeerGrpc.bindService(trisaPeer2PeerService, scheduler)
+            )
+            .map(Some(_))
+        else Resource.pure[Task, Option[Server]](None)
 
       paymentsEndpoint = new PaymentEndpoints(cardanoAddressInfoService, mirrorConfig.httpConfig)
       apiServer = new ApiServer(paymentsEndpoint, mirrorConfig.httpConfig)
