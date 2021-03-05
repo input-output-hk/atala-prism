@@ -33,12 +33,12 @@ variable "vpc_state_key" {
   default = null # value will be computed based on vpc_name
 }
 
-variable postgres_password {
+variable "postgres_password" {
   description = "The password for the postgres user in the database. Should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_postgres_password."
   type        = string
 }
 
-variable atala_prism_domain {
+variable "atala_prism_domain" {
   description = "Domain name of atala prism"
   default     = "atalaprism.io"
 }

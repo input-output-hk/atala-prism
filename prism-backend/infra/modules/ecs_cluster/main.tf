@@ -17,7 +17,7 @@ module "ecs_fargate_role" {
   ]
 }
 
-resource aws_ecs_cluster ecs_cluster {
+resource "aws_ecs_cluster" "ecs_cluster" {
   name               = var.name
   capacity_providers = ["FARGATE", "FARGATE_SPOT"]
 

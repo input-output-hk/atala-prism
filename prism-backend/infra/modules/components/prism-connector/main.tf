@@ -63,7 +63,7 @@ module "connector_container_definition" {
   register_task_definition = false
 }
 
-resource aws_ecs_task_definition "connector_task_definition" {
+resource "aws_ecs_task_definition" "connector_task_definition" {
   count = var.enabled ? 1 : 0
 
   family                = "${var.parent_name}-connector-task-def"
@@ -82,7 +82,7 @@ resource aws_ecs_task_definition "connector_task_definition" {
   }
 }
 
-resource aws_ecs_service connector_service {
+resource "aws_ecs_service" "connector_service" {
   count = var.enabled ? 1 : 0
 
   name            = "${var.parent_name}-connector-service"

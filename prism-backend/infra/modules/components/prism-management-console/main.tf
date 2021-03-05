@@ -65,7 +65,7 @@ module "management_console_container_definition" {
   register_task_definition = false
 }
 
-resource aws_ecs_task_definition "management_console_task_definition" {
+resource "aws_ecs_task_definition" "management_console_task_definition" {
   count = var.enabled ? 1 : 0
 
   family                = "${var.parent_name}-management-console-task-def"
@@ -84,7 +84,7 @@ resource aws_ecs_task_definition "management_console_task_definition" {
   }
 }
 
-resource aws_ecs_service management_console_service {
+resource "aws_ecs_service" "management_console_service" {
   count = var.enabled ? 1 : 0
 
   name            = "${var.parent_name}-management-console-service"

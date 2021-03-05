@@ -52,7 +52,7 @@ module "prism_sdk_website_docs_container_definition" {
   register_task_definition = false
 }
 
-resource aws_ecs_task_definition "prism_sdk_website_docs_task_definition" {
+resource "aws_ecs_task_definition" "prism_sdk_website_docs_task_definition" {
   count = 1
 
   family                = "${var.parent_name}-prism-sdk-website-docs-task-def"
@@ -71,7 +71,7 @@ resource aws_ecs_task_definition "prism_sdk_website_docs_task_definition" {
   }
 }
 
-resource aws_ecs_service prism_sdk_website_docs_service {
+resource "aws_ecs_service" "prism_sdk_website_docs_service" {
   count = 1
 
   name            = "${var.parent_name}-prism-sdk-website-docs-service"

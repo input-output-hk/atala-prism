@@ -1,5 +1,5 @@
 
-provider aws {
+provider "aws" {
   profile = var.aws_profile
   region  = var.aws_region
 }
@@ -45,7 +45,7 @@ locals {
   cardano_wallet_api_port       = data.terraform_remote_state.cardano.outputs.wallet_port
 }
 
-resource aws_cloudwatch_log_group prism_log_group {
+resource "aws_cloudwatch_log_group" "prism_log_group" {
   name = "${var.env_name_short}-prism-log-group"
   tags = {
     Name = "${var.env_name_short}-prism-log-group"
@@ -53,24 +53,24 @@ resource aws_cloudwatch_log_group prism_log_group {
 }
 
 # Setup PostgreSQL Provider After RDS Database is Provisioned
-data aws_db_instance credentials_database {
+data "aws_db_instance" "credentials_database" {
   db_instance_identifier = "credentials-database-test"
 }
 
 # PostgreSQL password for the created connector user
-resource random_password connector_psql_password {
+resource "random_password" "connector_psql_password" {
   length  = 16
   special = false
 }
 
 # PostgreSQL password for the created node user
-resource random_password node_psql_password {
+resource "random_password" "node_psql_password" {
   length  = 16
   special = false
 }
 
 # PostgreSQL password for the created management console user
-resource random_password management_console_psql_password {
+resource "random_password" "management_console_psql_password" {
   length  = 16
   special = false
 }
@@ -95,7 +95,7 @@ locals {
 }
 
 # Create connector user
-resource postgresql_role connector_role {
+resource "postgresql_role" "connector_role" {
   name                = local.connector_psql_username
   login               = true
   password            = random_password.connector_psql_password.result
@@ -103,7 +103,7 @@ resource postgresql_role connector_role {
   skip_reassign_owned = true
 }
 
-resource postgresql_schema connector_schema {
+resource "postgresql_schema" "connector_schema" {
   name = local.connector_psql_username
   policy {
     create            = true
@@ -114,7 +114,7 @@ resource postgresql_schema connector_schema {
 }
 
 # Create node user
-resource postgresql_role node_role {
+resource "postgresql_role" "node_role" {
   name                = local.node_psql_username
   login               = true
   password            = random_password.node_psql_password.result
@@ -122,7 +122,7 @@ resource postgresql_role node_role {
   skip_reassign_owned = true
 }
 
-resource postgresql_schema node_schema {
+resource "postgresql_schema" "node_schema" {
   name = local.node_psql_username
   policy {
     create            = true
@@ -133,7 +133,7 @@ resource postgresql_schema node_schema {
 }
 
 # Create management console user
-resource postgresql_role management_console_role {
+resource "postgresql_role" "management_console_role" {
   name                = local.management_console_psql_username
   login               = true
   password            = random_password.management_console_psql_password.result
@@ -141,7 +141,7 @@ resource postgresql_role management_console_role {
   skip_reassign_owned = true
 }
 
-resource postgresql_schema management_console_schema {
+resource "postgresql_schema" "management_console_schema" {
   name = local.management_console_psql_username
   policy {
     create            = true
@@ -153,7 +153,7 @@ resource postgresql_schema management_console_schema {
 
 # security group
 # https://github.com/terraform-aws-modules/terraform-aws-security-group
-module security_group {
+module "security_group" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 3.0"
 
@@ -236,9 +236,9 @@ module security_group {
 
 # create ECS cluster with underlying EC2 instances
 module "ecs_cluster" {
-  source = "../../../modules/ecs_cluster"
+  source                    = "../../../modules/ecs_cluster"
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
-  name = "${var.env_name_short}-prism-ecs-cluster"
+  name                      = "${var.env_name_short}-prism-ecs-cluster"
 }
 
 data "aws_acm_certificate" "prism_tls_cert" {
@@ -308,20 +308,20 @@ module "prism_service" {
 
   tls_certificate_arn = data.aws_acm_certificate.prism_tls_cert.arn
 
-  atala_prism_domain = var.atala_prism_domain
+  atala_prism_domain        = var.atala_prism_domain
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 // Monitoring config
 // NB: cloudwatch alarms and associated SNS topic MUST be in us-east-1
 // (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-checks.html)
-provider aws {
+provider "aws" {
   alias  = "us-east-1"
   region = "us-east-1"
 }
 
 # Landing page failure, over a 30 second period will fail the health check.
-resource aws_route53_health_check landing_page_check {
+resource "aws_route53_health_check" "landing_page_check" {
   count             = var.monitoring_alerts_enabled
   fqdn              = "${var.env_name_short}.${var.atala_prism_domain}"
   port              = 443
@@ -337,12 +337,12 @@ resource aws_route53_health_check landing_page_check {
   }
 }
 
-data aws_sns_topic atala_prism_service_alerts {
+data "aws_sns_topic" "atala_prism_service_alerts" {
   provider = aws.us-east-1
   name     = "atala-prism-service-alerts"
 }
 
-resource aws_cloudwatch_metric_alarm alarm {
+resource "aws_cloudwatch_metric_alarm" "alarm" {
   provider            = aws.us-east-1
   count               = var.monitoring_alerts_enabled
   alarm_name          = "${var.env_name_short}_landing_healthcheck"
@@ -365,7 +365,7 @@ resource aws_cloudwatch_metric_alarm alarm {
 }
 
 
-data aws_acm_certificate cf-tls-cert {
+data "aws_acm_certificate" "cf-tls-cert" {
   provider = aws.us-east-1
   domain   = var.atala_prism_domain
   statuses = ["ISSUED"]
@@ -378,15 +378,15 @@ locals {
   # prism console develop
   envs = ["develop", "demo", "sandbox"]
   # cloud front is enabled to redirect traffic
-  is_cf_enabled = (contains(local.envs,var.env_name_short))
+  is_cf_enabled = (contains(local.envs, var.env_name_short))
   # cloud front enabled geud
   cf_enabled_geud = local.is_cf_enabled && var.geud_enabled
   # cloud front will be used only for develop or prod environment server for http to https redirection
   endpoint_cf_or_lb = local.is_cf_enabled ? data.dns_cname_record_set.console_cf_dns[0].host : module.prism_service.envoy_lb_dns_name
-  cf_cname_prefix = "console-${var.env_name_short}"
+  cf_cname_prefix   = "console-${var.env_name_short}"
 }
 
-resource aws_cloudfront_distribution intdemo_cf_dist {
+resource "aws_cloudfront_distribution" "intdemo_cf_dist" {
   count = var.intdemo_enabled && var.env_name_short == local.env_prod ? 1 : 0
 
   origin {
@@ -447,14 +447,14 @@ resource aws_cloudfront_distribution intdemo_cf_dist {
 }
 
 data "aws_lambda_function" "basic_auth" {
-  provider = aws.us-east-1
+  provider      = aws.us-east-1
   function_name = var.function_name
-  qualifier = 1 # version
+  qualifier     = 1 # version
 }
 
 # management console cloud front distribution
-resource aws_cloudfront_distribution console_cf_dist {
-  count =  local.cf_enabled_geud  ? 1 : 0
+resource "aws_cloudfront_distribution" "console_cf_dist" {
+  count = local.cf_enabled_geud ? 1 : 0
   origin {
     domain_name = module.prism_service.envoy_lb_dns_name
     origin_id   = "${local.cf_cname_prefix}-origin-id"
@@ -467,9 +467,9 @@ resource aws_cloudfront_distribution console_cf_dist {
     }
   }
 
-  enabled             = true
-  is_ipv6_enabled     = true
-  comment             = "${var.env_name_short} Cloudfront distribution"
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "${var.env_name_short} Cloudfront distribution"
 
   aliases = ["${local.cf_cname_prefix}.${var.atala_prism_domain}"]
 
@@ -522,7 +522,7 @@ resource aws_cloudfront_distribution console_cf_dist {
 
 # public DNS record for the loadbalancer/grpc proxy/other backend services
 # This points to <env>.atalaprism.io
-resource aws_route53_record grpc_dns_entry {
+resource "aws_route53_record" "grpc_dns_entry" {
   count   = var.intdemo_enabled ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = "${var.env_name_short}.${var.atala_prism_domain}"
@@ -534,7 +534,7 @@ resource aws_route53_record grpc_dns_entry {
 # Landing page DNS
 # for www/prod, use the bare domain atalaprism.io
 # query A record for cloudfront domain
-data dns_a_record_set cf_dns {
+data "dns_a_record_set" "cf_dns" {
   count = var.intdemo_enabled && var.env_name_short == local.env_prod ? 1 : 0
   host  = aws_cloudfront_distribution.intdemo_cf_dist[0].domain_name
 }
@@ -542,13 +542,13 @@ data dns_a_record_set cf_dns {
 # management console DNS
 # for management console , use the domain console-{var.env_name_short}.atalaprism.io
 # query CNAME record for cloudfront domain
-data dns_cname_record_set console_cf_dns {
+data "dns_cname_record_set" "console_cf_dns" {
   count = local.cf_enabled_geud ? 1 : 0
   host  = aws_cloudfront_distribution.console_cf_dist[0].domain_name
 }
 
 # create a matching one for atalaprism.io
-resource aws_route53_record domain_dns_entry {
+resource "aws_route53_record" "domain_dns_entry" {
   count   = var.intdemo_enabled && var.env_name_short == local.env_prod ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = var.atala_prism_domain
@@ -558,7 +558,7 @@ resource aws_route53_record domain_dns_entry {
 }
 
 # public DNS record for the PRISM console
-resource aws_route53_record console_dns_entry {
+resource "aws_route53_record" "console_dns_entry" {
   count   = var.geud_enabled ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = "console-${var.env_name_short}.${var.atala_prism_domain}"
@@ -568,7 +568,7 @@ resource aws_route53_record console_dns_entry {
 }
 
 # public DNS record for the PRISM docs
-resource aws_route53_record docs_dns_entry {
+resource "aws_route53_record" "docs_dns_entry" {
   count   = 1
   zone_id = var.atala_prism_zoneid
   name    = "docs-${var.env_name_short}.${var.atala_prism_domain}"
@@ -581,8 +581,8 @@ resource aws_route53_record docs_dns_entry {
 # public DNS record for the PRISM grpc console
 # public DNS record for the browser wallet / management / mobile grpc calls
 # This is required to bypass the cloud front for grpc calls
-resource aws_route53_record grpc_console_dns_entry {
-  count   = var.geud_enabled  ? 1 : 0
+resource "aws_route53_record" "grpc_console_dns_entry" {
+  count   = var.geud_enabled ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = "grpc-${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"

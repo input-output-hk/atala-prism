@@ -1,31 +1,31 @@
 
-variable aws_profile {
+variable "aws_profile" {
   description = "The AWS CLI profile to use."
   default     = "default"
 }
 
 // NB: cloudwatch alarms and associated SNS topic MUST be in us-east-1 (NOT us-east-2)
 // (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-checks.html)
-provider aws {
+provider "aws" {
   region  = "us-east-1"
   profile = var.aws_profile
 }
 
-variable sns_topic_name {
+variable "sns_topic_name" {
   description = "The topic name for monitoring alerts"
   default     = "atala-prism-service-alerts"
 }
 
-variable slack_channel_name {
+variable "slack_channel_name" {
   description = "The slack channel where monitoring should be sent."
   default     = "atala-prism-service-alerts"
 }
 
-variable slack_webhook_url {
+variable "slack_webhook_url" {
   description = "Webhook URL for the slack monitoring alerts channel. This should be stored in your .secrets.tfvars file."
 }
 
-variable slack_display_user {
+variable "slack_display_user" {
   description = "The username to use for reporting monitoring events to slack"
   default     = "reporter"
 }

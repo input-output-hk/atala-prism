@@ -92,6 +92,13 @@ commands:
           name: "Test Scala code is properly formatted"
           command: ./scalafmt --test
 
+  terraform-fmt-test:
+    description: "Test Terraform code is properly formatted"
+    steps:
+      - run:
+          name: "Test Terraform code is properly formatted"
+          command: terraform fmt -check -recursive
+
   aggregate-test-reports:
     description: "Aggregate all test reports under a directory"
     parameters:
@@ -303,6 +310,8 @@ jobs:
       - install-scalafmt
 
       - scalafmt-test
+
+      - terraform-fmt-test
 
       - run:
           name: Configure AWS

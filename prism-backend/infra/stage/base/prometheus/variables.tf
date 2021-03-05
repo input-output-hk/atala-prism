@@ -39,7 +39,7 @@ variable "vpc_state_key" {
   default = null # value will be computed based on vpc_name
 }
 
-variable atala_prism_domain {
+variable "atala_prism_domain" {
   description = "Domain name of atala prism"
   default     = "atalaprism.io"
 }

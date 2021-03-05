@@ -58,7 +58,7 @@ module "console_container_definition" {
   register_task_definition = false
 }
 
-resource aws_ecs_task_definition "console_task_definition" {
+resource "aws_ecs_task_definition" "console_task_definition" {
   count = var.enabled ? 1 : 0
 
   family                = "${var.parent_name}-console-task-def"
@@ -77,7 +77,7 @@ resource aws_ecs_task_definition "console_task_definition" {
   }
 }
 
-resource aws_ecs_service console_service {
+resource "aws_ecs_service" "console_service" {
   count = var.enabled ? 1 : 0
 
   name            = "${var.parent_name}-console-service"

@@ -19,12 +19,12 @@ variable "atala_prism_zoneid" {
   default     = "Z04196731VMWR6G5290VG"
 }
 
-provider aws {
+provider "aws" {
   region  = var.aws_region
   profile = var.aws_profile
 }
 
-resource aws_acm_certificate default {
+resource "aws_acm_certificate" "default" {
   domain_name               = var.atala_prism_domain
   subject_alternative_names = ["*.${var.atala_prism_domain}"]
   validation_method         = "DNS"
@@ -33,7 +33,7 @@ resource aws_acm_certificate default {
   }
 }
 
-resource aws_route53_record validation {
+resource "aws_route53_record" "validation" {
   zone_id = var.atala_prism_zoneid
   name    = aws_acm_certificate.default.domain_validation_options[0].resource_record_name
   type    = aws_acm_certificate.default.domain_validation_options[0].resource_record_type
@@ -42,11 +42,11 @@ resource aws_route53_record validation {
   ttl = "300"
 }
 
-resource aws_acm_certificate_validation default {
+resource "aws_acm_certificate_validation" "default" {
   certificate_arn         = aws_acm_certificate.default.arn
   validation_record_fqdns = [aws_route53_record.validation.fqdn]
 }
 
-output certificate-arn {
+output "certificate-arn" {
   value = aws_acm_certificate.default.arn
 }

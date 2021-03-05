@@ -26,7 +26,7 @@ module "connector" {
   private_dns_namespace_id   = var.private_dns_namespace_id
   private_dns_namespace_name = var.private_dns_namespace_name
 
-  log_group_name = var.log_group_name
+  log_group_name            = var.log_group_name
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
@@ -65,7 +65,7 @@ module "node" {
   private_dns_namespace_id   = var.private_dns_namespace_id
   private_dns_namespace_name = var.private_dns_namespace_name
 
-  log_group_name = var.log_group_name
+  log_group_name            = var.log_group_name
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
@@ -76,8 +76,8 @@ module "management_console" {
   port                            = var.management_console_port
 
   # use Envoy as a service mesh / local load balancer for node
-  node_host = module.envoy.envoy_host
-  node_port = var.node_port
+  node_host      = module.envoy.envoy_host
+  node_port      = var.node_port
   connector_host = module.envoy.envoy_host
   connector_port = var.connector_port
 
@@ -99,7 +99,7 @@ module "management_console" {
   private_dns_namespace_id   = var.private_dns_namespace_id
   private_dns_namespace_name = var.private_dns_namespace_name
 
-  log_group_name = var.log_group_name
+  log_group_name            = var.log_group_name
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
@@ -124,7 +124,7 @@ module "landing_page" {
   private_dns_namespace_id   = var.private_dns_namespace_id
   private_dns_namespace_name = var.private_dns_namespace_name
 
-  log_group_name = var.log_group_name
+  log_group_name            = var.log_group_name
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
@@ -149,12 +149,12 @@ module "console" {
   private_dns_namespace_id   = var.private_dns_namespace_id
   private_dns_namespace_name = var.private_dns_namespace_name
 
-  log_group_name = var.log_group_name
+  log_group_name            = var.log_group_name
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 
 module "prism_sdk_website_docs" {
-  source  = "../../components/prism-sdk-website-docs"
+  source = "../../components/prism-sdk-website-docs"
 
   prism_sdk_website_docs_docker_image = var.prism_sdk_website_docs_docker_image
   prism_sdk_website_docs_port         = var.prism_sdk_website_docs_port
@@ -172,7 +172,7 @@ module "prism_sdk_website_docs" {
   private_dns_namespace_id   = var.private_dns_namespace_id
   private_dns_namespace_name = var.private_dns_namespace_name
 
-  log_group_name = var.log_group_name
+  log_group_name            = var.log_group_name
   aws_ecs_capacity_provider = var.aws_ecs_capacity_provider
 }
 

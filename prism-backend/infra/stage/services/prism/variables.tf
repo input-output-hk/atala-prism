@@ -1,14 +1,14 @@
-variable env_name_short {
+variable "env_name_short" {
   description = "A short abbreviation for the environment name, used as in resource an DNS names."
 }
 
-variable aws_ecs_capacity_provider {
+variable "aws_ecs_capacity_provider" {
   description = "Capacity provider strategy FARGATE_SPOT or FARGATE"
-  type = string
-  default = "FARGATE_SPOT"
+  type        = string
+  default     = "FARGATE_SPOT"
 }
 
-variable aws_profile {
+variable "aws_profile" {
   description = "The AWS CLI profile to use."
   default     = "default"
 }
@@ -16,139 +16,139 @@ variable aws_profile {
 // Note, this is also currently hardcoded into env.tf
 // since terraform does not perform variable expansion
 // in the backend config.
-variable aws_region {
+variable "aws_region" {
   description = "The AWS region to create resources in."
   default     = "us-east-2"
 }
 
-variable intdemo_enabled {
+variable "intdemo_enabled" {
   description = "Whether or not deploy intdemo components"
   type        = bool
   default     = true
 }
 
-variable geud_enabled {
+variable "geud_enabled" {
   description = "Whether or not deploy geud components"
   type        = bool
   default     = true
 }
 
-variable autoscale_min {
+variable "autoscale_min" {
   description = "Minimum autoscale (number of EC2 instances in ECS cluster)"
   default     = "1"
 }
 
-variable autoscale_max {
+variable "autoscale_max" {
   description = "Maximum autoscale (number of EC2 instances in ECS cluster)"
   default     = "2"
 }
 
-variable autoscale_desired {
+variable "autoscale_desired" {
   description = "Desired autoscale (number of EC2 instances in ECS cluster)"
   default     = "1"
 }
 
-variable instance_type {
+variable "instance_type" {
   default = "m5ad.large"
   type    = string
 }
 
-variable connector_docker_image {
+variable "connector_docker_image" {
   description = "Docker image for the connector."
   type        = string
 }
 
-variable connector_port {
+variable "connector_port" {
   description = "Port number for the connector"
   type        = number
   default     = 50051
 }
 
-variable node_docker_image {
+variable "node_docker_image" {
   description = "Docker image for the node."
   type        = string
 }
 
-variable node_port {
+variable "node_port" {
   description = "Port number for the node"
   type        = number
   default     = 50053
 }
 
-variable management_console_docker_image {
+variable "management_console_docker_image" {
   description = "Docker image for the management console."
   type        = string
 }
 
-variable management_console_port {
+variable "management_console_port" {
   description = "Port number for the management console."
   type        = number
   default     = 50054
 }
 
-variable landing_docker_image {
+variable "landing_docker_image" {
   description = "Docker image for the interactive demo web app."
 }
 
-variable landing_port {
+variable "landing_port" {
   description = "Port for the interactive demo web app."
   type        = number
   default     = 80
 }
 
-variable prism_sdk_website_docs_docker_image {
+variable "prism_sdk_website_docs_docker_image" {
   description = "Docker image for the SDK docs website."
 }
 
-variable prism_sdk_website_docs_port {
+variable "prism_sdk_website_docs_port" {
   description = "Port for the SDK docs website."
   type        = number
   default     = 80
 }
 
-variable prism_console_docker_image {
+variable "prism_console_docker_image" {
   description = "Docker image for the PRISM console web app."
 }
 
-variable prism_console_port {
+variable "prism_console_port" {
   description = "Port for the PRISM console web app."
   type        = number
   default     = 80
 }
 
-variable prism_lb_envoy_docker_image {
+variable "prism_lb_envoy_docker_image" {
   description = "Docker image for the envoy grpc proxy."
   default     = "895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-lb-envoy:latest"
 }
 
-variable grpc_web_proxy_port {
+variable "grpc_web_proxy_port" {
   description = "Port for the envoy gprc-web proxy."
   type        = number
   default     = 8080
 }
 
-variable postgres_password {
+variable "postgres_password" {
   description = "The password for the postgres user in the database. Should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_postgres_password."
   type        = string
 }
 
-variable cardano_confirmation_blocks {
+variable "cardano_confirmation_blocks" {
   description = "Number of blocks to wait for a particular Cardano block to be confirmed by PRISM"
   type        = number
   default     = 31
 }
 
-variable cardano_wallet_id {
+variable "cardano_wallet_id" {
   description = "Cardano wallet id to use for PRISM transactions"
   default     = ""
 }
 
-variable cardano_wallet_passphrase {
+variable "cardano_wallet_passphrase" {
   description = "Passphrase to the wallet used for PRISM transactions"
   default     = ""
 }
 
-variable cardano_payment_address {
+variable "cardano_payment_address" {
   description = "Address to send funds to when publishing PRISM transactions"
   default     = ""
 }
@@ -177,24 +177,24 @@ variable "cardano_state_key" {
   default     = null # value will be computed based on vpc_name
 }
 
-variable atala_prism_domain {
+variable "atala_prism_domain" {
   description = "Domain name of atala prism"
   default     = "atalaprism.io"
 }
 
-variable atala_prism_zoneid {
+variable "atala_prism_zoneid" {
   description = "Route53 ZoneId for the domain"
   default     = "Z04196731VMWR6G5290VG"
 }
 
-variable monitoring_alerts_enabled {
+variable "monitoring_alerts_enabled" {
   description = "Set to 1 to enable monitoring alerts from this environment to the atala-prism-service-alerts channel."
   type        = number
   default     = 0
 }
 
 variable "function_name" {
-  type = string
+  type    = string
   default = "basic_auth"
 }
 

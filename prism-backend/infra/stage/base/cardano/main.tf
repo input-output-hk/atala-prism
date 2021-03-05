@@ -1,5 +1,5 @@
 
-provider aws {
+provider "aws" {
   profile = var.aws_profile
   region  = var.aws_region
 }
@@ -20,12 +20,12 @@ data "terraform_remote_state" "vpc" {
 }
 
 # Setup PostgreSQL Provider After RDS Database is Provisioned
-data aws_db_instance credentials_database {
+data "aws_db_instance" "credentials_database" {
   db_instance_identifier = "credentials-database-test"
 }
 
 # PostgreSQL password for the created connector user
-resource random_password psql_password {
+resource "random_password" "psql_password" {
   length  = 16
   special = false
 }
@@ -46,7 +46,7 @@ locals {
   psql_database = local.psql_username
 }
 
-resource postgresql_role cardano_role {
+resource "postgresql_role" "cardano_role" {
   name                = local.psql_username
   login               = true
   password            = random_password.psql_password.result

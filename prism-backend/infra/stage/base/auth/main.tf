@@ -1,19 +1,19 @@
 
-variable aws_profile {
+variable "aws_profile" {
   description = "The AWS CLI profile to use."
   default     = "default"
 }
 
-provider aws {
-  region  = "us-east-1"
+provider "aws" {
+  region = "us-east-1"
 }
 
 // NB "us-east-1"
 // This is important since all Lambda@Edge functions to be used with CloudFront must be in this region.
-provider aws {
+provider "aws" {
   region  = "us-east-1"
   profile = var.aws_profile
-  alias  = "us-east-1"
+  alias   = "us-east-1"
 }
 
 data "aws_iam_policy_document" "lambda_assume_role" {

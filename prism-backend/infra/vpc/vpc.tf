@@ -1,5 +1,5 @@
 
-provider aws {
+provider "aws" {
   profile = var.aws_profile
   region  = var.aws_region
 }
@@ -12,7 +12,7 @@ data "aws_availability_zones" "available" {
 
 // This is the private network in which our environment will run
 // See https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html
-resource aws_vpc credentials-vpc {
+resource "aws_vpc" "credentials-vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
   tags = {
@@ -22,14 +22,14 @@ resource aws_vpc credentials-vpc {
 
 // This creates network configuration
 // allowing (controlled) access to the VPC from the internet
-resource aws_internet_gateway credentials-internet-gateway {
+resource "aws_internet_gateway" "credentials-internet-gateway" {
   vpc_id = aws_vpc.credentials-vpc.id
   tags = {
     Name = "credentials-internet-gateway-${var.env_type}"
   }
 }
 
-resource aws_subnet credentials-subnet-primary {
+resource "aws_subnet" "credentials-subnet-primary" {
   vpc_id            = aws_vpc.credentials-vpc.id
   cidr_block        = "10.0.0.0/24"
   availability_zone = data.aws_availability_zones.available.names[0]
@@ -39,7 +39,7 @@ resource aws_subnet credentials-subnet-primary {
 }
 
 // Defines how to route to the subnet above.
-resource aws_route_table credentials-public-subnet-rt-primary {
+resource "aws_route_table" "credentials-public-subnet-rt-primary" {
   vpc_id = aws_vpc.credentials-vpc.id
   route {
     cidr_block = "0.0.0.0/0"
@@ -51,13 +51,13 @@ resource aws_route_table credentials-public-subnet-rt-primary {
 }
 
 // Connects the route table to the subnet.
-resource aws_route_table_association credentials-external-route-primary {
+resource "aws_route_table_association" "credentials-external-route-primary" {
   subnet_id      = aws_subnet.credentials-subnet-primary.id
   route_table_id = aws_route_table.credentials-public-subnet-rt-primary.id
 }
 
 
-resource aws_subnet credentials-subnet-secondary {
+resource "aws_subnet" "credentials-subnet-secondary" {
   vpc_id            = aws_vpc.credentials-vpc.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = data.aws_availability_zones.available.names[1]
@@ -66,7 +66,7 @@ resource aws_subnet credentials-subnet-secondary {
   }
 }
 
-resource aws_route_table credentials-public-subnet-rt-secondary {
+resource "aws_route_table" "credentials-public-subnet-rt-secondary" {
   vpc_id = aws_vpc.credentials-vpc.id
   route {
     cidr_block = "0.0.0.0/0"
@@ -77,18 +77,18 @@ resource aws_route_table credentials-public-subnet-rt-secondary {
   }
 }
 
-resource aws_route_table_association credentials-external-route-secondary {
+resource "aws_route_table_association" "credentials-external-route-secondary" {
   subnet_id      = aws_subnet.credentials-subnet-secondary.id
   route_table_id = aws_route_table.credentials-public-subnet-rt-secondary.id
 }
 
 // Allows access to the database
-data aws_security_group credentials-database-security-group {
+data "aws_security_group" "credentials-database-security-group" {
   vpc_id = aws_vpc.credentials-vpc.id
   name   = "credentials-database-security-group"
 }
 
-resource aws_security_group_rule allow_rds_access {
+resource "aws_security_group_rule" "allow_rds_access" {
   type              = "ingress"
   from_port         = 5432
   to_port           = 5432
