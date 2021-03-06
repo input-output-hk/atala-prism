@@ -34,6 +34,27 @@ static_resources:
               - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
                 route:
                   cluster: node_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.ConsoleService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.ContactsService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialIssuanceService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypesService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
+                route:
+                  cluster: console_service
               - match: { prefix: "/io.iohk" }
                 route:
                   cluster: connector_service

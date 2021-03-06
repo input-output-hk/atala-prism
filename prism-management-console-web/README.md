@@ -6,6 +6,10 @@
 
 The .protos are compiled any time you run/build the app/tests. For more information go to [Compile .protos section](#Compile-.protos)
 
+Envoy is required to proxy the grpcweb calls to the backend services, run it with (be aware this won't work for MacOS where you need to download the envoy binary):
+- `docker run --rm -ti --net=host -v $PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.16-latest`
+- `docker run --rm -ti --net=host -v $PWD/envoy/envoy-console.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.16-latest` (use this if you interact with the console backend).
+
 ### Actual instructions to run the project
 
 See our main [README](../README.md#How-to-run) for instructions.
