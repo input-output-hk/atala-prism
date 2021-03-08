@@ -26,8 +26,10 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
   "connectorClientService" should {
     "generate connection token" in new ConnectorStubs {
       when(connector.generateConnectionToken(any))
-        .thenReturn(Future.successful(GenerateConnectionTokenResponse(connectionToken)))
-      service.generateConnectionToken.runSyncUnsafe(1.minute) mustBe GenerateConnectionTokenResponse(connectionToken)
+        .thenReturn(Future.successful(GenerateConnectionTokenResponse(List(connectionToken))))
+      service.generateConnectionToken.runSyncUnsafe(1.minute) mustBe GenerateConnectionTokenResponse(
+        List(connectionToken)
+      )
     }
 
     "request credential" in new ConnectorStubs {

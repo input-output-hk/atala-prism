@@ -24,8 +24,32 @@ import scala.util.Random
 
 class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
-  "GenerateConnectionToken" should {
-    "generate connection token" in {
+  "GenerateConnectionTokens" should {
+    "generate connection tokens" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val tokensCount = 3
+      val _ = createIssuer("Issuer", Some(publicKey), Some(did))
+      val request = connector_api.GenerateConnectionTokenRequest(tokensCount)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        val response = blockingStub.generateConnectionToken(request)
+        val tokens = response.tokens.map(new TokenString(_))
+
+        tokens.size mustBe tokensCount
+        tokens.foreach { token =>
+          ConnectionTokensDAO
+            .exists(token)
+            .transact(database)
+            .unsafeToFuture()
+            .futureValue mustBe true
+        }
+      }
+    }
+
+    "generate connection tokens when tokens count is not supplied" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
@@ -35,10 +59,11 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
       usingApiAs(rpcRequest) { blockingStub =>
         val response = blockingStub.generateConnectionToken(request)
-        val token = new TokenString(response.token)
+        val tokens = response.tokens.map(new TokenString(_))
 
+        tokens.size mustBe 1
         ConnectionTokensDAO
-          .exists(token)
+          .exists(tokens.head)
           .transact(database)
           .unsafeToFuture()
           .futureValue mustBe true

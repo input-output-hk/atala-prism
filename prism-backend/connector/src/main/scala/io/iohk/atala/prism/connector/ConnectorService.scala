@@ -281,10 +281,10 @@ class ConnectorService(
 
       implicit val loggingContext: LoggingContext = LoggingContext("request" -> request, "userId" -> userId)
       connections
-        .generateToken(userId)
+        .generateTokens(userId, if (request.count == 0) 1 else request.count)
         .wrapExceptions
-        .successMap { tokenString =>
-          connector_api.GenerateConnectionTokenResponse(tokenString.token)
+        .successMap { tokenStrings =>
+          connector_api.GenerateConnectionTokenResponse(tokenStrings.map(_.token))
         }
     }
 

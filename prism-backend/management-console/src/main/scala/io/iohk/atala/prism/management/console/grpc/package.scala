@@ -118,7 +118,13 @@ package object grpc {
       for {
         json <- JsonValidator.jsonData(request.jsonData)
         externalId <- Contact.ExternalId.validated(request.externalId)
-      } yield CreateContact(externalId, json, request.name)
+        generateConnectionTokenRequestMetadata <-
+          request.generateConnectionTokensRequestMetadata
+            .map(_.transformInto[GenerateConnectionTokenRequestMetadata])
+            .fold[Try[GenerateConnectionTokenRequestMetadata]](
+              Failure(new IllegalArgumentException("generateConnectionTokenRequestMetadata is missing"))
+            )(Success(_))
+      } yield CreateContact(externalId, json, request.name, generateConnectionTokenRequestMetadata)
     }
 
   def toSortByDirection(proto: SortByDirection): Try[ResultOrdering.Direction] = {
@@ -250,7 +256,13 @@ package object grpc {
         validatedGroups <- toGroupIdSet(request.groups)
         validatedContacts <- toCreateContacts(request.contacts)
         _ = if (validatedContacts.isEmpty) throw new RuntimeException("There are no contacts to create")
-      } yield CreateContact.Batch(validatedGroups, validatedContacts)
+        generateConnectionTokenRequestMetadata <-
+          request.generateConnectionTokensRequestMetadata
+            .map(_.transformInto[GenerateConnectionTokenRequestMetadata])
+            .fold[Try[GenerateConnectionTokenRequestMetadata]](
+              Failure(new IllegalArgumentException("generateConnectionTokenRequestMetadata is missing"))
+            )(Success(_))
+      } yield CreateContact.Batch(validatedGroups, validatedContacts, generateConnectionTokenRequestMetadata)
     }
 
   implicit val deleteContactConverter: ProtoConverter[DeleteContactRequest, DeleteContact] =

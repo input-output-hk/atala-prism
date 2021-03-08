@@ -79,7 +79,7 @@ object FindContactsQueryBuilder {
   }
   private val selectFR =
     fr"""
-        SELECT contact_id, external_id, contact_data, contacts.created_at, contacts.name,
+        SELECT contact_id, connection_token, external_id, contact_data, contacts.created_at, contacts.name,
                (SELECT COUNT(*) FROM received_credentials WHERE contact_id = contacts.contact_id) AS number_of_credentials_received,
                (SELECT COUNT(*) FROM draft_credentials WHERE contact_id = contacts.contact_id) AS number_of_credentials_created
         """

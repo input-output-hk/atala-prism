@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
 
 trait ConnectionsRepository {
 
-  def insertToken(initiator: ParticipantId, token: TokenString): FutureEither[Nothing, TokenString]
+  def insertTokens(initiator: ParticipantId, tokens: List[TokenString]): FutureEither[Nothing, List[TokenString]]
 
   def getTokenInfo(token: TokenString): FutureEither[ConnectorError, ParticipantInfo]
 
@@ -50,7 +50,9 @@ trait ConnectionsRepository {
 
   def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]]
 
-  def getAcceptorConnections(acceptorIds: List[ParticipantId]): FutureEither[ConnectorError, List[ContactConnection]]
+  def getConnectionsByConnectionTokens(
+      connectionTokens: List[TokenString]
+  ): FutureEither[ConnectorError, List[ContactConnection]]
 }
 
 object ConnectionsRepository {
@@ -59,12 +61,15 @@ object ConnectionsRepository {
       with ConnectorErrorSupport {
     val logger: Logger = LoggerFactory.getLogger(getClass)
 
-    override def insertToken(initiator: ParticipantId, token: TokenString): FutureEither[Nothing, TokenString] = {
+    override def insertTokens(
+        initiator: ParticipantId,
+        tokens: List[TokenString]
+    ): FutureEither[Nothing, List[TokenString]] = {
       ConnectionTokensDAO
-        .insert(initiator, token)
+        .insert(initiator, tokens)
         .transact(xa)
         .unsafeToFuture()
-        .map(_ => Right(token))
+        .map(_ => Right(tokens))
         .toFutureEither
     }
 
@@ -243,11 +248,11 @@ object ConnectionsRepository {
         .toFutureEither
     }
 
-    override def getAcceptorConnections(
-        acceptorIds: List[ParticipantId]
+    override def getConnectionsByConnectionTokens(
+        connectionTokens: List[TokenString]
     ): FutureEither[ConnectorError, List[ContactConnection]] = {
       ConnectionsDAO
-        .getAcceptorConnections(acceptorIds)
+        .getConnectionsByConnectionTokens(connectionTokens)
         .transact(xa)
         .unsafeToFuture()
         .map(Right(_))

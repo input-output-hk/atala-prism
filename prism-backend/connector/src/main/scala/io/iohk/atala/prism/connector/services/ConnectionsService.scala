@@ -24,8 +24,8 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeServi
     connectionsRepository.getConnectionByToken(token)
   }
 
-  def generateToken(userId: ParticipantId): FutureEither[ConnectorError, TokenString] = {
-    connectionsRepository.insertToken(userId, TokenString.random())
+  def generateTokens(userId: ParticipantId, tokensCount: Int): FutureEither[ConnectorError, List[TokenString]] = {
+    connectionsRepository.insertTokens(userId, List.fill(tokensCount)(TokenString.random()))
   }
 
   def getTokenInfo(token: TokenString): FutureEither[ConnectorError, ParticipantInfo] = {
@@ -88,9 +88,9 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeServi
     } yield keys
   }
 
-  def getAcceptorConnections(
-      acceptorIds: List[ParticipantId]
+  def getConnectionsByConnectionTokens(
+      connectionTokens: List[TokenString]
   ): FutureEither[ConnectorError, List[ContactConnection]] = {
-    connectionsRepository.getAcceptorConnections(acceptorIds)
+    connectionsRepository.getConnectionsByConnectionTokens(connectionTokens)
   }
 }

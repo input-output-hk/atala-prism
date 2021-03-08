@@ -10,6 +10,7 @@ import doobie.util.fragments._
 import io.circe.Json
 import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, ParticipantId, UpdateContact}
 import io.iohk.atala.prism.management.console.repositories.daos.queries.FindContactsQueryBuilder
+import io.iohk.atala.prism.models.ConnectionToken
 
 import java.time.Instant
 
@@ -18,35 +19,39 @@ object ContactsDAO {
   def createContact(
       participantId: ParticipantId,
       data: CreateContact,
-      createdAt: Instant
+      createdAt: Instant,
+      connectionToken: ConnectionToken
   ): ConnectionIO[Contact] = {
     val contactId = Contact.Id.random()
     sql"""
          |INSERT INTO contacts
-         |  (contact_id, contact_data, created_at, created_by, external_id, name)
+         |  (contact_id, connection_token, contact_data, created_at, created_by, external_id, name)
          |VALUES
-         |  ($contactId, ${data.data}, $createdAt, $participantId, ${data.externalId}, ${data.name})
-         |RETURNING contact_id, external_id, contact_data, created_at, name
+         |  ($contactId, $connectionToken, ${data.data}, $createdAt, $participantId, ${data.externalId}, ${data.name})
+         |RETURNING contact_id, connection_token, external_id, contact_data, created_at, name
          |""".stripMargin.query[Contact].unique
   }
 
   def createContacts(
       institutionId: ParticipantId,
       contacts: List[CreateContact.NoOwner],
-      createdAt: Instant
+      createdAt: Instant,
+      connectionTokens: List[ConnectionToken]
   ): ConnectionIO[List[Contact.Id]] = {
-    type CreateContactItem = (Contact.Id, Json, Instant, ParticipantId, Contact.ExternalId, String)
+    type CreateContactItem = (Contact.Id, ConnectionToken, Json, Instant, ParticipantId, Contact.ExternalId, String)
     val contactIds = List.tabulate(contacts.size)(_ => Contact.Id.random())
     val data = contacts
       .zip(contactIds)
+      .zip(connectionTokens)
       .map {
-        case (item, id) =>
-          (id, item.data, createdAt, institutionId, item.externalId, item.name)
+        case ((item, id), connectionToken) =>
+          (id, connectionToken, item.data, createdAt, institutionId, item.externalId, item.name)
       }
 
-    val statement = """
-                    |INSERT INTO contacts (contact_id, contact_data, created_at, created_by, external_id, name)
-                    |VALUES (?, ?, ?, ?, ?, ?)
+    val statement =
+      """
+                    |INSERT INTO contacts (contact_id, connection_token, contact_data, created_at, created_by, external_id, name)
+                    |VALUES (?, ?, ?, ?, ?, ?, ?)
                     |""".stripMargin
     Update[CreateContactItem](statement)
       .updateMany(data)
@@ -75,7 +80,7 @@ object ContactsDAO {
 
   def findContact(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Option[Contact]] = {
     sql"""
-         |SELECT contact_id, external_id, contact_data, created_at, name
+         |SELECT contact_id, connection_token, external_id, contact_data, created_at, name
          |FROM contacts
          |WHERE contact_id = $contactId AND
          |      created_by = $participantId
@@ -87,7 +92,7 @@ object ContactsDAO {
       externalId: Contact.ExternalId
   ): doobie.ConnectionIO[Option[Contact]] = {
     sql"""
-         |SELECT contact_id, external_id, contact_data, created_at, name
+         |SELECT contact_id, connection_token, external_id, contact_data, created_at, name
          |FROM contacts
          |WHERE external_id = $externalId AND
          |      created_by = $participantId
@@ -99,7 +104,7 @@ object ContactsDAO {
       case Some(contactIdsNonEmpty) =>
         val fragment =
           fr"""
-              |SELECT contact_id, external_id, contact_data, created_at, name
+              |SELECT contact_id, connection_token, external_id, contact_data, created_at, name
               |FROM contacts""".stripMargin ++
             whereAnd(fr"created_by = $institutionId", in(fr"contact_id", contactIdsNonEmpty))
         fragment.query[Contact].to[List]

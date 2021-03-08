@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.models
 
 import io.circe.Json
-import io.iohk.atala.prism.models.UUIDValue
+import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -15,7 +15,8 @@ final case class GetContact(
 final case class CreateContact(
     externalId: Contact.ExternalId,
     data: Json,
-    name: String
+    name: String,
+    generateConnectionTokenRequestMetadata: GenerateConnectionTokenRequestMetadata
 )
 
 object CreateContact {
@@ -25,7 +26,11 @@ object CreateContact {
       name: String
   )
 
-  final case class Batch(groups: Set[InstitutionGroup.Id], contacts: List[NoOwner])
+  final case class Batch(
+      groups: Set[InstitutionGroup.Id],
+      contacts: List[NoOwner],
+      generateConnectionTokenRequestMetadata: GenerateConnectionTokenRequestMetadata
+  )
 }
 
 final case class UpdateContact(
@@ -41,6 +46,7 @@ final case class DeleteContact(
 
 final case class Contact(
     contactId: Contact.Id,
+    connectionToken: ConnectionToken,
     externalId: Contact.ExternalId,
     data: Json,
     createdAt: Instant,

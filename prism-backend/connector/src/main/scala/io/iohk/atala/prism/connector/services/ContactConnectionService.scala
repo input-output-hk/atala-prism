@@ -3,6 +3,7 @@ package io.iohk.atala.prism.connector.services
 import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
 import io.iohk.atala.prism.connector.errors.ConnectorErrorSupport
 import io.iohk.atala.prism.connector.grpc.ProtoCodecs
+import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.services.ConnectionsService
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
@@ -32,7 +33,7 @@ class ContactConnectionService(
         LoggingContext("request" -> request, "did" -> did)
 
       connectionsService
-        .getAcceptorConnections(request.acceptorIds.map(id => ParticipantId.unsafeFrom(id)).to(List))
+        .getConnectionsByConnectionTokens(request.connectionTokens.map(TokenString(_)).to(List))
         .wrapExceptions
         .successMap { contactConnections =>
           ConnectionsStatusResponse(

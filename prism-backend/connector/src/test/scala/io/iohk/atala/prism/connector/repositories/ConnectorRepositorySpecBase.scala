@@ -111,7 +111,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
   protected def createToken(initiator: ParticipantId): TokenString = {
     val tokenString = TokenString.random()
     ConnectionTokensDAO
-      .insert(initiator, tokenString)
+      .insert(initiator, List(tokenString))
       .transact(database)
       .unsafeToFuture()
       .futureValue

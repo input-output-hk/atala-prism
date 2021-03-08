@@ -25,7 +25,7 @@ class ConnectorClientServiceStub(
   def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] = Task.pure(messageResponse)
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse] =
-    Task.pure(GenerateConnectionTokenResponse(connectionToken))
+    Task.pure(GenerateConnectionTokenResponse(List(connectionToken)))
 
   def requestCredential(
       connectionId: ConnectionId,

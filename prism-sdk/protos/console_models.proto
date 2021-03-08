@@ -10,7 +10,10 @@ import "common_models.proto";
 // Indicates the status on the contact's connection
 enum ContactConnectionStatus {
   STATUS_MISSING = 0; // default value, represents the lack of status
-  STATUS_INVITATION_MISSING = 1; // the is no connection token generated and no invitation has been sent
+  //TODO remove after removing console functionality from connector
+  // There is no connection token generated yet, kept for compatibility with connector
+  // as the console backend generates the tokens while creating contacts
+  STATUS_INVITATION_MISSING = 1;
   STATUS_CONNECTION_MISSING = 2; // the contact has been invited and the connection token has been generated
   STATUS_CONNECTION_ACCEPTED = 3; // the contact accepted the connection
   STATUS_CONNECTION_REVOKED = 4; // the contact rejected the connection
@@ -168,4 +171,20 @@ message StoredSignedCredential {
   int64 storedAt = 3; // the time when the credential was stored in the database
   string externalId = 4; // the external id associated to the contact that sent the credential
   string batchInclusionProof = 5; // the inclusion proof associated to the encodedSignedCredential
+}
+
+// Metadata used to authenticate GenerateConnectionTokenRequest to connector.
+// Frontend must sign GenerateConnectionTokenRequest with count value equal to number of contacts and
+// pass signed request through this message.
+// All fields of this message are required.
+message GenerateConnectionTokensRequestMetadata {
+  // value of did
+  string did = 1;
+  // id of did key
+  string didKeyId = 2;
+  // Base64 encoded signature of GenerateConnectionTokenRequest
+  // and request nonce signed with institution private key
+  string didSignature = 3;
+  // Base64 encoded request nonce
+  string requestNonce = 4;
 }

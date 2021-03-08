@@ -20,14 +20,15 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   lazy val contactsRepository = new ContactsRepository(database)
 
   "insertToken" should {
-    "correctly generate token" in {
+    "correctly generate tokens" in {
       val issuerId = createIssuer()
-      val token = TokenString.random()
+      val token1 = TokenString.random()
+      val token2 = TokenString.random()
 
-      val result = connectionsRepository.insertToken(issuerId, token).value.futureValue
+      val result = connectionsRepository.insertTokens(issuerId, List(token1, token2)).value.futureValue
       result mustBe a[Right[_, _]]
 
-      sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token""".runUnique[Int]() mustBe 1
+      sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token1 OR token=$token2""".runUnique[Int]() mustBe 2
     }
   }
 
@@ -270,7 +271,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val connectionId2 = createConnection(initiator2, acceptor2, token2, ConnectionStatus.ConnectionAccepted)
 
       val connectionStatuses =
-        connectionsRepository.getAcceptorConnections(List(acceptor1, acceptor2)).value.futureValue.toOption.get
+        connectionsRepository.getConnectionsByConnectionTokens(List(token1, token2)).value.futureValue.toOption.get
 
       val contactConnection1 = ContactConnection(Some(connectionId1), Some(token1), ConnectionStatus.InvitationMissing)
       val contactConnection2 = ContactConnection(Some(connectionId2), Some(token2), ConnectionStatus.ConnectionAccepted)
@@ -278,14 +279,38 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       connectionStatuses mustBe List(contactConnection1, contactConnection2)
     }
 
-    "return invitation missing for non-existing connections" in {
-      val acceptor1 = createHolder("acceptor1", None)
-      val acceptor2 = createHolder("acceptor2", None)
+    "return invitation missing for non-existing connection tokens" in {
       val connectionStatuses =
-        connectionsRepository.getAcceptorConnections(List(acceptor1, acceptor2)).value.futureValue.toOption.get
+        connectionsRepository
+          .getConnectionsByConnectionTokens(List(TokenString("tokenString1"), TokenString("tokenString2")))
+          .value
+          .futureValue
+          .toOption
+          .get
 
       val contactConnection1 = ContactConnection(None, None, ConnectionStatus.InvitationMissing)
       val contactConnection2 = ContactConnection(None, None, ConnectionStatus.InvitationMissing)
+
+      connectionStatuses mustBe List(contactConnection1, contactConnection2)
+    }
+
+    "return connection missing for non-existing connections" in {
+      val initiator1 = createHolder("initiator1", None)
+      val token1 = createToken(initiator1)
+
+      val initiator2 = createHolder("initiator2", None)
+      val token2 = createToken(initiator2)
+
+      val connectionStatuses =
+        connectionsRepository
+          .getConnectionsByConnectionTokens(List(token1, token2))
+          .value
+          .futureValue
+          .toOption
+          .get
+
+      val contactConnection1 = ContactConnection(None, None, ConnectionStatus.ConnectionMissing)
+      val contactConnection2 = ContactConnection(None, None, ConnectionStatus.ConnectionMissing)
 
       connectionStatuses mustBe List(contactConnection1, contactConnection2)
     }

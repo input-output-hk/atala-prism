@@ -68,7 +68,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
         console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED
       )
 
-      val request = connector_api.ConnectionsStatusRequest(List(acceptor1.uuid.toString, acceptor2.uuid.toString))
+      val request = connector_api.ConnectionsStatusRequest(List(token1.token, token2.token))
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { service =>

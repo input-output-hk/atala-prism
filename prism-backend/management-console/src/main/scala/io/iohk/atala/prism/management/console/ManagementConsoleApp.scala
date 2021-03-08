@@ -11,11 +11,11 @@ import io.iohk.atala.prism.config.NodeConfig
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
+import io.iohk.atala.prism.protos.connector_api.{ConnectorServiceGrpc, ContactConnectionServiceGrpc}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.management.console.repositories._
-import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
+import io.iohk.atala.prism.management.console.integrations.{ConnectionTokenServiceImpl, ContactsIntegrationService}
 
 object ManagementConsoleApp extends IOApp {
 
@@ -59,11 +59,21 @@ object ManagementConsoleApp extends IOApp {
       )
 
       // contact connection service
-      connector = GrpcUtils.createPlaintextStub(
+      connectorContactsService = GrpcUtils.createPlaintextStub(
         host = globalConfig.getConfig("connector").getString("host"),
         port = globalConfig.getConfig("connector").getInt("port"),
         stub = ContactConnectionServiceGrpc.stub
       )
+
+      // contact contacts connection service
+      connectorService = GrpcUtils.createPlaintextStub(
+        host = globalConfig.getConfig("connector").getString("host"),
+        port = globalConfig.getConfig("connector").getInt("port"),
+        stub = ConnectorServiceGrpc.stub
+      )
+
+      // connection token service
+      connectionTokenService = new ConnectionTokenServiceImpl(connectorService)
 
       // repositories
       contactsRepository = new ContactsRepository(tx)
@@ -90,7 +100,8 @@ object ManagementConsoleApp extends IOApp {
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
       consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)
-      contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)
+      contactsIntegrationService =
+        new ContactsIntegrationService(contactsRepository, connectorContactsService, connectionTokenService)
       contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
       credentialIssuanceService = new CredentialIssuanceServiceImpl(
         credentialIssuancesRepository,

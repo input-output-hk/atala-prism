@@ -141,7 +141,7 @@ object DataPreparation extends BaseDAO {
     val token = maybeToken.getOrElse(TokenString.random())
 
     val tx = for {
-      _ <- ConnectionTokensDAO.insert(ParticipantId(issuerId.uuid), token)
+      _ <- ConnectionTokensDAO.insert(ParticipantId(issuerId.uuid), List(token))
       _ <- ContactsDAO.setConnectionToken(issuerId, contactId, token)
     } yield token
 

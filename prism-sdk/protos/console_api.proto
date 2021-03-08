@@ -183,6 +183,9 @@ message CreateContactRequest {
 
   // The contact's name, required for the management console, ignored on the connector
   string name = 4;
+
+  // Metadata used to authenticate GenerateConnectionToken request to connector
+  GenerateConnectionTokensRequestMetadata generateConnectionTokensRequestMetadata = 5;
 }
 // Response after creating a contact
 message CreateContactResponse {
@@ -215,6 +218,9 @@ message CreateContactsRequest {
     // Arbitrary data for the contact, should be a valid json, when missing, "{}" will be used
     string jsonData = 5;
   }
+
+  // Metadata used to authenticate GenerateConnectionToken request to connector
+  GenerateConnectionTokensRequestMetadata generateConnectionTokensRequestMetadata = 6;
 }
 // Response after creating contacts
 message CreateContactsResponse {}

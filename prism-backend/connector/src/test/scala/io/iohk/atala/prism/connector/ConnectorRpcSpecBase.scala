@@ -133,7 +133,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   protected def createToken(initiator: ParticipantId): TokenString = {
     val tokenString = TokenString.random()
     ConnectionTokensDAO
-      .insert(initiator, tokenString)
+      .insert(initiator, List(tokenString))
       .transact(database)
       .unsafeToFuture()
       .futureValue

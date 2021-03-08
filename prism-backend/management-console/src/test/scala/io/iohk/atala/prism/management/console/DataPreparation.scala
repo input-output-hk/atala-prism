@@ -17,8 +17,11 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
   ParticipantsDAO,
   ReceivedCredentialsDAO
 }
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
+import io.scalaland.chimney.dsl._
+import io.iohk.atala.prism.protos.console_models
+import io.iohk.atala.prism.protos.console_models.GenerateConnectionTokensRequestMetadata
 
 import java.time.{Instant, LocalDate}
 import scala.util.Random
@@ -39,6 +42,17 @@ object DataPreparation {
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
     id
   }
+
+  val generateConnectionTokenRequestMetadata: GenerateConnectionTokenRequestMetadata =
+    GenerateConnectionTokenRequestMetadata(
+      did = newDID().toString,
+      didKeyId = "didKeyId",
+      didSignature = "didSignature",
+      requestNonce = "requestNonce"
+    )
+
+  val generateConnectionTokenRequestProto: GenerateConnectionTokensRequestMetadata =
+    generateConnectionTokenRequestMetadata.transformInto[console_models.GenerateConnectionTokensRequestMetadata]
 
   def createInstitutionGroup(institutionId: ParticipantId, name: InstitutionGroup.Name)(implicit
       database: Transactor[IO]
@@ -61,13 +75,14 @@ object DataPreparation {
         "admissionDate" -> LocalDate.now().asJson
       ),
       externalId = externalId,
-      name = name
+      name = name,
+      generateConnectionTokenRequestMetadata = generateConnectionTokenRequestMetadata
     )
 
     groupName match {
       case None =>
         ContactsDAO
-          .createContact(institutionId, request, createdAt.getOrElse(Instant.now()))
+          .createContact(institutionId, request, createdAt.getOrElse(Instant.now()), ConnectionToken("connectionToken"))
           .transact(database)
           .unsafeRunSync()
       case Some(name) =>
@@ -78,7 +93,12 @@ object DataPreparation {
           .getOrElse(throw new RuntimeException(s"Group $name does not exist"))
 
         val query = for {
-          contact <- ContactsDAO.createContact(institutionId, request, createdAt.getOrElse(Instant.now()))
+          contact <- ContactsDAO.createContact(
+            institutionId,
+            request,
+            createdAt.getOrElse(Instant.now()),
+            ConnectionToken("connectionToken")
+          )
           _ <- InstitutionGroupsDAO.addContact(group.id, contact.contactId)
         } yield contact
 
@@ -184,5 +204,9 @@ object DataPreparation {
       .transact(database)
       .unsafeRunSync()
     ()
+  }
+
+  def makeConnectionTokens(count: Int = 1): List[ConnectionToken] = {
+    1.to(count).map(i => ConnectionToken(s"ConnectionToken$i")).toList
   }
 }

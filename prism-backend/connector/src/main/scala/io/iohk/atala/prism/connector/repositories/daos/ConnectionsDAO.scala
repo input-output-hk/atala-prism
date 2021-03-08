@@ -145,19 +145,29 @@ object ConnectionsDAO {
     }
   }
 
-  def getAcceptorConnections(acceptorIds: List[ParticipantId]): doobie.ConnectionIO[List[ContactConnection]] = {
-    NonEmptyList.fromList(acceptorIds) match {
-      case Some(acceptorIdsNonEmpty) =>
+  def getConnectionsByConnectionTokens(
+      connectionTokens: List[TokenString]
+  ): doobie.ConnectionIO[List[ContactConnection]] = {
+    NonEmptyList.fromList(connectionTokens) match {
+      case Some(connectionTokensNonEmpty) =>
         val fragment =
-          fr"SELECT acceptor, id, token, status FROM connections" ++
-            whereAnd(in(fr"acceptor", acceptorIdsNonEmpty))
-        fragment.query[(ParticipantId, ContactConnection)].toMap.map { contactConnectionMap =>
-          acceptorIds.map(
-            contactConnectionMap.getOrElse(
-              _,
-              ContactConnection(None, None, ConnectionStatus.InvitationMissing)
+          fr"SELECT ct.token, c.id, c.token, c.status FROM connection_tokens ct" ++
+            fr"LEFT JOIN connections c ON ct.token = c.token" ++
+            whereAnd(in(fr"ct.token", connectionTokensNonEmpty))
+        fragment.query[(TokenString, Option[ContactConnection])].toMap.map { contactConnectionMap =>
+          connectionTokens.map { connectionToken =>
+            val contactConnectionOption = contactConnectionMap
+              .getOrElse(
+                connectionToken,
+                // there is no such a connection token in connection_tokens table
+                Some(ContactConnection(None, None, ConnectionStatus.InvitationMissing))
+              )
+
+            contactConnectionOption.getOrElse(
+              // there is connection token in connection_tokens table, but connection has not yet been added
+              ContactConnection(None, None, ConnectionStatus.ConnectionMissing)
             )
-          )
+          }
         }
       case None =>
         doobie.free.connection.pure(List.empty)

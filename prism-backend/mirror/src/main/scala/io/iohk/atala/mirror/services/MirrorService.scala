@@ -41,12 +41,20 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
   def createAccount: Task[CreateAccountResponse] = {
     connectorService.generateConnectionToken
       .flatMap(response => {
-        val newToken = ConnectionToken(response.token)
+        response.tokens.headOption
+          .map { tokenString =>
+            val newToken = ConnectionToken(tokenString)
 
-        ConnectionDao
-          .insert(Connection(newToken, None, ConnectionState.Invited, Instant.now(), None, None))
-          .transact(tx)
-          .map(_ => CreateAccountResponse(newToken.token))
+            ConnectionDao
+              .insert(Connection(newToken, None, ConnectionState.Invited, Instant.now(), None, None))
+              .transact(tx)
+              .map(_ => CreateAccountResponse(newToken.token))
+          }
+          .getOrElse(
+            Task.raiseError(
+              new RuntimeException("GenerateConnectionToken response returned empty list of connection tokens")
+            )
+          )
       })
   }
 

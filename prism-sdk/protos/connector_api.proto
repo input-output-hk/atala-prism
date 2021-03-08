@@ -44,7 +44,7 @@ service ConnectorService {
   // DID Document does not match DID (INVALID_ARGUMENT).
   rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
 
-  // Generate connection token that can be used to instantiate connection.
+  // Generate connection tokens that can be used to instantiate connection.
   // Errors:
   // Billing plan doesn't allow token generation (PERMISSION_DENIED).
   rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
@@ -147,11 +147,12 @@ message RevokeConnectionResponse {
 
 // Request to generate a connection token
 message GenerateConnectionTokenRequest {
+  int32 count = 1; // how many tokens to generate (optional, default value is 1)
 }
 
 // Result with generated token
 message GenerateConnectionTokenResponse {
-  string token = 1; // generated token
+  repeated string tokens = 1; // generated tokens
 }
 
 // Request to return messages for us after the given known message (if any)
@@ -270,7 +271,7 @@ message GetBuildInfoResponse {
 }
 
 message ConnectionsStatusRequest {
-  repeated string acceptorIds = 1;
+  repeated string connectionTokens = 1;
 }
 
 message ConnectionsStatusResponse {

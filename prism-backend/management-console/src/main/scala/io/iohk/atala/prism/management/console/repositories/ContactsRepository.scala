@@ -21,6 +21,7 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
   InstitutionGroupsDAO,
   ReceivedCredentialsDAO
 }
+import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -32,14 +33,15 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       participantId: ParticipantId,
       contactData: CreateContact,
       maybeGroupName: Option[InstitutionGroup.Name],
-      createdAt: Instant = Instant.now()
+      createdAt: Instant = Instant.now(),
+      connectionToken: ConnectionToken
   ): FutureEither[ManagementConsoleError, Contact] = {
     val query = maybeGroupName match {
       case None => // if we do not request the contact to be added to a group
-        ContactsDAO.createContact(participantId, contactData, createdAt)
+        ContactsDAO.createContact(participantId, contactData, createdAt, connectionToken)
       case Some(groupName) => // if we are requesting to add a contact to a group
         for {
-          contact <- ContactsDAO.createContact(participantId, contactData, createdAt)
+          contact <- ContactsDAO.createContact(participantId, contactData, createdAt, connectionToken)
           groupMaybe <- InstitutionGroupsDAO.find(participantId, groupName)
           group = groupMaybe.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
           _ <- InstitutionGroupsDAO.addContact(group.id, contact.contactId)
@@ -55,11 +57,12 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def createBatch(
       institutionId: ParticipantId,
-      request: CreateContact.Batch
+      request: CreateContact.Batch,
+      connectionTokens: List[ConnectionToken]
   ): FutureEither[ManagementConsoleError, Unit] = {
     def unsafe = {
       for {
-        contactIds <- ContactsDAO.createContacts(institutionId, request.contacts, Instant.now())
+        contactIds <- ContactsDAO.createContacts(institutionId, request.contacts, Instant.now(), connectionTokens)
         _ <- InstitutionGroupsDAO.addContacts(request.groups, contactIds.toSet)
       } yield ().asRight[ManagementConsoleError]
     }

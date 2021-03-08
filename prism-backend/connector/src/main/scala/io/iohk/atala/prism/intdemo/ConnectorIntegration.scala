@@ -83,8 +83,13 @@ object ConnectorIntegration {
 
     override def generateConnectionToken(senderId: ParticipantId): Future[TokenString] = {
       connectionsService
-        .generateToken(senderId)
+        .generateTokens(senderId, tokensCount = 1)
         .toFuture(toRuntimeException)
+        .flatMap(
+          _.headOption
+            .map(Future.successful)
+            .getOrElse(Future.failed(new RuntimeException("Connection service returned empty connection tokens list")))
+        )
     }
 
     override def getMessages(

@@ -10,6 +10,7 @@ import io.iohk.atala.prism.management.console.services.{
   CredentialTypesServiceImpl,
   CredentialsServiceImpl
 }
+import io.iohk.atala.prism.management.console.stubs.ConnectionTokenServiceStub
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
@@ -57,8 +58,9 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialTypeRepository = new CredentialTypeRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  lazy val connectorMock =
-    mock[io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc.ContactConnectionService]
+  lazy val connectorContactsServiceMock =
+    mock[io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc.ContactConnectionServiceStub]
+
   lazy val authenticator =
     new ManagementConsoleAuthenticator(
       participantsRepository,
@@ -67,7 +69,10 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
       GrpcAuthenticationHeaderParser
     )
 
-  lazy val contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connectorMock)
+  lazy val connectionTokenServiceStub = new ConnectionTokenServiceStub()
+
+  lazy val contactsIntegrationService =
+    new ContactsIntegrationService(contactsRepository, connectorContactsServiceMock, connectionTokenServiceStub)
 
   lazy val consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)(
     executionContext

@@ -14,20 +14,28 @@ class KycBridgeService(tx: Transactor[Task], connectorService: ConnectorClientSe
   def createAccount: Task[CreateAccountResponse] = {
     connectorService.generateConnectionToken
       .flatMap(response => {
-        val newToken = ConnectionToken(response.token)
+        response.tokens.headOption
+          .map { tokenString =>
+            val newToken = ConnectionToken(tokenString)
 
-        ConnectionDao
-          .insert(
-            Connection(
-              token = newToken,
-              id = None,
-              state = ConnectionState.Invited,
-              acuantDocumentInstanceId = None,
-              acuantDocumentStatus = None
+            ConnectionDao
+              .insert(
+                Connection(
+                  token = newToken,
+                  id = None,
+                  state = ConnectionState.Invited,
+                  acuantDocumentInstanceId = None,
+                  acuantDocumentStatus = None
+                )
+              )
+              .transact(tx)
+              .map(_ => CreateAccountResponse(newToken.token))
+          }
+          .getOrElse(
+            Task.raiseError(
+              new RuntimeException("GenerateConnectionToken response returned empty list of connection tokens")
             )
           )
-          .transact(tx)
-          .map(_ => CreateAccountResponse(newToken.token))
       })
   }
 }

@@ -44,6 +44,15 @@ package object errors {
       )
   }
 
+  case class GenerationOfConnectionTokensFailed(expectedTokenCount: Int, actualTokenCount: Int)
+      extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Generation of Connection Tokens failed, expected token count: $expectedTokenCount " +
+          s"but connector generated: $actualTokenCount"
+      )
+  }
+
   case class UnknownValueError(tpe: String, value: String) extends ManagementConsoleError {
     override def toStatus: Status = {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
