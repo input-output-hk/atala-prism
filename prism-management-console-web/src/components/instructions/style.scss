@@ -1,12 +1,12 @@
 @import '../../css/general_styling';
 
 .instructionsHeader {
-  height: 10vh;
+  padding: 1em 0;
   display: flex;
   align-items: center;
   img {
     margin-left: 50px;
-    height: 25px;
+    height: 28px;
   }
 }
 
@@ -57,7 +57,7 @@
   border-radius: 6px 6px 0 0;
   background-color: white;
   margin: 0;
-  height: 90vh;
+  height: 95vh;
   display: inline-grid;
   grid-template-columns: 50% 50%;
 }

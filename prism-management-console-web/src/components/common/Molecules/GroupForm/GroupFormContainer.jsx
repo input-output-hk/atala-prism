@@ -73,12 +73,10 @@ const GroupName = ({
 
   return (
     <Row type="flex" gutter={12} className={`ai-center mb-3 ${className}`}>
-      <Col sm={20} md={8} className="FormContainer">
+      <Col className="FormContainer">
         <GroupForm ref={formRef} updateForm={handleUpdateForm} formValues={formValues} />
       </Col>
-      <Col sm={2} md={2}>
-        {renderNameState()}
-      </Col>
+      <Col>{renderNameState()}</Col>
     </Row>
   );
 };
