@@ -7,7 +7,8 @@ import {
   LOCKED,
   BROWSER_WALLET_CHECK_INTERVAL_MS,
   BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS,
-  MISSING_WALLET_ERROR
+  MISSING_WALLET_ERROR,
+  CREDENTIAL_VERIFICATION_ERRORS
 } from '../../helpers/constants';
 
 const RETRIES = 100;
@@ -136,6 +137,31 @@ async function signCredentials(unsignedCredentials) {
   return Promise.all(signRequests);
 }
 
+async function verifyCredential(signedCredential, inclusionProof) {
+  const { sessionId } = this.session;
+  // This method checks that:
+  // - the signature is valid
+  // - it was signed with a valid key (at the time of signing)
+  // - neither the batch nor the credential has been revoked
+  // - the hash has been included in the transaction
+  const verificationErrors = await window.prism.verifySignedCredential(
+    sessionId,
+    signedCredential,
+    inclusionProof
+  );
+  return getVerificationResults(verificationErrors);
+}
+
+function getVerificationResults(errors) {
+  return Object.keys(CREDENTIAL_VERIFICATION_ERRORS).reduce(
+    (acc, key) =>
+      Object.assign(acc, {
+        [key]: errors.some(error => error.includes(CREDENTIAL_VERIFICATION_ERRORS[key]))
+      }),
+    {}
+  );
+}
+
 function Wallet(config) {
   this.config = config;
   this.session = defaultSessionState;
@@ -158,5 +184,6 @@ Wallet.prototype.setSessionErrorHandler = setSessionErrorHandler;
 Wallet.prototype.getNonce = getNonce;
 Wallet.prototype.signMessage = signMessage;
 Wallet.prototype.signCredentials = signCredentials;
+Wallet.prototype.verifyCredential = verifyCredential;
 
 export default Wallet;

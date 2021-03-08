@@ -11,7 +11,9 @@ export function credentialMapper(credential, credentialTypes) {
     connectionstatus,
     encodedsignedcredential,
     publicationstoredat,
-    issuanceproof
+    issuanceproof,
+    issuanceoperationhash,
+    batchinclusionproof
   } = credential;
 
   const parsedCredentialJson = JSON.parse(credentialdata);
@@ -23,6 +25,8 @@ export function credentialMapper(credential, credentialTypes) {
     encodedsignedcredential,
     publicationstoredat,
     issuanceproof,
+    issuanceoperationhash,
+    batchinclusionproof,
     credentialType: getCredentialTypeObject(parsedCredentialJson, credentialTypes),
     status: getCredentialStatus(credential),
     contactData: contactMapper({

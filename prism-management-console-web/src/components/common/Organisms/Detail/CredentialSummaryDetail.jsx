@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
-import { Drawer, message, Tabs, Alert, Divider } from 'antd';
+import { Drawer, Tabs, Alert, Divider } from 'antd';
 import { Trans, useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_STATUSES, drawerWidth } from '../../../../helpers/constants';
-import img from '../../../../images/verified.svg';
+import verifiedIcon from '../../../../images/verified.svg';
+import invalidIcon from '../../../../images/redCross.svg';
 import cardanoLogo from '../../../../images/cardanoLogo.svg';
 import hashedFile from '../../../../images/hashedFile.svg';
 import CardDetail from './DetailCard';
@@ -30,6 +31,26 @@ const getCardanoExplorerUrl = (txId, ledger) => {
 const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
   const { t } = useTranslation();
   const [rawVisible, setRawVisible] = useState(false);
+
+  const {
+    verificationResult: {
+      credentialRevoked,
+      batchRevoked,
+      invalidMerkleProof,
+      invalidKey,
+      keyRevoked,
+      invalidSignature
+    } = {}
+  } = credentialData;
+
+  const credentialIsValid = !(
+    credentialRevoked ||
+    batchRevoked ||
+    invalidMerkleProof ||
+    invalidKey ||
+    keyRevoked ||
+    invalidSignature
+  );
 
   const tabs = {
     summary: {
@@ -60,20 +81,11 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     </div>
   );
 
-  const contentSecondCard = (
-    <CustomButton
-      buttonProps={{
-        className: 'theme-link'
-      }}
-      buttonText="Copy"
-    />
-  );
-
   const extraJsx = (
-    <div className="ValidityButton">
-      <img src={img} alt="verifiedIcon" />
+    <div className={credentialIsValid ? 'ValidButton' : 'InvalidButton'}>
+      <img src={credentialIsValid ? verifiedIcon : invalidIcon} alt="verifiedIcon" />
       <span>{t('credentials.detail.validity')}</span>
-      <p>{t('credentials.detail.valid')}</p>
+      <p>{t(`credentials.detail.${credentialIsValid ? 'valid' : 'invalid'}`)}</p>
     </div>
   );
 
@@ -81,19 +93,13 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     <>
       <div className="credentialStatusContent">
         <span>{t('credentials.detail.source')}</span>
-        <p>University of Innovation and Technology</p>
+        <p>{credentialData?.issuer}</p>
       </div>
       <div className="credentialStatusContent">
-        <span>{t('credentials.detail.integrity')}</span>
-        <p> No changes </p>
+        <span>{t('credentials.detail.integrity.title')}</span>
+        <p>{t(`credentials.detail.integrity.${invalidSignature ? 'invalid' : 'valid'}`)}</p>
       </div>
     </>
-  );
-
-  const infoSecondCard = (
-    <div className="credentialStatusContent">
-      <h5 className="">{t('credentials.detail.transactionTimestamp')} 23/08/2019 | 15:00 hs </h5>
-    </div>
   );
 
   const renderHtmlCredential = ({ html }) => {
@@ -101,10 +107,6 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     const cleanHtml = sanitizeView(unescapedHtml);
     /* eslint-disable-next-line react/no-danger */
     return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
-  };
-
-  const handleVerify = () => {
-    message.warn(t('credentials.messages.notImplementedYet'));
   };
 
   const cardanoExplorerHeader = (
@@ -141,16 +143,6 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
               <Alert message={revokedMessage} type="error" showIcon icon={revokedIcon} />
             </div>
           )}
-          {/* Left commented code for when it's possible verify credential */}
-          {/* <div className="actionsContainer">
-            <CustomButton
-              buttonText={t('credentials.detail.verify')}
-              buttonProps={{
-                className: 'theme-primary verifyButton',
-                onClick: handleVerify
-              }}
-            />
-          </div> */}
         </TabPane>
         <TabPane tab={tabs.details.title} key={tabs.details.key}>
           <CardDetail
@@ -194,7 +186,15 @@ CredentialSummaryDetail.propTypes = {
     html: PropTypes.string,
     credentialdata: PropTypes.string,
     issuanceproof: PropTypes.shape({ transactionid: PropTypes.string }),
-    status: PropTypes.number.isRequired
+    status: PropTypes.number.isRequired,
+    verificationResult: PropTypes.shape({
+      credentialRevoked: PropTypes.bool,
+      batchRevoked: PropTypes.bool,
+      invalidMerkleProof: PropTypes.bool,
+      invalidKey: PropTypes.bool,
+      keyRevoked: PropTypes.bool,
+      invalidSignature: PropTypes.bool
+    })
   }).isRequired
 };
 

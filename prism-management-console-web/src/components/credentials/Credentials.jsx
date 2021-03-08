@@ -21,15 +21,16 @@ import './_style.scss';
 
 const { TabPane } = Tabs;
 
-const Credentials = ({ tabProps, setActiveTab, loading }) => {
+const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
   const { t } = useTranslation();
   const [currentCredential, setCurrentCredential] = useState({});
   const [showDrawer, setShowDrawer] = useState(false);
 
   const { accountStatus } = useSession();
 
-  const showCredentialData = credential => {
-    setCurrentCredential(credential);
+  const showCredentialData = async credential => {
+    const verificationResult = await verifyCredential(credential);
+    setCurrentCredential(Object.assign({ verificationResult }, credential));
     setShowDrawer(true);
   };
 
@@ -87,7 +88,8 @@ Credentials.propTypes = {
     [CREDENTIALS_RECEIVED]: PropTypes.shape(credentialTabShape)
   }).isRequired,
   loading: PropTypes.shape({ issued: PropTypes.bool, received: PropTypes.bool }),
-  setActiveTab: PropTypes.func.isRequired
+  setActiveTab: PropTypes.func.isRequired,
+  verifyCredential: PropTypes.func.isRequired
 };
 
 export default Credentials;

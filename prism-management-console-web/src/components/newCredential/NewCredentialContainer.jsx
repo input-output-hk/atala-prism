@@ -198,7 +198,12 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       const credentialsData = importedData.map((data, index) => {
         const { contactid } = subjects.find(({ externalid }) => externalid === data.externalid);
         const html = _.escape(credentialViews[index]);
-        return Object.assign(_.omit(data, 'originalArray'), { credentialType, contactid, html });
+        return Object.assign(_.omit(data, 'originalArray'), {
+          credentialType,
+          contactid,
+          html,
+          issuer: session.organisationName
+        });
       });
       const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
         credentialsData

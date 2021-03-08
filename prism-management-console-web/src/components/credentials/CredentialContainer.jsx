@@ -20,7 +20,8 @@ import {
   SEND_CREDENTIALS,
   REVOKE_SINGLE_CREDENTIAL,
   SIGN_SINGLE_CREDENTIAL,
-  SEND_SINGLE_CREDENTIAL
+  SEND_SINGLE_CREDENTIAL,
+  DEFAULT_CREDENTIAL_VERIFICATION_RESULT
 } from '../../helpers/constants';
 import {
   useCredentialsIssuedListWithFilters,
@@ -290,6 +291,16 @@ const CredentialContainer = ({ api }) => {
 
   const handleCancel = () => setConfirmationModal(false);
 
+  const verifyCredential = ({ encodedsignedcredential, batchinclusionproof }) =>
+    api.wallet.verifyCredential(encodedsignedcredential, batchinclusionproof).catch(error => {
+      Logger.error('There has been an error verifiying the credential', error);
+      const pendingPublication = error.message.includes('Missing publication date');
+      message.error(
+        t(`credentials.errors.${pendingPublication ? 'pendingPublication' : 'errorVerifying'}`)
+      );
+      return DEFAULT_CREDENTIAL_VERIFICATION_RESULT;
+    });
+
   const tabProps = {
     [CREDENTIALS_ISSUED]: {
       tableProps: {
@@ -348,7 +359,12 @@ const CredentialContainer = ({ api }) => {
   return (
     <>
       {confirmationModal && renderModal()}
-      <Credentials tabProps={tabProps} setActiveTab={setActiveTab} loading={loading} />
+      <Credentials
+        tabProps={tabProps}
+        setActiveTab={setActiveTab}
+        loading={loading}
+        verifyCredential={verifyCredential}
+      />
     </>
   );
 };
@@ -367,7 +383,8 @@ CredentialContainer.propTypes = {
       getReceivedCredentials: PropTypes.func.isRequired
     }),
     wallet: PropTypes.shape({
-      signCredentials: PropTypes.func.isRequired
+      signCredentials: PropTypes.func.isRequired,
+      verifyCredential: PropTypes.func.isRequired
     }).isRequired,
     connector: PropTypes.shape({
       sendCredential: PropTypes.func.isRequired

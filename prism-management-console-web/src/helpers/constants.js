@@ -173,3 +173,29 @@ export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;
 
 // Usefull css classes
 export const MAIN_CONTAINER_CLASS = 'MainContainer';
+
+// credential verification errors
+const CREDENTIAL_REVOKED = 'The credential was revoked';
+const BATCH_REVOKED = 'The batch where the credential was issued is revoked';
+const INVALID_MERKLE_PROOF = 'Invalid Merkle proof';
+const INVALID_KEY = 'The signing key was added after the credential was issued.';
+const KEY_REVOKED = 'The signing key was revoked before the credential was issued.';
+const INVALID_SIGNATURE = 'The credential signature was invalid';
+
+export const CREDENTIAL_VERIFICATION_ERRORS = {
+  credentialRevoked: CREDENTIAL_REVOKED,
+  batchRevoked: BATCH_REVOKED,
+  invalidMerkleProof: INVALID_MERKLE_PROOF,
+  invalidKey: INVALID_KEY,
+  keyRevoked: KEY_REVOKED,
+  invalidSignature: INVALID_SIGNATURE
+};
+
+export const DEFAULT_CREDENTIAL_VERIFICATION_RESULT = {
+  credentialRevoked: true,
+  batchRevoked: true,
+  invalidMerkleProof: true,
+  invalidKey: true,
+  keyRevoked: true,
+  invalidSignature: true
+};

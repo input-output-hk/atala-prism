@@ -303,8 +303,13 @@
       "notPublished": "Not Signed",
       "validity": "Validity: ",
       "valid": "Valid",
+      "invalid": "Invalid",
       "source": "Source:",
-      "integrity": "Integrity: ",
+      "integrity": {
+        "title": "Integrity: ",
+        "valid": "No changes",
+        "invalid": "Tampered"
+      },
       "hashedFile": "Hashed File",
       "rawCredential": "Raw Credential",
       "goToCardano": "Go to Cardano",
@@ -340,7 +345,8 @@
     "errors": {
       "errorRevoking": "An error occurred while revoking the credential(s)",
       "errorSigning": "An error occurred while signing the credential(s)",
-      "errorSending": "An error occurred while sending the credential(s)"
+      "errorSending": "An error occurred while sending the credential(s)",
+      "errorVerifying": "An error occurred while verifying the credential"
     }
   },
   "credentialSummary": {
