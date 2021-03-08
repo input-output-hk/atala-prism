@@ -19,6 +19,7 @@ import io.iohk.atala.prism.protos.console_api.{
 import io.iohk.atala.prism.protos.{connector_api, console_api, node_models}
 import scalapb.grpc.Channels
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js.JSConverters._
 
@@ -38,9 +39,11 @@ class ConnectorClientService(url: String) {
 
   def revokeCredential(
       ecKeyPair: ECKeyPair,
+      did: DID,
       signedCredentialStringRepresentation: String,
       batchId: CredentialBatchId,
-      batchOperationHash: SHA256Digest
+      batchOperationHash: SHA256Digest,
+      credentialId: UUID
   )(implicit ec: ExecutionContext): Future[io.iohk.atala.prism.protos.common_models.TransactionInfo] = {
     val credentialHashT = io.iohk.atala.prism.credentials.Credential
       .fromString(signedCredentialStringRepresentation)
@@ -63,11 +66,14 @@ class ConnectorClientService(url: String) {
           )
       }
       signedOperation = signedAtalaOperation(ecKeyPair, operation)
-      request =
+      request = {
         console_api
           .RevokePublishedCredentialRequest()
           .withRevokeCredentialsOperation(signedOperation)
-      response <- credentialsServiceApi.revokePublishedCredential(request)
+          .withCredentialId(credentialId.toString)
+      }
+      requestMetadata = metadataForRequest(ecKeyPair, did, request)
+      response <- credentialsServiceApi.revokePublishedCredential(request, requestMetadata.toJSDictionary)
     } yield response.transactionInfo.getOrElse(
       throw new RuntimeException("The server didn't returned the expected transaction info")
     )

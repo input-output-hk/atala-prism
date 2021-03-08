@@ -3,6 +3,8 @@ package io.iohk.atala.cvp.webextension.common.models
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 
+import java.util.UUID
+
 /**
   * Whenever a user needs to review a request, an instance of this trait is added to a queue
   */
@@ -14,7 +16,8 @@ object PendingRequest {
   final case class RevokeCredential(
       signedCredentialStringRepresentation: String,
       batchId: CredentialBatchId,
-      batchOperationHash: SHA256Digest
+      batchOperationHash: SHA256Digest,
+      credentialId: UUID
   ) extends PendingRequest
 
   final case class WithId(id: Int, request: PendingRequest)

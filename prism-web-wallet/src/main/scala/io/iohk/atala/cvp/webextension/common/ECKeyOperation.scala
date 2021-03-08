@@ -41,11 +41,17 @@ object ECKeyOperation {
       signingKey: ECKeyPair,
       credentialsData: List[CredentialData]
   ): (AtalaOperation, List[(String, MerkleInclusionProof)]) = {
+    // The long-form DID may be used in the wallet, but only the canonical one can issue credentials.
+    val canonicalDID = issuerDID.canonical
+      .getOrElse(
+        throw new RuntimeException("There is no way to get the canonical DID which is required to issue credentials")
+      )
+
     val signedCredentials: List[Credential] = credentialsData.map { cd =>
       Credential
         .fromCredentialContent(
           CredentialContent(
-            CredentialContent.JsonFields.IssuerDid.field -> issuerDID.value,
+            CredentialContent.JsonFields.IssuerDid.field -> canonicalDID.value, // The verification requires the DID
             CredentialContent.JsonFields.IssuanceKeyId.field -> signingKeyId,
             CredentialContent.JsonFields.CredentialSubject.field -> cd.credentialClaims
           )
@@ -55,7 +61,8 @@ object ECKeyOperation {
 
     val (merkleRoot, proofs) = CredentialBatches.batch(signedCredentials)
     val merkleRootProto = ByteString.copyFrom(merkleRoot.hash.value.toArray)
-    val credentialBatchData = CredentialBatchData(issuerDID = issuerDID.suffix.value, merkleRoot = merkleRootProto)
+    // This requires the suffix only, as the node stores only suffixes
+    val credentialBatchData = CredentialBatchData(issuerDID = canonicalDID.suffix.value, merkleRoot = merkleRootProto)
     val issueCredentialOperation = IssueCredentialBatchOperation(Some(credentialBatchData))
     val credentialsAndProofs =
       signedCredentials.map(_.canonicalForm).zip(proofs)

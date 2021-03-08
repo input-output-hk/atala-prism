@@ -113,9 +113,11 @@ private[background] class WalletManager(
           // TODO: Decode the credential before accepting the request to make sure it has the proper data (and html view)
           connectorClientService.revokeCredential(
             ecKeyPair,
+            walletData.did,
             signedCredentialStringRepresentation = r.signedCredentialStringRepresentation,
             batchId = r.batchId,
-            batchOperationHash = r.batchOperationHash
+            batchOperationHash = r.batchOperationHash,
+            credentialId = r.credentialId
           )
       }
     } yield {

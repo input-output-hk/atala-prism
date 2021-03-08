@@ -1,4 +1,4 @@
-W# PRISM
+# PRISM
 This is the server side from the PRISM project.
 
 ## How to import project using BSP

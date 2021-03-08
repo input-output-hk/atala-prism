@@ -10,7 +10,9 @@ import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, Credentia
 import io.iohk.atala.prism.credentials.VerificationError._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, VerificationError}
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.util.BytesOps
 
+import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
@@ -45,7 +47,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
           "requestSignature" -> js.Any.fromFunction2(requestCredentialIssuanceApproval),
           "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest),
           "verifySignedCredential" -> js.Any.fromFunction3(verifySignedCredential),
-          "revokeCredential" -> js.Any.fromFunction4(requestCredentialRevocationApproval)
+          "revokeCredential" -> js.Any.fromFunction5(requestCredentialRevocationApproval)
         ): js.UndefOr[js.Any]
       }
     )
@@ -84,16 +86,19 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     * Enqueues a request to revoke the given credential
     *
     * @param sessionId the session that's being used to enqueue the operation
-    * @param signedCredentialStringRepresentation the signed credential in its canonical's form
-    * @param batchIdStr the batch id returned when issuing the credential
-    * @param batchOperationHashStr the hash of the operation batch that issued the credential
+    * @param signedCredentialStringRepresentation the signed credential in its canonical form
+    * @param batchIdStr the batch id returned when issuing the credential, must be a hex-encoded string
+    * @param batchOperationHashStr the hash of the operation batch that issued the credential,
+    *                              must be a hex-encoded string, or a base64 encoded string.
+    * @param credentialIdStr the console internal credential Id, must be an UUID
     * @return a promise that's resolved once the operation is approved/rejected
     */
   def requestCredentialRevocationApproval(
       sessionId: String,
       signedCredentialStringRepresentation: String,
       batchIdStr: String,
-      batchOperationHashStr: String
+      batchOperationHashStr: String,
+      credentialIdStr: String
   ): js.Promise[Unit] = {
     val requestT = for {
       batchId <- Try {
@@ -101,13 +106,23 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
           .fromString(batchIdStr)
           .getOrElse(throw new RuntimeException("Invalid batch id"))
       }
-      batchOperationHash <- Try {
-        SHA256Digest.fromHex(batchOperationHashStr)
+      batchOperationHash <- Try { SHA256Digest.fromHex(batchOperationHashStr) }
+        .orElse {
+          // For some reason the frontend gets a base64 encoded string for the operation hash
+          // to simplify their work, we just try to parse the hex, falling back to the base64 version
+          // node that the url decoder version is not used on purpose.
+          Try(Base64.getDecoder.decode(batchOperationHashStr))
+            .map(bytes => BytesOps.bytesToHex(bytes))
+            .map(SHA256Digest.fromHex)
+        }
+      credentialId <- Try {
+        UUID.fromString(credentialIdStr)
       }
     } yield PendingRequest.RevokeCredential(
       signedCredentialStringRepresentation = signedCredentialStringRepresentation,
       batchId = batchId,
-      batchOperationHash = batchOperationHash
+      batchOperationHash = batchOperationHash,
+      credentialId = credentialId
     )
 
     val result = for {

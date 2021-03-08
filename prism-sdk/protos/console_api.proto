@@ -594,7 +594,7 @@ message StorePublishedCredentialResponse {}
 
 // Request to revoke a published credential
 message RevokePublishedCredentialRequest {
-  string credentialId = 1; // the internal credential id, used to link the revocation transaction id
+  string credentialId = 1; // the internal credential id, used to link the revocation transaction id, must be an UUID
   // a signed instance of RevokeCredentials operation.
   // note that even that the operation allows many credentials to be revoked, the request
   // is only accepted when there is a single credential involved.

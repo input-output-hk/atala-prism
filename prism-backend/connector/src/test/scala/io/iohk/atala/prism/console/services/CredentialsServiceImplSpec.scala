@@ -186,6 +186,56 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         lastTwoCredentials.toSet must be(Set(credentlal2Proto, credentlal3Proto))
       }
     }
+
+    "retrieve the revocation data when a credential is revoked" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = DataPreparation.createIssuer(issuerName, did = Some(did))
+      val contact = DataPreparation.createContact(issuerId, "Subject 1", None, "")
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
+      )
+
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential.credentialId,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+
+      val mockRevocationTransactionId = TransactionId.from(SHA256Digest.compute("revocation".getBytes).value).value
+      credentialsRepository
+        .storeRevocationData(issuerId, originalCredential.credentialId, mockRevocationTransactionId)
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      val request = console_api.GetGenericCredentialsRequest().withLimit(10)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.getGenericCredentials(request)
+        val revocationProof = response.credentials.head.revocationProof.value
+        revocationProof.transactionId must be(mockRevocationTransactionId.toString)
+        revocationProof.ledger.isInMemory must be(true)
+      }
+    }
   }
 
   "publishBatch" should {

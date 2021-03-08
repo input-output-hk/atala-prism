@@ -29,9 +29,13 @@ object ProtoCodecs {
 
   def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {
     val connectionStatus = contactConnectionStatus2Proto.transform(credential.connectionStatus)
+    val revocationProofMaybe = for {
+      revocationTxid <- credential.revokedOnTransactionId
+      publicationData <- credential.publicationData
+    } yield CommonProtoCodecs.toTransactionInfo(TransactionInfo(revocationTxid, publicationData.ledger))
 
     val model = console_models
-      .CManagerGenericCredential()
+      .CManagerGenericCredential(revocationProof = revocationProofMaybe)
       .withCredentialId(credential.credentialId.toString)
       .withIssuerId(credential.issuedBy.toString)
       .withContactId(credential.subjectId.toString)
