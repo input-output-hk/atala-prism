@@ -28,7 +28,6 @@ import {
   useCredentialsReceivedListWithFilters
 } from '../../hooks/useCredentials';
 import { useSession } from '../providers/SessionContext';
-import { mockDelay } from '../../helpers/genericHelpers';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -133,7 +132,7 @@ const CredentialContainer = ({ api }) => {
   };
 
   // eslint-disable-next-line no-magic-numbers
-  const revokeCredentials = credentials => mockDelay(3000);
+  const revokeCredentials = credentials => api.wallet.revokeCredentials(credentials);
 
   const signCredentials = credentials => api.wallet.signCredentials(credentials);
 
@@ -384,7 +383,8 @@ CredentialContainer.propTypes = {
     }),
     wallet: PropTypes.shape({
       signCredentials: PropTypes.func.isRequired,
-      verifyCredential: PropTypes.func.isRequired
+      verifyCredential: PropTypes.func.isRequired,
+      revokeCredentials: PropTypes.func.isRequired
     }).isRequired,
     connector: PropTypes.shape({
       sendCredential: PropTypes.func.isRequired

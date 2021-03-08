@@ -3,6 +3,7 @@ import { contactMapper } from './contactHelpers';
 
 export function credentialMapper(credential, credentialTypes) {
   const {
+    batchid,
     credentialid,
     credentialdata,
     contactid,
@@ -13,13 +14,16 @@ export function credentialMapper(credential, credentialTypes) {
     publicationstoredat,
     issuanceproof,
     issuanceoperationhash,
-    batchinclusionproof
+    batchinclusionproof,
+    sharedat,
+    revocationproof
   } = credential;
 
   const parsedCredentialJson = JSON.parse(credentialdata);
 
   return {
     ...parsedCredentialJson,
+    batchid,
     credentialid,
     credentialdata,
     encodedsignedcredential,
@@ -27,6 +31,8 @@ export function credentialMapper(credential, credentialTypes) {
     issuanceproof,
     issuanceoperationhash,
     batchinclusionproof,
+    sharedat,
+    revocationproof,
     credentialType: getCredentialTypeObject(parsedCredentialJson, credentialTypes),
     status: getCredentialStatus(credential),
     contactData: contactMapper({
@@ -50,7 +56,8 @@ function getCredentialTypeObject(credentialData, credentialTypes) {
 }
 
 function getCredentialStatus(credential) {
-  const { publicationstoredat, sharedat } = credential;
+  const { publicationstoredat, sharedat, revocationproof } = credential;
+  if (revocationproof) return CREDENTIAL_STATUSES.credentialRevoked;
   if (sharedat) return CREDENTIAL_STATUSES.credentialSent;
   if (publicationstoredat) return CREDENTIAL_STATUSES.credentialSigned;
   return CREDENTIAL_STATUSES.credentialDraft;

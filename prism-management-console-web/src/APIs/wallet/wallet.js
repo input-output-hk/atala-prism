@@ -162,6 +162,21 @@ function getVerificationResults(errors) {
   );
 }
 
+function revokeCredentials(credentials) {
+  const { sessionId } = this.session;
+
+  const revokeRequests = credentials.map(cred =>
+    window.prism.revokeCredential(
+      sessionId,
+      cred.encodedsignedcredential,
+      cred.batchid,
+      cred.issuanceoperationhash,
+      cred.credentialid
+    )
+  );
+  return Promise.all(revokeRequests);
+}
+
 function Wallet(config) {
   this.config = config;
   this.session = defaultSessionState;
@@ -185,5 +200,6 @@ Wallet.prototype.getNonce = getNonce;
 Wallet.prototype.signMessage = signMessage;
 Wallet.prototype.signCredentials = signCredentials;
 Wallet.prototype.verifyCredential = verifyCredential;
+Wallet.prototype.revokeCredentials = revokeCredentials;
 
 export default Wallet;
