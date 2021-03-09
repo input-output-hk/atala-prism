@@ -106,14 +106,14 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
           .fromString(batchIdStr)
           .getOrElse(throw new RuntimeException("Invalid batch id"))
       }
-      batchOperationHash <- Try { SHA256Digest.fromHex(batchOperationHashStr) }
+      batchOperationHash <- Try { SHA256Digest.fromHexUnsafe(batchOperationHashStr) }
         .orElse {
           // For some reason the frontend gets a base64 encoded string for the operation hash
           // to simplify their work, we just try to parse the hex, falling back to the base64 version
           // node that the url decoder version is not used on purpose.
           Try(Base64.getDecoder.decode(batchOperationHashStr))
             .map(bytes => BytesOps.bytesToHex(bytes))
-            .map(SHA256Digest.fromHex)
+            .map(SHA256Digest.fromHexUnsafe)
         }
       credentialId <- Try {
         UUID.fromString(credentialIdStr)

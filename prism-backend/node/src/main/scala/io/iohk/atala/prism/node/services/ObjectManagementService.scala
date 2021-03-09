@@ -183,7 +183,7 @@ class ObjectManagementService private (
       case node_internal.AtalaObject.Block.BlockContent(block) => Future.successful(block)
       case node_internal.AtalaObject.Block.BlockHash(hash) =>
         storage
-          .get(SHA256Digest(hash.toByteArray.toVector).hexValue)
+          .get(SHA256Digest.fromVectorUnsafe(hash.toByteArray.toVector).hexValue)
           .map(_.getOrElse(throw new RuntimeException(s"Content of block $hash not found")))
           .map(node_internal.AtalaBlock.parseFrom)
       case node_internal.AtalaObject.Block.Empty =>

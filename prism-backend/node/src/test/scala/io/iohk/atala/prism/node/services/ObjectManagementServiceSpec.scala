@@ -485,7 +485,7 @@ class ObjectManagementServiceSpec
   }
 
   protected def getBlockFromStorage(atalaObject: node_internal.AtalaObject): node_internal.AtalaBlock = {
-    val atalaBlockHash = SHA256Digest(atalaObject.getBlockHash.toByteArray.toVector)
+    val atalaBlockHash = SHA256Digest.fromVectorUnsafe(atalaObject.getBlockHash.toByteArray.toVector)
     val atalaBlockData = storage.get(atalaBlockHash.hexValue).futureValue.value
     node_internal.AtalaBlock.parseFrom(atalaBlockData)
   }

@@ -35,7 +35,7 @@ class EncryptedDataVaultServiceImpl(
         .create(
           CreatePayload(
             Payload.ExternalId.unsafeFrom(request.externalId),
-            SHA256Digest(request.payloadHash.toByteArray.toVector),
+            SHA256Digest.fromVectorUnsafe(request.payloadHash.toByteArray.toVector),
             did,
             request.payload.toByteArray.toVector
           )

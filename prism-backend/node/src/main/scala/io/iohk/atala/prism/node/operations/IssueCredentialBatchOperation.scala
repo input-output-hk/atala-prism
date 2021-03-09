@@ -96,7 +96,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
       merkleRoot <- credentialBatchData.child(_.merkleRoot, "merkleRoot").parse { merkleRoot =>
         Either.cond(
           merkleRoot.size == SHA256Digest.BYTE_LENGTH,
-          MerkleRoot(SHA256Digest(merkleRoot.toByteArray.toVector)),
+          MerkleRoot(SHA256Digest.fromVectorUnsafe(merkleRoot.toByteArray.toVector)),
           s"Merkle root must be of ${SHA256Digest.BYTE_LENGTH} bytes"
         )
       }

@@ -15,5 +15,5 @@ package object circe {
   }
 
   implicit val sHA256DigestEncoder: Encoder[SHA256Digest] = Encoder[String].contramap(_.hexValue)
-  implicit val sHA256DigestDecoder: Decoder[SHA256Digest] = Decoder[String].map(SHA256Digest.fromHex)
+  implicit val sHA256DigestDecoder: Decoder[SHA256Digest] = Decoder[String].map(SHA256Digest.fromHexUnsafe)
 }

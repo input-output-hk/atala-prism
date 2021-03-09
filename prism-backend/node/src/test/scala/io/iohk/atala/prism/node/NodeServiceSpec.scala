@@ -159,7 +159,7 @@ class NodeServiceSpec
       val longFormDID = DID.createUnpublishedDID(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value.value)
+      val didDigest = SHA256Digest.fromHexUnsafe(longFormDID.getCanonicalSuffix.value.value)
       val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
       val key1 = DIDPublicKey(didSuffix, "master0", KeyUsage.MasterKey, masterKey)
@@ -452,7 +452,7 @@ class NodeServiceSpec
           credentialHash = ByteString.EMPTY
         )
 
-      val expectedMessage = "INTERNAL: requirement failed"
+      val expectedMessage = "INTERNAL: Vector length doesn't correspond to expected length  - 32"
 
       val error = intercept[RuntimeException] {
         service.getCredentialRevocationTime(requestWithInvalidCredentialHash)

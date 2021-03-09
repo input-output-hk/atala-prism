@@ -109,7 +109,7 @@ object UpdateDid {
       opt[String]("previous-operation")
         .valueName("<hash>")
         .action(
-          lens.composeLens(GenLens[UpdateDid](_.previousOperation)).optify(s => Some(SHA256Digest.fromHex(s)))
+          lens.composeLens(GenLens[UpdateDid](_.previousOperation)).optify(s => Some(SHA256Digest.fromHexUnsafe(s)))
         ),
       opt[String]("generate-master-key")
         .valueName("<key-id>")

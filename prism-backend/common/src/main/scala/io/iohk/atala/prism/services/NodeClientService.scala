@@ -175,5 +175,6 @@ object NodeClientService {
 
   def toByteString(hash: SHA256Digest): ByteString = ByteString.copyFrom(hash.value.toArray)
 
-  def toSHA256Digest(byteString: ByteString): SHA256Digest = SHA256Digest(byteString.toByteArray.toVector)
+  def toSHA256Digest(byteString: ByteString): SHA256Digest =
+    SHA256Digest.fromVectorUnsafe(byteString.toByteArray.toVector)
 }

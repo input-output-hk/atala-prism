@@ -53,7 +53,7 @@ object StateStorage {
 
       val operations = splitLines.collect {
         case Array("operation", id, lastOperation) =>
-          (id, SHA256Digest.fromHex(lastOperation))
+          (id, SHA256Digest.fromHexUnsafe(lastOperation))
       }.toMap
 
       State(keys = keys, lastOperationPerId = operations, didSuffix = didSuffix)

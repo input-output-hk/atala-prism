@@ -81,9 +81,9 @@ object MerkleTree {
         case Left(_) => None
         case Right(parsedProof) =>
           val tryProof = for {
-            h <- parsedProof.hcursor.get[String](json.hashField).toTry.map(SHA256Digest.fromHex)
+            h <- parsedProof.hcursor.get[String](json.hashField).toTry.map(SHA256Digest.fromHexUnsafe)
             i <- parsedProof.hcursor.get[Int](json.indexField).toTry
-            s <- parsedProof.hcursor.get[List[String]](json.siblingsField).toTry.map(_.map(SHA256Digest.fromHex))
+            s <- parsedProof.hcursor.get[List[String]](json.siblingsField).toTry.map(_.map(SHA256Digest.fromHexUnsafe))
           } yield MerkleInclusionProof(h, i, s)
           tryProof.toOption
       }

@@ -203,7 +203,7 @@ class NodeServiceImpl(
     }
     val credentialHashF = Future.fromTry {
       Try {
-        SHA256Digest(request.credentialHash.toByteArray.toVector)
+        SHA256Digest.fromVectorUnsafe(request.credentialHash.toByteArray.toVector)
       }
     }
 

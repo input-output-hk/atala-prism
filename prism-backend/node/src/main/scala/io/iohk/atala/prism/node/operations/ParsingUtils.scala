@@ -69,7 +69,7 @@ object ParsingUtils {
     hash.parse { hash =>
       Either.cond(
         hash.size() == SHA256Digest.BYTE_LENGTH,
-        SHA256Digest(hash.toByteArray.toVector),
+        SHA256Digest.fromVectorUnsafe(hash.toByteArray.toVector),
         s"must have ${SHA256Digest.BYTE_LENGTH} bytes"
       )
     }
@@ -79,7 +79,7 @@ object ParsingUtils {
     hashesV.parse { hashes =>
       Either.cond(
         hashes.forall(_.size() == SHA256Digest.BYTE_LENGTH),
-        hashes.map(h => SHA256Digest(h.toByteArray.toVector)).to(List),
+        hashes.map(h => SHA256Digest.fromVectorUnsafe(h.toByteArray.toVector)).to(List),
         s"must have ${SHA256Digest.BYTE_LENGTH} bytes"
       )
     }
