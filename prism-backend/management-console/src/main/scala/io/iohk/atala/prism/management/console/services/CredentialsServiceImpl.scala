@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
+import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -8,8 +9,10 @@ import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
 import io.iohk.atala.prism.protos.console_api._
+import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherFOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -83,4 +86,28 @@ class CredentialsServiceImpl(
   override def storePublishedCredential(
       request: StorePublishedCredentialRequest
   ): Future[StorePublishedCredentialResponse] = ???
+
+  override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] = {
+    auth[GetLedgerData]("getLedgerData", request) { (_, query) =>
+      val result = for {
+        batchState <- nodeService.getBatchState(
+          node_api
+            .GetBatchStateRequest()
+            .withBatchId(query.batchId.id)
+        )
+        credentialLedgerData <- nodeService.getCredentialRevocationTime(
+          node_api
+            .GetCredentialRevocationTimeRequest()
+            .withBatchId(query.batchId.id)
+            .withCredentialHash(ByteString.copyFrom(query.credentialHash.value.toArray))
+        )
+      } yield GetLedgerDataResponse(
+        batchIssuance = batchState.publicationLedgerData,
+        batchRevocation = batchState.revocationLedgerData,
+        credentialRevocation = credentialLedgerData.revocationLedgerData
+      )
+
+      result.lift
+    }
+  }
 }

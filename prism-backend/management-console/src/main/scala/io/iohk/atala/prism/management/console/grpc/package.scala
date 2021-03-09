@@ -19,8 +19,11 @@ import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
-
 import java.time.LocalDate
+
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.SHA256Digest
+
 import scala.util.{Failure, Success, Try}
 
 package object grpc {
@@ -373,6 +376,14 @@ package object grpc {
   implicit val shareCredentialConverter: ProtoConverter[ShareCredentialRequest, ShareCredential] =
     (request: ShareCredentialRequest) => {
       GenericCredential.Id.from(request.cmanagerCredentialId).map(ShareCredential)
+    }
+
+  implicit val getLedgerDataConverter: ProtoConverter[GetLedgerDataRequest, GetLedgerData] =
+    (request: GetLedgerDataRequest) => {
+      for {
+        batchId <- Try(CredentialBatchId.unsafeFromString(request.batchId))
+        credentialHash = SHA256Digest.fromVectorUnsafe(request.credentialHash.toByteArray.toVector)
+      } yield GetLedgerData(batchId, credentialHash)
     }
 
   implicit val createCredentialBulkConverter: ProtoConverter[CreateGenericCredentialBulkRequest, CreateCredentialBulk] =

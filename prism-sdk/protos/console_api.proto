@@ -84,7 +84,12 @@ service CredentialsService {
   rpc ShareCredential (ShareCredentialRequest) returns (ShareCredentialResponse) {}
 
   // Retrieves node information associated to a credential
+  // TODO: DEPRECATE when we migrate to the management console
   rpc GetBlockchainData (GetBlockchainDataRequest) returns (GetBlockchainDataResponse) {}
+
+  // Retrieves node information associated to a batch and (optionally) specific
+  // credentials within a batch
+  rpc GetLedgerData(GetLedgerDataRequest) returns (GetLedgerDataResponse) {}
 
   // Publishes a credential batch to the blockchain.
   // This method also stores the published batch on the database.
@@ -636,4 +641,19 @@ message RevokePublishedCredentialRequest {
 // Response after revoking a credential
 message RevokePublishedCredentialResponse {
   TransactionInfo transactionInfo = 1; // the blockchain transaction details for the revocation
+}
+
+// Request ledger data recorded by the node for a specific batch and credential
+message GetLedgerDataRequest {
+  string batchId = 1; // the batchId (assigned by the protocol) for which we want information to be returned
+  // (optional) the credential hash for which we want information to be returned. We assume that the credential
+  // was issued in the batch associated to `batchId`
+  bytes credentialHash = 2;
+}
+
+// Returns the ledger data from the node associated to a batch and credential
+message GetLedgerDataResponse {
+  LedgerData batchIssuance = 1; // if present, the ledger data associated to the issuance of the batch requested
+  LedgerData batchRevocation = 2; // if present, the ledger data associated to the revocation of the batch requested
+  LedgerData credentialRevocation = 3; // if present, the ledger data associated to the revocation of the credential requested
 }

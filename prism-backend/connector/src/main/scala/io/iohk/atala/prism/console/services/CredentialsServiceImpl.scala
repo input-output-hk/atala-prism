@@ -338,4 +338,7 @@ class CredentialsServiceImpl(
         }
     }
   }
+
+  // Do not implement, this is implemented in the management console
+  override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] = ???
 }
