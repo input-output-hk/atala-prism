@@ -16,8 +16,16 @@
   }
 }
 
-.ButtonControls {
+.flexCenter {
   display: flex;
+  justify-content: center;
+  margin-top: 2em;
+}
+
+.ButtonControls {
+
+  display: flex;
+  justify-content: center;
 
   button {
     margin-left: 1em;

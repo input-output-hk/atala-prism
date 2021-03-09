@@ -74,6 +74,7 @@ const Connections = ({
       </div>
       <ConnectionsFilter {...filterProps} fetchContacts={handleContactsRequest} />
       {renderContent()}
+      <div className="flexCenter">{accountStatus === CONFIRMED && <AddUserButtons />}</div>
       <QRModal
         visible={QRModalIsOpen}
         onCancel={onQRClosed}
