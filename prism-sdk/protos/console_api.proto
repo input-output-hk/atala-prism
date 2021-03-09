@@ -16,6 +16,14 @@ service ConsoleService {
 
   // Retrieves numbers about the operations done in the management console
   rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
+
+  // Bind DID to institution.
+  // This is commonly expected for institutions that need to use a public DID, the method
+  // invokes the node to publish the DID to the blockchain.
+  rpc RegisterDID (RegisterConsoleDIDRequest) returns (RegisterConsoleDIDResponse) {}
+
+  // Return the details for the authenticated user
+  rpc GetCurrentUser (GetConsoleCurrentUserRequest) returns (GetConsoleCurrentUserResponse) {}
 }
 
 // The Contacts API
@@ -165,6 +173,31 @@ message GetStatisticsResponse {
   int32 numberOfCredentialsInDraft = 5; // total number of credentials that aren't published to the blockchain yet
   int32 numberOfCredentialsPublished = 6; // total number of credentials published to the blockchain
   int32 numberOfCredentialsReceived = 7; // total number of credentials received from contacts
+}
+
+// Request to register DID.
+message RegisterConsoleDIDRequest {
+  // The necessary operation to publish the DID to the blockchain
+  SignedAtalaOperation createDIDOperation = 1;
+
+  // The way to identify the institution
+  string name = 2;
+
+  // The logo linked to the institution (optional)
+  bytes logo = 3;
+}
+// Confirmation of DID registration
+message RegisterConsoleDIDResponse {
+  string did = 1; // the registered DID
+  TransactionInfo transactionInfo = 2; // the transaction associated with the registration
+}
+
+// Request to get the authenticated user details
+message GetConsoleCurrentUserRequest {}
+// The authenticated user details
+message GetConsoleCurrentUserResponse {
+  string name = 1; // the name
+  bytes logo = 2; // the associated logo (optional)
 }
 
 // Request to create a contact on the authenticated institution

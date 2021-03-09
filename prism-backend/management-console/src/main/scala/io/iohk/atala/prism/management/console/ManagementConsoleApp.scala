@@ -15,7 +15,11 @@ import io.iohk.atala.prism.protos.connector_api.{ConnectorServiceGrpc, ContactCo
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.management.console.repositories._
-import io.iohk.atala.prism.management.console.integrations.{ConnectionTokenServiceImpl, ContactsIntegrationService}
+import io.iohk.atala.prism.management.console.integrations.{
+  ConnectionTokenServiceImpl,
+  ContactsIntegrationService,
+  ParticipantsIntegrationService
+}
 
 object ManagementConsoleApp extends IOApp {
 
@@ -99,7 +103,8 @@ object ManagementConsoleApp extends IOApp {
       )
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
-      consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)
+      participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository, node)
+      consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
       contactsIntegrationService =
         new ContactsIntegrationService(contactsRepository, connectorContactsService, connectionTokenService)
       contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)

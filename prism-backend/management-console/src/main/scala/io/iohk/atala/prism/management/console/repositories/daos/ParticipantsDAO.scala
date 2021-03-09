@@ -22,7 +22,7 @@ object ParticipantsDAO {
     sql"""
          |SELECT participant_id, name, did, logo, created_at
          |FROM participants
-         |WHERE id = $id
+         |WHERE participant_id = $id
       """.stripMargin.query[ParticipantInfo].option
   }
 

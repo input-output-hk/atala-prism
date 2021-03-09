@@ -71,6 +71,31 @@ package object grpc {
       }
     }
 
+  implicit val registerDIDConverted: ProtoConverter[RegisterConsoleDIDRequest, RegisterDID] = { request =>
+    {
+      for {
+        operation <- Try {
+          request.createDIDOperation
+            .getOrElse(throw new RuntimeException("Missing createDIDOperation"))
+        }
+        _ <- Try {
+          if (operation.operation.exists(_.operation.isCreateDid)) ()
+          else throw new RuntimeException("Invalid createDIDOperation, it is a different operation")
+        }
+
+        name <- Try {
+          if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
+          else request.name.trim
+        }
+
+        logo <- Try {
+          val bytes = request.logo.toByteArray
+          ParticipantLogo(bytes.toVector)
+        }
+      } yield RegisterDID(signedOperation = operation, name = name, logo = logo)
+    }
+  }
+
   implicit val createGroupConverter: ProtoConverter[CreateGroupRequest, CreateInstitutionGroup] =
     (request: CreateGroupRequest) => {
       for {

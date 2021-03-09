@@ -1,15 +1,23 @@
 package io.iohk.atala.prism.management.console.services
 
+import com.google.protobuf.ByteString
+import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.management.console.models.InstitutionGroup
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
+import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.{common_models, console_api}
+import io.iohk.atala.prism.protos.{common_models, console_api, node_api, node_models}
+import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.IdiomaticMockito._
+import org.scalatest.OptionValues._
 
 import java.time.Instant
+import scala.concurrent.Future
 
 class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
 
@@ -159,4 +167,128 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       }
     }
   }
+
+  "registerDID" should {
+    def doTest(did: DID, transactionId: TransactionId, request: console_api.RegisterConsoleDIDRequest) = {
+      usingApiAsConsole.unlogged { serviceStub =>
+        nodeMock.createDID(*).returns {
+          Future.successful(
+            node_api
+              .CreateDIDResponse(did.suffix.value)
+              .withTransactionInfo(
+                common_models
+                  .TransactionInfo()
+                  .withTransactionId(transactionId.toString)
+                  .withLedger(common_models.Ledger.IN_MEMORY)
+              )
+          )
+        }
+        serviceStub.registerDID(request)
+      }
+    }
+
+    "work with logo" in {
+      val did = DataPreparation.newDID()
+      val transactionId = TransactionId.from(SHA256Digest.compute("logotxid".getBytes).value).value
+      val request = console_api
+        .RegisterConsoleDIDRequest(name = "iohk")
+        .withLogo(ByteString.copyFrom("logo".getBytes()))
+        .withCreateDIDOperation(
+          node_models
+            .SignedAtalaOperation()
+            .withOperation(
+              node_models
+                .AtalaOperation(node_models.AtalaOperation.Operation.CreateDid(node_models.CreateDIDOperation()))
+            )
+        )
+
+      val response = doTest(did, transactionId, request)
+      response.did must be(did.value)
+      response.transactionInfo.map(_.transactionId).value must be(transactionId.toString)
+    }
+
+    "work without logo" in {
+      val did = DataPreparation.newDID()
+      val transactionId = TransactionId.from(SHA256Digest.compute("nologotxid".getBytes).value).value
+      val request = console_api
+        .RegisterConsoleDIDRequest(name = "iohk")
+        .withCreateDIDOperation(
+          node_models
+            .SignedAtalaOperation()
+            .withOperation(
+              node_models
+                .AtalaOperation(node_models.AtalaOperation.Operation.CreateDid(node_models.CreateDIDOperation()))
+            )
+        )
+
+      val response = doTest(did, transactionId, request)
+      response.did must be(did.value)
+      response.transactionInfo.map(_.transactionId).value must be(transactionId.toString)
+    }
+
+    "fail when the operation is not missing" in {
+      val did = DataPreparation.newDID()
+      val transactionId = TransactionId.from(SHA256Digest.compute("x".getBytes).value).value
+      val request = console_api
+        .RegisterConsoleDIDRequest(name = "iohk")
+
+      intercept[StatusRuntimeException] {
+        doTest(did, transactionId, request)
+      }
+    }
+
+    "fail when the operation is not a createDIDOperation" in {
+      val did = DataPreparation.newDID()
+      val transactionId = TransactionId.from(SHA256Digest.compute("x".getBytes).value).value
+      val request = console_api
+        .RegisterConsoleDIDRequest(name = "iohk")
+        .withCreateDIDOperation(
+          node_models
+            .SignedAtalaOperation()
+            .withOperation(
+              node_models
+                .AtalaOperation(
+                  node_models.AtalaOperation.Operation.IssueCredentialBatch(node_models.IssueCredentialBatchOperation())
+                )
+            )
+        )
+
+      intercept[StatusRuntimeException] {
+        doTest(did, transactionId, request)
+      }
+    }
+  }
+
+  "getCurrentUser" should {
+    def prepareSignedRequest() = {
+      val keys = EC.generateKeyPair()
+      val did = generateDid(keys.publicKey)
+      val request = console_api.GetConsoleCurrentUserRequest()
+      SignedRpcRequest.generate(keys, did, request)
+    }
+
+    "return the details" in {
+      val rpcRequest = prepareSignedRequest()
+      val name = "iohk"
+      createParticipant(name, rpcRequest.did)
+
+      usingApiAsConsole(rpcRequest) { blockingStub =>
+        val response = blockingStub.getCurrentUser(rpcRequest.request)
+        response.logo.toByteArray must be(empty)
+        response.name must be(name)
+      }
+    }
+
+    "fail on unknown user" in {
+      val rpcRequest = prepareSignedRequest()
+
+      usingApiAsConsole(rpcRequest) { blockingStub =>
+        val ex = intercept[StatusRuntimeException] {
+          blockingStub.getCurrentUser(rpcRequest.request)
+        }
+        ex.getStatus.getCode must be(Status.UNKNOWN.getCode)
+      }
+    }
+  }
+
 }

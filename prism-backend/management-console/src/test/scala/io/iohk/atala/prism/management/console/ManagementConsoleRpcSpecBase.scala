@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console
 
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
+import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, ParticipantsIntegrationService}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services.{
   ConsoleServiceImpl,
@@ -74,7 +74,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val contactsIntegrationService =
     new ContactsIntegrationService(contactsRepository, connectorContactsServiceMock, connectionTokenServiceStub)
 
-  lazy val consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)(
+  lazy val participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository, nodeMock)
+  lazy val consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)(
     executionContext
   )
   lazy val contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)(

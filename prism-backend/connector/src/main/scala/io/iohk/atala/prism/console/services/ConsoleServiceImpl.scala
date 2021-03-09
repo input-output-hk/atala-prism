@@ -47,4 +47,14 @@ class ConsoleServiceImpl(statisticsRepository: StatisticsRepository, authenticat
       f(Institution.Id(participantId.uuid))
     }
   }
+
+  // Used only on the console backend
+  override def registerDID(request: RegisterConsoleDIDRequest): Future[RegisterConsoleDIDResponse] = {
+    Future.failed(throw new NotImplementedError("This is available on the console backend only"))
+  }
+
+  // Used only on the console backend
+  override def getCurrentUser(request: GetConsoleCurrentUserRequest): Future[GetConsoleCurrentUserResponse] = {
+    Future.failed(throw new NotImplementedError("This is available on the console backend only"))
+  }
 }

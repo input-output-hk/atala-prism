@@ -6,10 +6,11 @@ import io.iohk.atala.prism.utils.FutureEither
 import scalapb.GeneratedMessage
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 trait AuthSupport[Err <: PrismError, Id] {
   self: ErrorSupport[Err] =>
+  import AuthSupport._
 
   protected val authenticator: Authenticator[Id]
 
@@ -45,4 +46,16 @@ trait AuthSupport[Err <: PrismError, Id] {
   // parameter Query and all other type parameters can usually be inferred by Scala.
   def auth[Query <: Product]: AuthPartiallyApplied[Query] =
     new AuthPartiallyApplied[Query]()
+
+  def unitAuth: AuthPartiallyApplied[EmptyQuery.type] = auth[EmptyQuery.type]
+}
+
+object AuthSupport {
+  // Sometimes we need to authenticate a request that requires no arguments, as the interface requires
+  // a Product, we can't use the Unit type but an empty case-class.
+  final case object EmptyQuery
+
+  implicit def emptyQueryProtoConverter[T <: scalapb.GeneratedMessage]: ProtoConverter[T, EmptyQuery.type] = { _ =>
+    Try(EmptyQuery)
+  }
 }
