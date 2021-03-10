@@ -4,14 +4,12 @@ import java.util.concurrent.TimeUnit
 import cats.effect.{Resource, Sync}
 import com.typesafe.config.Config
 import io.grpc.netty.{GrpcSslContexts, NettyServerBuilder}
-import io.grpc.{Server, ServerServiceDefinition}
+import io.grpc.{Channel, ManagedChannelBuilder, Server, ServerInterceptor, ServerServiceDefinition}
 import io.grpc.protobuf.services.ProtoReflectionService
 
 import java.io.File
 import scala.concurrent.blocking
 import io.grpc.stub.AbstractStub
-import io.grpc.ManagedChannelBuilder
-import io.grpc.Channel
 
 object GrpcUtils {
 
@@ -58,9 +56,12 @@ object GrpcUtils {
   def createGrpcServer[F[_]: Sync](
       grpcConfig: GrpcConfig,
       sslConfigOption: Option[SslConfig],
+      interceptor: Option[ServerInterceptor],
       services: ServerServiceDefinition*
   ): Resource[F, Server] = {
-    val builder = NettyServerBuilder.forPort(grpcConfig.port)
+    val builder = NettyServerBuilder
+      .forPort(grpcConfig.port)
+    interceptor.foreach(builder.intercept(_))
 
     builder.addService(
       ProtoReflectionService.newInstance()

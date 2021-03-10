@@ -74,7 +74,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val contactsIntegrationService =
     new ContactsIntegrationService(contactsRepository, connectorContactsServiceMock, connectionTokenServiceStub)
 
-  lazy val participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository, nodeMock)
+  lazy val participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
   lazy val consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)(
     executionContext
   )

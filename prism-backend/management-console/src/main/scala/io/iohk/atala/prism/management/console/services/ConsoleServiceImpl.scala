@@ -10,7 +10,6 @@ import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.ParticipantsIntegrationService
 import io.iohk.atala.prism.management.console.models.{GetStatistics, ParticipantId, RegisterDID}
 import io.iohk.atala.prism.management.console.repositories.StatisticsRepository
-import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
@@ -57,11 +56,7 @@ class ConsoleServiceImpl(
         )
         participantsIntegrationService
           .register(query)
-          .map { data =>
-            RegisterConsoleDIDResponse()
-              .withDid(data.did.value)
-              .withTransactionInfo(CommonProtoCodecs.toTransactionInfo(data.transactionInfo))
-          }
+          .map { _ => RegisterConsoleDIDResponse() }
           .wrapExceptions
           .flatten
     }

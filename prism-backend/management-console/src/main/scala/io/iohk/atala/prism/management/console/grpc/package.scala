@@ -4,6 +4,7 @@ import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.circe.Json
 import io.iohk.atala.prism.grpc.ProtoConverter
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
@@ -77,15 +78,11 @@ package object grpc {
   implicit val registerDIDConverted: ProtoConverter[RegisterConsoleDIDRequest, RegisterDID] = { request =>
     {
       for {
-        operation <- Try {
-          request.createDIDOperation
-            .getOrElse(throw new RuntimeException("Missing createDIDOperation"))
+        did <- Try {
+          DID
+            .fromString(request.did)
+            .getOrElse(throw new RuntimeException("Missing or invalid DID"))
         }
-        _ <- Try {
-          if (operation.operation.exists(_.operation.isCreateDid)) ()
-          else throw new RuntimeException("Invalid createDIDOperation, it is a different operation")
-        }
-
         name <- Try {
           if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
           else request.name.trim
@@ -95,7 +92,7 @@ package object grpc {
           val bytes = request.logo.toByteArray
           ParticipantLogo(bytes.toVector)
         }
-      } yield RegisterDID(signedOperation = operation, name = name, logo = logo)
+      } yield RegisterDID(did = did, name = name, logo = logo)
     }
   }
 

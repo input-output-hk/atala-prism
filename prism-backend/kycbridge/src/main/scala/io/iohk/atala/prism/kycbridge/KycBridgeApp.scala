@@ -131,6 +131,7 @@ object KycBridgeApp extends TaskApp {
       grpcServer <- GrpcUtils.createGrpcServer[Task](
         kycBridgeConfig.grpcConfig,
         sslConfigOption = None,
+        interceptor = None,
         KycBridgeServiceGrpc.bindService(kycBridgeGrpcService, scheduler)
       )
 

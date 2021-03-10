@@ -17,9 +17,8 @@ service ConsoleService {
   // Retrieves numbers about the operations done in the management console
   rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
 
-  // Bind DID to institution.
-  // This is commonly expected for institutions that need to use a public DID, the method
-  // invokes the node to publish the DID to the blockchain.
+  // Bind DID to institution, this is the first step before invoking any API
+  // the DID is expected to be resolvable from the node before issuing any credential
   rpc RegisterDID (RegisterConsoleDIDRequest) returns (RegisterConsoleDIDResponse) {}
 
   // Return the details for the authenticated user
@@ -181,9 +180,10 @@ message GetStatisticsResponse {
 }
 
 // Request to register DID.
+// TODO: Verify DID's ownership
 message RegisterConsoleDIDRequest {
-  // The necessary operation to publish the DID to the blockchain
-  SignedAtalaOperation createDIDOperation = 1;
+  // The DID associated to the institution
+  string did = 1;
 
   // The way to identify the institution
   string name = 2;
@@ -192,10 +192,7 @@ message RegisterConsoleDIDRequest {
   bytes logo = 3;
 }
 // Confirmation of DID registration
-message RegisterConsoleDIDResponse {
-  string did = 1; // the registered DID
-  TransactionInfo transactionInfo = 2; // the transaction associated with the registration
-}
+message RegisterConsoleDIDResponse {}
 
 // Request to get the authenticated user details
 message GetConsoleCurrentUserRequest {}

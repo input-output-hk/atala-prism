@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.background.wallet
 
 import cats.data.ValidatedNel
-import com.google.protobuf.ByteString
+import cats.syntax.functor._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.CredentialsCopyJob
@@ -9,6 +9,7 @@ import io.iohk.atala.cvp.webextension.background.models.console.ConsoleCredentia
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
+import io.iohk.atala.cvp.webextension.background.services.console.ConsoleClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.models._
@@ -20,11 +21,12 @@ import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
+import io.iohk.atala.prism.protos.connector_api.RegisterDIDResponse
 import org.scalajs.dom.crypto.CryptoKey
 
 import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 private object WalletManager {
@@ -56,6 +58,7 @@ private[background] class WalletManager(
     storageService: StorageService,
     connectorClientService: ConnectorClientService,
     nodeClientService: NodeClientService,
+    consoleClientService: ConsoleClientService,
     credentialsCopyJob: CredentialsCopyJob
 )(implicit
     ec: ExecutionContext
@@ -337,23 +340,38 @@ private[background] class WalletManager(
       organisationName: String,
       logo: Array[Byte]
   ): Future[(RegisterDIDResponse, DID)] = {
-
-    val connectRole = RoleHepler.toConnectorApiRole(role)
-    val logoByteString = ByteString.copyFrom(logo)
     val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
 
     val createDIDOperation = ECKeyOperation.createDIDAtalaOperation(ecKeyPair)
-    val registerDIDRequest = RegisterDIDRequest(
-      Some(ECKeyOperation.signedAtalaOperation(ecKeyPair, createDIDOperation)),
-      connectRole,
-      organisationName,
-      logoByteString
-    )
+    val signedOperation = ECKeyOperation.signedAtalaOperation(ecKeyPair, createDIDOperation)
+    val did = DID.createUnpublishedDID(ecKeyPair.publicKey)
 
-    // use an unpublished DID to start authenticating requests right away
-    connectorClientService
-      .registerDID(registerDIDRequest)
-      .map(_ -> DID.createUnpublishedDID(ecKeyPair.publicKey))
+    // Right now, the console and the connector needs to keep the DID registered, while the frontend is migrated
+    // to use the console backend, we may not use it, which means that the console registration fails, in that case
+    // we just keep the previous behavior which is registering in the connector only.
+    //
+    // The console is invoked after the connector because the DID gets published by the connector while the
+    // console expects that the DID will be already published.
+    for {
+      response <- {
+        connectorClientService
+          .registerDID(signedOperation, organisationName, logo, role)
+      }
+      _ <- {
+        consoleClientService
+          .registerDID(did, organisationName, logo)
+          .void
+          .recover {
+            case NonFatal(ex) =>
+              println(
+                s"Failed to register DID on the console, we assume it isn't used for this deployment: ${ex.getMessage}"
+              )
+          }
+      }
+    } yield {
+      // use an unpublished DID to start authenticating requests right away
+      response -> did
+    }
   }
 
   private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {

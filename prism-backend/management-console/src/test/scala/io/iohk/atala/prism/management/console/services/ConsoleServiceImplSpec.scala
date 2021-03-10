@@ -11,7 +11,7 @@ import io.iohk.atala.prism.management.console.models.InstitutionGroup
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.{common_models, console_api, node_api, node_models}
+import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
@@ -191,67 +191,44 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       val did = DataPreparation.newDID()
       val transactionId = TransactionId.from(SHA256Digest.compute("logotxid".getBytes).value).value
       val request = console_api
-        .RegisterConsoleDIDRequest(name = "iohk")
+        .RegisterConsoleDIDRequest()
+        .withDid(did.value)
+        .withName("iohk")
         .withLogo(ByteString.copyFrom("logo".getBytes()))
-        .withCreateDIDOperation(
-          node_models
-            .SignedAtalaOperation()
-            .withOperation(
-              node_models
-                .AtalaOperation(node_models.AtalaOperation.Operation.CreateDid(node_models.CreateDIDOperation()))
-            )
-        )
 
-      val response = doTest(did, transactionId, request)
-      response.did must be(did.value)
-      response.transactionInfo.map(_.transactionId).value must be(transactionId.toString)
+      doTest(did, transactionId, request)
     }
 
     "work without logo" in {
       val did = DataPreparation.newDID()
       val transactionId = TransactionId.from(SHA256Digest.compute("nologotxid".getBytes).value).value
       val request = console_api
-        .RegisterConsoleDIDRequest(name = "iohk")
-        .withCreateDIDOperation(
-          node_models
-            .SignedAtalaOperation()
-            .withOperation(
-              node_models
-                .AtalaOperation(node_models.AtalaOperation.Operation.CreateDid(node_models.CreateDIDOperation()))
-            )
-        )
+        .RegisterConsoleDIDRequest()
+        .withDid(did.value)
+        .withName("iohk")
 
-      val response = doTest(did, transactionId, request)
-      response.did must be(did.value)
-      response.transactionInfo.map(_.transactionId).value must be(transactionId.toString)
+      doTest(did, transactionId, request)
     }
 
-    "fail when the operation is not missing" in {
+    "fail when the did is missing" in {
       val did = DataPreparation.newDID()
       val transactionId = TransactionId.from(SHA256Digest.compute("x".getBytes).value).value
       val request = console_api
-        .RegisterConsoleDIDRequest(name = "iohk")
+        .RegisterConsoleDIDRequest()
+        .withName("iohk")
 
       intercept[StatusRuntimeException] {
         doTest(did, transactionId, request)
       }
     }
 
-    "fail when the operation is not a createDIDOperation" in {
+    "fail when the did is invalid" in {
       val did = DataPreparation.newDID()
       val transactionId = TransactionId.from(SHA256Digest.compute("x".getBytes).value).value
       val request = console_api
-        .RegisterConsoleDIDRequest(name = "iohk")
-        .withCreateDIDOperation(
-          node_models
-            .SignedAtalaOperation()
-            .withOperation(
-              node_models
-                .AtalaOperation(
-                  node_models.AtalaOperation.Operation.IssueCredentialBatch(node_models.IssueCredentialBatchOperation())
-                )
-            )
-        )
+        .RegisterConsoleDIDRequest()
+        .withDid("this is not a did!")
+        .withName("iohk")
 
       intercept[StatusRuntimeException] {
         doTest(did, transactionId, request)
@@ -290,5 +267,4 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       }
     }
   }
-
 }

@@ -5,7 +5,9 @@ import io.grpc.stub.{ClientCallStreamObserver, StreamObserver}
 import io.iohk.atala.cvp.webextension.background.models.console.ConsoleCredentialId
 import io.iohk.atala.cvp.webextension.background.services._
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
+import io.iohk.atala.cvp.webextension.background.wallet.models.RoleHepler
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
+import io.iohk.atala.cvp.webextension.common.models.Role
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
@@ -27,7 +29,19 @@ class ConnectorClientService(url: String) {
   private val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
   private val credentialsServiceApi = console_api.CredentialsServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
 
-  def registerDID(request: RegisterDIDRequest): Future[RegisterDIDResponse] = {
+  def registerDID(
+      operation: node_models.SignedAtalaOperation,
+      name: String,
+      logo: Array[Byte],
+      role: Role
+  ): Future[RegisterDIDResponse] = {
+    val request = connector_api
+      .RegisterDIDRequest()
+      .withCreateDIDOperation(operation)
+      .withName(name)
+      .withLogo(ByteString.copyFrom(logo))
+      .withRole(RoleHepler.toConnectorApiRole(role))
+
     connectorApi.registerDID(request)
   }
 

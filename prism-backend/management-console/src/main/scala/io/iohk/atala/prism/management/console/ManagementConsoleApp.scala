@@ -1,25 +1,26 @@
 package io.iohk.atala.prism.management.console
 
-import scala.concurrent.ExecutionContext
 import cats.effect.{ExitCode, IO, IOApp, Resource}
-import org.slf4j.LoggerFactory
-import io.grpc.Server
 import com.typesafe.config.ConfigFactory
-import io.iohk.atala.prism.utils.GrpcUtils
-import io.iohk.atala.prism.repositories.TransactorFactory
+import io.grpc.Server
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.config.NodeConfig
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
-import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.connector_api.{ConnectorServiceGrpc, ContactConnectionServiceGrpc}
-import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.management.console.services._
-import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.integrations.{
   ConnectionTokenServiceImpl,
   ContactsIntegrationService,
   ParticipantsIntegrationService
 }
+import io.iohk.atala.prism.management.console.repositories._
+import io.iohk.atala.prism.management.console.services._
+import io.iohk.atala.prism.protos.connector_api.{ConnectorServiceGrpc, ContactConnectionServiceGrpc}
+import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.repositories.TransactorFactory
+import io.iohk.atala.prism.utils.GrpcUtils
+import org.slf4j.LoggerFactory
+
+import scala.concurrent.ExecutionContext
 
 object ManagementConsoleApp extends IOApp {
 
@@ -103,7 +104,7 @@ object ManagementConsoleApp extends IOApp {
       )
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
-      participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository, node)
+      participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
       contactsIntegrationService =
         new ContactsIntegrationService(contactsRepository, connectorContactsService, connectionTokenService)
@@ -117,6 +118,7 @@ object ManagementConsoleApp extends IOApp {
       grpcServer <- GrpcUtils.createGrpcServer[IO](
         grpcConfig,
         sslConfigOption = None,
+        interceptor = Some(new GrpcAuthenticatorInterceptor),
         console_api.ConsoleServiceGrpc.bindService(consoleService, ec),
         console_api.ContactsServiceGrpc.bindService(contactsService, ec),
         console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, ec),
@@ -127,5 +129,4 @@ object ManagementConsoleApp extends IOApp {
       )
     } yield grpcServer
   }
-
 }

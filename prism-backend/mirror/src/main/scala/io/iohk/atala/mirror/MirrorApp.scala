@@ -129,6 +129,7 @@ object MirrorApp extends TaskApp {
       grpcServer <- GrpcUtils.createGrpcServer[Task](
         mirrorConfig.grpcConfig,
         sslConfigOption = None,
+        interceptor = None,
         MirrorServiceGrpc.bindService(mirrorGrpcService, scheduler)
       )
 
@@ -139,6 +140,7 @@ object MirrorApp extends TaskApp {
             .createGrpcServer[Task](
               mirrorConfig.trisaConfig.grpcConfig,
               sslConfigOption = Some(mirrorConfig.trisaConfig.sslConfig),
+              interceptor = None,
               TrisaPeer2PeerGrpc.bindService(trisaPeer2PeerService, scheduler)
             )
             .map(Some(_))

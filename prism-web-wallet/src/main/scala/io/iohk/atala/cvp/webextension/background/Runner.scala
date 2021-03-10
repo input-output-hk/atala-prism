@@ -138,8 +138,14 @@ object Runner {
     val credentialsCopyJob =
       new CredentialsCopyJob(connectorClientService, consoleClientService)
 
-    val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService, credentialsCopyJob)
+    val walletManager = new WalletManager(
+      browserActionService,
+      storage,
+      connectorClientService,
+      nodeClientService,
+      consoleClientService,
+      credentialsCopyJob
+    )
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, walletManager)
@@ -162,8 +168,14 @@ object Runner {
     val credentialsCopyJob =
       new CredentialsCopyJob(connectorClientService, consoleClientService)
 
-    val walletManager =
-      new WalletManager(browserActionService, storage, connectorClientService, nodeClientService, credentialsCopyJob)
+    val walletManager = new WalletManager(
+      browserActionService,
+      storage,
+      connectorClientService,
+      nodeClientService,
+      consoleClientService,
+      credentialsCopyJob
+    )
 
     val commandProcessor =
       new CommandProcessor(browserNotificationService, walletManager)
