@@ -3,7 +3,7 @@ package io.iohk.atala.cvp.webextension.popup
 import com.alexitc.materialui.facade.materialUiCore.{materialUiCoreStrings, components => mui}
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.models.Role
-import io.iohk.atala.cvp.webextension.popup.components.{ErrorMessage, ProgressButton}
+import io.iohk.atala.cvp.webextension.popup.components.{ErrorMessage, LogoMessage, ProgressButton}
 import io.iohk.atala.cvp.webextension.popup.models.View.{DisplayMnemonic, Welcome}
 import io.iohk.atala.cvp.webextension.popup.models.{Data, ImageLogo, View}
 import org.scalajs.dom
@@ -42,12 +42,6 @@ import scala.util.{Failure, Success}
   }
 
   override def render(): ReactElement = {
-
-    val logoWarningMessage: ImageLogo => String = logo =>
-      s"The logo you are trying to upload has invalid dimensions. " +
-        s"Please change your image to match the required upload dimensions and " +
-        s"try again. Invalid logo dimensions ${logo.width}px per ${logo.height}px " +
-        s"supported logo dimensions must be maximum 50px per 50px."
 
     def removeImage(): Unit = {
       setState(_.copy(logo = None))
@@ -113,30 +107,7 @@ import scala.util.{Failure, Success}
               ),
               label(htmlFor := "logo")("Upload your logo")
             ),
-            state.logo.map(logo =>
-              if (!logo.hasValidDimensions) {
-                div(className := "upload_status_container")(
-                  div(
-                    className := "flex",
-                    p(
-                      className := "imgTextError",
-                      img(className := "red", src := "/assets/images/paper-clip.svg"),
-                      logo.file.name,
-                      div(
-                        img(src := "/assets/images/x.svg"),
-                        className := "logo-img",
-                        onClick := { () => removeImage() }
-                      )
-                    )
-                  ),
-                  p(
-                    logoWarningMessage(logo)
-                  )
-                )
-              } else {
-                div(className := "upload_status_container")(logo.file.name)
-              }
-            )
+            state.logo.map(logo => LogoMessage(logo, () => removeImage()))
           ),
           div(className := "")(
             div(className := "input__container")(
