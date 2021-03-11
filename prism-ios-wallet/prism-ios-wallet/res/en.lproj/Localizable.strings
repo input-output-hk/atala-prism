@@ -43,12 +43,10 @@
 
 
 // <!-- Dashboard -->
-"tab_profile" = "Profile";
-"tab_connections" = "Connections";
-"tab_wallet" = "Wallet";
 "tab_settings" = "Settings";
 "tab_credentials" = "Credentials";
 "tab_contacts" = "Contacts";
+"tab_services" = "Services";
 
 // <!-- Contacts -->
 "connections_nav_title" = "Contacts";
@@ -318,3 +316,17 @@
 "activitylog_connected" = "Connected";
 "activitylog_deleted" = "Deleted";
 "activitylog_empty_title" = "You don’t have any activities";
+
+// <!-- Home -->
+"home_profile_hey" = "Hey!";
+"home_profile_view_profile" = "VIEW PROFILE";
+"home_profile_notifications" = "You have %d notification(s)";
+"home_profile_notifications_empty" = "No new notifications";
+"home_activitylog_title" = "LAST ACTIVITY";
+"home_activitylog_button" = "Activity Log";
+"home_promotional_try" = "Try Atala PRISM\nInteractive Demo &\nreceive credentials";
+"home_promotional_instructions" = "Open atalaprism.io on a\ndesktop and follow demo steps";
+"home_promotional_more_info" = "More Info";
+"home_promotional_share" = "Share with your Friends!";
+"home_promotional_share_desc" = "Atala PRISM lorem ipsum\ndolor sit amtet";
+"home_promotional_send_invite" = "Send Invite";

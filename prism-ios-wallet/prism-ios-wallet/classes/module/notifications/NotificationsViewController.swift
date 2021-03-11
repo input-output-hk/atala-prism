@@ -23,10 +23,6 @@ class NotificationsViewController: ListingBaseViewController {
         return navBar
     }
 
-    lazy var actionHistory = SelectorAction(action: { [weak self] in
-          self?.presenterImpl.tappedHistoryButton()
-    })
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -75,23 +71,13 @@ class NotificationsViewController: ListingBaseViewController {
             navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle,
                                        hasBackButton: credentialsMode != .degrees, rightIconName: nil,
                                        rightIconAction: nil)
-        } else if credentialsMode == .activityLog {
-            navBar = NavBarCustomStyle(hasNavBar: true, title: "activitylog_title".localize(),
-                                       hasBackButton: true, rightIconName: nil, rightIconAction: nil)
         } else {
             let navTitle =  "notifications_title".localize()
-            let navIconName = mode != .fetching ? "ico_history" : nil
-            navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: false,
-                                       rightIconName: navIconName, rightIconAction: actionHistory)
+            navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: true)
             viewDetail.clearWebView()
         }
 
         NavBarCustom.config(view: self)
-
-        // Change empty view
-        let titleKey = credentialsMode == .activityLog ? "activitylog_empty_title" : "notifications_empty_title"
-        viewEmpty.config(imageNamed: "img_notifications_tray", title: titleKey.localize(),
-                         subtitle: nil, buttonText: nil, buttonAction: nil)
     }
 
     func config(isLoading: Bool) {
@@ -117,8 +103,6 @@ class NotificationsViewController: ListingBaseViewController {
             return "notificationHeader"
         case .newDegree:
             return "notification"
-        case .activityLog:
-            return "activityLog"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
@@ -133,8 +117,6 @@ class NotificationsViewController: ListingBaseViewController {
             return NotificationHeaderViewCell.default_NibName()
         case .newDegree:
             return NotificationViewCell.default_NibName()
-        case .activityLog:
-            return ActivityLogTableViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }

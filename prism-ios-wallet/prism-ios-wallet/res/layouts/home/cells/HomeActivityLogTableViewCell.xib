@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="89" id="KGk-i7-Jjw" customClass="HomeActivityLogTableViewCell" customModule="Atala_PRISM" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="406" height="89"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="406" height="89"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2gA-pw-Lzb">
+                        <rect key="frame" x="32" y="6" width="342" height="77"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="D47-ON-bBn">
+                                <rect key="frame" x="15" y="18.5" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="40" id="RMo-dU-lK6"/>
+                                    <constraint firstAttribute="height" constant="40" id="wF9-p3-aNp"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BPt-xp-iBD">
+                                <rect key="frame" x="66" y="17" width="28" height="12"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="10"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appGreyBlue"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Label Label Label Label Label Label Label Label Label Label" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g9m-OY-xjF">
+                                <rect key="frame" x="66" y="31" width="191" height="36"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="connections_more_info"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appPropertyGrey"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_time" translatesAutoresizingMaskIntoConstraints="NO" id="uMS-2L-HKA">
+                                <rect key="frame" x="267" y="41.5" width="15" height="15"/>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="418-zd-J14">
+                                <rect key="frame" x="289" y="43" width="31" height="12"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="10"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="connections_more_info"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appGreyBlue"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="D47-ON-bBn" secondAttribute="bottom" constant="14" id="Erk-0z-xAZ"/>
+                            <constraint firstAttribute="trailing" secondItem="418-zd-J14" secondAttribute="trailing" constant="22" id="Fc8-ue-ZJf"/>
+                            <constraint firstItem="g9m-OY-xjF" firstAttribute="top" secondItem="BPt-xp-iBD" secondAttribute="bottom" constant="2" id="KGK-RD-iuL"/>
+                            <constraint firstItem="418-zd-J14" firstAttribute="leading" secondItem="uMS-2L-HKA" secondAttribute="trailing" constant="7" id="Mk4-mh-Xii"/>
+                            <constraint firstItem="g9m-OY-xjF" firstAttribute="leading" secondItem="BPt-xp-iBD" secondAttribute="leading" id="NUk-uC-WUj"/>
+                            <constraint firstItem="uMS-2L-HKA" firstAttribute="centerY" secondItem="g9m-OY-xjF" secondAttribute="centerY" id="PI9-xd-XoG"/>
+                            <constraint firstItem="D47-ON-bBn" firstAttribute="centerY" secondItem="2gA-pw-Lzb" secondAttribute="centerY" id="Rts-68-aTe"/>
+                            <constraint firstItem="uMS-2L-HKA" firstAttribute="leading" secondItem="g9m-OY-xjF" secondAttribute="trailing" constant="10" id="SEy-0f-l8I"/>
+                            <constraint firstItem="D47-ON-bBn" firstAttribute="leading" secondItem="2gA-pw-Lzb" secondAttribute="leading" constant="15" id="e9v-eM-AEh"/>
+                            <constraint firstItem="uMS-2L-HKA" firstAttribute="centerY" secondItem="418-zd-J14" secondAttribute="centerY" id="hqh-kb-pGL"/>
+                            <constraint firstItem="BPt-xp-iBD" firstAttribute="leading" secondItem="D47-ON-bBn" secondAttribute="trailing" constant="11" id="jHw-oC-MPN"/>
+                            <constraint firstItem="BPt-xp-iBD" firstAttribute="top" secondItem="2gA-pw-Lzb" secondAttribute="top" constant="17" id="pOh-cV-pVC"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="g9m-OY-xjF" secondAttribute="bottom" constant="10" id="ssw-eT-fvU"/>
+                            <constraint firstItem="D47-ON-bBn" firstAttribute="top" relation="greaterThanOrEqual" secondItem="2gA-pw-Lzb" secondAttribute="top" constant="14" id="yXX-ea-Tcb"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="2gA-pw-Lzb" secondAttribute="bottom" constant="6" id="fOv-XI-hUB"/>
+                    <constraint firstItem="2gA-pw-Lzb" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="32" id="io6-V4-dKO"/>
+                    <constraint firstItem="2gA-pw-Lzb" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="6" id="nUQ-q3-7mA"/>
+                    <constraint firstAttribute="trailing" secondItem="2gA-pw-Lzb" secondAttribute="trailing" constant="32" id="nsC-PZ-BXa"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="dateLbl" destination="418-zd-J14" id="0PC-JY-vUt"/>
+                <outlet property="imageLogo" destination="D47-ON-bBn" id="J0R-ua-fg6"/>
+                <outlet property="titleLbl" destination="g9m-OY-xjF" id="140-x1-SsB"/>
+                <outlet property="typeLbl" destination="BPt-xp-iBD" id="0a5-6k-11A"/>
+                <outlet property="viewMainBody" destination="2gA-pw-Lzb" id="pox-9w-wCo"/>
+            </connections>
+            <point key="canvasLocation" x="184.05797101449278" y="90.736607142857139"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ico_time" width="15" height="15"/>
+    </resources>
+</document>

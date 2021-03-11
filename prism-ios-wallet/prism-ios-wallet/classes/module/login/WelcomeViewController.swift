@@ -14,8 +14,8 @@ class WelcomeViewController: BaseViewController {
     static func openThisView(_ caller: UIViewController?) {
 
         ViewControllerUtils.changeScreenPresented(caller: caller, storyboardName: "Welcome",
-                                                  viewControllerIdentif: "Welcome")
-        caller?.navigationController?.popViewController(animated: true)
+                                                  viewControllerIdentif: "Welcome", animated: false)
+//        caller?.navigationController?.popViewController(animated: true)
     }
 
     // MARK: Setup

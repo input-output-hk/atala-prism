@@ -11,8 +11,7 @@ import SwiftProtobuf
 import ObjectMapper
 
 class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
-                                NotificationViewCellPresenterDelegate, DegreeViewCellPresenterDelegate,
-                                 ActivityLogViewCellPresenterDelegate {
+                                NotificationViewCellPresenterDelegate, DegreeViewCellPresenterDelegate {
 
     var viewImpl: NotificationsViewController? {
         return view as? NotificationsViewController
@@ -20,7 +19,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     enum CredentialsMode {
         case degrees
-        case activityLog
         case detail
     }
 
@@ -29,7 +27,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         case degree // degrees mode
         case newDegreeHeader // degrees mode
         case newDegree // degree mode
-        case activityLog // activity log mode
     }
 
     struct CellRow {
@@ -42,8 +39,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     var degreeRows: [CellRow]?
 
     var detailCredential: Credential?
-
-    var activityLogs: [ActivityHistory]?
 
     private let fetchLock = NSLock()
     @Atomic var isFetching = false
@@ -60,14 +55,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         updateViewToState()
     }
 
-    func startShowingActivityLog() {
-
-        mode = .activityLog
-        let dao = ActivityHistoryDAO()
-        activityLogs = dao.listActivityHistory()
-        updateViewToState()
-    }
-
     func startShowingDetails(credential: Credential) {
 
         detailCredential = credential
@@ -77,10 +64,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     }
 
     // MARK: Buttons
-
-    func tappedHistoryButton() {
-        self.startShowingActivityLog()
-    }
 
     @discardableResult
     func tappedBackButton() -> Bool {
@@ -116,8 +99,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             return !(degreeRows?.isEmpty ?? true)
         case .detail:
             return true
-        case .activityLog:
-            return !(activityLogs?.isEmpty ?? true)
         }
     }
 
@@ -129,8 +110,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         switch mode {
         case .degrees:
             return degreeRows?.size() ?? 0
-        case .activityLog:
-            return activityLogs?.size() ?? 0
         case .detail:
             return 0
         }
@@ -144,8 +123,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         switch mode {
         case .degrees:
             return degreeRows![indexPath.row].type
-        case .activityLog:
-            return .activityLog
         case .detail:
             return .degree
         }
@@ -307,11 +284,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         if let credential = cellRow?.value as? Credential {
             startShowingDetails(credential: credential)
         }
-    }
-
-    func setup(for cell: ActivityLogTableViewCell) {
-        let detailRow = activityLogs![cell.indexPath!.row]
-        cell.config(history: detailRow)
     }
 
     // MARK: Accept and Decline buttons

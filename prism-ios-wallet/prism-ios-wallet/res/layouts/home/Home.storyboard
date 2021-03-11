@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="rWi-Rr-64Q">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Home View Controller-->
+        <scene sceneID="649-eO-OL7">
+            <objects>
+                <viewController id="t2n-0f-E6D" customClass="HomeViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="bNi-Qt-w1Y">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" contentInsetAdjustmentBehavior="never" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CGO-5c-VNg">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="862"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="9qJ-x9-Upb"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="CGO-5c-VNg" firstAttribute="leading" secondItem="9qJ-x9-Upb" secondAttribute="leading" id="J11-fE-KsM"/>
+                            <constraint firstItem="9qJ-x9-Upb" firstAttribute="trailing" secondItem="CGO-5c-VNg" secondAttribute="trailing" id="KlX-ia-QZQ"/>
+                            <constraint firstItem="9qJ-x9-Upb" firstAttribute="bottom" secondItem="CGO-5c-VNg" secondAttribute="bottom" id="Poq-6A-Uxt"/>
+                            <constraint firstItem="CGO-5c-VNg" firstAttribute="top" secondItem="bNi-Qt-w1Y" secondAttribute="top" id="gor-R8-pSg"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="G5J-zj-3wa"/>
+                    <connections>
+                        <outlet property="table" destination="CGO-5c-VNg" id="cvo-hn-jZk"/>
+                        <segue destination="TI2-fE-c2i" kind="show" identifier="ProfileSegue" id="b1C-P3-2L2"/>
+                        <segue destination="NaS-H7-cwY" kind="show" identifier="NotificationsSegue" id="2wp-Jk-xiI"/>
+                        <segue destination="Zxg-dQ-gT6" kind="show" identifier="ActivityLogSegue" id="Bhq-jq-scc"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="lwu-Qj-tt2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="47.826086956521742" y="-306.02678571428572"/>
+        </scene>
+        <!--Profile-->
+        <scene sceneID="u0e-Ff-k2l">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Profile" referencedIdentifier="Profile" id="TI2-fE-c2i" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="epZ-VK-G8c"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="LU6-40-mHu" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="633" y="-348"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="w04-Q6-yVA">
+            <objects>
+                <navigationController storyboardIdentifier="Home" automaticallyAdjustsScrollViewInsets="NO" useStoryboardIdentifierAsRestorationIdentifier="YES" navigationBarHidden="YES" id="rWi-Rr-64Q" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="n9I-D3-jkY">
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="t2n-0f-E6D" kind="relationship" relationship="rootViewController" id="bOv-WQ-XHJ"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4SJ-wZ-eSN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-862.31884057971024" y="-306.02678571428572"/>
+        </scene>
+        <!--Notifications-->
+        <scene sceneID="E2y-rJ-Iqn">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Notifications" referencedIdentifier="Notifications" id="NaS-H7-cwY" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Ect-gY-ang"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="GRM-oZ-GCE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="659" y="-307"/>
+        </scene>
+        <!--ActivityLog-->
+        <scene sceneID="oiR-OU-Lra">
+            <objects>
+                <viewControllerPlaceholder storyboardName="ActivityLog" referencedIdentifier="ActivityLog" id="Zxg-dQ-gT6" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="u65-bj-Bui"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ldn-xV-kcC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="654" y="-265"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

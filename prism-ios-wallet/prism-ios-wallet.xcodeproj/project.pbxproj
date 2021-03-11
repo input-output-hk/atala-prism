@@ -60,6 +60,14 @@
 		B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B35470F924E4252D009F4844 /* DeleteContact.storyboard */; };
 		B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35470FB24E42546009F4844 /* DeleteContactViewController.swift */; };
 		B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */; };
+		B35CEEE325E4256C00DA2BF9 /* HomeProfileTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35CEEE125E4256C00DA2BF9 /* HomeProfileTableViewCell.swift */; };
+		B35CEEE425E4256C00DA2BF9 /* HomeProfileTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B35CEEE225E4256C00DA2BF9 /* HomeProfileTableViewCell.xib */; };
+		B35CEEF125E5382500DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35CEEEF25E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift */; };
+		B35CEEF225E5382500DA2BF9 /* HomeActivityLogHeaderTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B35CEEF025E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.xib */; };
+		B35CEEFB25E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35CEEF925E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift */; };
+		B35CEEFC25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B35CEEFA25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib */; };
+		B35CEF0525E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35CEF0325E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift */; };
+		B35CEF0625E68B6600DA2BF9 /* HomePromotionalTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B35CEF0425E68B6600DA2BF9 /* HomePromotionalTableViewCell.xib */; };
 		B36233CF24F5880700AC96A6 /* NoResultsViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36233CE24F5880700AC96A6 /* NoResultsViewCell.swift */; };
 		B36233D124F5886500AC96A6 /* NoResultsViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B36233D024F5886500AC96A6 /* NoResultsViewCell.xib */; };
 		B36889DF25AE338D00E864B5 /* SuccessModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36889DE25AE338D00E864B5 /* SuccessModalViewController.swift */; };
@@ -74,10 +82,16 @@
 		B37FDBC7253A23A90024766B /* CredentialVerificationDetail.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B37FDBC6253A23A90024766B /* CredentialVerificationDetail.storyboard */; };
 		B37FDBCC253A396F0024766B /* CredentialVerificationDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37FDBCB253A396F0024766B /* CredentialVerificationDetailViewController.swift */; };
 		B38D944A24AE53440053CE36 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D944924AE53430053CE36 /* Reachability.swift */; };
+		B397DC5B25E3E6A900B26506 /* Home.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B397DC5A25E3E6A900B26506 /* Home.storyboard */; };
+		B397DC6125E3EB2200B26506 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B397DC6025E3EB2200B26506 /* HomeViewController.swift */; };
+		B397DC6A25E3EB3800B26506 /* HomePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B397DC6925E3EB3800B26506 /* HomePresenter.swift */; };
 		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
 		B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */; };
 		B3A3E32824D0971200DEA1EE /* RestoreAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A3E32724D0971200DEA1EE /* RestoreAccountViewController.swift */; };
 		B3A3E32A24D0972500DEA1EE /* RestoreAccountPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A3E32924D0972500DEA1EE /* RestoreAccountPresenter.swift */; };
+		B3A55F4B25E7D663004FA2EA /* ActivityLog.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3A55F4A25E7D663004FA2EA /* ActivityLog.storyboard */; };
+		B3A55F8725E7D78E004FA2EA /* ActivityLogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A55F8625E7D78E004FA2EA /* ActivityLogViewController.swift */; };
+		B3A55F8D25E7D7A6004FA2EA /* ActivityLogPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A55F8C25E7D7A6004FA2EA /* ActivityLogPresenter.swift */; };
 		B3A98F5324ED5FD300E138C2 /* ActivityLogTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A98F5124ED5FD300E138C2 /* ActivityLogTableViewCell.swift */; };
 		B3A98F5424ED5FD300E138C2 /* ActivityLogTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */; };
 		B3A98F5724EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A98F5524EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift */; };
@@ -325,6 +339,14 @@
 		B35470F924E4252D009F4844 /* DeleteContact.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DeleteContact.storyboard; sourceTree = "<group>"; };
 		B35470FB24E42546009F4844 /* DeleteContactViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteContactViewController.swift; sourceTree = "<group>"; };
 		B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestCell.swift; sourceTree = "<group>"; };
+		B35CEEE125E4256C00DA2BF9 /* HomeProfileTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeProfileTableViewCell.swift; sourceTree = "<group>"; };
+		B35CEEE225E4256C00DA2BF9 /* HomeProfileTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeProfileTableViewCell.xib; sourceTree = "<group>"; };
+		B35CEEEF25E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeActivityLogHeaderTableViewCell.swift; sourceTree = "<group>"; };
+		B35CEEF025E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeActivityLogHeaderTableViewCell.xib; sourceTree = "<group>"; };
+		B35CEEF925E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeActivityLogTableViewCell.swift; sourceTree = "<group>"; };
+		B35CEEFA25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeActivityLogTableViewCell.xib; sourceTree = "<group>"; };
+		B35CEF0325E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePromotionalTableViewCell.swift; sourceTree = "<group>"; };
+		B35CEF0425E68B6600DA2BF9 /* HomePromotionalTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomePromotionalTableViewCell.xib; sourceTree = "<group>"; };
 		B36233CE24F5880700AC96A6 /* NoResultsViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoResultsViewCell.swift; sourceTree = "<group>"; };
 		B36233D024F5886500AC96A6 /* NoResultsViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NoResultsViewCell.xib; sourceTree = "<group>"; };
 		B36889DE25AE338D00E864B5 /* SuccessModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuccessModalViewController.swift; sourceTree = "<group>"; };
@@ -339,10 +361,16 @@
 		B37FDBC6253A23A90024766B /* CredentialVerificationDetail.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CredentialVerificationDetail.storyboard; sourceTree = "<group>"; };
 		B37FDBCB253A396F0024766B /* CredentialVerificationDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialVerificationDetailViewController.swift; sourceTree = "<group>"; };
 		B38D944924AE53430053CE36 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
+		B397DC5A25E3E6A900B26506 /* Home.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Home.storyboard; sourceTree = "<group>"; };
+		B397DC6025E3EB2200B26506 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		B397DC6925E3EB3800B26506 /* HomePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePresenter.swift; sourceTree = "<group>"; };
 		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
 		B3A3E32524D075D700DEA1EE /* RestoreAccount.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RestoreAccount.storyboard; sourceTree = "<group>"; };
 		B3A3E32724D0971200DEA1EE /* RestoreAccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreAccountViewController.swift; sourceTree = "<group>"; };
 		B3A3E32924D0972500DEA1EE /* RestoreAccountPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreAccountPresenter.swift; sourceTree = "<group>"; };
+		B3A55F4A25E7D663004FA2EA /* ActivityLog.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ActivityLog.storyboard; sourceTree = "<group>"; };
+		B3A55F8625E7D78E004FA2EA /* ActivityLogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogViewController.swift; sourceTree = "<group>"; };
+		B3A55F8C25E7D7A6004FA2EA /* ActivityLogPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogPresenter.swift; sourceTree = "<group>"; };
 		B3A98F5124ED5FD300E138C2 /* ActivityLogTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogTableViewCell.swift; sourceTree = "<group>"; };
 		B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityLogTableViewCell.xib; sourceTree = "<group>"; };
 		B3A98F5524EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityHistory+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -698,7 +726,6 @@
 			children = (
 				B3045F1D2512B338004FAC50 /* NotificationHeaderViewCell.xib */,
 				EE904F1F2373BA2100EE6344 /* NotificationViewCell.xib */,
-				B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */,
 			);
 			path = cels;
 			sourceTree = "<group>";
@@ -708,6 +735,81 @@
 			children = (
 				EE904F072373AAE000EE6344 /* NotificationHeaderViewCell.swift */,
 				EE904F052373AAD200EE6344 /* NotificationViewCell.swift */,
+			);
+			path = cells;
+			sourceTree = "<group>";
+		};
+		B35CEEEB25E4320200DA2BF9 /* cells */ = {
+			isa = PBXGroup;
+			children = (
+				B35CEEE225E4256C00DA2BF9 /* HomeProfileTableViewCell.xib */,
+				B35CEEF025E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.xib */,
+				B35CEEFA25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib */,
+				B35CEF0425E68B6600DA2BF9 /* HomePromotionalTableViewCell.xib */,
+			);
+			path = cells;
+			sourceTree = "<group>";
+		};
+		B397DC5925E3E69500B26506 /* home */ = {
+			isa = PBXGroup;
+			children = (
+				B35CEEEB25E4320200DA2BF9 /* cells */,
+				B397DC5A25E3E6A900B26506 /* Home.storyboard */,
+			);
+			path = home;
+			sourceTree = "<group>";
+		};
+		B397DC5F25E3EAEF00B26506 /* home */ = {
+			isa = PBXGroup;
+			children = (
+				B397DC6825E3EB2800B26506 /* cells */,
+				B397DC6025E3EB2200B26506 /* HomeViewController.swift */,
+				B397DC6925E3EB3800B26506 /* HomePresenter.swift */,
+			);
+			path = home;
+			sourceTree = "<group>";
+		};
+		B397DC6825E3EB2800B26506 /* cells */ = {
+			isa = PBXGroup;
+			children = (
+				B35CEEE125E4256C00DA2BF9 /* HomeProfileTableViewCell.swift */,
+				B35CEEEF25E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift */,
+				B35CEEF925E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift */,
+				B35CEF0325E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift */,
+			);
+			path = cells;
+			sourceTree = "<group>";
+		};
+		B3A55F4825E7D63E004FA2EA /* activityLog */ = {
+			isa = PBXGroup;
+			children = (
+				B3A55F4925E7D651004FA2EA /* cells */,
+				B3A55F4A25E7D663004FA2EA /* ActivityLog.storyboard */,
+			);
+			path = activityLog;
+			sourceTree = "<group>";
+		};
+		B3A55F4925E7D651004FA2EA /* cells */ = {
+			isa = PBXGroup;
+			children = (
+				B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */,
+			);
+			path = cells;
+			sourceTree = "<group>";
+		};
+		B3A55F8125E7D753004FA2EA /* activityLog */ = {
+			isa = PBXGroup;
+			children = (
+				B3A55F8225E7D75C004FA2EA /* cells */,
+				B3A55F8625E7D78E004FA2EA /* ActivityLogViewController.swift */,
+				B3A55F8C25E7D7A6004FA2EA /* ActivityLogPresenter.swift */,
+			);
+			path = activityLog;
+			sourceTree = "<group>";
+		};
+		B3A55F8225E7D75C004FA2EA /* cells */ = {
+			isa = PBXGroup;
+			children = (
 				B3A98F5124ED5FD300E138C2 /* ActivityLogTableViewCell.swift */,
 			);
 			path = cells;
@@ -894,6 +996,8 @@
 		EE7D49D52366B9C2007C31A8 /* module */ = {
 			isa = PBXGroup;
 			children = (
+				B3A55F8125E7D753004FA2EA /* activityLog */,
+				B397DC5F25E3EAEF00B26506 /* home */,
 				B352434024FFD9D90053A804 /* dateFormat */,
 				B3F94E91247455A60087EBFD /* security */,
 				B3F94E8C247455990087EBFD /* lock */,
@@ -1112,6 +1216,8 @@
 		EE7D4B182366B9C3007C31A8 /* layouts */ = {
 			isa = PBXGroup;
 			children = (
+				B3A55F4825E7D63E004FA2EA /* activityLog */,
+				B397DC5925E3E69500B26506 /* home */,
 				B352433D24FFD5730053A804 /* dateFormat */,
 				B3F94E87247455720087EBFD /* security */,
 				B3F94E84247455650087EBFD /* lock */,
@@ -1544,6 +1650,7 @@
 				EE7D4C792366B9C4007C31A8 /* Localizable.strings in Resources */,
 				B309A9A8250FF2F200C62B50 /* CredentialSectionViewCell.xib in Resources */,
 				B3F94E86247455650087EBFD /* Lock.storyboard in Resources */,
+				B35CEEF225E5382500DA2BF9 /* HomeActivityLogHeaderTableViewCell.xib in Resources */,
 				EE7D4C832366B9C4007C31A8 /* LaunchScreen.storyboard in Resources */,
 				EE71855E23835EB000C58F62 /* ShareItemViewCell.xib in Resources */,
 				EE7185752384D5EE00C58F62 /* TabsViewCell.xib in Resources */,
@@ -1557,6 +1664,8 @@
 				B36F2FC224DDAC620012FDCC /* DeleteCredential.storyboard in Resources */,
 				EE718552237DCDB100C58F62 /* Welcome.storyboard in Resources */,
 				B3045F1E2512B338004FAC50 /* NotificationHeaderViewCell.xib in Resources */,
+				B3A55F4B25E7D663004FA2EA /* ActivityLog.storyboard in Resources */,
+				B35CEF0625E68B6600DA2BF9 /* HomePromotionalTableViewCell.xib in Resources */,
 				EE7D4D0823676311007C31A8 /* Dashboard.storyboard in Resources */,
 				EE631CFB23C66259001EAA0F /* InfoPlist.strings in Resources */,
 				EE7D4CB62366B9C5007C31A8 /* ListingEmptyViewCell.xib in Resources */,
@@ -1581,12 +1690,15 @@
 				B309A9A4250FF0A500C62B50 /* CredentialSharedViewCellViewCell.xib in Resources */,
 				EE7D4CC42366B9C5007C31A8 /* SteradianMedium.otf in Resources */,
 				EE7D4CB72366B9C5007C31A8 /* ListingLoadingViewCell.xib in Resources */,
+				B397DC5B25E3E6A900B26506 /* Home.storyboard in Resources */,
 				EE8FD4EA23726AC000EFF62E /* Settings.storyboard in Resources */,
 				EE48AC06237753C600C0A441 /* Terms.storyboard in Resources */,
+				B35CEEE425E4256C00DA2BF9 /* HomeProfileTableViewCell.xib in Resources */,
 				EE7185792384F40500C58F62 /* PaddingViewCell.xib in Resources */,
 				EE7D4D30236FB379007C31A8 /* ConnectionMainViewCell.xib in Resources */,
 				B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */,
 				EE48AC04237753A900C0A441 /* Register.storyboard in Resources */,
+				B35CEEFC25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib in Resources */,
 				EE7D4CC32366B9C5007C31A8 /* SteradianBold.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1761,6 +1873,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE7185622384B76B00C58F62 /* BrowserViewController.swift in Sources */,
+				B35CEF0525E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift in Sources */,
 				EE7D4C402366B9C4007C31A8 /* String+Extensions.swift in Sources */,
 				B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */,
 				EE7D4C272366B9C4007C31A8 /* LoggedUser.swift in Sources */,
@@ -1819,6 +1932,7 @@
 				EE22F1EA23A486FA003C4F87 /* wallet.pb.swift in Sources */,
 				EE7D4CEB23673C39007C31A8 /* Optional+Extensions.swift in Sources */,
 				EE7185562383089500C58F62 /* ConnectionConfirmViewController.swift in Sources */,
+				B397DC6125E3EB2200B26506 /* HomeViewController.swift in Sources */,
 				EE904F082373AAE000EE6344 /* NotificationHeaderViewCell.swift in Sources */,
 				B309C16924BF5CD600AF70DF /* Contact+CoreDataClass.swift in Sources */,
 				B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */,
@@ -1826,6 +1940,7 @@
 				B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */,
 				B37FDBCC253A396F0024766B /* CredentialVerificationDetailViewController.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
+				B35CEEE325E4256C00DA2BF9 /* HomeProfileTableViewCell.swift in Sources */,
 				B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */,
 				B36889DF25AE338D00E864B5 /* SuccessModalViewController.swift in Sources */,
 				B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */,
@@ -1858,6 +1973,7 @@
 				B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */,
 				EE7D4CFC236759A1007C31A8 /* DashboardViewController.swift in Sources */,
 				EE7D4C012366B9C4007C31A8 /* BasePresenter.swift in Sources */,
+				B35CEEFB25E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift in Sources */,
 				EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */,
 				B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */,
 				EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */,
@@ -1878,6 +1994,7 @@
 				EE7D4CF223673C39007C31A8 /* Array+Extensions2.swift in Sources */,
 				F5E38949234BC34D0001F1E3 /* AppDelegate.swift in Sources */,
 				EE48AC1C23775DFC00C0A441 /* SuccessPresenter.swift in Sources */,
+				B3A55F8D25E7D7A6004FA2EA /* ActivityLogPresenter.swift in Sources */,
 				EE7D4CF723673C39007C31A8 /* UIAlertController+Extensions.swift in Sources */,
 				EE7D4BFD2366B9C4007C31A8 /* BaseViewController.swift in Sources */,
 				B3EA098124A51C260082B71B /* ConnectionAddManualViewController.swift in Sources */,
@@ -1903,11 +2020,13 @@
 				EE7D4BBA2366B9C4007C31A8 /* UserUtils.swift in Sources */,
 				B3491BFB251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift in Sources */,
 				B38D944A24AE53440053CE36 /* Reachability.swift in Sources */,
+				B35CEEF125E5382500DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift in Sources */,
 				B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
 				B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */,
 				B3508F3B25C2D53900F907B0 /* DateFormatInfoTableViewCell.swift in Sources */,
 				B3A98F5724EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift in Sources */,
+				B3A55F8725E7D78E004FA2EA /* ActivityLogViewController.swift in Sources */,
 				EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */,
 				B352434624FFDA270053A804 /* DateFormatPresenter.swift in Sources */,
 				EE7D4C6F2366B9C4007C31A8 /* SharedMemoryHelper.swift in Sources */,
@@ -1926,6 +2045,7 @@
 				EE7D49D22366B697007C31A8 /* Common.swift in Sources */,
 				EE7D4CED23673C39007C31A8 /* UIView+Extensions2.swift in Sources */,
 				EE8CD818237CFDB700614578 /* InformationView.swift in Sources */,
+				B397DC6A25E3EB3800B26506 /* HomePresenter.swift in Sources */,
 				B309C16524BF5CD600AF70DF /* Credential+CoreDataClass.swift in Sources */,
 				EE71856E2384D0C100C58F62 /* FieldViewCell.swift in Sources */,
 				EE7D4D27236F8DE9007C31A8 /* ListingBaseViewController.swift in Sources */,
@@ -2118,7 +2238,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 140;
+				CURRENT_PROJECT_VERSION = 145;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
@@ -2145,7 +2265,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 140;
+				CURRENT_PROJECT_VERSION = 145;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "prism-ios-wallet/Info.plist";

@@ -36,7 +36,9 @@ extension UIView {
                                 borderWidth: CGFloat = 0,
                                 borderColor: CGColor = UIColor.white.cgColor,
                                 onlyTops: Bool = false,
-                                onlyBottoms: Bool = false) {
+                                onlyBottoms: Bool = false,
+                                onlyLefts: Bool = false,
+                                onlyRights: Bool = false) {
 
         layer.cornerRadius = radius
         layer.masksToBounds = true
@@ -45,7 +47,11 @@ extension UIView {
         if onlyTops {
             layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         } else if onlyBottoms {
-            layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMinYCorner]
+        } else if onlyLefts {
+            layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner]
+        } else if onlyRights {
+            layer.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMinYCorner]
         }
     }
 

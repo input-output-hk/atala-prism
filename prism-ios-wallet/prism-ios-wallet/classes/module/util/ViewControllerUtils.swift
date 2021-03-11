@@ -148,7 +148,7 @@ class ViewControllerUtils {
     static func changeScreenPresented(caller: UIViewController?,
                                       storyboardName: String,
                                       viewControllerIdentif: String? = nil,
-                                      params: [Any?]? = nil) {
+                                      params: [Any?]? = nil, animated: Bool = true) {
 
         let storyboard = UIStoryboard(name: storyboardName, bundle: nil)
         let viewcontroller = storyboard.instantiateViewController(withIdentifier:
@@ -163,6 +163,6 @@ class ViewControllerUtils {
         }
         navController?.modalPresentationStyle = .fullScreen
         viewcontroller.modalPresentationStyle = .fullScreen
-        caller?.present(navController!, animated: true, completion: nil)
+        caller?.present(navController!, animated: animated, completion: nil)
     }
 }

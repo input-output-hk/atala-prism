@@ -15,6 +15,14 @@ class ActivityHistoryDAO: BaseDAO {
         return [NSSortDescriptor(key: "timestamp", ascending: false),
                 NSSortDescriptor(key: "credentialName", ascending: true)]
     }
+    
+    func listRecentActivityHistory(limit: Int = 3) -> [ActivityHistory]? {
+        let fetchRequest = ActivityHistory.fetchRequest()
+        fetchRequest.sortDescriptors = getSortDescriptors()
+        fetchRequest.fetchLimit = limit
+        let result = try? getManagedContext()?.fetch(fetchRequest)
+        return result as? [ActivityHistory]
+    }
 
     func listActivityHistory() -> [ActivityHistory]? {
         let fetchRequest = ActivityHistory.fetchRequest()

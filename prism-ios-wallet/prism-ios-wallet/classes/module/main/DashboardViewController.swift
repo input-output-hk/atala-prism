@@ -18,10 +18,10 @@ class DashboardViewController: BaseTabPagerViewController {
     public typealias MyBar = TMBar.TabBar
     let bar = MyBar()
 
-    let viewControllersStoryboardIdentifiers = ["Credentials", "Connections", "Notifications", "Profile", "Settings"]
-    let viewControllersIdentifiers = ["Credentials", "Connections", "Notifications", "Profile", "Settings"]
-    let viewControllersTitles = ["tab_credentials", "tab_contacts", "", "tab_profile", "tab_settings"]
-    let viewControllersIcons = ["tab_credentials", "tab_contacts", "tab_empty", "tab_profile", "tab_settings"]
+    let viewControllersStoryboardIdentifiers = ["Credentials", "Connections", "Home", "Profile", "Settings"]
+    let viewControllersIdentifiers = ["Credentials", "Connections", "Home", "Profile", "Settings"]
+    let viewControllersTitles = ["tab_credentials", "tab_contacts", "", "tab_services", "tab_settings"]
+    let viewControllersIcons = ["tab_credentials", "tab_contacts", "tab_empty", "tab_services", "tab_settings"]
 
     lazy var viewControllers = { makeAllChildViewControllers() }()
 
@@ -43,6 +43,14 @@ class DashboardViewController: BaseTabPagerViewController {
                                                name: .showCredentialsScreen, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(onShowContactsScreen),
                                                name: .showContactsScreen, object: nil)
+
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        // Select the initial tab
+        scrollToPage(Page.at(index: 2), animated: false)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -77,8 +85,6 @@ class DashboardViewController: BaseTabPagerViewController {
         // Reorder mid button to top
         self.view.insertSubview(viewMidButtonContainer, at: self.view.subviews.count)
 
-        // Select the initial tab
-        scrollToPage(Page.at(index: 2), animated: false)
 
     }
 
@@ -149,12 +155,19 @@ class DashboardViewController: BaseTabPagerViewController {
 
     func makeChildViewController(index: Int) -> UIViewController {
         let storyboard = UIStoryboard(name: viewControllersStoryboardIdentifiers[index], bundle: .main)
-        return storyboard.instantiateViewController(withIdentifier: viewControllersIdentifiers[index])
+        return (storyboard.instantiateViewController(withIdentifier: viewControllersIdentifiers[index]))
     }
 
     @discardableResult
     override func scrollToPage(_ page: PageboyViewController.Page, animated: Bool,
                                completion: PageboyViewController.PageScrollCompletion? = nil) -> Bool {
+        // Check if is the Services button
+        if case Page.at(index: 3) = page {
+            let alert = UIAlertController(title: "Comming soon", message: nil, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "ok".localize(), style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return true
+        }
         let result = super.scrollToPage(page, animated: animated)
 
         // Check if is the central button

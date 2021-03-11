@@ -62,7 +62,7 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
 
         // Navigation bar
         navBar = NavBarCustomStyle(hasNavBar: true, isWhite: hasBgSpecial, title: navTitle,
-                                   hasBackButton: profileMode != .initial, rightIconName: navTitleIcon,
+                                   hasBackButton: true, rightIconName: navTitleIcon,
                                    rightIconAction: navTitleIconAction)
         NavBarCustom.config(view: self)
         // Special background
