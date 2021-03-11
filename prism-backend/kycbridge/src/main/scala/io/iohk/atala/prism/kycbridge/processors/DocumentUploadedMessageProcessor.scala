@@ -5,7 +5,7 @@ import monix.eval.Task
 import cats.data.EitherT
 import doobie.util.transactor.Transactor
 import io.circe.syntax._
-import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor, NodeClientService}
+import io.iohk.atala.prism.services.{BaseGrpcClientService, ConnectorClientService, MessageProcessor, NodeClientService}
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage}
@@ -16,7 +16,6 @@ import io.iohk.atala.prism.kycbridge.services.{AssureIdService, FaceIdService}
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
-import io.iohk.atala.prism.config.ConnectorConfig
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
 import io.iohk.atala.prism.kycbridge.models.{Connection, faceId}
@@ -30,7 +29,7 @@ class DocumentUploadedMessageProcessor(
     connectorService: ConnectorClientService,
     assureIdService: AssureIdService,
     faceIdService: FaceIdService,
-    connectorConfig: ConnectorConfig
+    authConfig: BaseGrpcClientService.DidBasedAuthConfig
 )(implicit ec: ECTrait) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -143,12 +142,12 @@ class DocumentUploadedMessageProcessor(
     Credential
       .fromCredentialContent(
         CredentialContent(
-          CredentialContent.JsonFields.IssuerDid.field -> connectorConfig.authConfig.did.value,
-          CredentialContent.JsonFields.IssuanceKeyId.field -> connectorConfig.authConfig.didKeyId,
+          CredentialContent.JsonFields.IssuerDid.field -> authConfig.did.value,
+          CredentialContent.JsonFields.IssuanceKeyId.field -> authConfig.didKeyId,
           CredentialContent.JsonFields.CredentialSubject.field -> credentialSubject
           // CredentialContent.JsonFields.CredentialSubject.field -> (credentialSubject ++ biographic ++ classificationType)
         )
       )
-      .sign(connectorConfig.authConfig.didKeyPair.privateKey)
+      .sign(authConfig.didKeyPair.privateKey)
   }
 }

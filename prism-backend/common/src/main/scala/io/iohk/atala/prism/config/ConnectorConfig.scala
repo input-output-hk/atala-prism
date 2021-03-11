@@ -1,13 +1,8 @@
 package io.iohk.atala.prism.config
 
-import java.util.Base64
-
 import com.typesafe.config.Config
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
-import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
-import io.iohk.atala.prism.identity.DID
 
-case class ConnectorConfig(host: String, port: Int, authConfig: DidBasedAuthConfig)
+case class ConnectorConfig(host: String, port: Int)
 
 object ConnectorConfig {
 
@@ -17,22 +12,9 @@ object ConnectorConfig {
     val host = config.getString("host")
     val port = config.getInt("port")
 
-    val did = DID.unsafeFromString(config.getString("did"))
-    val didKeyId = config.getString("did-key-id")
-    val didPrivateKey = config.getString("did-private-key")
-
-    val privateKey = EC.toPrivateKey(Base64.getUrlDecoder.decode(didPrivateKey))
-    val publicKey = EC.toPublicKeyFromPrivateKey(privateKey.getEncoded)
-
     ConnectorConfig(
       host = host,
-      port = port,
-      authConfig = DidBasedAuthConfig(
-        did = did,
-        didKeyId = didKeyId,
-        didKeyPair = ECKeyPair(privateKey, publicKey)
-      )
+      port = port
     )
   }
-
 }

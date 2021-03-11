@@ -8,7 +8,6 @@ import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.credential_models.{StartAcuantProcess, AtalaMessage, ProofRequest, KycBridgeMessage}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-import io.iohk.atala.prism.config.ConnectorConfig
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
 import io.iohk.atala.prism.models.{ConnectorMessageId, CredentialProofRequestType}
 
@@ -58,8 +57,8 @@ trait ConnectorClientService {
 class ConnectorClientServiceImpl(
     connector: ConnectorServiceGrpc.ConnectorServiceStub,
     requestAuthenticator: RequestAuthenticator,
-    connectorConfig: ConnectorConfig
-) extends BaseGrpcClientService(connector, requestAuthenticator, connectorConfig.authConfig)
+    authConfig: BaseGrpcClientService.BaseGrpcAuthConfig
+) extends BaseGrpcClientService(connector, requestAuthenticator, authConfig)
     with ConnectorClientService {
 
   private val logger = LoggerFactory.getLogger(this.getClass)

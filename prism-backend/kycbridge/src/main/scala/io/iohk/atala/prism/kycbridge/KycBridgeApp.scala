@@ -32,6 +32,7 @@ import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.kycbridge.processors.DocumentUploadedMessageProcessor
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.services.BaseGrpcClientService
 
 object KycBridgeApp extends TaskApp {
 
@@ -96,8 +97,11 @@ object KycBridgeApp extends TaskApp {
         stub = NodeServiceGrpc.stub
       )
 
-      connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(ec), connectorConfig)
-      nodeService = new NodeClientServiceImpl(node, connectorConfig.authConfig)
+      // auth config - stored in the db
+      authConfig <- BaseGrpcClientService.DidBasedAuthConfig.getOrCreate(globalConfig, tx, connector)
+
+      connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(ec), authConfig)
+      nodeService = new NodeClientServiceImpl(node, authConfig)
       kycBridgeService = new KycBridgeService(tx, connectorService)
       kycBridgeGrpcService = new KycBridgeGrpcService(kycBridgeService)(scheduler)
       assureIdService = new AssureIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
@@ -113,7 +117,7 @@ object KycBridgeApp extends TaskApp {
         connectorService,
         assureIdService,
         faceIdService,
-        connectorConfig
+        authConfig
       )
 
       connectorMessageService = new ConnectorMessagesService(

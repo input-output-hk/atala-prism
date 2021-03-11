@@ -11,7 +11,6 @@ import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.connector_api._
-import io.iohk.atala.prism.config.ConnectorConfig
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
 import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
@@ -165,7 +164,11 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
   trait ConnectorStubs {
     val connectionToken = "i_vYVUXxhkkFBwrGBgx7Og=="
     val connector = mock[ConnectorServiceGrpc.ConnectorServiceStub]
-    val service = new ConnectorClientServiceImpl(connector, mock[RequestAuthenticator], mock[ConnectorConfig]) {
+    val service = new ConnectorClientServiceImpl(
+      connector,
+      mock[RequestAuthenticator],
+      mock[BaseGrpcClientService.BaseGrpcAuthConfig]
+    ) {
       override def authenticatedCall[Response, Request <: GeneratedMessage](
           request: Request,
           call: ConnectorServiceGrpc.ConnectorServiceStub => (Request => Future[Response])

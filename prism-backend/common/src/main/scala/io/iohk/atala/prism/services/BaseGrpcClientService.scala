@@ -3,11 +3,20 @@ package io.iohk.atala.prism.services
 import java.util.Base64
 
 import scala.concurrent.Future
+import scala.util.Try
+
 import io.grpc.Metadata
 import io.grpc.stub.{AbstractStub, MetadataUtils}
 import scalapb.GeneratedMessage
 import monix.eval.Task
-import io.iohk.atala.prism.crypto.ECKeyPair
+import org.slf4j.LoggerFactory
+import cats.effect.Resource
+import cats.data.OptionT
+import com.google.protobuf.ByteString
+import doobie.util.transactor.Transactor
+import doobie.free.connection.ConnectionIO
+import com.typesafe.config.Config
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.services.BaseGrpcClientService.{
   AuthHeaders,
@@ -16,7 +25,10 @@ import io.iohk.atala.prism.services.BaseGrpcClientService.{
   PublicKeyBasedAuthConfig
 }
 import io.iohk.atala.prism.identity.DID
-import org.slf4j.LoggerFactory
+import io.iohk.atala.prism.daos.DbConfigDao
+import io.iohk.atala.prism.protos.{connector_api, node_models}
+
+import doobie.implicits._
 
 /**
   * Abstract service which provides support for DID based authentication for gRPC
@@ -99,6 +111,132 @@ object BaseGrpcClientService {
       didKeyId: String,
       didKeyPair: ECKeyPair
   ) extends BaseGrpcAuthConfig(didKeyPair)
+  object DidBasedAuthConfig {
+
+    /**
+      * Names of the keys in the database.
+      */
+    object ConfigKeyNames {
+      val DID = "did"
+      val DID_KEY_ID = "did-key-id"
+      val DID_PRIVATE_KEY = "did-private-key"
+    }
+
+    private val logger = LoggerFactory.getLogger(BaseGrpcClientService.getClass)
+
+    def getOrCreate(
+        applicationConfig: Config,
+        tx: Transactor[Task],
+        connector: connector_api.ConnectorServiceGrpc.ConnectorServiceStub
+    ): Resource[Task, DidBasedAuthConfig] = {
+
+      lazy val getFromApplicationConfig: Option[DidBasedAuthConfig] = {
+        for {
+          did <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID}")).toOption.map(DID.unsafeFromString)
+          didKeyId <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID_KEY_ID}")).toOption
+          didPrivateKey <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID_PRIVATE_KEY}")).toOption
+          didKeyPair <- getECKeyPairFromString(didPrivateKey)
+          _ = logger.info(s"DID for auth loaded from application.ini: ${did.toString}")
+        } yield DidBasedAuthConfig(
+          did = did,
+          didKeyId = didKeyId,
+          didKeyPair = didKeyPair
+        )
+      }
+
+      lazy val getFromDb: Task[DidBasedAuthConfig] = {
+        (for {
+          did <- OptionT(DbConfigDao.get(ConfigKeyNames.DID)).map(DID.unsafeFromString)
+          didKeyId <- OptionT(DbConfigDao.get(ConfigKeyNames.DID_KEY_ID))
+          didPrivateKey <- OptionT(DbConfigDao.get(ConfigKeyNames.DID_PRIVATE_KEY))
+          didKeyPair <- OptionT.fromOption[ConnectionIO](getECKeyPairFromString(didPrivateKey))
+          _ = logger.info(s"DID for auth loaded from the DB config: ${did.toString}")
+        } yield DidBasedAuthConfig(
+          did = did,
+          didKeyId = didKeyId,
+          didKeyPair = didKeyPair
+        )).transact(tx).getOrElseF(createNewDid.flatMap(saveAuthConfig))
+      }
+
+      def getECKeyPairFromString(encodedPrivateKey: String): Option[ECKeyPair] = {
+        for {
+          privateKey <- Try(EC.toPrivateKey(Base64.getUrlDecoder.decode(encodedPrivateKey))).toOption
+          publicKey <- Try(EC.toPublicKeyFromPrivateKey(privateKey.getEncoded)).toOption
+        } yield ECKeyPair(privateKey, publicKey)
+      }
+
+      def createNewDid: Task[DidBasedAuthConfig] = {
+        val keyPair = EC.generateKeyPair()
+        val publicKey = node_models.PublicKey(
+          id = "master",
+          usage = node_models.KeyUsage.MASTER_KEY,
+          keyData = node_models.PublicKey.KeyData.EcKeyData(
+            node_models.ECKeyData(
+              curve = ECConfig.CURVE_NAME,
+              x = ByteString.copyFrom(keyPair.publicKey.getCurvePoint.x.toByteArray),
+              y = ByteString.copyFrom(keyPair.publicKey.getCurvePoint.y.toByteArray)
+            )
+          )
+        )
+        val createDidOp = node_models.CreateDIDOperation(
+          didData = Some(
+            node_models.DIDData(
+              publicKeys = Seq(publicKey)
+            )
+          )
+        )
+
+        val atalaOp =
+          node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
+
+        val signedAtalaOp = node_models.SignedAtalaOperation(
+          signedWith = "master",
+          operation = Some(atalaOp),
+          signature = ByteString.copyFrom(EC.sign(atalaOp.toByteArray, keyPair.privateKey).data)
+        )
+
+        val request = connector_api
+          .RegisterDIDRequest()
+          .withCreateDIDOperation(signedAtalaOp)
+          .withLogo(ByteString.EMPTY)
+          .withName("auto-generated-did")
+          .withRole(connector_api.RegisterDIDRequest.Role.issuer)
+
+        for {
+          authConfig <-
+            Task
+              .fromFuture(connector.registerDID(request))
+              .map(response =>
+                DidBasedAuthConfig(
+                  did = DID.unsafeFromString(response.did),
+                  didKeyId = "master",
+                  didKeyPair = keyPair
+                )
+              )
+          _ = logger.info(s"New DID for auth created: ${authConfig.did.toString}")
+        } yield authConfig
+      }
+
+      def saveAuthConfig(authConfig: DidBasedAuthConfig): Task[DidBasedAuthConfig] = {
+        (for {
+          _ <- DbConfigDao.setIfNotExists(ConfigKeyNames.DID, authConfig.did.toString)
+          _ <- DbConfigDao.setIfNotExists(ConfigKeyNames.DID_KEY_ID, authConfig.didKeyId)
+          _ <- DbConfigDao.setIfNotExists(
+            ConfigKeyNames.DID_PRIVATE_KEY,
+            Base64.getUrlEncoder.encodeToString(authConfig.didKeyPair.privateKey.getEncoded)
+          )
+          // as we want to save DID once, even after save we have to get the current value again
+        } yield ()).transact(tx).flatMap(_ => getFromDb)
+      }
+
+      Resource.liftF(
+        Task(getFromApplicationConfig).flatMap {
+          case None => getFromDb
+          case Some(authConfig) => Task.pure(authConfig)
+        }
+      )
+    }
+  }
 
   case class PublicKeyBasedAuthConfig(keyPair: ECKeyPair) extends BaseGrpcAuthConfig(keyPair)
 

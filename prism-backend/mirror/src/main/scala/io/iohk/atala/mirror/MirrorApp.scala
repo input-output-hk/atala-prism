@@ -22,7 +22,12 @@ import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.repositories.TransactorFactory
-import io.iohk.atala.prism.services.{ConnectorClientServiceImpl, ConnectorMessagesService, NodeClientServiceImpl}
+import io.iohk.atala.prism.services.{
+  BaseGrpcClientService,
+  ConnectorClientServiceImpl,
+  ConnectorMessagesService,
+  NodeClientServiceImpl
+}
 import io.iohk.atala.prism.utils.GrpcUtils
 import doobie.implicits._
 import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
@@ -86,9 +91,12 @@ object MirrorApp extends TaskApp {
         stub = NodeServiceGrpc.stub
       )
 
+      // auth config - stored in the db
+      authConfig <- BaseGrpcClientService.DidBasedAuthConfig.getOrCreate(globalConfig, tx, connector)
+
       // services
-      connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), connectorConfig)
-      nodeService = new NodeClientServiceImpl(node, connectorConfig.authConfig)
+      connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), authConfig)
+      nodeService = new NodeClientServiceImpl(node, authConfig)
       mirrorService = new MirrorService(tx, connectorService)
       credentialService = new CredentialService(tx, connectorService, nodeService)
       cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig, nodeService)

@@ -22,7 +22,8 @@ Start the database:
 docker run -it --rm -e POSTGRES_DB=kyc_bridge_db -p 5435:5432 postgres:11.5
 ```
 
-To create example DID, run:
+To create example DID (otherwise the DID will be generated automatically 
+and saved in the database), run:
 
 ```sh
 sbt "connectorClient/run register"

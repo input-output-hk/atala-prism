@@ -27,12 +27,13 @@ trait ServicesFixtures {
   object ConnectorClientServiceFixtures {
     val defaultConnectorConfig = ConnectorConfig(
       host = "localhost",
-      port = 9999,
-      DidBasedAuthConfig(
-        did = DID.buildPrismDID("did"),
-        didKeyId = "master",
-        didKeyPair = EC.generateKeyPair()
-      )
+      port = 9999
+    )
+
+    val defaultDidBasedAuthConfig = DidBasedAuthConfig(
+      did = DID.buildPrismDID("did"),
+      didKeyId = "master",
+      didKeyPair = EC.generateKeyPair()
     )
   }
 

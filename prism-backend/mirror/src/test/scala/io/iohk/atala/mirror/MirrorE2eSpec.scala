@@ -21,7 +21,6 @@ import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import cats.implicits._
 import doobie.implicits._
-import io.iohk.atala.prism.config.ConnectorConfig
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.models.{ConnectionToken, CredentialProofRequestType}
 import monix.execution.Scheduler.Implicits.global
@@ -59,11 +58,11 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
         _ = logger.info(s"DID: ${did.value}")
 
         // create services
-        connectorConfig = createConnectorConfig(did, masterKey)
+        authConfig = createAuthConfig(did, masterKey, "master")
 
-        nodeService = new NodeClientServiceImpl(nodeStub, connectorConfig.authConfig)
+        nodeService = new NodeClientServiceImpl(nodeStub, authConfig)
         connectorClientService =
-          new ConnectorClientServiceImpl(connectorStub, new RequestAuthenticator(ecTrait), connectorConfig)
+          new ConnectorClientServiceImpl(connectorStub, new RequestAuthenticator(ecTrait), authConfig)
         credentialService = new CredentialService(
           database,
           connectorClientService,
@@ -159,14 +158,6 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
       SendMessageRequest(connectionId = connectionId, message = message)
 
     val getMessagesPaginatedRequest = GetMessagesPaginatedRequest(limit = Int.MaxValue)
-
-    def createConnectorConfig(did: DID, keys: ECKeyPair) = {
-      ConnectorConfig(
-        host = "localhost",
-        port = 50051,
-        authConfig = createAuthConfig(did, keys, keyId)
-      )
-    }
   }
 
   def createNode(

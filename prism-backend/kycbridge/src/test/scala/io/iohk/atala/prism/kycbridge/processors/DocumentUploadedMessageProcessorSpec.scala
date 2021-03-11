@@ -70,7 +70,7 @@ class DocumentUploadedMessageProcessorSpec
           connectorClientService,
           assureIdServiceStub,
           faceIdServiceStubWithFailedMatch,
-          defaultConnectorConfig
+          defaultDidBasedAuthConfig
         )
 
       // when
@@ -97,7 +97,7 @@ class DocumentUploadedMessageProcessorSpec
         connectorClientService,
         assureIdServiceStub,
         faceIdServiceStub,
-        defaultConnectorConfig
+        defaultDidBasedAuthConfig
       )
 
     val acuantProcessFinished = AcuantProcessFinished(documentInstanceId = "id")
