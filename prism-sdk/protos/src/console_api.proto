@@ -8,6 +8,7 @@ package io.iohk.atala.prism.protos;
 import "console_models.proto";
 import "common_models.proto";
 import "node_models.proto";
+import "google/protobuf/timestamp.proto";
 
 // The Management Console API
 service ConsoleService {
@@ -410,7 +411,7 @@ message GetCredentialIssuanceRequest {
 message GetCredentialIssuanceResponse {
   string name = 1; // Name of the credential issuance
   string credentialTypeId = 2; // // The id (UUID) of credential type which is used as a template for this credential.
-  int64 createdAt = 3; // Timestamp (millis since epoch) when the credential issuance was created
+  google.protobuf.Timestamp createdAt = 3; // Timestamp when the credential issuance was created
   repeated CredentialIssuanceContact credentialIssuanceContacts = 4; // The contacts and their credential data
 }
 

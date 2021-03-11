@@ -39,6 +39,7 @@ import io.iohk.atala.prism.protos.node_api.{
 }
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
@@ -412,7 +413,8 @@ class NodeServiceSpec
         .withTimestampInfo(
           node_models
             .TimestampInfo()
-            .withBlockTimestamp(issuedOnLedgerData.timestampInfo.atalaBlockTimestamp.toEpochMilli)
+            .withBlockTimestampDeprecated(issuedOnLedgerData.timestampInfo.atalaBlockTimestamp.toEpochMilli)
+            .withBlockTimestamp(issuedOnLedgerData.timestampInfo.atalaBlockTimestamp.toProtoTimestamp)
             .withBlockSequenceNumber(issuedOnLedgerData.timestampInfo.atalaBlockSequenceNumber)
             .withOperationSequenceNumber(issuedOnLedgerData.timestampInfo.operationSequenceNumber)
         )
@@ -504,7 +506,8 @@ class NodeServiceSpec
 
       val timestampInfoProto = node_models
         .TimestampInfo()
-        .withBlockTimestamp(revocationDate.atalaBlockTimestamp.toEpochMilli)
+        .withBlockTimestampDeprecated(revocationDate.atalaBlockTimestamp.toEpochMilli)
+        .withBlockTimestamp(revocationDate.atalaBlockTimestamp.toProtoTimestamp)
         .withBlockSequenceNumber(revocationDate.atalaBlockSequenceNumber)
         .withOperationSequenceNumber(revocationDate.operationSequenceNumber)
 

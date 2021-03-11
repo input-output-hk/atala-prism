@@ -14,6 +14,9 @@ import io.iohk.atala.prism.protos.{node_api, node_models}
 import cats.implicits._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
+import io.iohk.atala.prism.utils.syntax._
+
+import scala.annotation.nowarn
 
 trait NodeClientService {
 
@@ -122,9 +125,11 @@ object NodeClientService {
     )
   }
 
+  @nowarn("msg=value blockTimestampDeprecated in class TimestampInfo is deprecated")
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): credentials.TimestampInfo = {
     credentials.TimestampInfo(
-      Instant.ofEpochMilli(timestampInfoProto.blockTimestamp),
+      timestampInfoProto.blockTimestamp
+        .fold(Instant.ofEpochMilli(timestampInfoProto.blockTimestampDeprecated))(_.toInstant),
       timestampInfoProto.blockSequenceNumber,
       timestampInfoProto.operationSequenceNumber
     )
@@ -134,7 +139,8 @@ object NodeClientService {
     node_models.TimestampInfo(
       timestampInfoProto.atalaBlockTimestamp.toEpochMilli,
       timestampInfoProto.atalaBlockSequenceNumber,
-      timestampInfoProto.operationSequenceNumber
+      timestampInfoProto.operationSequenceNumber,
+      timestampInfoProto.atalaBlockTimestamp.toProtoTimestamp.some
     )
   }
 

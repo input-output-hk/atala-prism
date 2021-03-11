@@ -14,6 +14,8 @@ import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorResult
 
+import cats.syntax.option._
+import com.google.protobuf.timestamp.Timestamp
 import doobie.implicits._
 import monix.execution.Scheduler.Implicits.global
 
@@ -36,7 +38,8 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec[Task] {
       // given
       val receivedMessage = ReceivedMessage(
         id = "id1",
-        received = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
+        receivedDeprecated = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
+        received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
         connectionId = "0a66fcef-4d50-4a67-a365-d4dbebcf22d3",
         message = AtalaMessage().toByteString
       )

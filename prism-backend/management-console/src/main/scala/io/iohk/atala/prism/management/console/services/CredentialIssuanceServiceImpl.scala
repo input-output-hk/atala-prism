@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.syntax.option._
 import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -10,6 +11,7 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.console_models.CredentialIssuanceContact
+import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,7 +46,7 @@ class CredentialIssuanceServiceImpl(
         GetCredentialIssuanceResponse(
           name = credentialIssuance.name,
           credentialTypeId = credentialIssuance.credentialTypeId.uuid.toString,
-          createdAt = credentialIssuance.createdAt.toEpochMilli,
+          createdAt = credentialIssuance.createdAt.toProtoTimestamp.some,
           credentialIssuanceContacts = credentialIssuance.contacts.map(contact =>
             CredentialIssuanceContact(
               contactId = contact.contactId.toString,

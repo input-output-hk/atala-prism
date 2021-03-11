@@ -37,6 +37,9 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor, NodeClientService}
 import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorException, MessageProcessorResult}
+import io.iohk.atala.prism.utils.syntax._
+
+import scala.annotation.nowarn
 
 class CredentialService(
     tx: Transactor[Task],
@@ -133,7 +136,7 @@ class CredentialService(
       .flatMap(_.content.issuerDid)
       .toOption
   }
-
+  @nowarn("msg=value receivedDeprecated in class ReceivedMessage is deprecated")
   private def createUserCredential(
       receivedMessage: ReceivedMessage,
       token: ConnectionToken,
@@ -152,7 +155,9 @@ class CredentialService(
         RawCredential(plainTextCredential.encodedCredential),
         getIssuersDid(RawCredential(plainTextCredential.encodedCredential)),
         ConnectorMessageId(receivedMessage.id),
-        MessageReceivedDate(Instant.ofEpochMilli(receivedMessage.received)),
+        MessageReceivedDate(
+          receivedMessage.received.fold(Instant.ofEpochSecond(receivedMessage.receivedDeprecated))(_.toInstant)
+        ),
         credentialStatus
       )
     }

@@ -3,7 +3,7 @@ set -e
 
 OUT_DIR="./src/protos"
 
-PROTOS_DIR="../prism-sdk/protos"
+PROTOS_DIR="../prism-sdk/protos/src"
 
 # clean protos directory first to avoid keeping dust
 rm -rf $OUT_DIR

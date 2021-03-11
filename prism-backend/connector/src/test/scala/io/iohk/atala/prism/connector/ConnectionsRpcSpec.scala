@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector
 
+import cats.syntax.option._
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
@@ -13,6 +14,7 @@ import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
+import io.iohk.atala.prism.utils.syntax._
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
@@ -332,8 +334,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
   "getConnectionCommunicationKeys" should {
     "return non-revoked keys for a DID owning participant" in {
-      val earlierTimestamp = LocalDateTime.of(2020, 5, 12, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1000L
-      val laterTimestamp = LocalDateTime.of(2020, 5, 13, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1000L
+      val earlierTimestamp = LocalDateTime.of(2020, 5, 12, 0, 0).toInstant(ZoneOffset.UTC)
+      val laterTimestamp = LocalDateTime.of(2020, 5, 13, 0, 0).toInstant(ZoneOffset.UTC)
       val issuerCommKeys = Seq(
         ("foo", EC.generateKeyPair(), None, node_models.KeyUsage.COMMUNICATION_KEY),
         ("bar", EC.generateKeyPair(), None, node_models.KeyUsage.COMMUNICATION_KEY),
@@ -361,8 +363,13 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
                 node_models.PublicKey(
                   id = keyId,
                   usage = usage,
-                  addedOn = Some(node_models.TimestampInfo(earlierTimestamp, 1, 1)),
-                  revokedOn = revokedTimestamp.map(node_models.TimestampInfo(_, 1, 1)),
+                  addedOn = Some(
+                    node_models
+                      .TimestampInfo(earlierTimestamp.toEpochMilli, 1, 1, earlierTimestamp.toProtoTimestamp.some)
+                  ),
+                  revokedOn = revokedTimestamp.map(instant =>
+                    node_models.TimestampInfo(instant.toEpochMilli, 1, 1, instant.toProtoTimestamp.some)
+                  ),
                   keyData = node_models.PublicKey.KeyData.EcKeyData(
                     node_models.ECKeyData(
                       ECConfig.CURVE_NAME,

@@ -14,6 +14,7 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.protos.{console_api, console_models}
+import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,7 +45,8 @@ class GroupsServiceImpl(
               console_models
                 .Group()
                 .withId(group.id.toString)
-                .withCreatedAt(group.createdAt.getEpochSecond)
+                .withCreatedAtDeprecated(group.createdAt.getEpochSecond)
+                .withCreatedAt(group.createdAt.toProtoTimestamp)
                 .withName(group.name.value)
                 .withNumberOfContacts(request.contactIds.size)
             )

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.services
 
 import java.time.{LocalDateTime, ZoneOffset}
 
+import cats.syntax.option._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scalapb.GeneratedMessage
@@ -16,6 +17,7 @@ import io.iohk.atala.prism.models.CredentialProofRequestType
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
 import io.iohk.atala.prism.protos.connector_models.ConnectionInfo
+import io.iohk.atala.prism.utils.syntax._
 
 import monix.execution.Scheduler.Implicits.global
 
@@ -62,7 +64,8 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
             "id1",
             LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
             "0a66fcef-4d50-4a67-a365-d4dbebcf22d3",
-            AtalaMessage().withIssuerSentCredential(IssuerSentCredential()).toByteString
+            AtalaMessage().withIssuerSentCredential(IssuerSentCredential()).toByteString,
+            LocalDateTime.of(2020, 6, 12, 0, 0).toInstant(ZoneOffset.UTC).toProtoTimestamp.some
           )
           val response = GetMessagesPaginatedResponse(Seq(receivedMessage))
 

@@ -106,15 +106,15 @@ object SdkBuild {
       .settings(
         name := "prism-protos",
         PB.protoSources in Compile := Seq(
-          (baseDirectory in ThisBuild).value / "protos"
+          (baseDirectory in ThisBuild).value / "protos" / "src"
         ),
         scalacOptions += {
           CrossVersion.partialVersion(scalaVersion.value) match {
-            case Some((2, n)) if n <= 12 => "-P:silencer:pathFilters=.*scalapb/.*"
-            case _ => "-Wconf:src=.*scalapb/.*:silent"
+            case Some((2, n)) if n <= 12 => "-P:silencer:pathFilters=.*scalapb/.*;.jvm/.*;.js/.*"
+            case _ => "-Wconf:src=.*scalapb/.*:silent,src=.jvm/.*:silent,src=.js/.*:silent"
           }
         },
-        libraryDependencies += "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion
+        libraryDependencies += "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
       )
       .jvmSettings(
         libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,

@@ -30,8 +30,10 @@ import io.iohk.atala.prism.models.{
   CredentialProofRequestType
 }
 import io.iohk.atala.prism.services.NodeClientService
+import scala.annotation.nowarn
 
 // sbt "project mirror" "testOnly *services.CredentialServiceSpec"
+@nowarn("msg=value receivedDeprecated in class ReceivedMessage is deprecated")
 class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with MirrorFixtures {
   import ConnectionFixtures._, CredentialFixtures._, ConnectorMessageFixtures._
 
@@ -53,7 +55,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
             RawCredential(credentialMessage1.message.toString),
             None,
             ConnectorMessageId(credentialMessage1.id),
-            MessageReceivedDate(Instant.ofEpochMilli(credentialMessage1.received)),
+            MessageReceivedDate(Instant.ofEpochMilli(credentialMessage1.receivedDeprecated)),
             CredentialStatus.Valid
           )
         )

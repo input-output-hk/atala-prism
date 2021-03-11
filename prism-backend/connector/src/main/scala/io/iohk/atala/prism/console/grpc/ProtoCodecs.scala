@@ -1,11 +1,13 @@
 package io.iohk.atala.prism.console.grpc
 
 import com.google.protobuf.ByteString
+import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models
 import io.iohk.atala.prism.console.models.GenericCredential
 import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.{common_models, console_models}
+import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.Transformer
 
 import java.time.LocalDate
@@ -45,14 +47,16 @@ object ProtoCodecs {
       .withContactData(credential.subjectData.noSpaces)
       .withExternalId(credential.externalId.value)
       .withConnectionStatus(connectionStatus)
-      .withSharedAt(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
+      .withSharedAtDeprecated(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
+      .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
 
     credential.publicationData.fold(model) { data =>
       model
         .withNodeCredentialId("") // this field is not needed anymore, it will be deprecated soon
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
-        .withPublicationStoredAt(data.storedAt.toEpochMilli)
+        .withPublicationStoredAtDeprecated(data.storedAt.toEpochMilli)
+        .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
         .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
         .withBatchInclusionProof(data.inclusionProof.encode)
         .withBatchId(data.credentialBatchId.id)
@@ -72,6 +76,7 @@ object ProtoCodecs {
       .withConnectionStatus(status)
       .withConnectionToken(token)
       .withConnectionId(connectionId)
-      .withCreatedAt(contact.createdAt.toEpochMilli)
+      .withCreatedAtDeprecated(contact.createdAt.toEpochMilli)
+      .withCreatedAt(contact.createdAt.toProtoTimestamp)
   }
 }

@@ -623,7 +623,7 @@ jobs:
           name: Move the protos to the proper folder
           command: |
             mkdir protos
-            cd prism-sdk/protos
+            cd prism-sdk/protos/src
             mv common_models.proto \
               connector_api.proto \
               connector_models.proto \
@@ -636,7 +636,7 @@ jobs:
               node_models.proto \
               vault_api.proto \
               vault_models.proto \
-              ../../protos/
+              ../../../protos/
 
       # apparently, the argument to set the destination folder doesn't work
       - run:

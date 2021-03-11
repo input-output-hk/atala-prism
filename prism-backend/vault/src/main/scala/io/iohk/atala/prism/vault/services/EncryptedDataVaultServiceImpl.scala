@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.vault.services
 
+import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -10,6 +11,7 @@ import io.iohk.atala.prism.protos.vault_models
 import io.iohk.atala.prism.vault.VaultAuthenticator
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.PayloadsRepository
+import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -73,7 +75,7 @@ class EncryptedDataVaultServiceImpl(
                 id = p.id.toString,
                 hash = ByteString.copyFrom(p.hash.value.toArray),
                 content = ByteString.copyFrom(p.content.toArray),
-                createdAt = p.createdAt.toEpochMilli
+                createdAt = p.createdAt.toProtoTimestamp.some
               )
             )
           )

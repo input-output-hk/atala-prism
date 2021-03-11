@@ -4,6 +4,7 @@ option java_multiple_files = true;
 option java_package = "io.iohk.atala.prism.protos";
 
 import "console_models.proto";
+import "google/protobuf/timestamp.proto";
 
 package io.iohk.atala.prism.protos;
 
@@ -74,12 +75,13 @@ message Connection {
 // Information on the connection; both sides see the same connectionId and creation time, but each sees different participantInfo
 message ConnectionInfo {
     string connectionId = 1; // the connection identifier
-    int64 created = 2; // moment of instantiation as milliseconds since the Unix Epoch
+    int64 created_deprecated = 2 [deprecated = true]; // moment of instantiation as milliseconds since the Unix Epoch
     ParticipantInfo participantInfo = 3; // [Will be deprecated] information about the participant at the other end
     string token = 4; // the token used to generate the connection
     string participantName = 5; // same value as the one contained in `participantInfo`
     bytes participantLogo = 6; // same value as the one contained in `participantInfo`
     string participantDID = 7; // same value as the one contained in `participantInfo`
+    google.protobuf.Timestamp created = 8; // timestamp of instantiation
 }
 
 // Communication key for connection participant.
@@ -100,9 +102,10 @@ message ConnectionKey {
 // Message received via a connection
 message ReceivedMessage {
     string id = 1; // the unique id for this message
-    int64 received = 2; // time when Connector received the message as milliseconds since the Unix Epoch
+    int64 received_deprecated = 2 [deprecated = true]; // time when Connector received the message as milliseconds since the Unix Epoch
     string connectionId = 3; // connection where the message has been received
     bytes message = 4; // raw message, which needs to be parsed to get something meaningful, AtalaMessage is the common choice
+    google.protobuf.Timestamp received = 5; // timestamp when Connector received the message
 }
 
 message ContactConnection {

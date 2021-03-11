@@ -11,6 +11,7 @@ import io.iohk.atala.prism.protos.console_api.{
 }
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.syntax._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -33,7 +34,8 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
                 console_models
                   .Group()
                   .withId(g.id.toString)
-                  .withCreatedAt(g.createdAt.getEpochSecond)
+                  .withCreatedAtDeprecated(g.createdAt.getEpochSecond)
+                  .withCreatedAt(g.createdAt.toProtoTimestamp)
                   .withName(g.name.value)
                   .withNumberOfContacts(0) // creating a group adds no contacts
               )
@@ -61,7 +63,8 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, authenticator:
           console_models
             .Group()
             .withId(g.value.id.toString)
-            .withCreatedAt(g.value.createdAt.getEpochSecond)
+            .withCreatedAtDeprecated(g.value.createdAt.getEpochSecond)
+            .withCreatedAt(g.value.createdAt.toProtoTimestamp)
             .withName(g.value.name.value)
             .withNumberOfContacts(g.numberOfContacts)
         }

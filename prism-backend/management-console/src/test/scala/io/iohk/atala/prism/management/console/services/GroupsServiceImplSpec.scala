@@ -59,7 +59,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         // the data is included
         response.group.value.name must be(newGroup.value)
         response.group.value.id mustNot be(empty)
-        response.group.value.createdAt > 0 must be(true)
+        response.group.value.createdAt.isDefined mustBe true
         response.group.value.numberOfContacts must be(0)
 
         // the new group needs to exist
@@ -88,7 +88,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         // the data is included
         response.group.value.name must be(newGroup.value)
         response.group.value.id mustNot be(empty)
-        response.group.value.createdAt > 0 must be(true)
+        response.group.value.createdAt.isDefined mustBe true
         response.group.value.numberOfContacts must be(2)
 
         // the new group needs to exist
@@ -214,7 +214,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
         val resultGroup = result.head
         resultGroup.id mustNot be(empty)
-        resultGroup.createdAt > 0 must be(true)
+        resultGroup.createdAt.isDefined mustBe true
         resultGroup.name must be(groups(0).value)
         resultGroup.numberOfContacts must be(2)
       }

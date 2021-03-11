@@ -5,6 +5,8 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
+import "google/protobuf/timestamp.proto";
+
 // Request to check the service's health
 message HealthCheckRequest {}
 // Response after checking the service's health
@@ -19,14 +21,14 @@ message Date {
 
 // Represents a time interval between two given timestamps
 message TimeInterval {
-    // the starting inclusive timestamp in millis since epoch
+    // the starting inclusive timestamp
     // cannot be missing (i.e. the interval cannot be open-ended)
     // has to be before or equal to endTimestamp
-    int64 startTimestamp = 1;
-    // the ending inclusive timestamp in millis since epoch
+    google.protobuf.Timestamp startTimestamp = 1;
+    // the ending inclusive timestamp
     // cannot be missing (i.e. the interval cannot be open-ended)
     // has to be after or equal to endTimestamp
-    int64 endTimestamp = 2;
+    google.protobuf.Timestamp endTimestamp = 2;
 }
 
 // When returning results, this is how you specify the direction on how those get sorted
@@ -51,8 +53,9 @@ enum Ledger {
 // TODO: Consider renaming to TransactionInBlockInfo given that it includes information about the transaction.
 message BlockInfo {
     int32 number = 1; // Number of the block in the ledger
-    int64 timestamp = 2; // Millis since epoch when the block was created
+    int64 timestamp_deprecated = 2 [deprecated = true]; // Millis since epoch when the block was created
     int32 index = 3; // Index of the transaction within the block
+    google.protobuf.Timestamp timestamp = 4; // Timestamp when the block was created
 }
 
 // Information about a ledger transaction, as well as the block it is inclded in

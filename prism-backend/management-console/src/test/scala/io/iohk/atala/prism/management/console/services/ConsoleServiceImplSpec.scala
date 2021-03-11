@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.services
 
 import com.google.protobuf.ByteString
 import io.grpc.{Status, StatusRuntimeException}
+import cats.syntax.option._
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
@@ -12,6 +13,7 @@ import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsol
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
+import io.iohk.atala.prism.utils.syntax._
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
@@ -81,8 +83,8 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       val request = console_api.GetStatisticsRequest(
         Some(
           common_models.TimeInterval(
-            start.toEpochMilli,
-            end.toEpochMilli
+            start.toProtoTimestamp.some,
+            end.toProtoTimestamp.some
           )
         )
       )
@@ -114,8 +116,8 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       val request = console_api.GetStatisticsRequest(
         Some(
           common_models.TimeInterval(
-            end.toEpochMilli,
-            start.toEpochMilli
+            end.toProtoTimestamp.some,
+            start.toProtoTimestamp.some
           )
         )
       )
@@ -146,7 +148,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
 
       val request2 = console_api.GetStatisticsRequest(
         Some(
-          common_models.TimeInterval(startTimestamp = Instant.now().toEpochMilli)
+          common_models.TimeInterval(startTimestamp = Instant.now().toProtoTimestamp.some)
         )
       )
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
@@ -157,7 +159,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
 
       val request3 = console_api.GetStatisticsRequest(
         Some(
-          common_models.TimeInterval(endTimestamp = Instant.now().toEpochMilli)
+          common_models.TimeInterval(startTimestamp = Instant.now().toProtoTimestamp.some)
         )
       )
       val rpcRequest3 = SignedRpcRequest.generate(keyPair, did, request3)

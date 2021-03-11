@@ -20,6 +20,9 @@ import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
+import scala.annotation.nowarn
+
+@nowarn("msg=value createdAtDeprecated in class Group is deprecated")
 class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
   private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
@@ -58,7 +61,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         // the data is included
         response.group.value.name must be(newGroup.value)
         response.group.value.id mustNot be(empty)
-        response.group.value.createdAt > 0 must be(true)
+        response.group.value.createdAtDeprecated > 0 must be(true)
         response.group.value.numberOfContacts must be(0)
 
         // the new group needs to exist
@@ -136,7 +139,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
         val resultGroup = result.head
         resultGroup.id mustNot be(empty)
-        resultGroup.createdAt > 0 must be(true)
+        resultGroup.createdAtDeprecated > 0 must be(true)
         resultGroup.name must be(groups(0).value)
         resultGroup.numberOfContacts must be(2)
       }

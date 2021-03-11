@@ -12,12 +12,16 @@ import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.utils.syntax._
+
+import scala.annotation.nowarn
 
 object ProtoCodecs {
   def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_models.TimestampInfo = {
     node_models
       .TimestampInfo()
-      .withBlockTimestamp(timestampInfo.atalaBlockTimestamp.toEpochMilli)
+      .withBlockTimestampDeprecated(timestampInfo.atalaBlockTimestamp.toEpochMilli)
+      .withBlockTimestamp(timestampInfo.atalaBlockTimestamp.toProtoTimestamp)
       .withBlockSequenceNumber(timestampInfo.atalaBlockSequenceNumber)
       .withOperationSequenceNumber(timestampInfo.operationSequenceNumber)
   }
@@ -88,9 +92,11 @@ object ProtoCodecs {
   // TODO: Manage proper validations.
   //       This implies making default values for operation sequence number to be 1
   //       (it is currently 0). The block sequence number starts at 1 already.
+  @nowarn("msg=value blockTimestampDeprecated in class TimestampInfo is deprecated")
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): TimestampInfo = {
     TimestampInfo(
-      Instant.ofEpochMilli(timestampInfoProto.blockTimestamp),
+      timestampInfoProto.blockTimestamp
+        .fold(Instant.ofEpochMilli(timestampInfoProto.blockTimestampDeprecated))(_.toInstant),
       timestampInfoProto.blockSequenceNumber,
       timestampInfoProto.operationSequenceNumber
     )

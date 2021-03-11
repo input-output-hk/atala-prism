@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.console.services
 
+import cats.syntax.option._
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.ConnectorErrorSupport
 import io.iohk.atala.prism.connector.model.ConnectionId
@@ -14,6 +15,7 @@ import io.iohk.atala.prism.protos.console_api.{
   GetLatestCredentialExternalIdResponse
 }
 import io.iohk.atala.prism.protos.{console_api, console_models}
+import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -114,7 +116,8 @@ class CredentialsStoreService(
                   console_models.StoredSignedCredential(
                     individualId = credential.individualId.toString,
                     encodedSignedCredential = credential.encodedSignedCredential,
-                    storedAt = credential.storedAt.toEpochMilli,
+                    storedAtDeprecated = credential.storedAt.toEpochMilli,
+                    storedAt = credential.storedAt.toProtoTimestamp.some,
                     externalId = credential.externalId.value,
                     batchInclusionProof = credential.merkleInclusionProof.encode
                   )

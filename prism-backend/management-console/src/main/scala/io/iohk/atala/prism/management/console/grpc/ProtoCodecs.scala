@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.syntax.option._
 import com.google.protobuf.ByteString
+import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
 import io.iohk.atala.prism.protos.console_api.GetContactResponse
 import io.iohk.atala.prism.protos.console_models.{Group, StoredSignedCredential}
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
+import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
@@ -54,7 +57,8 @@ object ProtoCodecs {
     console_models
       .Group()
       .withId(group.value.id.toString)
-      .withCreatedAt(group.value.createdAt.getEpochSecond)
+      .withCreatedAtDeprecated(group.value.createdAt.getEpochSecond)
+      .withCreatedAt(group.value.createdAt.toProtoTimestamp)
       .withName(group.value.name.value)
       .withNumberOfContacts(group.numberOfContacts)
   }
@@ -63,7 +67,8 @@ object ProtoCodecs {
     console_models.StoredSignedCredential(
       individualId = receivedSignedCredential.individualId.toString,
       encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
-      storedAt = receivedSignedCredential.receivedAt.toEpochMilli
+      storedAtDeprecated = receivedSignedCredential.receivedAt.toEpochMilli,
+      storedAt = receivedSignedCredential.receivedAt.toProtoTimestamp.some
     )
   }
 
@@ -77,14 +82,16 @@ object ProtoCodecs {
       .withIssuerName(credential.issuerName)
       .withContactData(credential.subjectData.noSpaces)
       .withExternalId(credential.externalId.value)
-      .withSharedAt(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
+      .withSharedAtDeprecated(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
+      .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
 
     credential.publicationData.fold(model) { data =>
       model
         .withNodeCredentialId(data.nodeCredentialId)
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
-        .withPublicationStoredAt(data.storedAt.toEpochMilli)
+        .withPublicationStoredAtDeprecated(data.storedAt.toEpochMilli)
+        .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
     }
   }
 
@@ -94,7 +101,8 @@ object ProtoCodecs {
       .withContactId(contact.contactId.toString)
       .withExternalId(contact.externalId.value)
       .withJsonData(contact.data.noSpaces)
-      .withCreatedAt(contact.createdAt.toEpochMilli)
+      .withCreatedAtDeprecated(contact.createdAt.toEpochMilli)
+      .withCreatedAt(contact.createdAt.toProtoTimestamp)
       .withConnectionId(connection.connectionId)
       .withConnectionToken(connection.connectionToken)
       .withConnectionStatus(connection.connectionStatus)
@@ -118,7 +126,7 @@ object ProtoCodecs {
   def toCredentialTypeProto(credentialType: CredentialType): console_models.CredentialType = {
     credentialType
       .into[console_models.CredentialType]
-      .withFieldConst(_.createdAt, credentialType.createdAt.toEpochMilli)
+      .withFieldConst(_.createdAt, credentialType.createdAt.toProtoTimestamp.some)
       .withFieldConst(_.id, credentialType.id.uuid.toString)
       .withFieldConst(
         _.icon,
@@ -152,18 +160,8 @@ object ProtoCodecs {
 
   def toTimestamp(timeInterval: common_models.TimeInterval): Try[TimeInterval] = {
     for {
-      _ <-
-        if (timeInterval.startTimestamp == 0)
-          Failure(new IllegalArgumentException("Starting timestamp was not specified"))
-        else
-          Success(())
-      _ <-
-        if (timeInterval.endTimestamp == 0)
-          Failure(new IllegalArgumentException("Ending timestamp was not specified"))
-        else
-          Success(())
-      startTimestamp <- Try(Instant.ofEpochMilli(timeInterval.startTimestamp))
-      endTimestamp <- Try(Instant.ofEpochMilli(timeInterval.endTimestamp))
+      startTimestamp <- readTimestamp(timeInterval.startTimestamp, "Starting timestamp was not specified")
+      endTimestamp <- readTimestamp(timeInterval.endTimestamp, "Ending timestamp was not specified")
       _ <-
         if (startTimestamp.isAfter(endTimestamp))
           Failure(
@@ -173,4 +171,15 @@ object ProtoCodecs {
           Success(())
     } yield TimeInterval(startTimestamp, endTimestamp)
   }
+
+  private def readTimestamp(
+      maybeTimestamp: Option[Timestamp],
+      messageOnError: String
+  ): Try[Instant] =
+    maybeTimestamp.fold[Try[Instant]] {
+      Failure(new IllegalArgumentException(messageOnError))
+    } {
+      case Timestamp(0L, _, _) => Failure(new IllegalArgumentException(messageOnError))
+      case timestamp => Success(timestamp.toInstant)
+    }
 }

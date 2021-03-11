@@ -6,14 +6,16 @@ option java_package = "io.iohk.atala.prism.protos";
 package io.iohk.atala.prism.protos;
 
 import "common_models.proto";
+import "google/protobuf/timestamp.proto";
 
 // Includes timestamping details about a blockchain's block.
 //
 // TODO: Consider renaming to BlockTimestampInfo.
 message TimestampInfo {
-    uint64 blockTimestamp = 1; // timestamp provided from the underlying blockchain
+    uint64 blockTimestamp_deprecated = 1 [deprecated = true]; // timestamp provided from the underlying blockchain
     uint32 blockSequenceNumber = 2; // transaction index inside the underlying blockchain block
     uint32 operationSequenceNumber = 3; // operation index inside the AtalaBlock
+    google.protobuf.Timestamp blockTimestamp = 4; // timestamp provided from the underlying blockchain
 }
 
 // Every key has a single purpose, these are the available ones

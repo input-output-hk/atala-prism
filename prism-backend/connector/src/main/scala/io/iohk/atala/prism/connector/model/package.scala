@@ -2,6 +2,7 @@ package io.iohk.atala.prism.connector.model
 
 import java.time.Instant
 import java.util.{Base64, UUID}
+import cats.syntax.option._
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
@@ -9,6 +10,7 @@ import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models
+import io.iohk.atala.prism.utils.syntax._
 
 import scala.util.Random
 
@@ -93,7 +95,8 @@ case class ConnectionInfo(
   def toProto: connector_models.ConnectionInfo = {
     connector_models.ConnectionInfo(
       id.toString,
-      created = instantiatedAt.toEpochMilli,
+      createdDeprecated = instantiatedAt.toEpochMilli,
+      created = instantiatedAt.toProtoTimestamp.some,
       participantInfo = Some(participantInfo.toProto),
       token = token.token,
       participantName = participantInfo.name,
@@ -146,7 +149,8 @@ case class Message(
       id.toString,
       receivedAt.toEpochMilli,
       connection.toString,
-      ByteString.copyFrom(content)
+      ByteString.copyFrom(content),
+      receivedAt.toProtoTimestamp.some
     )
   }
 }
