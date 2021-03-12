@@ -9,7 +9,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
 }
 val versionDetails: groovy.lang.Closure<VersionDetails> by extra
-val pbandkVersion by extra("0.10.0-M2")
+val pbandkVersion by extra("0.10.0-M3")
 
 // Since NPM only accepts pure semantic versioning (\d.\d.\d), we have to
 // replace 0.1.0-$githash with 0.1.0 in root package.json

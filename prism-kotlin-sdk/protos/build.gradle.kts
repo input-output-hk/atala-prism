@@ -129,6 +129,11 @@ kotlin {
     }
 }
 
+dependencies {
+    // This is needed for well-known protobuf types (such as `google/protobuf`) to be discoverable
+    implementation("pro.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
+}
+
 tasks {
     compileJava {
         enabled = false
