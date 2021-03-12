@@ -145,8 +145,8 @@ package object grpc {
         externalId <- Contact.ExternalId.validated(request.externalId)
         generateConnectionTokenRequestMetadata <-
           request.generateConnectionTokensRequestMetadata
-            .map(_.transformInto[GenerateConnectionTokenRequestMetadata])
-            .fold[Try[GenerateConnectionTokenRequestMetadata]](
+            .map(_.transformInto[ConnectorAuthenticatedRequestMetadata])
+            .fold[Try[ConnectorAuthenticatedRequestMetadata]](
               Failure(new IllegalArgumentException("generateConnectionTokenRequestMetadata is missing"))
             )(Success(_))
       } yield CreateContact(externalId, json, request.name, generateConnectionTokenRequestMetadata)
@@ -283,8 +283,8 @@ package object grpc {
         _ = if (validatedContacts.isEmpty) throw new RuntimeException("There are no contacts to create")
         generateConnectionTokenRequestMetadata <-
           request.generateConnectionTokensRequestMetadata
-            .map(_.transformInto[GenerateConnectionTokenRequestMetadata])
-            .fold[Try[GenerateConnectionTokenRequestMetadata]](
+            .map(_.transformInto[ConnectorAuthenticatedRequestMetadata])
+            .fold[Try[ConnectorAuthenticatedRequestMetadata]](
               Failure(new IllegalArgumentException("generateConnectionTokenRequestMetadata is missing"))
             )(Success(_))
       } yield CreateContact.Batch(validatedGroups, validatedContacts, generateConnectionTokenRequestMetadata)

@@ -1,16 +1,10 @@
 package io.iohk.atala.prism.management.console
 
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, ParticipantsIntegrationService}
 import io.iohk.atala.prism.management.console.repositories._
-import io.iohk.atala.prism.management.console.services.{
-  ConsoleServiceImpl,
-  ContactsServiceImpl,
-  CredentialIssuanceServiceImpl,
-  CredentialTypesServiceImpl,
-  CredentialsServiceImpl
-}
-import io.iohk.atala.prism.management.console.stubs.ConnectionTokenServiceStub
+import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
@@ -58,21 +52,16 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialTypeRepository = new CredentialTypeRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  lazy val connectorContactsServiceMock =
-    mock[io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc.ContactConnectionServiceStub]
 
-  lazy val authenticator =
-    new ManagementConsoleAuthenticator(
-      participantsRepository,
-      requestNoncesRepository,
-      nodeMock,
-      GrpcAuthenticationHeaderParser
-    )
+  lazy val authenticator = new ManagementConsoleAuthenticator(
+    participantsRepository,
+    requestNoncesRepository,
+    nodeMock,
+    GrpcAuthenticationHeaderParser
+  )
 
-  lazy val connectionTokenServiceStub = new ConnectionTokenServiceStub()
-
-  lazy val contactsIntegrationService =
-    new ContactsIntegrationService(contactsRepository, connectorContactsServiceMock, connectionTokenServiceStub)
+  lazy val connectorMock = mock[ConnectorClient]
+  lazy val contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connectorMock)
 
   lazy val participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
   lazy val consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)(

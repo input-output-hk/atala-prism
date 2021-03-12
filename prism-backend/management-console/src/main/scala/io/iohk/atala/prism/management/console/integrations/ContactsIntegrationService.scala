@@ -1,23 +1,22 @@
 package io.iohk.atala.prism.management.console.integrations
 
+import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.ContactsRepository
 import io.iohk.atala.prism.models.ConnectionToken
-import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
+import io.iohk.atala.prism.protos.connector_models
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
-import io.iohk.atala.prism.protos.{connector_api, connector_models}
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ContactsIntegrationService(
     contactsRepository: ContactsRepository,
-    contactConnectionService: ContactConnectionServiceGrpc.ContactConnectionServiceStub,
-    connectionTokenService: ConnectionTokenService
+    connector: ConnectorClient
 )(implicit
     ec: ExecutionContext
 ) {
@@ -30,14 +29,13 @@ class ContactsIntegrationService(
       group: Option[InstitutionGroup.Name]
   ): Future[Either[errors.ManagementConsoleError, ContactWithConnection]] = {
     (for {
-      generateTokensResponse <- new FutureEither(
-        connectionTokenService
+      generateTokensResponse <-
+        connector
           .generateConnectionTokens(request.generateConnectionTokenRequestMetadata, count = 1)
-          .map(Right(_))
-      )
+          .lift
 
       token <-
-        generateTokensResponse.tokens.headOption
+        generateTokensResponse.headOption
           .map(FutureEither.right)
           .getOrElse(
             FutureEither.left(errors.GenerationOfConnectionTokensFailed(expectedTokenCount = 1, actualTokenCount = 0))
@@ -47,7 +45,7 @@ class ContactsIntegrationService(
         participantId,
         request,
         group,
-        connectionToken = ConnectionToken(token)
+        connectionToken = token
       )
     } yield {
       val connection = connector_models.ContactConnection(
@@ -64,13 +62,10 @@ class ContactsIntegrationService(
     (for {
       tokens <-
         if (request.contacts.nonEmpty) {
-          new FutureEither(
-            connectionTokenService
-              .generateConnectionTokens(request.generateConnectionTokenRequestMetadata, request.contacts.size)
-              .map(_.tokens)
-              .map(Right(_))
-          )
-        } else new FutureEither(Future.successful(Right(Seq.empty)))
+          connector
+            .generateConnectionTokens(request.generateConnectionTokenRequestMetadata, request.contacts.size)
+            .lift
+        } else Future.successful(Right(Seq.empty)).toFutureEither
 
       _ <-
         if (tokens.size == request.contacts.size) FutureEither.right(())
@@ -85,7 +80,7 @@ class ContactsIntegrationService(
       _ <- contactsRepository.createBatch(
         institutionId,
         request,
-        tokens.map(ConnectionToken).toList
+        tokens.toList
       )
     } yield ()).value
   }
@@ -103,18 +98,12 @@ class ContactsIntegrationService(
   ): Future[Either[errors.ManagementConsoleError, GetContactsResult]] = {
     val result = for {
       list <- contactsRepository.getBy(institutionId, paginatedQuery)
-      connectorRequest =
-        connector_api.ConnectionsStatusRequest(connectionTokens = list.map(_.details.connectionToken.toString))
-      connectionStatusResponse <- {
-        contactConnectionService
-          .getConnectionStatus(connectorRequest)
-          .map(Right(_))
-          .toFutureEither
+      statusList <- {
+        connector
+          .getConnectionStatus(list.map(_.details.connectionToken))
+          .lift
       }
-      tokenToConnection =
-        connectionStatusResponse.connections
-          .map(connection => ConnectionToken(connection.connectionToken) -> connection)
-          .toMap
+      tokenToConnection = statusList.map(c => ConnectionToken(c.connectionToken) -> c).toMap
     } yield {
       val data = list
         .map { contact =>
@@ -143,20 +132,14 @@ class ContactsIntegrationService(
       result <- {
         contactMaybe
           .map { contact =>
-            contactConnectionService
-              .getConnectionStatus(
-                connector_api.ConnectionsStatusRequest(connectionTokens =
-                  List(contact.contact.connectionToken.toString)
-                )
-              )
-              .map(_.connections.headOption)
+            connector
+              .getConnectionStatus(List(contact.contact.connectionToken))
+              .map(_.headOption)
               .map(contactMaybe.zip)
               .map(_.map(DetailedContactWithConnection.tupled.apply))
-
           }
           .getOrElse(Future.successful(None))
-          .map(Right(_))
-          .toFutureEither
+          .lift
       }
     } yield result
 

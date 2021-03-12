@@ -63,6 +63,11 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
 
     logger.info("Loading DID whitelist")
     val didWhitelist = DidWhitelistLoader.load(globalConfig)
+    if (didWhitelist.isEmpty) {
+      logger.warn(s"DID whitelist is empty, which prevents integrating the console backend")
+    } else {
+      logger.info(s"DID whitelist:\n${didWhitelist.map(_.value).map("- " + _).mkString("\n")}")
+    }
 
     // node client
     val configLoader = new ConfigLoader

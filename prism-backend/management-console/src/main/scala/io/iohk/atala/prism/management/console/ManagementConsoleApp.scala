@@ -5,15 +5,11 @@ import com.typesafe.config.ConfigFactory
 import io.grpc.Server
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.config.NodeConfig
+import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
-import io.iohk.atala.prism.management.console.integrations.{
-  ConnectionTokenServiceImpl,
-  ContactsIntegrationService,
-  ParticipantsIntegrationService
-}
+import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, ParticipantsIntegrationService}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
-import io.iohk.atala.prism.protos.connector_api.{ConnectorServiceGrpc, ContactConnectionServiceGrpc}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.TransactorFactory
@@ -63,22 +59,10 @@ object ManagementConsoleApp extends IOApp {
         stub = NodeServiceGrpc.stub
       )
 
-      // contact connection service
-      connectorContactsService = GrpcUtils.createPlaintextStub(
-        host = globalConfig.getConfig("connector").getString("host"),
-        port = globalConfig.getConfig("connector").getInt("port"),
-        stub = ContactConnectionServiceGrpc.stub
-      )
-
-      // contact contacts connection service
-      connectorService = GrpcUtils.createPlaintextStub(
-        host = globalConfig.getConfig("connector").getString("host"),
-        port = globalConfig.getConfig("connector").getInt("port"),
-        stub = ConnectorServiceGrpc.stub
-      )
-
-      // connection token service
-      connectionTokenService = new ConnectionTokenServiceImpl(connectorService)
+      // connector
+      connectorConfig = ConnectorClient.Config(globalConfig.getConfig("connector"))
+      _ = logger.info(s"Connector config loaded: $connectorConfig")
+      connector = ConnectorClient(connectorConfig)
 
       // repositories
       contactsRepository = new ContactsRepository(tx)
@@ -106,8 +90,7 @@ object ManagementConsoleApp extends IOApp {
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
       participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
-      contactsIntegrationService =
-        new ContactsIntegrationService(contactsRepository, connectorContactsService, connectionTokenService)
+      contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)
       contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
       credentialIssuanceService = new CredentialIssuanceServiceImpl(
         credentialIssuancesRepository,

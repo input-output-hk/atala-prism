@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.models
 
-case class GenerateConnectionTokenRequestMetadata(
+case class ConnectorAuthenticatedRequestMetadata(
     did: String,
     didKeyId: String,
     didSignature: String,

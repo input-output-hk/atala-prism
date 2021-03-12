@@ -16,7 +16,7 @@ final case class CreateContact(
     externalId: Contact.ExternalId,
     data: Json,
     name: String,
-    generateConnectionTokenRequestMetadata: GenerateConnectionTokenRequestMetadata
+    generateConnectionTokenRequestMetadata: ConnectorAuthenticatedRequestMetadata
 )
 
 object CreateContact {
@@ -29,7 +29,7 @@ object CreateContact {
   final case class Batch(
       groups: Set[InstitutionGroup.Id],
       contacts: List[NoOwner],
-      generateConnectionTokenRequestMetadata: GenerateConnectionTokenRequestMetadata
+      generateConnectionTokenRequestMetadata: ConnectorAuthenticatedRequestMetadata
   )
 }
 

@@ -43,8 +43,8 @@ object DataPreparation {
     id
   }
 
-  val generateConnectionTokenRequestMetadata: GenerateConnectionTokenRequestMetadata =
-    GenerateConnectionTokenRequestMetadata(
+  val generateConnectionTokenRequestMetadata: ConnectorAuthenticatedRequestMetadata =
+    ConnectorAuthenticatedRequestMetadata(
       did = newDID().toString,
       didKeyId = "didKeyId",
       didSignature = "didSignature",
