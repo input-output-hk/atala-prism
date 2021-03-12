@@ -165,7 +165,7 @@ Steps
    ```
    [terminal 3]
    atala$ cd prism-management-console-web/envoy
-   envoy$ docker run --rm -ti --net=host -v $PWD/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.12.1
+   envoy$ docker run --rm -ti --net=host -v $PWD/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.16-latest
    ```
 
 3. Now it is time to compile the web extension (the wallet)
