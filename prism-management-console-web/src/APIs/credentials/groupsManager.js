@@ -1,10 +1,12 @@
+import Logger from '../../helpers/Logger';
 import { REQUEST_AUTH_TIMEOUT_MS } from '../../helpers/constants';
 import { GroupsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 
 const {
   GetGroupsRequest,
   CreateGroupRequest,
-  UpdateGroupRequest
+  UpdateGroupRequest,
+  DeleteGroupRequest
 } = require('../../protos/console_api_pb');
 
 async function getGroups(contactId) {
@@ -51,8 +53,15 @@ async function updateGroup(groupId, contactIdsToAdd, contactIdsToRemove) {
 }
 
 async function deleteGroup(groupId) {
-  console.log(`should delete group with id: ${groupId}`);
-  throw new Error();
+  Logger.info(`deleting group with id: ${groupId}`);
+  const request = new DeleteGroupRequest();
+
+  request.setGroupid(groupId);
+
+  const { metadata, sessionError } = await this.auth.getMetadata(request);
+  if (sessionError) return {};
+
+  return this.client.deleteGroup(request, metadata);
 }
 
 function GroupsManager(config, auth) {

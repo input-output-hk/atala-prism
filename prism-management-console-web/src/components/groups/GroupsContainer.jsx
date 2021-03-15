@@ -27,6 +27,7 @@ const GroupsContainer = ({ api }) => {
 
     const { groupId } = getLastArrayElementOrEmpty(oldGroups);
 
+    setLoading(true);
     return api.groupsManager
       .getGroups({ name, date: filterDateAsUnix, pageSize: GROUP_PAGE_SIZE, lastId: groupId })
       .then(filteredGroups => {
@@ -52,7 +53,6 @@ const GroupsContainer = ({ api }) => {
 
   useEffect(() => {
     if (!groups.length) {
-      setLoading(true);
       updateGroups();
     }
   }, [groups]);
@@ -61,14 +61,12 @@ const GroupsContainer = ({ api }) => {
     api.groupsManager
       .deleteGroup(group.id)
       .then(() => {
-        updateGroups();
         message.success(t('groups.deletionSuccess', { groupName: group.name }));
+        setGroups(groups.filter(g => g.id !== group.id));
       })
       .catch(error => {
         Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
         message.error(t('errors.errorDeletingGroup', { groupName: group.name }));
-        // TODO: remove warn when group deletion has implemented on backend
-        message.warn(t('errors.notImplementedYet'));
       });
 
   const copyGroup = ({ numberofcontacts, name }, copyName) =>
