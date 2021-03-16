@@ -3,6 +3,7 @@ include(":crypto")
 include(":identity")
 include(":credentials")
 include(":docs")
+include(":generator")
 
 buildscript {
     repositories {

@@ -32,12 +32,14 @@ protobuf {
     }
     generateProtoTasks {
         ofSourceSet("main").forEach { task ->
+            task.dependsOn(":generator:jar")
             task.builtins {
                 remove("java")
             }
             task.plugins {
                 id("kotlin") {
                     option("kotlin_package=io.iohk.atala.prism.kotlin.protos")
+                    option("kotlin_service_gen=${project(":generator").buildDir}/libs/generator-$version.jar|io.iohk.atala.prism.kotlin.generator.Generator")
                 }
             }
         }
@@ -97,6 +99,7 @@ kotlin {
             kotlin.srcDir("$buildDir/generated/source/proto/main/kotlin")
             dependencies {
                 api("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
         val commonTest by getting {
@@ -105,7 +108,12 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                api("io.grpc:grpc-kotlin-stub:1.0.0")
+                api("io.grpc:grpc-okhttp:1.36.0")
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
