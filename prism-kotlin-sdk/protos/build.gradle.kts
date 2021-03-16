@@ -70,7 +70,13 @@ kotlin {
         }
     }
     js(IR) {
-        nodejs()
+        browser {
+            testTask {
+                useKarma {
+                    useChrome()
+                }
+            }
+        }
         binaries.executable()
         useCommonJs()
 
@@ -120,7 +126,11 @@ kotlin {
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("grpc-web", "1.2.1", generateExternals = true))
+            }
+        }
         val jsTest by getting {
             dependencies {
                 implementation(kotlin("test-js"))

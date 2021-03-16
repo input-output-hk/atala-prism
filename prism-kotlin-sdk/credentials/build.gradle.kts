@@ -19,7 +19,13 @@ kotlin {
         }
     }
     js(IR) {
-        nodejs()
+        browser {
+            testTask {
+                useKarma {
+                    useChrome()
+                }
+            }
+        }
         binaries.executable()
         useCommonJs()
 
