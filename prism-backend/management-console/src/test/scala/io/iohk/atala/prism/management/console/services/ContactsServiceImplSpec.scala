@@ -384,7 +384,8 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       }
       val (institutionId, responseT) = runTest(_ => request)
       responseT.isSuccess must be(true)
-      testAvailableContacts(institutionId, 2)
+      responseT.toOption.value.contactsCreated must be(2)
+      testAvailableContacts(institutionId, responseT.toOption.value.contactsCreated)
     }
 
     "work when groups are provided assigning the contacts to the given groups" in {
@@ -418,6 +419,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       }
       val (institutionId, responseT) = runTest(request)
       responseT.isSuccess must be(true)
+      responseT.toOption.value.contactsCreated must be(2)
 
       // the new contacts need to be assigned to the groups
       groups.foreach { group =>

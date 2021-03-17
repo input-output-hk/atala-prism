@@ -58,7 +58,7 @@ class ContactsIntegrationService(
   def createContacts(
       institutionId: ParticipantId,
       request: CreateContact.Batch
-  ): Future[Either[errors.ManagementConsoleError, Unit]] = {
+  ): Future[Either[errors.ManagementConsoleError, Int]] = {
     (for {
       tokens <-
         if (request.contacts.nonEmpty) {
@@ -77,12 +77,12 @@ class ContactsIntegrationService(
             )
           )
 
-      _ <- contactsRepository.createBatch(
+      numberOfContacts <- contactsRepository.createBatch(
         institutionId,
         request,
         tokens.toList
       )
-    } yield ()).value
+    } yield numberOfContacts).value
   }
 
   def updateContact(

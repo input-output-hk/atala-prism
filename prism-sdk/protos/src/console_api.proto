@@ -259,7 +259,9 @@ message CreateContactsRequest {
   GenerateConnectionTokensRequestMetadata generateConnectionTokensRequestMetadata = 6;
 }
 // Response after creating contacts
-message CreateContactsResponse {}
+message CreateContactsResponse {
+  int32 contactsCreated = 1; // the number of contacts created
+}
 
 // Request to retrieve the contacts from the authenticated institution.
 //

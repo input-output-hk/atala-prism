@@ -101,11 +101,12 @@ object ProtoCodecs {
       .withContactId(contact.contactId.toString)
       .withExternalId(contact.externalId.value)
       .withJsonData(contact.data.noSpaces)
-      .withCreatedAtDeprecated(contact.createdAt.toEpochMilli)
-      .withCreatedAt(contact.createdAt.toProtoTimestamp)
-      .withConnectionId(connection.connectionId)
-      .withConnectionToken(connection.connectionToken)
       .withConnectionStatus(connection.connectionStatus)
+      .withConnectionToken(connection.connectionToken)
+      .withConnectionId(connection.connectionId)
+      .withCreatedAtDeprecated(contact.createdAt.toEpochMilli)
+      .withName(contact.name)
+      .withCreatedAt(contact.createdAt.toProtoTimestamp)
   }
 
   def toStatisticsProto(statistics: Statistics): console_api.GetStatisticsResponse = {

@@ -59,18 +59,18 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       institutionId: ParticipantId,
       request: CreateContact.Batch,
       connectionTokens: List[ConnectionToken]
-  ): FutureEither[ManagementConsoleError, Unit] = {
+  ): FutureEither[ManagementConsoleError, Int] = {
     def unsafe = {
       for {
         contactIds <- ContactsDAO.createContacts(institutionId, request.contacts, Instant.now(), connectionTokens)
         _ <- InstitutionGroupsDAO.addContacts(request.groups, contactIds.toSet)
-      } yield ().asRight[ManagementConsoleError]
+      } yield contactIds.size.asRight[ManagementConsoleError]
     }
 
     val connectionIO = for {
       errorMaybe <- institutionHelper.checkGroups(institutionId, request.groups)
       result <- errorMaybe match {
-        case Some(consoleError) => connection.pure(consoleError.asLeft[Unit])
+        case Some(consoleError) => connection.pure(consoleError.asLeft[Int])
         case None => unsafe
       }
     } yield result

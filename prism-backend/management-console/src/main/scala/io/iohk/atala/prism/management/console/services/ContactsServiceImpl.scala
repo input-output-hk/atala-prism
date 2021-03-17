@@ -93,8 +93,8 @@ class ContactsServiceImpl(
       contactsIntegrationService
         .createContacts(participantId, query)
         .toFutureEither
-        .map { _ =>
-          console_api.CreateContactsResponse()
+        .map { numberOfContacts =>
+          console_api.CreateContactsResponse(numberOfContacts)
         }
     }
 
