@@ -49,13 +49,13 @@ class HomePromotionalTableViewCell: BaseTableViewCell {
         moreInfoBttn.addRoundCorners(radius: 12.5, borderWidth: 1, borderColor: UIColor.appRed.cgColor)
         shareBttn.addRoundCorners(radius: 22.5, borderWidth: 1, borderColor: UIColor.appWhite.cgColor)
     }
-    
+
     // MARK: Buttons
 
     @IBAction func moreInfoTapped(_ sender: Any) {
         delegateImpl?.promotionalMoreInfoTapped(for: self)
     }
-    
+
     @IBAction func shareTapped(_ sender: Any) {
         delegateImpl?.promotionalShareTapped(for: self)
     }

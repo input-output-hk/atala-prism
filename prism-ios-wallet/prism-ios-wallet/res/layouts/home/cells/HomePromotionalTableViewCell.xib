@@ -54,7 +54,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <action selector="moreInfoTapped:" destination="KGk-i7-Jjw" eventType="touchDragOutside" id="0na-1N-E2g"/>
+                                    <action selector="moreInfoTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="rA6-my-wPY"/>
                                 </connections>
                             </button>
                         </subviews>

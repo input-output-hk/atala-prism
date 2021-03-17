@@ -32,6 +32,11 @@
 		B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */; };
 		B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16F24BF89F100AF70DF /* ContactDAO.swift */; };
 		B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */; };
+		B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */; };
+		B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */; };
+		B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */; };
+		B313878425ED72BA007A67C8 /* IntdemoTutorialPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */; };
+		B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */; };
 		B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31F0922257AB98800BCA71C /* AtomicProperty.swift */; };
 		B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */; };
 		B32A7B72243288A500B52586 /* ConnectionProofRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */; };
@@ -311,6 +316,11 @@
 		B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialDAO.swift; sourceTree = "<group>"; };
 		B309C16F24BF89F100AF70DF /* ContactDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDAO.swift; sourceTree = "<group>"; };
 		B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryDAO.swift; sourceTree = "<group>"; };
+		B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = IntdemoTutorial.storyboard; sourceTree = "<group>"; };
+		B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPageView.swift; sourceTree = "<group>"; };
+		B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntdemoTutorialPageView.xib; sourceTree = "<group>"; };
+		B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPresenter.swift; sourceTree = "<group>"; };
+		B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialViewController.swift; sourceTree = "<group>"; };
 		B31F0922257AB98800BCA71C /* AtomicProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicProperty.swift; sourceTree = "<group>"; };
 		B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConnectionProofRequest.storyboard; sourceTree = "<group>"; };
 		B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestViewController.swift; sourceTree = "<group>"; };
@@ -755,6 +765,8 @@
 			children = (
 				B35CEEEB25E4320200DA2BF9 /* cells */,
 				B397DC5A25E3E6A900B26506 /* Home.storyboard */,
+				B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */,
+				B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */,
 			);
 			path = home;
 			sourceTree = "<group>";
@@ -765,6 +777,9 @@
 				B397DC6825E3EB2800B26506 /* cells */,
 				B397DC6025E3EB2200B26506 /* HomeViewController.swift */,
 				B397DC6925E3EB3800B26506 /* HomePresenter.swift */,
+				B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */,
+				B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */,
+				B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */,
 			);
 			path = home;
 			sourceTree = "<group>";
@@ -1660,6 +1675,7 @@
 				B36F27BD2406E2C400FF751B /* About.storyboard in Resources */,
 				EE7185662384B96400C58F62 /* Browser.storyboard in Resources */,
 				B3A98F5424ED5FD300E138C2 /* ActivityLogTableViewCell.xib in Resources */,
+				B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */,
 				EE7D4D19236A99D7007C31A8 /* NavBarCustom.xib in Resources */,
 				B36F2FC224DDAC620012FDCC /* DeleteCredential.storyboard in Resources */,
 				EE718552237DCDB100C58F62 /* Welcome.storyboard in Resources */,
@@ -1699,6 +1715,7 @@
 				B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */,
 				EE48AC04237753A900C0A441 /* Register.storyboard in Resources */,
 				B35CEEFC25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib in Resources */,
+				B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */,
 				EE7D4CC32366B9C5007C31A8 /* SteradianBold.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1873,6 +1890,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE7185622384B76B00C58F62 /* BrowserViewController.swift in Sources */,
+				B313878425ED72BA007A67C8 /* IntdemoTutorialPresenter.swift in Sources */,
 				B35CEF0525E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift in Sources */,
 				EE7D4C402366B9C4007C31A8 /* String+Extensions.swift in Sources */,
 				B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */,
@@ -1907,6 +1925,7 @@
 				EE71855C2383563100C58F62 /* ShareDialogViewController.swift in Sources */,
 				EE7D4D28236F8DE9007C31A8 /* ListingErrorRetryViewCell.swift in Sources */,
 				EE7D4C3D2366B9C4007C31A8 /* SelectorAction.swift in Sources */,
+				B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */,
 				EE7D4C412366B9C4007C31A8 /* Collection+Extension.swift in Sources */,
 				B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */,
 				B3F94E96247455A60087EBFD /* SecurityMainViewCell.swift in Sources */,
@@ -1950,6 +1969,7 @@
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
 				EE7D4D012367621C007C31A8 /* CredentialsViewController.swift in Sources */,
+				B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */,
 				EE8FD4E223726A3600EFF62E /* SettingsPresenter.swift in Sources */,
 				EE48AC152377547C00C0A441 /* LoginPresenter.swift in Sources */,
 				EE7D4D17236A89AE007C31A8 /* NavBarCustom.swift in Sources */,

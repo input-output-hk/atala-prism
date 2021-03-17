@@ -166,7 +166,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     func promotionalMoreInfoTapped(for cell: HomePromotionalTableViewCell) {
-        
+        viewImpl?.changeScreenToIntdemoTutorial()
     }
 
     func promotionalShareTapped(for cell: HomePromotionalTableViewCell) {

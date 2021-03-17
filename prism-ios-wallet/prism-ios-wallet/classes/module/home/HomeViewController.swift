@@ -79,4 +79,8 @@ class HomeViewController: ListingBaseViewController {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "ActivityLogSegue", params: nil)
     }
 
+    func changeScreenToIntdemoTutorial() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "IntdemoTutorialSegue", params: nil)
+    }
+
 }

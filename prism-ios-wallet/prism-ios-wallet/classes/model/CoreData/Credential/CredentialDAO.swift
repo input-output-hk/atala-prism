@@ -27,7 +27,7 @@ class CredentialDAO: BaseDAO {
         let result = try? getManagedContext()?.fetch(fetchRequest)
         return result
     }
-
+    
     func countNewCredentials() -> Int {
         let fetchRequest = Credential.createFetchRequest()
         fetchRequest.predicate = NSPredicate(format: "viewed == false")

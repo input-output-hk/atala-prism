@@ -37,6 +37,7 @@
                         <segue destination="TI2-fE-c2i" kind="show" identifier="ProfileSegue" id="b1C-P3-2L2"/>
                         <segue destination="NaS-H7-cwY" kind="show" identifier="NotificationsSegue" id="2wp-Jk-xiI"/>
                         <segue destination="Zxg-dQ-gT6" kind="show" identifier="ActivityLogSegue" id="Bhq-jq-scc"/>
+                        <segue destination="NJ6-Ct-zvz" kind="show" identifier="IntdemoTutorialSegue" id="02b-WX-Mxw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lwu-Qj-tt2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -51,7 +52,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LU6-40-mHu" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="633" y="-348"/>
+            <point key="canvasLocation" x="633" y="-370"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="w04-Q6-yVA">
@@ -78,7 +79,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GRM-oZ-GCE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="659" y="-307"/>
+            <point key="canvasLocation" x="659" y="-329"/>
         </scene>
         <!--ActivityLog-->
         <scene sceneID="oiR-OU-Lra">
@@ -88,7 +89,17 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ldn-xV-kcC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="654" y="-265"/>
+            <point key="canvasLocation" x="654" y="-287"/>
+        </scene>
+        <!--IntdemoTutorial-->
+        <scene sceneID="jdf-X6-WLs">
+            <objects>
+                <viewControllerPlaceholder storyboardName="IntdemoTutorial" referencedIdentifier="IntdemoTutorial" id="NJ6-Ct-zvz" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="pMV-RM-02s"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="3GX-oc-luN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="674" y="-242"/>
         </scene>
     </scenes>
     <resources>

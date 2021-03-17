@@ -23,6 +23,7 @@
 "next" = "Next";
 "accept" = "Accept";
 "service_error" = "Service is unavailable. Try again later";
+"back" = "Back";
 
  // <!-- Default errors and loadings -->
 "coming_soon_btn" = "COMING SOON";
@@ -330,3 +331,15 @@
 "home_promotional_share" = "Share with your Friends!";
 "home_promotional_share_desc" = "Atala PRISM lorem ipsum\ndolor sit amtet";
 "home_promotional_send_invite" = "Send Invite";
+
+
+// <!-- Home -->
+"intdemotutorial_step_1_title" = "Become a Citizen\nof Metropol City";
+"intdemotutorial_step_1_subtitle" = "Metropol city has announced that all residents will be issued with a new digital ID. This forward thinking initiative will give citizens fast and friction-free access to many government and municipal services, making it easier than ever before to take public transport, pay city taxes and vote on local issues, straight from your phone.";
+"intdemotutorial_step_2_title" = "Connect with an\nOrganization";
+"intdemotutorial_step_2_subtitle" = "To obtain your Government ID, follow the steps below:";
+"intdemotutorial_step_2_desc_1" = "Open Atala PRISM on your phone.\n\n";
+"intdemotutorial_step_2_desc_2" = "Go to the Notifications Menu\nIcon menu and tap the Scan QR code button.\n\n";
+"intdemotutorial_step_2_desc3" = "Scan the QR code";
+"intdemotutorial_step_3_title" = "Receive\nyour Credential";
+"intdemotutorial_step_3_subtitle" = "Prove your identity in one click and instantly access services everywhere Atala PRISM is suported.";
