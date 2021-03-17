@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 import CredentialSummaryDetail from '../../../../common/Organisms/Detail/CredentialSummaryDetail';
 import { mockHtmlCredential } from '../../../../../helpers/mockData';
-import { dateFormat } from '../../../../../helpers/formatters';
+import { backendDateFormat } from '../../../../../helpers/formatters';
 import { credentialTypesShape } from '../../../../../helpers/propShapes';
 
 import './style.scss';
@@ -27,8 +27,8 @@ const CredentialDetail = ({ credential, credentialTypes, isCredentialIssued }) =
     <div className="credentialData">
       <p>{t('credentials.detail.dateSigned')}</p>
       <span>
-        {publicationstoredat
-          ? dateFormat(publicationstoredat)
+        {publicationstoredat?.seconds
+          ? backendDateFormat(publicationstoredat?.seconds)
           : t('credentials.detail.notPublished')}
       </span>
     </div>

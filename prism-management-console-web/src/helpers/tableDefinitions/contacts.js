@@ -7,7 +7,7 @@ import StatusBadge from '../../components/connections/Atoms/StatusBadge/StatusBa
 import holderDefaultAvatar from '../../images/holder-default-avatar.svg';
 import ActionButtons from '../../components/connections/Atoms/ActionButtons/ActionButtons';
 import ActionGroupButtons from '../../components/groupEditing/ActionButtons';
-import { contactBackendDateFormat } from '../formatters';
+import { backendDateFormat } from '../formatters';
 
 const translationKeyPrefix = 'contacts.table.columns';
 
@@ -38,7 +38,7 @@ const getBasicContactColumns = () => [
   {
     key: 'creationDate',
     render: ({ createdat }) => (
-      <CellRenderer title={tp('creationDate')} value={contactBackendDateFormat(createdat)} />
+      <CellRenderer title={tp('creationDate')} value={backendDateFormat(createdat?.seconds)} />
     )
   }
 ];

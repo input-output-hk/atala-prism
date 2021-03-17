@@ -25,7 +25,7 @@ const baseColumns = [
     key: 'createdAt',
     align: 'left',
     render: ({ createdat }) => (
-      <CellRenderer title={tp('createdAt')} value={backendDateFormat(createdat)} />
+      <CellRenderer title={tp('createdAt')} value={backendDateFormat(createdat?.seconds)} />
     )
   },
   {

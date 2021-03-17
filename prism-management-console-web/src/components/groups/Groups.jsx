@@ -16,9 +16,9 @@ import { filterByInclusion } from '../../helpers/filterHelpers';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
 import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
+import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 
 import './_style.scss';
-import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -74,7 +74,7 @@ const Groups = ({
     groups.filter(
       group =>
         filterByInclusion(name, group.name) &&
-        (!date || backendDateFormat(group.createdat) === date)
+        (!date || backendDateFormat(group.createdat?.seconds) === date)
     );
 
   const handleUpdateGroups = (oldGroups, newDate, newName) => {

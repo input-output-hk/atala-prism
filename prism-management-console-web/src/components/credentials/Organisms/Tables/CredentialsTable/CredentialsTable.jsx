@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
-import { dateFormat } from '../../../../../helpers/formatters';
+import { backendDateFormat } from '../../../../../helpers/formatters';
 import InfiniteScrollTable from '../../../../common/Organisms/Tables/InfiniteScrollTable';
 import freeUniLogo from '../../../../../images/free-uni-logo.png';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
@@ -71,8 +71,8 @@ const getCredentialsIssuedColumns = (
       <CellRenderer
         title={tp('dateSigned')}
         value={
-          publicationstoredat
-            ? dateFormat(publicationstoredat)
+          publicationstoredat?.seconds
+            ? backendDateFormat(publicationstoredat?.seconds)
             : i18n.t('credentials.detail.notPublished')
         }
       />
@@ -154,7 +154,7 @@ const getCredentialsReceivedColumns = (viewText, onView) => [
   {
     key: 'dateReceived',
     render: ({ storedat }) => (
-      <CellRenderer title={tp('dateReceived')} value={dateFormat(storedat)} />
+      <CellRenderer title={tp('dateReceived')} value={backendDateFormat(storedat?.seconds)} />
     )
   },
   {

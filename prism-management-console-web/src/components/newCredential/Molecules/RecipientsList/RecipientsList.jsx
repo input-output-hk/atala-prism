@@ -4,10 +4,10 @@ import { Table } from 'antd';
 import contactLogo from '../../../../images/holder-default-avatar.svg';
 import groupLogo from '../../../../images/groupIcon.svg';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import { contactBackendDateFormat } from '../../../../helpers/formatters';
+import { backendDateFormat } from '../../../../helpers/formatters';
+import { useTranslationWithPrefix } from '../../../../hooks/useTranslationWithPrefix';
 
 import './_style.scss';
-import { useTranslationWithPrefix } from '../../../../hooks/useTranslationWithPrefix';
 
 const contactsPrefix = 'contacts.table.columns';
 const groupsPrefix = 'groups.table.columns';
@@ -46,10 +46,10 @@ const RecipientsList = ({ recipients }) => {
           },
           {
             render: ({ createdat }) =>
-              createdat && (
+              createdat?.seconds && (
                 <CellRenderer
                   title={tpc('creationDate')}
-                  value={contactBackendDateFormat(createdat)}
+                  value={backendDateFormat(createdat?.seconds)}
                 />
               )
           }
