@@ -15,7 +15,7 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   GetCredentialIssuance
 }
 import io.iohk.atala.prism.management.console.validations.JsonValidator
-import io.iohk.atala.prism.protos.{common_models, console_models}
+import io.iohk.atala.prism.protos.{common_models, console_models, node_api}
 import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
@@ -381,6 +381,38 @@ package object grpc {
         batchId <- Try(CredentialBatchId.unsafeFromString(request.batchId))
         credentialHash = SHA256Digest.fromVectorUnsafe(request.credentialHash.toByteArray.toVector)
       } yield GetLedgerData(batchId, credentialHash)
+    }
+
+  implicit val publishBatchConverter: ProtoConverter[PublishBatchRequest, PublishBatch] =
+    (request: PublishBatchRequest) => {
+      for {
+        signedOperation <- Try(
+          request.issueCredentialBatchOperation.getOrElse(throw new RuntimeException("Missing signed operation"))
+        )
+        isIssueCredentialBatch =
+          signedOperation.operation
+            .getOrElse(throw new RuntimeException("Missing operation"))
+            .operation
+            .isIssueCredentialBatch
+        _ =
+          if (isIssueCredentialBatch) ()
+          else throw new RuntimeException("IssueCredentialBatch operation expected but not found")
+      } yield PublishBatch(signedOperation)
+    }
+
+  implicit val issueCredentialBatchResponseConverter
+      : ProtoConverter[node_api.IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse] =
+    (response: node_api.IssueCredentialBatchResponse) => {
+      for {
+        batchId <- Try(
+          CredentialBatchId
+            .fromString(response.batchId)
+            .getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
+        )
+        transactionInfo =
+          response.transactionInfo
+            .getOrElse(throw new RuntimeException("The node did not return a transaction"))
+      } yield IssueCredentialBatchNodeResponse(batchId, transactionInfo)
     }
 
   implicit val createCredentialBulkConverter: ProtoConverter[CreateGenericCredentialBulkRequest, CreateCredentialBulk] =

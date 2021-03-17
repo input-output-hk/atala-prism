@@ -8,6 +8,7 @@ import io.circe.syntax._
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.repositories.daos.{
   ContactsDAO,
@@ -22,8 +23,10 @@ import org.scalatest.OptionValues._
 import io.scalaland.chimney.dsl._
 import io.iohk.atala.prism.protos.console_models
 import io.iohk.atala.prism.protos.console_models.GenerateConnectionTokensRequestMetadata
-
 import java.time.{Instant, LocalDate}
+
+import io.iohk.atala.prism.credentials.CredentialBatchId
+
 import scala.util.Random
 
 object DataPreparation {
@@ -208,5 +211,19 @@ object DataPreparation {
 
   def makeConnectionTokens(count: Int = 1): List[ConnectionToken] = {
     1.to(count).map(i => ConnectionToken(s"ConnectionToken$i")).toList
+  }
+
+  def getBatchData(
+      batchId: CredentialBatchId
+  )(implicit database: Transactor[IO]): Option[(TransactionId, Ledger, SHA256Digest)] = {
+    sql"""
+         |SELECT issued_on_transaction_id, ledger, issuance_operation_hash
+         |FROM published_batches
+         |WHERE batch_id = ${batchId.id}
+         |""".stripMargin
+      .query[(TransactionId, Ledger, SHA256Digest)]
+      .option
+      .transact(database)
+      .unsafeRunSync()
   }
 }

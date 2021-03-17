@@ -4,11 +4,16 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.management.console.DataPreparation.createParticipant
+import io.iohk.atala.prism.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.management.console.DataPreparation.{createParticipant, getBatchData}
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
-import io.iohk.atala.prism.protos.{console_api, node_api, node_models, common_models}
+import io.iohk.atala.prism.models.Ledger.InMemory
+import io.iohk.atala.prism.protos.{common_models, console_api, node_api, node_models}
 import org.mockito.IdiomaticMockito.StubbingOps
+import org.mockito.Mockito.verify
+import org.scalatest.OptionValues.convertOptionToValuable
 
 import scala.concurrent.Future
 
@@ -149,5 +154,92 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
         response.credentialRevocation mustBe (Some(credentialRevocationLedgerData))
       }
     }
+  }
+
+  "CredentialsServiceImpl.publishBatch" should {
+    def buildSignedIssueCredentialOp(
+        credentialHash: SHA256Digest,
+        didSuffix: DIDSuffix
+    ): node_models.SignedAtalaOperation = {
+      node_models.SignedAtalaOperation(
+        signedWith = "mockKey",
+        signature = ByteString.copyFrom("".getBytes()),
+        operation = Some(
+          node_models.AtalaOperation(
+            operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
+              node_models.IssueCredentialBatchOperation(
+                credentialBatchData = Some(
+                  node_models.CredentialBatchData(
+                    issuerDID = didSuffix.value,
+                    merkleRoot = ByteString.copyFrom(credentialHash.value.toArray)
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+
+    "forward request to node and store data in database" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      createParticipant(issuerName, did)
+
+      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
+
+      val issuanceOp = buildSignedIssueCredentialOp(
+        mockEncodedSignedCredentialHash,
+        mockDIDSuffix
+      )
+
+      val mockCredentialBatchId =
+        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash))
+      val mockTransactionInfo =
+        common_models
+          .TransactionInfo()
+          .withTransactionId(mockCredentialBatchId.id)
+          .withLedger(common_models.Ledger.IN_MEMORY)
+
+      val nodeRequest = node_api
+        .IssueCredentialBatchRequest()
+        .withSignedOperation(issuanceOp)
+
+      nodeMock
+        .issueCredentialBatch(nodeRequest)
+        .returns(
+          Future
+            .successful(
+              node_api
+                .IssueCredentialBatchResponse()
+                .withTransactionInfo(mockTransactionInfo)
+                .withBatchId(mockCredentialBatchId.id)
+            )
+        )
+
+      val request = console_api
+        .PublishBatchRequest()
+        .withIssueCredentialBatchOperation(issuanceOp)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        val publishResponse = serviceStub.publishBatch(request)
+        verify(nodeMock).issueCredentialBatch(nodeRequest)
+
+        publishResponse.batchId mustBe mockCredentialBatchId.id
+        publishResponse.transactionInfo mustBe Some(mockTransactionInfo)
+
+        val (txId, ledger, hash) = getBatchData(mockCredentialBatchId).value
+        txId.toString mustBe mockTransactionInfo.transactionId
+        ledger mustBe (InMemory)
+        hash mustBe SHA256Digest.compute(issuanceOp.operation.value.toByteArray)
+      }
+    }
+
   }
 }

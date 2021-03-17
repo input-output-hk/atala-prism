@@ -6,6 +6,8 @@ import cats.effect.IO
 import doobie.ConnectionIO
 import doobie.util.transactor.Transactor
 import doobie.implicits._
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.errors.{
   ContactIdsWereNotFound,
   CredentialDataValidationFailed,
@@ -23,8 +25,9 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialTypeDao, CredentialsDAO}
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
+import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 
 import scala.concurrent.ExecutionContext
 
@@ -143,5 +146,17 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .unsafeToFuture()
       .map(Right(_))
       .toFutureEither
+  }
+
+  def storeBatchData(
+      batchId: CredentialBatchId,
+      issuanceOperationHash: SHA256Digest,
+      issuanceTransactionInfo: TransactionInfo
+  ): FutureEither[Nothing, Int] = {
+    CredentialsDAO
+      .storeBatchData(batchId, issuanceTransactionInfo, issuanceOperationHash)
+      .transact(xa)
+      .unsafeToFuture()
+      .lift
   }
 }

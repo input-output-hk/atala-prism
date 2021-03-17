@@ -1,11 +1,15 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import java.time.Instant
+
 import cats.implicits._
 import doobie._
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.models.TransactionInfo
 
 object CredentialsDAO {
 
@@ -153,6 +157,24 @@ object CredentialsDAO {
          |""".stripMargin.update.run.flatTap { n =>
       FC.raiseError(new RuntimeException(s"The credential was not issued by the specified issuer")).whenA(n != 1)
     }
+  }
+
+  def storeBatchData(
+      batchId: CredentialBatchId,
+      issuanceTransactionInfo: TransactionInfo,
+      issuanceOperationHash: SHA256Digest
+  ): doobie.ConnectionIO[Int] = {
+    sql"""
+         |INSERT INTO published_batches (
+         |  batch_id, issued_on_transaction_id, ledger, issuance_operation_hash, stored_at
+         |)
+         |VALUES ($batchId,
+         |        ${issuanceTransactionInfo.transactionId},
+         |        ${issuanceTransactionInfo.ledger},
+         |        ${issuanceOperationHash},
+         |        ${Instant.now()}
+         |)
+         |""".stripMargin.update.run
   }
 
   def markAsShared(institutionId: ParticipantId, credentialId: GenericCredential.Id): doobie.ConnectionIO[Unit] = {

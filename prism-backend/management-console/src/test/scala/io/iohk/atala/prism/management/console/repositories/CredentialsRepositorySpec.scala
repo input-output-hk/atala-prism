@@ -3,6 +3,7 @@ package io.iohk.atala.prism.management.console.repositories
 import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -387,6 +388,31 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       assertThrows[Exception] {
         credentialsRepository.markAsShared(issuerId2, credential.credentialId).value.futureValue.toOption.value
       }
+    }
+  }
+
+  "storeBatchData" should {
+    "insert the expected data" in {
+      val mockHash = SHA256Digest.compute("random".getBytes())
+      val mockBatchId = CredentialBatchId.fromDigest(mockHash)
+      val mockLedger = Ledger.InMemory
+      val mockTransactionId =
+        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+
+      credentialsRepository
+        .storeBatchData(
+          mockBatchId,
+          mockHash,
+          TransactionInfo(mockTransactionId, mockLedger, None)
+        )
+        .value
+        .futureValue
+
+      val (transactionId, ledger, hash) = DataPreparation.getBatchData(mockBatchId).value
+
+      transactionId mustBe mockTransactionId
+      ledger mustBe mockLedger
+      hash mustBe mockHash
     }
   }
 }
