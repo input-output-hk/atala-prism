@@ -152,6 +152,21 @@ def espressoTestDependencies = [
         idlingConcurrent: "androidx.test.espresso.idling:idling-concurrent:$espressoVersion",
 ]
 
+// Publishes Kotlin SDK artifacts to the local m2 repository if necessary
+void publishKotlinSdk(String gitVersion) {
+    def homeDir = project.gradle.gradleUserHomeDir.getParentFile().toPath()
+    def prismRepositoryBase = homeDir.resolve(".m2/repository/io/iohk/atala/prism")
+    def cryptoArtifact = prismRepositoryBase.resolve("crypto-android/$gitVersion")
+    def protosArtifact = prismRepositoryBase.resolve("protos-android/$gitVersion")
+    def identityArtifact = prismRepositoryBase.resolve("identity-android/$gitVersion")
+    if (!Files.exists(cryptoArtifact) || !Files.exists(protosArtifact) || !Files.exists(identityArtifact)) {
+        def cmd = "./gradlew compileKotlinJvm publish"
+        def proc = cmd.execute(null, new File("../prism-kotlin-sdk"))
+        proc.in.eachLine { line -> println line }
+        proc.err.eachLine { line -> println 'WARNING: ' + line }
+        proc.waitFor()
+    }
+}
 
 dependencies {
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
@@ -219,9 +234,10 @@ dependencies {
     testCoreDependencies.each { k, dep -> androidTestImplementation dep }
     espressoTestDependencies.each { k, dep -> androidTestImplementation dep }
 
-    def gitVersion = versionDetails().gitHash.substring(0, 8)
+    def gitVersion = "0.1.0-" + versionDetails().gitHash.substring(0, 8)
+    publishKotlinSdk(gitVersion)
 
-    implementation("io.iohk.atala.prism:identity:0.1-$gitVersion") {
+    implementation("io.iohk.atala.prism:identity:$gitVersion") {
         exclude group: 'com.google.protobuf' // We use javalite version instead
         exclude group: 'io.grpc' // We use javalite version instead
     }

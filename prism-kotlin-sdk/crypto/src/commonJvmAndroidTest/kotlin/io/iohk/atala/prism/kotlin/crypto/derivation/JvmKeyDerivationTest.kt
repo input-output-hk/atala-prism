@@ -40,7 +40,7 @@ class JvmKeyDerivationTest {
     @Test
     fun testComputeRightBinarySeed() {
         val password = "TREZOR"
-        val jsonData = javaClass.classLoader.getResource("bip39_vectors.json")!!.readText()
+        val jsonData = javaClass.classLoader!!.getResource("bip39_vectors.json")!!.readText()
         val vectors = Json.decodeFromString<List<List<String>>>(jsonData)
         for (v in vectors) {
             val (_, mnemonicPhrase, binarySeedHex, _) = v
@@ -82,7 +82,7 @@ class JvmKeyDerivationTest {
         class Derivation(val path: String, val pubKeyHex: String, val privKeyHex: String)
         class TestVector(val seedHex: String, val derivations: List<Derivation>)
 
-        val jsonData = javaClass.classLoader.getResource("bip32_vectors.json")!!.readText()
+        val jsonData = javaClass.classLoader!!.getResource("bip32_vectors.json")!!.readText()
         val vectors = Json.decodeFromString<List<RawTestVector>>(jsonData).map { vector ->
             val derivations = vector.derivations.map { derivation ->
                 val (path, pubKeyHex, privKeyHex) = derivation

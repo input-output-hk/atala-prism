@@ -3,23 +3,18 @@ package io.iohk.atala.prism.kotlin.crypto.keys
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
+import io.iohk.atala.prism.kotlin.crypto.GenericJavaCryptography
 import io.iohk.atala.prism.kotlin.crypto.util.toKotlinBigInteger
 import io.iohk.atala.prism.kotlin.crypto.util.toUnsignedByteArray
-import java.lang.IllegalStateException
 import java.security.PublicKey
 
 actual class ECPublicKey(internal val key: PublicKey) : ECKey() {
     override fun getEncoded(): List<Byte> {
-        val curvePoint = when (key) {
-            is org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey -> {
-                val point = key.w
-                ECPoint(
-                    BigInteger.fromByteArray(point.affineX.toUnsignedByteArray(), Sign.POSITIVE),
-                    BigInteger.fromByteArray(point.affineY.toUnsignedByteArray(), Sign.POSITIVE)
-                )
-            }
-            else -> throw IllegalStateException("Unexpected public key implementation")
-        }
+        val javaPoint = GenericJavaCryptography.publicKeyPoint(key)
+        val curvePoint = ECPoint(
+            BigInteger.fromByteArray(javaPoint.affineX.toUnsignedByteArray(), Sign.POSITIVE),
+            BigInteger.fromByteArray(javaPoint.affineY.toUnsignedByteArray(), Sign.POSITIVE)
+        )
         val size = ECConfig.PRIVATE_KEY_BYTE_SIZE
         val xArr = curvePoint.x.toByteArray()
         val yArr = curvePoint.y.toByteArray()
@@ -35,12 +30,7 @@ actual class ECPublicKey(internal val key: PublicKey) : ECKey() {
     }
 
     actual fun getCurvePoint(): ECPoint {
-        return when (key) {
-            is org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey -> {
-                val point = key.w
-                ECPoint(point.affineX.toKotlinBigInteger(), point.affineY.toKotlinBigInteger())
-            }
-            else -> throw IllegalStateException("Unexpected public key implementation")
-        }
+        val javaPoint = GenericJavaCryptography.publicKeyPoint(key)
+        return ECPoint(javaPoint.affineX.toKotlinBigInteger(), javaPoint.affineY.toKotlinBigInteger())
     }
 }

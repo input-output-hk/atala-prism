@@ -3,9 +3,13 @@ plugins {
     kotlin("plugin.serialization")
     kotlin("native.cocoapods")
     `maven-publish`
+    id("com.android.library")
 }
 
 kotlin {
+    android {
+        publishAllLibraryVariants()
+    }
     jvm {
         compilations.all {
             kotlinOptions {
@@ -52,15 +56,36 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        val jvmMain by getting {
+        val androidMain by getting {
+            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
             dependencies {
                 implementation("com.madgag.spongycastle:prov:1.58.0.0")
                 implementation("org.bitcoinj:bitcoinj-core:0.15.8")
                 api("com.google.guava:guava:30.1-jre")
             }
         }
-        val jvmTest by getting {
+        val androidTest by getting {
+            kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
+            resources.srcDir("src/commonJvmAndroidTest/resources")
             dependencies {
+                implementation(kotlin("test"))
+                implementation(kotlin("test-junit5"))
+                runtimeOnly("org.robolectric:android-all:10-robolectric-5803371")
+            }
+        }
+        val jvmMain by getting {
+            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
+            dependencies {
+                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
+                implementation("org.bitcoinj:bitcoinj-core:0.15.10")
+                api("com.google.guava:guava:30.1-jre")
+            }
+        }
+        val jvmTest by getting {
+            kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
+            resources.srcDir("src/commonJvmAndroidTest/resources")
+            dependencies {
+                implementation(kotlin("test"))
                 implementation(kotlin("test-junit5"))
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
             }
@@ -99,6 +124,15 @@ kotlin {
         ios.deploymentTarget = "13.0"
 
         pod("Secp256k1Kit.swift", version = "1.1", moduleName = "Secp256k1Kit")
+    }
+}
+
+android {
+    compileSdkVersion(29)
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    defaultConfig {
+        minSdkVersion(26)
+        targetSdkVersion(29)
     }
 }
 

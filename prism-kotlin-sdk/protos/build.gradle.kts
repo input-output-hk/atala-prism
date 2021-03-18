@@ -1,4 +1,3 @@
-import com.google.protobuf.gradle.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
@@ -7,10 +6,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 plugins {
     kotlin("multiplatform")
     `maven-publish`
-    `java-library`
-    id("com.google.protobuf")
+    id("com.android.library")
 }
-val protobufVersion = "3.11.1"
 val pbandkVersion: String by rootProject.extra
 
 repositories {
@@ -21,46 +18,10 @@ repositories {
     maven { setUrl("https://dl.bintray.com/itegulov/maven") }
 }
 
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:$protobufVersion"
-    }
-    plugins {
-        id("kotlin") {
-            artifact = "pro.streem.pbandk:protoc-gen-kotlin-jvm:$pbandkVersion:jvm8@jar"
-        }
-    }
-    generateProtoTasks {
-        ofSourceSet("main").forEach { task ->
-            task.dependsOn(":generator:jar")
-            task.builtins {
-                remove("java")
-            }
-            task.plugins {
-                id("kotlin") {
-                    option("kotlin_package=io.iohk.atala.prism.kotlin.protos")
-                    option("kotlin_service_gen=${project(":generator").buildDir}/libs/generator-$version.jar|io.iohk.atala.prism.kotlin.generator.Generator")
-                }
-            }
-        }
-    }
-}
-
-sourceSets {
-    main {
-        proto {
-            setSrcDirs(listOf("src/main/proto"))
-            setIncludes(
-                listOf(
-                    "common_*.proto",
-                    "node_*.proto"
-                )
-            )
-        }
-    }
-}
-
 kotlin {
+    android {
+        publishAllLibraryVariants()
+    }
     jvm {
         compilations.all {
             kotlinOptions {
@@ -102,7 +63,7 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
-            kotlin.srcDir("$buildDir/generated/source/proto/main/kotlin")
+            kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             dependencies {
                 api("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
@@ -114,14 +75,32 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
+        val androidMain by getting {
+            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
+            dependencies {
+                api("io.grpc:grpc-kotlin-stub:1.0.0")
+                api("io.grpc:grpc-okhttp:1.36.0")
+            }
+        }
+        val androidTest by getting {
+            kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(kotlin("test-junit5"))
+                runtimeOnly("org.robolectric:android-all:10-robolectric-5803371")
+            }
+        }
         val jvmMain by getting {
+            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
             dependencies {
                 api("io.grpc:grpc-kotlin-stub:1.0.0")
                 api("io.grpc:grpc-okhttp:1.36.0")
             }
         }
         val jvmTest by getting {
+            kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
             dependencies {
+                implementation(kotlin("test"))
                 implementation(kotlin("test-junit5"))
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
             }
@@ -147,24 +126,26 @@ kotlin {
     }
 }
 
-dependencies {
-    // This is needed for well-known protobuf types (such as `google/protobuf`) to be discoverable
-    implementation("pro.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
+android {
+    compileSdkVersion(29)
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    defaultConfig {
+        minSdkVersion(26)
+        targetSdkVersion(29)
+    }
 }
 
 tasks {
-    compileJava {
-        enabled = false
-    }
-
     "jvmTest"(Test::class) {
         useJUnitPlatform()
     }
 
-    project(":protos").tasks
+    project(":protosLib").tasks
         .matching { it.name == "generateProto" }
         .all {
             val compileTasks = listOf<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>(
+                named<KotlinCompile>("compileReleaseKotlinAndroid").get(),
+                named<KotlinCompile>("compileDebugKotlinAndroid").get(),
                 named<KotlinCompile>("compileKotlinJvm").get(),
                 named<KotlinJsCompile>("compileKotlinJs").get(),
                 named<KotlinNativeCompile>("compileKotlinIosX64").get(),

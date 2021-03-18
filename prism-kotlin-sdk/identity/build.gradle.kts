@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
     `maven-publish`
+    id("com.android.library")
 }
 val pbandkVersion: String by rootProject.extra
 
@@ -9,6 +10,9 @@ dependencies {
 }
 
 kotlin {
+    android {
+        publishAllLibraryVariants()
+    }
     jvm {
         compilations.all {
             kotlinOptions {
@@ -61,7 +65,18 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
+        val androidMain by getting {
+            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
+        }
+        val androidTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(kotlin("test-junit5"))
+                runtimeOnly("org.robolectric:android-all:10-robolectric-5803371")
+            }
+        }
         val jvmMain by getting {
+            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
             dependencies {
                 implementation("com.madgag.spongycastle:prov:1.58.0.0")
                 api("org.bitcoinj:bitcoinj-core:0.15.8")
@@ -69,6 +84,7 @@ kotlin {
         }
         val jvmTest by getting {
             dependencies {
+                implementation(kotlin("test"))
                 implementation(kotlin("test-junit5"))
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
             }
@@ -92,6 +108,15 @@ kotlin {
         repositories {
             mavenLocal()
         }
+    }
+}
+
+android {
+    compileSdkVersion(29)
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    defaultConfig {
+        minSdkVersion(26)
+        targetSdkVersion(29)
     }
 }
 

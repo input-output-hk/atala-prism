@@ -12,22 +12,12 @@ import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.crypto.util.toJavaBigInteger
 import io.iohk.atala.prism.kotlin.crypto.util.toKotlinBigInteger
 import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
-import org.spongycastle.jce.ECNamedCurveTable
-import org.spongycastle.jce.provider.BouncyCastleProvider
-import org.spongycastle.jce.spec.ECNamedCurveSpec
 import java.security.*
 import java.security.spec.*
 
 actual object EC {
-    private val provider = BouncyCastleProvider()
-    private val ecParameterSpec = ECNamedCurveTable.getParameterSpec(CURVE_NAME)
-    private val ecNamedCurveSpec: ECParameterSpec = ECNamedCurveSpec(
-        ecParameterSpec.name,
-        ecParameterSpec.curve,
-        ecParameterSpec.g,
-        ecParameterSpec.n
-    )
-
+    private val provider = GenericJavaCryptography.provider
+    private val ecNamedCurveSpec = GenericJavaCryptography.ecNamedCurveSpec
     private val keyFactory = KeyFactory.getInstance("EC", provider)
 
     init {
@@ -84,8 +74,7 @@ actual object EC {
 
     @JvmStatic
     actual fun toPublicKeyFromPrivateKey(privateKey: ECPrivateKey): ECPublicKey {
-        val q = ecParameterSpec.g.multiply(privateKey.getD().toJavaBigInteger())
-        val pubSpec = org.spongycastle.jce.spec.ECPublicKeySpec(q, ecParameterSpec)
+        val pubSpec = GenericJavaCryptography.keySpec(privateKey.getD().toJavaBigInteger())
         return ECPublicKey(keyFactory.generatePublic(pubSpec))
     }
 

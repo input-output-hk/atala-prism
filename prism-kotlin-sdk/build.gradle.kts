@@ -4,6 +4,7 @@ plugins {
     kotlin("multiplatform") version "1.4.30" apply false
     kotlin("plugin.serialization") version "1.4.30" apply false
     kotlin("native.cocoapods") version "1.4.30" apply false
+    id("com.android.library") version "4.0.2" apply false
     id("com.google.protobuf") version "0.8.14" apply false
     id("com.palantir.git-version") version "0.12.3"
     id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
@@ -36,9 +37,10 @@ allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
+        google()
         maven("https://plugins.gradle.org/m2/")
-        maven { setUrl("https://dl.bintray.com/itegulov/maven") }
-        maven(url = "https://kotlin.bintray.com/kotlinx/")
+        maven("https://dl.bintray.com/itegulov/maven")
+        maven("https://kotlin.bintray.com/kotlinx/")
     }
 
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
