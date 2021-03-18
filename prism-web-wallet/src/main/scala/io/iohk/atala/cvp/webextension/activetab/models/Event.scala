@@ -21,7 +21,7 @@ private[activetab] object Event {
   final case class GotSdkDetails(extensionId: String) extends Event
   final case class GotWalletStatus(status: String) extends Event
   final case class GotUserSession(userDetails: UserDetails) extends Event
-  final case object EnqueueRequestApprovalAck extends Event
+  final case class GotEnqueueRequestApprovalResultTransactionId(transactionId: String) extends Event
   final case class GotSignedResponse(signedMessage: SignedMessage) extends Event
   final case class SignedCredentialVerified(result: ValidatedNel[VerificationError, Unit]) extends Event
 

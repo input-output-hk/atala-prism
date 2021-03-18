@@ -5,7 +5,12 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.iohk.atala.cvp.webextension.activetab.isolated.ExtensionAPI
-import io.iohk.atala.cvp.webextension.activetab.models.{JsSdkDetails, JsSignedMessage, JsUserDetails}
+import io.iohk.atala.cvp.webextension.activetab.models.{
+  JsRequestApprovalResult,
+  JsSdkDetails,
+  JsSignedMessage,
+  JsUserDetails
+}
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, PendingRequest}
 import io.iohk.atala.prism.credentials.VerificationError._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, VerificationError}
@@ -72,13 +77,20 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
       .toJSPromise
   }
 
-  // TODO: Return the transaction id after publishing the operation
   // used to request signing a credential, which needs to be approved manually in the UI
-  def requestCredentialIssuanceApproval(sessionId: String, payloadAsJson: String): Unit = {
-    val subject = readJsonAs[CredentialSubject](payloadAsJson)
-    val request = PendingRequest.IssueCredential(subject)
-    // TODO: Avoid discarding the future, return it instead
-    extensionAPI.enqueueRequestRequiringManualApproval(sessionId, request)
+  def requestCredentialIssuanceApproval(
+      sessionId: String,
+      payloadAsJson: String
+  ): js.Promise[JsRequestApprovalResult] = {
+    val maybeSubject = Try(readJsonAs[CredentialSubject](payloadAsJson))
+
+    val result = for {
+      request <- Future.fromTry(maybeSubject.map(PendingRequest.IssueCredential))
+      approvalResult <-
+        extensionAPI.enqueueRequestRequiringManualApproval(sessionId, request).map(JsRequestApprovalResult)
+    } yield approvalResult
+
+    result.toJSPromise
   }
 
   // TODO: Return the transaction id after publishing the operation
@@ -99,7 +111,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
       batchIdStr: String,
       batchOperationHashStr: String,
       credentialIdStr: String
-  ): js.Promise[Unit] = {
+  ): js.Promise[JsRequestApprovalResult] = {
     val requestT = for {
       batchId <- Try {
         CredentialBatchId
@@ -127,8 +139,9 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
 
     val result = for {
       request <- Future.fromTry(requestT)
-      _ <- extensionAPI.enqueueRequestRequiringManualApproval(sessionId, request)
-    } yield ()
+      transactionId <- extensionAPI.enqueueRequestRequiringManualApproval(sessionId, request)
+      convertedResponse = JsRequestApprovalResult(transactionId)
+    } yield convertedResponse
 
     result.toJSPromise
   }

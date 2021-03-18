@@ -28,7 +28,10 @@ private[background] class CommandProcessor(
         browserNotificationService.notify(title, message)
         Future.successful(CommandResponse(Event.BrowserNotificationSent(): Event))
       case Command.EnqueueRequestApproval(sessionId, request) =>
-        walletManager.enqueueRequestApproval(origin, sessionId, request).map(CommandResponse.apply)
+        walletManager
+          .enqueueRequestApproval(origin, sessionId, request)
+          .map(Command.ApprovalRequestResult)
+          .map(CommandResponse.apply)
       case Command.GetRequestsRequiringManualApproval =>
         Future.successful {
           val requests = walletManager.getRequestsRequiringManualApproval().toList

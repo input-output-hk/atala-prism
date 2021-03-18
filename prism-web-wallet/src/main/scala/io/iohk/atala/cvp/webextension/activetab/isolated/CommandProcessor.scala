@@ -26,7 +26,7 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
       case Command.EnqueueRequestApproval(sessionId, request) =>
         backgroundAPI
           .enqueueRequestApproval(sessionId, request)
-          .map(_ => Event.EnqueueRequestApprovalAck)
+          .map(response => Event.GotEnqueueRequestApprovalResultTransactionId(response.transactionId))
 
       case Command.SignConnectorRequest(sessionId, request) =>
         backgroundAPI

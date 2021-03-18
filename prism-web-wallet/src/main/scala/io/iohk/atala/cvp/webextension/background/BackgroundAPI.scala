@@ -5,6 +5,7 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
+  ApprovalRequestResult,
   GotRequestsRequiringManualApproval,
   SignedConnectorResponse,
   TransactionInfo,
@@ -59,7 +60,7 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.GetUserSession)
   }
 
-  def enqueueRequestApproval(sessionId: String, request: PendingRequest): Future[Unit] = {
+  def enqueueRequestApproval(sessionId: String, request: PendingRequest): Future[ApprovalRequestResult] = {
     process(Command.EnqueueRequestApproval(sessionId, request))
   }
 

@@ -21,7 +21,9 @@ private[background] object Command {
   final case class SendBrowserNotification(title: String, message: String) extends CommandWithResponse[Event]
 
   // Enqueue an operation to be reviewed manually
-  final case class EnqueueRequestApproval(sessionId: String, request: PendingRequest) extends CommandWithResponse[Unit]
+  final case class EnqueueRequestApproval(sessionId: String, request: PendingRequest)
+      extends CommandWithResponse[ApprovalRequestResult]
+  final case class ApprovalRequestResult(transactionId: String)
 
   final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest)
       extends CommandWithResponse[SignedConnectorResponse]

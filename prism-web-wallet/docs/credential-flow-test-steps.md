@@ -166,7 +166,7 @@ and we will not need to remember any other data apart from the organization name
    
    ``` 
    BackgroundAPI: Sending command {"RequestSignature":{"sessionId":"63dc6e84-37cd-4117-8a3c-0b733cc350e4","subject":{"id":"db4e7c01-3912-4be9-b41b-7e0e4a79ce4e","properties":{"degree":"CS Degree"}}}}
-   main-bundle.js:110650 BackgroundAPI: Received response {"Right":{"value":{}}}
+   main-bundle.js:110650 BackgroundAPI: Received response {"Right":{"value":{ "transactionId": "5d41cf5e3f980ac804df576c36d9c327fbf9a9478d157e658cb4b85bcf2d5f06" }}}
    ```
    
 1. To verify that the issuance was correct you can check logs in the connector and node terminals.

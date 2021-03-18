@@ -55,10 +55,13 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     }
   }
 
-  def enqueueRequestRequiringManualApproval(sessionId: String, request: PendingRequest): Future[Unit] = {
+  def enqueueRequestRequiringManualApproval(
+      sessionId: String,
+      request: PendingRequest
+  ): Future[String] = {
     val cmd = Command.EnqueueRequestApproval(sessionId, request)
     processCommand(cmd).collect {
-      case Event.EnqueueRequestApprovalAck => ()
+      case r: Event.GotEnqueueRequestApprovalResultTransactionId => r.transactionId
       case x => throw new RuntimeException(s"Unknown response: $x")
     }
   }

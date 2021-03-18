@@ -22,6 +22,7 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api.RegisterDIDResponse
+import io.iohk.atala.prism.protos.console_api.PublishBatchResponse
 import org.scalajs.dom.crypto.CryptoKey
 
 import java.util.{Base64, UUID}
@@ -95,45 +96,55 @@ private[background] class WalletManager(
     state.pendingRequestsQueue.list
   }
 
-  // TODO: Support credential revocation requests
   def approvePendingRequest(requestId: Int): Future[Unit] = {
     for {
-      (request, _) <- requestF(requestId)
+      (request, promise) <- requestF(requestId)
       walletData <- walletDataF()
       ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
-      _ <- request match {
+      requestResult <- request match {
         case r: PendingRequest.IssueCredential =>
           // TODO: Issue a batch instead
           val claims = r.credentialData.properties.asJson.noSpaces
-          connectorClientService.signAndPublishBatch(
-            ecKeyPair,
-            walletData.did,
-            signingKeyId,
-            List(CredentialData(ConsoleCredentialId(r.credentialData.id), claims))
-          )
+          connectorClientService
+            .signAndPublishBatch(
+              ecKeyPair,
+              walletData.did,
+              signingKeyId,
+              List(CredentialData(ConsoleCredentialId(r.credentialData.id), claims))
+            )
+            .map(handleSignAndPublishResponse)
 
         case r: PendingRequest.RevokeCredential =>
           // TODO: Decode the credential before accepting the request to make sure it has the proper data (and html view)
-          connectorClientService.revokeCredential(
-            ecKeyPair,
-            walletData.did,
-            signedCredentialStringRepresentation = r.signedCredentialStringRepresentation,
-            batchId = r.batchId,
-            batchOperationHash = r.batchOperationHash,
-            credentialId = r.credentialId
-          )
+          connectorClientService
+            .revokeCredential(
+              ecKeyPair,
+              walletData.did,
+              signedCredentialStringRepresentation = r.signedCredentialStringRepresentation,
+              batchId = r.batchId,
+              batchOperationHash = r.batchOperationHash,
+              credentialId = r.credentialId
+            )
+            .map(_.transactionId)
       }
+      _ = promise.success(requestResult)
     } yield {
       println(s"Request approved: $requestId")
       removeRequest(requestId)
     }
   }
 
-  def rejectRequest(requestId: Int): Future[Unit] = {
-    removeRequest(requestId)
-    println(s"Request rejected = $requestId")
-    Future.unit
-  }
+  def rejectRequest(requestId: Int): Future[Unit] =
+    for {
+      (_, promise) <- requestF(requestId)
+      _ = promise.failure(new RuntimeException("The user rejected the request"))
+    } yield {
+      removeRequest(requestId)
+      println(s"Request rejected = $requestId")
+    }
+
+  private def handleSignAndPublishResponse(in: PublishBatchResponse): String =
+    in.transactionInfo.fold[String](throw new RuntimeException("Transaction Info Not Returned"))(_.transactionId)
 
   private def removeRequest(requestId: Int): Unit = {
     updateState { cur =>
@@ -225,18 +236,14 @@ private[background] class WalletManager(
   }
 
   // enqueues a request which should be reviewed manually
-  def enqueueRequestApproval(origin: Origin, sessionID: SessionID, request: PendingRequest): Future[Unit] = {
+  def enqueueRequestApproval(origin: Origin, sessionID: SessionID, request: PendingRequest): Future[String] =
     for {
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
-    } yield {
-      val (newRequestQueue, promise) = state.pendingRequestsQueue.enqueue(request)
-      updateState(_.copy(pendingRequestsQueue = newRequestQueue))
-      reloadPopup()
-      // TODO: Avoid ignoring the future result
-      println(s"Future ${promise.future} ignored on purpose to keep compatibility, be kind and fix the bug")
-      ()
-    }
-  }
+      (newRequestQueue, promise) = state.pendingRequestsQueue.enqueue(request)
+      _ = updateState(_.copy(pendingRequestsQueue = newRequestQueue))
+      _ = reloadPopup()
+      result <- promise.future
+    } yield result
 
   def createWallet(
       password: String,

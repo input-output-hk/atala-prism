@@ -37,28 +37,14 @@ class BackgroundAPISpec extends AsyncWordSpec with WalletDomSpec {
     }
   }
 
-  "enqueueRequestApproval" should {
-    "create a successful IssueCredential request" in {
-      val api = new BackgroundAPI()
-      val subject = CredentialSubject("id", Map("key" -> "value"))
-      for {
-        _ <- setUpWallet(api, List(TEST_KEY))
-        u <- api.login()
-        res <- api.enqueueRequestApproval(u.sessionId, PendingRequest.IssueCredential(subject))
-      } yield {
-        res mustBe ()
-      }
-    }
-  }
-
-  "getSignatureRequests" should {
+  "enqueueRequestApproval + getSignatureRequests" should {
     "return the pending signature requests" in {
       val api = new BackgroundAPI()
       val subject = CredentialSubject("id", Map("key" -> "value"))
       for {
         _ <- setUpWallet(api)
         u <- api.login()
-        _ <- api.enqueueRequestApproval(u.sessionId, PendingRequest.IssueCredential(subject))
+        _ = api.enqueueRequestApproval(u.sessionId, PendingRequest.IssueCredential(subject))
         signingRequests <- api.getSignatureRequests()
       } yield {
         signingRequests.requests mustBe List(PendingRequest.WithId(0, PendingRequest.IssueCredential(subject)))
