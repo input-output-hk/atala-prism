@@ -6,7 +6,7 @@ import cats.syntax.either._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, _}
-import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, UpdateParticipantProfile, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
@@ -95,6 +95,17 @@ class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
       .toFutureEither
   }
 
+  def updateParticipantProfileBy(
+      id: ParticipantId,
+      participantProfile: UpdateParticipantProfile
+  ): FutureEither[ConnectorError, Unit] = {
+    ParticipantsDAO
+      .updateParticipantByID(id, participantProfile)
+      .transact(xa)
+      .map(_.asRight)
+      .unsafeToFuture()
+      .toFutureEither
+  }
 }
 
 object ParticipantsRepository {

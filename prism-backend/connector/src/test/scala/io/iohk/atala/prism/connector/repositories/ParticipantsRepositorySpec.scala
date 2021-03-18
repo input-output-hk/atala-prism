@@ -82,5 +82,102 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
       val result = participantsRepository.findBy(did).value.futureValue
       result.left.value must be(UnknownValueError("did", did.value))
     }
+
+    "update participant name and logo by ParticipantId" in {
+
+      val id = ParticipantId.random()
+      val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None, None)
+      ParticipantsDAO
+        .insert(info)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+      val profile = UpdateParticipantProfile("Updated Issuer", Some(logo))
+
+      ParticipantsDAO
+        .updateParticipantByID(id, profile)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val expectedParticipant = info.copy(did = Some(shortDID), name = "Updated Issuer", logo = Some(logo))
+
+      val result = participantsRepository.findBy(longDID).value.futureValue
+      result.toOption.value must be(expectedParticipant)
+    }
+
+    "update participant with empty name and logo by ParticipantId" in {
+
+      val id = ParticipantId.random()
+      val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), Some(logo), None, None)
+      ParticipantsDAO
+        .insert(info)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+      val profile = UpdateParticipantProfile("", None)
+
+      ParticipantsDAO
+        .updateParticipantByID(id, profile)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val expectedParticipant = info.copy(did = Some(shortDID), name = "", logo = None)
+
+      val result = participantsRepository.findBy(longDID).value.futureValue
+      result.toOption.value must be(expectedParticipant)
+    }
+
+    "update participant with empty logo by ParticipantId" in {
+
+      val id = ParticipantId.random()
+      val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), Some(logo), None, None)
+      ParticipantsDAO
+        .insert(info)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+      val profile = UpdateParticipantProfile("Updated Issuer", None)
+
+      ParticipantsDAO
+        .updateParticipantByID(id, profile)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val expectedParticipant = info.copy(did = Some(shortDID), name = "Updated Issuer", logo = None)
+
+      val result = participantsRepository.findBy(longDID).value.futureValue
+      result.toOption.value must be(expectedParticipant)
+    }
+
+    "fail update participant name and logo for invalid ParticipantId" in {
+
+      val id = ParticipantId.random()
+      val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None, None)
+      ParticipantsDAO
+        .insert(info)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+      val profile = UpdateParticipantProfile("Updated Issuer", Some(logo))
+      val invalidID = ParticipantId.random()
+      assertThrows[Exception] {
+        ParticipantsDAO
+          .updateParticipantByID(invalidID, profile)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+      }
+
+      val expectedParticipant = info.copy(did = Some(shortDID))
+      val result = participantsRepository.findBy(longDID).value.futureValue
+      result.toOption.value must be(expectedParticipant)
+    }
   }
 }

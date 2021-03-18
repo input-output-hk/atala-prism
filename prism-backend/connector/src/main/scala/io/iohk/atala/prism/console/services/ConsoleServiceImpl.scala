@@ -57,4 +57,9 @@ class ConsoleServiceImpl(statisticsRepository: StatisticsRepository, authenticat
   override def getCurrentUser(request: GetConsoleCurrentUserRequest): Future[GetConsoleCurrentUserResponse] = {
     Future.failed(throw new NotImplementedError("This is available on the console backend only"))
   }
+
+  // Used only on the console backend
+  override def updateParticipantProfile(request: ConsoleUpdateProfileRequest): Future[ConsoleUpdateProfileResponse] =
+    Future.failed(throw new NotImplementedError("This is available on the console backend only"))
+
 }

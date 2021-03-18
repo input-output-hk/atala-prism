@@ -1,9 +1,11 @@
 package io.iohk.atala.prism.connector.repositories.daos
 
 import cats.data.OptionT
+import cats.implicits._
+import doobie.FC
 import doobie.implicits._
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile, TokenString}
 import io.iohk.atala.prism.crypto.ECPublicKey
-import io.iohk.atala.prism.connector.model.{ParticipantInfo, TokenString}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 
@@ -49,8 +51,8 @@ object ParticipantsDAO {
   def findByPublicKey(publicKey: ECPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
-         |SELECT id, tpe, public_key, name, did, logo, transaction_id, ledger
-         |FROM participants
+           |SELECT id, tpe, public_key, name, did, logo, transaction_id, ledger
+           |FROM participants
          |WHERE public_key = $publicKey
       """.stripMargin.query[ParticipantInfo].option
     }
@@ -63,4 +65,21 @@ object ParticipantsDAO {
          |WHERE did = $did
       """.stripMargin.query[ParticipantInfo].option
     }
+
+  def updateParticipantByID(id: ParticipantId, profile: UpdateParticipantProfile): doobie.ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE participants
+         |SET logo = ${profile.logo},
+         |name = ${profile.name}
+         |WHERE id = $id
+       """.stripMargin.update.run.flatMap { count =>
+      FC.raiseError(
+          new Exception(
+            s"ParticipantsDAO: cannot update ParticipantProfile, update result count was not equal to 1: $count"
+          )
+        )
+        .whenA(count != 1)
+    }.void
+  }
+
 }

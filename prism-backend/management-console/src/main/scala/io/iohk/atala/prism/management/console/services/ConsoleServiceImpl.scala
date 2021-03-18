@@ -8,7 +8,13 @@ import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.ParticipantsIntegrationService
-import io.iohk.atala.prism.management.console.models.{GetStatistics, ParticipantId, RegisterDID}
+import io.iohk.atala.prism.management.console.models.{
+  GetStatistics,
+  ParticipantId,
+  ParticipantLogo,
+  UpdateParticipantProfile,
+  RegisterDID
+}
 import io.iohk.atala.prism.management.console.repositories.StatisticsRepository
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
@@ -71,6 +77,18 @@ class ConsoleServiceImpl(
           GetConsoleCurrentUserResponse()
             .withName(info.name)
             .withLogo(ByteString.copyFrom(logoBytes))
+        }
+    }
+  }
+
+  override def updateParticipantProfile(request: ConsoleUpdateProfileRequest): Future[ConsoleUpdateProfileResponse] = {
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, _) =>
+      val logo = ParticipantLogo(request.logo.toByteArray.toVector)
+      val participantProfile = UpdateParticipantProfile(request.name, Option(logo))
+      participantsIntegrationService
+        .update(participantId, participantProfile)
+        .map { _ =>
+          ConsoleUpdateProfileResponse()
         }
     }
   }

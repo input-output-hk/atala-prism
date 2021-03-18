@@ -21,7 +21,6 @@ import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
 import java.time.LocalDate
-
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 
@@ -510,4 +509,22 @@ package object grpc {
     (request: MarkAsArchivedCredentialTypeRequest) => {
       CredentialTypeId.from(request.credentialTypeId).map(MarkAsArchivedCredentialType)
     }
+
+  implicit val participantProfileConverter: ProtoConverter[ConsoleUpdateProfileRequest, UpdateParticipantProfile] = {
+    request =>
+      {
+        for {
+          name <- Try {
+            if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
+            else request.name.trim
+          }
+
+          logo <- Try {
+            val bytes = request.logo.toByteArray
+            if (bytes.isEmpty) None
+            else Some(ParticipantLogo(bytes.toVector))
+          }
+        } yield UpdateParticipantProfile(name, logo)
+      }
+  }
 }

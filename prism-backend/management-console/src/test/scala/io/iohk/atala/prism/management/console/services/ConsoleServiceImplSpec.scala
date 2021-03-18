@@ -8,7 +8,7 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.InstitutionGroup
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -278,6 +278,46 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       usingApiAsConsole(rpcRequest) { blockingStub =>
         val ex = intercept[StatusRuntimeException] {
           blockingStub.getCurrentUser(rpcRequest.request)
+        }
+        ex.getStatus.getCode must be(Status.UNKNOWN.getCode)
+      }
+    }
+  }
+
+  "updateParticipantProfile" should {
+    def prepareSignedRequest() = {
+      val keys = EC.generateKeyPair()
+      val did = generateDid(keys.publicKey)
+      val request =
+        console_api
+          .ConsoleUpdateProfileRequest()
+          .withName("iohk updated")
+          .withLogo(ByteString.copyFrom("logo".getBytes()))
+      SignedRpcRequest.generate(keys, did, request)
+    }
+
+    "update the Participant Profile details" in {
+      val rpcRequest = prepareSignedRequest()
+      val name = "iohk"
+      val logo = ParticipantLogo("logo".getBytes().toVector)
+
+      val participantId = createParticipant(name, rpcRequest.did)
+
+      usingApiAsConsole(rpcRequest) { blockingStub =>
+        blockingStub.updateParticipantProfile(rpcRequest.request)
+        val result = participantsRepository.findBy(participantId).value.futureValue
+        val participantInfo = result.toOption.value
+        participantInfo.name must be("iohk updated")
+        participantInfo.logo must be(Some(logo))
+      }
+    }
+
+    "fail on unknown ParticipantId" in {
+      val rpcRequest = prepareSignedRequest()
+
+      usingApiAsConsole(rpcRequest) { blockingStub =>
+        val ex = intercept[StatusRuntimeException] {
+          blockingStub.updateParticipantProfile(rpcRequest.request)
         }
         ex.getStatus.getCode must be(Status.UNKNOWN.getCode)
       }

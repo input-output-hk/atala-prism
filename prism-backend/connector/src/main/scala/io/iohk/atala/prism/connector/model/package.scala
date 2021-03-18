@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.connector.model
 
-import java.time.Instant
-import java.util.{Base64, UUID}
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
@@ -12,6 +10,8 @@ import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, UUIDVal
 import io.iohk.atala.prism.protos.connector_models
 import io.iohk.atala.prism.utils.syntax._
 
+import java.time.Instant
+import java.util.{Base64, UUID}
 import scala.util.Random
 
 sealed trait ParticipantType extends EnumEntry with Lowercase
@@ -28,6 +28,8 @@ object ConnectionId extends UUIDValue.Builder[ConnectionId]
 
 case class MessageId(uuid: UUID) extends AnyVal with UUIDValue
 object MessageId extends UUIDValue.Builder[MessageId]
+
+case class UpdateParticipantProfile(name: String, logo: Option[ParticipantLogo])
 
 case class ParticipantLogo(bytes: Vector[Byte]) extends AnyVal
 case class ParticipantInfo(
@@ -128,13 +130,13 @@ case class RawConnection(
 case class TokenString(token: String) extends AnyVal
 
 object TokenString {
+  def random(): TokenString = random(Random)
+
   def random(randomness: Random): TokenString = {
     val bytes = Array.ofDim[Byte](16)
     randomness.nextBytes(bytes)
     new TokenString(Base64.getUrlEncoder.encodeToString(bytes))
   }
-
-  def random(): TokenString = random(Random)
 }
 
 case class Message(

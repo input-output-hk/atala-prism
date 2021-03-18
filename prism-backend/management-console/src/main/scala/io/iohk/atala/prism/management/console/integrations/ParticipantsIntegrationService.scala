@@ -2,7 +2,12 @@ package io.iohk.atala.prism.management.console.integrations
 
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, RegisterDID}
+import io.iohk.atala.prism.management.console.models.{
+  ParticipantId,
+  ParticipantInfo,
+  UpdateParticipantProfile,
+  RegisterDID
+}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository
 import io.iohk.atala.prism.utils.FutureEither
 
@@ -20,5 +25,16 @@ class ParticipantsIntegrationService(participantsRepository: ParticipantsReposit
 
   def getDetails(participantId: ParticipantId): FutureEither[errors.ManagementConsoleError, ParticipantInfo] = {
     participantsRepository.findBy(participantId)
+  }
+
+  def update(
+      participantId: ParticipantId,
+      participantProfile: UpdateParticipantProfile
+  ): FutureEither[ManagementConsoleError, Unit] = {
+    val updateRequest = ParticipantsRepository.UpdateParticipantProfileRequest(
+      id = participantId,
+      participantProfile
+    )
+    participantsRepository.update(updateRequest)
   }
 }

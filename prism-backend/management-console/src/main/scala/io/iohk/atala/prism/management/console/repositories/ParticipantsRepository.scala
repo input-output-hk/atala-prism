@@ -4,8 +4,8 @@ import cats.effect.IO
 import cats.syntax.applicative._
 import cats.syntax.either._
 import com.typesafe.config.ConfigFactory
-import doobie.util.transactor.Transactor
 import doobie.implicits._
+import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
@@ -15,7 +15,12 @@ import io.iohk.atala.prism.management.console.errors.{
   ManagementConsoleErrorSupport,
   UnknownValueError
 }
-import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, ParticipantLogo}
+import io.iohk.atala.prism.management.console.models.{
+  ParticipantId,
+  ParticipantInfo,
+  ParticipantLogo,
+  UpdateParticipantProfile
+}
 import io.iohk.atala.prism.management.console.repositories.daos.{CredentialTypeDao, ParticipantsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -81,6 +86,15 @@ class ParticipantsRepository(
       .unsafeToFuture()
       .toFutureEither
   }
+
+  def update(request: UpdateParticipantProfileRequest): FutureEither[ManagementConsoleError, Unit] = {
+    ParticipantsDAO
+      .updateParticipantByID(request.id, request.participantProfile)
+      .transact(xa)
+      .map(_.asRight)
+      .unsafeToFuture()
+      .toFutureEither
+  }
 }
 
 object ParticipantsRepository {
@@ -89,5 +103,10 @@ object ParticipantsRepository {
       name: String,
       did: DID,
       logo: ParticipantLogo
+  )
+
+  final case class UpdateParticipantProfileRequest(
+      id: ParticipantId,
+      participantProfile: UpdateParticipantProfile
   )
 }

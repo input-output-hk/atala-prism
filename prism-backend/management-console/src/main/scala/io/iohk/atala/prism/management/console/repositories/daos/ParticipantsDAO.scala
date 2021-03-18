@@ -1,12 +1,13 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
-import java.time.Instant
-
-import doobie.ConnectionIO
-import doobie.implicits.toSqlInterpolator
-import doobie.implicits.legacy.instant._
+import cats.implicits._
+import doobie.implicits.{toSqlInterpolator, _}
+import doobie.{ConnectionIO, FC}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
+import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, UpdateParticipantProfile}
+import doobie.implicits.legacy.instant._
+
+import java.time.Instant
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): ConnectionIO[Unit] = {
@@ -32,5 +33,21 @@ object ParticipantsDAO {
          |FROM participants
          |WHERE did = $did
       """.stripMargin.query[ParticipantInfo].option
+  }
+
+  def updateParticipantByID(id: ParticipantId, profile: UpdateParticipantProfile): doobie.ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE participants
+         |SET logo = ${profile.logo},
+         |name = ${profile.name}
+         |WHERE participant_id = $id
+       """.stripMargin.update.run.flatMap { count =>
+      FC.raiseError(
+          new Exception(
+            s"ParticipantsDAO: cannot update ParticipantProfile, update result count was not equal to 1: $count"
+          )
+        )
+        .whenA(count != 1)
+    }.void
   }
 }

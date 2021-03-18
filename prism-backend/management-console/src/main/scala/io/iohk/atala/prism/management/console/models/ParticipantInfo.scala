@@ -15,3 +15,5 @@ final case class ParticipantInfo(
     did: DID,
     logo: Option[ParticipantLogo]
 )
+
+final case class UpdateParticipantProfile(name: String, logo: Option[ParticipantLogo])

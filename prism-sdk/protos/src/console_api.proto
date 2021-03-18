@@ -24,6 +24,10 @@ service ConsoleService {
 
   // Return the details for the authenticated user
   rpc GetCurrentUser (GetConsoleCurrentUserRequest) returns (GetConsoleCurrentUserResponse) {}
+
+ // Updates an existing participants profile
+ rpc updateParticipantProfile (ConsoleUpdateProfileRequest) returns (ConsoleUpdateProfileResponse) {}
+
 }
 
 // The Contacts API
@@ -657,3 +661,15 @@ message GetLedgerDataResponse {
   LedgerData batchRevocation = 2; // if present, the ledger data associated to the revocation of the batch requested
   LedgerData credentialRevocation = 3; // if present, the ledger data associated to the revocation of the credential requested
 }
+
+// Request to Update participant profile name amd logo
+message ConsoleUpdateProfileRequest {
+  // The way to identify the institution
+  string name = 1;
+  // The logo linked to the institution (optional field)
+  // when logo is missing, it will be set to an empty
+  bytes logo = 2;
+}
+
+// Confirmation of participants profile updated
+message ConsoleUpdateProfileResponse {}

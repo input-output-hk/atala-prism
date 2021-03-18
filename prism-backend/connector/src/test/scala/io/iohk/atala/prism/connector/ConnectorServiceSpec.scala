@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.connector
 
+import com.google.protobuf.ByteString
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.connector.model.ParticipantLogo
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 
@@ -68,6 +71,46 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
       usingApiAs(rpcRequest) { blockingStub =>
         val ex = intercept[StatusRuntimeException] {
           blockingStub.getCurrentUser(rpcRequest.request)
+        }
+        ex.getStatus.getCode must be(Status.UNKNOWN.getCode)
+      }
+    }
+  }
+
+  "updateParticipantProfile" should {
+    def prepareSignedRequest() = {
+      val keys = EC.generateKeyPair()
+      val did = generateDid(keys.publicKey)
+      val logo = "none".getBytes()
+      val request = connector_api
+        .UpdateProfileRequest(name = "Update Issuer")
+        .withLogo(ByteString.copyFrom(logo))
+      (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
+    }
+
+    "update the Participant Profile details" in {
+      val (publicKey, rpcRequest) = prepareSignedRequest()
+
+      val name = "Issuer"
+      val logo = ParticipantLogo("none".getBytes().toVector)
+      val participantId = createIssuer(name, Some(publicKey), Some(rpcRequest.did))
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        val _ = blockingStub.updateParticipantProfile(rpcRequest.request)
+        val result = participantsRepository.findBy(participantId).value.futureValue
+
+        val participantInfo = result.toOption.value
+        participantInfo.name must be("Update Issuer")
+        participantInfo.logo must be(Some(logo))
+      }
+    }
+
+    "fail on unknown user" in {
+      val (_, rpcRequest) = prepareSignedRequest()
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        val ex = intercept[StatusRuntimeException] {
+          blockingStub.updateParticipantProfile(rpcRequest.request)
         }
         ex.getStatus.getCode must be(Status.UNKNOWN.getCode)
       }

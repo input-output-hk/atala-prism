@@ -5,9 +5,10 @@ import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.BuildInfo
-import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
+import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
 import io.iohk.atala.prism.connector.errors._
+import io.iohk.atala.prism.connector.grpc._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.connector.services.{
@@ -20,7 +21,12 @@ import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.connector_api.{GetMessageStreamRequest, GetMessageStreamResponse}
+import io.iohk.atala.prism.protos.connector_api.{
+  GetMessageStreamRequest,
+  GetMessageStreamResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse
+}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
 import io.iohk.atala.prism.utils.FutureEither
@@ -35,13 +41,14 @@ class ConnectorService(
     messages: MessagesService,
     registrationService: RegistrationService,
     messageNotificationService: MessageNotificationService,
-    authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
+    val authenticator: ConnectorAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
     participantsRepository: ParticipantsRepository
 )(implicit
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
-    with ConnectorErrorSupport {
+    with ConnectorErrorSupport
+    with AuthSupport[ConnectorError, ParticipantId] {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -320,6 +327,22 @@ class ConnectorService(
     }
   }
 
+  private def getMessageIdField(
+      id: String,
+      fieldName: String
+  )(implicit lc: LoggingContext): Either[ConnectorError, Option[model.MessageId]] = {
+    id match {
+      case "" => Right(None)
+      case id =>
+        model.MessageId
+          .from(id)
+          .fold(
+            _ => Left(InvalidArgumentError(fieldName, "valid id", id).logWarn),
+            id => Right(Some(id))
+          )
+    }
+  }
+
   override def getMessageStream(
       request: GetMessageStreamRequest,
       responseObserver: StreamObserver[GetMessageStreamResponse]
@@ -354,22 +377,6 @@ class ConnectorService(
       f(participantId)
     }
     ()
-  }
-
-  private def getMessageIdField(
-      id: String,
-      fieldName: String
-  )(implicit lc: LoggingContext): Either[ConnectorError, Option[model.MessageId]] = {
-    id match {
-      case "" => Right(None)
-      case id =>
-        model.MessageId
-          .from(id)
-          .fold(
-            _ => Left(InvalidArgumentError(fieldName, "valid id", id).logWarn),
-            id => Right(Some(id))
-          )
-    }
   }
 
   override def getMessagesForConnection(
@@ -513,4 +520,18 @@ class ConnectorService(
         .successMap(identity)
     }
   }
+
+  override def updateParticipantProfile(
+      request: UpdateProfileRequest
+  ): Future[UpdateProfileResponse] = {
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, updateProfile) =>
+      participantsRepository
+        .updateParticipantProfileBy(participantId, updateProfile)
+        .map(_ =>
+          connector_api
+            .UpdateProfileResponse()
+        )
+    }
+  }
+
 }
