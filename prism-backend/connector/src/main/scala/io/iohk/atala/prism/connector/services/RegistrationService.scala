@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.services
 
+import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.identity.DID
@@ -22,7 +23,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
       name: String,
       logo: ParticipantLogo,
       createDIDOperation: node_models.SignedAtalaOperation
-  ): FutureEither[Nothing, RegistrationResult] = {
+  ): FutureEither[ConnectorError, RegistrationResult] = {
 
     for {
       createDIDResponse <-

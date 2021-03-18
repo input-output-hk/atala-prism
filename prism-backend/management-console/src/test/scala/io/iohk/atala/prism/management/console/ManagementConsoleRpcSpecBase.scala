@@ -42,7 +42,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     )
   }
 
-  lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
+  lazy val participantsRepository = new ParticipantsRepository(database)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val contactsRepository = new ContactsRepository(database)(executionContext)
   lazy val statisticsRepository = new StatisticsRepository(database)

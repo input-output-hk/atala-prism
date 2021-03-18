@@ -27,7 +27,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
   )
 
   lazy val storedCredentials = new StoredCredentialsRepository(database)
-  private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
+  private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private val aHash = SHA256Digest.compute("".getBytes())

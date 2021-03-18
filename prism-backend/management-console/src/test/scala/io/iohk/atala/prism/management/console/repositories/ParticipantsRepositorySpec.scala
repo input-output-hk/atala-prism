@@ -7,7 +7,7 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
-import io.iohk.atala.prism.management.console.errors.UnknownValueError
+import io.iohk.atala.prism.management.console.errors.{InvalidRequest, UnknownValueError}
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
@@ -53,23 +53,45 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     }
   }
 
-  "create new participant with default user defined credential types" in {
-    val request = CreateParticipantRequest(
-      id = ParticipantId.random(),
-      name = "participant name",
-      did = DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value,
-      logo = ParticipantLogo(Vector.empty)
-    )
+  "create" should {
+    "create new participant with default user defined credential types" in {
+      val request = CreateParticipantRequest(
+        id = ParticipantId.random(),
+        name = "participant name",
+        did = DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value,
+        logo = ParticipantLogo(Vector.empty)
+      )
 
-    participantsRepository.create(request).value.futureValue mustBe a[Right[_, _]]
+      participantsRepository.create(request).value.futureValue mustBe a[Right[_, _]]
 
-    val credentialTypesRepository = new CredentialTypeRepository(database)
+      val credentialTypesRepository = new CredentialTypeRepository(database)
 
-    val defaultCredentialTypes = credentialTypesRepository.findByInstitution(request.id).value.futureValue.toOption.get
-    defaultCredentialTypes.map(_.name).toSet mustBe DefaultCredentialTypeConfig(
-      ConfigFactory.load()
-    ).defaultCredentialTypes
-      .map(_.name)
-      .toSet
+      val defaultCredentialTypes =
+        credentialTypesRepository.findByInstitution(request.id).value.futureValue.toOption.get
+      defaultCredentialTypes.map(_.name).toSet mustBe DefaultCredentialTypeConfig(
+        ConfigFactory.load()
+      ).defaultCredentialTypes
+        .map(_.name)
+        .toSet
+    }
+
+    "return error while trying to create participant with the same did twice" in {
+      val did = DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+      val request1 = CreateParticipantRequest(
+        id = ParticipantId.random(),
+        name = "participant name",
+        did = did,
+        logo = ParticipantLogo(Vector.empty)
+      )
+      val request2 = CreateParticipantRequest(
+        id = ParticipantId.random(),
+        name = "participant name",
+        did = did,
+        logo = ParticipantLogo(Vector.empty)
+      )
+
+      participantsRepository.create(request1).value.futureValue.isRight mustBe true
+      participantsRepository.create(request2).value.futureValue mustBe Left(InvalidRequest("DID already exists"))
+    }
   }
 }

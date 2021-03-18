@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
+import cats.syntax.applicative._
+import cats.syntax.either._
 import com.typesafe.config.ConfigFactory
 import doobie.util.transactor.Transactor
 import doobie.implicits._
@@ -8,6 +10,7 @@ import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors.{
+  InvalidRequest,
   ManagementConsoleError,
   ManagementConsoleErrorSupport,
   UnknownValueError
@@ -16,21 +19,18 @@ import io.iohk.atala.prism.management.console.models.{ParticipantId, Participant
 import io.iohk.atala.prism.management.console.repositories.daos.{CredentialTypeDao, ParticipantsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import org.postgresql.util.PSQLException
 import org.slf4j.{Logger, LoggerFactory}
-
-import scala.concurrent.ExecutionContext
 
 class ParticipantsRepository(
     xa: Transactor[IO],
     defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
-)(implicit
-    ec: ExecutionContext
 ) extends ManagementConsoleErrorSupport {
   import ParticipantsRepository._
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def create(request: CreateParticipantRequest): FutureEither[Nothing, Unit] = {
+  def create(request: CreateParticipantRequest): FutureEither[ManagementConsoleError, Unit] = {
     val info = ParticipantInfo(
       id = request.id,
       name = request.name,
@@ -43,8 +43,12 @@ class ParticipantsRepository(
       _ <- CredentialTypeDao.insertDefaultCredentialTypes(request.id, defaultCredentialTypeConfig)
     } yield ())
       .transact(xa)
+      .map(_.asRight)
+      .handleErrorWith {
+        case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
+          InvalidRequest("DID already exists").asLeft.pure[IO]
+      }
       .unsafeToFuture()
-      .map(Right(_))
       .toFutureEither
   }
 

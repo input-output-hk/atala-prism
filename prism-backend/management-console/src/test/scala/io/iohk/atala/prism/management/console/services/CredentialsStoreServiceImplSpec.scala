@@ -24,7 +24,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
   )
 
   lazy val receivedCredentials = new ReceivedCredentialsRepository(database)
-  private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
+  private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 

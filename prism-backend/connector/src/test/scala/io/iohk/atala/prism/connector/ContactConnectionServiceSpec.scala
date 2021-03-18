@@ -21,7 +21,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with Co
 
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
+  lazy val participantsRepository = new ParticipantsRepository(database)
 
   val keyPair = EC.generateKeyPair()
   val publicKey = keyPair.publicKey

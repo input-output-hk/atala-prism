@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.connector.repositories
 
 import cats.effect.IO
+import cats.syntax.applicative._
+import cats.syntax.either._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, _}
@@ -12,18 +14,18 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionInfo}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import org.postgresql.util.PSQLException
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.util.Base64
-import scala.concurrent.ExecutionContext
 
-class ParticipantsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) extends ConnectorErrorSupport {
+class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
 
   import ParticipantsRepository._
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def create(request: CreateParticipantRequest): FutureEither[Nothing, Unit] = {
+  def create(request: CreateParticipantRequest): FutureEither[ConnectorError, Unit] = {
     val info = ParticipantInfo(
       id = request.id,
       tpe = request.tpe,
@@ -38,8 +40,12 @@ class ParticipantsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) 
     ParticipantsDAO
       .insert(info)
       .transact(xa)
+      .map(_.asRight)
+      .handleErrorWith {
+        case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
+          InvalidRequest("DID already exists").asLeft.pure[IO]
+      }
       .unsafeToFuture()
-      .map(Right(_))
       .toFutureEither
   }
 

@@ -1,13 +1,14 @@
 package io.iohk.atala.prism.management.console.integrations
 
 import io.iohk.atala.prism.management.console.errors
+import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, RegisterDID}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository
 import io.iohk.atala.prism.utils.FutureEither
 
 class ParticipantsIntegrationService(participantsRepository: ParticipantsRepository) {
 
-  def register(request: RegisterDID): FutureEither[Nothing, Unit] = {
+  def register(request: RegisterDID): FutureEither[ManagementConsoleError, Unit] = {
     val createRequest = ParticipantsRepository.CreateParticipantRequest(
       id = ParticipantId.random(),
       name = request.name,

@@ -51,7 +51,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
+  lazy val participantsRepository = new ParticipantsRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =

@@ -20,6 +20,7 @@ import org.scalatest.OptionValues._
 
 import java.time.Instant
 import scala.concurrent.Future
+import scala.util.Try
 
 class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
 
@@ -235,6 +236,19 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenera
       intercept[StatusRuntimeException] {
         doTest(did, transactionId, request)
       }
+    }
+
+    "fail when user tries register the same did twice" in {
+      val did = DataPreparation.newDID()
+      val transactionId = TransactionId.from(SHA256Digest.compute("logotxid".getBytes).value).value
+      val request = console_api
+        .RegisterConsoleDIDRequest()
+        .withDid(did.value)
+        .withName("iohk")
+
+      doTest(did, transactionId, request)
+      val mustBeError = Try(doTest(did, transactionId, request))
+      mustBeError.toEither.left.map(_.getMessage) mustBe Left("INVALID_ARGUMENT: DID already exists")
     }
   }
 

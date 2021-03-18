@@ -256,14 +256,12 @@ class ConnectorService(
         result <-
           registrationService
             .register(tpe = tpe, logo = logo, name = request.name, createDIDOperation = createDIDOperation)
-            .value
-            .map {
-              case Left(_) => throw new RuntimeException("Impossible")
-              case Right(x) => x
+            .successMap { registerResult =>
+              connector_api
+                .RegisterDIDResponse(did = registerResult.did.value)
+                .withTransactionInfo(ProtoCodecs.toTransactionInfo(registerResult.transactionInfo))
             }
-      } yield connector_api
-        .RegisterDIDResponse(did = result.did.value)
-        .withTransactionInfo(ProtoCodecs.toTransactionInfo(result.transactionInfo))
+      } yield result
     }
   }
 

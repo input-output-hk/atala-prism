@@ -79,7 +79,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val connectionsRepository = new ConnectionsRepository.PostgresImpl(xa)(executionContext)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
-    val participantsRepository = new ParticipantsRepository(xa)(executionContext)
+    val participantsRepository = new ParticipantsRepository(xa)
 
     // authenticator
     val authenticator = new ConnectorAuthenticator(
