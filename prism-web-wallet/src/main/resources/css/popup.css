@@ -883,3 +883,29 @@ inputChip::placeholder {
 .logo-img:hover {
   cursor: pointer;
 }
+
+/* STYLE OF SCROLL */
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-color: lightgray;
+  border-radius: 10px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: gray; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #333; 
+}
+
+/* END OF STYLE OF SCROLL */
