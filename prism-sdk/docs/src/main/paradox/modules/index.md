@@ -1,8 +1,6 @@
 @@@ index
 * @ref:[Crypto](crypto.md)
-* @ref:[Identity](identity.md)
-* @ref:[Credentials](credentials.md)
-* @ref:[Protos](protos.md)
+* @ref:[Identity](identity.md)\
 * @ref:[Connector](connector.md)
 @@@
 
