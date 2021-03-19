@@ -20,7 +20,9 @@ sourceSets {
             setIncludes(
                 listOf(
                     "common_*.proto",
-                    "node_*.proto"
+                    "node_*.proto",
+                    "connector_*.proto",
+                    "console_*.proto"
                 )
             )
         }

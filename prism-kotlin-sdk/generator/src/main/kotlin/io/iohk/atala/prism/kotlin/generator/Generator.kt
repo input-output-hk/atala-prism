@@ -14,10 +14,14 @@ class Generator : ServiceGenerator {
             val serviceNameLit = "\"${service.file.packageName}.${service.name}\""
             val methodNameLit = "\"${method.name}\""
             interfaceMethods += "suspend fun ${method.name}(req: $reqType): $respType"
+            interfaceMethods += "suspend fun ${method.name}Auth(req: $reqType, metadata: PrismMetadata): $respType"
             clientMethods += """
-                        override suspend fun ${method.name}(req: $reqType): $respType {
-                            return client.call(req, $reqType.Companion, $respType.Companion, $serviceNameLit, $methodNameLit)
-                        }
+                            override suspend fun ${method.name}(req: $reqType): $respType {
+                                return client.call(req, $reqType.Companion, $respType.Companion, $serviceNameLit, $methodNameLit)
+                            }
+                            override suspend fun ${method.name}Auth(req: $reqType, metadata: PrismMetadata): $respType {
+                                return client.callAuth(req, $reqType.Companion, $respType.Companion, $serviceNameLit, $methodNameLit, metadata)
+                            }
             """
         }
         return listOf(
@@ -27,8 +31,10 @@ class Generator : ServiceGenerator {
                     """
                     package ${service.file.kotlinPackageName}
                     
+                    import io.iohk.atala.prism.kotlin.protos.PrismMetadata
+                    
                     interface ${service.name} {
-                        ${interfaceMethods.joinToString("\n                    ")}
+                        ${interfaceMethods.joinToString("\n                        ")}
                         class Client(val client: io.iohk.atala.prism.kotlin.protos.GrpcClient) : ${service.name} {
                             ${clientMethods.joinToString("")}
                         }

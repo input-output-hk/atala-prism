@@ -35,4 +35,15 @@ actual class GrpcClient actual constructor(
             methodDescriptor
         ).await()
     }
+
+    actual suspend fun <Req : Message, Resp : Message> callAuth(
+        request: Req,
+        reqCompanion: Message.Companion<Req>,
+        respCompanion: Message.Companion<Resp>,
+        serviceName: String,
+        methodName: String,
+        prismMetadata: PrismMetadata
+    ): Resp {
+        TODO("JavaScript GRPC authentication is not supported yet")
+    }
 }

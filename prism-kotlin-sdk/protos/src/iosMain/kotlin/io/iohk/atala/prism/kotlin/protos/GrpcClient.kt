@@ -15,4 +15,15 @@ actual class GrpcClient actual constructor(
     ): Resp {
         TODO("iOS GRPC client is not supported yet")
     }
+
+    actual suspend fun <Req : Message, Resp : Message> callAuth(
+        request: Req,
+        reqCompanion: Message.Companion<Req>,
+        respCompanion: Message.Companion<Resp>,
+        serviceName: String,
+        methodName: String,
+        prismMetadata: PrismMetadata
+    ): Resp {
+        TODO("iOS GRPC client is not supported yet")
+    }
 }
