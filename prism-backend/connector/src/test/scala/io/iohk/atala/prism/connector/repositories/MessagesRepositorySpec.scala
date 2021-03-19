@@ -1,10 +1,14 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.data.NonEmptyList
 import com.softwaremill.diffx.scalatest.DiffMatcher._
+import doobie.Fragments
 import doobie.implicits._
-import io.iohk.atala.prism.connector.model.ConnectionId
+import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus}
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
+import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.OptionValues._
 
@@ -67,6 +71,107 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       caught.getCause must not be null
       caught.getCause.getMessage mustBe s"Failed to send message, the connection $connection with sender $issuer doesn't exist"
     }
+  }
+
+  "insert many messages from the initiator to the acceptors" in {
+    val issuer = createIssuer()
+    val holder1 = createHolder()
+    val holder2 = createHolder()
+    val token1 = createToken(issuer)
+    val token2 = createToken(issuer)
+    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
+    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+
+    val message = credential_models.AtalaMessage()
+
+    val messages =
+      NonEmptyList.of(
+        MessageToSendByConnectionToken(token1.token, Some(message)),
+        MessageToSendByConnectionToken(token2.token, Some(message))
+      )
+
+    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    val messagesIds = NonEmptyList.fromList(result.toOption.value).get
+
+    val insertedMessages =
+      (fr"""
+           |SELECT sender, recipient, content
+           |FROM messages
+           |WHERE """.stripMargin ++ Fragments.in(fr"id", messagesIds))
+        .query[(ParticipantId, ParticipantId, Array[Byte])]
+        .to[List]
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+    insertedMessages.foreach {
+      case (messageSender, messageRecipient, messageContent) =>
+        messageSender mustBe issuer
+        List(holder1, holder2) must contain(messageRecipient)
+        messageContent mustBe message.toByteArray
+    }
+  }
+
+  "insert many messages from the acceptor to the initiator" in {
+    val issuer = createIssuer()
+    val holder = createHolder()
+    val token = createToken(issuer)
+    createConnection(issuer, holder, token, ConnectionStatus.InvitationMissing)
+    createConnection(issuer, holder, token, ConnectionStatus.InvitationMissing)
+
+    val message1 =
+      credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token1"))
+
+    val message2 =
+      credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token2"))
+
+    val messages =
+      NonEmptyList.of(
+        MessageToSendByConnectionToken(token.token, Some(message1)),
+        MessageToSendByConnectionToken(token.token, Some(message2))
+      )
+
+    val result = messagesRepository.insertMessages(holder, messages).value.futureValue
+    val messagesIds = NonEmptyList.fromList(result.toOption.value).get
+
+    val insertedMessages =
+      (fr"""
+           |SELECT sender, recipient, content
+           |FROM messages
+           |WHERE """.stripMargin ++ Fragments.in(fr"id", messagesIds))
+        .query[(ParticipantId, ParticipantId, Array[Byte])]
+        .to[List]
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+    insertedMessages.foreach {
+      case (messageSender, messageRecipient, messageContent) =>
+        messageSender mustBe holder
+        messageRecipient mustBe issuer
+        List(message1.toByteArray, message2.toByteArray) must contain(messageContent)
+    }
+  }
+
+  "fail to insert many messages if one of the connection token is invalid" in {
+    val issuer = createIssuer()
+    val holder1 = createHolder()
+    val holder2 = createHolder()
+    val token1 = createToken(issuer)
+    val token2 = createToken(issuer)
+    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
+    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+
+    val message = credential_models.AtalaMessage()
+
+    val messages =
+      NonEmptyList.of(
+        MessageToSendByConnectionToken(token1.token, Some(message)),
+        MessageToSendByConnectionToken("invalidConnectionToken", Some(message))
+      )
+
+    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    result mustBe a[Left[_, _]]
   }
 
   "getMessagesPaginated" should {

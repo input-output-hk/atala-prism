@@ -67,6 +67,13 @@ service ConnectorService {
   // Connection closed (FAILED_PRECONDITION).
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
 
+  // Send many messages atomically, if one message can't be send (unknown connection for example),
+  // then rest of the messages is also not send. This method uses connection tokens instead of connections ids.
+  // Errors:
+  // Unknown connections (UNKNOWN).
+  // Connections closed (FAILED_PRECONDITION).
+  rpc SendMessages (SendMessagesRequest) returns (SendMessagesResponse) {}
+
   // Return the information about the Connector and Node builds
   rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
 
@@ -210,6 +217,16 @@ message SendMessageRequest {
 
 // Confirmation of message sending
 message SendMessageResponse {
+}
+
+// Request to send many messages
+message SendMessagesRequest {
+  // messages to send, can be empty, no messages will be send in that case
+  repeated MessageToSendByConnectionToken messagesByConnectionToken = 1;
+}
+
+// Confirmation of messages sending
+message SendMessagesResponse {
 }
 
 // @exclude

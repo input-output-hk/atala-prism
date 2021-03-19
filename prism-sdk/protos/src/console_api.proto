@@ -8,6 +8,7 @@ package io.iohk.atala.prism.protos;
 import "console_models.proto";
 import "common_models.proto";
 import "node_models.proto";
+import "connector_api.proto";
 import "google/protobuf/timestamp.proto";
 
 // The Management Console API
@@ -86,6 +87,9 @@ service CredentialsService {
   // NOTE: This doesn't send the actual credential to the related contact, but is supposed to be
   //       invoked everytime such credential is sent.
   rpc ShareCredential (ShareCredentialRequest) returns (ShareCredentialResponse) {}
+
+  // Sends many credentials and mark them as shared
+  rpc ShareCredentials (ShareCredentialsRequest) returns (ShareCredentialsResponse) {}
 
   // Retrieves node information associated to a credential
   // TODO: DEPRECATE when we migrate to the management console
@@ -224,8 +228,11 @@ message CreateContactRequest {
   // The contact's name, required for the management console, ignored on the connector
   string name = 4;
 
-  // Metadata used to authenticate GenerateConnectionToken request to connector
-  GenerateConnectionTokensRequestMetadata generateConnectionTokensRequestMetadata = 5;
+  // Metadata used to authenticate GenerateConnectionTokenRequest to connector.
+  // Frontend must sign GenerateConnectionTokenRequest with count value equal to number of contacts and
+  // pass signed request metadata through this message.
+  // All fields of this message are required.
+  ConnectorRequestMetadata generateConnectionTokensRequestMetadata = 5;
 }
 // Response after creating a contact
 message CreateContactResponse {
@@ -259,8 +266,11 @@ message CreateContactsRequest {
     string jsonData = 5;
   }
 
-  // Metadata used to authenticate GenerateConnectionToken request to connector
-  GenerateConnectionTokensRequestMetadata generateConnectionTokensRequestMetadata = 6;
+  // Metadata used to authenticate GenerateConnectionTokenRequest to connector.
+  // Frontend must sign GenerateConnectionTokenRequest with count value equal to 1 and
+  // pass signed request metadata through this message.
+  // All fields of this message are required.
+  ConnectorRequestMetadata generateConnectionTokensRequestMetadata = 6;
 }
 // Response after creating contacts
 message CreateContactsResponse {
@@ -564,6 +574,24 @@ message ShareCredentialRequest {
 }
 // Response after sharing a credential
 message ShareCredentialResponse {}
+
+// Request to share many credentials, which sends credentials through connector and marks them as sent.
+message ShareCredentialsRequest {
+  // Non empty list of ids of credentials which will be send to connector and later marked as shared
+  repeated string credentialsIds = 1;
+
+  // request to connector containing messages with signed credentials
+  SendMessagesRequest sendMessagesRequest = 2;
+
+  // Metadata used to authenticate SendMessagesRequest to connector.
+  // Frontend must sign SendMessagesRequest which can be fetched
+  // from GetShareCredentialsRequestToSign grpc management console method and
+  // pass signed request through this message.
+  // All fields of this message are required.
+  ConnectorRequestMetadata sendMessagesRequestMetadata = 3;
+}
+// Response after sharing a credential
+message ShareCredentialsResponse {}
 
 // Request to get the credentials for the given contact.
 //

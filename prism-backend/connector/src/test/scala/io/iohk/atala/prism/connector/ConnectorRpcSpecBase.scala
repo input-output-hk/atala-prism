@@ -157,6 +157,19 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
   protected def createConnection(
       initiatorId: ParticipantId,
       acceptorId: ParticipantId,
+      token: TokenString
+  ): ConnectionId = {
+    ConnectionsDAO
+      .insert(initiatorId, acceptorId, token, ConnectionStatus.InvitationMissing)
+      .transact(database)
+      .unsafeToFuture()
+      .futureValue
+      ._1
+  }
+
+  protected def createConnection(
+      initiatorId: ParticipantId,
+      acceptorId: ParticipantId,
       instantiatedAt: Instant
   ): ConnectionId = {
     val token = createToken(initiatorId)

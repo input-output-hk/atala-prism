@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.data.NonEmptyList
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.credentials.CredentialBatchId
@@ -8,6 +9,7 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
+import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.genericCredentialToProto
 import io.iohk.atala.prism.management.console.grpc._
@@ -15,12 +17,16 @@ import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
 import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
-import io.iohk.atala.prism.protos.node_api.{IssueCredentialBatchResponse, NodeServiceGrpc}
+import io.iohk.atala.prism.protos.common_models
+import io.iohk.atala.prism.protos.node_api.IssueCredentialBatchResponse
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherFOps
 import org.slf4j.{Logger, LoggerFactory}
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -28,7 +34,8 @@ import scala.util.Try
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
     val authenticator: ManagementConsoleAuthenticator,
-    nodeService: NodeServiceGrpc.NodeService
+    nodeService: NodeServiceGrpc.NodeService,
+    connectorClient: ConnectorClient
 )(implicit
     ec: ExecutionContext
 ) extends console_api.CredentialsServiceGrpc.CredentialsService
@@ -72,7 +79,7 @@ class CredentialsServiceImpl(
   override def shareCredential(request: ShareCredentialRequest): Future[ShareCredentialResponse] =
     auth[ShareCredential]("shareCredential", request) { (participantId, query) =>
       credentialsRepository
-        .markAsShared(participantId, query.credentialId)
+        .markAsShared(participantId, NonEmptyList.of(query.credentialId))
         .map { _ =>
           console_api.ShareCredentialResponse()
         }
@@ -182,4 +189,24 @@ class CredentialsServiceImpl(
       result.lift
     }
   }
+
+  override def shareCredentials(
+      request: console_api.ShareCredentialsRequest
+  ): Future[console_api.ShareCredentialsResponse] = {
+    auth[ShareCredentials]("shareCredentials", request) { (participantId, query) =>
+      for {
+        _ <- credentialsRepository.verifyPublishedCredentialsExist(participantId, query.credentialsIds)
+        _ <-
+          connectorClient
+            .sendMessages(
+              query.sendMessagesRequest,
+              query.sendMessagesRequestMetadata
+            )
+            .lift
+
+        _ <- credentialsRepository.markAsShared(participantId, query.credentialsIds)
+      } yield ShareCredentialsResponse()
+    }
+  }
+
 }

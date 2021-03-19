@@ -47,7 +47,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
           groupName = group.name.value,
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       connectorMock.generateConnectionTokens(*, *).returns {
         Future.successful(
@@ -82,7 +82,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
           groupName = group.name.value,
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -130,7 +130,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         .CreateContactRequest(
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -164,7 +164,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val request = console_api
         .CreateContactRequest(
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -203,7 +203,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
           jsonData = json.noSpaces,
           externalId = externalId.value,
           groupName = "missing group",
-          generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -244,7 +244,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
         .CreateContactRequest(
           groupName = group.name.value,
           jsonData = json.noSpaces,
-          generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -283,7 +283,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
           groupName = group.name.value,
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -376,7 +376,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
           )
         )
         .withGroups(List.empty)
-        .withGenerateConnectionTokensRequestMetadata(generateConnectionTokenRequestProto)
+        .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
       connectorMock.generateConnectionTokens(*, *).returns {
         Future.successful(
           List.fill(2)(ConnectionToken(UUID.randomUUID.toString))
@@ -410,7 +410,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
             )
           )
           .withGroups(List(group1, group2).map(_.id.uuid.toString))
-          .withGenerateConnectionTokensRequestMetadata(generateConnectionTokenRequestProto)
+          .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
       }
       connectorMock.generateConnectionTokens(*, *).returns {
         Future.successful(
@@ -454,7 +454,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
             )
           )
           .withGroups("wrong" :: List(group1, group2).map(_.id.uuid.toString))
-          .withGenerateConnectionTokensRequestMetadata(generateConnectionTokenRequestProto)
+          .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
       }
 
       val (institutionId, responseT) = runTest(request)
@@ -483,7 +483,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
             )
           )
           .withGroups(List(group1, group1, group2).map(_.id.uuid.toString))
-          .withGenerateConnectionTokensRequestMetadata(generateConnectionTokenRequestProto)
+          .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
       }
 
       val (institutionId, responseT) = runTest(request)
@@ -510,7 +510,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
           )
         )
         .withGroups(List.empty)
-        .withGenerateConnectionTokensRequestMetadata(generateConnectionTokenRequestProto)
+        .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
 
       val (institutionId, responseT) = runTest(_ => request)
       responseT.isFailure must be(true)
@@ -535,7 +535,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
           )
         )
         .withGroups(List.empty)
-        .withGenerateConnectionTokensRequestMetadata(generateConnectionTokenRequestProto)
+        .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
 
       val (institutionId, responseT) = runTest(_ => request)
       responseT.isFailure must be(true)
@@ -570,7 +570,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGener
       val createRequest = console_api.CreateContactRequest(
         jsonData = json.noSpaces,
         externalId = externalId.value,
-        generateConnectionTokensRequestMetadata = Some(generateConnectionTokenRequestProto)
+        generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
       )
       val createRpcRequest = SignedRpcRequest.generate(keyPair, did, createRequest)
 

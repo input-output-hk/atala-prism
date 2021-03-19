@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
+import cats.data.NonEmptyList
+
 import java.time.Instant
 
 import cats.implicits._
@@ -177,20 +179,36 @@ object CredentialsDAO {
          |""".stripMargin.update.run
   }
 
-  def markAsShared(institutionId: ParticipantId, credentialId: GenericCredential.Id): doobie.ConnectionIO[Unit] = {
-    sql"""
+  def markAsShared(
+      institutionId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): doobie.ConnectionIO[Unit] = {
+    (fr"""
          |UPDATE published_credentials pc
          |SET shared_at = CURRENT_TIMESTAMP
          |FROM draft_credentials c
          |WHERE c.credential_id = pc.credential_id AND
-         |      pc.credential_id = $credentialId AND
-         |      issuer_id = $institutionId
-         |""".stripMargin.update.run
-      .flatTap { n =>
-        FC.raiseError(new RuntimeException(s"The credential wasn't found or it hasn't been published yet"))
-          .whenA(n != 1)
-      }
-      .map(_ => ())
+         |      issuer_id = $institutionId AND""".stripMargin ++
+      Fragments.in(fr"pc.credential_id", credentialsIds)).update.run.flatTap { n =>
+      FC.raiseError(
+          new RuntimeException(s"Cannot mark credentials as shared. Updated rows: $n expected ${credentialsIds.size}")
+        )
+        .whenA(n != credentialsIds.size)
+    }.void
+  }
+
+  def verifyPublishedCredentialsExist(
+      institutionId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): doobie.ConnectionIO[List[GenericCredential.Id]] = {
+    (fr"""
+         |SELECT pc.credential_id
+         |FROM published_credentials pc
+         |JOIN draft_credentials c USING(credential_id)
+         |WHERE c.issuer_id = $institutionId AND""".stripMargin ++
+      Fragments.in(fr"pc.credential_id", credentialsIds))
+      .query[GenericCredential.Id]
+      .to[List]
   }
 
   def deleteBy(contactId: Contact.Id): doobie.ConnectionIO[Int] = {

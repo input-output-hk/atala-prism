@@ -84,7 +84,8 @@ object ManagementConsoleApp extends IOApp {
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
         authenticator,
-        node
+        node,
+        connector
       )
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)

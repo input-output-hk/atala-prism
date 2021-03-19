@@ -1,10 +1,14 @@
 package io.iohk.atala.prism.connector.repositories.daos
 
 import doobie.implicits._
+import cats.implicits._
+import doobie.FC
 import doobie.implicits.legacy.instant._
+import doobie.util.update.Update
 import fs2.Stream
-import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
+import io.iohk.atala.prism.connector.model.{ConnectionId, CreateMessage, Message, MessageId}
 import io.iohk.atala.prism.models.ParticipantId
+
 import java.time.Instant
 
 object MessagesDAO {
@@ -20,6 +24,24 @@ object MessagesDAO {
          |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.map(_ =>
       ()
     )
+  }
+
+  def insert(
+      messages: List[CreateMessage]
+  ): doobie.ConnectionIO[Unit] = {
+    Update[CreateMessage]("""
+         |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
+         |VALUES (?, ?, ?, ?, ?, ?)""".stripMargin)
+      .updateMany(messages)
+      .flatTap { affectedRows =>
+        FC.raiseError(
+            new RuntimeException(
+              s"Unknown error while inserting ${messages.size} messages, affected rows: $affectedRows"
+            )
+          )
+          .whenA(messages.size != affectedRows)
+      }
+      .void
   }
 
   def getMessage(id: MessageId): doobie.ConnectionIO[Option[Message]] = {

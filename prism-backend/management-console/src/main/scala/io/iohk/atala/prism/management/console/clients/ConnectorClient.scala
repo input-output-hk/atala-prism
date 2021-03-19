@@ -26,6 +26,11 @@ trait ConnectorClient {
       count: Int
   ): Future[Seq[ConnectionToken]]
 
+  def sendMessages(
+      request: SendMessagesRequest,
+      metadata: ConnectorAuthenticatedRequestMetadata
+  ): Future[SendMessagesResponse]
+
   def getConnectionStatus(tokens: Seq[ConnectionToken]): Future[Seq[ContactConnection]]
 }
 
@@ -108,6 +113,16 @@ object ConnectorClient {
       newStub
         .generateConnectionToken(GenerateConnectionTokenRequest(count))
         .map(_.tokens.map(ConnectionToken.apply))
+    }
+
+    override def sendMessages(
+        request: SendMessagesRequest,
+        metadata: ConnectorAuthenticatedRequestMetadata
+    ): Future[SendMessagesResponse] = {
+      val headers = createMetadataHeaders(metadata)
+      val newStub = MetadataUtils.attachHeaders(connectorService, headers)
+
+      newStub.sendMessages(request)
     }
 
     override def getConnectionStatus(tokens: Seq[ConnectionToken]): Future[Seq[ContactConnection]] = {

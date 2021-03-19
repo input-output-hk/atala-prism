@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.data.EitherT
+import cats.data.{EitherT, NonEmptyList}
 import cats.data.Validated.{Invalid, Valid}
 import cats.effect.IO
 import doobie.ConnectionIO
@@ -13,7 +13,8 @@ import io.iohk.atala.prism.management.console.errors.{
   CredentialDataValidationFailed,
   ExternalIdsWereNotFound,
   ManagementConsoleError,
-  MissingContactIdAndExternalId
+  MissingContactIdAndExternalId,
+  PublishedCredentialsNotExist
 }
 import io.iohk.atala.prism.management.console.models.{
   Contact,
@@ -139,12 +140,31 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def markAsShared(issuerId: ParticipantId, credentialId: GenericCredential.Id): FutureEither[Nothing, Unit] = {
+  def markAsShared(
+      issuerId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): FutureEither[Nothing, Unit] = {
     CredentialsDAO
-      .markAsShared(issuerId, credentialId)
+      .markAsShared(issuerId, credentialsIds)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
+      .toFutureEither
+  }
+
+  def verifyPublishedCredentialsExist(
+      issuerId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): FutureEither[ManagementConsoleError, Unit] = {
+    CredentialsDAO
+      .verifyPublishedCredentialsExist(issuerId, credentialsIds)
+      .transact(xa)
+      .unsafeToFuture()
+      .map { existingCredentialIds =>
+        val nonExistingCredentials = credentialsIds.toList.toSet.diff(existingCredentialIds.toSet)
+        if (nonExistingCredentials.nonEmpty) Left(PublishedCredentialsNotExist(nonExistingCredentials.toList))
+        else Right(())
+      }
       .toFutureEither
   }
 

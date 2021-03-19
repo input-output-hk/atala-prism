@@ -2,6 +2,7 @@ package io.iohk.atala.prism.connector.repositories.daos
 
 import java.time.Instant
 import cats.data.NonEmptyList
+import doobie.Fragments
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments.{in, whereAnd}
@@ -86,6 +87,20 @@ object ConnectionsDAO {
          | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant""".stripMargin
       .query[ParticipantId]
       .option
+  }
+
+  def getOtherSideAndIdByConnectionTokens(
+      connectionTokens: NonEmptyList[TokenString],
+      participant: ParticipantId
+  ): doobie.ConnectionIO[List[(TokenString, ConnectionId, ParticipantId)]] = {
+    (fr"""
+         |SELECT token, id, acceptor AS other_side FROM connections WHERE """.stripMargin ++
+      Fragments.in(fr"token", connectionTokens) ++ fr""" AND initiator = $participant
+         | UNION
+         | SELECT token, id, initiator AS other_side FROM connections WHERE """.stripMargin ++
+      Fragments.in(fr"token", connectionTokens) ++ fr""" AND acceptor = $participant""".stripMargin)
+      .query[(TokenString, ConnectionId, ParticipantId)]
+      .to[List]
   }
 
   def getConnectionByToken(token: TokenString): doobie.ConnectionIO[Option[Connection]] = {

@@ -1,27 +1,41 @@
 package io.iohk.atala.prism.management.console.services
 
 import com.google.protobuf.ByteString
+import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDGenerator
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
-import io.iohk.atala.prism.management.console.DataPreparation.{createParticipant, getBatchData}
+import io.iohk.atala.prism.management.console.DataPreparation.getBatchData
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.models.Ledger.InMemory
-import io.iohk.atala.prism.protos.{common_models, console_api, node_api, node_models}
+import io.iohk.atala.prism.management.console.DataPreparation.{
+  createContact,
+  createGenericCredential,
+  createParticipant,
+  publishCredential
+}
+import io.iohk.atala.prism.management.console.models.GenericCredential
+import io.iohk.atala.prism.management.console.DataPreparation
+import io.iohk.atala.prism.protos.connector_api.SendMessagesResponse
+import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
+import io.iohk.atala.prism.protos.{common_models, connector_api, console_api, node_api, node_models}
 import org.mockito.IdiomaticMockito.StubbingOps
 import org.mockito.Mockito.verify
 import org.scalatest.OptionValues.convertOptionToValuable
+import org.mockito.ArgumentMatchersSugar.*
 
+import java.util.UUID
 import scala.concurrent.Future
 
 class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
 
+  val keyPair = EC.generateKeyPair()
+  val did = generateDid(keyPair.publicKey)
+
   "CredentialsServiceImpl.getLedgerData" should {
-    val keyPair = EC.generateKeyPair()
-    val did = generateDid(keyPair.publicKey)
     val aHash = SHA256Digest.compute("random".getBytes())
     val aCredentialHash = ByteString.copyFrom(aHash.value.toArray)
     val illegalCredentialHash = ByteString.copyFrom(aHash.value.drop(1).toArray)
@@ -241,5 +255,124 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       }
     }
 
+  }
+
+  "shareCredentials" should {
+    connectorMock.sendMessages(*, *).returns {
+      Future.successful(SendMessagesResponse())
+    }
+
+    "send credentials to connector and mark them as shared" in {
+      val (credential1, credential2) = prepareCredentials()
+
+      val request = console_api.ShareCredentialsRequest(
+        List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
+        sendMessagesRequest =
+          Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
+        sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+      )
+
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        serviceStub.shareCredentials(request)
+
+        val result1 = credentialsRepository.getBy(credential1.credentialId).value.futureValue.toOption.value.value
+        result1.sharedAt mustNot be(empty)
+
+        val result2 = credentialsRepository.getBy(credential2.credentialId).value.futureValue.toOption.value.value
+        result2.sharedAt mustNot be(empty)
+      }
+    }
+
+    "return error when credential ids are not valid UUIDs" in {
+      assertShareCredentialsError {
+        case (credential1, _) =>
+          console_api.ShareCredentialsRequest(
+            List(credential1.credentialId.uuid.toString, "invalidUuid"),
+            sendMessagesRequest =
+              Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
+            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+          )
+      }
+    }
+
+    "return error when credential ids don't exist" in {
+      assertShareCredentialsError {
+        case (credential1, _) =>
+          console_api.ShareCredentialsRequest(
+            List(credential1.credentialId.uuid.toString, UUID.randomUUID().toString),
+            sendMessagesRequest =
+              Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
+            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+          )
+      }
+    }
+
+    "return error when connector request metadata is empty" in {
+      assertShareCredentialsError {
+        case (credential1, credential2) =>
+          console_api.ShareCredentialsRequest(
+            List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
+            sendMessagesRequest =
+              Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
+            sendMessagesRequestMetadata = None
+          )
+      }
+    }
+
+    "return error when send message request is empty" in {
+      assertShareCredentialsError {
+        case (credential1, credential2) =>
+          console_api.ShareCredentialsRequest(
+            List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
+            sendMessagesRequest = None,
+            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+          )
+      }
+    }
+
+    "return error when number of credential ids doesn't match number of messages to send" in {
+      assertShareCredentialsError {
+        case (credential1, credential2) =>
+          console_api.ShareCredentialsRequest(
+            List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
+            sendMessagesRequest =
+              Some(connector_api.SendMessagesRequest(1.to(3).map(_ => MessageToSendByConnectionToken()))),
+            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+          )
+      }
+    }
+
+    def assertShareCredentialsError(
+        f: (GenericCredential, GenericCredential) => console_api.ShareCredentialsRequest
+    ) = {
+      val (credential1, credential2) = prepareCredentials()
+
+      val request = f(credential1, credential2)
+
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        intercept[StatusRuntimeException] {
+          serviceStub.shareCredentials(request)
+        }
+
+        val result1 = credentialsRepository.getBy(credential1.credentialId).value.futureValue.toOption.value.value
+        result1.sharedAt must be(empty)
+
+        val result2 = credentialsRepository.getBy(credential2.credentialId).value.futureValue.toOption.value.value
+        result2.sharedAt must be(empty)
+      }
+    }
+  }
+
+  private def prepareCredentials(): (GenericCredential, GenericCredential) = {
+    val issuerId = createParticipant("Issuer X", did)
+    val subject = createContact(issuerId, "IOHK Student", None)
+
+    val credential1 = createGenericCredential(issuerId, subject.contactId, "A")
+    val credential2 = createGenericCredential(issuerId, subject.contactId, "B")
+
+    publishCredential(issuerId, credential1.credentialId)
+    publishCredential(issuerId, credential2.credentialId)
+
+    (credential1, credential2)
   }
 }

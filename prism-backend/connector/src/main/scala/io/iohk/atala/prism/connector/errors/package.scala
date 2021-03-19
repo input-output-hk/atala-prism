@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.connector
 
 import io.grpc.Status
+import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 
 package object errors {
@@ -54,6 +55,15 @@ package object errors {
   case class ServiceUnavailableError() extends ConnectorError {
     override def toStatus: Status = {
       Status.UNAVAILABLE.withDescription("Service unavailable. Please try later.")
+    }
+  }
+
+  case class ConnectionNotFound(tokenString: TokenString) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.NOT_FOUND.withDescription(
+        s"Connection with token $tokenString doesn't exist. " +
+          s"Other side might not have accepted connection yet or connection token is invalid"
+      )
     }
   }
 }

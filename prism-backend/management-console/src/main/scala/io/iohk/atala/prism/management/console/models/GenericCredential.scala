@@ -1,10 +1,13 @@
 package io.iohk.atala.prism.management.console.models
 
+import cats.data.NonEmptyList
+
 import java.time.Instant
 import java.util.UUID
 import io.circe.Json
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
+import io.iohk.atala.prism.protos.connector_api
 
 final case class CreateGenericCredential(
     contactId: Option[Contact.Id],
@@ -27,6 +30,12 @@ final case class GetContactCredentials(
 
 final case class ShareCredential(
     credentialId: GenericCredential.Id
+)
+
+final case class ShareCredentials(
+    credentialsIds: NonEmptyList[GenericCredential.Id],
+    sendMessagesRequest: connector_api.SendMessagesRequest,
+    sendMessagesRequestMetadata: ConnectorAuthenticatedRequestMetadata
 )
 
 final case class StoreCredential(

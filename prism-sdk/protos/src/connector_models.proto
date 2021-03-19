@@ -4,6 +4,7 @@ option java_multiple_files = true;
 option java_package = "io.iohk.atala.prism.protos";
 
 import "console_models.proto";
+import "credential_models.proto";
 import "google/protobuf/timestamp.proto";
 
 package io.iohk.atala.prism.protos;
@@ -112,4 +113,9 @@ message ContactConnection {
     string connectionId = 1;
     string connectionToken = 2;
     ContactConnectionStatus connectionStatus = 3;
+}
+
+message MessageToSendByConnectionToken {
+    string connectionToken = 1; // connection token used to accept connection
+    AtalaMessage message = 2; // raw message
 }

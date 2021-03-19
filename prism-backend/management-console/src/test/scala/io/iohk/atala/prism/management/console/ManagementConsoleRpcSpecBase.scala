@@ -82,7 +82,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   )
 
   lazy val credentialsService =
-    new CredentialsServiceImpl(credentialsRepository, authenticator, nodeMock)(
+    new CredentialsServiceImpl(credentialsRepository, authenticator, nodeMock, connectorMock)(
       executionContext
     )
 

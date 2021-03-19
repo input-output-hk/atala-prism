@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.data.NonEmptyList
 import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -7,7 +8,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.errors.CredentialDataValidationFailed
+import io.iohk.atala.prism.management.console.errors.{CredentialDataValidationFailed, PublishedCredentialsNotExist}
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
@@ -333,12 +334,25 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     "work" in {
       val issuerId = createParticipant("Issuer X")
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
-      val credential = createGenericCredential(issuerId, subjectId, "A")
-      publishCredential(issuerId, credential.credentialId)
-      credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
 
-      val result = credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
-      result.sharedAt mustNot be(empty)
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      publishCredential(issuerId, credential1.credentialId)
+      publishCredential(issuerId, credential2.credentialId)
+
+      credentialsRepository
+        .markAsShared(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
+        .value
+        .futureValue
+        .toOption
+        .value
+
+      val result1 = credentialsRepository.getBy(credential1.credentialId).value.futureValue.toOption.value.value
+      result1.sharedAt mustNot be(empty)
+
+      val result2 = credentialsRepository.getBy(credential2.credentialId).value.futureValue.toOption.value.value
+      result2.sharedAt mustNot be(empty)
     }
 
     "set a new date even if the credential was shared before" in {
@@ -346,7 +360,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
       publishCredential(issuerId, credential.credentialId)
-      credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
+      credentialsRepository
+        .markAsShared(issuerId, NonEmptyList.of(credential.credentialId))
+        .value
+        .futureValue
+        .toOption
+        .value
       val result1 = credentialsRepository
         .getBy(credential.credentialId)
         .value
@@ -357,7 +376,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .sharedAt
         .value
 
-      credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
+      credentialsRepository
+        .markAsShared(issuerId, NonEmptyList.of(credential.credentialId))
+        .value
+        .futureValue
+        .toOption
+        .value
       val result2 = credentialsRepository
         .getBy(credential.credentialId)
         .value
@@ -375,7 +399,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
       assertThrows[Exception] {
-        credentialsRepository.markAsShared(issuerId, credential.credentialId).value.futureValue.toOption.value
+        credentialsRepository
+          .markAsShared(issuerId, NonEmptyList.of(credential.credentialId))
+          .value
+          .futureValue
+          .toOption
+          .value
       }
     }
 
@@ -386,9 +415,52 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credential = createGenericCredential(issuerId, subjectId, "A")
       publishCredential(issuerId, credential.credentialId)
       assertThrows[Exception] {
-        credentialsRepository.markAsShared(issuerId2, credential.credentialId).value.futureValue.toOption.value
+        credentialsRepository
+          .markAsShared(issuerId2, NonEmptyList.of(credential.credentialId))
+          .value
+          .futureValue
+          .toOption
+          .value
       }
     }
+  }
+
+  "verifyPublishedCredentialsExist" should {
+    "work" in {
+      val issuerId = createParticipant("Issuer X")
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      publishCredential(issuerId, credential1.credentialId)
+      publishCredential(issuerId, credential2.credentialId)
+
+      val result = credentialsRepository
+        .verifyPublishedCredentialsExist(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
+        .value
+        .futureValue
+
+      result mustBe a[Right[_, _]]
+    }
+
+    "return error when one of the credential is not found or published" in {
+      val issuerId = createParticipant("Issuer X")
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      publishCredential(issuerId, credential1.credentialId)
+
+      val result = credentialsRepository
+        .verifyPublishedCredentialsExist(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
+        .value
+        .futureValue
+
+      result mustBe Left(PublishedCredentialsNotExist(List(credential2.credentialId)))
+    }
+
   }
 
   "storeBatchData" should {

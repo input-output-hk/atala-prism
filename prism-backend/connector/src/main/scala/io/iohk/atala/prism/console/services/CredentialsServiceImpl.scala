@@ -341,4 +341,9 @@ class CredentialsServiceImpl(
 
   // Do not implement, this is implemented in the management console
   override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] = ???
+
+  // Do not implement, this is implemented in the management console
+  override def shareCredentials(
+      request: console_api.ShareCredentialsRequest
+  ): Future[console_api.ShareCredentialsResponse] = ???
 }

@@ -11,6 +11,8 @@ import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
+import io.iohk.atala.prism.protos.credential_models
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.MockitoSugar._
@@ -39,6 +41,122 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
         val msg =
           MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeToFuture().futureValue.head
         msg.connection mustBe connectionId
+      }
+    }
+  }
+
+  "SendMessages" should {
+    "insert many message into database" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+
+      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val holderId1 = createHolder("Holder1")
+      val holderId2 = createHolder("Holder2")
+      val token1 = createToken(issuerId)
+      val token2 = createToken(issuerId)
+      createConnection(issuerId, holderId1, token1)
+      createConnection(issuerId, holderId2, token2)
+
+      val message1 =
+        credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token1"))
+      val message2 =
+        credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token2"))
+
+      val messages =
+        List(
+          MessageToSendByConnectionToken(token1.token, Some(message1)),
+          MessageToSendByConnectionToken(token2.token, Some(message2))
+        )
+
+      val request = connector_api.SendMessagesRequest(messages)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        blockingStub.sendMessages(request)
+        val msg1 =
+          MessagesDAO.getMessagesPaginated(holderId1, 1, None).transact(database).unsafeToFuture().futureValue.head
+        msg1.content mustBe message1.toByteArray
+
+        val msg2 =
+          MessagesDAO.getMessagesPaginated(holderId2, 1, None).transact(database).unsafeToFuture().futureValue.head
+        msg2.content mustBe message2.toByteArray
+      }
+    }
+
+    "do not insert messages into database if request doesn't contain any messages" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+
+      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val holderId1 = createHolder("Holder1")
+      createConnection(issuerId, holderId1)
+
+      val messages = List.empty
+
+      val request = connector_api.SendMessagesRequest(messages)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        blockingStub.sendMessages(request)
+        MessagesDAO
+          .getMessagesPaginated(holderId1, 1, None)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+          .size mustBe 0
+      }
+    }
+
+    "fail to insert many messages when connection doesn't exist (or connection token is bad)" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+
+      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val holderId1 = createHolder("Holder1")
+      val holderId2 = createHolder("Holder2")
+      val token1 = createToken(issuerId)
+      val token2 = createToken(issuerId)
+      createConnection(issuerId, holderId1, token1)
+
+      val message1 =
+        credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token1"))
+      val message2 =
+        credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token2"))
+
+      val messages =
+        List(
+          MessageToSendByConnectionToken(token1.token, Some(message1)),
+          MessageToSendByConnectionToken(token2.token, Some(message2))
+        )
+
+      val request = connector_api.SendMessagesRequest(messages)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        intercept[StatusRuntimeException] {
+          blockingStub.sendMessages(request)
+        }
+
+        MessagesDAO
+          .getMessagesPaginated(holderId1, 1, None)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+          .size mustBe 0
+
+        MessagesDAO
+          .getMessagesPaginated(holderId2, 1, None)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+          .size mustBe 0
       }
     }
   }

@@ -7,6 +7,7 @@ import io.iohk.atala.prism.management.console.models.{
   Contact,
   CredentialTypeId,
   CredentialTypeState,
+  GenericCredential,
   InstitutionGroup,
   ParticipantId
 }
@@ -50,6 +51,15 @@ package object errors {
       Status.INVALID_ARGUMENT.withDescription(
         s"Generation of Connection Tokens failed, expected token count: $expectedTokenCount " +
           s"but connector generated: $actualTokenCount"
+      )
+  }
+
+  case class PublishedCredentialsNotExist(nonExistingCredentialIds: List[GenericCredential.Id])
+      extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Credentials with following ids don't exist or has not been " +
+          s"published yet: ${nonExistingCredentialIds.map(_.uuid.toString).mkString(", ")}"
       )
   }
 

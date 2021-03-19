@@ -21,8 +21,8 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
 import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 import io.scalaland.chimney.dsl._
-import io.iohk.atala.prism.protos.console_models
-import io.iohk.atala.prism.protos.console_models.GenerateConnectionTokensRequestMetadata
+import io.iohk.atala.prism.protos.console_models.ConnectorRequestMetadata
+
 import java.time.{Instant, LocalDate}
 
 import io.iohk.atala.prism.credentials.CredentialBatchId
@@ -46,7 +46,7 @@ object DataPreparation {
     id
   }
 
-  val generateConnectionTokenRequestMetadata: ConnectorAuthenticatedRequestMetadata =
+  val connectorAuthenticatedRequestMetadata: ConnectorAuthenticatedRequestMetadata =
     ConnectorAuthenticatedRequestMetadata(
       did = newDID().toString,
       didKeyId = "didKeyId",
@@ -54,8 +54,8 @@ object DataPreparation {
       requestNonce = "requestNonce"
     )
 
-  val generateConnectionTokenRequestProto: GenerateConnectionTokensRequestMetadata =
-    generateConnectionTokenRequestMetadata.transformInto[console_models.GenerateConnectionTokensRequestMetadata]
+  val connectorRequestMetadataProto: ConnectorRequestMetadata =
+    connectorAuthenticatedRequestMetadata.transformInto[ConnectorRequestMetadata]
 
   def createInstitutionGroup(institutionId: ParticipantId, name: InstitutionGroup.Name)(implicit
       database: Transactor[IO]
@@ -79,7 +79,7 @@ object DataPreparation {
       ),
       externalId = externalId,
       name = name,
-      generateConnectionTokenRequestMetadata = generateConnectionTokenRequestMetadata
+      generateConnectionTokenRequestMetadata = connectorAuthenticatedRequestMetadata
     )
 
     groupName match {

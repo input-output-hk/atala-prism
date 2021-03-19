@@ -1,9 +1,11 @@
 package io.iohk.atala.prism.connector
 
-import io.iohk.atala.prism.connector.model.{ParticipantLogo, UpdateParticipantProfile}
+import cats.data.NonEmptyList
+import io.iohk.atala.prism.connector.model.{ParticipantLogo, UpdateParticipantProfile, SendMessages}
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.protos.connector_api.UpdateProfileRequest
 import scala.util.Try
+import io.iohk.atala.prism.protos.connector_api
 
 package object grpc {
   implicit val participantProfileConverter: ProtoConverter[UpdateProfileRequest, UpdateParticipantProfile] = {
@@ -23,4 +25,10 @@ package object grpc {
         } yield UpdateParticipantProfile(name, logo)
       }
   }
+
+  implicit val sendMessagesConverter: ProtoConverter[connector_api.SendMessagesRequest, SendMessages] = {
+    (request: connector_api.SendMessagesRequest) =>
+      Try(SendMessages(NonEmptyList.fromList(request.messagesByConnectionToken.toList)))
+  }
+
 }

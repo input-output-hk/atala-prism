@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console
 
+import cats.data.NonEmptyList
 import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.circe.Json
@@ -20,9 +21,11 @@ import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
+
 import java.time.LocalDate
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 
 import scala.util.{Failure, Success, Try}
 
@@ -142,12 +145,9 @@ package object grpc {
       for {
         json <- JsonValidator.jsonData(request.jsonData)
         externalId <- Contact.ExternalId.validated(request.externalId)
-        generateConnectionTokenRequestMetadata <-
+        generateConnectionTokenRequestMetadata <- toConnectorRequestMetadata(
           request.generateConnectionTokensRequestMetadata
-            .map(_.transformInto[ConnectorAuthenticatedRequestMetadata])
-            .fold[Try[ConnectorAuthenticatedRequestMetadata]](
-              Failure(new IllegalArgumentException("generateConnectionTokenRequestMetadata is missing"))
-            )(Success(_))
+        )
       } yield CreateContact(externalId, json, request.name, generateConnectionTokenRequestMetadata)
     }
 
@@ -280,12 +280,9 @@ package object grpc {
         validatedGroups <- toGroupIdSet(request.groups)
         validatedContacts <- toCreateContacts(request.contacts)
         _ = if (validatedContacts.isEmpty) throw new RuntimeException("There are no contacts to create")
-        generateConnectionTokenRequestMetadata <-
+        generateConnectionTokenRequestMetadata <- toConnectorRequestMetadata(
           request.generateConnectionTokensRequestMetadata
-            .map(_.transformInto[ConnectorAuthenticatedRequestMetadata])
-            .fold[Try[ConnectorAuthenticatedRequestMetadata]](
-              Failure(new IllegalArgumentException("generateConnectionTokenRequestMetadata is missing"))
-            )(Success(_))
+        )
       } yield CreateContact.Batch(validatedGroups, validatedContacts, generateConnectionTokenRequestMetadata)
     }
 
@@ -373,6 +370,51 @@ package object grpc {
     (request: ShareCredentialRequest) => {
       GenericCredential.Id.from(request.cmanagerCredentialId).map(ShareCredential)
     }
+
+  implicit val shareCredentialsConverter: ProtoConverter[ShareCredentialsRequest, ShareCredentials] =
+    (request: ShareCredentialsRequest) => {
+      for {
+        idsNonEmptyList <- toCredentialsIds(request.credentialsIds)
+        connectorRequestMetadata <- toConnectorRequestMetadata(request.sendMessagesRequestMetadata)
+        sendMessageRequest <- request.sendMessagesRequest.fold[Try[SendMessagesRequest]](
+          Failure(new IllegalArgumentException("sendMessagesRequest cannot be empty"))
+        )(Success(_))
+        _ <-
+          if (idsNonEmptyList.size == sendMessageRequest.messagesByConnectionToken.size) Success(())
+          else
+            Failure(
+              new IllegalArgumentException(
+                s"Number of credentialIds: ${idsNonEmptyList.size} doesn't equal number of" +
+                  s" messages to send: ${sendMessageRequest.messagesByConnectionToken.size}"
+              )
+            )
+      } yield ShareCredentials(
+        idsNonEmptyList,
+        sendMessageRequest,
+        connectorRequestMetadata
+      )
+    }
+
+  private def toConnectorRequestMetadata(
+      connectorRequestMetadata: Option[console_models.ConnectorRequestMetadata]
+  ): Try[ConnectorAuthenticatedRequestMetadata] = {
+    connectorRequestMetadata
+      .map(_.transformInto[ConnectorAuthenticatedRequestMetadata])
+      .fold[Try[ConnectorAuthenticatedRequestMetadata]](
+        Failure(new IllegalArgumentException("connector request metadata is missing"))
+      )(Success(_))
+  }
+
+  private def toCredentialsIds(credentialsIds: Seq[String]): Try[NonEmptyList[GenericCredential.Id]] = {
+    for {
+      idsList <- credentialsIds.map(GenericCredential.Id.from).toList.sequence
+      idsNonEmptyList <-
+        NonEmptyList
+          .fromList(idsList)
+          .map(Success(_))
+          .getOrElse(Failure(new IllegalArgumentException("Empty credential ids list")))
+    } yield idsNonEmptyList
+  }
 
   implicit val getLedgerDataConverter: ProtoConverter[GetLedgerDataRequest, GetLedgerData] =
     (request: GetLedgerDataRequest) => {

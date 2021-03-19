@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.connector.model
 
+import cats.data.NonEmptyList
+
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
@@ -8,6 +10,7 @@ import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models
+import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
 import io.iohk.atala.prism.utils.syntax._
 
 import java.time.Instant
@@ -156,3 +159,16 @@ case class Message(
     )
   }
 }
+
+case class CreateMessage(
+    id: MessageId,
+    connection: ConnectionId,
+    sender: ParticipantId,
+    recipient: ParticipantId,
+    receivedAt: Instant,
+    content: Array[Byte]
+)
+
+case class SendMessages(
+    messages: Option[NonEmptyList[MessageToSendByConnectionToken]]
+)

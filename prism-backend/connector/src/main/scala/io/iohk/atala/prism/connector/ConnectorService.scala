@@ -534,4 +534,24 @@ class ConnectorService(
     }
   }
 
+  /** Send messages over many connections
+    *
+    * Available to: Issuer, Holder, Validator
+    *
+    * Errors:
+    * Unknown connection (UNKNOWN)
+    * Connection closed (FAILED_PRECONDITION)
+    */
+  override def sendMessages(request: connector_api.SendMessagesRequest): Future[connector_api.SendMessagesResponse] = {
+    auth[SendMessages]("sendMessages", request) { (participantId, query) =>
+      query.messages.fold(
+        FutureEither.right[ConnectorError, connector_api.SendMessagesResponse](connector_api.SendMessagesResponse())
+      ) { messagesToInsert =>
+        messages
+          .insertMessages(participantId, messagesToInsert)
+          .map(_ => connector_api.SendMessagesResponse())
+      }
+    }
+  }
+
 }
