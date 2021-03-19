@@ -56,7 +56,7 @@ Embed the credential in a batch, leaving you with a proof of inclusion:
 
 At last, you can verify that a credential is valid:
 
-```scala mdoc:crash
+```scala
   PrismCredentialVerification
     .verify(
       keyData = ???, // get this from Cardano
