@@ -25,7 +25,6 @@
     "filterTitle": "No {{model}} match these filters"
   },
   "generic": {
-    "step": "Step {{step}}",
     "underConstruction": "Under construction",
     "contactsTemplate": "Contacts"
   },

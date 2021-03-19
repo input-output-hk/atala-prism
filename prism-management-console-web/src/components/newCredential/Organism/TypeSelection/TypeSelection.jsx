@@ -1,36 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Col, Row } from 'antd';
-import { useTranslation } from 'react-i18next';
 import TypeCard from '../../Molecules/TypeCard/TypeCard';
 import { credentialTypeShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
-const TypeSelection = ({ credentialTypes, selectedType, onTypeSelection }) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="TypeSelectionWrapper">
-      <Col className="TypeSelectionContainer">
-        <h1>{t('newCredential.typeSelection')}</h1>
-        <Row type="flex" align="middle" className="TypeSelection">
-          {Object.keys(credentialTypes)
-            .filter(key => credentialTypes[key].enabled)
-            .map(key => (
-              <TypeCard
-                credentialType={credentialTypes[key]}
-                typeKey={key}
-                key={key}
-                isSelected={selectedType === key}
-                onClick={onTypeSelection}
-              />
-            ))}
-        </Row>
-      </Col>
+const TypeSelection = ({ credentialTypes, selectedType, onTypeSelection }) => (
+  <div className="TypeSelectionWrapper">
+    <div className="TypeSelectionContainer">
+      <div className="TypeSelection">
+        {Object.keys(credentialTypes)
+          .filter(key => credentialTypes[key].enabled)
+          .map(key => (
+            <TypeCard
+              credentialType={credentialTypes[key]}
+              typeKey={key}
+              key={key}
+              isSelected={selectedType === key}
+              onClick={onTypeSelection}
+            />
+          ))}
+      </div>
     </div>
-  );
-};
+  </div>
+);
 
 TypeSelection.defaultProps = {
   selectedType: ''

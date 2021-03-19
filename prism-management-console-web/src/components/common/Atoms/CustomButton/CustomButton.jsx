@@ -11,13 +11,12 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ icon, buttonText, buttonProps, loading, className }) => (
+const CustomButton = ({ buttonText, buttonProps, loading, className }) => (
   <Button
     {...buttonProps}
     className={`${buttonProps.className} ${className}`}
     disabled={buttonProps?.disabled || loading}
   >
-    {icon && icon}
     {loading ? <SimpleLoading /> : buttonText}
   </Button>
 );
@@ -25,7 +24,6 @@ const CustomButton = ({ icon, buttonText, buttonProps, loading, className }) => 
 CustomButton.defaultProps = {
   buttonText: '',
   className: '',
-  icon: null,
   loading: false
 };
 
@@ -44,7 +42,6 @@ CustomButton.propTypes = {
   }).isRequired,
   buttonText: PropTypes.string,
   className: PropTypes.string,
-  icon: PropTypes.element,
   loading: PropTypes.bool
 };
 

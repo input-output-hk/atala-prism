@@ -1,13 +1,14 @@
 @import '../../../../css/general_styling';
 
 .img-success {
-  width: 30%;
+  width: 150px;
 }
 .success-wrapper {
-  height: 100%;
   flex-direction: column;
   display: flex;
+  padding: 1em;
   .success-container {
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;

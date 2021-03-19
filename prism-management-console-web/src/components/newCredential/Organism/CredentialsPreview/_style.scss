@@ -1,12 +1,15 @@
 @import '../../../../css/general_styling';
 
-.CredentialsPreview {
+.CredWrapper {
   display: flex;
-  height: 50vh;
-
-  .Divider {
-    margin: 2em 0;
-    border: 1px solid $light-grey;
+  flex-direction: column;
+  .CredentialsPreview {
+    display: flex;
+    padding: 2em 0;
+    .Divider {
+      margin: 2em 0;
+      border: 1px solid $light-grey;
+    }
   }
 
   .RecipientsContainer {
@@ -14,6 +17,7 @@
     width: 65%;
     display: flex;
     flex-flow: column;
+    overflow-y: scroll;
     h3 {
       @include primary-text($h3, #26385b);
       font-weight: bold;

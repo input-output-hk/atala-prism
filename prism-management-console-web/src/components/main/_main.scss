@@ -26,6 +26,9 @@
         h1 {
           @include secondary-text($h1, $secondary-color);
         }
+        h3 {
+          @include secondary-text($body, $dark-grey);
+        }
       }
 
       .FilterControls {

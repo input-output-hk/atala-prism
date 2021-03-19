@@ -1,18 +1,14 @@
 @import '../../../../css/general_styling';
 
-.ImportCredentialsOptionCard{
-  width: 315px;
-  height: 250px;
-}
-.ImportContactOptionCard{
+.ImportCredentialsOptionCard {
   width: 300px;
-  height: 268px;
+  height: 250px;
 }
 
 .OptionCard {
   cursor: pointer;
   text-align: center;
-  margin: 0 1em;  
+  margin: 0 1em;
   background-color: white;
   position: relative;
   justify-content: center;
@@ -25,83 +21,93 @@
     border: 2px solid $primary-color;
   }
 
-  .active{
+  .active {
     border-radius: 50px;
   }
   .CardText {
-
     h1 {
-      @include primary-text($h1, $black);
+      @include primary-text($h2, $black);
       font-weight: bold;
     }
     p {
       @include primary-text($body, $dark-grey);
     }
   }
+  .ImportContactOptionCard {
+    width: 300px;
+    height: 268px;
+    .Selected {
+      border: 2px solid $primary-color;
+      border-radius: 10px;
+      box-shadow: $red-shadow;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      .ant-avatar-circle {
+        color: $primary-color;
+        background-color: white;
+        border-color: $primary-color;
+        border-radius: 20px;
+        border-style: solid;
+        border-width: 2px;
+        span {
+          font-size: 18px;
+          line-height: 28px;
+        }
+      }
+
+      h1 {
+        @include secondary-text($h2, $secondary-color);
+        @include letter-spacing();
+      }
+
+      p {
+        @include primary-text($body, $secondary-color);
+        @include letter-spacing();
+      }
+    }
+    .img-container {
+      display: flex;
+      align-items: center;
+      img {
+        width: 100px;
+      }
+    }
+  }
 }
-.content-container{
+.content-container {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   text-align: center;
 }
-.Selected {
-  border: 2px solid $primary-color;
-  border-radius: 10px;
-  box-shadow: $red-shadow;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
 
-  .ant-avatar-circle {
-    color: $primary-color;
-    background-color: white;
-    border-color: $primary-color;
-    border-radius: 20px;
-    border-style: solid;
-    border-width: 2px;
-
-    span {
-      font-size: 18px;
-      line-height: 28px;
-    }
-  }
-
-  h1 {
-    @include secondary-text($h1, $secondary-color);
-    @include letter-spacing();
-  }
-
-  p {
-    @include primary-text($body, $secondary-color);
-    @include letter-spacing();
-  }
-}
-.icon-container{
+.icon-container {
   width: 100%;
   text-align: end;
-  .icon{
+  .icon {
     color: $primary-color;
     font-size: 25px;
+    margin-bottom: 0.4em;
   }
-  .icon-disabled{
+  .icon-disabled {
     color: white;
     font-size: 25px;
-
   }
 }
-.img-container{
+.img-container {
   display: flex;
   align-items: center;
-  img{
-    width: 150px;
+  justify-content: center;
+  img {
+    width: 100px;
   }
 }
 .NotSelected {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column;
   .ant-avatar-circle {
     color: $grey;
     opacity: 0.2;
@@ -111,13 +117,13 @@
     border-style: solid;
     border-width: 2px;
   }
-  img{
-    opacity: .5;
+  img {
+    opacity: 0.5;
   }
 
   .CardText {
     h1 {
-      @include primary-text($h1, $grey);
+      @include primary-text($h2, $grey);
       font-weight: bold;
     }
     p {

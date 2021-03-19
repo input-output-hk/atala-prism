@@ -19,8 +19,7 @@
       }
     }
     h3 {
-      @include primary-text($h3, $black);
-      font-weight: bold;
+      @include primary-text($h3, $dark-grey);
     }
     p {
       @include primary-text($body, #7f92a6);

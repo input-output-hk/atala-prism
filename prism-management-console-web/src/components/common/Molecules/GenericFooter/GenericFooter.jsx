@@ -1,9 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
-const GenericFooter = ({ previous, next, disablePrevious, disableNext, labels, loading }) => (
+const GenericFooter = ({ previous, next, disablePrevious, disableNext, loading }) => (
   <div className="GenericFooter">
     <div className="LeftButtons">
       {previous && (
@@ -13,7 +14,7 @@ const GenericFooter = ({ previous, next, disablePrevious, disableNext, labels, l
             className: 'theme-grey',
             disabled: disablePrevious
           }}
-          buttonText={labels.previous}
+          buttonText={<LeftOutlined />}
         />
       )}
     </div>
@@ -25,7 +26,7 @@ const GenericFooter = ({ previous, next, disablePrevious, disableNext, labels, l
             className: 'theme-primary',
             disabled: disableNext
           }}
-          buttonText={labels.next}
+          buttonText={<RightOutlined />}
           loading={loading}
         />
       )}

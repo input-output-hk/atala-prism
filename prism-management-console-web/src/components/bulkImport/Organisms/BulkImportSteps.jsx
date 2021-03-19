@@ -56,12 +56,6 @@ const BulkImportSteps = ({
 
   return (
     <div className={`BulkImportStepsWrapper ${isEmbedded[useCase] ? 'EmbeddedImportWrapper' : ''}`}>
-      <div
-        className={`ContentHeader TitleAndSubtitle ${isEmbedded[useCase] ? 'EmbeddedHeader' : ''}`}
-      >
-        <h3>{t(`${useCase}.bulkImportStep.title`)}</h3>
-        <p>{t(`${useCase}.bulkImportStep.info`)}</p>
-      </div>
       <div className="BulkImportContent">
         <CompleteSpreadSheetStep
           currentStep={currentStep}

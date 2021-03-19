@@ -1,104 +1,106 @@
 @import '../../../../css/general_styling';
 
-.RecipientsSelection {
-  height: 100%;
-  .ant-tabs {
-    height: 100%;
-  }
-  .ant-tabs-content {
-    height: calc(100% - 6.5em);
-  }
-  .ConnectionsTable {
-    height: 100%;
-    padding: 0 3em;
-  }
-  .groupsTableContainer {
-    height: 100%;
-  }
-  .GroupTableContainer {
-    height: 100%;
-  }
-  .ant-tabs-nav-wrap,
-  .selectionGroups {
-    margin: 1em 3em;
-  }
-  .ant-tabs-nav .ant-tabs-tab {
-    @include primary-text($h3, #a0aabb);
-    font-weight: 800;
-    margin: 0 1em;
-  }
-  .ant-tabs-tab-active {
-    .ant-tabs-tab-btn {
-      @include primary-text($h3, $black);
-      font-weight: 800;
-    }
-  }
-  .selectionGroups {
-    width: 15%;
-  }
-  .selectionGroups {
-    .ant-input:focus {
-      border-color: $primary-color;
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656);
-    }
-    .ant-input:hover {
-      border-color: $primary-color;
-    }
-  }
-  .ant-tabs-ink-bar {
-    background-color: $primary-color;
-  }
-  .ant-tabs-nav .ant-tabs-tab:active {
-    color: $primary-color;
-  }
-  .ant-tabs-tab:hover {
-    color: $primary-color;
-  }
-  .selectGroupSubtitle {
-    margin: 0 3em;
-    span {
-      @include body-text($body, #728099, 400);
-    }
-  }
-  .selectGroupCheckbox {
-    margin-right: 3em;
-    display: flex;
-    flex-direction: row-reverse;
-    span {
-      @include primary-text($label, $black);
+  .TypeSelectionContainer {
+    padding: 1em 1.5em;
+    .TypeSelection {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 2em;
     }
   }
 
-  .selectionGroupsContainer {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    .checkboxReverse {
+  .RecipientsSelection {
+    height: 100%;
+    .ant-tabs {
+      height: 100%;
+    }
+    .ant-tabs-content {
+      height: calc(100% - 6.5em);
+    }
+    .groupsTableContainer {
+      height: 100%;
+    }
+    .GroupTableContainer {
+      height: 100%;
+    }
+    .ant-tabs-nav-wrap,
+    .ant-tabs-nav .ant-tabs-tab {
+      @include primary-text($body, $dark-grey);
+      font-weight: 800;
+      margin: 0 1.5em;
+    }
+    .ant-tabs-tab-active {
+      .ant-tabs-tab-btn {
+        @include primary-text($body, $black);
+        font-weight: 800;
+      }
+    }
+    .selectionGroups {
+      width: 15%;
+    }
+    .selectionGroups {
+      .ant-input:focus {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656);
+      }
+      .ant-input:hover {
+        border-color: $primary-color;
+      }
+    }
+    .ant-tabs-ink-bar {
+      background-color: $primary-color;
+    }
+    .ant-tabs-nav .ant-tabs-tab:active {
+      color: $primary-color;
+    }
+    .ant-tabs-tab:hover {
+      color: $primary-color;
+    }
+    .ant-tabs-content-holder {
+      padding: 1em 3em;
+    }
+    .selectGroupSubtitle {
+      span {
+        @include body-text($body, #728099, 400);
+      }
+    }
+    .selectGroupCheckbox {
+      margin-right: 3em;
       display: flex;
       flex-direction: row-reverse;
-      align-items: center !important;
-      .icon {
-        margin-right: 0.5em;
-      }
-      .ant-checkbox-wrapper {
-        display: flex !important;
-        align-items: center !important;
-        flex-direction: row-reverse !important;
-      }
       span {
-        display: flex !important;
-        align-items: center;
-        top: 0;
+        @include primary-text($label, $black);
       }
     }
-    .noRecipientsCheckbox {
-      background-color: $light-grey;
-      border: 1px solid $medium-grey;
-      padding: 0.5em 1.5em 0.5em 1em;
-      border-radius: 2em;
+
+    .selectionGroupsContainer {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-top: 1em;
+      .checkboxReverse {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center !important;
+        .icon {
+          margin-right: 0.5em;
+        }
+        .ant-checkbox-wrapper {
+          display: flex !important;
+          align-items: center !important;
+          flex-direction: row-reverse !important;
+        }
+        span {
+          display: flex !important;
+          align-items: center;
+          top: 0;
+        }
+      }
+      .noRecipientsCheckbox {
+        background-color: $light-grey;
+        border: 1px solid $medium-grey;
+        padding: 0.5em 1.5em 0.5em 1em;
+        border-radius: 2em;
+      }
     }
   }
-  .groupsTableContainer {
-    margin: 0em 3em;
-  }
-}

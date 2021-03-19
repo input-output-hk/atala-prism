@@ -31,7 +31,6 @@
   }
 
   .CardText {
-    margin-top: 2em;
     width: 100%;
     h1 {
       text-align: center;
@@ -87,7 +86,7 @@
   }
 
   p {
-    @include primary-text($body, $secondary-color);
+    @include primary-text($body, $dark-grey);
     @include letter-spacing();
   }
 }
@@ -122,9 +121,7 @@
   cursor: not-allowed !important;
 }
 
-.Step1Actions {
-  margin: 1em 0 2.5em;
-}
+
 .Step2Actions {
   margin: 1em 0;
 }
@@ -166,6 +163,6 @@
 }
 
 .EmbeddedStepCard {
-  height: 255px !important;
-  width: 540px !important;
+  min-height: 255px !important;
+  min-width: 500px !important;
 }

@@ -27,10 +27,6 @@ const ImportTypeSelectionContainer = ({
 
   return (
     <div className={`ImportWrapper ${isEmbedded ? 'EmbeddedImportWrapper' : ''}`}>
-      <div className={`ContentHeader TitleAndSubtitle ${isEmbedded ? 'EmbeddedHeader' : ''}`}>
-        <h2>{t(`${useCase}.importTypeSelection.title`)}</h2>
-        <p>{t(`${useCase}.importTypeSelection.info`)}</p>
-      </div>
       <ImportTypeSelector
         selected={selectedMethod}
         onSelect={setSelectedMethod}

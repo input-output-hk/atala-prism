@@ -2,12 +2,25 @@
 
 .CredentialMainContent {
   display: flex;
-  flex-flow: column;
-  justify-content: space-between;
-  height: 100%;
-
-  .CredentialContainerTop {
-
+  width: 100%;
+  padding: 1em;
+  flex-direction: column;
+  .WizardContentContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 100%;
+    position: relative;
+    .GenericFooter {
+      position: fixed;
+      right: 5%;
+      top:85vh;
+      width: 150px;
+      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.0523656);
+    }
+  }
+  .CredentialContainerSide {
+    width: 10%;
     &::-webkit-scrollbar {
       width: 6px;
     }

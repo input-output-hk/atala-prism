@@ -64,12 +64,10 @@ const BulkImportErrorLog = ({ fileData: { fileObj }, validationErrors, returnToU
   return (
     <>
       <div className="errorLogSection">
-        <div className="title">
-          <div>
-            <h1>{t('bulkImport.errorLog.title')}</h1>
-            <h3>{t('bulkImport.errorLog.info')}</h3>
-          </div>
+        <div className="subtitleLog">
+          <h3>{t('bulkImport.errorLog.info')}</h3>
         </div>
+
         <div className="table">
           <Table
             scroll={{ y: '36vh' }}

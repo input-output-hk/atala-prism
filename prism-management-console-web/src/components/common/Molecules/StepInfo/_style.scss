@@ -2,37 +2,38 @@
 
 .StepsInfo {
   background-color: $light-grey;
-  padding: 3em 3em 0 3em;
+  padding: 2em;
+  display: flex;
   flex-direction: column;
-  align-items: baseline;
-  .NewCredentialTitle {
-    h1 {
-      @include secondary-text($h1, $black);
-    }
-
-    p {
-      @include body-text($h3, $dark-grey, 400);
-    }
-  }
-
+  height: 100vh;
   .NewCredentialSteps {
-    padding: 1em 0;
     display: flex;
+    margin: 0 auto;
     width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: flex-start;
     .StepLine {
+      display: flex;
+      justify-content: center;
       margin-bottom: 0.75em;
       &:last-child {
         margin-bottom: 0;
       }
       .StepLineContentActive {
-        padding: 0.5em;
         background: #fff;
+        border: 1px solid rgb(30, 214, 158);
         border-radius: 60px;
         display: flex;
+        justify-content: center;
         align-items: center;
-        width: 280px;
         box-shadow: $shadow;
+        height: 30px;
+        width: 30px;
+        .ant-badge-count {
+          background-color: transparent !important;
+          font-weight: bold;
+          color: rgb(30, 214, 158);
+        }
         label {
           @include body-text($label, $secondary-color, 400);
           margin-left: 1em;
@@ -43,10 +44,13 @@
         padding: 0.5em;
         display: flex;
         align-items: center;
-        width: 280px;
+        justify-content: center;
+        height: 30px;
+        background: white;
+        width: 30px;
+        border-radius: 10em;
         label {
           @include body-text($label, $secondary-color, 400);
-          margin-left: 1em;
         }
       }
     }

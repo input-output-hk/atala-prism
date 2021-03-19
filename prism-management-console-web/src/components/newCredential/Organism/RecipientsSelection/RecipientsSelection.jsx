@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { SearchOutlined, WarningOutlined } from '@ant-design/icons';
-import { Col, Tabs, Input, Checkbox } from 'antd';
+import { Tabs, Input, Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
-
 import GroupsTable from '../../../groups/Organisms/Tables/GroupsTable';
 import ConnectionsTable from '../../../connections/Organisms/table/ConnectionsTable';
 import { withApi } from '../../../providers/withApi';
@@ -53,7 +52,7 @@ const RecipientsSelection = ({
   };
 
   return (
-    <Col type="flex" className="RecipientsSelection">
+    <div className="RecipientsSelection">
       <Tabs defaultActiveKey="groups" onChange={setActiveKey}>
         <TabPane key={GROUPS_KEY} tab={t('newCredential.targetsSelection.groups')}>
           <div className="selectGroupSubtitle">
@@ -133,7 +132,7 @@ const RecipientsSelection = ({
           )}
         </TabPane>
       </Tabs>
-    </Col>
+    </div>
   );
 };
 

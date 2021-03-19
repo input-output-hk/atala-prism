@@ -3,22 +3,22 @@
 .OptionCardsContainer {
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: 100%;
+  margin-top: 2em;
+  width: 100%;
 }
 
 .ImportWrapper {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
   .ContentHeader {
-    border-bottom: 1px solid $light-grey;
     padding: 3em;
-    display: block!important;
+    display: block !important;
     h2 {
       @include primary-text($h2, $black);
       font-weight: bold;
+    }
+    h3 {
+      @include secondary-text($body, $dark-grey);
     }
     p {
       @include primary-text($h3, $dark-grey);
@@ -27,8 +27,14 @@
 }
 
 .EmbeddedImportWrapper {
-  height: 90%;
+  width: 100%;
   .EmbeddedHeader {
-    padding: 1em 3em !important; 
+    padding: 1em 3em !important;
+    h1 {
+      @include secondary-text($h1, $black);
+      .stepDetail {
+        color: $primary-color;
+      }
+    }
   }
 }

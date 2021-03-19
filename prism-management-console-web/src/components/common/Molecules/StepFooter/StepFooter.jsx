@@ -1,18 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { Steps } from 'antd';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import './_style.scss';
-
-const createSteps = count => {
-  if (count <= 1) return [];
-
-  const steps = [];
-  for (let i = 0; i < count; i++) steps.push(<Steps.Step key={i} />);
-
-  return steps;
-};
 
 const StepFooter = ({
   currentStep,
@@ -41,11 +32,8 @@ const StepFooter = ({
             className: 'theme-grey',
             disabled: disablePrevious
           }}
-          buttonText={t('actions.back')}
+          buttonText={<LeftOutlined />}
         />
-      </div>
-      <div className="StepContainer">
-        <Steps current={currentStep}>{createSteps(stepCount)}</Steps>
       </div>
       <div className="ContinueButtons">
         {renderExtraOptions && <div className="SaveButton">{renderExtraOptions()}</div>}
@@ -55,7 +43,7 @@ const StepFooter = ({
             className: 'theme-primary',
             disabled: disableNext
           }}
-          buttonText={t(lastStep ? finishText : 'actions.next')}
+          buttonText={<RightOutlined />}
           loading={lastStep && loading}
         />
       </div>
