@@ -70,7 +70,7 @@ For the sake of simplicity, in this tutorial we are not interacting with the Car
 
 Taking the data from the previous steps, we can verify the credential. As you see, no errors are returned, which means that the credential is valid:
 
-```scala mdoc
+```scala
   PrismCredentialVerification
     .verify(
       keyData = keyData,

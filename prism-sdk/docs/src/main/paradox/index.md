@@ -18,6 +18,6 @@ The SDK modules provide all the necessary functionality to deal with cryptograph
 
 * The @ref:[Crypto](modules/crypto.md) module provides the necessary cryptographic primitives, mainly required by other components.
 * The @ref:[Identity](modules/identity.md) module provides the necessary stuff to work with Decentralized Identifiers. We are in the process of becoming compliant with the [DID Spec](https://w3c-ccg.github.io/did-spec/).
-* The Credentials module provides the necessary stuff to work with Verifiable Credentials. We are in the process of becoming compliant with the [Verifiable Credentials Data Model](https://w3c.github.io/vc-data-model/).
+* The @ref:[Credentials](modules/credentials.md) module provides the necessary stuff to work with Verifiable Credentials. We are in the process of becoming compliant with the [Verifiable Credentials Data Model](https://w3c.github.io/vc-data-model/).
 * The Protos module includes the necessary protobuf definitions to interact with our server side API, as well as models required while encoding data to its binary representation.
 * The @ref:[Connector](modules/connector.md) module provides utility functions to simplify the interaction with the server side APIs, like the necessary APIs to authenticate requests.
