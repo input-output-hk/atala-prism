@@ -58,7 +58,7 @@ import slinky.web.html.{p, _}
         div(
           className := "div_logo",
           id := "logoPrism",
-          img(className := "hola", src := "/assets/images/prism-logo.svg")
+          img(className := "logoImage", src := "/assets/images/prism-logo.svg")
         )
       ),
       mui

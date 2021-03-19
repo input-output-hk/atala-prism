@@ -54,6 +54,11 @@ import scala.util.{Failure, Success}
       val signingRequest = state.requests(state.id)
 
       div(id := "mainView", className := "spaceBetween")(
+        div(
+          className := "div_logo",
+          id := "logoPrism",
+          img(className := "logoImage", src := "/assets/images/prism-logo.svg")
+        ),
         h3(className := "h3_pending")(
           "Signature request"
         ),
