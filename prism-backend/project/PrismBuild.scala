@@ -205,7 +205,8 @@ object PrismBuild {
       .settings(
         name := "kycbridge",
         mainClass in (Compile, run) := Some("io.iohk.atala.prism.kycbridge.KycBridgeApp"),
-        libraryDependencies ++= http4sDependencies
+        libraryDependencies ++= http4sDependencies,
+        trapExit := false
       )
       .dependsOn(common % "compile->compile;test->test")
 

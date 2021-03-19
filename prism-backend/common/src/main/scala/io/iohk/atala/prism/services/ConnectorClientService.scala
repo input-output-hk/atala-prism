@@ -1,15 +1,16 @@
 package io.iohk.atala.prism.services
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import monix.eval.Task
 import fs2.Stream
 import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.protos.connector_api._
-import io.iohk.atala.prism.protos.credential_models.{StartAcuantProcess, AtalaMessage, ProofRequest, KycBridgeMessage}
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, KycBridgeMessage, ProofRequest, StartAcuantProcess}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
 import io.iohk.atala.prism.models.{ConnectorMessageId, CredentialProofRequestType}
+import io.iohk.atala.prism.utils.TaskUtils
 
 trait ConnectorClientService {
 
@@ -61,6 +62,9 @@ class ConnectorClientServiceImpl(
 ) extends BaseGrpcClientService(connector, requestAuthenticator, authConfig)
     with ConnectorClientService {
 
+  private val CONNECTION_MAX_RETIRES = 10
+  private val CONNECTION_RETRY_WAIT_TIME = 30.seconds
+
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] =
@@ -102,21 +106,21 @@ class ConnectorClientServiceImpl(
         (lastSeenMessageId, initialAwakeDelay)
       ) {
         case (lastSeenMessageId, shouldApplyAwakeDelay) =>
-          getMessagesPaginated(lastSeenMessageId, limit).flatMap(response =>
-            for {
-              _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
-              _ = logger.info(s"Call GetMessagesPaginated - lastSeenMessageId: ${lastSeenMessageId}")
+          val task = for {
+            _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
+            _ <- Task.pure(logger.info(s"Call GetMessagesPaginated - lastSeenMessageId: ${lastSeenMessageId}"))
+            response <- getMessagesPaginated(lastSeenMessageId, limit)
+            result = response.messages match {
+              case Nil =>
+                val applyAwakeDelay = true
+                Some(Nil -> (lastSeenMessageId -> applyAwakeDelay))
+              case messages =>
+                val applyAwakeDelay = messages.size != limit
+                Some(messages -> (Some(ConnectorMessageId(messages.last.id)) -> applyAwakeDelay))
+            }
+          } yield result
 
-              result = response.messages match {
-                case Nil =>
-                  val applyAwakeDelay = true
-                  Some(Nil -> (lastSeenMessageId -> applyAwakeDelay))
-                case messages =>
-                  val applyAwakeDelay = messages.size != limit
-                  Some(messages -> (Some(ConnectorMessageId(messages.last.id)) -> applyAwakeDelay))
-              }
-            } yield result
-          )
+          TaskUtils.retry(task, CONNECTION_MAX_RETIRES, CONNECTION_RETRY_WAIT_TIME)
       }
   }
 
@@ -147,23 +151,23 @@ class ConnectorClientServiceImpl(
         (lastSeenConnectionId, initialAwakeDelay)
       ) {
         case (lastSeenConnectionId, shouldApplyAwakeDelay) =>
-          getConnectionsPaginated(lastSeenConnectionId, limit).flatMap(response =>
-            for {
-              _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
-              _ = logger.info(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}")
+          val task = for {
+            _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
+            _ <- Task.pure(logger.info(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}"))
+            response <- getConnectionsPaginated(lastSeenConnectionId, limit)
+            result = response.connections match {
+              case Nil =>
+                val applyAwakeDelay = true
+                Some(Nil -> (lastSeenConnectionId -> applyAwakeDelay))
+              case connections =>
+                val applyAwakeDelay = connections.size != limit
+                Some(
+                  connections -> (ConnectionId.from(connections.last.connectionId).toOption -> applyAwakeDelay)
+                )
+            }
+          } yield result
 
-              result = response.connections match {
-                case Nil =>
-                  val applyAwakeDelay = true
-                  Some(Nil -> (lastSeenConnectionId -> applyAwakeDelay))
-                case connections =>
-                  val applyAwakeDelay = connections.size != limit
-                  Some(
-                    connections -> (ConnectionId.from(connections.last.connectionId).toOption -> applyAwakeDelay)
-                  )
-              }
-            } yield result
-          )
+          TaskUtils.retry(task, CONNECTION_MAX_RETIRES, CONNECTION_RETRY_WAIT_TIME)
       }
       .flatMap(Stream.emits) // convert Seq[ConnectionInfo] to ConnectionInfo
   }

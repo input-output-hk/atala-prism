@@ -43,7 +43,7 @@ object KycBridgeApp extends TaskApp {
   override def run(args: List[String]): Task[ExitCode] = {
     val classLoader = Thread.currentThread().getContextClassLoader
     app(classLoader).use {
-      case (assureIdService, acasService, grpcServer) =>
+      case (assureIdService, acasService, grpcServer, streams) =>
         logger.info("Kyc bridge application started")
 
         //only for demonstration purpose
@@ -65,11 +65,19 @@ object KycBridgeApp extends TaskApp {
           _ = logger.info(s"Document status: $documentStatus")
           _ = logger.info("Starting GRPC server")
           _ = grpcServer.start
-        } yield ()).flatMap(_ => Task.never)
+          //We use Task.parSequence instead of calling `start` on every task,
+          //because `start` doesn't propagate errors, `Task.parSequence` does this.
+          _ <- Task.parSequence(streams)
+        } yield ())
+          .flatMap(_ => Task.never)
+          .onErrorHandle(error => {
+            logger.error(error.getMessage)
+            ExitCode.Error
+          })
     }
   }
 
-  def app(classLoader: ClassLoader): Resource[Task, (AssureIdServiceImpl, AcasServiceImpl, Server)] =
+  def app(classLoader: ClassLoader): Resource[Task, (AssureIdServiceImpl, AcasServiceImpl, Server, List[Task[Unit]])] =
     for {
       httpClient <- BlazeClientBuilder[Task](global).resource
 
@@ -127,9 +135,11 @@ object KycBridgeApp extends TaskApp {
         saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
       )
 
-      _ <- Resource.liftF(connectionService.connectionUpdateStream.compile.drain.start)
-      _ <- Resource.liftF(acuantService.acuantDataStream.compile.drain.start)
-      _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
+      streams = List(
+        connectionService.connectionUpdateStream.compile.drain,
+        acuantService.acuantDataStream.compile.drain,
+        connectorMessageService.messagesUpdatesStream.compile.drain
+      )
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[Task](
@@ -139,6 +149,6 @@ object KycBridgeApp extends TaskApp {
         KycBridgeServiceGrpc.bindService(kycBridgeGrpcService, scheduler)
       )
 
-    } yield (assureIdService, acasService, grpcServer)
+    } yield (assureIdService, acasService, grpcServer, streams)
 
 }

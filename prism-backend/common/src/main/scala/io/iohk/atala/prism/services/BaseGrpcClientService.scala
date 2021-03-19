@@ -55,7 +55,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
     val newStub = MetadataUtils.attachHeaders(stub, signRequest(request))
 
     Task
-      .fromFuture(call(newStub)(request))
+      .deferFuture(call(newStub)(request))
       .onErrorHandleWith { error =>
         logger.error(s"Error occurred when calling grpc service: ${error.getMessage} cause: ${error.getCause}")
         Task.raiseError(error)
