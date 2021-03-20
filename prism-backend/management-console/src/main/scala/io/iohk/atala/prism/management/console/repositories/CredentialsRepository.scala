@@ -136,8 +136,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .storePublicationData(issuerId, credentialData)
       .transact(xa)
       .unsafeToFuture()
-      .map(Right(_))
-      .toFutureEither
+      .lift
   }
 
   def markAsShared(

@@ -25,6 +25,7 @@ object StatisticsDAO {
              |  ) AS numberOfCredentials,
              |  (SELECT COUNT(*) FROM published_credentials
              |   JOIN draft_credentials USING (credential_id)
+             |   JOIN published_batches USING (batch_id)
              |   WHERE issuer_id = $participantId AND stored_at BETWEEN $start AND $end
              |  ) AS numberOfCredentialsPublished,
              |  (SELECT COUNT(*) FROM received_credentials

@@ -1,43 +1,14 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  GenericCredential,
-  InstitutionGroup,
-  ParticipantId,
-  PublishCredential,
-  TimeInterval
-}
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, TimeInterval}
 import org.scalatest.OptionValues._
-
 import java.time.Instant
 
 class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
   lazy val repository = new StatisticsRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
-
-  private def publishCredential(issuerId: ParticipantId, credential: GenericCredential): Either[Nothing, Int] = {
-    credentialsRepository
-      .storePublicationData(
-        issuerId,
-        PublishCredential(
-          credential.credentialId,
-          SHA256Digest.compute("test".getBytes),
-          "mockNodeCredentialId",
-          "mockEncodedSignedCredential",
-          TransactionInfo(
-            TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
-            Ledger.InMemory,
-            None
-          )
-        )
-      )
-      .value
-      .futureValue
-  }
 
   "query" should {
     "work" in {
@@ -51,23 +22,7 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
       // credentials
       val credential1 = createGenericCredential(issuerId, contact3.contactId, "A")
       createGenericCredential(issuerId, contact3.contactId, "B")
-      credentialsRepository
-        .storePublicationData(
-          issuerId,
-          PublishCredential(
-            credential1.credentialId,
-            SHA256Digest.compute("test".getBytes),
-            "mockNodeCredentialId",
-            "mockEncodedSignedCredential",
-            TransactionInfo(
-              TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
-              Ledger.InMemory,
-              None
-            )
-          )
-        )
-        .value
-        .futureValue
+      publishCredential(issuerId, credential1)
 
       val result = repository.query(issuerId, None).value.futureValue.toOption.value
       result.numberOfContacts must be(4)

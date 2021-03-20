@@ -24,6 +24,7 @@ import io.scalaland.chimney.Transformer
 
 import java.time.LocalDate
 import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 
@@ -439,6 +440,28 @@ package object grpc {
           if (isIssueCredentialBatch) ()
           else throw new RuntimeException("IssueCredentialBatch operation expected but not found")
       } yield PublishBatch(signedOperation)
+    }
+
+  implicit val storePublishedCredentialConverter
+      : ProtoConverter[StorePublishedCredentialRequest, StorePublishedCredential] =
+    (request: StorePublishedCredentialRequest) => {
+      for {
+        encodedSignedCredential <- Try {
+          require(request.encodedSignedCredential.nonEmpty, "Empty encoded credential")
+          request.encodedSignedCredential
+        }
+        consoleCredentialId = GenericCredential.Id.unsafeFrom(request.consoleCredentialId)
+        batchId = CredentialBatchId.unsafeFromString(request.batchId)
+        proof =
+          MerkleInclusionProof
+            .decode(request.encodedInclusionProof)
+            .getOrElse(throw new RuntimeException(s"Invalid inclusion proof: ${request.encodedInclusionProof}"))
+      } yield StorePublishedCredential(
+        encodedSignedCredential = encodedSignedCredential,
+        consoleCredentialId = consoleCredentialId,
+        batchId = batchId,
+        inclusionProof = proof
+      )
     }
 
   implicit val issueCredentialBatchResponseConverter

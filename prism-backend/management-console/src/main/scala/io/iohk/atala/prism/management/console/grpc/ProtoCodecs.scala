@@ -3,6 +3,7 @@ package io.iohk.atala.prism.management.console.grpc
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp.Timestamp
+import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
 import io.iohk.atala.prism.protos.console_api.GetContactResponse
@@ -11,8 +12,10 @@ import io.iohk.atala.prism.protos.{common_models, connector_models, console_api,
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
-
 import java.time.{Instant, LocalDate}
+
+import io.iohk.atala.prism.models.TransactionInfo
+
 import scala.util.{Failure, Success, Try}
 
 object ProtoCodecs {
@@ -87,11 +90,14 @@ object ProtoCodecs {
 
     credential.publicationData.fold(model) { data =>
       model
-        .withNodeCredentialId(data.nodeCredentialId)
+        .withNodeCredentialId("") // deprecated
+        .withBatchId(data.credentialBatchId.id)
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
+        .withBatchInclusionProof(data.inclusionProof.encode)
         .withPublicationStoredAtDeprecated(data.storedAt.toEpochMilli)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
+        .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
     }
   }
 

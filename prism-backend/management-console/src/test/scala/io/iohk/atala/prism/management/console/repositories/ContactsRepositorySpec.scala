@@ -523,7 +523,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         tag = "tag1",
         credentialIssuanceContactId = None
       )
-      publishCredential(institutionId, issuedCredential.credentialId)
+      publishCredential(institutionId, issuedCredential)
 
       val contactWithDetails = repository.find(institutionId, contact.contactId).value.futureValue.toOption.value.value
 

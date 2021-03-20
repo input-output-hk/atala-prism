@@ -26,6 +26,8 @@ import io.iohk.atala.prism.protos.console_models.ConnectorRequestMetadata
 import java.time.{Instant, LocalDate}
 
 import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import io.iohk.atala.prism.models.Ledger.InMemory
 
 import scala.util.Random
 
@@ -188,20 +190,21 @@ object DataPreparation {
     DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
   }
 
-  def publishCredential(issuerId: ParticipantId, id: GenericCredential.Id)(implicit database: Transactor[IO]): Unit = {
+  def publishCredential(
+      issuerId: ParticipantId,
+      batchId: CredentialBatchId,
+      consoleId: GenericCredential.Id,
+      encodedSignedCredential: String,
+      mockMerkleProof: MerkleInclusionProof
+  )(implicit database: Transactor[IO]): Unit = {
     CredentialsDAO
       .storePublicationData(
         issuerId,
         PublishCredential(
-          id,
-          SHA256Digest.compute("test".getBytes),
-          "mockNodeCredentialId",
-          "mockEncodedSignedCredential",
-          TransactionInfo(
-            TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
-            Ledger.InMemory,
-            None
-          )
+          consoleId,
+          batchId,
+          encodedSignedCredential,
+          mockMerkleProof
         )
       )
       .transact(database)
@@ -212,7 +215,6 @@ object DataPreparation {
   def makeConnectionTokens(count: Int = 1): List[ConnectionToken] = {
     1.to(count).map(i => ConnectionToken(s"ConnectionToken$i")).toList
   }
-
   def getBatchData(
       batchId: CredentialBatchId
   )(implicit database: Transactor[IO]): Option[(TransactionId, Ledger, SHA256Digest)] = {
@@ -225,5 +227,60 @@ object DataPreparation {
       .option
       .transact(database)
       .unsafeRunSync()
+  }
+
+  def publishBatch(
+      batchId: CredentialBatchId,
+      previousOperationHash: SHA256Digest,
+      mockTransactionInfo: TransactionInfo
+  )(implicit database: Transactor[IO]): Unit = {
+    CredentialsDAO
+      .storeBatchData(
+        batchId,
+        mockTransactionInfo,
+        previousOperationHash
+      )
+      .transact(database)
+      .unsafeRunSync()
+    ()
+  }
+
+  def publishCredential(
+      issuerId: ParticipantId,
+      credential: GenericCredential
+  )(implicit
+      database: Transactor[IO]
+  ): Unit = {
+    val aHash = SHA256Digest.compute("test".getBytes)
+    val aBatchId = CredentialBatchId.random()
+    val anEncodedSignedCredential = "mockEncodedSignedCredential"
+    val aMerkleProof = MerkleInclusionProof(aHash, 0, List())
+    val aTransactionInfo = TransactionInfo(
+      transactionId = TransactionId.from(aHash.value).value,
+      ledger = InMemory,
+      block = None
+    )
+
+    CredentialsDAO
+      .storeBatchData(
+        aBatchId,
+        aTransactionInfo,
+        aHash
+      )
+      .transact(database)
+      .unsafeRunSync()
+    CredentialsDAO
+      .storePublicationData(
+        issuerId,
+        PublishCredential(
+          credential.credentialId,
+          aBatchId,
+          anEncodedSignedCredential,
+          aMerkleProof
+        )
+      )
+      .transact(database)
+      .unsafeRunSync()
+    ()
   }
 }

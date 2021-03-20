@@ -164,7 +164,27 @@ class CredentialsServiceImpl(
 
   override def storePublishedCredential(
       request: StorePublishedCredentialRequest
-  ): Future[StorePublishedCredentialResponse] = ???
+  ): Future[StorePublishedCredentialResponse] = {
+    auth[StorePublishedCredential]("storePublishedCredential", request) { (participantId, query) =>
+      for {
+        maybeCredential <- credentialsRepository.getBy(query.consoleCredentialId)
+        credential = maybeCredential.getOrElse(
+          throw new RuntimeException(s"Credential with ID ${query.consoleCredentialId} does not exist")
+        )
+        // Verify issuer
+        _ = require(credential.issuedBy == participantId, "The credential was not issued by the specified issuer")
+        _ <- credentialsRepository.storePublicationData(
+          issuerId = participantId,
+          credentialData = PublishCredential(
+            query.consoleCredentialId,
+            query.batchId,
+            query.encodedSignedCredential,
+            query.inclusionProof
+          )
+        )
+      } yield StorePublishedCredentialResponse()
+    }
+  }
 
   override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] = {
     auth[GetLedgerData]("getLedgerData", request) { (_, query) =>

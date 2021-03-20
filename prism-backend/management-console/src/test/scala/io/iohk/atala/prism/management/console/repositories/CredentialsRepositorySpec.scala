@@ -1,10 +1,13 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.data.NonEmptyList
+import cats.effect.IO
+import doobie.util.transactor
 import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -14,6 +17,8 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
+  import CredentialsRepositorySpec.publish
+
   lazy val credentialsRepository = new CredentialsRepository(database)
 
   "create" should {
@@ -90,7 +95,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
-      publishCredential(issuerId, credential.credentialId)
+
+      publish(issuerId, credential.credentialId)
 
       credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
       succeed
@@ -125,7 +131,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credA = createGenericCredential(issuerId, subject, "A")
       val credB = createGenericCredential(issuerId, subject, "B")
       createGenericCredential(issuerId, subject, "C")
-      publishCredential(issuerId, credA.credentialId)
+      publish(issuerId, credA.credentialId)
       credentialsRepository.getBy(credA.credentialId)
 
       val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
@@ -159,7 +165,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       createGenericCredential(issuerId, subject, "A")
       createGenericCredential(issuerId, subject, "B")
       val credC = createGenericCredential(issuerId, subject, "C")
-      publishCredential(issuerId, credC.credentialId)
+      publish(issuerId, credC.credentialId)
       createGenericCredential(issuerId, subject, "D")
 
       val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
@@ -200,7 +206,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       createGenericCredential(issuerId, subjectId2, "C")
       val cred2 = createGenericCredential(issuerId, subjectId1, "D")
       createGenericCredential(issuerId, subjectId2, "E")
-      publishCredential(issuerId, cred1.credentialId)
+      publish(issuerId, cred1.credentialId)
 
       val result = credentialsRepository.getBy(issuerId, subjectId1).value.futureValue.toOption.value
       result.map(_.credentialId) must be(List(cred1.credentialId, cred2.credentialId))
@@ -224,19 +230,26 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockTransactionId =
+        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+      val mockLedger = Ledger.InMemory
+      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
+
+      /// we first publish the batch
+      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockTransactionInfo = TransactionInfo(TransactionId.from(mockNodeCredentialId).value, Ledger.InMemory)
+      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
 
       val inserted = credentialsRepository
         .storePublicationData(
           issuerId,
           PublishCredential(
             originalCredential.credentialId,
-            mockOperationHash,
-            mockNodeCredentialId,
+            mockBatchId,
             mockEncodedSignedCredential,
-            mockTransactionInfo
+            mockMerkleProof
           )
         )
         .value
@@ -252,7 +265,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val updatedCredential = credentialList.headOption.value
       val publicationData = updatedCredential.publicationData.value
 
-      publicationData.nodeCredentialId must be(mockNodeCredentialId)
+      publicationData.credentialBatchId must be(mockBatchId)
       publicationData.issuanceOperationHash must be(mockOperationHash)
       publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
       publicationData.transactionId must be(mockTransactionInfo.transactionId)
@@ -265,9 +278,17 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockTransactionId =
+        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+      val mockLedger = Ledger.InMemory
+      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
+
+      /// we first publish the batch
+      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockTransactionInfo = TransactionInfo(TransactionId.from(mockNodeCredentialId).value, Ledger.InMemory)
+      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
 
       intercept[RuntimeException](
         credentialsRepository
@@ -275,10 +296,9 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
             issuerId,
             PublishCredential(
               GenericCredential.Id.random(),
-              mockOperationHash,
-              mockNodeCredentialId,
+              mockBatchId,
               mockEncodedSignedCredential,
-              mockTransactionInfo
+              mockMerkleProof
             )
           )
           .value
@@ -298,9 +318,17 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, subjectId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockNodeCredentialId = mockOperationHash.hexValue
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockTransactionId =
+        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+      val mockLedger = Ledger.InMemory
+      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
+
+      /// we first publish the batch
+      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockTransactionInfo = TransactionInfo(TransactionId.from(mockNodeCredentialId).value, Ledger.InMemory)
+      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
 
       intercept[RuntimeException](
         credentialsRepository
@@ -308,10 +336,46 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
             ParticipantId.random(),
             PublishCredential(
               originalCredential.credentialId,
-              mockOperationHash,
-              mockNodeCredentialId,
+              mockBatchId,
               mockEncodedSignedCredential,
-              mockTransactionInfo
+              mockMerkleProof
+            )
+          )
+          .value
+          .futureValue
+      )
+
+      val credentialList =
+        credentialsRepository.getBy(issuerId, subjectId).value.futureValue.toOption.value
+
+      credentialList.length must be(1)
+
+      val updatedCredential = credentialList.headOption.value
+
+      updatedCredential must be(originalCredential)
+      updatedCredential.publicationData must be(empty)
+    }
+
+    "fail when the batch id does not exist" in {
+      val issuerId = createParticipant("Issuer X")
+      val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
+      val subjectId = createContact(issuerId, "IOHK Student 2", Some(group.name)).contactId
+      val originalCredential = createGenericCredential(issuerId, subjectId, "A")
+
+      val mockHash = SHA256Digest.compute("000".getBytes())
+      val mockBatchId = CredentialBatchId.fromDigest(mockHash)
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+
+      intercept[RuntimeException](
+        credentialsRepository
+          .storePublicationData(
+            issuerId,
+            PublishCredential(
+              originalCredential.credentialId,
+              mockBatchId,
+              mockEncodedSignedCredential,
+              mockMerkleProof
             )
           )
           .value
@@ -338,8 +402,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credential1 = createGenericCredential(issuerId, subjectId, "A")
       val credential2 = createGenericCredential(issuerId, subjectId, "B")
 
-      publishCredential(issuerId, credential1.credentialId)
-      publishCredential(issuerId, credential2.credentialId)
+      publishCredential(issuerId, credential1)
+      publishCredential(issuerId, credential2)
 
       credentialsRepository
         .markAsShared(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
@@ -359,13 +423,15 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
-      publishCredential(issuerId, credential.credentialId)
+
+      publish(issuerId, credential.credentialId)
       credentialsRepository
         .markAsShared(issuerId, NonEmptyList.of(credential.credentialId))
         .value
         .futureValue
         .toOption
         .value
+
       val result1 = credentialsRepository
         .getBy(credential.credentialId)
         .value
@@ -413,7 +479,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId2 = createParticipant("Issuer Y")
       val subjectId = createContact(issuerId, "IOHK Student", None).contactId
       val credential = createGenericCredential(issuerId, subjectId, "A")
-      publishCredential(issuerId, credential.credentialId)
+      publish(issuerId, credential.credentialId)
       assertThrows[Exception] {
         credentialsRepository
           .markAsShared(issuerId2, NonEmptyList.of(credential.credentialId))
@@ -433,8 +499,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credential1 = createGenericCredential(issuerId, subjectId, "A")
       val credential2 = createGenericCredential(issuerId, subjectId, "B")
 
-      publishCredential(issuerId, credential1.credentialId)
-      publishCredential(issuerId, credential2.credentialId)
+      publishCredential(issuerId, credential1)
+      publishCredential(issuerId, credential2)
 
       val result = credentialsRepository
         .verifyPublishedCredentialsExist(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
@@ -451,7 +517,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credential1 = createGenericCredential(issuerId, subjectId, "A")
       val credential2 = createGenericCredential(issuerId, subjectId, "B")
 
-      publishCredential(issuerId, credential1.credentialId)
+      publishCredential(issuerId, credential1)
 
       val result = credentialsRepository
         .verifyPublishedCredentialsExist(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
@@ -486,5 +552,25 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       ledger mustBe mockLedger
       hash mustBe mockHash
     }
+  }
+}
+
+object CredentialsRepositorySpec {
+  private val aHash = SHA256Digest.compute("random string".getBytes())
+  private val aBatchId = CredentialBatchId.fromDigest(aHash)
+  private val aTxInfo = TransactionInfo(
+    TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+    Ledger.InMemory,
+    None
+  )
+  private val aProof = MerkleInclusionProof(aHash, 1, List(aHash))
+  private val anEncodedCred = "encodedSignedCredenital"
+
+  def publish(
+      issuerId: ParticipantId,
+      consoleId: GenericCredential.Id
+  )(implicit database: transactor.Transactor[IO]): Unit = {
+    DataPreparation.publishBatch(aBatchId, aHash, aTxInfo)
+    DataPreparation.publishCredential(issuerId, aBatchId, consoleId, anEncodedCred, aProof)
   }
 }

@@ -3,9 +3,9 @@ package io.iohk.atala.prism.management.console.models
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 
-case class PublishCredential(
-    consoleCredentialId: GenericCredential.Id,
-    credentialBatchId: CredentialBatchId,
+final case class StorePublishedCredential(
     encodedSignedCredential: String,
-    proofOfInclusion: MerkleInclusionProof
+    consoleCredentialId: GenericCredential.Id,
+    batchId: CredentialBatchId,
+    inclusionProof: MerkleInclusionProof
 )

@@ -20,15 +20,36 @@ object CredentialsDAO {
         |PTS AS (
         |   SELECT participant_id AS issuer_id, name
         |   FROM participants
-        |)""".stripMargin
+        |),""".stripMargin
 
   private val selectGenericCredential =
     fr"""
         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
-        |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-        |       pc.transaction_id, pc.ledger, pc.shared_at
+        |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
+        |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
       """.stripMargin
+
+  private def withPublishedCredentialsPC(maybeCredentialId: Option[GenericCredential.Id] = None) =
+    maybeCredentialId match {
+      case Some(credentialId) =>
+        fr"""
+           |PC AS (
+           |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
+           |         stored_at, issued_on_transaction_id, ledger, shared_at
+           |  FROM published_credentials JOIN published_batches USING (batch_id)
+           |  WHERE credential_id = $credentialId
+           |)
+          """.stripMargin
+      case None =>
+        fr"""
+          |PC AS (
+          |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
+          |         stored_at, issued_on_transaction_id, ledger, shared_at
+          |  FROM published_credentials JOIN published_batches USING (batch_id)
+          |)
+          """.stripMargin
+    }
 
   def create(
       participantId: ParticipantId,
@@ -45,26 +66,26 @@ object CredentialsDAO {
          |    $createdOn, ${data.credentialIssuanceContactId}, ${data.credentialTypeId})
          |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id,
          |    credential_issuance_contact_id
-         |),""".stripMargin ++ withParticipantsPTS ++
+         |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(id)) ++
       fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data,
-         |       pc.node_credential_id, pc.operation_hash, pc.encoded_signed_credential, pc.stored_at,
-         |       pc.transaction_id, pc.ledger, pc.shared_at
+           |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
+           |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (inserted.contact_id = contacts.contact_id)
-         |     LEFT JOIN published_credentials pc USING (credential_id)
+         |     LEFT JOIN PC USING (credential_id)
          |""".stripMargin)
       .query[GenericCredential]
       .unique
   }
 
   def getBy(credentialId: GenericCredential.Id): doobie.ConnectionIO[Option[GenericCredential]] = {
-    (fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(credentialId)) ++ selectGenericCredential ++
       fr"""
          |FROM draft_credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.contact_id = contacts.contact_id)
-         |     LEFT JOIN published_credentials pc USING (credential_id)
+         |     LEFT JOIN PC USING (credential_id)
          |WHERE credential_id = $credentialId
          |""".stripMargin)
       .query[GenericCredential]
@@ -83,24 +104,24 @@ object CredentialsDAO {
              |  SELECT created_on AS last_seen_time
              |  FROM draft_credentials
              |  WHERE credential_id = $lastSeen
-             |),""".stripMargin ++ withParticipantsPTS ++ selectGenericCredential ++
+             |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
           fr"""
              |FROM CTE CROSS JOIN draft_credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.contact_id = contacts.contact_id)
-             |     LEFT JOIN published_credentials pc USING (credential_id)
+             |     LEFT JOIN PC USING (credential_id)
              |WHERE c.issuer_id = $issuedBy AND
              |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
              |ORDER BY c.created_on ASC, credential_id
              |LIMIT $limit
              |""".stripMargin
       case None =>
-        fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+        fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
           fr"""
              |FROM draft_credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN contacts ON (c.contact_id = contacts.contact_id)
-             |     LEFT JOIN published_credentials pc USING (credential_id)
+             |     LEFT JOIN PC USING (credential_id)
              |WHERE c.issuer_id = $issuedBy
              |ORDER BY c.created_on ASC, credential_id
              |LIMIT $limit
@@ -110,12 +131,12 @@ object CredentialsDAO {
   }
 
   def getBy(issuedBy: ParticipantId, subjectId: Contact.Id): doobie.ConnectionIO[List[GenericCredential]] = {
-    (fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
       fr"""
          |FROM draft_credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (c.contact_id = contacts.contact_id)
-         |     LEFT JOIN published_credentials pc USING (credential_id)
+         |     LEFT JOIN PC USING (credential_id)
          |WHERE c.issuer_id = $issuedBy AND
          |      c.contact_id = $subjectId
          |ORDER BY c.created_on ASC, credential_id
@@ -128,12 +149,12 @@ object CredentialsDAO {
       issuedBy: ParticipantId,
       subjectId: Contact.Id
   ): doobie.ConnectionIO[List[GenericCredential]] = {
-    (fr"WITH" ++ withParticipantsPTS ++ selectGenericCredential ++
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
       fr"""
           |FROM draft_credentials c
           |     JOIN PTS USING (issuer_id)
           |     JOIN contacts ON (c.contact_id = contacts.contact_id)
-          |     JOIN published_credentials pc USING (credential_id)
+          |     JOIN PC USING (credential_id)
           |WHERE c.issuer_id = $issuedBy AND
           |      c.contact_id = $subjectId
           |ORDER BY c.created_on ASC, credential_id
@@ -145,16 +166,14 @@ object CredentialsDAO {
   def storePublicationData(issuerId: ParticipantId, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {
     sql"""
          |INSERT INTO published_credentials (
-         |  credential_id, node_credential_id, operation_hash, encoded_signed_credential, transaction_id, ledger, stored_at)
+         |  credential_id, batch_id, encoded_signed_credential, inclusion_proof
+         |)
          |SELECT credential_id,
-         |       ${credentialData.nodeCredentialId},
-         |       ${credentialData.issuanceOperationHash},
+         |       ${credentialData.credentialBatchId},
          |       ${credentialData.encodedSignedCredential},
-         |       ${credentialData.transactionInfo.transactionId},
-         |       ${credentialData.transactionInfo.ledger},
-         |       ${Instant.now()}
+         |       ${credentialData.proofOfInclusion}
          |FROM draft_credentials
-         |WHERE credential_id = ${credentialData.credentialId} AND
+         |WHERE credential_id = ${credentialData.consoleCredentialId} AND
          |      issuer_id = $issuerId
          |""".stripMargin.update.run.flatTap { n =>
       FC.raiseError(new RuntimeException(s"The credential was not issued by the specified issuer")).whenA(n != 1)

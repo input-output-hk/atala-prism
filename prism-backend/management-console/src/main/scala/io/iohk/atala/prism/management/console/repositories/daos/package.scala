@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import doobie.Meta
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.management.console.models.{
   Contact,
@@ -19,4 +20,9 @@ package object daos extends BaseDAO {
     Meta[String].timap(CredentialExternalId.apply)(_.value)
 
   implicit val credentialIssuanceIdMeta: Meta[CredentialIssuance.Id] = uuidValueMeta(CredentialIssuance.Id)
+
+  implicit val merkleProofMeta: Meta[MerkleInclusionProof] =
+    Meta[String].timap(s =>
+      MerkleInclusionProof.decode(s).getOrElse(throw new RuntimeException(s"Invalid inclusion proof: $s"))
+    )(_.encode)
 }
