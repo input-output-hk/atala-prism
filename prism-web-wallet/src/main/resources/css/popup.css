@@ -635,6 +635,11 @@ select:focus {
   width: 100%;
 }
 
+.welcome_img {
+  width: 100%;
+  text-align: center;
+}
+
 .Welcome_img{
   width: 150px;
   margin: 0 auto;
