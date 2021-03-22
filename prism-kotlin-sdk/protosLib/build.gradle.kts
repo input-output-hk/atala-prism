@@ -22,7 +22,8 @@ sourceSets {
                     "common_*.proto",
                     "node_*.proto",
                     "connector_*.proto",
-                    "console_*.proto"
+                    "console_*.proto",
+                    "credential_*.proto"
                 )
             )
         }
